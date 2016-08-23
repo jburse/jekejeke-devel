@@ -5,11 +5,15 @@ the Jekejeke Prolog source. Here and then you might
 see other artefacts such as Java code, SQL code, XML
 documents, etc...
 
-The exceerpts are organized along the main components of
+The excerpts are organized along the main components of
 Jekejeke Prolog. There is also a folder with some operating
 system utilities commonly used across the compontents.
 
 # Runtime Library Excerpts
+
+The following excerpts have already been uploaded:
+- [jekrun/swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/swing):
+  Thread and System Statistics.
 
 # Development Environment Excerpts
 
@@ -17,7 +21,7 @@ system utilities commonly used across the compontents.
 
 # System Utilities Excerpts
 
-The following samples have already been uploaded:
+The following excerpts have already been uploaded:
 - [utils/headless](https://github.com/jburse/jekejeke-devel/tree/master/utils/headless):
   Custom Streams, Data Structures and Primitives.
 - [utils/swing](https://github.com/jburse/jekejeke-devel/tree/master/utils/swing):
@@ -32,4 +36,4 @@ Feel free to fork for non-commercial attributed use. There
 request if you find issues, but there is also no service
 agreement by us. Note also that Jekejeke is a trademark.
 
-Jan Burse, 21.08.2016
+Jan Burse, 23.08.2016
