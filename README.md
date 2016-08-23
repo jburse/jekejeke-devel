@@ -19,6 +19,10 @@ The following excerpts have already been uploaded:
 
 # Development Environment Excerpts
 
+The following excerpts have already been uploaded:
+- [jekdev/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekdev/headless):
+  Development Predicates.
+
 # Minlog Extension Excerpts
 
 The following excerpts have already been uploaded:
