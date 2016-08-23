@@ -1,6 +1,6 @@
 # What is this?
 
-Thism repository contains Prolog text excerpts from
+This repository contains Prolog text excerpts from
 the Jekejeke Prolog source. Here and then you might
 see other artefacts such as Java code, SQL code, XML
 documents, etc...
@@ -16,6 +16,14 @@ system utilities commonly used across the compontents.
 # Minlog Extension Excerpts
 
 # System Utilities Excerpts
+
+The following samples have already been uploaded:
+- [utils/headless](https://github.com/jburse/jekejeke-devel/tree/master/utils/headless):
+  Custom Streams, Data Structures and Primitives.
+- [utils/swing](https://github.com/jburse/jekejeke-devel/tree/master/utils/swing):
+  Modded Swing Class Loader.
+- [utils/android](https://github.com/jburse/jekejeke-devel/tree/master/utils/android):
+  Modded Adroid Class Loader.
 
 # Issues and Contributing
 

@@ -1,0 +1,215 @@
+package matula.util.data;
+
+/**
+ * <p>This class provides a list array. The advantage over the usual Java
+ * class ArrayList is no mod count, no bounds check and more important
+ * automatic shrinking. The list array is implemented by an object array
+ * plus a size field that indicates the size which might differ from the
+ * length of the object array:
+ * </p>
+ * <pre>
+ *           +----------+-----------------+------------+
+ *           | table[0] |      ...        | table[n-1] |
+ *           +----------+-----------------+------------+
+ *           < ---------- table.length = n ----------- >
+ *           < ----------- size --------- >
+ * </pre>
+ * <p>Each operation automatically resizes. Its also possible to access
+ * the object array and size field directly and perform some bulk
+ * operation possibly update the size field and then call resize. Each
+ * operation is not synchronized. Application code needs to synchronize on
+ * its own if necessary and might execute multiple operations insided its
+ * synchronized block.
+ * </p>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
+ */
+public final class ListArray<E> {
+    public static final int MIN_SIZE = 2;
+
+    public Object[] table = new Object[MIN_SIZE];
+    public int size;
+
+    /**
+     * <p>Retrieve size.</p>
+     *
+     * @return The size.
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
+     * <p>Returns the index of the first occurence.</p>
+     *
+     * @param o The object.
+     * @return The index.
+     */
+    public int indexOf(Object o) {
+        for (int i = 0; i < size; i++)
+            if (o != null ? o.equals(table[i]) : null == table[i])
+                return i;
+        return -1;
+    }
+
+    /**
+     * <p>Checks whether the object is contained in the list.</p>
+     *
+     * @param o The object.
+     * @return True if the object is contained in the list, otherwise false.
+     */
+    public boolean contains(Object o) {
+        return indexOf(o) != -1;
+    }
+
+    /**
+     * <p>Add an element at the end.</p>
+     *
+     * @param e The element.
+     */
+    public void add(E e) {
+        if (size >= table.length)
+            resize(table.length * 2);
+        table[size++] = e;
+    }
+
+    /**
+     * <p>Add an element at a position.</p>
+     *
+     * @param i The index.
+     * @param e The element.
+     */
+    public void add(int i, E e) {
+        if (size >= table.length)
+            resize(table.length * 2);
+        if (i != size)
+            System.arraycopy(table, i, table, i + 1, size - i);
+        table[i] = e;
+        size++;
+    }
+
+    /**
+     * <p>Remove an element at a position.</p>
+     *
+     * @param i The index.
+     */
+    public void remove(int i) {
+        int k = size - i - 1;
+        if (k > 0)
+            System.arraycopy(table, i + 1, table, i, k);
+        table[--size] = null;
+        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
+            resize(table.length / 2);
+    }
+
+    /**
+     * <p>Remove an element.</p>
+     *
+     * @param o The element.
+     */
+    public void remove(Object o) {
+        int k = indexOf(o);
+        if (k != -1)
+            remove(k);
+    }
+
+    /**
+     * <p>Retrieve an element.</p>
+     *
+     * @param i The index.
+     * @return The element.
+     */
+    public E get(int i) {
+        return (E) table[i];
+    }
+
+    /**
+     * <p>Set an element.</p>
+     *
+     * @param i The index.
+     * @param e The element.
+     */
+    public void set(int i, E e) {
+        table[i] = e;
+    }
+
+    /**
+     * <p>Copy elements to an array.</p>
+     *
+     * @param target The array.
+     */
+    public void toArray(E[] target) {
+        toArray(target, 0);
+    }
+
+    /**
+     * <p>Copy elements to an array.</p>
+     *
+     * @param target The array.
+     * @param pos    The start index.
+     */
+    public void toArray(E[] target, int pos) {
+        if (size > 0)
+            System.arraycopy(table, 0, target, pos, size);
+    }
+
+    /**
+     * <p>Resize the list array.</p>
+     */
+    public void resize() {
+        int len = table.length;
+        while (size < len / 4 && len / 2 > MIN_SIZE)
+            len = len / 2;
+        if (len != table.length)
+            resize(len);
+    }
+
+    /**
+     * <p>Resize the list array.</p>
+     *
+     * @param s The new size.
+     */
+    public void resize(int s) {
+        Object[] newtable = new Object[s];
+        int k = Math.min(s, table.length);
+        System.arraycopy(table, 0, newtable, 0, k);
+        table = newtable;
+    }
+
+    /**
+     * <p>Clear the table.</p>
+     */
+    public void clear() {
+        if (size == 0)
+            return;
+        if (table.length != MIN_SIZE) {
+            table = new Object[MIN_SIZE];
+        } else {
+            int n = Math.min(size, MIN_SIZE);
+            for (int i = 0; i < n; i++)
+                table[i] = null;
+        }
+        size = 0;
+    }
+
+}
