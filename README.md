@@ -12,6 +12,8 @@ system utilities commonly used across the compontents.
 # Runtime Library Excerpts
 
 The following excerpts have already been uploaded:
+- [jekrun/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/headless):
+  Runtime and Frequent Predicates.
 - [jekrun/swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/swing):
   Thread and System Statistics.
 
