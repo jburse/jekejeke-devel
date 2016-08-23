@@ -15,11 +15,15 @@ The following excerpts have already been uploaded:
 - [jekrun/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/headless):
   Runtime and Frequent Predicates.
 - [jekrun/swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/swing):
-  Thread and System Statistics.
+  Swing Thread Statistics.
 
 # Development Environment Excerpts
 
 # Minlog Extension Excerpts
+
+The following excerpts have already been uploaded:
+- [jekmin/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekmin/headless):
+  Minlog Predicates.
 
 # System Utilities Excerpts
 
