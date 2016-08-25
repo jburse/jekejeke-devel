@@ -1,7 +1,17 @@
 /**
  * The module provides access to the shell that started the interpreter.
- * The predicate getenv/2 allows accessing and enumerating shell environment
- * variables. The access is always case insensitive.
+ * The predicate getenv/2 allows accessing and enumerating shell
+ * environment variables. The access is always case insensitive.
+ *
+ * Examples:
+ * ?- get_time(D), format('%tc\n', [D]).
+ * Mon Aug 22 17:07:24 CEST 2016
+ * ?- statistics(wall, T), get_time(T, D), format('%tc\n', [D]).
+ * Mon Aug 22 17:07:39 CEST 2016
+ *
+ * The predicates get_time/1 and get_time/2 can be used to retrieve a
+ * time object that is suitable for format/2 and friends. The predicate
+ * get_time/2 has an integer time stamp constructor parameter.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -74,7 +84,8 @@ getenv(Name, Value) :-
 
 /**
  * get_time(T, S):
- * The predicate succeeds with a time object S for the time T.
+ * The predicate succeeds with a time object S for the time
+ * T in milliseconds since January 1, 1970, 00:00:00 GMT.
  * The time object is suitable for format/2 and friends.
  */
 % get_time(+Integer, -DateTime)

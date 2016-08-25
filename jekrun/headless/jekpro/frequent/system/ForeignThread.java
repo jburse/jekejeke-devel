@@ -1,5 +1,7 @@
 package jekpro.frequent.system;
 
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.*;
 import jekpro.tools.term.Term;
 import matula.util.misc.Alarm;
@@ -38,6 +40,10 @@ import java.io.BufferedWriter;
 public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
 
+    /****************************************************************/
+    /* Thread Creation                                              */
+    /****************************************************************/
+
     /**
      * <p>Make a copy of the given term and create a thread
      * running the term once.</p>
@@ -49,7 +55,7 @@ public final class ForeignThread {
     public static Thread sysThreadNew(Interpreter inter, Term t)
             throws InterpreterMessage {
         t = Term.copyTermWrapped(inter, t);
-        Interpreter inter2 = inter.getKnowledgebase().iterable();
+        final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_DISP_INPUT);
         ConnectionReader cr;
         if (rd instanceof ConnectionReader && (cr = (ConnectionReader) rd).getBuffer() != 0) {
@@ -83,25 +89,160 @@ public final class ForeignThread {
         inter2.setProperty(Toolkit.PROP_SYS_DISP_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_CUR_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_ATTACHED_TO, inter.getProperty(Toolkit.PROP_SYS_ATTACHED_TO));
-        CallIn callin = inter2.iterator(t);
+        final CallIn callin = inter2.iterator(t);
 
-        Thread thread = new Thread(callin);
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    try {
+                        callin.nextClose();
+                    } catch (InterpreterMessage y) {
+                        InterpreterException x = new InterpreterException(y,
+                                InterpreterException.fetchStack(inter2));
+                        systemDeathBreak(inter2, x);
+                    } catch (InterpreterException x) {
+                        systemDeathBreak(inter2, x);
+                    }
+                } catch (ThreadDeath x) {
+                    /* */
+                } catch (Throwable x) {
+                    x.printStackTrace();
+                }
+                inter2.getController().setFence(null);
+            }
+        });
         inter2.getController().setFence(thread);
         return thread;
     }
 
     /**
-     * <p>Abort a thread with a message.</p>
+     * <p>Show the death exception.</p>
+     *
+     * @param inter The interpreter.
+     * @param x     The death exception.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    private static void systemDeathBreak(Interpreter inter, InterpreterException x)
+            throws InterpreterMessage, InterpreterException {
+        InterpreterMessage m;
+        if ((m = x.exceptionType(EngineException.OP_ERROR)) != null &&
+                m.messageType(EngineMessage.OP_SYSTEM_ERROR) != null) {
+            InterpreterException rest = x.causeChainRest();
+            if (rest != null)
+                rest.printStackTrace(inter);
+        } else {
+            x.printStackTrace(inter);
+        }
+    }
+
+    /****************************************************************/
+    /* Thread Signalling                                            */
+    /****************************************************************/
+
+    /**
+     * <p>Set the signal of a thread.</p>
+     * <p>Block if thread has already a signal.</p>
+     *
+     * @param t The thread.
+     * @param m The message.
+     * @throws InterruptedException The current thread was interrupted.
+     */
+    public static void sysThreadAbort(Thread t, Term m)
+            throws InterruptedException {
+        synchronized (t) {
+            while (systemGetSignal(t) != null)
+                t.wait();
+            systemSetSignal(t, m);
+            t.notifyAll();
+        }
+    }
+
+    /**
+     * <p>Set the signal of a thread.</p>
+     * <p>Fail if thread has already a signal.</p>
      *
      * @param t The thread.
      * @param m The message.
      */
-    public static void sysThreadAbort(Thread t, Term m) {
+    public static boolean sysThreadDown(Thread t, Term m) {
+        synchronized (t) {
+            if (systemGetSignal(t) == null) {
+                systemSetSignal(t, m);
+                t.notifyAll();
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * <p>Set the signal of a thread or timeout.</p>
+     *
+     * @param t     The thread.
+     * @param m     The message.
+     * @param sleep The time-out.
+     * @return True if signal is set, otherwise false.
+     * @throws InterruptedException The current thread was interrupted.
+     */
+    public static boolean sysThreadDown(Thread t, Term m, long sleep)
+            throws InterruptedException {
+        long when = System.currentTimeMillis() + sleep;
+        synchronized (t) {
+            while (systemGetSignal(t) != null & sleep > 0) {
+                t.wait(sleep);
+                sleep = when - System.currentTimeMillis();
+            }
+            if (sleep > 0) {
+                systemSetSignal(t, m);
+                t.notifyAll();
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * <p>Retrieve the signal.</p>
+     *
+     * @param t The thread.
+     * @return The old signal, can be null.
+     */
+    private static InterpreterMessage systemGetSignal(Thread t) {
+        Controller contr = Controller.currentController(t);
+        if (contr == null)
+            return null;
+        return contr.getSignal();
+    }
+
+    /**
+     * <p>Set the signal.</p>
+     *
+     * @param t The thread.
+     * @param m The message.
+     */
+    private static void systemSetSignal(Thread t, Term m) {
         Controller contr = Controller.currentController(t);
         if (contr == null)
             return;
         InterpreterMessage im = new InterpreterMessage(m);
         contr.setSignal(im);
+    }
+
+    /****************************************************************/
+    /* Thread Joining                                               */
+    /****************************************************************/
+
+    /**
+     * <p>Check if a thread has terminated.</p>
+     *
+     * @param t The thread.
+     * @return True if thread is terminated, otherwise false.
+     */
+    public static boolean sysThreadCombine(Thread t) {
+        return !t.isAlive();
     }
 
     /**
@@ -110,7 +251,7 @@ public final class ForeignThread {
      * @param t     The thread.
      * @param sleep The time-out.
      * @return True if thread is terminated, otherwise false.
-     * @throws InterruptedException Join was interrupted.
+     * @throws InterruptedException The current thread was interrupted.
      */
     public static boolean sysThreadCombine(Thread t, long sleep)
             throws InterruptedException {

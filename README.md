@@ -42,7 +42,7 @@ The following excerpts have already been uploaded:
 # Issues and Contributing
 
 Feel free to fork for non-commercial attributed use. There
- is no warranty for the samples. You might try a pull
+ is no warranty for the excerpts. You might try a pull
 request if you find issues, but there is also no service
 agreement by us. Note also that Jekejeke is a trademark.
 

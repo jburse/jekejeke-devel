@@ -68,6 +68,16 @@
       sysPipePut('Interpreter','Queue','Term')).
 
 /**
+ * pipe_offer(P, O):
+ * The predicate succeeds for sending a copy of the term O to the pipe P.
+ * The predicate fails for a full queue.
+ */
+% pipe_offer(+Pipe, +Term)
+:- public pipe_offer/2.
+:- foreign(pipe_offer/2, 'ForeignPipe',
+      sysPipeOffer('Interpreter','Queue','Term')).
+
+/**
  * pipe_offer(P, O, T):
  * The predicate succeeds for sending a copy of the term O to the
  * pipe P in the timeout T. Otherwise the predicate fails.
@@ -86,6 +96,16 @@
 :- public pipe_take/2.
 :- virtual pipe_take/2.
 :- foreign(pipe_take/2, 'Queue', take).
+
+/**
+ * pipe_poll(P, O):
+ * The predicate succeeds for getting a term O form the pipe P.
+ * The predicate fails for an empty queue.
+ */
+% pipe_poll(+Pipe, -Term)
+:- public pipe_poll/2.
+:- virtual pipe_poll/2.
+:- foreign(pipe_poll/2, 'Queue', poll).
 
 /**
  * pipe_poll(P, T, O):

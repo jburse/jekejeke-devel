@@ -12,7 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 
 /**
- * The foreign predicates for the module system/file.
+ * <p>The foreign predicates for the module system/file.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

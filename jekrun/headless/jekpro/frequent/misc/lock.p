@@ -71,6 +71,7 @@
 /**
  * lock_aquire(L):
  * The predicate succeeds after locking the lock L.
+ * The predicate blocks if the lock is already held.
  */
 % lock_acquire(+Lock)
 :- public lock_acquire/1.
@@ -78,9 +79,19 @@
 :- foreign(lock_acquire/1, 'AbstractLock', acquire).
 
 /**
+ * lock_attempt(L):
+ * The predicate succeeds after locking the lock L.
+ * The predicate fails if the lock is already held.
+ */
+% lock_attempt(+Lock)
+:- public lock_attempt/1.
+:- virtual lock_attempt/1.
+:- foreign(lock_attempt/1, 'AbstractLock', attempt).
+
+/**
  * lock_attempt(L, T):
- * The predicate succeeds after locking the lock L in the timeout T.
- * Otherwise the predicate fails.
+ * The predicate succeeds after locking the lock L
+ * in the timeout T. Otherwise the predicate fails.
  */
 % lock_attempt(+Lock, +Integer)
 :- public lock_attempt/2.

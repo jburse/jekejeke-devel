@@ -95,20 +95,29 @@
 
 /**
  * thread_abort(T, M):
- * The predicate succeeds for aborting the thread T by the message M.
+ * The predicate sets the signal of the thread T to M.
+ * The predicate blocks for a thread with a signal.
  */
 % thread_abort(+Thread, +Message)
 :- public thread_abort/2.
 :- foreign(thread_abort/2, 'ForeignThread', sysThreadAbort('Thread','Term')).
 
 /**
- * thread_kill(T):
- * The predicate succeeds for killing the thread T.
+ * thread_down(T, M):
+ * The predicate sets the signal of th thread T to M.
+ * The predicate fails for a thread with a signal.
  */
-% thread_kill(+Thread)
-:- public thread_kill/1.
-:- virtual thread_kill/1.
-:- foreign(thread_kill/1, 'Thread', stop).
+:- public thread_down/2.
+:- foreign(thread_down/2, 'ForeignThread', sysThreadDown('Thread','Term')).
+
+/**
+ * thread_downl(T, M, W):
+ * The predicate sets the signal of the thread T to M
+ * in the timeout W. Otherwise the predicate fails.
+ */
+% thread_down(+Thread, +Message, +Integer)
+:- public thread_down/3.
+:- foreign(thread_down/3, 'ForeignThread', sysThreadDown('Thread','Term',long)).
 
 /**
  * thread_join(T):
@@ -120,10 +129,27 @@
 :- foreign(thread_join/1, 'Thread', join).
 
 /**
+ * thread_combine(T):
+ * The predicate succeeds when the thread T has terminated.
+ * The predicate fails for an alive thread.
+ */
+:- public thread_combine/1.
+:- foreign(thread_combine/1, 'ForeignThread', sysThreadCombine('Thread')).
+
+/**
  * thread_combine(T, W):
  * The predicate succeeds when the thread T has terminated
  * in the timeout W. Otherwise the predicate fails.
  */
 :- public thread_combine/2.
 :- foreign(thread_combine/2, 'ForeignThread', sysThreadCombine('Thread',long)).
+
+/**
+ * thread_kill(T):
+ * The predicate succeeds for killing the thread T.
+ */
+% thread_kill(+Thread)
+:- public thread_kill/1.
+:- virtual thread_kill/1.
+:- foreign(thread_kill/1, 'Thread', stop).
 

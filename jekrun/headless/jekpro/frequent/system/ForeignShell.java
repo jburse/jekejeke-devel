@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 /**
- * The foreign predicates for the module system/shell.
+ * <p>The foreign predicates for the module system/shell.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

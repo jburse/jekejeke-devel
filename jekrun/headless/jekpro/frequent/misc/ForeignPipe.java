@@ -50,6 +50,22 @@ public final class ForeignPipe {
     }
 
     /**
+     * <p>Enqueue a copy of a term in a pipe. If the pipe has not
+     * reached max size, the copy is enqueued. Otherwise we
+     * return false. There is no assurance of fairness.</p>
+     *
+     * @param inter The interpreter.
+     * @param q     The queue.
+     * @param t     The term.
+     * @throws InterruptedException Thread was interrupted.
+     */
+    public static boolean sysPipeOffer(Interpreter inter, Queue q, Term t)
+            throws InterruptedException {
+        t = Term.copyTermWrapped(inter, t);
+        return q.offer(t);
+    }
+
+    /**
      * <p>Enqueue a copy of a term in a pipe with a timeout. If
      * the pipe has not reached max size, the copy is enqueued.
      * Otherwise the current thread waits maximum timeout time until
