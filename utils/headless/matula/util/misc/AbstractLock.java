@@ -29,11 +29,20 @@ public abstract class AbstractLock {
 
     /**
      * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
      *
      * @throws InterruptedException If the request was cancelled.
      */
     public abstract void acquire()
             throws InterruptedException;
+
+    /**
+     * <p>Attempt the lock.</p>
+     * <p>Fails if lock is already held.</p>
+     *
+     * @return True if lock was acquired, or false otherwise.
+     */
+    public abstract boolean attempt();
 
     /**
      * <p>Acquire the lock or time-out.</p>

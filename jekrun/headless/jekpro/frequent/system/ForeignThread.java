@@ -1,10 +1,7 @@
 package jekpro.frequent.system;
 
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.*;
 import jekpro.tools.term.Term;
-import matula.util.misc.Alarm;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
 
@@ -126,8 +123,8 @@ public final class ForeignThread {
     private static void systemDeathBreak(Interpreter inter, InterpreterException x)
             throws InterpreterMessage, InterpreterException {
         InterpreterMessage m;
-        if ((m = x.exceptionType(EngineException.OP_ERROR)) != null &&
-                m.messageType(EngineMessage.OP_SYSTEM_ERROR) != null) {
+        if ((m = x.exceptionType("error")) != null &&
+                m.messageType("system_error") != null) {
             InterpreterException rest = x.causeChainRest();
             if (rest != null)
                 rest.printStackTrace(inter);

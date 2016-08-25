@@ -111,7 +111,7 @@ public final class Alarm {
      * <p>Perform a sleep.</p>
      *
      * @param sleep The time-out.
-     * @throws InterruptedException
+     * @throws InterruptedException The current thread was interrupted.
      */
     public static void sleep(long sleep)
             throws InterruptedException {

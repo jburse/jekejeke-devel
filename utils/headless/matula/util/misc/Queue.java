@@ -53,10 +53,8 @@ public final class Queue {
      * <p>Create a queue.</p>
      *
      * @param m The maximum size, must be greater than zero.
-     * @throws IndexOutOfBoundsException Maximum size underflow.
      */
-    public Queue(int m)
-            throws IndexOutOfBoundsException {
+    public Queue(int m) {
         if (!(m > 0))
             throw new IndexOutOfBoundsException("maxsize underflow");
         max = m;
@@ -64,20 +62,39 @@ public final class Queue {
 
     /**
      * <p>Post an object.</p>
+     * <p>Blocks if queue is full.</p>
      *
      * @param t The object, not null.
      * @throws InterruptedException If the request was cancelled.
-     * @throws NullPointerException If the posted object was null.
      */
     public void put(Object t)
             throws InterruptedException, NullPointerException {
         if (t == null)
             throw new NullPointerException("null element");
         synchronized (this) {
-            while (this.list.size() >= this.max)
+            while (list.size() >= max)
                 this.wait();
-            this.list.add(t);
+            list.add(t);
             this.notifyAll();
+        }
+    }
+
+    /**
+     * <p>Post an object.</p>
+     * <p>Fails if queue is full.</p>
+     *
+     * @return True if object was posted, or false otherwise.
+     */
+    public boolean offer(Object t) {
+        if (t == null)
+            throw new NullPointerException("null element");
+        synchronized (this) {
+            if (list.size() < max) {
+                list.add(t);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -87,7 +104,6 @@ public final class Queue {
      * @param t     The object, not null.
      * @param sleep The time-out.
      * @return True if object was posted, or false otherwise.
-     * @throws InterruptedException If the request was cancelled.
      */
     public boolean offer(Object t, long sleep)
             throws InterruptedException, NullPointerException {
@@ -95,12 +111,12 @@ public final class Queue {
             throw new NullPointerException("null element");
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            while (this.list.size() >= this.max && sleep > 0) {
+            while (list.size() >= max && sleep > 0) {
                 this.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                this.list.add(t);
+                list.add(t);
                 this.notifyAll();
                 return true;
             } else {
@@ -109,9 +125,9 @@ public final class Queue {
         }
     }
 
-
     /**
      * <p>Take an object.</p>
+     * <p>Blocks if queue is empty.</p>
      *
      * @return The object, not null.
      * @throws InterruptedException If the request was cancelled.
@@ -119,12 +135,30 @@ public final class Queue {
     public Object take()
             throws InterruptedException {
         synchronized (this) {
-            while (this.list.size() == 0)
+            while (list.size() == 0)
                 this.wait();
-            Object t = this.list.get(0);
-            this.list.remove(0);
+            Object t = list.get(0);
+            list.remove(0);
             this.notifyAll();
             return t;
+        }
+    }
+
+    /**
+     * <p>Take an object.</p>
+     * <p>Fails if queue is empty.</p>
+     *
+     * @return The object or null if no object was taken.
+     */
+    public Object poll() {
+        synchronized (this) {
+            if (list.size() != 0) {
+                Object t = list.get(0);
+                list.remove(0);
+                return t;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -139,13 +173,13 @@ public final class Queue {
             throws InterruptedException {
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            while (this.list.size() == 0 && sleep > 0) {
+            while (list.size() == 0 && sleep > 0) {
                 this.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                Object t = this.list.get(0);
-                this.list.remove(0);
+                Object t = list.get(0);
+                list.remove(0);
                 this.notifyAll();
                 return t;
             } else {

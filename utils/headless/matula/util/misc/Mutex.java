@@ -31,6 +31,7 @@ public final class Mutex extends AbstractLock {
 
     /**
      * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
      *
      * @throws InterruptedException If the request was cancelled.
      */
@@ -43,6 +44,26 @@ public final class Mutex extends AbstractLock {
             while (locked != null)
                 this.wait();
             locked = thread;
+        }
+    }
+
+    /**
+     * <p>Attempt the lock.</p>
+     * <p>Fails if lock is already held.</p>
+     *
+     * @return True if lock was acquired, or false otherwise.
+     */
+    public boolean attempt() {
+        Thread thread = Thread.currentThread();
+        synchronized (this) {
+            if (locked == thread)
+                throw new IllegalStateException("alread_locked");
+            if (locked == null) {
+                locked = thread;
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

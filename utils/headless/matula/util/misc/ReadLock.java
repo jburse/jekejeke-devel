@@ -42,7 +42,8 @@ final class ReadLock extends AbstractLock {
     }
 
     /**
-     * <p>Acquire the read lock.</p>
+     * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
      *
      * @throws InterruptedException If the request was cancelled.
      */
@@ -54,6 +55,26 @@ final class ReadLock extends AbstractLock {
             while (parent.write.otherWriter(thread))
                 parent.wait();
             set.putKey(thread);
+        }
+    }
+
+    /**
+     * <p>Attempt the lock.</p>
+     * <p>Fails if lock is already held.</p>
+     *
+     * @return True if lock was acquired, or false otherwise.
+     */
+    public boolean attempt() {
+        Thread thread = Thread.currentThread();
+        synchronized (parent) {
+            if (set.getKey(thread) != null)
+                throw new IllegalStateException("alread_locked");
+            if (!parent.write.otherWriter(thread)) {
+                set.putKey(thread);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

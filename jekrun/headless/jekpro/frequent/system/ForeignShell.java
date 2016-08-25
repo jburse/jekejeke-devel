@@ -3,7 +3,6 @@ package jekpro.frequent.system;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 
-import java.util.Date;
 import java.util.Iterator;
 
 /**
