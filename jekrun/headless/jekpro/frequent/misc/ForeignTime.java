@@ -37,8 +37,8 @@ public final class ForeignTime {
      * <p>Schedule an item on an alarm queue.</p>
      *
      * @param inter The interpreter.
-     * @param a The alarm queue.
-     * @param t The item.
+     * @param a     The alarm queue.
+     * @param t     The item.
      * @param sleep The timeout.
      * @return The alarm entry.
      */

@@ -112,6 +112,10 @@ public final class ForeignThread {
         return thread;
     }
 
+    /****************************************************************/
+    /* System Error Helper                                          */
+    /****************************************************************/
+
     /**
      * <p>Show the death exception.</p>
      *
@@ -147,11 +151,11 @@ public final class ForeignThread {
      */
     public static void sysThreadAbort(Thread t, Term m)
             throws InterruptedException {
+        InterpreterMessage im = new InterpreterMessage(m);
         synchronized (t) {
-            while (systemGetSignal(t) != null)
+            while (contrGetSignal(t) != null)
                 t.wait();
-            systemSetSignal(t, m);
-            t.notifyAll();
+            contrSetSignal(t, im);
         }
     }
 
@@ -163,10 +167,10 @@ public final class ForeignThread {
      * @param m The message.
      */
     public static boolean sysThreadDown(Thread t, Term m) {
+        InterpreterMessage im = new InterpreterMessage(m);
         synchronized (t) {
-            if (systemGetSignal(t) == null) {
-                systemSetSignal(t, m);
-                t.notifyAll();
+            if (contrGetSignal(t) == null) {
+                contrSetSignal(t, im);
                 return true;
             } else {
                 return false;
@@ -185,15 +189,15 @@ public final class ForeignThread {
      */
     public static boolean sysThreadDown(Thread t, Term m, long sleep)
             throws InterruptedException {
+        InterpreterMessage im = new InterpreterMessage(m);
         long when = System.currentTimeMillis() + sleep;
         synchronized (t) {
-            while (systemGetSignal(t) != null & sleep > 0) {
+            while (contrGetSignal(t) != null & sleep > 0) {
                 t.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                systemSetSignal(t, m);
-                t.notifyAll();
+                contrSetSignal(t, im);
                 return true;
             } else {
                 return false;
@@ -201,13 +205,46 @@ public final class ForeignThread {
         }
     }
 
+    /****************************************************************/
+    /* Java Foreign Function Helper                                 */
+    /****************************************************************/
+
+    /**
+     * <p>Clear the signal.</p>
+     *
+     * @return The old signal, can be null.
+     */
+    public static InterpreterMessage sysThreadClear() {
+        Thread t = Thread.currentThread();
+        synchronized (t) {
+            InterpreterMessage m = contrSetSignal(t, null);
+            t.notifyAll();
+            return m;
+        }
+    }
+
+    /**
+     * <p>Set the interrupt mask.</p>
+     *
+     * @param m The new interrupt mask.
+     * @return the old interrupt mask.
+     */
+    public static boolean sysThreadMask(boolean m) {
+        Thread t = Thread.currentThread();
+        return contrSetMask(t, m);
+    }
+
+    /****************************************************************/
+    /* Controller Helper                                            */
+    /****************************************************************/
+
     /**
      * <p>Retrieve the signal.</p>
      *
      * @param t The thread.
      * @return The old signal, can be null.
      */
-    private static InterpreterMessage systemGetSignal(Thread t) {
+    private static InterpreterMessage contrGetSignal(Thread t) {
         Controller contr = Controller.currentController(t);
         if (contr == null)
             return null;
@@ -218,14 +255,28 @@ public final class ForeignThread {
      * <p>Set the signal.</p>
      *
      * @param t The thread.
-     * @param m The message.
+     * @param m The new signal, can be null.
+     * @return the old signal, can be null.
      */
-    private static void systemSetSignal(Thread t, Term m) {
+    private static InterpreterMessage contrSetSignal(Thread t, InterpreterMessage m) {
         Controller contr = Controller.currentController(t);
         if (contr == null)
-            return;
-        InterpreterMessage im = new InterpreterMessage(m);
-        contr.setSignal(im);
+            return null;
+        return contr.setSignal(m);
+    }
+
+    /**
+     * <p>Set the interrupt mask.</p>
+     *
+     * @param t The thread.
+     * @param m The new interrupt mask.
+     * @return the old interrupt mask.
+     */
+    private static boolean contrSetMask(Thread t, boolean m) {
+        Controller contr = Controller.currentController(t);
+        if (contr == null)
+            return false;
+        return contr.setMask(m);
     }
 
     /****************************************************************/
