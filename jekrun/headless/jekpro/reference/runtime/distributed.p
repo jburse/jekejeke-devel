@@ -15,7 +15,7 @@
  * The meta-predicates balance/[2,3] and setup_balance/[3,4] allow work
  * distribution of a generate and test. The meta-predicates might change
  * the order of the result set. If the meta-predicates are cancelled by
- a cut such as in a surrounding \+/1 or once/1 they will automatically
+ * a cut such as in a surrounding \+/1 or once/1 they will automatically
  * cancel each spawned thread.
  *
  * The meta-predicates balance/[2,3] and setup_balance/[3,4] assume a
@@ -79,13 +79,10 @@ balance(G, T) :-
 :- public balance/3.
 :- meta_predicate balance(0,0,?).
 balance(G, T, N) :-
-   pipe_new(N, F),
    term_variables(G, I),
+   pipe_new(N, F),
    sys_clean_thread(sys_put_all(I, G, F, N)),
-   pipe_new(N, B),
-   term_variables((G,T), J),
-   sys_clean_threads(sys_put_all(J, (  sys_take_all(I, F, 1), T), B, 1), N),
-   sys_take_all(J, B, N).
+   horde((  sys_take_all(I, F, 1), T), N).
 
 /**
  * setup_balance(S, G, T):
@@ -105,24 +102,34 @@ setup_balance(S, G, T) :-
 :- public setup_balance/4.
 :- meta_predicate setup_balance(0,0,0,?).
 setup_balance(S, G, T, N) :-
-   pipe_new(N, F),
    term_variables(G, I),
+   pipe_new(N, F),
    sys_clean_thread(sys_put_all(I, G, F, N)),
-   pipe_new(N, B),
-   term_variables((S,G,T), J),
-   sys_clean_threads(sys_put_all(J, (  S,
-                                       sys_take_all(I, F, 1), T), B, 1), N),
-   sys_take_all(J, B, N).
+   horde((  S,
+            sys_take_all(I, F, 1), T), N).
 
-% sys_clean_threads(+Goal, +Integer)
-:- private sys_clean_threads/2.
-:- meta_predicate sys_clean_threads(0,?).
-sys_clean_threads(_, 0) :- !.
-sys_clean_threads(G, N) :-
-   N > 0,
-   sys_clean_thread(G),
-   M is N - 1,
-   sys_clean_threads(G, M).
+/**
+ * horde(T):
+ * horde(T, N):
+ * The predicate succeeds whenever T succeeds. The predicate
+ * distributes the work over the available processors running
+ * copies of T. The binary predicate allows specifying the
+ * number N of processors.
+ */
+% horde(+Goal)
+:- public horde/1.
+:- meta_predicate horde(0).
+horde(T) :-
+   statistics(processors, N),
+   horde(T, N).
+% horde(+Goal, +Integer)
+:- public horde/2.
+:- meta_predicate horde(0,?).
+horde(T, N) :-
+   term_variables(T, J),
+   pipe_new(N, B),
+   sys_clean_threads(sys_put_all(J, T, B, 1), N),
+   sys_take_all(J, B, N).
 
 /**********************************************************/
 /* Pipe Utilities                                         */

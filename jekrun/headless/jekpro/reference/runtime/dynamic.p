@@ -6,13 +6,17 @@
  * removes clauses and the predicates asserta/1 and assertz/1
  * add a clause.
  *
- * The predicates clause/2 and retract/1 can only match clauses that
- * are accessible from the current context. The predicates asserta/1
- * and assertz/1 cannot redefine a predicate. Instead it must be
- * marked multi-file. The clauses of a dynamic predicate are seen
- * by all threads. A thread local predicate on the other hand has
- * its own set of clauses for each thread. The predicate abolish/1
- * allows removing a predicate turning it into undefined again.
+ * The predicates clause/2, retract/1 and retractall/1 can only
+ * match clauses that are visible from the head predicate that is
+ * used in the search. The predicates asserta/1 and assertz/1 cannot
+ * redefine a predicate. Instead it must be marked multi-file. The
+ * clauses of a dynamic predicate are seen by all threads. A thread
+ * local predicate on the other hand has its own set of clauses
+ * for each thread.
+ *
+ * The predicate abolish/1 allows removing a predicate turning it
+ * into undefined again. The predicate abolish/1 can be also used
+ * to remove operators.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

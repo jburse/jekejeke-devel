@@ -5,11 +5,11 @@
  * recordz_ref/1 and erase_ref/1. A new instance of the original clause
  * can be retrieved again by the predicate compiled_ref/2.
  *
- * The predicate clause_ref/3 can be used to find a clause in the knowledge
- * base. The predicate will return those clauses that are visible from
- * the head predicate that is used in the search. The predicate works
- * also for static predicates. The predicate additionally returns clause
- * reference that can be used with the other predicates here.
+ * The predicate clause_ref/3 and dynamic_ref/3 can be used to find
+ * a clause in the knowledge base. The predicate will return those
+ * clauses that are visible from the head predicate that is used in
+ * the search. The predicate additionally returns clause reference that
+ * can be used with the other predicates here.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -121,7 +121,8 @@
 /**
  * dynamic_ref(H, B, R):
  * The predicate succeeds with the user clauses that match
- * H :- B and the clause reference R of the user clause.
+ * H :- B and the clause reference R of the user clause. The
+ * head predicate must be dynamic or thread local.
  */
 % dynamic_ref(-Term, -Goal, -Ref)
 :- public dynamic_ref/3.

@@ -61,6 +61,22 @@ sys_clean_thread(G) :-
                  sys_cleanup(sys_thread_fini(I)))).
 
 /**
+ * sys_clean_threads(G, N):
+ * The predicate succeeds to create and start N new threads for
+ * copies of the goal G, and also installs a clean-up handler to
+ * abortcand join the threads.
+ */
+% sys_clean_threads(+Goal, +Integer)
+:- public sys_clean_threads/2.
+:- meta_predicate sys_clean_threads(0,?).
+sys_clean_threads(_, 0) :- !.
+sys_clean_threads(G, N) :-
+   N > 0,
+   sys_clean_thread(G),
+   M is N - 1,
+   sys_clean_threads(G, M).
+
+/**
  * sys_thread_init(G, I):
  * The predicate succeeds to create and start a new thread I
  * for a copy of the goal G.
