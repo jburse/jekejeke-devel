@@ -117,3 +117,14 @@
 :- meta_predicate clause_ref(-1,0,?).
 :- set_predicate_property(clause_ref/3, sys_noexpand).
 :- special(clause_ref/3, 'SpecialRef', 7).
+
+/**
+ * dynamic_ref(H, B, R):
+ * The predicate succeeds with the user clauses that match
+ * H :- B and the clause reference R of the user clause.
+ */
+% dynamic_ref(-Term, -Goal, -Ref)
+:- public dynamic_ref/3.
+:- meta_predicate dynamic_ref(-1,0,?).
+:- set_predicate_property(dynamic_ref/3, sys_noexpand).
+:- special(dynamic_ref/3, 'SpecialRef', 8).

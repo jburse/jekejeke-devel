@@ -14,10 +14,11 @@
  * A new thread will share the knowledgebase and the display input/output
  * of the creating thread. On the other hand a new thread will have its
  * own thread local predicates. A thread can be aborted by the predicate
- * thread_abort/2. A thread can be killed by the predicate thread_kill/1.
+ * thread_abort/2 and thread_down/[2,3]. A thread can e killed by the
+ * predicate thread_kill/1.
  *
- * The predicates thread_join/1 and thread_combine/2 allow waiting for the
- * termination of a thread. The predicates will block respectively timeout
+ * The predicates thread_join/1 and thread_combine/[1,2] allow waiting for
+ * the termination of a thread. The predicates will block, fail or timeout
  * when the thread is alive. Every thread can be joined and joining does
  * not retrieve an exit code and/or an exit Prolog term.
  *
@@ -77,7 +78,8 @@
 
 /**
  * thread_new(G, T):
- * The predicate succeeds for a new thread T on the copy of the goal G.
+ * The predicate succeeds for a new thread T on the
+ * copy of the goal G.
  */
 % thread_new(+Goal, -Thread)
 :- public thread_new/2.
@@ -95,8 +97,8 @@
 
 /**
  * thread_abort(T, M):
- * The predicate sets the signal of the thread T to M.
- * The predicate blocks for a thread with a signal.
+ * The predicate succeeds for signalling the error
+ * message M to the thread T.
  */
 % thread_abort(+Thread, +Message)
 :- public thread_abort/2.
@@ -104,16 +106,16 @@
 
 /**
  * thread_down(T, M):
- * The predicate sets the signal of th thread T to M.
- * The predicate fails for a thread with a signal.
+ * The predicate succeeds for signalling the error
+ * message M to the thread T. Otherwise the predicate fails.
  */
 :- public thread_down/2.
 :- foreign(thread_down/2, 'ForeignThread', sysThreadDown('Thread','Term')).
 
 /**
  * thread_downl(T, M, W):
- * The predicate sets the signal of the thread T to M
- * in the timeout W. Otherwise the predicate fails.
+ * The predicate succeeds for signalling the error message M
+ * to the thread T in the timeout W. Otherwise the predicate fails.
  */
 % thread_down(+Thread, +Message, +Integer)
 :- public thread_down/3.
@@ -122,7 +124,6 @@
 /**
  * thread_join(T):
  * The predicate succeeds when the thread T has terminated.
- * The predicate blocks for an alive thread.
  */
 :- public thread_join/1.
 :- virtual thread_join/1.
@@ -131,7 +132,7 @@
 /**
  * thread_combine(T):
  * The predicate succeeds when the thread T has terminated.
- * The predicate fails for an alive thread.
+ * Otherwise the predicate fails.
  */
 :- public thread_combine/1.
 :- foreign(thread_combine/1, 'ForeignThread', sysThreadCombine('Thread')).

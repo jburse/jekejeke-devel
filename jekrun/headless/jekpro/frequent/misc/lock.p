@@ -11,8 +11,8 @@
  * ?- mutex_new(M), lock_acquire(M), lock_release(M), lock_acquire(M).
  * M = 0r3f10bc2a
  *
- * The predicates lock_acquire/1 and lock_attempt/2 allow incrementing a
- * semaphore by one. These predicates will block respectively timeout when
+ * The predicates lock_acquire/1 and lock_attempt/[1,2] allow incrementing a
+ * semaphore by one. These predicates will block, fail or timeout when
  * the semaphore has already reached its maximum by other threads. The
  * predicate lock_release/1 allows decrementing the semaphore by one,
  * provided it is not already zero.
@@ -71,7 +71,6 @@
 /**
  * lock_aquire(L):
  * The predicate succeeds after locking the lock L.
- * The predicate blocks if the lock is already held.
  */
 % lock_acquire(+Lock)
 :- public lock_acquire/1.
@@ -81,7 +80,7 @@
 /**
  * lock_attempt(L):
  * The predicate succeeds after locking the lock L.
- * The predicate fails if the lock is already held.
+ * Otherwise the predicate fails.
  */
 % lock_attempt(+Lock)
 :- public lock_attempt/1.

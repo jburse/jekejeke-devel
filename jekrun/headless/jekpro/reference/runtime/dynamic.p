@@ -41,6 +41,7 @@
 :- use_package(foreign(jekpro/reference/runtime)).
 
 :- module(user, []).
+:- use_module(library(experiment/ref)).
 
 :- public prefix(dynamic).
 :- op(1150, fx, dynamic).
@@ -128,14 +129,35 @@ sys_declaration_indicator((thread_local I), I).
 
 /**
  * retract(C): [ISO 8.9.3]
- * The predicate succeeds and removes with the user clauses that
+ * The predicate succeeds with and removes the user clauses that
  * match C. The head predicate must be dynamic or thread local.
  */
 % retract(-Term)
 :- public retract/1.
 :- meta_predicate retract(-1).
 :- set_predicate_property(retract/1, sys_noexpand).
-:- special(retract/1, 'SpecialDynamic', 3).
+retract(V) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+retract((H :- B)) :- !,
+   dynamic_ref(H, B, R),
+   erase_ref(R).
+retract(H) :-
+   dynamic_ref(H, true, R),
+   erase_ref(R).
+
+/**
+ * retractall(H): [Corr.2 8.9.5]
+ * The predicate succeeds and removes the user clauses that match
+ * the head H. The head predicate must be dynamic or thread local.
+ */
+:- public retractall/1.
+:- meta_predicate retractall(-1).
+:- set_predicate_property(retractall/1, sys_noexpand).
+retractall(H) :-
+   dynamic_ref(H, _, R),
+   erase_ref(R), fail.
+retractall(_).
 
 /**
  * asserta(C): [ISO 8.9.1]
@@ -145,7 +167,7 @@ sys_declaration_indicator((thread_local I), I).
 % asserta(+Term)
 :- public asserta/1.
 :- meta_predicate asserta(-1).
-:- special(asserta/1, 'SpecialDynamic', 4).
+:- special(asserta/1, 'SpecialDynamic', 3).
 
 /**
  * assertz(C): [ISO 8.9.2]
@@ -155,7 +177,7 @@ sys_declaration_indicator((thread_local I), I).
 % assertz(+Term)
 :- public assertz/1.
 :- meta_predicate assertz(-1).
-:- special(assertz/1, 'SpecialDynamic', 5).
+:- special(assertz/1, 'SpecialDynamic', 4).
 
 /**
  * abolish(P): [ISO 8.9.4]
@@ -174,7 +196,7 @@ abolish(X) :-
    sys_abolish_predicate(X).
 
 :- private sys_abolish_predicate/1.
-:- special(sys_abolish_predicate/1, 'SpecialDynamic', 6).
+:- special(sys_abolish_predicate/1, 'SpecialDynamic', 5).
 
 :- private sys_abolish_oper/1.
-:- special(sys_abolish_oper/1, 'SpecialDynamic', 8).
+:- special(sys_abolish_oper/1, 'SpecialDynamic', 6).

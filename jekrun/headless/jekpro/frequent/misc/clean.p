@@ -1,7 +1,8 @@
 /**
  * This module provides supervised execution. Currently we support
- * the supervision of slave threads by a master thread, whereby the
- * slave threads are freshly created and started.
+ * the supervision of slave threads by a master thread, whereby
+ * the slave threads are freshly created with a copy of the given
+ * goal and then started.
  *
  * Example:
  * ?- sys_clean_thread((thread_sleep(1000), write(hello),
@@ -13,8 +14,9 @@
  * Yes
  *
  * The predicate sys_clean_thread/1 runs a slave thread which will be
- * cancelled for a termination event in the continuation. Cancelling is
- * done by aborting and joining the slave thread.
+ * cancelled for a termination event in the continuation or a signal
+ * by another thread. Cancelling is done by aborting and joining
+ * the slave thread.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

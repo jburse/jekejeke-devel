@@ -11,10 +11,10 @@
  * Q = 0ra2a372,
  * R = p(_A)
  *
- * The predicates pipe_put/2 and pipe_offer/3 allow sending a message
- * to a queue. The predicates will block respectively timeout when
- * the queue is full. The predicates pipe_take/2 and pipe_peek/3 allow
- * getting a message from a queue. The predicates will block respectively
+ * The predicates pipe_put/2 and pipe_offer/[2,3] allow sending a message
+ * to a queue. The predicates will block, fail or timeout when
+ * the queue is full. The predicates pipe_take/2 and pipe_peek/[2,3] allow
+ * getting a message from a queue. The predicates will block, fail or
  * timeout when the queue is empty.
  *
  * Warranty & Liability
@@ -60,7 +60,6 @@
 /**
  * pipe_put(P, O):
  * The predicate succeeds for sending a copy of the term O to the pipe P.
- * The predicate blocks for a full queue.
  */
 % pipe_put(+Pipe, +Term)
 :- public pipe_put/2.
@@ -70,7 +69,7 @@
 /**
  * pipe_offer(P, O):
  * The predicate succeeds for sending a copy of the term O to the pipe P.
- * The predicate fails for a full queue.
+ * Otherwise the predicate fails.
  */
 % pipe_offer(+Pipe, +Term)
 :- public pipe_offer/2.
@@ -90,7 +89,6 @@
 /**
  * pipe_take(P, O):
  * The predicate succeeds for getting a term O form the pipe P.
- * The predicate blocks for an empty queue.
  */
 % pipe_take(+Pipe, -Term)
 :- public pipe_take/2.
@@ -100,7 +98,7 @@
 /**
  * pipe_poll(P, O):
  * The predicate succeeds for getting a term O form the pipe P.
- * The predicate fails for an empty queue.
+ * Otherwise the predicate fails.
  */
 % pipe_poll(+Pipe, -Term)
 :- public pipe_poll/2.
