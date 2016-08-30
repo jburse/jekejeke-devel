@@ -1,8 +1,9 @@
 /**
- * This module provides meta-predicates to distribute work over
- * multiple threads. Currently the work distribution is only locally
- * done, since we do not yet implement load balancing along multiple
- * invocations of these meta-predicates.
+ * This module provides meta-predicates to distribute work over multiple
+ * threads. The simplest meta-predicate horde/[1,2] collects the results
+ * of the spawned threads and leaves the work distribution to the spawned
+ * threads itself. The other predicates distribute work items among the
+ * spawned threads, but do this only on a local scale.
  *
  * Example:
  * ?- balance(between(1,10,X), Y is X*X).
@@ -62,6 +63,29 @@
 :- use_module(library(misc/clean)).
 
 /**
+ * horde(T):
+ * horde(T, N):
+ * The predicate succeeds whenever T succeeds. The predicate
+ * spawns threads over the available processors running
+ * copies of T. The binary predicate allows specifying the
+ * number N of processors.
+ */
+% horde(+Goal)
+:- public horde/1.
+:- meta_predicate horde(0).
+horde(T) :-
+   statistics(processors, N),
+   horde(T, N).
+% horde(+Goal, +Integer)
+:- public horde/2.
+:- meta_predicate horde(0,?).
+horde(T, N) :-
+   term_variables(T, J),
+   pipe_new(N, B),
+   sys_clean_threads(sys_put_all(J, T, B, 1), N),
+   sys_take_all(J, B, N).
+
+/**
  * balance(G, T):
  * balance(G, T, N):
  * The predicate succeeds whenever G, T succeeds. The predicate
@@ -107,29 +131,6 @@ setup_balance(S, G, T, N) :-
    sys_clean_thread(sys_put_all(I, G, F, N)),
    horde((  S,
             sys_take_all(I, F, 1), T), N).
-
-/**
- * horde(T):
- * horde(T, N):
- * The predicate succeeds whenever T succeeds. The predicate
- * distributes the work over the available processors running
- * copies of T. The binary predicate allows specifying the
- * number N of processors.
- */
-% horde(+Goal)
-:- public horde/1.
-:- meta_predicate horde(0).
-horde(T) :-
-   statistics(processors, N),
-   horde(T, N).
-% horde(+Goal, +Integer)
-:- public horde/2.
-:- meta_predicate horde(0,?).
-horde(T, N) :-
-   term_variables(T, J),
-   pipe_new(N, B),
-   sys_clean_threads(sys_put_all(J, T, B, 1), N),
-   sys_take_all(J, B, N).
 
 /**********************************************************/
 /* Pipe Utilities                                         */

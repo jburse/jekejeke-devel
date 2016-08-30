@@ -79,7 +79,7 @@
 :- meta_predicate call_cleanup(0,0).
 :- set_predicate_property(call_cleanup/2, sys_notrace).
 call_cleanup(B, C) :-
-   sys_cleanup(C),
+   sys_atomic(sys_cleanup(C)),
    current_prolog_flag(sys_choices, X),
    call(B),
    current_prolog_flag(sys_choices, Y),

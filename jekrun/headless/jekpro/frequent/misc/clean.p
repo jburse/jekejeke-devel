@@ -1,8 +1,8 @@
 /**
  * This module provides supervised execution. Currently we support
  * the supervision of slave threads by a master thread, whereby
- * the slave threads are freshly created with a copy of the given
- * goal and then started.
+ * the slave threads are freshly created with a copy of the
+ * given goal and then started.
  *
  * Example:
  * ?- sys_clean_thread((thread_sleep(1000), write(hello),
@@ -13,10 +13,10 @@
  * hello
  * Yes
  *
- * The predicate sys_clean_thread/1 runs a slave thread which will be
- * cancelled for a termination event in the continuation or a signal
- * by another thread. Cancelling is done by aborting and joining
- * the slave thread.
+ * The predicate sys_clean_thread/1 and sys_clean_threads/2 run
+ * slave threads which will be cancelled for a termination event
+ * in the continuation or a signal by another thread. Cancelling
+ * is done by aborting and joining the slave threads.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -50,8 +50,8 @@
 /**
  * sys_clean_thread(G):
  * The predicate succeeds to create and start a new thread for a
- * copy of the goal G, and also installs a clean-up handler to abort
- * and join the thread.
+ * copy of the goal G, and also installs a clean-up handler to
+ * cancel the thread.
  */
 % sys_clean_thread(+Goal)
 :- public sys_clean_thread/1.
@@ -63,8 +63,8 @@ sys_clean_thread(G) :-
 /**
  * sys_clean_threads(G, N):
  * The predicate succeeds to create and start N new threads for
- * copies of the goal G, and also installs a clean-up handler to
- * abortcand join the threads.
+ * copies of the goal G, and also installs clean-up handlers to
+ * cancel the threads.
  */
 % sys_clean_threads(+Goal, +Integer)
 :- public sys_clean_threads/2.
