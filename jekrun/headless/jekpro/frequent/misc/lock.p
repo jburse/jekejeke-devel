@@ -62,11 +62,19 @@
 
 /**
  * mutex_new(M):
- * The predicate succeeds for a new mutex M.
+ * The predicate succeeds for a new slotted mutex M.
  */
 % mutex_new(-Mutex)
 :- public mutex_new/1.
 :- foreign_constructor(mutex_new/1, 'Mutex', new).
+
+/**
+ * unslotted_new(M):
+ * The predicate succeeds for a new unslotted mutex M.
+ */
+% unslotted_new(-Mutex)
+:- public unslotted_new/1.
+:- foreign_constructor(unslotted_new/1, 'Unslotted', new).
 
 /**
  * lock_aquire(L):
@@ -107,12 +115,22 @@
 :- foreign(lock_release/1, 'AbstractLock', release).
 
 /**
- * readwrite_new(P):
- * The predicate succeeds for a new read write pair P.
+ * lock_new(P):
+ * The predicate succeeds for a new slotted and escalable
+ * read write pair P.
  */
-% readwrite_new(-ReadWrite)
-:- public readwrite_new/1.
-:- foreign_constructor(readwrite_new/1, 'ReadWrite', new).
+% lock_new(-ReadWrite)
+:- public lock_new/1.
+:- foreign_constructor(lock_new/1, 'Lock', new).
+
+/**
+ * nonescalable_new(P):
+ * The predicate succeeds for a new unslotted and non-escalable
+ * read write pair P.
+ */
+% nonescalable_new(-ReadWrite)
+:- public nonescalable_new/1.
+:- foreign_constructor(nonescalable_new/1, 'Nonescalable', new).
 
 /**
  * get_read(P, R):
@@ -120,7 +138,7 @@
  */
 :- public get_read/2.
 :- virtual get_read/2.
-:- foreign(get_read/2, 'ReadWrite', getRead).
+:- foreign(get_read/2, 'AbstractPair', getRead).
 
 /**
  * get_write(P, W):
@@ -128,4 +146,4 @@
  */
 :- public get_write/2.
 :- virtual get_write/2.
-:- foreign(get_write/2, 'ReadWrite', getWrite).
+:- foreign(get_write/2, 'AbstractPair', getWrite).

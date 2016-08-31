@@ -50,6 +50,14 @@
 :- module(pipe, []).
 
 /**
+ * pipe_new(Q):
+ * The predicate succeeds for a new unbonded queue Q.
+ */
+% pipe_new(-Queue)
+:- public pipe_new/1.
+:- foreign_constructor(pipe_new/1, 'Unbounded', new).
+
+/**
  * pipe_new(M, Q):
  * The predicate succeeds for a new bounded queue Q with maximum size M.
  */
@@ -74,7 +82,7 @@
 % pipe_offer(+Pipe, +Term)
 :- public pipe_offer/2.
 :- foreign(pipe_offer/2, 'ForeignPipe',
-      sysPipeOffer('Interpreter','Queue','Term')).
+      sysPipeOffer('Interpreter','AbstractPipe','Term')).
 
 /**
  * pipe_offer(P, O, T):
@@ -93,7 +101,7 @@
 % pipe_take(+Pipe, -Term)
 :- public pipe_take/2.
 :- virtual pipe_take/2.
-:- foreign(pipe_take/2, 'Queue', take).
+:- foreign(pipe_take/2, 'AbstractPipe', take).
 
 /**
  * pipe_poll(P, O):
@@ -103,7 +111,7 @@
 % pipe_poll(+Pipe, -Term)
 :- public pipe_poll/2.
 :- virtual pipe_poll/2.
-:- foreign(pipe_poll/2, 'Queue', poll).
+:- foreign(pipe_poll/2, 'AbstractPipe', poll).
 
 /**
  * pipe_poll(P, T, O):
@@ -113,4 +121,4 @@
 % pipe_poll(+Pipe, +Integer, -Term)
 :- public pipe_poll/3.
 :- virtual pipe_poll/3.
-:- foreign(pipe_poll/3, 'Queue', poll(long)).
+:- foreign(pipe_poll/3, 'AbstractPipe', poll(long)).

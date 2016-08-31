@@ -15,7 +15,7 @@
  * for each thread.
  *
  * The predicate abolish/1 allows removing a predicate turning it
- * into undefined again. The predicate abolish/1 can be also used
+ * into non-existent again. The predicate abolish/1 can be also used
  * to remove operators.
  *
  * Warranty & Liability
