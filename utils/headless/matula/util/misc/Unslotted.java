@@ -1,7 +1,7 @@
 package matula.util.misc;
 
 /**
- * <p>This class provides a slotted mutex object.</p>
+ * <p>This class provides an unslotted mutex object.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -26,8 +26,8 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Mutex extends AbstractLock {
-    private Thread locked;
+public final class Unslotted extends AbstractLock {
+    private boolean locked;
 
     /**
      * <p>Acquire the lock.</p>
@@ -37,13 +37,10 @@ public final class Mutex extends AbstractLock {
      */
     public void acquire()
             throws InterruptedException {
-        Thread thread = Thread.currentThread();
         synchronized (this) {
-            if (locked == thread)
-                throw new IllegalStateException("alread_locked");
-            while (locked != null)
+            while (locked)
                 this.wait();
-            locked = thread;
+            locked = true;
         }
     }
 
@@ -54,12 +51,9 @@ public final class Mutex extends AbstractLock {
      * @return True if lock was acquired, or false otherwise.
      */
     public boolean attempt() {
-        Thread thread = Thread.currentThread();
         synchronized (this) {
-            if (locked == thread)
-                throw new IllegalStateException("alread_locked");
-            if (locked == null) {
-                locked = thread;
+            if (!locked) {
+                locked = true;
                 return true;
             } else {
                 return false;
@@ -76,17 +70,14 @@ public final class Mutex extends AbstractLock {
      */
     public boolean attempt(long sleep)
             throws InterruptedException {
-        Thread thread = Thread.currentThread();
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            if (locked == thread)
-                throw new IllegalStateException("alread_locked");
-            while (locked != null && sleep > 0) {
+            while (!locked && sleep > 0) {
                 this.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                locked = thread;
+                locked = true;
                 return true;
             } else {
                 return false;
@@ -98,11 +89,8 @@ public final class Mutex extends AbstractLock {
      * <p>Release the lock.</p>
      */
     public void release() {
-        Thread thread = Thread.currentThread();
         synchronized (this) {
-            if (locked != thread)
-                throw new IllegalStateException("not_locked");
-            locked = null;
+            locked = false;
             this.notifyAll();
         }
     }

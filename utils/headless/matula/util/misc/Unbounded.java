@@ -1,8 +1,9 @@
 package matula.util.misc;
 
+import matula.util.data.ListArray;
+
 /**
- * <p>This class provides a slotted mutex object.</p>
- * <p/>
+ * <p>This class provides an unbounded queue.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -26,84 +27,91 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Mutex extends AbstractLock {
-    private Thread locked;
+public final class Unbounded extends AbstractPipe {
+    private final ListArray<Object> list;
 
     /**
-     * <p>Acquire the lock.</p>
-     * <p>Blocks if lock is already held.</p>
-     *
-     * @throws InterruptedException If the request was cancelled.
+     * <p>Create an unbounded queue.</p>
      */
-    public void acquire()
-            throws InterruptedException {
-        Thread thread = Thread.currentThread();
+    public Unbounded() {
+        list = new ListArray<Object>();
+    }
+
+    /**
+     * <p>Post an object.</p>
+     * <p>Always succeeds.</p>
+     *
+     * @return True if object was posted, or false otherwise.
+     */
+    public boolean offer(Object t) {
+        if (t == null)
+            throw new NullPointerException("null element");
         synchronized (this) {
-            if (locked == thread)
-                throw new IllegalStateException("alread_locked");
-            while (locked != null)
-                this.wait();
-            locked = thread;
+            list.add(t);
+            return true;
         }
     }
 
     /**
-     * <p>Attempt the lock.</p>
-     * <p>Fails if lock is already held.</p>
+     * <p>Take an object.</p>
+     * <p>Blocks if queue is empty.</p>
      *
-     * @return True if lock was acquired, or false otherwise.
+     * @return The object, not null.
+     * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt() {
-        Thread thread = Thread.currentThread();
+    public Object take()
+            throws InterruptedException {
         synchronized (this) {
-            if (locked == thread)
-                throw new IllegalStateException("alread_locked");
-            if (locked == null) {
-                locked = thread;
-                return true;
+            while (list.size() == 0)
+                this.wait();
+            Object t = list.get(0);
+            list.remove(0);
+            this.notifyAll();
+            return t;
+        }
+    }
+
+    /**
+     * <p>Take an object.</p>
+     * <p>Fails if queue is empty.</p>
+     *
+     * @return The object or null if no object was taken.
+     */
+    public Object poll() {
+        synchronized (this) {
+            if (list.size() != 0) {
+                Object t = list.get(0);
+                list.remove(0);
+                return t;
             } else {
-                return false;
+                return null;
             }
         }
     }
 
     /**
-     * <p>Acquire the lock or time-out.</p>
+     * <p>Take an object or time-out.</p>
      *
      * @param sleep The time-out.
-     * @return True if lock was acquired, or false otherwise.
+     * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep)
+    public Object poll(long sleep)
             throws InterruptedException {
-        Thread thread = Thread.currentThread();
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            if (locked == thread)
-                throw new IllegalStateException("alread_locked");
-            while (locked != null && sleep > 0) {
+            while (list.size() == 0 && sleep > 0) {
                 this.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                locked = thread;
-                return true;
+                Object t = list.get(0);
+                list.remove(0);
+                this.notifyAll();
+                return t;
             } else {
-                return false;
+                return null;
             }
-        }
-    }
-
-    /**
-     * <p>Release the lock.</p>
-     */
-    public void release() {
-        Thread thread = Thread.currentThread();
-        synchronized (this) {
-            if (locked != thread)
-                throw new IllegalStateException("not_locked");
-            locked = null;
-            this.notifyAll();
         }
     }
 

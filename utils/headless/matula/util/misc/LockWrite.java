@@ -1,7 +1,7 @@
 package matula.util.misc;
 
 /**
- * <p>This class provides a slotted mutex object.</p>
+ * <p>This class provides a write lock object.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -26,8 +26,18 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Mutex extends AbstractLock {
-    private Thread locked;
+final class LockWrite extends AbstractLock {
+    Thread locked;
+    private final Lock parent;
+
+    /**
+     * <p>Create a write lock.</p>
+     *
+     * @param p The read write state.
+     */
+    LockWrite(Lock p) {
+        parent = p;
+    }
 
     /**
      * <p>Acquire the lock.</p>
@@ -35,14 +45,14 @@ public final class Mutex extends AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public void acquire()
-            throws InterruptedException {
+    public void acquire() throws InterruptedException {
         Thread thread = Thread.currentThread();
-        synchronized (this) {
+        synchronized (parent) {
             if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            while (locked != null)
-                this.wait();
+            while (parent.read.otherReaders(thread) != 0 ||
+                    locked != null)
+                parent.wait();
             locked = thread;
         }
     }
@@ -55,10 +65,11 @@ public final class Mutex extends AbstractLock {
      */
     public boolean attempt() {
         Thread thread = Thread.currentThread();
-        synchronized (this) {
+        synchronized (parent) {
             if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            if (locked == null) {
+            if (parent.read.otherReaders(thread) == 0 &&
+                    locked == null) {
                 locked = thread;
                 return true;
             } else {
@@ -68,21 +79,21 @@ public final class Mutex extends AbstractLock {
     }
 
     /**
-     * <p>Acquire the lock or time-out.</p>
+     * <p>Acquire the write lock or time-out.</p>
      *
      * @param sleep The time-out.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep)
-            throws InterruptedException {
+    public boolean attempt(long sleep) throws InterruptedException {
         Thread thread = Thread.currentThread();
         long when = System.currentTimeMillis() + sleep;
-        synchronized (this) {
+        synchronized (parent) {
             if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            while (locked != null && sleep > 0) {
-                this.wait(sleep);
+            while ((parent.read.otherReaders(thread) != 0 ||
+                    locked != null) && sleep > 0) {
+                parent.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
@@ -95,16 +106,26 @@ public final class Mutex extends AbstractLock {
     }
 
     /**
-     * <p>Release the lock.</p>
+     * <p>Release the write lock.</p>
      */
     public void release() {
         Thread thread = Thread.currentThread();
-        synchronized (this) {
+        synchronized (parent) {
             if (locked != thread)
                 throw new IllegalStateException("not_locked");
             locked = null;
-            this.notifyAll();
+            parent.notifyAll();
         }
+    }
+
+    /**
+     * <p>Determine wether there is another writer.</p>
+     *
+     * @param thread The current thread.
+     * @return True if there is another writer, otherwise false.
+     */
+    boolean otherWriter(Thread thread) {
+        return (locked != null && locked != thread);
     }
 
 }

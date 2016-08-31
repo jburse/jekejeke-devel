@@ -1,7 +1,9 @@
 package matula.util.misc;
 
+import matula.util.data.SetHash;
+
 /**
- * <p>This class provides a write lock object.</p>
+ * <p>This class provides a slotted and escalable read lock object.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -26,16 +28,16 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class WriteLock extends AbstractLock {
-    private final ReadWrite parent;
-    Thread locked;
+final class LockRead extends AbstractLock {
+    SetHash<Thread> set = new SetHash<Thread>();
+    private final Lock parent;
 
     /**
-     * <p>Create a write lock.</p>
+     * <p>Create a read lock.</p>
      *
      * @param p The read write state.
      */
-    WriteLock(ReadWrite p) {
+    LockRead(Lock p) {
         parent = p;
     }
 
@@ -48,12 +50,11 @@ final class WriteLock extends AbstractLock {
     public void acquire() throws InterruptedException {
         Thread thread = Thread.currentThread();
         synchronized (parent) {
-            if (locked == thread)
+            if (set.getKey(thread) != null)
                 throw new IllegalStateException("alread_locked");
-            while (parent.read.otherReaders(thread) != 0 ||
-                    locked != null)
+            while (parent.write.otherWriter(thread))
                 parent.wait();
-            locked = thread;
+            set.putKey(thread);
         }
     }
 
@@ -66,11 +67,10 @@ final class WriteLock extends AbstractLock {
     public boolean attempt() {
         Thread thread = Thread.currentThread();
         synchronized (parent) {
-            if (locked == thread)
+            if (set.getKey(thread) != null)
                 throw new IllegalStateException("alread_locked");
-            if (parent.read.otherReaders(thread) == 0 &&
-                    locked == null) {
-                locked = thread;
+            if (!parent.write.otherWriter(thread)) {
+                set.putKey(thread);
                 return true;
             } else {
                 return false;
@@ -79,7 +79,7 @@ final class WriteLock extends AbstractLock {
     }
 
     /**
-     * <p>Acquire the write lock or time-out.</p>
+     * <p>Acquire the read lock or time-out.</p>
      *
      * @param sleep The time-out.
      * @return True if lock was acquired, or false otherwise.
@@ -89,15 +89,14 @@ final class WriteLock extends AbstractLock {
         Thread thread = Thread.currentThread();
         long when = System.currentTimeMillis() + sleep;
         synchronized (parent) {
-            if (locked == thread)
+            if (set.getKey(thread) != null)
                 throw new IllegalStateException("alread_locked");
-            while ((parent.read.otherReaders(thread) != 0 ||
-                    locked != null) && sleep > 0) {
+            while (parent.write.otherWriter(thread) && sleep > 0) {
                 parent.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                locked = thread;
+                set.putKey(thread);
                 return true;
             } else {
                 return false;
@@ -106,26 +105,32 @@ final class WriteLock extends AbstractLock {
     }
 
     /**
-     * <p>Release the write lock.</p>
+     * <p>Release a read lock.</p>
+     *
+     * @throws IllegalStateException If the write lock was not yet acquired.
      */
-    public void release() {
+    public void release() throws IllegalStateException {
         Thread thread = Thread.currentThread();
         synchronized (parent) {
-            if (locked != thread)
+            if (set.getKey(thread) == null)
                 throw new IllegalStateException("not_locked");
-            locked = null;
+            set.remove(thread);
             parent.notifyAll();
         }
     }
 
     /**
-     * <p>Determine wether there is another writer.</p>
+     * <p>Determine the number of other readers.</p>
      *
      * @param thread The current thread.
-     * @return True if there is another writer, otherwise false.
+     * @return The number of other readers.
      */
-    boolean otherWriter(Thread thread) {
-        return (locked != null && locked != thread);
+    int otherReaders(Thread thread) {
+        if (set.getKey(thread) != null) {
+            return set.size - 1;
+        } else {
+            return set.size;
+        }
     }
 
 }

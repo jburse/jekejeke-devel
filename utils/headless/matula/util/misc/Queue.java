@@ -45,8 +45,8 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Queue {
-    private final ListArray<Object> list = new ListArray<Object>();
+public final class Queue extends AbstractPipe {
+    private final ListArray<Object> list;
     private final int max;
 
     /**
@@ -57,6 +57,7 @@ public final class Queue {
     public Queue(int m) {
         if (!(m > 0))
             throw new IndexOutOfBoundsException("maxsize underflow");
+        list = new ListArray<Object>();
         max = m;
     }
 
@@ -68,7 +69,7 @@ public final class Queue {
      * @throws InterruptedException If the request was cancelled.
      */
     public void put(Object t)
-            throws InterruptedException, NullPointerException {
+            throws InterruptedException {
         if (t == null)
             throw new NullPointerException("null element");
         synchronized (this) {
@@ -106,7 +107,7 @@ public final class Queue {
      * @return True if object was posted, or false otherwise.
      */
     public boolean offer(Object t, long sleep)
-            throws InterruptedException, NullPointerException {
+            throws InterruptedException {
         if (t == null)
             throw new NullPointerException("null element");
         long when = System.currentTimeMillis() + sleep;
