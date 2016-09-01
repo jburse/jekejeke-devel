@@ -1,34 +1,35 @@
 /**
- * A mutex is a binary semaphore. A mutex can be created by the predicate
- * mutex_new/1. A mutex need not be explicitly destroyed, it will
- * automatically be reclaimed by the Java GC when not anymore used. Threads
- * waiting for a mutex can be interrupted.
+ * A mutex is a binary semaphore. A mutex can be created by the predicates
+ * mutex_new/1 and unslotted_new/2. A mutex need not be explicitly
+ * destroyed, it will automatically be reclaimed by the Java GC when
+ * not anymore used. To balance acquires and releases of the same
+ * semaphore the use of setup_call_cleanup/3 is recommended. Threads
+ * waiting for a semaphore can be interrupted.
  *
  * Example:
- * ?- mutex_new(M), lock_acquire(M), lock_acquire(M).
- * Error: The thread already holds the lock.
- *    	lock_acquire/1
- * ?- mutex_new(M), lock_acquire(M), lock_release(M), lock_acquire(M).
+ * ?- mutex_new(M), lock_acquire(M), lock_release(M).
  * M = 0r3f10bc2a
  *
- * The predicates lock_acquire/1 and lock_attempt/[1,2] allow incrementing a
- * semaphore by one. These predicates will block, fail or timeout when
+ * The predicates lock_acquire/1 and lock_attempt/[1,2] allow incrementing
+ * a semaphore by one. These predicates will block, fail or timeout when
  * the semaphore has already reached its maximum by other threads. The
  * predicate lock_release/1 allows decrementing the semaphore by one,
- * provided it is not already zero.
+ * provided it is not already zero. The slotted versions check that the
+ * owner doesn�t change, but currently do not allow re-entrancy.
  *
- * A read write pair can be create by the predicate readwrite_new/1. The
- * non-binary read semaphore can be retrieved by the predicate get_read/2 and
- * it can be incremented provided the write semaphore is zero. The binary write
+ * A read write pair can be created by the predicates lock_new/1 and
+ * nonescalable_new/1. In the non-escalable version the non-binary read
+ * semaphore can be retrieved by the predicate get_read/2 and it can be
+ * incremented provided the write semaphore is zero. The binary write
  * semaphore can be retrieved by the predicate get_write/2 and it can be
  * incremented provided the read semaphore is zero.
  *
- * It is allowed that the same thread holds a read and a write lock from
- * a read write pair. This can also be used to upgrade or downgrade a
- * read write pair by using unbalanced locking. For example if a thread
- * already holds a read lock, it can acquire the write lock and then
- * release the read lock. The result is that the read lock was changed
- * into a write lock.
+ * For the escalated version of the read write pair it is also allowed
+ * that the same thread holds a read and a write lock from a read write
+ * pair. This can for example be used to upgrade or downgrade a read write
+ * pair by using unbalanced locking. For example if a thread already holds
+ * a write lock, it can acquire the read lock and then release the write
+ * lock. The result is that the write lock was changed into a read lock.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

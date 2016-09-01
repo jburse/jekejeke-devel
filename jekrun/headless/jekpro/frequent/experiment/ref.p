@@ -41,17 +41,6 @@
 :- module(ref, []).
 
 /**
- * consultable_ref(C, R):
- * The predicate compiles the term C into a new clause reference R.
- * An undefined or unimplemented head predicate will be turned into
- * a static predicate. Otherwise the predicate must be static, dynamic
- * or thread local.
- */
-:- public consultable_ref/2.
-:- meta_predicate consultable_ref(-1,?).
-:- special(consultable_ref/2, 'SpecialRef', 0).
-
-/**
  * assertable_ref(C, R):
  * The predicate compiles the term C into a new clause reference R.
  * An undefined or unimplemented head predicate will be turned into a
@@ -60,7 +49,7 @@
  */
 :- public assertable_ref/2.
 :- meta_predicate assertable_ref(-1,?).
-:- special(assertable_ref/2, 'SpecialRef', 1).
+:- special(assertable_ref/2, 'SpecialRef', 0).
 
 /**
  * assumable_ref(C, R):
@@ -71,7 +60,7 @@
  */
 :- public assumable_ref/2.
 :- meta_predicate assumable_ref(-1,?).
-:- special(assumable_ref/2, 'SpecialRef', 2).
+:- special(assumable_ref/2, 'SpecialRef', 1).
 
 /**
  * recorda_ref(R):
@@ -79,7 +68,7 @@
  * predicate fails when the clause has already been recorded.
  */
 :- public recorda_ref/1.
-:- special(recorda_ref/1, 'SpecialRef', 3).
+:- special(recorda_ref/1, 'SpecialRef', 2).
 
 /**
  * recordz_ref(R):
@@ -87,7 +76,7 @@
  * predicate fails when the clause has already been recorded.
  */
 :- public recordz_ref/1.
-:- special(recordz_ref/1, 'SpecialRef', 4).
+:- special(recordz_ref/1, 'SpecialRef', 3).
 
 /**
  * erase_ref(R):
@@ -95,7 +84,7 @@
  * fails when the clause has already been erased.
  */
 :- public erase_ref/1.
-:- special(erase_ref/1, 'SpecialRef', 5).
+:- special(erase_ref/1, 'SpecialRef', 4).
 
 /**
  * compiled_ref(R, C):
@@ -105,27 +94,16 @@
 :- public compiled_ref/2.
 :- meta_predicate compiled_ref(?,-1).
 :- set_predicate_property(compiled_ref/2, sys_noexpand).
-:- special(compiled_ref/2, 'SpecialRef', 6).
+:- special(compiled_ref/2, 'SpecialRef', 5).
 
 /**
  * clause_ref(H, B, R):
  * The predicate succeeds with the user clauses that match
- * H :- B and the clause reference R of the user clause.
+ * H :- B and the clause reference R of the user clause. The
+ * head predicate must be dynamic or thread local.
  */
 % clause_ref(-Term, -Goal, -Ref)
 :- public clause_ref/3.
 :- meta_predicate clause_ref(-1,0,?).
 :- set_predicate_property(clause_ref/3, sys_noexpand).
-:- special(clause_ref/3, 'SpecialRef', 7).
-
-/**
- * dynamic_ref(H, B, R):
- * The predicate succeeds with the user clauses that match
- * H :- B and the clause reference R of the user clause. The
- * head predicate must be dynamic or thread local.
- */
-% dynamic_ref(-Term, -Goal, -Ref)
-:- public dynamic_ref/3.
-:- meta_predicate dynamic_ref(-1,0,?).
-:- set_predicate_property(dynamic_ref/3, sys_noexpand).
-:- special(dynamic_ref/3, 'SpecialRef', 8).
+:- special(clause_ref/3, 'SpecialRef', 6).

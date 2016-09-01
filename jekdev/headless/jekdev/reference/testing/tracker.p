@@ -59,6 +59,12 @@
 :- module(tracker, []).
 :- use_module(library(system/file)).
 :- use_module(library(inspection/frame)).
+:- use_module(library(inspection/stack)).
+:- use_module(library(testing/runner)).
+
+:- public text/1.
+:- multifile text/1.
+:- static text/1.
 
 /****************************************************************/
 /* Hit Update                                                   */
@@ -120,7 +126,7 @@ sys_cover_body(_).
 :- public tracker_batch/0.
 tracker_batch :- reset_cover_hit,
    visible([head,exit]), trace,
-   rule_frame(test_case(_, _, _, _), Body, _),
+   rule_frame(case(_, _, _, _), Body, _),
    sys_cover_body(Body), fail.
 tracker_batch :- nodebug,
    visible([call,exit,redo,fail]).

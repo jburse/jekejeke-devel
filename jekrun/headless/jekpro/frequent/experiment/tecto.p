@@ -87,18 +87,18 @@ user:phrase(call(P, _, _, _, _, _), _, _) :-
    sys_var(P),
    throw(error(instantiation_error,_)).
 
-% user:phrase_delay(+Goal)
-:- public user:phrase_delay/1.
-:- multifile user:phrase_delay/1.
-user:phrase_delay(call(P,_)) :-
+% user:sys_phrase_delay(+Goal)
+:- public user:sys_phrase_delay/1.
+:- multifile user:sys_phrase_delay/1.
+user:sys_phrase_delay(call(P,_)) :-
    sys_var(P).
-user:phrase_delay(call(P,_,_)) :-
+user:sys_phrase_delay(call(P,_,_)) :-
    sys_var(P).
-user:phrase_delay(call(P,_,_,_)) :-
+user:sys_phrase_delay(call(P,_,_,_)) :-
    sys_var(P).
-user:phrase_delay(call(P,_,_,_,_)) :-
+user:sys_phrase_delay(call(P,_,_,_,_)) :-
    sys_var(P).
-user:phrase_delay(call(P,_,_,_,_,_)) :-
+user:sys_phrase_delay(call(P,_,_,_,_,_)) :-
    sys_var(P).
 
 /**********************************************************/
@@ -212,19 +212,19 @@ user:sys_phrase_expansion(\(X, A, Y), I, O, sys_phrase(Q, I, O)) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
    copy_term(rec(X,B,L), rec(Y,Q,L)).
-user:sys_phrase_expansion(\(X, A, Y, Z), I, O, sys_phrase(call(Q,Z), I, O)) :-
+user:sys_phrase_expansion(\(X, A, Y, Z), I, O, sys_phrase(call(Q, Z), I, O)) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
    copy_term(rec(X,B,L), rec(Y,Q,L)).
-user:sys_phrase_expansion(\(X, A, Y, Z, T), I, O, sys_phrase(call(Q,Z,T), I, O)) :-
+user:sys_phrase_expansion(\(X, A, Y, Z, T), I, O, sys_phrase(call(Q, Z, T), I, O)) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
    copy_term(rec(X,B,L), rec(Y,Q,L)).
-user:sys_phrase_expansion(\(X, A, Y, Z, T, U), I, O, sys_phrase(call(Q,Z,T,U), I, O)) :-
+user:sys_phrase_expansion(\(X, A, Y, Z, T, U), I, O, sys_phrase(call(Q, Z, T, U), I, O)) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
    copy_term(rec(X,B,L), rec(Y,Q,L)).
-user:sys_phrase_expansion(\(X, A, Y, Z, T, U, V), I, O, sys_phrase(call(Q,Z,T,U,V), I, O)) :-
+user:sys_phrase_expansion(\(X, A, Y, Z, T, U, V), I, O, sys_phrase(call(Q, Z, T, U, V), I, O)) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
    copy_term(rec(X,B,L), rec(Y,Q,L)).

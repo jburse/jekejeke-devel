@@ -40,11 +40,11 @@ public final class ForeignPipe {
      * assurance of fairness.</p>
      *
      * @param inter The interpreter.
-     * @param q     The queue.
+     * @param q     The pipe.
      * @param t     The term.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static void sysPipePut(Interpreter inter, Queue q, Term t)
+    public static void sysPipePut(Interpreter inter, AbstractPipe q, Term t)
             throws InterruptedException {
         t = Term.copyTermWrapped(inter, t);
         q.put(t);
@@ -56,11 +56,11 @@ public final class ForeignPipe {
      * return false. There is no assurance of fairness.</p>
      *
      * @param inter The interpreter.
-     * @param q     The queue.
+     * @param q     The bounded queue.
      * @param t     The term.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static boolean sysPipeOffer(Interpreter inter, AbstractPipe q, Term t)
+    public static boolean sysPipeOffer(Interpreter inter, Queue q, Term t)
             throws InterruptedException {
         t = Term.copyTermWrapped(inter, t);
         return q.offer(t);
@@ -73,7 +73,7 @@ public final class ForeignPipe {
      * the pipe is depleted. There is no assurance of fairness.</p>
      *
      * @param inter The interpreter.
-     * @param q     The queue.
+     * @param q     The bounded queue.
      * @param t     The term.
      * @param sleep The timeout.
      * @return True if the term was enqueued, otherwise false.

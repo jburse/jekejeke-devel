@@ -9,18 +9,18 @@
  * The test cases are stored by as facts and rules in the
  * following form:
  *
- *      :- multifile(test_ref/4).
- *      :- discontiguous(test_ref/4).
- *      % test_ref(Fun, Arity, Suite, Ref).
+ *      :- multifile(ref/4).
+ *      :- discontiguous(ref/4).
+ *      % ref(Fun, Arity, Suite, Ref).
  *
- *      :- multifile(test_case/4).
- *      :- discontiguous(test_case/4).
- *      % test_case(Fun, Arity, Suite, Number) :- Body.
+ *      :- multifile(case/4).
+ *      :- discontiguous(case/4).
+ *      % case(Fun, Arity, Suite, Number) :- Body.
  *
  * Note: Fun/Arity is used to denote predicates, and Fun/-Arity-1
  * is used to denote evaluable functions. The test steps and the
  * test validation points need to be implemented in the body of the
- * predicate test_case/4. The body is assumed to terminate, the test
+ * predicate case/4. The body is assumed to terminate, the test
  * runner doesn't impose some timeout currently. The body can be used
  * to check a multitude of scenarios:
  *
@@ -101,6 +101,14 @@
 
 :- module(runner, []).
 :- use_module(library(inspection/frame)).
+
+:- public ref/4.
+:- multifile ref/4.
+:- static ref/4.
+
+:- public case/4.
+:- multifile case/4.
+:- static case/4.
 
 /****************************************************************/
 /* Summary Update                                               */
@@ -217,7 +225,7 @@ sys_test_body(_, 0-1).
 % runner_batch
 :- public runner_batch/0.
 runner_batch :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_remove_summary,
-   rule_frame(test_case(Fun, Arity, Suite, Case), Body, _),
+   rule_frame(case(Fun, Arity, Suite, Case), Body, _),
    sys_test_body(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),
    sys_update_predicate(Fun, Arity, Suite, OkNok),

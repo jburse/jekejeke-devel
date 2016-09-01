@@ -120,7 +120,7 @@ list_result_data(_, _, _).
 % list_test_case_data(+Atom,+Integer,+Atom,+Integer)
 :- private list_test_case_data/4.
 list_test_case_data(Fun, Arity, Suite, Case) :-
-   rule_frame(test_case(Fun, Arity, Suite, Case), Body, _),
+   rule_frame(case(Fun, Arity, Suite, Case), Body, _),
    write_term(Body, [quoted(true),context(-1)]),
    write('. '), fail.
 list_test_case_data(_, _, _, _).

@@ -1,21 +1,23 @@
 /**
- * Bounded queues allow exchanging messages. Messages are Prolog
- * terms and are copied. A bounded queue can be created by the
- * predicate pipe_new/2. A bounded queue need not be explicitly
- * destroyed, it will automatically be reclaimed by the Java GC
- * when not anymore used. Threads waiting for a bounded queue can
- * be interrupted.
+ * Pipes allow exchanging messages. Messages are Prolog terms and are
+ * copied. An unbounded queue can be created by the predicate
+ * pipe_new/1. A bounded queue can be created by the predicate
+ * pipe_new/2. Pipes need not be explicitly destroyed, they will
+ * automatically be reclaimed by the Java GC when not anymore used.
+ * Threads waiting for a pipe can be interrupted.
  *
  * Example:
  * ?- pipe_new(1, Q), pipe_put(Q, p(X)), pipe_take(Q, R).
  * Q = 0ra2a372,
  * R = p(_A)
  *
- * The predicates pipe_put/2 and pipe_offer/[2,3] allow sending a message
- * to a queue. The predicates will block, fail or timeout when
- * the queue is full. The predicates pipe_take/2 and pipe_peek/[2,3] allow
- * getting a message from a queue. The predicates will block, fail or
- * timeout when the queue is empty.
+ * The predicates pipe_put/2 and pipe_offer/[2,3] allow sending
+ * a message to a bounded queue. The predicates will block, fail
+ * or timeout when the bounded queue is full. The predicate
+ * pipe_put/2 can also be used for unbounded queues and will
+ * never block. The predicates pipe_take/3 and pipe_poll/[2,3]
+ * allow getting a message from a pipe. The predicates will block,
+ * fail or timeout when the pipe is empty.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -67,27 +69,28 @@
 
 /**
  * pipe_put(P, O):
- * The predicate succeeds for sending a copy of the term O to the pipe P.
+ * The predicate succeeds for sending a copy of the term O
+ * to the pipe P.
  */
 % pipe_put(+Pipe, +Term)
 :- public pipe_put/2.
 :- foreign(pipe_put/2, 'ForeignPipe',
-      sysPipePut('Interpreter','Queue','Term')).
+      sysPipePut('Interpreter','AbstractPipe','Term')).
 
 /**
  * pipe_offer(P, O):
- * The predicate succeeds for sending a copy of the term O to the pipe P.
- * Otherwise the predicate fails.
+ * The predicate succeeds for sending a copy of the term O to the
+ * bounded queue P. Otherwise the predicate fails.
  */
 % pipe_offer(+Pipe, +Term)
 :- public pipe_offer/2.
 :- foreign(pipe_offer/2, 'ForeignPipe',
-      sysPipeOffer('Interpreter','AbstractPipe','Term')).
+      sysPipeOffer('Interpreter','Queue','Term')).
 
 /**
  * pipe_offer(P, O, T):
  * The predicate succeeds for sending a copy of the term O to the
- * pipe P in the timeout T. Otherwise the predicate fails.
+ * bounded queue P in the timeout T. Otherwise the predicate fails.
  */
 % pipe_offer(+Pipe, +Term, +Integer)
 :- public pipe_offer/3.

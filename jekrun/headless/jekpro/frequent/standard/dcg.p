@@ -45,7 +45,7 @@
  *
  * The DCG grammar mechanism is extensible. The invocation part can be
  * extended by simultaneously adding custom clauses to the multi-file
- * predicates phrase/3 and phrase_delay/1. The expansion part can be
+ * predicates phrase/3 and sys_phrase_delay/1. The expansion part can be
  * extended by simultaneously adding custom clauses to the multi-file
  * predicates phrase_expansion/4, phrase_abnormal/1 and
  * sys_phrase_expansion/4. The module tecto is an example where this
@@ -78,7 +78,7 @@
 
 /**
  * Implementation note: This module defines 3 multifile predicates
- * parse/3, phrase_delay/1, phrase_expansion/4, phrase_abnormal/4
+ * parse/3, sys_phrase_delay/1, phrase_expansion/4, phrase_abnormal/4
  * and sys_phrase_expansion/4 so that the expansion and execution of dcgs
  * can be extended. This is for exmple used by the module tecto.
  */
@@ -103,19 +103,24 @@ phrase(P, _, _) :-
    sys_var(P),
    throw(error(instantiation_error,_)).
 phrase(P, I, O) :-
-   \+ phrase_delay(P), !,
+   \+ sys_phrase_delay(P), !,
    expand_goal(phrase(P, I, O), Q),
    call(Q).
 
+:- public sys_phrase/3.
+:- meta_predicate sys_phrase(2,?,?).
+sys_phrase(_, _, _) :-
+   throw(error(existence_error(body,sys_phrase/3),_)).
+
 /**
- * phrase_delay(A):
+ * sys_phrase_delay(A):
  * Succeeds for those phrases A that are extended in
  * phrase/3.
  */
-% phrase_delay(+Goal)
-:- public phrase_delay/1.
-:- multifile phrase_delay/1.
-:- static phrase_delay/1.
+% sys_phrase_delay(+Goal)
+:- public sys_phrase_delay/1.
+:- multifile sys_phrase_delay/1.
+:- static sys_phrase_delay/1.
 
 /**********************************************************/
 /* Goal Rewriting Steadfast                               */
@@ -241,6 +246,10 @@ phrase_expansion(call(P), I, O, phrase(P, I, O)).
  * fail (grammar):
  * The grammar connective fails.
  */
+:- public fail/2.
+fail(_, _) :-
+   throw(error(existence_error(body,fail/2),_)).
+
 phrase_expansion(P, _, _, P) :-
    P = fail.
 
@@ -286,9 +295,14 @@ phrase_expansion(U, I, O, (  U, Q)) :-
  * [A1, …, An] (grammar):
  * The grammar connective succeeds when the terminals A1, …, An can be consumed.
  */
+:- public []/2.
+[](_, _) :-
+   throw(error(existence_error(body,[]/2),_)).
+
 phrase_expansion(U, I, O, Q) :-
    U = [],
    sys_replace_site(Q, U, O=I).
+
 :- public '.'/4.
 :- meta_predicate '.'(2,2,?,?).
 '.'(_, _, _, _) :-
