@@ -2,10 +2,11 @@
  * When a clause is invoked a special kind of a frame is created.
  * Such a stack frame might have empty variable bindings or not yet
  * a parent, so that the corresponding property might return null/0
- * elements or missing. Besides that a stack frame constitutes an
- * element of the ancestor goal list. It therefore provides
- * additional properties such accessing the parent stack frame
- * or the current call goal.
+ * elements or missing.
+ *
+ * Besides that a stack frame constitutes an element of the ancestor
+ * goal list. It therefore provides additional properties such accessing
+ * the parent stack frame or the current call goal.
  *
  * A stack frame where all the variable bindings are initially empty
  * where there is no parent can be created with the predicate
@@ -36,9 +37,10 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- package(library(jekdev/reference/inspection)).
 :- use_package(foreign(jekdev/reference/inspection)).
 
-:- module(user, []).
+:- module(stack, []).
 
 % some stack property
 :- public sys_call_goal/1.

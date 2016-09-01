@@ -57,8 +57,8 @@
 :- package(library(jekdev/reference/testing)).
 
 :- module(tracker, []).
-:- use_module(library(experiment/ref)).
 :- use_module(library(system/file)).
+:- use_module(library(inspection/frame)).
 
 /****************************************************************/
 /* Hit Update                                                   */
@@ -120,7 +120,7 @@ sys_cover_body(_).
 :- public tracker_batch/0.
 tracker_batch :- reset_cover_hit,
    visible([head,exit]), trace,
-   clause_ref(test_case(_, _, _, _), Body, _),
+   rule_frame(test_case(_, _, _, _), Body, _),
    sys_cover_body(Body), fail.
 tracker_batch :- nodebug,
    visible([call,exit,redo,fail]).

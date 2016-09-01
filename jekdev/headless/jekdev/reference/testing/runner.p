@@ -100,7 +100,7 @@
 :- package(library(jekdev/reference/testing)).
 
 :- module(runner, []).
-:- use_module(library(experiment/ref)).
+:- use_module(library(inspection/frame)).
 
 /****************************************************************/
 /* Summary Update                                               */
@@ -217,7 +217,7 @@ sys_test_body(_, 0-1).
 % runner_batch
 :- public runner_batch/0.
 runner_batch :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_remove_summary,
-   clause_ref(test_case(Fun, Arity, Suite, Case), Body, _),
+   rule_frame(test_case(Fun, Arity, Suite, Case), Body, _),
    sys_test_body(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),
    sys_update_predicate(Fun, Arity, Suite, OkNok),

@@ -34,9 +34,9 @@
 :- package(library(jekdev/reference/testing)).
 
 :- module(diagnose, []).
-:- use_module(library(experiment/ref)).
 :- use_module(library(stream/console)).
 :- use_module(library(testing/runner)).
+:- use_module(library(inspection/frame)).
 
 /*************************************************************/
 /* List Suites                                               */
@@ -120,7 +120,7 @@ list_result_data(_, _, _).
 % list_test_case_data(+Atom,+Integer,+Atom,+Integer)
 :- private list_test_case_data/4.
 list_test_case_data(Fun, Arity, Suite, Case) :-
-   clause_ref(test_case(Fun, Arity, Suite, Case), Body, _),
+   rule_frame(test_case(Fun, Arity, Suite, Case), Body, _),
    write_term(Body, [quoted(true),context(-1)]),
    write('. '), fail.
 list_test_case_data(_, _, _, _).

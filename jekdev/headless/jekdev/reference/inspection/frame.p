@@ -1,13 +1,11 @@
 /**
- * When a clause is instantiated a new frame for the variables is
- * created. Practical Prolog systems store additional information
- * in a frame. We provide access to frame properties via frame
- * references. The predicates clause_frame/3 and retract_frame/2
- * and searches a clause and return the frame reference. The
- * predicate retract_frame/2 additionally removes a found clause.
- * These predicates are able to retrieve clauses unrestrictedly,
- * namely it is possible to retrieve clauses from dynamic or
- * static predicates.
+ * When a clause is instantiated a new frame for the variables is created.
+ * Practical Prolog systems store additional information in a frame. We
+ * provide access to frame properties via frame references. The predicate
+ * clause_frame/3 searches a clause and returns a frame reference. These
+ * predicates are able to retrieve clauses unrestrictedly, namely it is
+ * possible to retrieve clauses from thread local, dynamic or static
+ * predicates.
  *
  * The predicates frame_property/2, set_frame_property/2 and
  * reset_frame_property/2 allow inspecting and modifying frame
@@ -40,33 +38,22 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- package(library(jekdev/reference/inspection)).
 :- use_package(foreign(jekdev/reference/inspection)).
 
-:- module(user, []).
+:- module(frame, []).
 
 /**
- * clause_frame(H, B, F):
+ * rule_frame(H, B, F):
  * The predicate succeeds with the user clauses that match H :- B. The
  * predicate also unifies F with the new frame reference for the
  * found clauses.
  */
-% clause_frame(+Term, -Goal, -Frame)
-:- public clause_frame/3.
-:- meta_predicate clause_frame(-1,0,?).
-:- set_predicate_property(clause_frame/3, sys_noexpand).
-:- special(clause_frame/3, 'SpecialFrame', 0).
-
-/**
- * retract_frame(C, F):
- * The predicate removes and succeeds with the user clauses that
- * match C. The predicate also unifies F with the new frame reference
- * for the found clauses.
- */
-% retract_frame(+Term, -Frame)
-:- public retract_frame/2.
-:- meta_predicate retract_frame(-1,?).
-:- set_predicate_property(retract_frame/2, sys_noexpand).
-:- special(retract_frame/2, 'SpecialFrame', 1).
+% rule_frame(+Term, -Goal, -Frame)
+:- public rule_frame/3.
+:- meta_predicate rule_frame(-1,0,?).
+:- set_predicate_property(rule_frame/3, sys_noexpand).
+:- special(rule_frame/3, 'SpecialFrame', 0).
 
 /**
  * sys_instance_clause(R, F):
@@ -75,7 +62,7 @@
  */
 % sys_instance_clause(+Reference, -Frame)
 :- public sys_instance_clause/2.
-:- special(sys_instance_clause/2, 'SpecialFrame', 2).
+:- special(sys_instance_clause/2, 'SpecialFrame', 1).
 
 /**
  * frame_property(F, P):
@@ -95,10 +82,10 @@ frame_property(I, R) :-
    sys_member(R, P).
 
 :- private sys_frame_property/2.
-:- special(sys_frame_property/2, 'SpecialFrame', 3).
+:- special(sys_frame_property/2, 'SpecialFrame', 2).
 
 :- private sys_frame_property_chk/3.
-:- special(sys_frame_property_chk/3, 'SpecialFrame', 4).
+:- special(sys_frame_property_chk/3, 'SpecialFrame', 3).
 
 % a frame property
 :- public sys_clause_term/1.
@@ -112,7 +99,7 @@ sys_clause_term(_) :-
  */
 % set_frame_property(+Frame, +Property)
 :- public set_frame_property/2.
-:- special(set_frame_property/2, 'SpecialFrame', 5).
+:- special(set_frame_property/2, 'SpecialFrame', 4).
 
 /**
  * reset_frame_property(F, P):
@@ -120,7 +107,4 @@ sys_clause_term(_) :-
  */
 % reset_frame_property(+Frame, +Property)
 :- public reset_frame_property/2.
-:- special(reset_frame_property/2, 'SpecialFrame', 6).
-
-
-
+:- special(reset_frame_property/2, 'SpecialFrame', 5).
