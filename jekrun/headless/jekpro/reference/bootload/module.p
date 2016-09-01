@@ -246,13 +246,12 @@ sys_add_resource(Path) :-
 private [P|Q] :- !,
    sys_private(P),
    (private Q).
-private P, Q :- !,
+private P,Q :- !,
    sys_private(P),
    (private Q).
 private [] :- !.
 private P :-
    sys_private(P).
-:- set_predicate_property((private)/1, (meta_predicate (private 0))).
 :- set_predicate_property((private)/1, visible(public)).
 
 % sys_private(+IndicatorOrOperator)
@@ -285,13 +284,12 @@ sys_private(I) :-
 public [P|Q] :- !,
    sys_public(P),
    (public Q).
-public P, Q :- !,
+public P,Q :- !,
    sys_public(P),
    (public Q).
 public [] :- !.
 public P :-
    sys_public(P).
-:- set_predicate_property((public)/1, (meta_predicate (public 0))).
 :- set_predicate_property((public)/1, visible(public)).
 
 % sys_public(+IndicatorOrOperator)

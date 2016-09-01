@@ -63,11 +63,10 @@
  */
 % dynamic +Indicators
 :- public (dynamic)/1.
-:- meta_predicate (dynamic 0).
 dynamic [P|Q] :- !,
    sys_dynamic(P),
    (dynamic Q).
-dynamic P, Q :- !,
+dynamic P,Q :- !,
    sys_dynamic(P),
    (dynamic Q).
 dynamic [] :- !.
@@ -91,11 +90,10 @@ sys_dynamic(I) :-
  */
 % thread_local +Indicator
 :- public (thread_local)/1.
-:- meta_predicate (thread_local 0).
 thread_local [P|Q] :- !,
    sys_thread_local(P),
    (thread_local Q).
-thread_local P, Q :- !,
+thread_local P,Q :- !,
    sys_thread_local(P),
    (thread_local Q).
 thread_local [] :- !.
@@ -144,10 +142,10 @@ retract(V) :-
    var(V),
    throw(error(instantiation_error,_)).
 retract((H :- B)) :- !,
-   dynamic_ref(H, B, R),
+   clause_ref(H, B, R),
    erase_ref(R).
 retract(H) :-
-   dynamic_ref(H, true, R),
+   clause_ref(H, true, R),
    erase_ref(R).
 
 /**
@@ -159,7 +157,7 @@ retract(H) :-
 :- meta_predicate retractall(-1).
 :- set_predicate_property(retractall/1, sys_noexpand).
 retractall(H) :-
-   dynamic_ref(H, _, R),
+   clause_ref(H, _, R),
    erase_ref(R), fail.
 retractall(_).
 
