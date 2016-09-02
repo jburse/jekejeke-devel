@@ -125,3 +125,20 @@ time_out_loop :-
 
 :- thread_new(time_out_loop, I),
    thread_start(I).
+
+/**
+ * ticket_new(C):
+ * The predicate succeeds for a new counter C.
+ */
+% ticket_new(-Counter)
+:- public ticket_new/1.
+:- foreign_constructor(ticket_new/1, 'Ticket', new).
+
+/**
+ * ticket_next(C, V):
+ * The predicate succeeds for the atomic post increment V of the counter C.
+ */
+% ticket_next(+Counter, -Integer)
+:- public ticket_next/2.
+:- virtual ticket_next/2.
+:- foreign(ticket_next/2, 'Ticket', next).

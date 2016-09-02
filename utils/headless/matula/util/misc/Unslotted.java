@@ -90,6 +90,8 @@ public final class Unslotted extends AbstractLock {
      */
     public void release() {
         synchronized (this) {
+            if (!locked)
+                throw new IllegalStateException("not_locked");
             locked = false;
             this.notifyAll();
         }

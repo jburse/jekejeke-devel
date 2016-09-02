@@ -1,6 +1,5 @@
 package jekpro.frequent.basic;
 
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 
@@ -37,87 +36,70 @@ import java.util.Random;
 public final class ForeignRandom {
 
     /**
-     * <p>Produce a molec random double.</p>
-     *
-     * @param inter The call-in.
-     * @return The molec random double.
-     */
-    public static double sysRandom(Interpreter inter) {
-        Random random = (Random) inter.getProperty("sys_random");
-        return random.nextDouble();
-    }
-
-    /**
-     * <p>Produce a molec random value in the given range.</p>
+     * <p>Generate a random number in the given range.</p>
      * <p>The range must be greater than zero.</p>
      *
-     * @param inter The call-in.
-     * @param m     The range.
-     * @return The molec random value.
-     * @throws InterpreterMessage Negative range.
+     * @param r The random number generator.
+     * @param m The range.
+     * @return The random number.
+     * @throws InterpreterMessage Negative or zero range.
      */
-    public static Number sysRandom(Interpreter inter, Number m)
+    public static Number sysRandomNext(Random r, Number m)
             throws InterpreterMessage {
-        try {
-            Random random = (Random) inter.getProperty("sys_random");
-            if (m instanceof Integer) {
-                int x = m.intValue();
-                if (x <= 0)
-                    throw new InterpreterMessage(InterpreterMessage.evaluationError(
-                            "undefined"));
-                return Integer.valueOf(nextInteger(x, random));
-            } else if (m instanceof BigInteger) {
-                BigInteger x = (BigInteger) m;
-                if (x.compareTo(BigInteger.ZERO) <= 0)
-                    throw new InterpreterMessage(InterpreterMessage.evaluationError(
-                            "undefined"));
-                return TermAtomic.normBigInteger(nextBigInteger(x, random));
-            } else if (m instanceof Float) {
-                float x = m.floatValue();
-                if (x <= 0)
-                    throw new InterpreterMessage(InterpreterMessage.evaluationError(
-                            "undefined"));
-                return TermAtomic.guardFloat(Float.valueOf(x * random.nextFloat()));
-            } else if (m instanceof Double) {
-                double x = m.doubleValue();
-                if (x <= 0)
-                    throw new InterpreterMessage(InterpreterMessage.evaluationError(
-                            "undefined"));
-                return TermAtomic.guardDouble(Double.valueOf(x * random.nextDouble()));
-            } else if (m instanceof Long) {
-                long x = m.longValue();
-                if (x <= 0)
-                    throw new InterpreterMessage(InterpreterMessage.evaluationError(
-                            "undefined"));
-                return Long.valueOf(nextLong(x, random));
-            } else if (m instanceof BigDecimal) {
-                BigDecimal x = (BigDecimal) m;
-                if (x.compareTo(BigDecimal.ZERO) <= 0)
-                    throw new InterpreterMessage(InterpreterMessage.evaluationError(
-                            "undefined"));
-                return TermAtomic.normBigDecimal(nextBigDecimal(x, random));
-            } else {
-                throw new InterpreterMessage(InterpreterMessage.typeError(
-                        "number", m));
-            }
-        } catch (ArithmeticException x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.evaluationError(x.getMessage()));
+        if (m instanceof Integer) {
+            int x = m.intValue();
+            if (x <= 0)
+                throw new InterpreterMessage(InterpreterMessage.evaluationError(
+                        "undefined"));
+            return Integer.valueOf(nextInteger(x, r));
+        } else if (m instanceof BigInteger) {
+            BigInteger x = (BigInteger) m;
+            if (x.compareTo(BigInteger.ZERO) <= 0)
+                throw new InterpreterMessage(InterpreterMessage.evaluationError(
+                        "undefined"));
+            return TermAtomic.normBigInteger(nextBigInteger(x, r));
+        } else if (m instanceof Float) {
+            float x = m.floatValue();
+            if (x <= 0)
+                throw new InterpreterMessage(InterpreterMessage.evaluationError(
+                        "undefined"));
+            return TermAtomic.guardFloat(Float.valueOf(x * r.nextFloat()));
+        } else if (m instanceof Double) {
+            double x = m.doubleValue();
+            if (x <= 0)
+                throw new InterpreterMessage(InterpreterMessage.evaluationError(
+                        "undefined"));
+            return TermAtomic.guardDouble(Double.valueOf(x * r.nextDouble()));
+        } else if (m instanceof Long) {
+            long x = m.longValue();
+            if (x <= 0)
+                throw new InterpreterMessage(InterpreterMessage.evaluationError(
+                        "undefined"));
+            return Long.valueOf(nextLong(x, r));
+        } else if (m instanceof BigDecimal) {
+            BigDecimal x = (BigDecimal) m;
+            if (x.compareTo(BigDecimal.ZERO) <= 0)
+                throw new InterpreterMessage(InterpreterMessage.evaluationError(
+                        "undefined"));
+            return TermAtomic.normBigDecimal(nextBigDecimal(x, r));
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    "number", m));
         }
     }
 
     /**
      * <p>Generate a random integer in the interval [0..m)</p>
      *
-     * @param m      The integer magnitude.
-     * @param random The random generator.
+     * @param m The integer magnitude.
+     * @param r The random number generator.
      * @return The random integer.
      */
-    private static int nextInteger(int m, Random random) {
+    private static int nextInteger(int m, Random r) {
         int j = Integer.numberOfLeadingZeros(m);
         int k;
         do {
-            k = random.nextInt() >>> j;
+            k = r.nextInt() >>> j;
         } while (k >= m);
         return k;
     }
@@ -125,15 +107,15 @@ public final class ForeignRandom {
     /**
      * <p>Generate a random big integer in the interval [0..m)</p>
      *
-     * @param m      The big integer magnitude.
-     * @param random The random generator.
+     * @param m The big integer magnitude.
+     * @param r The random number generator.
      * @return The random big integer.
      */
-    private static BigInteger nextBigInteger(BigInteger m, Random random) {
+    private static BigInteger nextBigInteger(BigInteger m, Random r) {
         int j = m.bitLength();
         BigInteger k;
         do {
-            k = new BigInteger(j, random);
+            k = new BigInteger(j, r);
         } while (k.compareTo(m) >= 0);
         return k;
     }
@@ -141,15 +123,15 @@ public final class ForeignRandom {
     /**
      * <p>Generate a random long in the interval [0..m)</p>
      *
-     * @param m      The integer magnitude.
-     * @param random The random generator.
+     * @param m The integer magnitude.
+     * @param r The random number generator.
      * @return The random integer.
      */
-    private static long nextLong(long m, Random random) {
+    private static long nextLong(long m, Random r) {
         int j = Long.numberOfLeadingZeros(m);
         long k;
         do {
-            k = random.nextLong() >>> j;
+            k = r.nextLong() >>> j;
         } while (k >= m);
         return k;
     }
@@ -157,12 +139,14 @@ public final class ForeignRandom {
     /**
      * <p>Generate a random big decimal in the interval [0..m)</p>
      *
-     * @param m      The big decimal magnitude.
-     * @param random The random generator.
+     * @param m The big decimal magnitude.
+     * @param r The random number generator.
      * @return The random big decimal.
      */
-    private static BigDecimal nextBigDecimal(BigDecimal m, Random random) {
-        return new BigDecimal(nextBigInteger(m.unscaledValue(), random), m.scale());
+    private static BigDecimal nextBigDecimal(BigDecimal m, Random r) {
+        return new BigDecimal(
+                nextBigInteger(m.unscaledValue(), r),
+                m.scale());
     }
 
 }

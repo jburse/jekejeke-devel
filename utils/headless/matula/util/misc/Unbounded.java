@@ -39,16 +39,14 @@ public final class Unbounded extends AbstractPipe {
 
     /**
      * <p>Post an object.</p>
-     * <p>Always succeeds.</p>
      *
-     * @return True if object was posted, or false otherwise.
+     * @param t The object, not null.
      */
-    public boolean offer(Object t) {
+    public void put(Object t) {
         if (t == null)
             throw new NullPointerException("null element");
         synchronized (this) {
             list.add(t);
-            return true;
         }
     }
 

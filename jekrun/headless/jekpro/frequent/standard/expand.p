@@ -80,7 +80,7 @@ unit :-
 
 :- public ^ /2.
 :- meta_predicate ? ^0.
-_ ^ _ :-
+_^_ :-
    throw(error(existence_error(body,^ /2),_)).
 :- set_predicate_property(^ /2, sys_body).
 

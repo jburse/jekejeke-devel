@@ -49,6 +49,9 @@ package matula.util.misc;
 public class CodeType {
     public final static CodeType ISO_CODETYPE = new CodeType();
 
+    public static final int LINE_EOF = -1;
+    public static final char LINE_EOL = '\n';
+
     public static final int SUB_CLASS_WHITESPACE = 0;
     public static final int SUB_CLASS_LAYOUT = 1;
 

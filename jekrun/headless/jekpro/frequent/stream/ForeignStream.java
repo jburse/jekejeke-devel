@@ -64,6 +64,7 @@ public final class ForeignStream {
     public final static String OP_USE_CACHES = "use_caches";
     public final static String OP_TYPE = "type";
     public final static String OP_REPOSITION = "reposition";
+    public final static String OP_NEWLINE = "newline";
 
     /* error terms */
     private final static String OP_FLAG_VALUE = "flag_value";
@@ -592,6 +593,23 @@ public final class ForeignStream {
                 InterpreterMessage.checkNotLessThanZero(num);
                 int size = InterpreterMessage.castIntValue(num);
                 res.setBuffer(size);
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_NEWLINE)) {
+                switch (mode) {
+                    case MODE_READ:
+                        throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                    case MODE_WRITE:
+                    case MODE_APPEND:
+                        Object help = ((TermCompound)temp).getArg(0);
+                        InterpreterMessage.checkInstantiated(help);
+                        String newline = InterpreterMessage.castString(help);
+                        res.setNewLine(newline);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal mode");
+                }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
                 throw new InterpreterMessage(

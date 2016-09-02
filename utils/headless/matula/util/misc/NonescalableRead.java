@@ -100,6 +100,8 @@ public final class NonescalableRead extends AbstractLock {
      */
     public void release() throws IllegalStateException {
         synchronized (parent) {
+            if (set == 0)
+                throw new IllegalStateException("not_locked");
             set--;
             parent.notifyAll();
         }

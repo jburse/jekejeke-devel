@@ -1,6 +1,9 @@
 package matula.util.system;
 
+import matula.util.misc.CodeType;
+
 import java.io.FilterWriter;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Writer;
 
@@ -31,7 +34,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ConnectionWriter extends FilterWriter {
+public final class ConnectionWriter extends FilterWriter {
     private boolean bom;
     private String encoding = "";
     private RandomAccessFile raf;
@@ -39,6 +42,7 @@ public class ConnectionWriter extends FilterWriter {
     private boolean append;
     private int buffer;
     private Writer unbuf;
+    private String newline = OpenOpts.UNIX_NEWLINE;
 
     /**
      * <p>Create a connection writer from a write.</p>
@@ -173,6 +177,121 @@ public class ConnectionWriter extends FilterWriter {
      */
     public void setUnbuf(Writer u) {
         unbuf = u;
+    }
+
+    /**
+     * <p>Retrieve the new line string.</p>
+     *
+     * @return The new line string.
+     */
+    public String getNewLine() {
+        return newline;
+    }
+
+    /**
+     * <p>Set the new line string.</p>
+     *
+     * @param n The new line string.
+     */
+    public void setNewLine(String n) {
+        newline = n;
+    }
+
+    /***************************************************************/
+    /* Newline Rewriting                                           */
+    /***************************************************************/
+
+    /**
+     * Writes a single character.
+     *
+     * @throws IOException If an I/O error occurs
+     */
+    public void write(int c) throws IOException {
+        if (c == CodeType.LINE_EOL) {
+            out.write(newline);
+            return;
+        }
+        out.write(c);
+    }
+
+    /**
+     * Writes a portion of an array of characters.
+     *
+     * @param cbuf Buffer of characters to be written
+     * @param off  Offset from which to start reading characters
+     * @param len  Number of characters to be written
+     * @throws IOException If an I/O error occurs
+     */
+    public void write(char cbuf[], int off, int len) throws IOException {
+        int k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
+        while (k != -1) {
+            if (k != off)
+                out.write(cbuf, off, k - off);
+            out.write(newline);
+            k++;
+            len = len - k + off;
+            off = k;
+            k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
+        }
+        if (len != 0)
+            out.write(cbuf, off, len);
+    }
+
+    /**
+     * <p>Find the index of a character in a character buffer.</p>
+     *
+     * @param cbuf The character buffer.
+     * @param off  The offset.
+     * @param len  The length.
+     * @param ch   The character.
+     * @return The index, or -1.
+     */
+    private static int indexOf(char cbuf[], int off, int len, int ch) {
+        for (int i = 0; i < len; i++) {
+            if (cbuf[off + i] == ch)
+                return off + i;
+        }
+        return -1;
+    }
+
+    /**
+     * Writes a portion of a string.
+     *
+     * @param str String to be written
+     * @param off Offset from which to start reading characters
+     * @param len Number of characters to be written
+     * @throws IOException If an I/O error occurs
+     */
+    public void write(String str, int off, int len) throws IOException {
+        int k = indexOf(str, off, len, CodeType.LINE_EOL);
+        while (k != -1) {
+            if (k != off)
+                out.write(str, off, k - off);
+            out.write(newline);
+            k++;
+            len = len - k + off;
+            off = k;
+            k = indexOf(str, off, len, CodeType.LINE_EOL);
+        }
+        if (len != 0)
+            out.write(str, off, len);
+    }
+
+    /**
+     * <p>Find the index of a character in a string.</p>
+     *
+     * @param str The string.
+     * @param off The offset.
+     * @param len The length.
+     * @param ch  The character.
+     * @return The index, or -1.
+     */
+    private static int indexOf(String str, int off, int len, int ch) {
+        for (int i = 0; i < len; i++) {
+            if (str.charAt(off + i) == ch)
+                return off + i;
+        }
+        return -1;
     }
 
 }

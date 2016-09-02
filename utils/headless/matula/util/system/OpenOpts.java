@@ -44,11 +44,16 @@ public final class OpenOpts {
     private static final String ENC_UTF_16LE = "UTF-16LE";
     private static final String ENC_UTF_8 = "UTF-8";
 
+    public static final String UNIX_NEWLINE = "\n";
+    public static final String MAC_NEWLINE = "\r";
+    public static final String WINDOWS_NEWLINE = "\r\n";
+
     private int flags;
     private String encoding;
     private long ifmodifiedsince;
     private String ifnonematch = "";
     private int buffer = 8192;
+    private String newline = OpenOpts.UNIX_NEWLINE;
 
     /**
      * <p>Retrieve the flags.</p>
@@ -138,6 +143,24 @@ public final class OpenOpts {
      */
     public void setBuffer(int b) {
         buffer = b;
+    }
+
+    /**
+     * <p>Retrieve the new line string.</p>
+     *
+     * @return The new line string.
+     */
+    public String getNewLine() {
+        return newline;
+    }
+
+    /**
+     * <p>Set the new line string.</p>
+     *
+     * @param n The new line string.
+     */
+    public void setNewLine(String n) {
+        newline = n;
     }
 
     /*************************************************************************/
@@ -422,6 +445,7 @@ public final class OpenOpts {
                 cwr.setUnbuf(osw);
                 cwr.setRaf(raf);
                 cwr.setPath(adr);
+                cwr.setNewLine(newline);
                 return cwr;
             }
         } else {
@@ -478,6 +502,7 @@ public final class OpenOpts {
                 cwr.setEncoding(osw.getEncoding());
                 cwr.setUnbuf(osw);
                 cwr.setPath(adr);
+                cwr.setNewLine(newline);
                 return cwr;
             }
         }
@@ -537,6 +562,7 @@ public final class OpenOpts {
                 cwr.setUnbuf(osw);
                 cwr.setRaf(raf);
                 cwr.setPath(adr);
+                cwr.setNewLine(newline);
                 cwr.setAppend(true);
                 return cwr;
             }
@@ -580,6 +606,7 @@ public final class OpenOpts {
                 cwr.setEncoding(osw.getEncoding());
                 cwr.setUnbuf(osw);
                 cwr.setPath(adr);
+                cwr.setNewLine(newline);
                 cwr.setAppend(true);
                 return cwr;
             }

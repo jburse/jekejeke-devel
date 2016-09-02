@@ -1,7 +1,9 @@
 package matula.util.misc;
 
 /**
- * <p>This class provides an abstract pipe.</p>
+ * <p>This class provides an atomic integer.</p>
+ * <p>Should use AtomicInteger here, but too lazy right now.</p>
+ * <p>The counter is bounded at -2^31..2 31-1 and will roll over.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -25,44 +27,20 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractPipe {
+public final class Ticket {
+    private int counter;
 
     /**
-     * <p>Post an object.</p>
-     * <p>Blocks if queue is full.</p>
+     * <p>Increment this counter and return the old value.</p>
      *
-     * @param t The object, not null.
-     * @throws InterruptedException If the request was cancelled.
+     * @return The old value.
      */
-    public abstract void put(Object t)
-            throws InterruptedException;
-
-    /**
-     * <p>Take an object.</p>
-     * <p>Blocks if queue is empty.</p>
-     *
-     * @return The object, not null.
-     * @throws InterruptedException If the request was cancelled.
-     */
-    public abstract Object take()
-            throws InterruptedException;
-
-    /**
-     * <p>Take an object.</p>
-     * <p>Fails if queue is empty.</p>
-     *
-     * @return The object or null if no object was taken.
-     */
-    public abstract Object poll();
-
-    /**
-     * <p>Take an object or time-out.</p>
-     *
-     * @param sleep The time-out.
-     * @return The object or null if no object was taken.
-     * @throws InterruptedException If the request was cancelled.
-     */
-    public abstract Object poll(long sleep)
-            throws InterruptedException;
+    public int next() {
+        synchronized (this) {
+            int old = counter;
+            counter = old + 1;
+            return old;
+        }
+    }
 
 }

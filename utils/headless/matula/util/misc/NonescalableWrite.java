@@ -101,6 +101,8 @@ public final class NonescalableWrite extends AbstractLock {
      */
     public void release() {
         synchronized (parent) {
+            if (!locked)
+                throw new IllegalStateException("not_locked");
             locked = false;
             parent.notifyAll();
         }

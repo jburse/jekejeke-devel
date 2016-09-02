@@ -39,28 +39,80 @@
 :- package(library(jekpro/frequent/basic)).
 :- use_package(foreign(jekpro/frequent/basic)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(java/util)).
 
 :- module(random, []).
 
-/**
- * random:
- * The function returns a continuous uniform random
- * number in the interval [0..1).
- */
-% random : float
-:- public random/1.
-:- foreign_fun(random/1, 'ForeignRandom',
-      sysRandom('Interpreter')).
+/****************************************************************/
+/* Knowledge Base Random Numbers                                */
+/****************************************************************/
 
 /**
- * random(M):
- * The function returns a uniform random number in the interval [0..M)
- * for M>0. The distribution is discrete when M is discrete and
- * continuous otherwise.
+ * random(F):
+ * The predicate succeeds for a continuous uniform random
+ * number F in the interval [0..1) from the knowledgebase
+ * random number generator.
  */
-% random : integer -> integer
-% random : float -> float
-% random : decimal -> decimal
+% random(-Float)
+:- public random/1.
+random(F) :-
+   current_prolog_flag(sys_random, R),
+   random_next(R, F).
+
+/**
+ * random(M, N):
+ * The predicate succeeds for a uniform random number N in the
+ * interval [0..M) for M>0 from the knowledgebase random number
+ * generator. The distribution is discrete when M is discrete
+ * and continuous otherwise.
+ */
+% random(+Number, -Number)
 :- public random/2.
-:- foreign_fun(random/2, 'ForeignRandom',
-      sysRandom('Interpreter','Number')).
+random(M, N) :-
+   current_prolog_flag(sys_random, R),
+   random_next(R, M, N).
+
+/****************************************************************/
+/* Object Parameter Random Numbers                              */
+/****************************************************************/
+
+/**
+ * random_new(R):
+ * The predicate succeeds for a new random number generator
+ * R with a randomized seed.
+ */
+% random_new(-Random)
+:- public random_new/1.
+:- foreign_constructor(random_new/1, 'Random', new).
+
+/**
+ * random_new(S, R):
+ * The predicate succeeds for a new random number generator
+ * R with seed S.
+ */
+% random_new(+Integer, -Random)
+:- public random_new/2.
+:- foreign_constructor(random_new/2, 'Random', new(long)).
+
+/**
+ * random_next(R, F):
+ * The predicate succeeds for a continuous uniform random
+ * number F in the interval [0..1) from the random number
+ * generator R.
+ */
+% random_next(+Random, -Float)
+:- public random_next/2.
+:- virtual random_next/2.
+:- foreign(random_next/2, 'Random', nextDouble).
+
+/**
+ * random_next(R, M, N):
+ * The predicate succeeds for a uniform random number N in the
+ * interval [0..M) for M>0 from the random number generator R.
+ * The distribution is discrete when M is discrete and continuous
+ * otherwise.
+ */
+% random_next(+Random, +Number, -Number)
+:- public random_next/3.
+:- foreign(random_next/3, 'ForeignRandom',
+      sysRandomNext('Random','Number')).
