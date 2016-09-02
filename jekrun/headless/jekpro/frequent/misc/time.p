@@ -11,6 +11,9 @@
  * Hello World!
  * Hello World!
  * Hello World!
+ * Error: Execution aborted since time limit exceeded.
+ *    	thread_sleep/1
+ *    	time_out/2
  *
  * An item can be scheduled with the predicate alarm_schedue/4 giving
  * a delay in milliseconds. The predicate alarm_next/2 allows getting
@@ -22,6 +25,11 @@
  * served by a predefined thread. The predicate executes the given
  * goal once in the timeout. When the timeout is reached before the
  * goal completes an exception is thrown.
+ *
+ * The predicate ticket_new/1 can be used to create a counter whch
+ * will be initialized to zero. The counter can then be incremented
+ * via the predicate_next/2 whereby the old value is returned. The later
+ * predicate is implemented with the help of an atomic integer.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -55,6 +63,10 @@
 
 :- module(time, []).
 :- use_module(library(system/thread)).
+
+/****************************************************************/
+/* Alarm Queue                                                  */
+/****************************************************************/
 
 /**
  * alarm_new(A):
@@ -94,6 +106,10 @@
 :- virtual alarm_cancel/2.
 :- foreign(alarm_cancel/2, 'Alarm', cancel('AlarmEntry')).
 
+/****************************************************************/
+/* Time-out Thread                                              */
+/****************************************************************/
+
 /**
  * time_out(G, T):
  * The predicate succeeds when G succeeds in the timeout T. The predicate
@@ -126,6 +142,10 @@ time_out_loop :-
 :- thread_new(time_out_loop, I),
    thread_start(I).
 
+/****************************************************************/
+/* Ticket Objects                                               */
+/****************************************************************/
+
 /**
  * ticket_new(C):
  * The predicate succeeds for a new counter C.
@@ -136,7 +156,8 @@ time_out_loop :-
 
 /**
  * ticket_next(C, V):
- * The predicate succeeds for the atomic post increment V of the counter C.
+ * The predicate succeeds for incrementing the
+ * counter C and unifying the old value V
  */
 % ticket_next(+Counter, -Integer)
 :- public ticket_next/2.

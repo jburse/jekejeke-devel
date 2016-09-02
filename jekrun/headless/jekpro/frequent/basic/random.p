@@ -1,16 +1,20 @@
 /**
  * The evaluable functions random/0 and random/1 generate uniformly
  * distributed members of the arithmetic domains. Each knowledge base
- * has its own random number generator which can be accessed
- * concurrently.
+ * has its own pre-allocated random number generator which can be
+ * accessed concurrently. Random number generator objects can be
+ * created with the predicates random_new/1 and random_new/2.
  *
  * Examples:
  * random           --> 0.6011883752343405
  * random(100)      --> 61
  *
  * The result type of the evaluable function random/0 is always a
- * float. The result type of the evaluable function random/1 reflects
- * the type of the argument.
+ * Prolog float, which amounts to a Java double. The result type of
+ * the evaluable function random/1 reflects the type of the argument.
+ * The predicates random_next/2 and random_next/3 do the same, except
+ * that they take an additional random number generator object as
+ * a first parameter.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

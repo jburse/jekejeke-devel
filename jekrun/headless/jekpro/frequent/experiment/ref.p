@@ -1,15 +1,17 @@
 /**
- * The predicates consultable_ref/2, assertable_ref/2 and assumable_ref/2
- * allow the compilation of a clause. The clause can be associated and
- * de-associated with the head predicate via the predicates recorda_ref/1,
- * recordz_ref/1 and erase_ref/1. A new instance of the original clause
+ * The predicates assertable_ref/2 and assumable_ref/2 allow the
+ * compilation of a clause without any thread contention. The clause
+ * can be associated and de-associated with the head predicate via
+ * the predicates recorda_ref/1, recordz_ref/1 and erase_ref/1 whereby
+ * only one thread will win. A new instance of the original clause
  * can be retrieved again by the predicate compiled_ref/2.
  *
- * The predicate clause_ref/3 and dynamic_ref/3 can be used to find
- * a clause in the knowledge base. The predicate will return those
- * clauses that are visible from the head predicate that is used in
- * the search. The predicate additionally returns clause reference that
- * can be used with the other predicates here.
+ * The predicate clause_ref/3 can be used to find a clause in the
+ * knowledge base. This predicate respects the logical view approach
+ * form the ISO core Prolog standard. The predicate will further filter
+ * and only return those clauses that are visible from the head
+ * predicate that is used in the search. The predicate additionally
+ * returns clauses that can be used with the other predicates here.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
