@@ -1,9 +1,9 @@
 package matula.util.misc;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * <p>This class provides an atomic integer.</p>
- * <p>Should use AtomicInteger here, but too lazy right now.</p>
- * <p>The counter is bounded at -2^31..2 31-1 and will roll over.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -28,7 +28,7 @@ package matula.util.misc;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Ticket {
-    private int counter;
+    private AtomicInteger counter = new AtomicInteger();
 
     /**
      * <p>Increment this counter and return the old value.</p>
@@ -36,11 +36,13 @@ public final class Ticket {
      * @return The old value.
      */
     public int next() {
-        synchronized (this) {
-            int old = counter;
-            counter = old + 1;
-            return old;
-        }
+        int oldcount, newcount;
+        AtomicInteger atomic = counter;
+        do {
+            oldcount = atomic.get();
+            newcount = oldcount + 1;
+        } while (!atomic.compareAndSet(oldcount, newcount));
+        return oldcount;
     }
 
 }
