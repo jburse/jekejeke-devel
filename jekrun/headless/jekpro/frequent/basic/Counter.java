@@ -1,9 +1,9 @@
-package matula.util.misc;
+package jekpro.frequent.basic;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <p>This class provides an atomic integer.</p>
+ * <p>This class provides an atomic integer counter.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Ticket {
+public final class Counter {
     private AtomicInteger counter = new AtomicInteger();
 
     /**

@@ -16,6 +16,11 @@
  * that they take an additional random number generator object as
  * a first parameter.
  *
+ * The predicate counter_new/1 can be used to create a counter whch
+ * will be initialized to zero. The counter can then be incremented
+ * via the counter_next/2 whereby the old value is returned. The later
+ * predicate is implemented with the help of an atomic integer.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -120,3 +125,25 @@ random(M, N) :-
 :- public random_next/3.
 :- foreign(random_next/3, 'ForeignRandom',
       sysRandomNext('Random','Number')).
+
+/****************************************************************/
+/* Conter Object                                                */
+/****************************************************************/
+
+/**
+ * counter_new(C):
+ * The predicate succeeds for a new counter C.
+ */
+% counter_new(-Counter)
+:- public counter_new/1.
+:- foreign_constructor(counter_new/1, 'Counter', new).
+
+/**
+ * counter_new(C, V):
+ * The predicate succeeds for incrementing the
+ * counter C and unifying the old value V
+ */
+% counter_new(+Counter, -Integer)
+:- public counter_new/2.
+:- virtual counter_new/2.
+:- foreign(counter_new/2, 'Counter', next).

@@ -26,11 +26,6 @@
  * goal once in the timeout. When the timeout is reached before the
  * goal completes an exception is thrown.
  *
- * The predicate ticket_new/1 can be used to create a counter whch
- * will be initialized to zero. The counter can then be incremented
- * via the predicate_next/2 whereby the old value is returned. The later
- * predicate is implemented with the help of an atomic integer.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -141,25 +136,3 @@ time_out_loop :-
 
 :- thread_new(time_out_loop, I),
    thread_start(I).
-
-/****************************************************************/
-/* Ticket Objects                                               */
-/****************************************************************/
-
-/**
- * ticket_new(C):
- * The predicate succeeds for a new counter C.
- */
-% ticket_new(-Counter)
-:- public ticket_new/1.
-:- foreign_constructor(ticket_new/1, 'Ticket', new).
-
-/**
- * ticket_next(C, V):
- * The predicate succeeds for incrementing the
- * counter C and unifying the old value V
- */
-% ticket_next(+Counter, -Integer)
-:- public ticket_next/2.
-:- virtual ticket_next/2.
-:- foreign(ticket_next/2, 'Ticket', next).
