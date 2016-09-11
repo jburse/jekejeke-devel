@@ -143,10 +143,15 @@ retract(V) :-
    throw(error(instantiation_error,_)).
 retract((H :- B)) :- !,
    clause_ref(H, B, R),
-   erase_ref(R).
+   evict_ref(R).
 retract(H) :-
    clause_ref(H, true, R),
-   erase_ref(R).
+   evict_ref(R).
+
+:- private evict_ref/1.
+evict_ref(R) :-
+   erase_ref(R), !.
+evict_ref(_).
 
 /**
  * retractall(H): [Corr.2 8.9.5]
