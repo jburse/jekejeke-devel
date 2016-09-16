@@ -37,7 +37,7 @@ The following excerpts have already been uploaded:
 - [utils/swing](https://github.com/jburse/jekejeke-devel/tree/master/utils/swing):
   Modded Swing Class Loader.
 - [utils/android](https://github.com/jburse/jekejeke-devel/tree/master/utils/android):
-  Modded Adroid Class Loader.
+  Modded Android Class Loader.
 
 # Issues and Contributing
 
