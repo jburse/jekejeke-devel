@@ -37,6 +37,7 @@ public abstract class AbstractRuntime {
 
     /* initialize the primitives */
     static {
+        primitive.put(Character.TYPE.getName(), Character.TYPE);
         primitive.put(Byte.TYPE.getName(), Byte.TYPE);
         primitive.put(Short.TYPE.getName(), Short.TYPE);
         primitive.put(Integer.TYPE.getName(), Integer.TYPE);
@@ -44,7 +45,6 @@ public abstract class AbstractRuntime {
         primitive.put(Float.TYPE.getName(), Float.TYPE);
         primitive.put(Double.TYPE.getName(), Double.TYPE);
         primitive.put(Boolean.TYPE.getName(), Boolean.TYPE);
-        primitive.put(Character.TYPE.getName(), Character.TYPE);
         primitive.put(Void.TYPE.getName(), Void.TYPE);
     }
 

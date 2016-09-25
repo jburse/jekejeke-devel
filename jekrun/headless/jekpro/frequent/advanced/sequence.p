@@ -66,7 +66,7 @@ limit(C, G) :-
       new_local(K, 0),
       (  call(G),
          get_local(K, M),
-         N is M + 1,
+         N is M+1,
          (  N < C
          -> set_local(K, N); !)),
       free_local(K)).
@@ -91,6 +91,6 @@ offset(C, G) :-
       (  call(G),
          get_local(K, M),
          (  M < C
-         -> N is M + 1,
+         -> N is M+1,
             set_local(K, N), fail; true)),
       free_local(K)).

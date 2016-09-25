@@ -63,7 +63,8 @@ between(L, H, X) :-
    between2(L, H, X).
 between(L, H, X) :-
    integer(X), !,
-   L =< X, X =< H.
+   L =< X,
+   X =< H.
 between(_, _, X) :-
    throw(error(type_error(integer,X),_)).
 
@@ -73,7 +74,7 @@ between2(L, H, X) :-
    (  L = H -> !; true),
    X = L.
 between2(L, H, X) :-
-   Y is L + 1,
+   Y is L+1,
    between2(Y, H, X).
 
 /**
@@ -92,7 +93,8 @@ above(L, X) :-
    var(X), !,
    above2(L, X).
 above(L, X) :-
-   integer(X), !, L =< X.
+   integer(X), !,
+   L =< X.
 above(_, X) :-
    throw(error(type_error(integer,X),_)).
 
@@ -100,7 +102,7 @@ above(_, X) :-
 above2(L, X) :-
    X = L.
 above2(L, X) :-
-   Y is L + 1,
+   Y is L+1,
    above2(Y, X).
 
 /**
@@ -112,9 +114,9 @@ above2(L, X) :-
 :- public plus/3.
 plus(A, B, C) :-
    var(C), !,
-   C is A + B.
+   C is A+B.
 plus(A, B, C) :-
    var(A), !,
-   A is C - B.
+   A is C-B.
 plus(A, B, C) :-
-   B is C - A.
+   B is C-A.

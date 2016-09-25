@@ -73,7 +73,7 @@ sys_clean_threads(_, 0) :- !.
 sys_clean_threads(G, N) :-
    N > 0,
    sys_clean_thread(G),
-   M is N - 1,
+   M is N-1,
    sys_clean_threads(G, M).
 
 /**

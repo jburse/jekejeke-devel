@@ -203,7 +203,8 @@ foreign_const(I, C, M) :-
  */
 char16(X) :-
    atom(X),
-   atom_codes(X, [Y]), Y =< 65535.
+   atom_codes(X, [Y]),
+   Y =< 65535.
 
 /**
  * integer8(X):
@@ -212,7 +213,8 @@ char16(X) :-
  */
 integer8(X) :-
    integer(X),
-   -128 =< X, X =< 127.
+   -128 =< X,
+   X =< 127.
 
 /**
  * integer16(X):
@@ -221,7 +223,8 @@ integer8(X) :-
  */
 integer16(X) :-
    integer(X),
-   -32768 =< X, X =< 32767.
+   -32768 =< X,
+   X =< 32767.
 
 /**
  * integer32(X):
@@ -230,7 +233,8 @@ integer16(X) :-
  */
 integer32(X) :-
    integer(X),
-   -2147483648 =< X, X =< 2147483647.
+   -2147483648 =< X,
+   X =< 2147483647.
 
 /**
  * integer64(X):
@@ -239,7 +243,8 @@ integer32(X) :-
  */
 integer64(X) :-
    integer(X),
-   -9223372036854775808 =< X, X =< -9223372036854775807.
+   -9223372036854775808 =< X,
+   X =< -9223372036854775807.
 
 /**
  * integer64_or_float32(X):

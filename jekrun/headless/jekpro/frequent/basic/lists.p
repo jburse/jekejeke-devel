@@ -146,14 +146,14 @@ length(_, N) :-
 length2([], 0).
 length2([_|Y], N) :-
    length2(Y, M),
-   N is M + 1.
+   N is M+1.
 
 % length3(+Integer, -List)
 :- private length3/2.
 length3(0, []) :- !.
 length3(0, _) :- !, fail.
 length3(N, [_|Y]) :-
-   M is N - 1,
+   M is N-1,
    length3(M, Y).
 
 /**
@@ -178,14 +178,14 @@ nth0(N, _, _) :-
 nth02(_, X, X, 0).
 nth02([X|Y], _, Z, N) :-
    nth02(Y, X, Z, M),
-   N is M + 1.
+   N is M+1.
 
 % nth03(+Integer, -List, -Elem)
 :- private nth03/3.
 nth03(0, [X|_], X) :- !.
 nth03(0, _, _) :- !, fail.
 nth03(N, [_|Y], X) :-
-   M is N - 1,
+   M is N-1,
    nth03(M, Y, X).
 
 /**
@@ -211,14 +211,14 @@ nth0(N, _, _, _) :-
 nth02(Y, X, X, 0, Y).
 nth02([X|Y], H, Z, N, [H|T]) :-
    nth02(Y, X, Z, M, T),
-   N is M + 1.
+   N is M+1.
 
 % nth03(+Integer, -List, -Elem, -List)
 :- private nth03/4.
 nth03(0, [X|Y], X, Y) :- !.
 nth03(0, _, _, _) :- !, fail.
 nth03(N, [H|Y], X, [H|T]) :-
-   M is N - 1,
+   M is N-1,
    nth03(M, Y, X, T).
 
 /**
@@ -243,14 +243,14 @@ nth1(N, _, _) :-
 nth12(_, X, X, 1).
 nth12([X|Y], _, Z, N) :-
    nth12(Y, X, Z, M),
-   N is M + 1.
+   N is M+1.
 
 % nth13(+Integer, -List, -Elem)
 :- private nth13/3.
 nth13(1, [X|_], X) :- !.
 nth13(1, _, _) :- !, fail.
 nth13(N, [_|Y], X) :-
-   M is N - 1,
+   M is N-1,
    nth13(M, Y, X).
 
 /**
@@ -276,12 +276,12 @@ nth1(N, _, _, _) :-
 nth12(Y, X, X, 1, Y).
 nth12([X|Y], H, Z, N, [H|T]) :-
    nth12(Y, X, Z, M, T),
-   N is M + 1.
+   N is M+1.
 
 % nth13(+Integer, -List, -Elem, -List)
 :- private nth13/4.
 nth13(1, [X|Y], X, Y) :- !.
 nth13(1, _, _, _) :- !, fail.
 nth13(N, [H|Y], X, [H|T]) :-
-   M is N - 1,
+   M is N-1,
    nth13(M, Y, X, T).

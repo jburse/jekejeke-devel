@@ -1,55 +1,37 @@
 package matula.util.data;
 
 /**
- * <p>Implementation of a hash set.</p>
+ * <p>Implementation of a hash map.</p>
  * <p>Smaller initial size, and shrinks also.</p>
  * <p>No iterator provided, iterate by yourself over table and entries.</p>
- * </p>
- * Warranty & Liability
- * To the extent permitted by applicable law and unless explicitly
- * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
- * regarding the provided information. XLOG Technologies GmbH assumes
- * no liability that any problems might be solved with the information
- * provided by XLOG Technologies GmbH.
- * <p/>
- * Rights & License
- * All industrial property rights regarding the information - copyright
- * and patent rights in particular - are the sole property of XLOG
- * Technologies GmbH. If the company was not the originator of some
- * excerpts, XLOG Technologies GmbH has at least obtained the right to
- * reproduce, change and translate the information.
- * <p/>
- * Reproduction is restricted to the whole unaltered document. Reproduction
- * of the information is only allowed for non-commercial uses. Selling,
- * giving away or letting of the execution of the library is prohibited.
- * The library can be distributed as part of your applications and libraries
- * for execution provided this comment remains unchanged.
- * <p/>
- * Trademarks
- * Jekejeke is a registered trademark of XLOG Technologies GmbH.
+ *
+ * @author Copyright 2012-2016, XLOG Technologies GmbH, Switzerland
+ * @version Jekejeke Prolog 0.9.3 (a fast and small prolog interpreter)
  */
-public final class SetHash<E> extends AbstractSet<E> {
+public final class MapHash<K, V> extends AbstractMap<K, V> {
     private static final int MIN_SIZE = 2;
 
-    SetHashEntry<E>[] table = new SetHashEntry[MIN_SIZE];
+    MapHashEntry<K, V>[] table = new MapHashEntry[MIN_SIZE];
     public int size;
 
     /**
-     * <p>Retrieve the stored key.</p>
+     * <p>Find the key in the map.</p>
      *
-     * @param key The search key, can be null.
-     * @return The stored key or null.
+     * @param key The key.
+     * @return The value, or null.
      */
-    public E getKey(E key) {
+    public V get(K key) {
         int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
                 (table.length - 1) : 0);
 
-        SetHashEntry<E> e;
+        MapHashEntry<K, V> e;
         for (e = table[i]; e != null &&
                 !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
             ;
 
-        return (e != null ? e.key : null);
+        if (e == null)
+            return null;
+        return e.value;
     }
 
     /**
@@ -58,11 +40,11 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @param key The key.
      * @return The entry, or null.
      */
-    public SetEntry<E> getEntry(E key) {
+    public MapEntry<K, V> getEntry(K key) {
         int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
                 (table.length - 1) : 0);
 
-        SetHashEntry<E> e;
+        MapHashEntry<K, V> e;
         for (e = table[i]; e != null &&
                 !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
             ;
@@ -71,17 +53,18 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set.</p>
-     * <p>Assumption is that key is not yet present.</p>
+     * <p>Add the key to the map.</p>
      *
-     * @param key The key, can be null.
+     * @param key   The key.
+     * @param value The value.
+     * @return The new enry.
      */
-    public void putKey(E key) {
+    public MapEntry<K, V> put(K key, V value) {
         int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
                 (table.length - 1) : 0);
 
-        SetHashEntry<E> e = new SetHashEntry<E>(key);
-        SetHashEntry<E> f = table[i];
+        MapHashEntry<K, V> e = new MapHashEntry<K, V>(key, value);
+        MapHashEntry<K, V> f = table[i];
         if (f != null)
             f.prev = e;
         e.next = f;
@@ -90,6 +73,8 @@ public final class SetHash<E> extends AbstractSet<E> {
 
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
+
+        return e;
     }
 
     /**
@@ -97,11 +82,11 @@ public final class SetHash<E> extends AbstractSet<E> {
      *
      * @param key The key.
      */
-    public void remove(E key) {
+    public void remove(K key) {
         int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
                 (table.length - 1) : 0);
 
-        SetHashEntry<E> e;
+        MapHashEntry<K, V> e;
         for (e = table[i]; e != null &&
                 !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
             ;
@@ -109,8 +94,8 @@ public final class SetHash<E> extends AbstractSet<E> {
         if (e == null)
             return;
 
-        SetHashEntry<E> f = e.prev;
-        SetHashEntry<E> g = e.next;
+        MapHashEntry<K, V> f = e.prev;
+        MapHashEntry<K, V> g = e.next;
         if (f != null) {
             f.next = g;
         } else {
@@ -125,7 +110,30 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Resize after bulk delete.</p>
+     * <p>Remove an entry, but do not resize.</p>
+     *
+     * @param s The entry, not null.
+     */
+    public void removeEntry(MapEntry<K, V> s) {
+        MapHashEntry<K, V> e = (MapHashEntry<K, V>)s;
+        Object key = e.key;
+        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
+                (table.length - 1) : 0);
+
+        MapHashEntry<K, V> f = e.prev;
+        MapHashEntry<K, V> g = e.next;
+        if (f != null) {
+            f.next = g;
+        } else {
+            table[i] = g;
+        }
+        if (g != null)
+            g.prev = f;
+        size--;
+    }
+
+    /**
+     * <p>Resize after remove entry.</p>
      */
     public void resize() {
         int len = table.length;
@@ -136,24 +144,44 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Retrieve the table length.</p>
+     *
+     * @return The table length.
+     */
+    public int length() {
+        return table.length;
+    }
+
+    /**
+     * <p>Compute the index of a key.</p>
+     *
+     * @param key The key.
+     * @return The index.
+     */
+    public int index(K key) {
+        return (key != null ? HashScrambler.murmur(key.hashCode()) &
+                (table.length - 1) : 0);
+    }
+
+    /**
      * <p>Resize the hash table.</p>
      *
      * @param s The new size.
      */
     private void resize(int s) {
-        SetHashEntry<E>[] newtable = new SetHashEntry[s];
+        MapHashEntry<K, V>[] newtable = new MapHashEntry[s];
 
         for (int i = 0; i < table.length; i++) {
-            SetHashEntry<E> e = table[i];
+            MapHashEntry<K, V> e = table[i];
             while (e != null) {
-                SetHashEntry<E> b = e;
+                MapHashEntry<K, V> b = e;
                 e = b.next;
                 Object key = b.key;
                 int j = (key != null ? HashScrambler.murmur(key.hashCode()) &
                         (s - 1) : 0);
 
                 b.prev = null;
-                SetHashEntry<E> f = newtable[j];
+                MapHashEntry<K, V> f = newtable[j];
                 if (f != null)
                     f.prev = b;
                 b.next = f;
@@ -169,7 +197,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      *
      * @return The last entry, can be null.
      */
-    public SetEntry<E> getLastEntry() {
+    public MapEntry<K, V> getLastEntry() {
         return getPrevEntry(table.length - 1);
     }
 
@@ -178,19 +206,19 @@ public final class SetHash<E> extends AbstractSet<E> {
      *
      * @return The first entry, can be null.
      */
-    public SetEntry<E> getFirstEntry() {
+    public MapEntry<K, V> getFirstEntry() {
         return getNextEntry(0);
     }
 
     /**
      * <p>Retrieve the predecessor for a given entry.</p>
      *
-     * @param s The entry, not null.
-     * @return The predecessor, can be null.
+     * @param s The entry.
+     * @return The predecessor of the entry.
      */
-    public SetEntry<E> predecessor(SetEntry<E> s) {
-        SetHashEntry<E> e = (SetHashEntry<E>) s;
-        SetHashEntry<E> h = e.prev;
+    public MapEntry<K, V> predecessor(MapEntry<K, V> s) {
+        MapHashEntry<K, V> e = (MapHashEntry<K, V>) s;
+        MapHashEntry<K, V> h = e.next;
         if (h != null)
             return h;
         Object key = e.key;
@@ -200,14 +228,14 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Retrieve the successor for a given entry.</p>
+     * <p>Retrieve the successor entry of a given entry.</p>
      *
      * @param s The entry, not null.
-     * @return The successor, can be null.
+     * @return The succeeding entry.
      */
-    public SetEntry<E> successor(SetEntry<E> s) {
-        SetHashEntry<E> e = (SetHashEntry<E>) s;
-        SetHashEntry<E> h = e.next;
+    public MapEntry<K, V> successor(MapEntry<K, V> s) {
+        MapHashEntry<K, V> e = (MapHashEntry<K, V>) s;
+        MapHashEntry<K, V> h = e.next;
         if (h != null)
             return h;
         Object key = e.key;
@@ -221,9 +249,9 @@ public final class SetHash<E> extends AbstractSet<E> {
      *
      * @return The prev entry, can be null.
      */
-    private SetEntry<E> getPrevEntry(int start) {
+    private MapEntry<K, V> getPrevEntry(int start) {
         for (int i = start; i >= 0; i--) {
-            SetHashEntry<E> e = table[i];
+            MapHashEntry<K, V> e = table[i];
             if (e != null)
                 return e;
         }
@@ -235,9 +263,9 @@ public final class SetHash<E> extends AbstractSet<E> {
      *
      * @return The next entry, can be null.
      */
-    private SetEntry<E> getNextEntry(int start) {
+    private MapEntry<K, V> getNextEntry(int start) {
         for (int i = start; i < table.length; i++) {
-            SetHashEntry<E> e = table[i];
+            MapHashEntry<K, V> e = table[i];
             if (e != null)
                 return e;
         }
@@ -245,13 +273,13 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Clear the set.</p>
+     * <p>Clear the map.</p>
      */
     public void clear() {
         if (size == 0)
             return;
         if (table.length != MIN_SIZE) {
-            table = new SetHashEntry[MIN_SIZE];
+            table = new MapHashEntry[MIN_SIZE];
         } else {
             int n = Math.min(size, MIN_SIZE);
             for (int i = 0; i < n; i++)

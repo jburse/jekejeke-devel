@@ -171,7 +171,7 @@ sys_make_accu(X, _, _) :-
 sys_accu_sum([], 0).
 sys_accu_sum([X|Y], Z) :-
    sys_accu_sum(Y, H),
-   Z is H + X.
+   Z is H+X.
 
 % sys_accu_min(+List, -Value)
 :- private sys_accu_min/2.
@@ -183,7 +183,7 @@ sys_accu_min([X|Y], Z) :-
 sys_accu_min2([], X, X).
 sys_accu_min2([Y|T], X, Z) :-
    sys_accu_min2(T, Y, H),
-   Z is min(H, X).
+   Z is min(H,X).
 
 % sys_accu_max(+List, -Value)
 :- private sys_accu_max/2.
@@ -195,7 +195,7 @@ sys_accu_max([X|Y], Z) :-
 sys_accu_max2([], X, X).
 sys_accu_max2([Y|T], X, Z) :-
    sys_accu_max2(T, Y, H),
-   Z is max(H, X).
+   Z is max(H,X).
 
 % sys_accu_null(+List, -Value)
 :- private sys_accu_null/2.

@@ -162,7 +162,7 @@ sys_functor(K, J, B) :-
    sys_receiver_class(R, M),
    sys_functor(T, F, A),
    sys_replace_site(J, K, M:F),
-   B is A + 1.
+   B is A+1.
 sys_functor(T, F, A) :-
    functor(T, F, A).
 
@@ -250,11 +250,11 @@ sys_type_colon(S, 1) :-
 sys_type_colon(S:T, O) :- !,
    sys_type_module(S, M),
    sys_type_colon(T, N),
-   O is M + N.
+   O is M+N.
 sys_type_colon(S::T, O) :- !,
    sys_type_receiver(S, M),
    sys_type_colon(T, N),
-   O is M + N.
+   O is M+N.
 sys_type_colon(S, 0) :-
    callable(S).
 
@@ -275,7 +275,7 @@ sys_type_module(S, 0) :-
 sys_type_module(S/T, O) :- !,
    sys_type_package(S, M),
    sys_type_atom(T, N),
-   O is M + N.
+   O is M+N.
 sys_type_module(S, 0) :-
    atom(S).
 
@@ -292,7 +292,7 @@ sys_type_receiver(S, 0) :-
 sys_type_receiver(S/T, O) :- !,
    sys_type_package(S, M),
    sys_type_callable(T, N),
-   O is M + N.
+   O is M+N.
 sys_type_receiver(S, 0) :-
    callable(S).
 
@@ -307,7 +307,7 @@ sys_type_package(S, 1) :-
 sys_type_package(S/T, O) :- !,
    sys_type_package(S, M),
    sys_type_atom(T, N),
-   O is M + N.
+   O is M+N.
 sys_type_package(S, 0) :-
    atom(S).
 

@@ -27,7 +27,7 @@ package matula.util.data;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-public abstract class AbstractSet<K> {
+public abstract class AbstractSet<E> {
 
     /**
      * <p>Retrieve the stored key.</p>
@@ -35,7 +35,15 @@ public abstract class AbstractSet<K> {
      * @param key The search key, can be null.
      * @return The stored key or null.
      */
-    public abstract K getKey(K key);
+    public abstract E getKey(E key);
+
+    /**
+     * <p>Find the key in the map.</p>
+     *
+     * @param key The key.
+     * @return The entry, or null.
+     */
+    public abstract SetEntry<E> getEntry(E key);
 
     /**
      * <p>Add key to the set.</p>
@@ -43,26 +51,75 @@ public abstract class AbstractSet<K> {
      *
      * @param key The key, can be null.
      */
-    public abstract void putKey(K key);
+    public abstract void putKey(E key);
+
+    /**
+     * <p>Remove the key from the set.</p>
+     *
+     * @param key The key, can be null.
+     */
+    public abstract void remove(E key);
 
     /**
      * <p>Retrieve the last entry.</p>
      *
-     * @return The last entry.
+     * @return The last entry, can be null.
      */
-    public abstract SetEntry<K> getLastEntry();
+    public abstract SetEntry<E> getLastEntry();
+
+    /**
+     * <p>Retrieve the first entry.</p>
+     *
+     * @return The first entry, can be null.
+     */
+    public abstract SetEntry<E> getFirstEntry();
 
     /**
      * <p>Retrieve the predecessor for a given entry.</p>
      *
-     * @param t The entry.
-     * @return The predecessor of the entry.
+     * @param s The entry, not null.
+     * @return The predecessor, can be null.
      */
-    public abstract SetEntry<K> predecessor(SetEntry<K> t);
+    public abstract SetEntry<E> predecessor(SetEntry<E> s);
+
+    /**
+     * <p>Retrieve the successor for a given entry.</p>
+     *
+     * @param s The entry, not null.
+     * @return The successor, can be null.
+     */
+    public abstract SetEntry<E> successor(SetEntry<E> s);
 
     /**
      * <p>Clear the set.</p>
      */
     public abstract void clear();
+
+    /***********************************************************/
+    /* Bootstraped Methods                                     */
+    /***********************************************************/
+
+    /**
+     * <p>Copy the set entries to an array.</p>
+     *
+     * @param target The array.
+     */
+    public void toArray(E[] target) {
+        toArray(target, 0);
+    }
+
+    /**
+     * <p>Copy the hash map entries to an array.</p>
+     *
+     * @param target The array.
+     * @param pos    The start index.
+     */
+    public void toArray(E[] target, int pos) {
+        for (SetEntry<E> entry = getFirstEntry();
+             entry != null; entry = successor(entry)) {
+            target[pos] = entry.key;
+            pos++;
+        }
+    }
 
 }
