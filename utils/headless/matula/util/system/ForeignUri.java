@@ -464,10 +464,9 @@ public final class ForeignUri {
      * @param a The base URI.
      * @param b The absolute URI.
      * @return The relative or absolute URI.
-     * @throws UnsupportedEncodingException Encoding problem.
      */
     public static String sysUriRelative(String a, String b)
-            throws UnsupportedEncodingException, MalformedURLException {
+            throws MalformedURLException {
         String spec1 = ForeignUri.sysUriSpec(a);
         String scheme1 = ForeignUri.sysSpecScheme(spec1);
         String authority1 = ForeignUri.sysSpecAuthority(spec1);
@@ -652,7 +651,8 @@ public final class ForeignUri {
      * @param cset  The character set.
      * @return The URL encoded string.
      */
-    public static String encode(String s, boolean above, String needs, String cset)
+    public static String encode(String s, boolean above,
+                                String needs, String cset)
             throws UnsupportedEncodingException {
         StringBuilder buf = null;
         StringBuilder enc = null;
@@ -691,7 +691,8 @@ public final class ForeignUri {
      * @param enc  The unencoded characters.
      * @param cset The character set.
      */
-    private static void hexDigits(StringBuilder buf, StringBuilder enc, String cset)
+    private static void hexDigits(StringBuilder buf, StringBuilder enc,
+                                  String cset)
             throws UnsupportedEncodingException {
         byte[] bytes = enc.toString().getBytes(cset);
         for (int i = 0; i < bytes.length; i++) {
