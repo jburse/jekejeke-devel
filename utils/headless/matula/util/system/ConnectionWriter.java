@@ -1,6 +1,6 @@
 package matula.util.system;
 
-import matula.util.misc.CodeType;
+import matula.util.regex.CodeType;
 
 import java.io.FilterWriter;
 import java.io.IOException;
