@@ -29,7 +29,6 @@ import matula.util.text.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class CompLang {
-    public static final CompLang REMARK = new CompLang();
     public final static CompLang ISO_COMPLANG = new CompLang();
 
     public static final String LINE_SUPER = "01234567x";
@@ -44,20 +43,6 @@ public class CompLang {
         ISO_COMPLANG.setBlockCommentStart("/*");
         ISO_COMPLANG.setBlockCommentEnd("*/");
         ISO_COMPLANG.setEnd('.');
-    }
-
-    /**
-     * <p>Copy the remark.</p>
-     *
-     * @return The copy.
-     */
-    public CompLang copy() {
-        CompLang r = new CompLang();
-        r.setLineComment(getLineComment());
-        r.setBlockCommentStart(getBlockCommentStart());
-        r.setBlockCommentEnd(getBlockCommentEnd());
-        r.setEnd(getEnd());
-        return r;
     }
 
     /**
@@ -155,123 +140,6 @@ public class CompLang {
     /***********************************************************************/
     /* String Normalization                                                */
     /***********************************************************************/
-
-    /**
-     * <p>Resolve the doubles.</p>
-     * <p>Unbalanced escapes are tolerated.</p>
-     * <p>Version that can handle >16 bit Unicode.</p>
-     *
-     * @param str    The token.
-     * @param quote  The quote.
-     * @param offset The error offset.
-     * @return The resolved token.
-     * @throws ScannerError Shit happens.
-     */
-    public static String resolveDouble(String str, int quote, int offset)
-            throws ScannerError {
-        StringBuilder buf = null;
-        int n = str.length();
-        for (int i = 0; i < n; i++) {
-            int k = str.codePointAt(i);
-            if (k == quote) {
-                if (i + Character.charCount(k) < n && str.codePointAt(i + Character.charCount(k)) == quote) {
-                    if (buf == null)
-                        buf = new StringBuilder(str.substring(0, i));
-                    i += Character.charCount(k);
-                    buf.appendCodePoint(k);
-                } else {
-                    throw new ScannerError(Linespro.OP_SYNTAX_DOUBLING_MISSING, offset + i);
-                }
-            } else if (k == Linespro.LINE_BACKSLASH) {
-                if (buf != null)
-                    buf.appendCodePoint(k);
-                if (i + Character.charCount(k) < n) {
-                    i += Character.charCount(k);
-                    k = str.codePointAt(i);
-                    if (buf != null)
-                        buf.appendCodePoint(k);
-                    if (LINE_SUPER.indexOf(k) != -1) {
-                        int k2;
-                        while (i + Character.charCount(k) < n &&
-                                (k2 = str.codePointAt(i + Character.charCount(k))) != Linespro.LINE_BACKSLASH) {
-                            i += Character.charCount(k);
-                            k = k2;
-                            if (buf != null)
-                                buf.appendCodePoint(k);
-                        }
-                        if (i + Character.charCount(k) < n) {
-                            i += Character.charCount(k);
-                            k = Linespro.LINE_BACKSLASH;
-                            if (buf != null)
-                                buf.appendCodePoint(k);
-                        }
-                    }
-                }
-            } else {
-                if (buf != null)
-                    buf.appendCodePoint(k);
-            }
-            i += Character.charCount(k) - 1;
-        }
-        if (buf != null)
-            return buf.toString();
-        return str;
-    }
-
-    /**
-     * <p>Double the quotes.</p>
-     * <p>Unbalanced escapes are tolerated.</p>
-     * <p>Version that can handle >16 bit Unicode.</p>
-     *
-     * @param str   The token.
-     * @param quote The quote.
-     * @return The doubled token.
-     */
-    public static String doubleQuote(String str, int quote) {
-        StringBuilder buf = null;
-        int n = str.length();
-        for (int i = 0; i < n; i++) {
-            int k = str.codePointAt(i);
-            if (k == quote) {
-                if (buf == null)
-                    buf = new StringBuilder(str.substring(0, i));
-                buf.appendCodePoint(quote);
-                buf.appendCodePoint(quote);
-            } else if (k == Linespro.LINE_BACKSLASH) {
-                if (buf != null)
-                    buf.appendCodePoint(Linespro.LINE_BACKSLASH);
-                if (i + Character.charCount(k) < n) {
-                    i += Character.charCount(k);
-                    k = str.codePointAt(i);
-                    if (buf != null)
-                        buf.appendCodePoint(k);
-                    if (LINE_SUPER.indexOf(k) != -1) {
-                        int k2;
-                        while (i + Character.charCount(k) < n &&
-                                (k2 = str.codePointAt(i + Character.charCount(k))) != Linespro.LINE_BACKSLASH) {
-                            i += Character.charCount(k);
-                            k = k2;
-                            if (buf != null)
-                                buf.appendCodePoint(k);
-                        }
-                        if (i + Character.charCount(k) < n) {
-                            i += Character.charCount(k);
-                            k = Linespro.LINE_BACKSLASH;
-                            if (buf != null)
-                                buf.appendCodePoint(k);
-                        }
-                    }
-                }
-            } else {
-                if (buf != null)
-                    buf.appendCodePoint(k);
-            }
-            i += Character.charCount(k) - 1;
-        }
-        if (buf != null)
-            return buf.toString();
-        return str;
-    }
 
     /**
      * <p>Resolve the escapes in the string.</p>
