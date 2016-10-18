@@ -1,5 +1,7 @@
 package matula.util.regex;
 
+import matula.util.text.ScannerError;
+
 /**
  * <p>Classify code points.</p>
  * <p>The following character classifications are used:</p>
@@ -47,7 +49,11 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class CodeType {
-    public final static CodeType ISO_CODETYPE = new CodeType();
+    public static final CodeType DELEMITER = new CodeType();
+    public static final CodeType PAT_DELEMITER = new CodeType(true);
+    public static final CodeType ISO_CODETYPE = new CodeType();
+
+    public static final String OP_SYNTAX_ILLEGAL_UNDERSCORE = "illegal_underscore";
 
     public static final int LINE_EOF = -1;
     public static final char LINE_EOL = '\n';
@@ -78,6 +84,40 @@ public class CodeType {
         ISO_CODETYPE.setQuotes("\'\"`");
         ISO_CODETYPE.setInvalids("\uFFFD");
         ISO_CODETYPE.setJoiners("");
+    }
+
+    /**
+     * <p>Create a delemiter.</p>
+     */
+    public CodeType() {
+        /* do nothing */
+    }
+
+    /**
+     * <p>Create a delemiter.</p>
+     *
+     * @param pat True if pattern delemiter, otherwise false.
+     */
+    public CodeType(boolean pat) {
+        if (pat) {
+            setDelemiters(remove(getDelemiters(), "*?<~>^"));
+            setJoiners(add(getJoiners(), "*?<~>^"));
+        }
+    }
+
+    /**
+     * <p>Copy the delemiter.</p>
+     *
+     * @return The copy.
+     */
+    public CodeType copy() {
+        CodeType d = new CodeType();
+        d.setHints(getHints());
+        d.setDelemiters(getDelemiters());
+        d.setQuotes(getQuotes());
+        d.setInvalids(getInvalids());
+        d.setJoiners(getJoiners());
+        return d;
     }
 
     /**
@@ -463,6 +503,98 @@ public class CodeType {
             pos += Character.charCount(ch);
         }
         return true;
+    }
+
+    /***********************************************************************/
+    /* Number Normalization                                                */
+    /***********************************************************************/
+
+    /**
+     * <p>Strip the underscores from a string.</p>
+     *
+     * @param str The string.
+     * @return The stripped string.
+     */
+    public String stripUnderscore(String str) {
+        StringBuilder buf = null;
+        int n = str.length();
+        int pos = 0;
+        while (pos < n) {
+            int k = str.codePointAt(pos);
+            if (isUnderscore(k)) {
+                if (buf == null)
+                    buf = new StringBuilder(str.substring(0, pos));
+                /* skip */
+            } else {
+                if (buf != null)
+                    buf.appendCodePoint(k);
+            }
+            pos += Character.charCount(k);
+        }
+        if (buf != null)
+            return buf.toString();
+        return str;
+    }
+
+    /**
+     * <p>Check whether a string does neither starts nor ends
+     * with an underscore, nor has a twin underscore.</p>
+     * <p>We have to check again, since we strip underscores and toNumber()
+     * is also called from number_codes/2.</p>
+     *
+     * @param pos    The index.
+     * @param pos2   The second index.
+     * @param str    The string.
+     * @param offset The offset.
+     * @throws ScannerError If the string starts with a sign.
+     */
+    public void checkUnderscore(int pos, int pos2, String str,
+                                int offset)
+            throws ScannerError {
+        if (!(pos < pos2))
+            return;
+        int ch = str.codePointAt(pos);
+        if (isUnderscore(ch))
+            throw new ScannerError(OP_SYNTAX_ILLEGAL_UNDERSCORE, pos + offset);
+        pos += Character.charCount(ch);
+
+        if (!(pos < pos2))
+            return;
+        ch = str.codePointBefore(pos2);
+        pos2 -= Character.charCount(ch);
+        if (isUnderscore(ch))
+            throw new ScannerError(OP_SYNTAX_ILLEGAL_UNDERSCORE, pos2 + offset);
+
+        int k = indexTwin(pos, pos2, str);
+        if (k != -1)
+            throw new ScannerError(OP_SYNTAX_ILLEGAL_UNDERSCORE, k + offset);
+    }
+
+    /**
+     * <p>Find an underscore twin.</p>
+     *
+     * @param pos  The start of the string region.
+     * @param pos2 The end of the string region.
+     * @param str  The string.
+     * @return The first index, or -1.
+     */
+    private int indexTwin(int pos, int pos2, String str) {
+        boolean last = false;
+        while (pos < pos2) {
+            int ch = str.codePointAt(pos);
+            if (isUnderscore(ch)) {
+                if (!last) {
+                    last = true;
+                } else {
+                    return pos;
+                }
+            } else {
+                if (last)
+                    last = false;
+            }
+            pos += Character.charCount(ch);
+        }
+        return -1;
     }
 
 }
