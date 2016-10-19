@@ -42,14 +42,13 @@ public final class ConnectionReader extends FilterReader {
     private RandomAccessFile raf;
     private String path;
     private int buffer;
-    private int lineNumber = 0;
-    private boolean skipLF;
-    private boolean markedSkipLF;
-    private int markedLineNumber;
     private Reader unbuf;
 
-    private static final int maxSkipBufferSize = 8192;
-    private char skipBuffer[] = null;
+    private String line = "";
+    private int offset;
+    private int mark = -1;
+    private int lineno;
+    private boolean skiplf;
 
     /**
      * <p>Create a connection reader from a reader.</p>
@@ -210,7 +209,7 @@ public final class ConnectionReader extends FilterReader {
      * @param l An int specifying the line number
      */
     public void setLineNumber(int l) {
-        lineNumber = l;
+        lineno = l;
     }
 
     /**
@@ -219,7 +218,7 @@ public final class ConnectionReader extends FilterReader {
      * @return The current line number
      */
     public int getLineNumber() {
-        return lineNumber;
+        return lineno;
     }
 
     /**
@@ -241,6 +240,24 @@ public final class ConnectionReader extends FilterReader {
     }
 
     /**
+     * <p>Retrieve the current line.</p>
+     *
+     * @return The line.
+     */
+    public String getLine() {
+        return line;
+    }
+
+    /**
+     * <p>Retrieve the current offset.</p>
+     *
+     * @return The offset.
+     */
+    public int getOffset() {
+        return offset;
+    }
+
+    /**
      * <p>Read a single character. Line termination sequences are
      * compressed into a single '\n' character and lines are
      * counted.</p>
@@ -249,20 +266,13 @@ public final class ConnectionReader extends FilterReader {
      * @throws IOException IO error.
      */
     public int read() throws IOException {
-        int c = in.read();
-        if (skipLF) {
-            skipLF = false;
-            if (c == '\n')
-                c = in.read();
-        }
-        if (c == '\r') {
-            skipLF = true;
-            lineNumber++;
-            c = '\n';
-        } else if (c == '\n') {
-            lineNumber++;
-        }
-        return c;
+        if (line != null && offset >= line.length())
+            nextLine();
+        if (line == null)
+            return -1;
+        int ch = line.charAt(offset);
+        offset++;
+        return ch;
     }
 
     /**
@@ -277,94 +287,79 @@ public final class ConnectionReader extends FilterReader {
      * @throws IOException IO error.
      */
     public int read(char[] cbuf, int off, int len) throws IOException {
-        int n = in.read(cbuf, off, len);
-        if (n == -1)
-            return n;
-        int p = off;
-        for (int i = off; i < off + n; i++) {
-            char c = cbuf[i];
-            if (skipLF) {
-                skipLF = false;
-                if (c == '\n') {
-                    i++;
-                    if (i < off + n) {
-                        c = cbuf[i];
-                    } else {
-                        break;
-                    }
-                }
-            }
-            if (c == '\r') {
-                skipLF = true;
-                lineNumber++;
-                c = '\n';
-            } else if (c == '\n') {
-                lineNumber++;
-            }
-            cbuf[p++] = c;
-        }
-        return p - off;
-    }
-
-    /**
-     * <p>Read characters into a portion of an array. Line termination
-     * sequences are compressed into a single '\n' character and lines are
-     * counted.</p>
-     *
-     * @param cbuf The destination buffer.
-     * @return The number of characters read, or -1 if at end of the stream.
-     * @throws IOException IO error.
-     */
-    public int read(char[] cbuf) throws IOException {
-        return read(cbuf, 0, cbuf.length);
+        if (line != null && offset >= line.length())
+            nextLine();
+        if (line == null)
+            return -1;
+        int k = Math.min(line.length() - offset, len);
+        line.getChars(offset, offset + k, cbuf, off);
+        offset += k;
+        return k;
     }
 
     /**
      * Skip characters. Line termination sequences are compressed into a
      * single '\n' character and lines are counted.
      *
-     * @param n The number of characters to skip
+     * @param len The number of characters to skip
      * @return The number of characters actually skipped
      * @throws IOException              If an I/O error occurs
      * @throws IllegalArgumentException If <tt>n</tt> is negative
      */
-    public long skip(long n) throws IOException {
-        if (n < 0)
-            throw new IllegalArgumentException("skip() value is negative");
-        int nn = (int) Math.min(n, maxSkipBufferSize);
-        if ((skipBuffer == null) || (skipBuffer.length < nn))
-            skipBuffer = new char[nn];
-        long r = n;
-        while (r > 0) {
-            int nc = read(skipBuffer, 0, (int) Math.min(r, nn));
-            if (nc == -1)
-                break;
-            r -= nc;
+    public long skip(long len) throws IOException {
+        long done = 0;
+        while (len > 0) {
+            if (line != null && offset >= line.length())
+                nextLine();
+            if (line == null)
+                return done;
+            long k = Math.min(line.length() - offset, len);
+            offset += k;
+            done += k;
+            len -= k;
         }
-        return n - r;
+        return done;
     }
 
     /**
-     * <p>Mark the reader.</p>
+     * <p>Check whether the stream is ready.</p>
      *
-     * @param r Limit on the number of characters
-     * @throws IOException IO error.
+     * @return True if the stream is ready, otherwise false,
      */
-    public void mark(int r) throws IOException {
-        in.mark(2 * r);
-        markedLineNumber = lineNumber;
-        markedSkipLF = skipLF;
+    public boolean ready() throws IOException {
+        if (line != null && offset >= line.length())
+            return in.ready();
+        return true;
     }
 
     /**
-     * <p>Reset the reader.</p>
+     * <p>Check whether the stream supports mark.</p>
      *
-     * @throws IOException IO error.
+     * @return True if the stream supports mark, otherwise false.
+     */
+    public boolean markSupported() {
+        return true;
+    }
+
+    /**
+     * <p>Mark the current positions.</p>
+     *
+     * @param len The requested lookahead.
+     */
+    public void mark(int len) throws IOException {
+        if (mark != -1)
+            throw new IllegalArgumentException("already marked");
+        mark = offset;
+    }
+
+    /**
+     * <p>Unmark the current position.</p>
      */
     public void reset() throws IOException {
-        in.reset();
-        lineNumber = markedLineNumber;
-        skipLF = markedSkipLF;
+        if (mark == -1)
+            throw new IllegalArgumentException("already reset");
+        offset = mark;
+        mark = -1;
     }
 
     /**
@@ -376,6 +371,38 @@ public final class ConnectionReader extends FilterReader {
         in.close();
         if (raf != null)
             raf.close();
+    }
+
+    /************************************************************/
+    /* Read Line Helper                                         */
+    /************************************************************/
+
+    /**
+     * <p>Retrieve a line including the newline character.</p>
+     *
+     * @throws IOException Shit happens.
+     */
+    private void nextLine()
+            throws IOException {
+        if (line.endsWith("\n"))
+            lineno++;
+        StringBuilder buf = new StringBuilder();
+        int ch = in.read();
+        if (skiplf && ch == '\n')
+            ch = in.read();
+        while (ch != '\n' && ch != '\r' && ch != -1) {
+            buf.append((char) ch);
+            ch = in.read();
+        }
+        if (ch == -1 && buf.length() == 0) {
+            line = null;
+        } else {
+            if (ch != -1)
+                buf.append('\n');
+            skiplf = (ch == '\r');
+            line = buf.toString();
+        }
+        offset = 0;
     }
 
 }
