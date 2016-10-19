@@ -1,7 +1,6 @@
 package matula.util.regex;
 
 import matula.util.text.Linespro;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>Classify computer languages.</p>
@@ -28,7 +27,7 @@ import matula.util.regex.ScannerError;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class CompLang {
+public final class CompLang {
     public final static CompLang ISO_COMPLANG = new CompLang();
 
     public static final String LINE_SUPER = "01234567x";

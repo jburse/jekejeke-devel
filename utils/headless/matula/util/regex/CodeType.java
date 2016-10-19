@@ -1,7 +1,6 @@
 package matula.util.regex;
 
 import matula.util.text.Linespro;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>Classify code points.</p>
@@ -49,7 +48,7 @@ import matula.util.regex.ScannerError;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class CodeType {
+public final class CodeType {
     public static final CodeType ISO_CODETYPE = new CodeType();
     public static final CodeType ISO_PAT_CODETYPE = new CodeType(true);
 
