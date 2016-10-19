@@ -1,7 +1,7 @@
 package matula.util.regex;
 
 import matula.util.text.Linespro;
-import matula.util.text.ScannerError;
+import matula.util.regex.ScannerError;
 
 /**
  * <p>Classify code points.</p>
