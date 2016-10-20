@@ -1,7 +1,7 @@
 package matula.util.regex;
 
 /**
- * <p>The class provides a syntax error type and a error position.</p>
+ * <p>The class provides a syntax error type and an error position.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties

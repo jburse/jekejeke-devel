@@ -30,8 +30,6 @@ import matula.util.text.Linespro;
 public final class CompLang {
     public final static CompLang ISO_COMPLANG = new CompLang();
 
-    public static final String LINE_SUPER = "01234567x";
-
     private String linecomment = "//";
     private String blockcommentstart = "/*";
     private String blockcommentend = "*/";
@@ -170,32 +168,6 @@ public final class CompLang {
                 if (i < n) {
                     k = str.codePointAt(i);
                     switch (k) {
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                            int i2 = i;
-                            while (i < n && d.isAlfanum(k = str.codePointAt(i)))
-                                i += Character.charCount(k);
-                            if (i < n && str.codePointAt(i) == Linespro.LINE_BACKSLASH) {
-                                int val;
-                                try {
-                                    val = Integer.parseInt(str.substring(i2, i), 8);
-                                } catch (NumberFormatException x) {
-                                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
-                                }
-                                if (val < 0 || val > Character.MAX_CODE_POINT)
-                                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
-                                buf.appendCodePoint(val);
-                                k = Linespro.LINE_BACKSLASH;
-                            } else {
-                                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
-                            }
-                            break;
                         case 'a':
                             buf.appendCodePoint('\u0007');
                             break;
@@ -219,7 +191,7 @@ public final class CompLang {
                             break;
                         case 'x':
                             i += Character.charCount(k);
-                            i2 = i;
+                            int i2 = i;
                             while (i < n && d.isAlfanum(k = str.codePointAt(i)))
                                 i += Character.charCount(k);
                             if (i < n && str.codePointAt(i) == Linespro.LINE_BACKSLASH) {
@@ -248,7 +220,28 @@ public final class CompLang {
                             buf.appendCodePoint(k);
                             break;
                         default:
-                            throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                            if (Character.digit(k, 8) != -1) {
+                                i2 = i;
+                                while (i < n && d.isAlfanum(k = str.codePointAt(i)))
+                                    i += Character.charCount(k);
+                                if (i < n && str.codePointAt(i) == Linespro.LINE_BACKSLASH) {
+                                    int val;
+                                    try {
+                                        val = Integer.parseInt(str.substring(i2, i), 8);
+                                    } catch (NumberFormatException x) {
+                                        throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                    }
+                                    if (val < 0 || val > Character.MAX_CODE_POINT)
+                                        throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                    buf.appendCodePoint(val);
+                                    k = Linespro.LINE_BACKSLASH;
+                                } else {
+                                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                }
+                                break;
+                            } else {
+                                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                            }
                     }
                 } else {
                     throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);

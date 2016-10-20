@@ -7,18 +7,18 @@ import matula.util.text.Linespro;
  * <p>The following character classifications are used:</p>
  * <pre>
  *     whitespace -->  space_separator | line_separator | paragraph_separator
- *     layout -->      ~hints (control | format).
- *     invalid -->     unassigned | surrogate | private_use | invalid.
- *     solo -->        start_punctuation | end_punctuation | initial_quote_punctuation |
+ *     control    -->  ~hints (control | format).
+ *     invalid    -->  unassigned | surrogate | private_use | invalid.
+ *     solo       -->  start_punctuation | end_punctuation | initial_quote_punctuation |
  *                     final_quote_punctuation | delemiter | quote.
  *     underscore -->  connector_punctuation.
- *     lower -->       lowercase_letter | modifier_letter | other_letter.
- *     upper -->       uppercase_letter | titlecase_letter.
- *     alfanum -->     non_spacing_mark | enclosing_mark |
+ *     lower      -->  lowercase_letter | modifier_letter | other_letter.
+ *     upper      -->  uppercase_letter | titlecase_letter.
+ *     other      -->  non_spacing_mark | enclosing_mark |
  *                     combining_spacing_mark | letter_number |
  *                     other_number | joiner | hints.
- *     digit -->       decimal_digit_number.
- *     graphic -->     ~delemiter ~quote ~invalid ~joiner (dash_punctuation |
+ *     digit      -->  decimal_digit_number.
+ *     graphic    -->  ~delemiter ~quote ~invalid ~joiner (dash_punctuation |
  *                     other_punctuation
  *                     math_symbol |
  *                     currency_symbol |
@@ -58,7 +58,7 @@ public final class CodeType {
     public static final char LINE_EOL = '\n';
 
     public static final int SUB_CLASS_WHITESPACE = 0;
-    public static final int SUB_CLASS_LAYOUT = 1;
+    public static final int SUB_CLASS_CONTROL = 1;
 
     public static final int SUB_CLASS_INVALID = 2;
     public static final int SUB_CLASS_SOLO = 3;
@@ -66,7 +66,7 @@ public final class CodeType {
     public static final int SUB_CLASS_UNDERSCORE = 4;
     public static final int SUB_CLASS_UPPER = 5;
     public static final int SUB_CLASS_LOWER = 6;
-    public static final int SUB_CLASS_ALFANUM = 7;
+    public static final int SUB_CLASS_OTHER = 7;
     public static final int SUB_CLASS_DIGIT = 8;
 
     public static final int SUB_CLASS_GRAPHIC = 9;
@@ -248,9 +248,9 @@ public final class CodeType {
             case Character.CONTROL:
             case Character.FORMAT:
                 if (hints.indexOf(cp) != -1) {
-                    return CodeType.SUB_CLASS_ALFANUM;
+                    return CodeType.SUB_CLASS_OTHER;
                 } else {
-                    return CodeType.SUB_CLASS_LAYOUT;
+                    return CodeType.SUB_CLASS_CONTROL;
                 }
             case Character.UNASSIGNED:
             case Character.SURROGATE:
@@ -273,12 +273,12 @@ public final class CodeType {
             case Character.NON_SPACING_MARK:
             case Character.ENCLOSING_MARK:
             case Character.COMBINING_SPACING_MARK:
-                return CodeType.SUB_CLASS_ALFANUM;
+                return CodeType.SUB_CLASS_OTHER;
             case Character.DECIMAL_DIGIT_NUMBER:
                 return CodeType.SUB_CLASS_DIGIT;
             case Character.LETTER_NUMBER:
             case Character.OTHER_NUMBER:
-                return CodeType.SUB_CLASS_ALFANUM;
+                return CodeType.SUB_CLASS_OTHER;
             case Character.CONNECTOR_PUNCTUATION:
                 return CodeType.SUB_CLASS_UNDERSCORE;
             default:
@@ -289,7 +289,7 @@ public final class CodeType {
                 } else if (invalids.indexOf(cp) != -1) {
                     return CodeType.SUB_CLASS_INVALID;
                 } else if (joiners.indexOf(cp) != -1) {
-                    return CodeType.SUB_CLASS_ALFANUM;
+                    return CodeType.SUB_CLASS_OTHER;
                 } else {
                     return CodeType.SUB_CLASS_GRAPHIC;
                 }
@@ -305,7 +305,7 @@ public final class CodeType {
     public boolean isLayout(int cp) {
         int subtype = classOf(cp);
         return (subtype == CodeType.SUB_CLASS_WHITESPACE ||
-                subtype == CodeType.SUB_CLASS_LAYOUT);
+                subtype == CodeType.SUB_CLASS_CONTROL);
     }
 
     /**
@@ -620,7 +620,7 @@ public final class CodeType {
                     k = str.codePointAt(i);
                     if (buf != null)
                         buf.appendCodePoint(k);
-                    if (CompLang.LINE_SUPER.indexOf(k) != -1) {
+                    if (Character.digit(k,8)!=-1 || k=='x') {
                         int k2;
                         while (i + Character.charCount(k) < n &&
                                 isAlfanum(k2 = str.codePointAt(i + Character.charCount(k)))) {
@@ -676,7 +676,7 @@ public final class CodeType {
                     k = str.codePointAt(i);
                     if (buf != null)
                         buf.appendCodePoint(k);
-                    if (CompLang.LINE_SUPER.indexOf(k) != -1) {
+                    if (Character.digit(k,8)!=-1 || k=='x') {
                         int k2;
                         while (i + Character.charCount(k) < n &&
                                 isAlfanum(k2 = str.codePointAt(i + Character.charCount(k)))) {
