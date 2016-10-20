@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.text.ScannerReader;
 
 import java.io.*;
 import java.net.*;
@@ -675,15 +676,59 @@ public final class OpenOpts {
     }
 
     /**
+     * <p>Set the line number of a steram.</p>
+     *
+     * @param o The stream.
+     * @param l The line number.
+     */
+    public static void setLineNumber(Object o, int l) {
+        if (o instanceof ConnectionReader) {
+            ((ConnectionReader) o).setLineNumber(l);
+        } else if (o instanceof ScannerReader) {
+            ((ScannerReader) o).setLineNumber(l);
+        }
+    }
+
+    /**
      * <p>Retrieve the line number of a stream.</p>
      *
      * @param o The stream.
-     * @return The path.
+     * @return The line number or 0.
      */
     public static int getLineNumber(Object o) {
         if (o instanceof ConnectionReader)
             return ((ConnectionReader) o).getLineNumber();
+        if (o instanceof ScannerReader)
+            return ((ScannerReader)o).getLineNumber();
         return 0;
+    }
+
+    /**
+     * <p>Retrieve the current offset of a stream.</p>
+     *
+     * @param o The stream.
+     * @return The offset or 0.
+     */
+    public static int getOffset(Object o) {
+        if (o instanceof ConnectionReader)
+            return ((ConnectionReader) o).getOffset();
+        if (o instanceof ScannerReader)
+            return ((ScannerReader)o).getOffset();
+        return 0;
+    }
+
+    /**
+     * <p>Retrieve the current line of a stream.</p>
+     *
+     * @param o The stream.
+     * @return The line or null.
+     */
+    public static String getLine(Object o) {
+        if (o instanceof ConnectionReader)
+            return ((ConnectionReader) o).getLine();
+        if (o instanceof ScannerReader)
+            return ((ScannerReader)o).getLine();
+        return null;
     }
 
     /*************************************************************/
