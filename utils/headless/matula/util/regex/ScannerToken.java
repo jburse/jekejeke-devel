@@ -87,15 +87,6 @@ public final class ScannerToken {
     private String origin;
 
     /**
-     * <p>Create a scanner token for a reader.</p>
-     *
-     * @param r The reader.
-     */
-    public ScannerToken(Reader r) {
-        setReader(r);
-    }
-
-    /**
      * <p>Set the delemiter.</p>
      *
      * @param d The delemiter.
@@ -760,7 +751,7 @@ public final class ScannerToken {
      * @return True if the stream starts with, otherwise false.
      * @throws ScannerError Scanning problem.
      */
-    public boolean startsWith(String s) throws ScannerError {
+    private boolean startsWith(String s) throws ScannerError {
         if (s.length() == 1) {
             return (ch == s.charAt(0));
         } else if (s.length() == 2) {
@@ -776,7 +767,7 @@ public final class ScannerToken {
      * @param s The string.
      * @throws ScannerError Scanning problem.
      */
-    public void consumeStr(String s) throws ScannerError {
+    private void consumeStr(String s) throws ScannerError {
         if (s.length() == 1) {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -796,7 +787,7 @@ public final class ScannerToken {
      * @param s The string.
      * @throws ScannerError Scanning problem.
      */
-    public void skipStr(String s) throws ScannerError {
+    private void skipStr(String s) throws ScannerError {
         if (s.length() == 1) {
             ch = getCode();
         } else if (s.length() == 2) {
