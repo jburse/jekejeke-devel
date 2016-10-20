@@ -233,10 +233,10 @@ public final class ForeignLocale {
      * <p>Retrieve the message pattern.</p>
      * <p>An message pattern is stored in the properties file as follows:</p>
      * <pre>
-     *        pattern.functor.arity=<pattern>
+     *        pattern.functor.length=<pattern>
      * </pre>
      * <p>A pattern has the following syntax, whereby the number of
-     * argument type specifiers must match the arity:</p>
+     * argument type specifiers must match the length:</p>
      * <pre>
      *        pattern :== { 'parasq'
      *                    | 'paraq'
@@ -285,7 +285,7 @@ public final class ForeignLocale {
             }
         }
         if (pat.size() != arity)
-            throw new IllegalArgumentException("arity mismatch");
+            throw new IllegalArgumentException("length mismatch");
         return pat;
     }
 

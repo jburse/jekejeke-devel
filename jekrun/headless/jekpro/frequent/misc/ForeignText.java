@@ -1,7 +1,10 @@
 package jekpro.frequent.misc;
 
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.misc.CodeType;
+import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.TermCompound;
+import matula.util.data.ListArray;
+import matula.util.regex.CodeType;
 
 /**
  * Provides the methods for the module text.
@@ -62,6 +65,46 @@ public final class ForeignText {
      */
     public static int sysCodeType(CodeType ct, int cp) {
         return ct.classOf(cp);
+    }
+
+    /**
+     * <p>Tokenize an atom.</p>
+     *
+     * @param ct  The classifier.
+     * @param str The atom.
+     * @return The list of atoms.
+     */
+    public static Object sysTokenizeAtom(CodeType ct, String str) {
+        ListArray<String> list = null;
+        int n = str.length();
+        int pos = 0;
+        int last = -1;
+        while (pos < n) {
+            int ch = str.codePointAt(pos);
+            if (ct.wordBreak2(last, ch)) {
+                StringBuilder buf = new StringBuilder();
+                buf.appendCodePoint(ch);
+                pos += Character.charCount(ch);
+                last = ch;
+                while (pos < n && !ct.wordBreak1(last, ch = str.codePointAt(pos))) {
+                    buf.appendCodePoint(ch);
+                    pos += Character.charCount(ch);
+                    last = ch;
+                }
+                if (list == null)
+                    list = new ListArray<String>();
+                list.add(buf.toString());
+            } else {
+                pos += Character.charCount(ch);
+                last = ch;
+            }
+        }
+        Object res = Knowledgebase.OP_NIL;
+        if (list != null) {
+            for (int i = list.size - 1; i >= 0; i--)
+                res = new TermCompound(Knowledgebase.OP_CONS, list.get(i), res);
+        }
+        return res;
     }
 
 }

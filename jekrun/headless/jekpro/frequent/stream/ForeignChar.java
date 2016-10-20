@@ -79,40 +79,6 @@ public final class ForeignChar {
     }
 
     /**
-     * <p>Read a character from a text stream.</p>
-     *
-     * @param para The stream.
-     * @return The read character or end_of_file.
-     * @throws IOException IO error.
-     */
-    public static String sysGetChar(Reader para)
-            throws IOException {
-        String val;
-        int ch = para.read();
-        if (Character.isHighSurrogate((char) ch)) {
-            para.mark(1);
-            int ch2;
-            try {
-                ch2 = para.read();
-            } catch (IOException x) {
-                para.reset();
-                throw x;
-            }
-            para.reset();
-            if (Character.isLowSurrogate((char) ch2)) {
-                ch = Character.toCodePoint((char) ch, (char) ch2);
-                para.read();
-            }
-        }
-        if (ch == -1) {
-            val = "end_of_file";
-        } else {
-            val = new String(Character.toChars(ch));
-        }
-        return val;
-    }
-
-    /**
      * <p>Get a code from a text stream.</p>
      *
      * @param para The stream.
@@ -120,7 +86,7 @@ public final class ForeignChar {
      * @throws IOException IO error.
      */
     public static int sysGetCode(Reader para)
-            throws InterpreterMessage, IOException {
+            throws IOException {
         int ch = para.read();
         if (Character.isHighSurrogate((char) ch)) {
             para.mark(1);
@@ -141,28 +107,15 @@ public final class ForeignChar {
     }
 
     /**
-     * <p>Peek a character from a text stream.</p>
+     * <p>Read a character from a text stream.</p>
      *
      * @param para The stream.
-     * @return The peeked character or end_of_file.
-     * @throws InterpreterMessage Validation error..
+     * @return The read character or end_of_file.
+     * @throws IOException IO error.
      */
-    public static String sysPeekChar(Reader para)
-            throws InterpreterMessage, IOException {
-        para.mark(2);
-        int ch;
-        try {
-            ch = para.read();
-            if (Character.isHighSurrogate((char) ch)) {
-                int ch2 = para.read();
-                if (Character.isLowSurrogate((char) ch2))
-                    ch = Character.toCodePoint((char) ch, (char) ch2);
-            }
-        } catch (IOException x) {
-            para.reset();
-            throw x;
-        }
-        para.reset();
+    public static String sysGetChar(Reader para)
+            throws IOException {
+        int ch = sysGetCode(para);
         String val;
         if (ch == -1) {
             val = "end_of_file";
@@ -177,10 +130,10 @@ public final class ForeignChar {
      *
      * @param para The stream.
      * @return The peeked code or -1.
-     * @throws InterpreterMessage Validation error..
+     * @throws IOException IO error.
      */
     public static int sysPeekCode(Reader para)
-            throws InterpreterMessage, IOException {
+            throws IOException {
         para.mark(2);
         int ch;
         try {
@@ -196,6 +149,26 @@ public final class ForeignChar {
         }
         para.reset();
         return ch;
+    }
+
+
+    /**
+     * <p>Peek a character from a text stream.</p>
+     *
+     * @param para The stream.
+     * @return The peeked character or end_of_file.
+     * @throws IOException IO error.
+     */
+    public static String sysPeekChar(Reader para)
+            throws IOException {
+        int ch = sysPeekCode(para);
+        String val;
+        if (ch == -1) {
+            val = "end_of_file";
+        } else {
+            val = new String(Character.toChars(ch));
+        }
+        return val;
     }
 
 }
