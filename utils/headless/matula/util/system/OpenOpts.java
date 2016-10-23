@@ -1,7 +1,6 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
-import matula.util.text.ScannerReader;
 
 import java.io.*;
 import java.net.*;
@@ -684,8 +683,6 @@ public final class OpenOpts {
     public static void setLineNumber(Object o, int l) {
         if (o instanceof ConnectionReader) {
             ((ConnectionReader) o).setLineNumber(l);
-        } else if (o instanceof ScannerReader) {
-            ((ScannerReader) o).setLineNumber(l);
         }
     }
 
@@ -698,8 +695,6 @@ public final class OpenOpts {
     public static int getLineNumber(Object o) {
         if (o instanceof ConnectionReader)
             return ((ConnectionReader) o).getLineNumber();
-        if (o instanceof ScannerReader)
-            return ((ScannerReader)o).getLineNumber();
         return 0;
     }
 
@@ -712,8 +707,6 @@ public final class OpenOpts {
     public static int getOffset(Object o) {
         if (o instanceof ConnectionReader)
             return ((ConnectionReader) o).getOffset();
-        if (o instanceof ScannerReader)
-            return ((ScannerReader)o).getOffset();
         return 0;
     }
 
@@ -726,8 +719,6 @@ public final class OpenOpts {
     public static String getLine(Object o) {
         if (o instanceof ConnectionReader)
             return ((ConnectionReader) o).getLine();
-        if (o instanceof ScannerReader)
-            return ((ScannerReader)o).getLine();
         return null;
     }
 

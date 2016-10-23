@@ -24,6 +24,8 @@ import java.util.Properties;
  *    name    --> alfa { alfanum }.
  *    relator --> graphic { graphic }.
  * </pre>
+ * <p>Warning: The pre-allocated string buffer keeps using an
+ * internal buffer of size >max of the encountered tokens.</p>
  * <p>For graphic and solo see CodeType.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -48,7 +50,6 @@ import java.util.Properties;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-
 public final class ScannerToken {
     /* code in scanner error */
     public static final String OP_SYNTAX_ERROR = "syntax_error";
@@ -173,7 +174,12 @@ public final class ScannerToken {
      * @return The current token offset.
      */
     public int getTokenOffset() {
-        return OpenOpts.getOffset(reader) - 1 - token.length();
+        int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 1);
+        int ch2;
+        if (token.length() > 0 &&
+                delemiter.getQuotes().indexOf(ch2 = token.codePointAt(0)) != -1)
+            k += Character.charCount(ch2);
+        return OpenOpts.getOffset(reader) - k - token.length();
     }
 
     /**
@@ -244,13 +250,14 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextChar() throws ScannerError {
+    private void nextChar() throws ScannerError, IOException {
         if (ch == Linespro.LINE_BACKSLASH) {
             buf.appendCodePoint(ch);
             ch = getCode();
-            if (ch != -1) {
-                if (Character.digit(ch, 8) != -1 || ch == 'x') {
-                    while (ch != -1 && delemiter.isAlfanum(ch)) {
+            if (ch != CodeType.LINE_EOF) {
+                if (Character.digit(ch, 8) != -1
+                        || ch == 'x') {
+                    while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
@@ -278,11 +285,11 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextString() throws ScannerError {
+    private void nextString() throws ScannerError, IOException {
         int quote = ch;
         buf.appendCodePoint(ch);
         ch = getCode();
-        while (ch != -1) {
+        while (ch != CodeType.LINE_EOF) {
             if (ch == quote) {
                 ch = getCode();
                 if (ch == quote) {
@@ -301,12 +308,13 @@ public final class ScannerToken {
                 nextChar();
             }
         }
+        token = buf.toString();
         if (quote == '\'') {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader) - 1);
         } else if (quote == '`') {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader) - 1);
         } else {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader));
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader) - 1);
         }
     }
 
@@ -337,7 +345,7 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextNumber() throws ScannerError {
+    private void nextNumber() throws ScannerError, IOException {
         if (ch == '0') {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -353,9 +361,9 @@ public final class ScannerToken {
                 }
                 buf.appendCodePoint(ch);
                 ch = getCode();
-                while (ch != -1) {
-                    int val = Character.digit(ch, radix);
-                    if (val != -1 || delemiter.isUnderscore(ch)) {
+                while (ch != CodeType.LINE_EOF) {
+                    if (Character.digit(ch, radix) != -1 ||
+                            delemiter.isUnderscore(ch)) {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     } else {
@@ -375,10 +383,11 @@ public final class ScannerToken {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
-                } else if (ch != -1) {
+                } else if (ch != CodeType.LINE_EOF) {
                     nextChar();
                 } else {
-                    throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader));
+                    token = buf.toString();
+                    throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader) - 1);
                 }
                 token = buf.toString();
                 return;
@@ -386,7 +395,7 @@ public final class ScannerToken {
                 buf.appendCodePoint(ch);
                 ch = getCode();
                 /* mantiassa */
-                while (ch != -1 && isDigitOrUnderscore(ch)) {
+                while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                     buf.appendCodePoint(ch);
                     ch = getCode();
                 }
@@ -396,7 +405,7 @@ public final class ScannerToken {
                     ch = getCode();
                     buf.appendCodePoint(ch);
                     ch = getCode();
-                    while (ch != -1 && isDigitOrUnderscore(ch)) {
+                    while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
@@ -407,7 +416,7 @@ public final class ScannerToken {
             }
         }
         /* mantiassa */
-        while (ch != -1 && isDigitOrUnderscore(ch)) {
+        while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
             buf.appendCodePoint(ch);
             ch = getCode();
         }
@@ -417,7 +426,7 @@ public final class ScannerToken {
             ch = getCode();
             buf.appendCodePoint(ch);
             ch = getCode();
-            while (ch != -1 && isDigitOrUnderscore(ch)) {
+            while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
@@ -431,13 +440,13 @@ public final class ScannerToken {
      * <p>Parse an exponent.</p>
      * <p>The following exponent syntax is supported:</p>
      * <pre>
-     *    exponent --> ( "e" | "E" ) ( "-" | "+" | digit ) { digit | underscore }.
+     *    exponent --> ( "e" | "E" ) ( "-" | "+" ) digit { digit | underscore }.
      * </pre>
      * <p>For underscore and digit see class CodeType.</p>
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextExponent() throws ScannerError {
+    private void nextExponent() throws ScannerError, IOException {
         if ((ch == SCAN_EXPLOW || ch == SCAN_EXPCAP) &&
                 (Character.isDigit(peekCode()) ||
                         peekCode() == SCAN_NEG ||
@@ -454,7 +463,7 @@ public final class ScannerToken {
             if (Character.isDigit(ch)) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
-                while (ch != -1 && isDigitOrUnderscore(ch)) {
+                while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                     buf.appendCodePoint(ch);
                     ch = getCode();
                 }
@@ -487,28 +496,26 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextLineComment() throws ScannerError {
+    private void nextLineComment() throws ScannerError, IOException {
         if ((flags & MASK_RTRN_LINE) != 0) {
             String lc = remark.getLineComment();
             consumeStr(lc);
-            while (ch != -1 && ch != CodeType.LINE_EOL) {
+            while (ch != CodeType.LINE_EOF && ch != CodeType.LINE_EOL) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
-            if (ch != 1) {
-                buf.appendCodePoint(CodeType.LINE_EOL);
+            if (ch != CodeType.LINE_EOF) {
+                buf.appendCodePoint(ch);
                 ch = getCode();
             }
             token = buf.toString();
         } else {
             String lc = remark.getLineComment();
             skipStr(lc);
-            while (ch != -1 && ch != CodeType.LINE_EOL) {
+            while (ch != CodeType.LINE_EOF && ch != CodeType.LINE_EOL)
                 ch = getCode();
-            }
-            if (ch != 1) {
+            if (ch != CodeType.LINE_EOF)
                 ch = getCode();
-            }
         }
     }
 
@@ -521,11 +528,11 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextBlockComment() throws ScannerError {
+    private void nextBlockComment() throws ScannerError, IOException {
         if ((flags & MASK_RTRN_BLCK) != 0) {
             String bc = remark.getBlockCommentStart();
             consumeStr(bc);
-            while (ch != -1) {
+            while (ch != CodeType.LINE_EOF) {
                 bc = remark.getBlockCommentEnd();
                 if (bc != null && startsWith(bc)) {
                     consumeStr(bc);
@@ -538,7 +545,7 @@ public final class ScannerToken {
         } else {
             String lc = remark.getBlockCommentStart();
             skipStr(lc);
-            while (ch != -1) {
+            while (ch != CodeType.LINE_EOF) {
                 lc = remark.getBlockCommentEnd();
                 if (lc != null && startsWith(lc)) {
                     skipStr(lc);
@@ -547,7 +554,8 @@ public final class ScannerToken {
                 ch = getCode();
             }
         }
-        throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT, OpenOpts.getOffset(reader));
+        token = buf.toString();
+        throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT, OpenOpts.getOffset(reader) - 1);
     }
 
     /**
@@ -562,18 +570,20 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    private void nextFiller() throws ScannerError {
+    private void nextFiller() throws ScannerError, IOException {
         if ((flags & MASK_RTRN_LAYT) != 0) {
             buf.appendCodePoint(ch);
             ch = getCode();
-            while (ch != -1 && delemiter.isLayout(ch)) {
+            while (ch != CodeType.LINE_EOF &&
+                    delemiter.isLayout(ch)) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
             token = buf.toString();
         } else {
             ch = getCode();
-            while (ch != -1 && delemiter.isLayout(ch)) {
+            while (ch != CodeType.LINE_EOF &&
+                    delemiter.isLayout(ch)) {
                 ch = getCode();
             }
         }
@@ -588,7 +598,7 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    public void firstToken() throws ScannerError {
+    public void firstToken() throws ScannerError, IOException {
         ch = getCode();
         nextToken();
     }
@@ -598,9 +608,9 @@ public final class ScannerToken {
      *
      * @throws ScannerError Scanning problem.
      */
-    public void nextToken() throws ScannerError {
+    public void nextToken() throws ScannerError, IOException {
         buf.setLength(0);
-        while (ch != -1) {
+        while (ch != CodeType.LINE_EOF) {
             switch (delemiter.classOf(ch)) {
                 case CodeType.SUB_CLASS_WHITESPACE:
                 case CodeType.SUB_CLASS_CONTROL:
@@ -624,30 +634,23 @@ public final class ScannerToken {
                     buf.appendCodePoint(ch);
                     ch = getCode();
                     token = buf.toString();
-                    break;
+                    return;
                 case CodeType.SUB_CLASS_UNDERSCORE:
                 case CodeType.SUB_CLASS_LOWER:
                 case CodeType.SUB_CLASS_UPPER:
                 case CodeType.SUB_CLASS_OTHER:
                     buf.appendCodePoint(ch);
                     ch = getCode();
-                    while (ch != -1 && delemiter.isAlfanum(ch)) {
+                    while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
                     token = buf.toString();
-                    break;
+                    return;
                 case CodeType.SUB_CLASS_DIGIT:
                     nextNumber();
                     return;
                 case CodeType.SUB_CLASS_GRAPHIC:
-                    lc = remark.getBlockCommentStart();
-                    if (lc != null && startsWith(lc)) {
-                        nextBlockComment();
-                        if ((flags & MASK_RTRN_BLCK) != 0)
-                            return;
-                        continue;
-                    }
                     lc = remark.getLineComment();
                     if (lc != null && startsWith(lc)) {
                         nextLineComment();
@@ -655,27 +658,134 @@ public final class ScannerToken {
                             return;
                         continue;
                     }
+                    lc = remark.getBlockCommentStart();
+                    if (lc != null && startsWith(lc)) {
+                        nextBlockComment();
+                        if ((flags & MASK_RTRN_BLCK) != 0)
+                            return;
+                        continue;
+                    }
                     buf.appendCodePoint(ch);
                     ch = getCode();
-                    while (ch != -1 && delemiter.isGraphic(ch)) {
+                    while (ch != CodeType.LINE_EOF && delemiter.isGraphic(ch)) {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
                     token = buf.toString();
-                    break;
+                    return;
+                default:
+                    throw new IllegalArgumentException("illegal subclass");
             }
-            return;
         }
         token = buf.toString();
     }
 
     /**
-     * <p>Retriev the look ahread character.</p>
+     * <p>Retriev the look ahead character.</p>
      *
      * @return The look ahead code point.
      */
     public int lookAhead() {
         return ch;
+    }
+
+    /**************************************************************/
+    /* Terminal Point                                             */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether we are at second of a terminal point.</p>
+     *
+     * @return True if we are at second of a terminal point, otherwise false.
+     * @throws ScannerError Scanning problem.
+     */
+    public boolean isTerminalSuffix() throws ScannerError, IOException {
+        if (ch == CodeType.LINE_EOF)
+            return true;
+        if (delemiter.isLayout(ch))
+            return true;
+        String lc = remark.getLineComment();
+        if (lc != null && startsWith(lc))
+            return true;
+        return false;
+    }
+
+    /**
+     * <p>Read the spaces.</p>
+     * <p>The following spaces syntax is supported.</p>
+     * <pre>
+     *     spaces --> space { space }.
+     *     space  --> ~eol whitespace
+     *              | control.
+     * </pre>
+     * <p>For whitespace and control see class CodeType.</p>
+     *
+     * @throws ScannerError Scanning problem.
+     */
+    private void nextSpaces() throws ScannerError, IOException {
+        if ((flags & MASK_RTRN_LAYT) != 0) {
+            buf.appendCodePoint(ch);
+            ch = getCode();
+            while (ch != CodeType.LINE_EOF &&
+                    ch != CodeType.LINE_EOL &&
+                    delemiter.isLayout(ch)) {
+                buf.appendCodePoint(ch);
+                ch = getCode();
+            }
+            token = buf.toString();
+        } else {
+            ch = getCode();
+            while (ch != CodeType.LINE_EOF &&
+                    ch != CodeType.LINE_EOL &&
+                    delemiter.isLayout(ch)) {
+                ch = getCode();
+            }
+        }
+    }
+
+    /**
+     * <p>Advance to next terminal suffix.</p>
+     *
+     * @throws ScannerError Scanning problem.
+     */
+    public void nextTerminalSuffix() throws ScannerError, IOException {
+        buf.setLength(0);
+        while (ch != CodeType.LINE_EOF) {
+            switch (delemiter.classOf(ch)) {
+                case CodeType.SUB_CLASS_WHITESPACE:
+                case CodeType.SUB_CLASS_CONTROL:
+                    if (ch != CodeType.LINE_EOL) {
+                        nextSpaces();
+                        if ((flags & MASK_RTRN_LAYT) != 0)
+                            return;
+                        continue;
+                    }
+                    token = buf.toString();
+                    return;
+                case CodeType.SUB_CLASS_INVALID:
+                case CodeType.SUB_CLASS_SOLO:
+                    String lc = remark.getLineComment();
+                    if (lc != null && startsWith(lc)) {
+                        nextLineComment();
+                        if ((flags & MASK_RTRN_LINE) != 0)
+                            return;
+                        continue;
+                    }
+                    token = buf.toString();
+                    return;
+                case CodeType.SUB_CLASS_UNDERSCORE:
+                case CodeType.SUB_CLASS_LOWER:
+                case CodeType.SUB_CLASS_UPPER:
+                case CodeType.SUB_CLASS_OTHER:
+                case CodeType.SUB_CLASS_DIGIT:
+                case CodeType.SUB_CLASS_GRAPHIC:
+                    token = buf.toString();
+                    return;
+                default:
+                    throw new IllegalArgumentException("illegal subclass");
+            }
+        }
+        token = buf.toString();
     }
 
     /*************************************************************/
@@ -688,28 +798,24 @@ public final class ScannerToken {
      * @return The read code point or -1.
      * @throws ScannerError Scanning problem.
      */
-    private int getCode() throws ScannerError {
-        try {
-            int ch = reader.read();
-            if (Character.isHighSurrogate((char) ch)) {
-                reader.mark(1);
-                int ch2;
-                try {
-                    ch2 = reader.read();
-                } catch (IOException x) {
-                    reader.reset();
-                    throw x;
-                }
+    private int getCode() throws ScannerError, IOException {
+        int ch = reader.read();
+        if (Character.isHighSurrogate((char) ch)) {
+            reader.mark(1);
+            int ch2;
+            try {
+                ch2 = reader.read();
+            } catch (IOException x) {
                 reader.reset();
-                if (Character.isLowSurrogate((char) ch2)) {
-                    ch = Character.toCodePoint((char) ch, (char) ch2);
-                    reader.read();
-                }
+                throw x;
             }
-            return ch;
-        } catch (IOException x) {
-            throw new ScannerError(x.getMessage(), OpenOpts.getOffset(reader));
+            reader.reset();
+            if (Character.isLowSurrogate((char) ch2)) {
+                ch = Character.toCodePoint((char) ch, (char) ch2);
+                reader.read();
+            }
         }
+        return ch;
     }
 
     /**
@@ -718,26 +824,32 @@ public final class ScannerToken {
      * @return The peeked code point or -1.
      * @throws ScannerError Scanning problem.
      */
-    private int peekCode() throws ScannerError {
+    private int peekCode() throws ScannerError, IOException {
+        reader.mark(2);
+        int ch;
         try {
-            reader.mark(2);
-            int ch;
-            try {
-                ch = reader.read();
-                if (Character.isHighSurrogate((char) ch)) {
-                    int ch2 = reader.read();
-                    if (Character.isLowSurrogate((char) ch2))
-                        ch = Character.toCodePoint((char) ch, (char) ch2);
-                }
-            } catch (IOException x) {
-                reader.reset();
-                throw x;
+            ch = reader.read();
+            if (Character.isHighSurrogate((char) ch)) {
+                int ch2 = reader.read();
+                if (Character.isLowSurrogate((char) ch2))
+                    ch = Character.toCodePoint((char) ch, (char) ch2);
             }
-            reader.reset();
-            return ch;
         } catch (IOException x) {
-            throw new ScannerError(x.getMessage(), OpenOpts.getOffset(reader));
+            reader.reset();
+            throw x;
         }
+        reader.reset();
+        return ch;
+    }
+
+    /**
+     * <p>Push back the lock ahead character.</p>
+     *
+     * @throws IOException Scanning problem.
+     */
+    public void pushBack() throws IOException {
+        int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 1);
+        reader.skip(-k);
     }
 
     /**********************************************************/
@@ -751,7 +863,7 @@ public final class ScannerToken {
      * @return True if the stream starts with, otherwise false.
      * @throws ScannerError Scanning problem.
      */
-    private boolean startsWith(String s) throws ScannerError {
+    private boolean startsWith(String s) throws ScannerError, IOException {
         if (s.length() == 1) {
             return (ch == s.charAt(0));
         } else if (s.length() == 2) {
@@ -767,7 +879,7 @@ public final class ScannerToken {
      * @param s The string.
      * @throws ScannerError Scanning problem.
      */
-    private void consumeStr(String s) throws ScannerError {
+    private void consumeStr(String s) throws ScannerError, IOException {
         if (s.length() == 1) {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -787,7 +899,7 @@ public final class ScannerToken {
      * @param s The string.
      * @throws ScannerError Scanning problem.
      */
-    private void skipStr(String s) throws ScannerError {
+    private void skipStr(String s) throws ScannerError, IOException {
         if (s.length() == 1) {
             ch = getCode();
         } else if (s.length() == 2) {

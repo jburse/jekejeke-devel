@@ -25,7 +25,6 @@ package matula.util.regex;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-
 public final class ScannerError extends Exception {
     private String id;
     private int pos;
@@ -108,6 +107,8 @@ public final class ScannerError extends Exception {
 
     /**
      * <p>Generate a line position.</p>
+     * <p>We use two spaces for surrogate pairs which matches the font
+     * width of ideographic characters.</p>
      *
      * @param s The line.
      * @param p The position.
@@ -115,11 +116,20 @@ public final class ScannerError extends Exception {
      */
     public static String linePosition(String s, int p) {
         StringBuilder buf = new StringBuilder();
+        int n;
         if (s != null) {
             buf.append(s);
-            if (!s.endsWith("\n"))
-                buf.append('\n');
+            if (s.length() != 0 &&
+                    s.charAt(s.length() - 1) == CodeType.LINE_EOL) {
+                n = s.length() - 1;
+            } else {
+                buf.append(CodeType.LINE_EOL);
+                n = s.length();
+            }
+        } else {
+            n = 0;
         }
+        p = Math.min(p, n);
         while (p > 0) {
             buf.append(' ');
             p--;

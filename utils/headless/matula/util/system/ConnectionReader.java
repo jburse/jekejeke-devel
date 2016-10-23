@@ -1,5 +1,7 @@
 package matula.util.system;
 
+import matula.util.regex.CodeType;
+
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -9,6 +11,9 @@ import java.io.Reader;
  * <p>Refinement of the filter reader.</p>
  * <p>Allows the inspection of a couple of data.</p>
  * <p>Also provides line termination sequence compression.</p>
+ * <p>Further provides current line and offset inspection.</p>
+ * <p>Warning: The pre-allocated string buffer keeps using an
+ * internal buffer of size >max of the encountered lines.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -49,6 +54,7 @@ public final class ConnectionReader extends FilterReader {
     private int mark = -1;
     private int lineno;
     private boolean skiplf;
+    private StringBuilder buf = new StringBuilder();
 
     /**
      * <p>Create a connection reader from a reader.</p>
@@ -266,9 +272,9 @@ public final class ConnectionReader extends FilterReader {
      * @throws IOException IO error.
      */
     public int read() throws IOException {
-        if (line != null && offset >= line.length())
+        if (offset == line.length())
             nextLine();
-        if (line == null)
+        if (offset == line.length() + 1)
             return -1;
         int ch = line.charAt(offset);
         offset++;
@@ -287,9 +293,9 @@ public final class ConnectionReader extends FilterReader {
      * @throws IOException IO error.
      */
     public int read(char[] cbuf, int off, int len) throws IOException {
-        if (line != null && offset >= line.length())
+        if (offset == line.length())
             nextLine();
-        if (line == null)
+        if (offset == line.length() + 1)
             return -1;
         int k = Math.min(line.length() - offset, len);
         line.getChars(offset, offset + k, cbuf, off);
@@ -303,22 +309,27 @@ public final class ConnectionReader extends FilterReader {
      *
      * @param len The number of characters to skip
      * @return The number of characters actually skipped
-     * @throws IOException              If an I/O error occurs
-     * @throws IllegalArgumentException If <tt>n</tt> is negative
+     * @throws IOException If an I/O error occurs
      */
     public long skip(long len) throws IOException {
-        long done = 0;
-        while (len > 0) {
-            if (line != null && offset >= line.length())
-                nextLine();
-            if (line == null)
-                return done;
-            long k = Math.min(line.length() - offset, len);
+        if (len < 0) {
+            long k = Math.max(-offset, len);
             offset += k;
-            done += k;
-            len -= k;
+            return k;
+        } else {
+            long done = 0;
+            while (len > 0) {
+                if (offset == line.length())
+                    nextLine();
+                if (offset == line.length() + 1)
+                    return done;
+                long k = Math.min(line.length() - offset, len);
+                offset += k;
+                len -= k;
+                done += k;
+            }
+            return done;
         }
-        return done;
     }
 
     /**
@@ -327,7 +338,7 @@ public final class ConnectionReader extends FilterReader {
      * @return True if the stream is ready, otherwise false,
      */
     public boolean ready() throws IOException {
-        if (line != null && offset >= line.length())
+        if (offset == line.length())
             return in.ready();
         return true;
     }
@@ -384,25 +395,28 @@ public final class ConnectionReader extends FilterReader {
      */
     private void nextLine()
             throws IOException {
-        if (line.endsWith("\n"))
+        if (line.length() != 0 &&
+                line.charAt(line.length() - 1) == CodeType.LINE_EOL)
             lineno++;
-        StringBuilder buf = new StringBuilder();
+        buf.setLength(0);
         int ch = in.read();
-        if (skiplf && ch == '\n')
+        if (skiplf && ch == CodeType.LINE_EOL)
             ch = in.read();
-        while (ch != '\n' && ch != '\r' && ch != -1) {
+        while (ch != CodeType.LINE_EOL &&
+                ch != CodeType.LINE_WIN &&
+                ch != CodeType.LINE_EOF) {
             buf.append((char) ch);
             ch = in.read();
         }
-        if (ch == -1 && buf.length() == 0) {
-            line = null;
+        if (ch != -1)
+            buf.append(CodeType.LINE_EOL);
+        if (buf.length() == 0) {
+            offset = line.length() + 1;
         } else {
-            if (ch != -1)
-                buf.append('\n');
-            skiplf = (ch == '\r');
+            skiplf = (ch == CodeType.LINE_WIN);
             line = buf.toString();
+            offset = 0;
         }
-        offset = 0;
     }
 
 }

@@ -50,12 +50,14 @@ import matula.util.text.Linespro;
  */
 public final class CodeType {
     public static final CodeType ISO_CODETYPE = new CodeType();
-    public static final CodeType ISO_PAT_CODETYPE = new CodeType(true);
+    public static final CodeType ISO_PAT_CODETYPE = new CodeType();
 
     public static final String OP_SYNTAX_ILLEGAL_UNDERSCORE = "illegal_underscore";
+    public static final String OP_SYNTAX_DOUBLING_MISSING = "doubling_missing";
 
     public static final int LINE_EOF = -1;
     public static final char LINE_EOL = '\n';
+    public static final char LINE_WIN = '\r';
 
     public static final int SUB_CLASS_WHITESPACE = 0;
     public static final int SUB_CLASS_CONTROL = 1;
@@ -83,25 +85,23 @@ public final class CodeType {
         ISO_CODETYPE.setQuotes("\'\"`");
         ISO_CODETYPE.setInvalids("\uFFFD");
         ISO_CODETYPE.setJoiners("");
+
+        ISO_PAT_CODETYPE.setHints("\u200C\u200D");
+        ISO_PAT_CODETYPE.setDelemiters(",;!|%");
+        ISO_PAT_CODETYPE.setQuotes("\'\"`");
+        ISO_PAT_CODETYPE.setInvalids("\uFFFD");
+        ISO_PAT_CODETYPE.setJoiners("");
+        patternDelemiter(ISO_PAT_CODETYPE);
     }
 
     /**
-     * <p>Create a delemiter.</p>
-     */
-    public CodeType() {
-        /* do nothing */
-    }
-
-    /**
-     * <p>Create a delemiter.</p>
+     * <p>Modifiy a delemiter to a pattern delemiter.</p>
      *
-     * @param pat True if pattern delemiter, otherwise false.
+     * @param ct The delemiter.
      */
-    public CodeType(boolean pat) {
-        if (pat) {
-            setDelemiters(remove(getDelemiters(), "*?<~>^"));
-            setJoiners(add(getJoiners(), "*?<~>^"));
-        }
+    public static void patternDelemiter(CodeType ct) {
+        ct.setDelemiters(remove(ct.getDelemiters(), "*?<~>^"));
+        ct.setJoiners(add(ct.getJoiners(), "*?<~>^"));
     }
 
     /**
@@ -414,8 +414,8 @@ public final class CodeType {
      * @return True if the position is the beginning of a word break, otherwise false.
      */
     public boolean wordBreak1(int ch1, int ch2) {
-        return wordbreak1[ch1 == -1 ? CodeType.SUB_CLASS_INVALID : classOf(ch1)]
-                [ch2 == -1 ? CodeType.SUB_CLASS_INVALID : classOf(ch2)];
+        return wordbreak1[ch1 == LINE_EOF ? CodeType.SUB_CLASS_INVALID : classOf(ch1)]
+                [ch2 == LINE_EOF ? CodeType.SUB_CLASS_INVALID : classOf(ch2)];
     }
 
     /**
@@ -426,8 +426,8 @@ public final class CodeType {
      * @return True if the position is the beginning of a word break, otherwise false.
      */
     public boolean wordBreak2(int ch1, int ch2) {
-        return wordbreak2[ch1 == -1 ? CodeType.SUB_CLASS_INVALID : classOf(ch1)]
-                [ch2 == -1 ? CodeType.SUB_CLASS_INVALID : classOf(ch2)];
+        return wordbreak2[ch1 == LINE_EOF ? CodeType.SUB_CLASS_INVALID : classOf(ch1)]
+                [ch2 == LINE_EOF ? CodeType.SUB_CLASS_INVALID : classOf(ch2)];
     }
 
     /**
@@ -438,8 +438,8 @@ public final class CodeType {
      * @return true if the position is the beginning of a word break, otherwise false.
      */
     public boolean wordBreak1(int k, String t) {
-        return wordBreak1(k == 0 ? -1 : t.codePointBefore(k),
-                k == t.length() ? -1 : t.codePointAt(k));
+        return wordBreak1(k == 0 ? LINE_EOF : t.codePointBefore(k),
+                k == t.length() ? LINE_EOF : t.codePointAt(k));
     }
 
     /**
@@ -450,8 +450,8 @@ public final class CodeType {
      * @return true if the position is the end of a word break, otherwise false.
      */
     public boolean wordBreak2(int k, String t) {
-        return wordBreak2(k == 0 ? -1 : t.codePointBefore(k),
-                k == t.length() ? -1 : t.codePointAt(k));
+        return wordBreak2(k == 0 ? LINE_EOF : t.codePointBefore(k),
+                k == t.length() ? LINE_EOF : t.codePointAt(k));
     }
 
     /**
@@ -610,7 +610,7 @@ public final class CodeType {
                     i += Character.charCount(k);
                     buf.appendCodePoint(k);
                 } else {
-                    throw new ScannerError(Linespro.OP_SYNTAX_DOUBLING_MISSING, offset + i);
+                    throw new ScannerError(OP_SYNTAX_DOUBLING_MISSING, offset + i);
                 }
             } else if (k == Linespro.LINE_BACKSLASH) {
                 if (buf != null)

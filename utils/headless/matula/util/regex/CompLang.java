@@ -30,6 +30,11 @@ import matula.util.text.Linespro;
 public final class CompLang {
     public final static CompLang ISO_COMPLANG = new CompLang();
 
+    public static final String OP_SYNTAX_ILLEGAL_ESCAPE = "illegal_escape";
+    public static final String OP_SYNTAX_ILLEGAL_EOL = "illegal_eol";
+    public static final String OP_SYNTAX_ILLEGAL_LAYOUT = "illegal_layout";
+    public static final String OP_SYNTAX_ILLEGAL_UNICODE = "illegal_unicode";
+
     private String linecomment = "//";
     private String blockcommentstart = "/*";
     private String blockcommentend = "*/";
@@ -178,10 +183,10 @@ public final class CompLang {
                             buf.appendCodePoint('\u000C');
                             break;
                         case 'n':
-                            buf.appendCodePoint('\n');
+                            buf.appendCodePoint(CodeType.LINE_EOL);
                             break;
                         case 'r':
-                            buf.appendCodePoint('\r');
+                            buf.appendCodePoint(CodeType.LINE_WIN);
                             break;
                         case 't':
                             buf.appendCodePoint('\u0009');
@@ -199,19 +204,19 @@ public final class CompLang {
                                 try {
                                     val = Integer.parseInt(str.substring(i2, i), 16);
                                 } catch (NumberFormatException x) {
-                                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                    throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 }
                                 if (val < 0 || val > Character.MAX_CODE_POINT)
-                                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                    throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 buf.appendCodePoint(val);
                                 k = Linespro.LINE_BACKSLASH;
                             } else {
-                                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                             }
                             break;
-                        case '\n':
+                        case CodeType.LINE_EOL:
                             if (!cont)
-                                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_EOL, offset + i);
+                                throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, offset + i);
                             break;
                         case Linespro.LINE_SINGLE:
                         case '"':
@@ -229,29 +234,29 @@ public final class CompLang {
                                     try {
                                         val = Integer.parseInt(str.substring(i2, i), 8);
                                     } catch (NumberFormatException x) {
-                                        throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                        throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                     }
                                     if (val < 0 || val > Character.MAX_CODE_POINT)
-                                        throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                        throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                     buf.appendCodePoint(val);
                                     k = Linespro.LINE_BACKSLASH;
                                 } else {
-                                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                    throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 }
                                 break;
                             } else {
-                                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                             }
                     }
                 } else {
-                    throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                    throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                 }
-            } else if (k == '\n') {
-                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_EOL, offset + i);
+            } else if (k == CodeType.LINE_EOL) {
+                throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, offset + i);
             } else if (k != ' ' && d.isLayout(k)) {
-                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_LAYOUT, offset + i);
+                throw new ScannerError(OP_SYNTAX_ILLEGAL_LAYOUT, offset + i);
             } else if (!d.isValid(k)) {
-                throw new ScannerError(Linespro.OP_SYNTAX_ILLEGAL_UNICODE, offset + i);
+                throw new ScannerError(OP_SYNTAX_ILLEGAL_UNICODE, offset + i);
             } else {
                 if (buf != null)
                     buf.appendCodePoint(k);
@@ -292,10 +297,10 @@ public final class CompLang {
                     case '\u000C':
                         buf.appendCodePoint('f');
                         break;
-                    case '\n':
+                    case CodeType.LINE_EOL:
                         buf.appendCodePoint('n');
                         break;
-                    case '\r':
+                    case CodeType.LINE_WIN:
                         buf.appendCodePoint('r');
                         break;
                     case '\u0009':
