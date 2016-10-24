@@ -1,7 +1,5 @@
 package matula.util.regex;
 
-import matula.util.text.Linespro;
-
 /**
  * <p>Classify computer languages.</p>
  * Warranty & Liability
@@ -166,7 +164,7 @@ public final class CompLang {
                 offset++;
                 if (buf != null)
                     buf.appendCodePoint(k);
-            } else if (k == Linespro.LINE_BACKSLASH) {
+            } else if (k == CodeType.LINE_BACKSLASH) {
                 if (buf == null)
                     buf = new StringBuilder(str.substring(0, i));
                 i += Character.charCount(k);
@@ -199,7 +197,7 @@ public final class CompLang {
                             int i2 = i;
                             while (i < n && d.isAlfanum(k = str.codePointAt(i)))
                                 i += Character.charCount(k);
-                            if (i < n && str.codePointAt(i) == Linespro.LINE_BACKSLASH) {
+                            if (i < n && str.codePointAt(i) == CodeType.LINE_BACKSLASH) {
                                 int val;
                                 try {
                                     val = Integer.parseInt(str.substring(i2, i), 16);
@@ -209,7 +207,7 @@ public final class CompLang {
                                 if (val < 0 || val > Character.MAX_CODE_POINT)
                                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 buf.appendCodePoint(val);
-                                k = Linespro.LINE_BACKSLASH;
+                                k = CodeType.LINE_BACKSLASH;
                             } else {
                                 throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                             }
@@ -218,10 +216,10 @@ public final class CompLang {
                             if (!cont)
                                 throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, offset + i);
                             break;
-                        case Linespro.LINE_SINGLE:
+                        case CodeType.LINE_SINGLE:
                         case '"':
                         case '`':
-                        case Linespro.LINE_BACKSLASH:
+                        case CodeType.LINE_BACKSLASH:
                             buf.appendCodePoint(k);
                             break;
                         default:
@@ -229,7 +227,7 @@ public final class CompLang {
                                 i2 = i;
                                 while (i < n && d.isAlfanum(k = str.codePointAt(i)))
                                     i += Character.charCount(k);
-                                if (i < n && str.codePointAt(i) == Linespro.LINE_BACKSLASH) {
+                                if (i < n && str.codePointAt(i) == CodeType.LINE_BACKSLASH) {
                                     int val;
                                     try {
                                         val = Integer.parseInt(str.substring(i2, i), 8);
@@ -239,7 +237,7 @@ public final class CompLang {
                                     if (val < 0 || val > Character.MAX_CODE_POINT)
                                         throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                     buf.appendCodePoint(val);
-                                    k = Linespro.LINE_BACKSLASH;
+                                    k = CodeType.LINE_BACKSLASH;
                                 } else {
                                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 }
@@ -281,12 +279,12 @@ public final class CompLang {
         int n = str.length();
         for (int i = 0; i < n; i++) {
             int k = str.codePointAt(i);
-            if (k == Linespro.LINE_BACKSLASH
+            if (k == CodeType.LINE_BACKSLASH
                     || (k != ' ' && d.isLayout(k))
                     || !d.isValid(k)) {
                 if (buf == null)
                     buf = new StringBuilder(str.substring(0, i));
-                buf.appendCodePoint(Linespro.LINE_BACKSLASH);
+                buf.appendCodePoint(CodeType.LINE_BACKSLASH);
                 switch (k) {
                     case '\u0007':
                         buf.appendCodePoint('a');
@@ -309,10 +307,10 @@ public final class CompLang {
                     case '\u000B':
                         buf.appendCodePoint('v');
                         break;
-                    case Linespro.LINE_SINGLE:
+                    case CodeType.LINE_SINGLE:
                     case '\"':
                     case '`':
-                    case Linespro.LINE_BACKSLASH:
+                    case CodeType.LINE_BACKSLASH:
                         buf.appendCodePoint(k);
                         break;
                     default:
@@ -322,7 +320,7 @@ public final class CompLang {
                             buf.appendCodePoint('x');
                             buf.append(Integer.toHexString(k).toUpperCase());
                         }
-                        buf.appendCodePoint(Linespro.LINE_BACKSLASH);
+                        buf.appendCodePoint(CodeType.LINE_BACKSLASH);
                         break;
                 }
             } else {

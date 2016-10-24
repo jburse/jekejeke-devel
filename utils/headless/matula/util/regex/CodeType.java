@@ -1,7 +1,5 @@
 package matula.util.regex;
 
-import matula.util.text.Linespro;
-
 /**
  * <p>Classify code points.</p>
  * <p>The following character classifications are used:</p>
@@ -58,6 +56,9 @@ public final class CodeType {
     public static final int LINE_EOF = -1;
     public static final char LINE_EOL = '\n';
     public static final char LINE_WIN = '\r';
+    public static final char LINE_BACKSLASH = '\\';
+    public static final char LINE_SINGLE = '\'';
+    public static final char LINE_ZERO = '0';
 
     public static final int SUB_CLASS_WHITESPACE = 0;
     public static final int SUB_CLASS_CONTROL = 1;
@@ -612,7 +613,7 @@ public final class CodeType {
                 } else {
                     throw new ScannerError(OP_SYNTAX_DOUBLING_MISSING, offset + i);
                 }
-            } else if (k == Linespro.LINE_BACKSLASH) {
+            } else if (k == LINE_BACKSLASH) {
                 if (buf != null)
                     buf.appendCodePoint(k);
                 if (i + Character.charCount(k) < n) {
@@ -620,7 +621,7 @@ public final class CodeType {
                     k = str.codePointAt(i);
                     if (buf != null)
                         buf.appendCodePoint(k);
-                    if (Character.digit(k,8)!=-1 || k=='x') {
+                    if (Character.digit(k, 8) != -1 || k == 'x') {
                         int k2;
                         while (i + Character.charCount(k) < n &&
                                 isAlfanum(k2 = str.codePointAt(i + Character.charCount(k)))) {
@@ -630,9 +631,9 @@ public final class CodeType {
                                 buf.appendCodePoint(k);
                         }
                         if (i + Character.charCount(k) < n &&
-                                str.codePointAt(i + Character.charCount(k)) == Linespro.LINE_BACKSLASH) {
+                                str.codePointAt(i + Character.charCount(k)) == LINE_BACKSLASH) {
                             i += Character.charCount(k);
-                            k = Linespro.LINE_BACKSLASH;
+                            k = LINE_BACKSLASH;
                             if (buf != null)
                                 buf.appendCodePoint(k);
                         }
@@ -668,15 +669,15 @@ public final class CodeType {
                     buf = new StringBuilder(str.substring(0, i));
                 buf.appendCodePoint(quote);
                 buf.appendCodePoint(quote);
-            } else if (k == Linespro.LINE_BACKSLASH) {
+            } else if (k == LINE_BACKSLASH) {
                 if (buf != null)
-                    buf.appendCodePoint(Linespro.LINE_BACKSLASH);
+                    buf.appendCodePoint(LINE_BACKSLASH);
                 if (i + Character.charCount(k) < n) {
                     i += Character.charCount(k);
                     k = str.codePointAt(i);
                     if (buf != null)
                         buf.appendCodePoint(k);
-                    if (Character.digit(k,8)!=-1 || k=='x') {
+                    if (Character.digit(k, 8) != -1 || k == 'x') {
                         int k2;
                         while (i + Character.charCount(k) < n &&
                                 isAlfanum(k2 = str.codePointAt(i + Character.charCount(k)))) {
@@ -686,9 +687,9 @@ public final class CodeType {
                                 buf.appendCodePoint(k);
                         }
                         if (i + Character.charCount(k) < n &&
-                                str.codePointAt(i + Character.charCount(k)) == Linespro.LINE_BACKSLASH) {
+                                str.codePointAt(i + Character.charCount(k)) == LINE_BACKSLASH) {
                             i += Character.charCount(k);
-                            k = Linespro.LINE_BACKSLASH;
+                            k = LINE_BACKSLASH;
                             if (buf != null)
                                 buf.appendCodePoint(k);
                         }

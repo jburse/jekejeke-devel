@@ -2,7 +2,6 @@ package matula.util.regex;
 
 import matula.util.system.OpenOpts;
 import matula.util.text.LangProperties;
-import matula.util.text.Linespro;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -251,7 +250,7 @@ public final class ScannerToken {
      * @throws ScannerError Scanning problem.
      */
     private void nextChar() throws ScannerError, IOException {
-        if (ch == Linespro.LINE_BACKSLASH) {
+        if (ch == CodeType.LINE_BACKSLASH) {
             buf.appendCodePoint(ch);
             ch = getCode();
             if (ch != CodeType.LINE_EOF) {
@@ -261,7 +260,7 @@ public final class ScannerToken {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
-                    if (ch == Linespro.LINE_BACKSLASH) {
+                    if (ch == CodeType.LINE_BACKSLASH) {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
@@ -346,7 +345,7 @@ public final class ScannerToken {
      * @throws ScannerError Scanning problem.
      */
     private void nextNumber() throws ScannerError, IOException {
-        if (ch == '0') {
+        if (ch == CodeType.LINE_ZERO) {
             buf.appendCodePoint(ch);
             ch = getCode();
             if ((ch == PREFIX_OCTAL || ch == PREFIX_BINARY ||
@@ -373,12 +372,12 @@ public final class ScannerToken {
                 }
                 token = buf.toString();
                 return;
-            } else if (ch == Linespro.LINE_SINGLE) {
+            } else if (ch == CodeType.LINE_SINGLE) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
-                if (ch == Linespro.LINE_SINGLE) {
+                if (ch == CodeType.LINE_SINGLE) {
                     ch = getCode();
-                    if (ch == Linespro.LINE_SINGLE) {
+                    if (ch == CodeType.LINE_SINGLE) {
                         buf.appendCodePoint(ch);
                         buf.appendCodePoint(ch);
                         ch = getCode();
