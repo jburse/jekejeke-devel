@@ -28,19 +28,16 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CompilerSimple extends AbstractCompiler {
-    public static final CompilerSimple DEFAULT = new CompilerSimple();
 
     /**
      * <p>Parse a pattern.</p>
      *
      * @param st   The tokenizer.
      * @param expr The parse features to use.
-     * @param md   The match delemiter.
      * @return The pattern.
      * @throws ScannerError Shit happens.
      */
-    public AbstractSpecimen parseMatcher(ScannerToken st, int expr,
-                                         CodeType md)
+    public AbstractSpecimen parseMatcher(ScannerToken st, int expr)
             throws ScannerError, IOException {
         int flag = 0;
         if ((expr & EXPRESSION_EQUALS) != 0) {
@@ -61,7 +58,7 @@ public final class CompilerSimple extends AbstractCompiler {
         int pos;
         SpecimenSimple pm = new SpecimenSimple();
         pm.setPatDelemiter(st.getDelemiter());
-        pm.setMatchDelemiter(md);
+        pm.setMatchDelemiter(getMatchDelemiter());
         if ((expr & EXPRESSION_SINGLEQUOTE) != 0) {
             flag |= SpecimenSimple.MATCH_QUOTE;
             if (st.getToken().startsWith("'")) {
@@ -109,11 +106,6 @@ public final class CompilerSimple extends AbstractCompiler {
             throw x;
         }
         return pm;
-    }
-
-    public static void main(String[] args) throws ScannerError {
-        String pat = "foo*.bar";
-        AbstractSpecimen sp = DEFAULT.createSpecimen(pat);
     }
 
 }

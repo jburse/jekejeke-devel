@@ -31,33 +31,95 @@ import java.io.StringReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractCompiler {
-    public static final CodeType SHELL_CODETYPE = new CodeType();
-    public static final CodeType SHELL_PAT_CODETYPE = new CodeType();
-    public static final CompLang SHELL_COMPLANG = new CompLang();
+    public static final CodeType TEXT_CODETYPE = new CodeType();
+    public static final CodeType TEXT_PAT_CODETYPE = new CodeType();
+    public static final CompLang TEXT_COMPLANG = new CompLang();
+    public static final CompilerSimple TEXT_COMPILERSIMPLE = new CompilerSimple();
 
     public static final int EXPRESSION_SINGLEQUOTE = 0x00000001;
     public static final int EXPRESSION_EQUALS = 0x00000002;
 
     public static final String ERROR_SYNTAX_SUPERFLUOUS_TOKEN = "superfluous_token";
 
+    protected CodeType patdelemiter;
+    protected CompLang remark;
+    protected CodeType matchdelemiter;
+
     static {
-        SHELL_CODETYPE.setHints("\u200C\u200D");
-        SHELL_CODETYPE.setDelemiters("!");
-        SHELL_CODETYPE.setQuotes("\'\"`");
-        SHELL_CODETYPE.setInvalids("\uFFFD");
-        SHELL_CODETYPE.setJoiners(".$-");
+        TEXT_CODETYPE.setHints("\u200C\u200D");
+        TEXT_CODETYPE.setDelemiters("!");
+        TEXT_CODETYPE.setQuotes("\'\"`");
+        TEXT_CODETYPE.setInvalids("\uFFFD");
+        TEXT_CODETYPE.setJoiners(".$");
 
-        SHELL_PAT_CODETYPE.setHints("\u200C\u200D");
-        SHELL_PAT_CODETYPE.setDelemiters("!");
-        SHELL_PAT_CODETYPE.setQuotes("\'\"`");
-        SHELL_PAT_CODETYPE.setInvalids("\uFFFD");
-        SHELL_PAT_CODETYPE.setJoiners(".$-");
-        CodeType.patternDelemiter(SHELL_PAT_CODETYPE);
+        TEXT_PAT_CODETYPE.setHints("\u200C\u200D");
+        TEXT_PAT_CODETYPE.setDelemiters("!");
+        TEXT_PAT_CODETYPE.setQuotes("\'\"`");
+        TEXT_PAT_CODETYPE.setInvalids("\uFFFD");
+        TEXT_PAT_CODETYPE.setJoiners(".$");
+        CodeType.patternDelemiter(TEXT_PAT_CODETYPE);
 
-        SHELL_COMPLANG.setLineComment(null);
-        SHELL_COMPLANG.setBlockCommentStart(null);
-        SHELL_COMPLANG.setBlockCommentEnd(null);
-        SHELL_COMPLANG.setEnd(-1);
+        TEXT_COMPLANG.setLineComment(null);
+        TEXT_COMPLANG.setBlockCommentStart(null);
+        TEXT_COMPLANG.setBlockCommentEnd(null);
+        TEXT_COMPLANG.setEnd(-1);
+
+        TEXT_COMPILERSIMPLE.setPatDelemiter(TEXT_PAT_CODETYPE);
+        TEXT_COMPILERSIMPLE.setRemark(TEXT_COMPLANG);
+        TEXT_COMPILERSIMPLE.setMatchDelemiter(TEXT_CODETYPE);
+    }
+
+    /**
+     * <p>Set the pattern delemiter.</p>
+     *
+     * @param pd The pattrn delemiter.
+     */
+    public void setPatDelemiter(CodeType pd) {
+        patdelemiter = pd;
+    }
+
+    /**
+     * <p>Retrieve the pattern delemiter.</p>
+     *
+     * @return The pattern delemiter.
+     */
+    public CodeType getPatDelemiter() {
+        return patdelemiter;
+    }
+
+    /**
+     * <p>Retrieve the remark.</p>
+     *
+     * @return The remark.
+     */
+    public CompLang getRemark() {
+        return remark;
+    }
+
+    /**
+     * <p>Set the remark.</p>
+     *
+     * @param r The remark.
+     */
+    public void setRemark(CompLang r) {
+        remark = r;
+    }
+
+    /**
+     * <p>Set the match delemiter.</p>
+     * @param md The match delemiter.
+     */
+    public void setMatchDelemiter(CodeType md) {
+        matchdelemiter = md;
+    }
+
+    /**
+     * <p>Retrieve the match delemiter.</p>
+     *
+     * @return The match delemiter.
+     */
+    public CodeType getMatchDelemiter() {
+        return matchdelemiter;
     }
 
     /**
@@ -65,38 +127,32 @@ public abstract class AbstractCompiler {
      *
      * @param st   The scanner token.
      * @param expr The flags.
-     * @param md   The replace code type.
      * @return The pattern.
      * @throws ScannerError Scanner error.
      * @throws IOException  IO error.
      */
-    public abstract AbstractSpecimen parseMatcher(ScannerToken st, int expr,
-                                                  CodeType md)
+    public abstract AbstractSpecimen parseMatcher(ScannerToken st, int expr)
             throws ScannerError, IOException;
 
     /**
      * <p>Creates a pattern matcher.</p>
      *
      * @param s    The string to create the pattern matcher from.
-     * @param pd   The pattern delemiter.
-     * @param r    The pattern remark.
      * @param expr The expression features to use.
-     * @param md   The match delemiter.
      * @return The pattern matcher.
      * @throws ScannerError Shit happens.
      */
-    public AbstractSpecimen createSpecimen(String s, CodeType pd,
-                                           CompLang r, int expr,
-                                           CodeType md)
+    public AbstractSpecimen createSpecimen(String s,
+                                           int expr)
             throws ScannerError {
         try {
             ScannerToken st = new ScannerToken();
             ConnectionReader cr = new ConnectionReader(new StringReader(s));
             st.setReader(cr);
-            st.setDelemiter(pd);
-            st.setRemark(r);
+            st.setDelemiter(getPatDelemiter());
+            st.setRemark(getRemark());
             st.firstToken();
-            AbstractSpecimen matcher = parseMatcher(st, expr, md);
+            AbstractSpecimen matcher = parseMatcher(st, expr);
             if (!"".equals(st.getToken()))
                 throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
                         st.getTokenOffset());
@@ -110,31 +166,13 @@ public abstract class AbstractCompiler {
      * <p>Creates a pattern matcher.</p>
      *
      * @param s  The string to create the pattern matcher from.
-     * @param pd The pattern delemiter.
-     * @param r  The pattern remark.
-     * @param md The match delemiter.
-     * @return The pattern matcher.
-     * @throws ScannerError Shit happens.
-     */
-    public AbstractSpecimen createSpecimen(String s, CodeType pd,
-                                           CompLang r,
-                                           CodeType md)
-            throws ScannerError {
-        return createSpecimen(s, pd, r,
-                EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE, md);
-    }
-
-    /**
-     * <p>Creates a pattern matcher.</p>
-     *
-     * @param s The string to create the pattern matcher from.
      * @return The pattern matcher.
      * @throws ScannerError Shit happens.
      */
     public AbstractSpecimen createSpecimen(String s)
             throws ScannerError {
-        return createSpecimen(s, SHELL_PAT_CODETYPE,
-                SHELL_COMPLANG, SHELL_CODETYPE);
+        return createSpecimen(s,
+                EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE);
     }
 
 }
