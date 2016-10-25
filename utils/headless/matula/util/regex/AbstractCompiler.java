@@ -39,7 +39,7 @@ public abstract class AbstractCompiler {
      * @throws ScannerError Scanner error.
      * @throws IOException  IO error.
      */
-    public abstract AbstractPattern parseMatcher(ScannerToken st, int expr,
+    public abstract AbstractSpecimen parseMatcher(ScannerToken st, int expr,
                                                  CodeType md)
             throws ScannerError, IOException;
 

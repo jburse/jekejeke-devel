@@ -1,6 +1,6 @@
 package matula.util.regex;
 
-import util.regex.PatternWordSimple;
+import util.regex.SpecimenSimple;
 
 import java.io.IOException;
 
@@ -41,60 +41,60 @@ public final class CompilerSimple extends AbstractCompiler {
      * @return The pattern.
      * @throws ScannerError Shit happens.
      */
-    public PatternWordSimple parseMatcher(ScannerToken st, int expr,
+    public AbstractSpecimen parseMatcher(ScannerToken st, int expr,
                                           CodeType md)
             throws ScannerError, IOException {
         int flag = 0;
         if ((expr & AbstractPattern.EXPRESSION_EQUALS) != 0) {
-            flag |= PatternWordSimple.MATCH_CASE;
+            flag |= SpecimenSimple.MATCH_CASE;
             if ("=".equals(st.getToken())) {
-                flag |= PatternWordSimple.MATCH_SENSITIV;
+                flag |= SpecimenSimple.MATCH_SENSITIV;
                 st.nextToken();
             }
         } else {
-            flag |= PatternWordSimple.MATCH_SENSITIV;
+            flag |= SpecimenSimple.MATCH_SENSITIV;
         }
         if ("".equals(st.getToken()) ||
                 "(".equals(st.getToken()) ||
                 ")".equals(st.getToken()) ||
                 "!".equals(st.getToken()))
-            throw new ScannerError(PatternWordSimple.ERROR_SYNTAX_PHRASE_MISSING, st.getTokenOffset());
+            throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_PHRASE_MISSING, st.getTokenOffset());
         String pattern;
         int pos;
-        PatternWordSimple pm = new PatternWordSimple();
+        SpecimenSimple pm = new SpecimenSimple();
         pm.setPatDelemiter(st.getDelemiter());
         pm.setMatchDelemiter(md);
         if ((expr & AbstractPattern.EXPRESSION_SINGLEQUOTE) != 0) {
-            flag |= PatternWordSimple.MATCH_QUOTE;
+            flag |= SpecimenSimple.MATCH_QUOTE;
             if (st.getToken().startsWith("'")) {
-                flag |= PatternWordSimple.MATCH_PART;
+                flag |= SpecimenSimple.MATCH_PART;
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
                         '\'', st.getTokenOffset() + 1);
                 pos = st.getTokenOffset();
                 st.nextToken();
             } else if (st.getToken().startsWith("\"")) {
-                flag |= PatternWordSimple.MATCH_WORD;
+                flag |= SpecimenSimple.MATCH_WORD;
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
                         '"', st.getTokenOffset() + 1);
                 pos = st.getTokenOffset();
                 if (st.getDelemiter().singleToken(pattern))
-                    throw new ScannerError(PatternWordSimple.ERROR_SYNTAX_QUOTED_SINGLE, st.getTokenOffset());
+                    throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_QUOTED_SINGLE, st.getTokenOffset());
                 st.nextToken();
             } else {
-                flag |= PatternWordSimple.MATCH_WORD;
+                flag |= SpecimenSimple.MATCH_WORD;
                 pattern = st.getToken();
                 pos = st.getTokenOffset();
                 st.nextToken();
             }
         } else {
             if (st.getToken().startsWith("'"))
-                throw new ScannerError(PatternWordSimple.ERROR_SYNTAX_NOT_SUPPORTED, st.getTokenOffset());
+                throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_NOT_SUPPORTED, st.getTokenOffset());
             if (st.getToken().startsWith("\"")) {
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
                         '"', st.getTokenOffset() + 1);
                 pos = st.getTokenOffset();
                 if (st.getDelemiter().singleToken(pattern))
-                    throw new ScannerError(PatternWordSimple.ERROR_SYNTAX_QUOTED_SINGLE, st.getTokenOffset());
+                    throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_QUOTED_SINGLE, st.getTokenOffset());
                 st.nextToken();
             } else {
                 pattern = st.getToken();
