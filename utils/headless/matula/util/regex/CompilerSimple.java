@@ -45,7 +45,7 @@ public final class CompilerSimple extends AbstractCompiler {
                                           CodeType md)
             throws ScannerError, IOException {
         int flag = 0;
-        if ((expr & AbstractPattern.EXPRESSION_EQUALS) != 0) {
+        if ((expr & AbstractCompiler.EXPRESSION_EQUALS) != 0) {
             flag |= SpecimenSimple.MATCH_CASE;
             if ("=".equals(st.getToken())) {
                 flag |= SpecimenSimple.MATCH_SENSITIV;
@@ -64,7 +64,7 @@ public final class CompilerSimple extends AbstractCompiler {
         SpecimenSimple pm = new SpecimenSimple();
         pm.setPatDelemiter(st.getDelemiter());
         pm.setMatchDelemiter(md);
-        if ((expr & AbstractPattern.EXPRESSION_SINGLEQUOTE) != 0) {
+        if ((expr & AbstractCompiler.EXPRESSION_SINGLEQUOTE) != 0) {
             flag |= SpecimenSimple.MATCH_QUOTE;
             if (st.getToken().startsWith("'")) {
                 flag |= SpecimenSimple.MATCH_PART;
