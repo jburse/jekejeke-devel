@@ -1,6 +1,10 @@
 package matula.util.regex;
 
+import matula.util.system.ConnectionReader;
+import util.regex.CompilerAdvanced;
+
 import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * <p>Base class for a pattern compiler.</p>
@@ -28,6 +32,10 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractCompiler {
+    public static final int EXPRESSION_SINGLEQUOTE = 0x00000001;
+    public static final int EXPRESSION_EQUALS = 0x00000002;
+
+    public static final String ERROR_SYNTAX_SUPERFLUOUS_TOKEN = "superfluous_token";
 
     /**
      * <p>Parse a pattern.</p>
@@ -42,5 +50,68 @@ public abstract class AbstractCompiler {
     public abstract AbstractSpecimen parseMatcher(ScannerToken st, int expr,
                                                  CodeType md)
             throws ScannerError, IOException;
+
+    /**
+     * <p>Creates a pattern matcher.</p>
+     *
+     * @param s    The string to create the pattern matcher from.
+     * @param pd   The pattern delemiter.
+     * @param r    The pattern remark.
+     * @param expr The expression features to use.
+     * @param md   The match delemiter.
+     * @return The pattern matcher.
+     * @throws ScannerError Shit happens.
+     */
+    public AbstractSpecimen createSpecimen(String s, CodeType pd,
+                                                  CompLang r, int expr,
+                                                  CodeType md)
+            throws ScannerError {
+        try {
+            ScannerToken st = new ScannerToken();
+            ConnectionReader cr = new ConnectionReader(new StringReader(s));
+            st.setReader(cr);
+            st.setDelemiter(pd);
+            st.setRemark(r);
+            st.firstToken();
+            AbstractSpecimen matcher = parseMatcher(st, expr, md);
+            if (!"".equals(st.getToken()))
+                throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
+                        st.getTokenOffset());
+            return matcher;
+        } catch (IOException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
+    }
+
+    /**
+     * <p>Creates a pattern matcher.</p>
+     *
+     * @param s  The string to create the pattern matcher from.
+     * @param pd The pattern delemiter.
+     * @param r  The pattern remark.
+     * @param md The match delemiter.
+     * @return The pattern matcher.
+     * @throws ScannerError Shit happens.
+     */
+    public AbstractSpecimen createSpecimen(String s, CodeType pd,
+                                                  CompLang r,
+                                                  CodeType md)
+            throws ScannerError {
+        return createSpecimen(s, pd, r,
+                EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE, md);
+    }
+
+    /**
+     * <p>Creates a pattern matcher.</p>
+     *
+     * @param s The string to create the pattern matcher from.
+     * @return The pattern matcher.
+     * @throws ScannerError Shit happens.
+     */
+    public AbstractSpecimen createSpecimen(String s)
+            throws ScannerError {
+        return createSpecimen(s, CodeType.ISO_PAT_CODETYPE,
+                CompLang.ISO_COMPLANG, CodeType.ISO_CODETYPE);
+    }
 
 }

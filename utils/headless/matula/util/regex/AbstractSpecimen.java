@@ -1,17 +1,7 @@
 package matula.util.regex;
 
-import matula.util.system.ConnectionReader;
-import matula.util.text.LangProperties;
-import matula.util.text.PropertiesUnion;
-import util.regex.CompilerAdvanced;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Locale;
-import java.util.Properties;
-
 /**
- * <p>This class provides the base class for string specimen.</p>
+ * <p>This class provides the base class for a bounded string specimen.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -35,14 +25,24 @@ import java.util.Properties;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-
 public abstract class AbstractSpecimen extends AbstractPattern {
     public static final int MATCH_NEGATIV = 0x00000001;
-
     public static final int MASK_PAT_BOUNCE = 0x00000001;
 
     protected String pattern = "*";
     protected int flag;
+    protected String target = "*";
+
+    /**
+     * <p>Create an abstract speciment.</p>
+     */
+    public AbstractSpecimen() {
+        try {
+            prepareMatch();
+        } catch (ScannerError x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
+    }
 
     /**
      * <p>Set the pattern.</p>
@@ -80,6 +80,24 @@ public abstract class AbstractSpecimen extends AbstractPattern {
         return flag;
     }
 
+    /**
+     * <p>Set the target.</p>
+     *
+     * @param t The target.
+     */
+    public void setTarget(String t) {
+        target = t;
+    }
+
+    /**
+     * <p>Retrieve the target.</p>
+     *
+     * @return The target.
+     */
+    public String getTarget() {
+        return target;
+    }
+
     /******************************************************************/
     /* Preparation                                                    */
     /******************************************************************/
@@ -97,72 +115,13 @@ public abstract class AbstractSpecimen extends AbstractPattern {
      *
      * @param match The pattern to move.
      */
-    public abstract void replaceTo(AbstractSpecimen match);
-
-    /**
-     * <p>Creates a pattern matcher.</p>
-     *
-     * @param s    The string to create the pattern matcher from.
-     * @param pd   The pattern delemiter.
-     * @param r    The pattern remark.
-     * @param expr The expression features to use.
-     * @param md   The match delemiter.
-     * @return The pattern matcher.
-     * @throws ScannerError Shit happens.
-     */
-    public static AbstractSpecimen createPatternWord(String s, CodeType pd,
-                                                CompLang r, int expr,
-                                                AbstractCompiler comp,
-                                                CodeType md)
-            throws ScannerError {
-        try {
-            ScannerToken st = new ScannerToken();
-            ConnectionReader cr = new ConnectionReader(new StringReader(s));
-            st.setReader(cr);
-            st.setDelemiter(pd);
-            st.setRemark(r);
-            st.firstToken();
-            AbstractSpecimen matcher = comp.parseMatcher(st, expr, md);
-            if (!"".equals(st.getToken()))
-                throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
-                        st.getTokenOffset());
-            return matcher;
-        } catch (IOException x) {
-            throw new RuntimeException("shouldn't happen", x);
-        }
+    public void replaceTo(AbstractSpecimen match) {
+        setTarget(match.getPattern());
     }
 
-    /**
-     * <p>Creates a pattern matcher.</p>
-     *
-     * @param s  The string to create the pattern matcher from.
-     * @param pd The pattern delemiter.
-     * @param r  The pattern remark.
-     * @param md The match delemiter.
-     * @return The pattern matcher.
-     * @throws ScannerError Shit happens.
-     */
-    public static AbstractSpecimen createPatternWord(String s, CodeType pd,
-                                                CompLang r,
-                                                CodeType md)
-            throws ScannerError {
-        return createPatternWord(s, pd, r,
-                EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE,
-                CompilerAdvanced.DEFAULT, md);
-    }
-
-    /**
-     * <p>Creates a pattern matcher.</p>
-     *
-     * @param s The string to create the pattern matcher from.
-     * @return The pattern matcher.
-     * @throws ScannerError Shit happens.
-     */
-    public static AbstractSpecimen createPatternWord(String s)
-            throws ScannerError {
-        return createPatternWord(s, CodeType.ISO_PAT_CODETYPE,
-                CompLang.ISO_COMPLANG, CodeType.ISO_CODETYPE);
-    }
+    /******************************************************************/
+    /* Find                                                           */
+    /******************************************************************/
 
     /**
      * <p>Return a copy of the matcher.</p>
@@ -170,18 +129,5 @@ public abstract class AbstractSpecimen extends AbstractPattern {
      * @return The copy.
      */
     public abstract AbstractSpecimen copyMatcher();
-
-    /**
-     * <p>Retrieve the text bundle.</p>
-     *
-     * @param locale The locale.
-     * @return The text bundle.
-     */
-    public static Properties getLang(Locale locale) {
-        Properties[] props = new Properties[2];
-        props[0] = LangProperties.getLang(AbstractSpecimen.class, "pattern", locale);
-        props[1] = ScannerToken.getLang(locale);
-        return new PropertiesUnion(props);
-    }
 
 }

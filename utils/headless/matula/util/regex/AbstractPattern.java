@@ -1,7 +1,7 @@
 package matula.util.regex;
 
 /**
- * <p>This class provides the base class for string patterns.</p>
+ * <p>This class provides the base class for bounded string patterns.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -26,11 +26,6 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractPattern {
-    public static final int EXPRESSION_SINGLEQUOTE = 0x00000001;
-    public static final int EXPRESSION_EQUALS = 0x00000002;
-
-    public static final String ERROR_SYNTAX_SUPERFLUOUS_TOKEN = "superfluous_token";
-
     protected CodeType patdelemiter;
     protected CodeType matchdelemiter;
 
@@ -79,7 +74,7 @@ public abstract class AbstractPattern {
      *
      * @return The bound.
      */
-    public abstract int matchBound();
+    public abstract int getMatchBound();
 
     /******************************************************************/
     /* Find                                                           */
@@ -111,14 +106,14 @@ public abstract class AbstractPattern {
      *
      * @return The match start.
      */
-    public abstract int matchStart();
+    public abstract int getMatchStart();
 
     /**
      * <p>Return the match end position.</p>
      *
      * @return The match end.
      */
-    public abstract int matchEnd();
+    public abstract int getMatchEnd();
 
     /******************************************************************/
     /* Replace                                                        */
@@ -145,7 +140,7 @@ public abstract class AbstractPattern {
         int k = 0;
         while (matchPattern(k, str, 0)) {
             buf.append(patternReplace(true));
-            int u = matchEnd();
+            int u = getMatchEnd();
             if (u == k)
                 throw new IllegalArgumentException("problem with matcher");
             k = u;
