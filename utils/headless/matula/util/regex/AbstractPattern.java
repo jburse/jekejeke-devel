@@ -120,22 +120,12 @@ public abstract class AbstractPattern {
     /******************************************************************/
 
     /**
-     * <p>Replace the match by the substitution defined by the pattern.</p>
-     *
-     * @param strip Do not include the ending blanks.
-     * @return The replacement.
-     */
-    public abstract String patternReplace(boolean strip);
-
-    /**
      * Find all matches of the given string and replace them.
      *
      * @param str The string to match and replace.
      * @return The result.
-     * @throws ScannerError Shit happens.
      */
-    public final String patternReplaceAll(String str)
-            throws ScannerError {
+    public String patternReplaceAll(String str) {
         StringBuilder buf = new StringBuilder();
         int k = 0;
         while (matchPattern(k, str, 0)) {
@@ -148,5 +138,13 @@ public abstract class AbstractPattern {
         buf.append(str.substring(k));
         return buf.toString();
     }
+
+    /**
+     * <p>Replace the match by the substitution defined by the pattern.</p>
+     *
+     * @param strip Do not include the ending blanks.
+     * @return The replacement.
+     */
+    public abstract String patternReplace(boolean strip);
 
 }

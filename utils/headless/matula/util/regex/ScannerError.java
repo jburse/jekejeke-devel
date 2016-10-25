@@ -93,6 +93,15 @@ public final class ScannerError extends Exception {
     }
 
     /**
+     * Returns the detail message.
+     *
+     * @return The detail message.
+     */
+    public String getMessage() {
+        return toString();
+    }
+
+    /**
      * <p>Unparse the scanner error.</p>
      *
      * @return The scanner error as a string.

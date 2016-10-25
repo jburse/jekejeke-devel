@@ -1,7 +1,6 @@
 package matula.util.regex;
 
 import matula.util.system.ConnectionReader;
-import util.regex.CompilerAdvanced;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -32,10 +31,34 @@ import java.io.StringReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractCompiler {
+    public static final CodeType SHELL_CODETYPE = new CodeType();
+    public static final CodeType SHELL_PAT_CODETYPE = new CodeType();
+    public static final CompLang SHELL_COMPLANG = new CompLang();
+
     public static final int EXPRESSION_SINGLEQUOTE = 0x00000001;
     public static final int EXPRESSION_EQUALS = 0x00000002;
 
     public static final String ERROR_SYNTAX_SUPERFLUOUS_TOKEN = "superfluous_token";
+
+    static {
+        SHELL_CODETYPE.setHints("\u200C\u200D");
+        SHELL_CODETYPE.setDelemiters("!");
+        SHELL_CODETYPE.setQuotes("\'\"`");
+        SHELL_CODETYPE.setInvalids("\uFFFD");
+        SHELL_CODETYPE.setJoiners(".$-");
+
+        SHELL_PAT_CODETYPE.setHints("\u200C\u200D");
+        SHELL_PAT_CODETYPE.setDelemiters("!");
+        SHELL_PAT_CODETYPE.setQuotes("\'\"`");
+        SHELL_PAT_CODETYPE.setInvalids("\uFFFD");
+        SHELL_PAT_CODETYPE.setJoiners(".$-");
+        CodeType.patternDelemiter(SHELL_PAT_CODETYPE);
+
+        SHELL_COMPLANG.setLineComment(null);
+        SHELL_COMPLANG.setBlockCommentStart(null);
+        SHELL_COMPLANG.setBlockCommentEnd(null);
+        SHELL_COMPLANG.setEnd(-1);
+    }
 
     /**
      * <p>Parse a pattern.</p>
@@ -48,7 +71,7 @@ public abstract class AbstractCompiler {
      * @throws IOException  IO error.
      */
     public abstract AbstractSpecimen parseMatcher(ScannerToken st, int expr,
-                                                 CodeType md)
+                                                  CodeType md)
             throws ScannerError, IOException;
 
     /**
@@ -63,8 +86,8 @@ public abstract class AbstractCompiler {
      * @throws ScannerError Shit happens.
      */
     public AbstractSpecimen createSpecimen(String s, CodeType pd,
-                                                  CompLang r, int expr,
-                                                  CodeType md)
+                                           CompLang r, int expr,
+                                           CodeType md)
             throws ScannerError {
         try {
             ScannerToken st = new ScannerToken();
@@ -94,8 +117,8 @@ public abstract class AbstractCompiler {
      * @throws ScannerError Shit happens.
      */
     public AbstractSpecimen createSpecimen(String s, CodeType pd,
-                                                  CompLang r,
-                                                  CodeType md)
+                                           CompLang r,
+                                           CodeType md)
             throws ScannerError {
         return createSpecimen(s, pd, r,
                 EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE, md);
@@ -110,8 +133,8 @@ public abstract class AbstractCompiler {
      */
     public AbstractSpecimen createSpecimen(String s)
             throws ScannerError {
-        return createSpecimen(s, CodeType.ISO_PAT_CODETYPE,
-                CompLang.ISO_COMPLANG, CodeType.ISO_CODETYPE);
+        return createSpecimen(s, SHELL_PAT_CODETYPE,
+                SHELL_COMPLANG, SHELL_CODETYPE);
     }
 
 }

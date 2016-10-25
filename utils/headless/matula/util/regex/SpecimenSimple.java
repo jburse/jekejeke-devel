@@ -1,15 +1,7 @@
 package matula.util.regex;
 
-import matula.util.data.ListArray;
-import util.regex.Match;
-
 /**
- * <p>This class provides a bounded shell pattern. Character
- * ranges and quoted characters are not supported. On the oher
- * hand surrogate pairs are supported.</p>
- * <p>See also:<br>
- * Filename Pattern Matchine - David R. Tribble, 1991<br>
- * http://david.tribble.com/text/fpattern.html</p>
+ * <p>This class provides a bounded simple pattern.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -54,7 +46,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
 
     private int[] wildstart;
     private int[] wildend;
-    private Match[] match;
+    private int[] matchstart;
+    private int[] matchend;
     private String matchstr;
     private int searchpos;
     private int matchbound;
@@ -79,7 +72,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * @throws ScannerError Shit happens.
      */
     private void prepareMatch(int i) throws ScannerError {
-        ListArray<Match> vec = new ListArray<Match>();
+        int vecsize = 0;
         matchbound = 0;
         int patstart = i;
         for (; ; i++) {
@@ -88,21 +81,21 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 while (!patdelemiter.wordBreak2(i, pattern))
                     i++;
                 // if necessary add a unnamed match
-                vec.add(new Match());
+                vecsize++;
                 matchbound += MAX_MATCH_BLANK;
             } else if ((flag & MATCH_PART) != 0 && i == 0) {
                 // if at beginng add a unnamed match
-                vec.add(new Match());
+                vecsize++;
             }
             if (i < pattern.length()) {
                 char ch = pattern.charAt(i);
                 if (ch == CH_ANNONYM_MULT) {
                     // add a unnamed match
-                    vec.add(new Match());
+                    vecsize++;
                     matchbound += MAX_MATCH_WILDCARD;
                 } else if (ch == CH_ANNONYM_SINGLE) {
                     // add a unnamed match
-                    vec.add(new Match());
+                    vecsize++;
                     matchbound++;
                 } else {
                     matchbound++;
@@ -115,14 +108,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
             // end was already handled in loop by word break */
         } else if ((flag & MATCH_PART) != 0) {
             // at end add a unnamed match */
-            vec.add(new Match());
+            vecsize++;
         }
         int patend = i;
-        match = new Match[vec.size()];
-        vec.toArray(match);
+        matchstart = new int[vecsize];
+        matchend = new int[vecsize];
         // now that we know the number of matches we populate wild start and end
-        wildstart = new int[vec.size()];
-        wildend = new int[vec.size()];
+        wildstart = new int[vecsize];
+        wildend = new int[vecsize];
         //if ((flag & MATCH_SENSITIV) != 0) {
         int k = 0;
         for (i = patstart; ; i++) {
@@ -163,7 +156,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
             wildend[k] = i;
             k++;
         }
-        if (k != match.length)
+        if (k != vecsize)
             throw new IllegalArgumentException("problem prepare pat");
         if (i != patend)
             throw new IllegalArgumentException("problem prepare pat");
@@ -220,14 +213,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 // try match
                 for (int u = k; u <= matchstr.length() &&
                         (j == 0 || i == pattern.length()
-                        || u - k < MAX_MATCH_BLANK); u++) {
+                                || u - k < MAX_MATCH_BLANK); u++) {
                     if (!matchdelemiter.wordBreak2(u, matchstr))
                         continue;
                     if ((flags & MASK_PAT_BOUNCE) != 0 && u == matchstr.length())
                         continue;
                     if (matchPattern(i, u, z + 1, flags | MASK_PAT_BLOCK)) {
-                        match[z].start = k;
-                        match[z].end = u;
+                        matchstart[z] = k;
+                        matchend[z] = u;
                         return true;
                     }
                     // assure that only single break is skipped
@@ -240,8 +233,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 for (int u = k; u <= matchstr.length(); u++) {
                     // try match
                     if (matchPattern(i, u, z + 1, flags | MASK_PAT_BLOCK)) {
-                        match[z].start = k;
-                        match[z].end = u;
+                        matchstart[z] = k;
+                        matchend[z] = u;
                         return true;
                     }
                 }
@@ -252,8 +245,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     return true;
                 } else if ((flag & MATCH_PART) != 0) {
                     // set end of part
-                    match[z].start = k;
-                    match[z].end = matchstr.length();
+                    matchstart[z] = k;
+                    matchend[z] = matchstr.length();
                     return true;
                 }
                 return (k == matchstr.length());
@@ -270,8 +263,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     // try match
                     for (; u <= matchstr.length() && u - k < MAX_MATCH_WILDCARD; u++) {
                         if (matchPattern(i, u, z + 1, flags & ~MASK_PAT_BLOCK)) {
-                            match[z].start = k;
-                            match[z].end = u;
+                            matchstart[z] = k;
+                            matchend[z] = u;
                             return true;
                         }
                         // assure that only single break is skipped
@@ -283,8 +276,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     for (int u = k; u <= matchstr.length() &&
                             u - k < MAX_MATCH_WILDCARD; u++) {
                         if (matchPattern(i, u, z + 1, flags & ~MASK_PAT_BLOCK)) {
-                            match[z].start = k;
-                            match[z].end = u;
+                            matchstart[z] = k;
+                            matchend[z] = u;
                             return true;
                         }
                     }
@@ -292,9 +285,9 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 return false;
             } else if (ch == CH_ANNONYM_SINGLE) {
                 if (k == matchstr.length()) return false;
-                match[z].start = k;
+                matchstart[z] = k;
                 k++;
-                match[z].end = k;
+                matchend[z] = k;
                 z++;
                 i++;
                 flags &= ~MASK_PAT_BLOCK;
@@ -328,7 +321,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
     public boolean matchLastPattern(int k, String t, int flags) {
         matchstr = t.substring(0, k);
         searchpos = 0;
-        return matchLastPattern(pattern.length(), k, match.length - 1, flags);
+        return matchLastPattern(pattern.length(), k, matchstart.length - 1, flags);
     }
 
     /**
@@ -361,8 +354,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     if ((flags & MASK_PAT_BOUNCE) != 0 && u == 0)
                         continue;
                     if (matchLastPattern(i, u, z - 1, flags | MASK_PAT_BLOCK)) {
-                        match[z].start = u;
-                        match[z].end = k;
+                        matchstart[z] = u;
+                        matchend[z] = k;
                         return true;
                     }
                     // assure that only single break is skipped
@@ -375,8 +368,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 for (int u = k; u >= 0; u--) {
                     // try match
                     if (matchLastPattern(i, u, z - 1, flags | MASK_PAT_BLOCK)) {
-                        match[z].start = u;
-                        match[z].end = k;
+                        matchstart[z] = u;
+                        matchend[z] = k;
                         return true;
                     }
                 }
@@ -387,8 +380,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     return true;
                 } else if ((flag & MATCH_PART) != 0) {
                     // set end of part
-                    match[z].start = 0;
-                    match[z].end = k;
+                    matchstart[z] = 0;
+                    matchend[z] = k;
                     return true;
                 }
                 return (k == 0);
@@ -405,8 +398,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     // try match
                     for (; u >= 0 && k - u < MAX_MATCH_WILDCARD; u--) {
                         if (matchLastPattern(i, u, z - 1, flags & ~MASK_PAT_BLOCK)) {
-                            match[z].start = u;
-                            match[z].end = k;
+                            matchstart[z] = u;
+                            matchend[z] = k;
                             return true;
                         }
                         // assure that only single break is skipped
@@ -417,8 +410,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     // try match
                     for (int u = k; u >= 0 && k - u < MAX_MATCH_WILDCARD; u--) {
                         if (matchLastPattern(i, u, z - 1, flags & ~MASK_PAT_BLOCK)) {
-                            match[z].start = u;
-                            match[z].end = k;
+                            matchstart[z] = u;
+                            matchend[z] = k;
                             return true;
                         }
                     }
@@ -426,9 +419,9 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 return false;
             } else if (ch == CH_ANNONYM_SINGLE) {
                 if (k == 0) return false;
-                match[z].end = k;
+                matchend[z] = k;
                 k--;
-                match[z].start = k;
+                matchstart[z] = k;
                 z--;
                 i--;
                 flags &= ~MASK_PAT_BLOCK;
@@ -467,14 +460,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
      */
     private int getMatchStart(boolean strip) {
         if ((flag & MATCH_WORD) != 0) {
-            int k = 0;
+            int z = 0;
             if (strip) {
-                return match[k].end;
+                return matchend[z];
             } else {
-                return match[k].start;
+                return matchstart[z];
             }
         } else if ((flag & MATCH_PART) != 0) {
-            return match[0].end;
+            return matchend[0];
         } else {
             return searchpos;
         }
@@ -498,14 +491,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
      */
     private int getMatchEnd(boolean strip) {
         if ((flag & MATCH_WORD) != 0) {
-            int k = match.length - 1;
+            int z = matchstart.length - 1;
             if (strip) {
-                return match[k].start;
+                return matchstart[z];
             } else {
-                return match[k].end;
+                return matchend[z];
             }
         } else if ((flag & MATCH_PART) != 0) {
-            return match[match.length - 1].start;
+            return matchstart[matchstart.length - 1];
         } else {
             return matchstr.length();
         }
@@ -524,9 +517,9 @@ public final class SpecimenSimple extends AbstractSpecimen {
             pm.setPattern(pattern);
             pm.setFlag(flag);
             pm.prepareMatch();
-            for (int i = 0; i < match.length; i++) {
-                pm.match[i].start = match[i].start;
-                pm.match[i].end = match[i].end;
+            for (int i = 0; i < matchstart.length; i++) {
+                pm.matchstart[i] = matchstart[i];
+                pm.matchend[i] = matchend[i];
             }
             pm.searchpos = searchpos;
             pm.matchstr = matchstr;
@@ -554,40 +547,40 @@ public final class SpecimenSimple extends AbstractSpecimen {
             int wilds = 0;
             int wilde = z < wildstart.length ? wildstart[z] : pattern.length();
             int matchs = 0;
-            int matche = z < match.length ? match[z].start : matchstr.length();
+            int matche = z < matchstart.length ? matchstart[z] : matchstr.length();
             int tar = 0;
             for (int i = 0; ; i++) {
                 if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, target)) {
                     while (!patdelemiter.wordBreak2(i, target))
                         i++;
                     if (i < target.length() || !strip) {
-                        buf.append(matchstr.substring(match[z].start, match[z].end));
+                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
                         tar = i;
                         wilds = wildend[z];
-                        matchs = match[z].end;
+                        matchs = matchend[z];
                         z++;
                         wilde = z < wildstart.length ? wildstart[z] : pattern.length();
-                        matche = z < match.length ? match[z].start : matchstr.length();
+                        matche = z < matchstart.length ? matchstart[z] : matchstr.length();
                     }
                 } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                    buf.append(matchstr.substring(match[z].start, match[z].end));
+                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
                     tar = i;
                     wilds = wildend[z];
-                    matchs = match[z].end;
+                    matchs = matchend[z];
                     z++;
                     wilde = z < wildstart.length ? wildstart[z] : pattern.length();
-                    matche = z < match.length ? match[z].start : matchstr.length();
+                    matche = z < matchstart.length ? matchstart[z] : matchstr.length();
                 }
                 if (i < target.length()) {
                     char ch = target.charAt(i);
                     if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
-                        buf.append(matchstr.substring(match[z].start, match[z].end));
+                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
                         tar = i + 1;
                         wilds = wildend[z];
-                        matchs = match[z].end;
+                        matchs = matchend[z];
                         z++;
                         wilde = z < wildstart.length ? wildstart[z] : pattern.length();
-                        matche = z < match.length ? match[z].start : matchstr.length();
+                        matche = z < matchstart.length ? matchstart[z] : matchstr.length();
                     } else {
                         if (i - tar + wilds < wilde && i - tar + matchs < matche &&
                                 pattern.charAt(i - tar + wilds) != matchstr.charAt(i - tar + matchs)) {
@@ -608,10 +601,10 @@ public final class SpecimenSimple extends AbstractSpecimen {
             }
             if ((flag & MATCH_WORD) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(match[z - 1].end));
+                    buf.append(matchstr.substring(matchend[z - 1]));
             } else if ((flag & MATCH_PART) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(match[z].start, match[z].end));
+                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
             }
         } else {
             for (int i = 0; ; i++) {
@@ -619,17 +612,17 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     while (!patdelemiter.wordBreak2(i, target))
                         i++;
                     if (i < target.length() || !strip) {
-                        buf.append(matchstr.substring(match[z].start, match[z].end));
+                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
                         z++;
                     }
                 } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                    buf.append(matchstr.substring(match[z].start, match[z].end));
+                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
                     z++;
                 }
                 if (i < target.length()) {
                     char ch = target.charAt(i);
                     if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
-                        buf.append(matchstr.substring(match[z].start, match[z].end));
+                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
                         z++;
                     } else {
                         buf.append(ch);
@@ -640,10 +633,10 @@ public final class SpecimenSimple extends AbstractSpecimen {
             }
             if ((flag & MATCH_WORD) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(match[z - 1].end));
+                    buf.append(matchstr.substring(matchend[z - 1]));
             } else if ((flag & MATCH_PART) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(match[z].start, match[z].end));
+                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
             }
         }
         return buf.toString();

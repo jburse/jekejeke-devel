@@ -40,7 +40,7 @@ public final class CompilerSimple extends AbstractCompiler {
      * @throws ScannerError Shit happens.
      */
     public AbstractSpecimen parseMatcher(ScannerToken st, int expr,
-                                          CodeType md)
+                                         CodeType md)
             throws ScannerError, IOException {
         int flag = 0;
         if ((expr & EXPRESSION_EQUALS) != 0) {
@@ -109,6 +109,11 @@ public final class CompilerSimple extends AbstractCompiler {
             throw x;
         }
         return pm;
+    }
+
+    public static void main(String[] args) throws ScannerError {
+        String pat = "foo*.bar";
+        AbstractSpecimen sp = DEFAULT.createSpecimen(pat);
     }
 
 }
