@@ -151,7 +151,7 @@ public final class CompLang {
      * @param cont   The cont flag.
      * @param d      The delemiter.
      * @return The resolved token.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Parsing problem.
      */
     public static String resolveEscape(String str, int quote, int offset,
                                        boolean cont, CodeType d)

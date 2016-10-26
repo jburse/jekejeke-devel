@@ -27,6 +27,8 @@ package matula.util.regex;
  */
 public abstract class AbstractSpecimen extends AbstractPattern {
     public static final int MATCH_NEGATIV = 0x00000001;
+    public static final int MATCH_SENSITIV = 0x00000002;
+
     public static final int MASK_PAT_BOUNCE = 0x00000001;
 
     protected String pattern = "*";
@@ -105,7 +107,7 @@ public abstract class AbstractSpecimen extends AbstractPattern {
     /**
      * <p>Repare the pattern.</p>
      *
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Parsing problem.
      */
     public abstract void prepareMatch()
             throws ScannerError;

@@ -44,7 +44,7 @@ public final class MimeHeader {
      * <p>Create a mime header from a string.</p>
      *
      * @param s The string.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public MimeHeader(String s) throws IOException {
         parse(s);
@@ -104,7 +104,7 @@ public final class MimeHeader {
      * <p>Quante translation is automatically done by the stream tokenizer.</p>
      *
      * @param s The mime header.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     private void parse(String s) throws IOException {
         StreamTokenizer st = new StreamTokenizer(new StringReader(s));

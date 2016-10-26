@@ -33,7 +33,6 @@ public final class SpecimenSimple extends AbstractSpecimen {
     public static final char CH_ANNONYM_MULT = '*';
     public static final char CH_ANNONYM_SINGLE = '?';
 
-    public static final int MATCH_SENSITIV = 0x00000100;
     public static final int MATCH_WORD = 0x00000200;
     public static final int MATCH_PART = 0x00000400;
     public static final int MATCH_CASE = 0x00000800;
@@ -57,7 +56,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * wildcards. The implicit wildcards are between word
      * breaks. The explicit wildcards are * and ?.
      *
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Parsing problem.
      */
     public void prepareMatch() throws ScannerError {
         prepareMatch(0);
@@ -69,7 +68,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * breaks. The explicit wildcards are * and ?.
      *
      * @param i The index where to start from.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Parsing problem.
      */
     private void prepareMatch(int i) throws ScannerError {
         int vecsize = 0;

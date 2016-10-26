@@ -28,26 +28,53 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CompilerSimple extends AbstractCompiler {
+    public static final CompilerSimple ISO_COMPILERSIMPLE = new CompilerSimple();
+
+    static {
+        ISO_COMPILERSIMPLE.setPatDelemiter(CodeType.ISO_PAT_CODETYPE);
+        ISO_COMPILERSIMPLE.setRemark(CompLang.ISO_COMPLANG);
+        ISO_COMPILERSIMPLE.setMatchDelemiter(CodeType.ISO_CODETYPE);
+    }
+    
+    /**
+     * <p>Creata a specimen from a string.</p>
+     *
+     * @param pattern   The string.
+     * @param flag The specimen features to use.
+     * @return The specimen.
+     * @throws ScannerError Parsing problem.
+     */
+    public AbstractSpecimen createSpecimen(String pattern, int flag)
+            throws ScannerError {
+        SpecimenSimple pm = new SpecimenSimple();
+        pm.setPatDelemiter(getPatDelemiter());
+        pm.setMatchDelemiter(getMatchDelemiter());
+        pm.setPattern(pattern);
+        pm.setFlag(flag);
+        pm.prepareMatch();
+        return pm;
+    }
 
     /**
-     * <p>Parse a pattern.</p>
+     * <p>Parse a specimen from a scanner token.</p>
      *
-     * @param st   The tokenizer.
-     * @param expr The parse features to use.
-     * @return The pattern.
-     * @throws ScannerError Shit happens.
+     * @param st   The scanner token.
+     * @param expr The expression features to use.
+     * @return The specimen.
+     * @throws ScannerError Parsing problem.
+     * @throws IOException IO error.
      */
-    public AbstractSpecimen parseMatcher(ScannerToken st, int expr)
+    public AbstractSpecimen parseSpecimen(ScannerToken st, int expr)
             throws ScannerError, IOException {
         int flag = 0;
         if ((expr & EXPRESSION_EQUALS) != 0) {
             flag |= SpecimenSimple.MATCH_CASE;
             if ("=".equals(st.getToken())) {
-                flag |= SpecimenSimple.MATCH_SENSITIV;
+                flag |= AbstractSpecimen.MATCH_SENSITIV;
                 st.nextToken();
             }
         } else {
-            flag |= SpecimenSimple.MATCH_SENSITIV;
+            flag |= AbstractSpecimen.MATCH_SENSITIV;
         }
         if ("".equals(st.getToken()) ||
                 "(".equals(st.getToken()) ||
@@ -56,9 +83,6 @@ public final class CompilerSimple extends AbstractCompiler {
             throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_PHRASE_MISSING, st.getTokenOffset());
         String pattern;
         int pos;
-        SpecimenSimple pm = new SpecimenSimple();
-        pm.setPatDelemiter(st.getDelemiter());
-        pm.setMatchDelemiter(getMatchDelemiter());
         if ((expr & EXPRESSION_SINGLEQUOTE) != 0) {
             flag |= SpecimenSimple.MATCH_QUOTE;
             if (st.getToken().startsWith("'")) {
@@ -97,8 +121,11 @@ public final class CompilerSimple extends AbstractCompiler {
                 st.nextToken();
             }
         }
-        pm.setFlag(flag);
+        SpecimenSimple pm = new SpecimenSimple();
+        pm.setPatDelemiter(getPatDelemiter());
+        pm.setMatchDelemiter(getMatchDelemiter());
         pm.setPattern(pattern);
+        pm.setFlag(flag);
         try {
             pm.prepareMatch();
         } catch (ScannerError x) {

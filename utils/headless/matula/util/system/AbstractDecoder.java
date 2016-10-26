@@ -39,7 +39,7 @@ public abstract class AbstractDecoder {
      * @param in   The input stream.
      * @param know The recognizer.
      * @return The prepared input stream.
-     * @throws IOException  Shit happens.
+     * @throws IOException IO error.
      * @throws LicenseError Shit happens.
      */
     public abstract InputStream prepareStream(InputStream in, AbstractRecognizer know)

@@ -391,7 +391,7 @@ public final class ConnectionReader extends FilterReader {
     /**
      * <p>Retrieve a line including the newline character.</p>
      *
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     private void nextLine()
             throws IOException {

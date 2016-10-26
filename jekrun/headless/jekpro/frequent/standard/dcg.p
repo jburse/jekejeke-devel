@@ -287,6 +287,10 @@ phrase_expansion(U, I, O, (  P, Q)) :-
  * ! (grammar):
  * The grammar connective removes pending choice and then succeeds once.
  */
+:- public !/2.
+!(_, _) :-
+   throw(error(existence_error(body,!/2),_)).
+
 phrase_expansion(U, I, O, (  U, Q)) :-
    U = !,
    sys_replace_site(Q, U, O=I).

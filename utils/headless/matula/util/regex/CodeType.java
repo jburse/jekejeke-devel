@@ -595,7 +595,7 @@ public final class CodeType {
      * @param quote  The quote.
      * @param offset The error offset.
      * @return The resolved token.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Parsing problem.
      */
     public String resolveDouble(String str, int quote, int offset)
             throws ScannerError {

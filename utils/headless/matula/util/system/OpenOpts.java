@@ -618,7 +618,7 @@ public final class OpenOpts {
      *
      * @param con The connection.
      * @return The last modified date.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     private static long getLastModified(URLConnection con)
             throws IOException {
@@ -634,7 +634,7 @@ public final class OpenOpts {
      *
      * @param con The connection.
      * @return The expiration date.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     private static long getExpiration(URLConnection con)
             throws IOException {
@@ -650,7 +650,7 @@ public final class OpenOpts {
      *
      * @param con The connection.
      * @return The ETag, or "".
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public static String getETag(URLConnection con)
             throws IOException {

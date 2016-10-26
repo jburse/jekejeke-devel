@@ -31,11 +31,6 @@ import java.io.StringReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractCompiler {
-    public static final CodeType TEXT_CODETYPE = new CodeType();
-    public static final CodeType TEXT_PAT_CODETYPE = new CodeType();
-    public static final CompLang TEXT_COMPLANG = new CompLang();
-    public static final CompilerSimple TEXT_COMPILERSIMPLE = new CompilerSimple();
-
     public static final int EXPRESSION_SINGLEQUOTE = 0x00000001;
     public static final int EXPRESSION_EQUALS = 0x00000002;
 
@@ -44,30 +39,6 @@ public abstract class AbstractCompiler {
     protected CodeType patdelemiter;
     protected CompLang remark;
     protected CodeType matchdelemiter;
-
-    static {
-        TEXT_CODETYPE.setHints("\u200C\u200D");
-        TEXT_CODETYPE.setDelemiters("!");
-        TEXT_CODETYPE.setQuotes("\'\"`");
-        TEXT_CODETYPE.setInvalids("\uFFFD");
-        TEXT_CODETYPE.setJoiners(".$");
-
-        TEXT_PAT_CODETYPE.setHints("\u200C\u200D");
-        TEXT_PAT_CODETYPE.setDelemiters("!");
-        TEXT_PAT_CODETYPE.setQuotes("\'\"`");
-        TEXT_PAT_CODETYPE.setInvalids("\uFFFD");
-        TEXT_PAT_CODETYPE.setJoiners(".$");
-        CodeType.patternDelemiter(TEXT_PAT_CODETYPE);
-
-        TEXT_COMPLANG.setLineComment(null);
-        TEXT_COMPLANG.setBlockCommentStart(null);
-        TEXT_COMPLANG.setBlockCommentEnd(null);
-        TEXT_COMPLANG.setEnd(-1);
-
-        TEXT_COMPILERSIMPLE.setPatDelemiter(TEXT_PAT_CODETYPE);
-        TEXT_COMPILERSIMPLE.setRemark(TEXT_COMPLANG);
-        TEXT_COMPILERSIMPLE.setMatchDelemiter(TEXT_CODETYPE);
-    }
 
     /**
      * <p>Set the pattern delemiter.</p>
@@ -107,6 +78,7 @@ public abstract class AbstractCompiler {
 
     /**
      * <p>Set the match delemiter.</p>
+     *
      * @param md The match delemiter.
      */
     public void setMatchDelemiter(CodeType md) {
@@ -123,27 +95,48 @@ public abstract class AbstractCompiler {
     }
 
     /**
-     * <p>Parse a pattern.</p>
+     * <p>Creata a specimen from a string.</p>
+     *
+     * @param pat   The string.
+     * @param flag The specimen features to use.
+     * @return The specimen.
+     * @throws ScannerError Parsing problem.
+     */
+    public abstract AbstractSpecimen createSpecimen(String pat, int flag)
+            throws ScannerError;
+
+    /**
+     * <p>Creata a specimen from a string.</p>
+     *
+     * @param pat   The string.
+     * @return The specimen.
+     */
+    public AbstractSpecimen createSpecimen(String pat)
+            throws ScannerError {
+        return createSpecimen(pat, AbstractSpecimen.MATCH_SENSITIV);
+    }
+
+    /**
+     * <p>Parse a specimen from a scanner token.</p>
      *
      * @param st   The scanner token.
-     * @param expr The flags.
-     * @return The pattern.
+     * @param expr The expression features to use.
+     * @return The specimen.
      * @throws ScannerError Scanner error.
      * @throws IOException  IO error.
      */
-    public abstract AbstractSpecimen parseMatcher(ScannerToken st, int expr)
+    public abstract AbstractSpecimen parseSpecimen(ScannerToken st, int expr)
             throws ScannerError, IOException;
 
     /**
-     * <p>Creates a pattern matcher.</p>
+     * <p>Parse a specimen from a string.</p>
      *
-     * @param s    The string to create the pattern matcher from.
+     * @param s    The string to create the specimen from.
      * @param expr The expression features to use.
-     * @return The pattern matcher.
-     * @throws ScannerError Shit happens.
+     * @return The specimen.
+     * @throws ScannerError Parsing problem.
      */
-    public AbstractSpecimen createSpecimen(String s,
-                                           int expr)
+    public AbstractSpecimen parseSpecimen(String s, int expr)
             throws ScannerError {
         try {
             ScannerToken st = new ScannerToken();
@@ -152,7 +145,7 @@ public abstract class AbstractCompiler {
             st.setDelemiter(getPatDelemiter());
             st.setRemark(getRemark());
             st.firstToken();
-            AbstractSpecimen matcher = parseMatcher(st, expr);
+            AbstractSpecimen matcher = parseSpecimen(st, expr);
             if (!"".equals(st.getToken()))
                 throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
                         st.getTokenOffset());
@@ -163,16 +156,15 @@ public abstract class AbstractCompiler {
     }
 
     /**
-     * <p>Creates a pattern matcher.</p>
+     * <p>Parse a specimen from a string.</p>
      *
-     * @param s  The string to create the pattern matcher from.
-     * @return The pattern matcher.
-     * @throws ScannerError Shit happens.
+     * @param s  The string to create the specimen from.
+     * @return The specimen.
+     * @throws ScannerError Parsing problem.
      */
-    public AbstractSpecimen createSpecimen(String s)
+    public AbstractSpecimen parseSpecimen(String s)
             throws ScannerError {
-        return createSpecimen(s,
-                EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE);
+        return parseSpecimen(s, EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE);
     }
 
 }
