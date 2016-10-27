@@ -55,7 +55,7 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * @param adr    The path.
      * @param data   The client data.
      * @return The new class loader.
-     * @throws LicenseError Shit happens.
+     * @throws LicenseError License problem.
      */
     public Object addPath(Object loader, String adr, Object data)
             throws LicenseError {

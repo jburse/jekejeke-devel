@@ -55,7 +55,7 @@ public abstract class AbstractRuntime {
      * @param path   The path.
      * @param data   The client data.
      * @return The new class loader.
-     * @throws LicenseError Shit happens.
+     * @throws LicenseError License problem.
      */
     public abstract Object addPath(Object loader, String path, Object data)
             throws LicenseError;

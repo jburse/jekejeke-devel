@@ -274,7 +274,7 @@ public final class ConnectionReader extends FilterReader {
     public int read() throws IOException {
         if (offset == line.length())
             nextLine();
-        if (offset == line.length() + 1)
+        if (offset == line.length())
             return -1;
         int ch = line.charAt(offset);
         offset++;
@@ -295,7 +295,7 @@ public final class ConnectionReader extends FilterReader {
     public int read(char[] cbuf, int off, int len) throws IOException {
         if (offset == line.length())
             nextLine();
-        if (offset == line.length() + 1)
+        if (offset == line.length())
             return -1;
         int k = Math.min(line.length() - offset, len);
         line.getChars(offset, offset + k, cbuf, off);
@@ -321,7 +321,7 @@ public final class ConnectionReader extends FilterReader {
             while (len > 0) {
                 if (offset == line.length())
                     nextLine();
-                if (offset == line.length() + 1)
+                if (offset == line.length())
                     return done;
                 long k = Math.min(line.length() - offset, len);
                 offset += k;
@@ -395,9 +395,6 @@ public final class ConnectionReader extends FilterReader {
      */
     private void nextLine()
             throws IOException {
-        if (line.length() != 0 &&
-                line.charAt(line.length() - 1) == CodeType.LINE_EOL)
-            lineno++;
         buf.setLength(0);
         int ch = in.read();
         if (skiplf && ch == CodeType.LINE_EOL)
@@ -408,12 +405,15 @@ public final class ConnectionReader extends FilterReader {
             buf.append((char) ch);
             ch = in.read();
         }
-        if (ch != -1)
+        if (ch != CodeType.LINE_EOF)
             buf.append(CodeType.LINE_EOL);
-        if (buf.length() == 0) {
-            offset = line.length() + 1;
-        } else {
-            skiplf = (ch == CodeType.LINE_WIN);
+        skiplf = (ch == CodeType.LINE_WIN);
+        if (buf.length() != 0) {
+            if (line.length() != 0 &&
+                    line.charAt(line.length() - 1) == CodeType.LINE_EOL)
+                lineno++;
+            if (mark == line.length())
+                mark = 0;
             line = buf.toString();
             offset = 0;
         }

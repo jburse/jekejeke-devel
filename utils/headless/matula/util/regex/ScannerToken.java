@@ -173,7 +173,7 @@ public final class ScannerToken {
      * @return The current token offset.
      */
     public int getTokenOffset() {
-        int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 1);
+        int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 0);
         int ch2;
         if (token.length() > 0 &&
                 delemiter.getQuotes().indexOf(ch2 = token.codePointAt(0)) != -1)
@@ -309,11 +309,11 @@ public final class ScannerToken {
         }
         token = buf.toString();
         if (quote == '\'') {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader) - 1);
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
         } else if (quote == '`') {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader) - 1);
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
         } else {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader) - 1);
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader));
         }
     }
 
@@ -386,7 +386,7 @@ public final class ScannerToken {
                     nextChar();
                 } else {
                     token = buf.toString();
-                    throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader) - 1);
+                    throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader));
                 }
                 token = buf.toString();
                 return;
@@ -554,7 +554,7 @@ public final class ScannerToken {
             }
         }
         token = buf.toString();
-        throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT, OpenOpts.getOffset(reader) - 1);
+        throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT, OpenOpts.getOffset(reader));
     }
 
     /**
@@ -847,7 +847,7 @@ public final class ScannerToken {
      * @throws IOException Scanning problem.
      */
     public void pushBack() throws IOException {
-        int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 1);
+        int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 0);
         reader.skip(-k);
     }
 

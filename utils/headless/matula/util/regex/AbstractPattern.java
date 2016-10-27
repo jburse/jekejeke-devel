@@ -81,12 +81,22 @@ public abstract class AbstractPattern {
     /******************************************************************/
 
     /**
+     * <p>Match the pattern in a given string.</p>
+     *
+     * @param t     The string to match the pattern with.
+     * @return True if a match has been found, otherwise false.
+     */
+    public boolean matchPattern(String t) {
+        return matchPattern(0, t, 0);
+    }
+
+    /**
      * <p>Match the pattern from a given position in a given string.</p>
      *
      * @param k     The start position to try the match from.
      * @param t     The string to match the pattern with.
      * @param flags The flags.
-     * @return True if a match has been found.
+     * @return True if a match has been found, otherwise false.
      */
     public abstract boolean matchPattern(int k, String t, int flags);
 
@@ -97,7 +107,7 @@ public abstract class AbstractPattern {
      * @param k     The start position to try the match from.
      * @param t     The string to match the pattern with.
      * @param flags The flags.
-     * @return True if a match has been found.
+     * @return True if a match has been found, otherwise false.
      */
     public abstract boolean matchLastPattern(int k, String t, int flags);
 
@@ -118,6 +128,34 @@ public abstract class AbstractPattern {
     /******************************************************************/
     /* Replace                                                        */
     /******************************************************************/
+
+    /**
+     * Find first match of the given string and replace it.
+     *
+     * @param str The string to match and replace.
+     * @return The result.
+     */
+    public String patternReplace(String str) {
+        if (matchPattern(0, str, 0)) {
+            return patternReplace(false);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Find last match of the given string and replace it.
+     *
+     * @param str The string to match and replace.
+     * @return The result.
+     */
+    public String patternLastReplace(String str) {
+        if (matchLastPattern(str.length(), str, 0)) {
+            return patternReplace(false);
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Find all matches of the given string and replace them.

@@ -59,46 +59,42 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * @throws ScannerError Parsing problem.
      */
     public void prepareMatch() throws ScannerError {
-        prepareMatch(0);
-    }
-
-    /**
-     * Count the wild cards. There are implicit and explicit
-     * wildcards. The implicit wildcards are between word
-     * breaks. The explicit wildcards are * and ?.
-     *
-     * @param i The index where to start from.
-     * @throws ScannerError Parsing problem.
-     */
-    private void prepareMatch(int i) throws ScannerError {
-        int vecsize = 0;
+        int i = 0;
+        int k = 0;
         matchbound = 0;
-        int patstart = i;
-        for (; ; i++) {
+        for (; ; ) {
             if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, pattern)) {
+                int j = i;
+
                 // skip the word break
-                while (!patdelemiter.wordBreak2(i, pattern))
-                    i++;
-                // if necessary add a unnamed match
-                vecsize++;
-                matchbound += MAX_MATCH_BLANK;
+                while (!patdelemiter.wordBreak2(i, pattern)) {
+                    int ch = pattern.codePointAt(i);
+                    i += Character.charCount(ch);
+                }
+                // add a implicit wildcard
+                k++;
+
+                // inside blanks are bounded
+                if (j != 0 && i != pattern.length())
+                    matchbound += MAX_MATCH_BLANK;
             } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                // if at beginng add a unnamed match
-                vecsize++;
+                // add a implicit wildcard
+                k++;
             }
             if (i < pattern.length()) {
-                char ch = pattern.charAt(i);
+                int ch = pattern.codePointAt(i);
                 if (ch == CH_ANNONYM_MULT) {
-                    // add a unnamed match
-                    vecsize++;
+                    // add an explicit wildcard
+                    k++;
                     matchbound += MAX_MATCH_WILDCARD;
                 } else if (ch == CH_ANNONYM_SINGLE) {
-                    // add a unnamed match
-                    vecsize++;
-                    matchbound++;
+                    // add an explicit wildcard
+                    k++;
+                    matchbound += Character.charCount(ch);
                 } else {
-                    matchbound++;
+                    matchbound += Character.charCount(ch);
                 }
+                i += Character.charCount(ch);
             } else {
                 break;
             }
@@ -106,43 +102,47 @@ public final class SpecimenSimple extends AbstractSpecimen {
         if ((flag & MATCH_WORD) != 0) {
             // end was already handled in loop by word break */
         } else if ((flag & MATCH_PART) != 0) {
-            // at end add a unnamed match */
-            vecsize++;
+            // add a implicit wildcard
+            k++;
         }
-        int patend = i;
-        matchstart = new int[vecsize];
-        matchend = new int[vecsize];
+        matchstart = new int[k];
+        matchend = new int[k];
         // now that we know the number of matches we populate wild start and end
-        wildstart = new int[vecsize];
-        wildend = new int[vecsize];
-        //if ((flag & MATCH_SENSITIV) != 0) {
-        int k = 0;
-        for (i = patstart; ; i++) {
+        wildstart = new int[k];
+        wildend = new int[k];
+        i = 0;
+        k = 0;
+        for (; ; ) {
             if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, pattern)) {
-                // skip the word break
                 int j = i;
-                while (!patdelemiter.wordBreak2(i, pattern))
-                    i++;
-                // if necessary we had a wild
+
+                // skip the word break
+                while (!patdelemiter.wordBreak2(i, pattern)) {
+                    int ch = pattern.codePointAt(i);
+                    i += Character.charCount(ch);
+                }
+
+                // add a implicit wildcard
                 wildstart[k] = j;
                 wildend[k] = i;
                 k++;
             } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                // if at beginng we had a wild
+                // add a implicit wildcard
                 wildstart[k] = i;
                 wildend[k] = i;
                 k++;
             }
             if (i < pattern.length()) {
-                char ch = pattern.charAt(i);
+                int ch = pattern.codePointAt(i);
                 if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
-                    // add a wild
+                    // add an explicit wildcard
                     wildstart[k] = i;
-                    wildend[k] = i + 1;
+                    wildend[k] = i + Character.charCount(ch);
                     k++;
                 } else {
-                    /* do nothing */
+                    // do nothing
                 }
+                i += Character.charCount(ch);
             } else {
                 break;
             }
@@ -150,15 +150,13 @@ public final class SpecimenSimple extends AbstractSpecimen {
         if ((flag & MATCH_WORD) != 0) {
             // end was already handled in loop by word break
         } else if ((flag & MATCH_PART) != 0) {
-            // at end add a wild
+            // add a implicit wildcard
             wildstart[k] = i;
             wildend[k] = i;
             k++;
         }
-        if (k != vecsize)
-            throw new IllegalArgumentException("problem prepare pat");
-        if (i != patend)
-            throw new IllegalArgumentException("problem prepare pat");
+        if (k != wildstart.length)
+            throw new IllegalArgumentException("prepare problem");
     }
 
     /**
@@ -199,113 +197,178 @@ public final class SpecimenSimple extends AbstractSpecimen {
      */
     private boolean matchPattern(int i, int k, int z, int flags) {
         for (; ; ) {
-            char ch;
-            if ((flags & MASK_PAT_BLOCK) == 0 &&
-                    (flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, pattern)) {
-                // skip the word break
-                int j = i;
-                while (!patdelemiter.wordBreak2(i, pattern))
-                    i++;
-                // assure that previous word end was reached
-                if (j != 0 && !matchdelemiter.wordBreak1(k, matchstr))
-                    return false;
-                // try match
-                for (int u = k; u <= matchstr.length() &&
-                        (j == 0 || i == pattern.length()
-                                || u - k < MAX_MATCH_BLANK); u++) {
-                    if (!matchdelemiter.wordBreak2(u, matchstr))
-                        continue;
-                    if ((flags & MASK_PAT_BOUNCE) != 0 && u == matchstr.length())
-                        continue;
-                    if (matchPattern(i, u, z + 1, flags | MASK_PAT_BLOCK)) {
-                        matchstart[z] = k;
-                        matchend[z] = u;
-                        return true;
-                    }
-                    // assure that only single break is skipped
-                    if (j != 0)
+            if ((flags & MASK_PAT_BLOCK) == 0) {
+                if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, pattern)) {
+                    int j = i;
+
+                    // assure that previous word end was reached
+                    if (j != 0 && !matchdelemiter.wordBreak1(k, matchstr))
                         return false;
-                }
-                return false;
-            } else if ((flags & MASK_PAT_BLOCK) == 0 &&
-                    (flag & MATCH_PART) != 0 && i == 0) {
-                for (int u = k; u <= matchstr.length(); u++) {
-                    // try match
-                    if (matchPattern(i, u, z + 1, flags | MASK_PAT_BLOCK)) {
-                        matchstart[z] = k;
-                        matchend[z] = u;
-                        return true;
+
+                    // skip the word break
+                    while (!patdelemiter.wordBreak2(i, pattern)) {
+                        int ch = pattern.codePointAt(i);
+                        i += Character.charCount(ch);
                     }
-                }
-                return false;
-            } else if (i == pattern.length()) {
-                if ((flag & MATCH_WORD) != 0) {
-                    // already handled in loop
-                    return true;
-                } else if ((flag & MATCH_PART) != 0) {
-                    // set end of part
-                    matchstart[z] = k;
-                    matchend[z] = matchstr.length();
-                    return true;
-                }
-                return (k == matchstr.length());
-            } else if ((ch = pattern.charAt(i)) == CH_ANNONYM_MULT) {
-                int j = i;
-                i++;
-                if ((flag & MATCH_WORD) != 0) {
-                    boolean flagstart = patdelemiter.wordBreak2(j, pattern);
-                    boolean flagend = patdelemiter.wordBreak1(i, pattern);
+
                     int u = k;
-                    if (flagstart && flagend)
-                        u++;
-                    boolean break2 = matchdelemiter.wordBreak2(k, matchstr);
-                    // try match
-                    for (; u <= matchstr.length() && u - k < MAX_MATCH_WILDCARD; u++) {
-                        if (matchPattern(i, u, z + 1, flags & ~MASK_PAT_BLOCK)) {
+                    for (; ; ) {
+                        if (!matchdelemiter.wordBreak2(u, matchstr)) {
+                            // don't try
+                        } else if ((flags & MASK_PAT_BOUNCE) != 0 && u == matchstr.length()) {
+                            // don't try
+                        } else {
+                            // try match
+                            if (matchPattern(i, u, z + 1, flags | MASK_PAT_BLOCK)) {
+                                matchstart[z] = k;
+                                matchend[z] = u;
+                                return true;
+                            }
+
+                            // assure that only single break is skipped
+                            if (j != 0)
+                                return false;
+                        }
+
+                        if (u < matchstr.length()) {
+                            int ch = matchstr.codePointAt(u);
+                            u += Character.charCount(ch);
+                        } else {
+                            break;
+                        }
+
+                        // inside blanks are bounded
+                        if (j != 0 && i != pattern.length()
+                                && u - k >= MAX_MATCH_BLANK)
+                            break;
+                    }
+                    return false;
+                } else if ((flag & MATCH_PART) != 0 && i == 0) {
+                    int u = k;
+                    for (; ; ) {
+                        // try match
+                        if (matchPattern(i, u, z + 1, flags | MASK_PAT_BLOCK)) {
                             matchstart[z] = k;
                             matchend[z] = u;
                             return true;
                         }
-                        // assure that only single break is skipped
-                        if ((!break2 || u != k) && matchdelemiter.wordBreak1(u, matchstr))
-                            return false;
-                    }
-                } else {
-                    // try match
-                    for (int u = k; u <= matchstr.length() &&
-                            u - k < MAX_MATCH_WILDCARD; u++) {
-                        if (matchPattern(i, u, z + 1, flags & ~MASK_PAT_BLOCK)) {
-                            matchstart[z] = k;
-                            matchend[z] = u;
-                            return true;
+
+                        if (u < matchstr.length()) {
+                            int ch = matchstr.codePointAt(u);
+                            u += Character.charCount(ch);
+                        } else {
+                            break;
                         }
                     }
+                    return false;
                 }
-                return false;
-            } else if (ch == CH_ANNONYM_SINGLE) {
-                if (k == matchstr.length()) return false;
-                matchstart[z] = k;
-                k++;
-                matchend[z] = k;
-                z++;
-                i++;
-                flags &= ~MASK_PAT_BLOCK;
+            }
+            if (i < pattern.length()) {
+                int ch = pattern.codePointAt(i);
+                if (ch == CH_ANNONYM_MULT) {
+                    int j = i;
+                    i += Character.charCount(ch);
+                    if ((flag & MATCH_WORD) != 0) {
+                        boolean f1 = patdelemiter.wordBreak2(j, pattern) &&
+                                patdelemiter.wordBreak1(i, pattern);
+                        boolean f2 = matchdelemiter.wordBreak2(k, matchstr);
+                        int u = k;
+                        for (; ; ) {
+                            if (f1) {
+                                // don't try
+                                f1 = false;
+                            } else {
+                                // try match
+                                if (matchPattern(i, u, z + 1, flags & ~MASK_PAT_BLOCK)) {
+                                    matchstart[z] = k;
+                                    matchend[z] = u;
+                                    return true;
+                                }
+                                // assure that only single break is skipped
+                                if ((!f2 || u != k) && matchdelemiter.wordBreak1(u, matchstr))
+                                    return false;
+                            }
+
+                            if (u < matchstr.length()) {
+                                ch = matchstr.codePointAt(u);
+                                u += Character.charCount(ch);
+                            } else {
+                                break;
+                            }
+
+                            // explicit wildcard multi is bound
+                            if (u - k >= MAX_MATCH_WILDCARD)
+                                break;
+                        }
+                    } else {
+                        int u = k;
+                        for (; ; ) {
+                            // try match
+                            if (matchPattern(i, u, z + 1, flags & ~MASK_PAT_BLOCK)) {
+                                matchstart[z] = k;
+                                matchend[z] = u;
+                                return true;
+                            }
+
+                            if (u < matchstr.length()) {
+                                ch = matchstr.codePointAt(u);
+                                u += Character.charCount(ch);
+                            } else {
+                                break;
+                            }
+
+                            // explicit wildcard multi is bound
+                            if (u - k >= MAX_MATCH_WILDCARD)
+                                break;
+                        }
+                    }
+                    return false;
+                } else if (ch == CH_ANNONYM_SINGLE) {
+                    // explicit wildcard single
+                    if (k < matchstr.length()) {
+                        int ch2 = matchstr.codePointAt(k);
+                        matchstart[z] = k;
+                        matchend[z] = k + Character.charCount(ch2);
+                        z++;
+                        k += Character.charCount(ch2);
+                        flags &= ~MASK_PAT_BLOCK;
+                    } else {
+                        return false;
+                    }
+                    i += Character.charCount(ch);
+                } else {
+                    // compare characters
+                    if (k < matchstr.length()) {
+                        int ch2 = matchstr.codePointAt(k);
+                        if ((flag & MATCH_SENSITIV) != 0) {
+                            if (ch != ch2)
+                                return false;
+                        } else {
+                            if (Character.toLowerCase(ch) !=
+                                    Character.toLowerCase(ch2))
+                                return false;
+                        }
+                        k += Character.charCount(ch2);
+                        flags &= ~MASK_PAT_BLOCK;
+                    } else {
+                        return false;
+                    }
+                    i += Character.charCount(ch);
+                }
             } else {
-                // single character
-                if (k == matchstr.length()) return false;
-                if ((flag & MATCH_SENSITIV) != 0) {
-                    if (pattern.charAt(i) != matchstr.charAt(k))
-                        return false;
-                } else {
-                    if (Character.toLowerCase(pattern.charAt(i)) !=
-                            Character.toLowerCase(matchstr.charAt(k)))
-                        return false;
-                }
-                k++;
-                i++;
-                flags &= ~MASK_PAT_BLOCK;
+                break;
             }
         }
+        if ((flag & MATCH_WORD) != 0) {
+            // already handled in loop
+            return true;
+        } else if ((flag & MATCH_PART) != 0) {
+            // set end of part
+            matchstart[z] = k;
+            matchend[z] = matchstr.length();
+            return true;
+        }
+        return (k == matchstr.length());
     }
 
     /**
@@ -335,111 +398,178 @@ public final class SpecimenSimple extends AbstractSpecimen {
      */
     private boolean matchLastPattern(int i, int k, int z, int flags) {
         for (; ; ) {
-            char ch;
-            if ((flags & MASK_PAT_BLOCK) == 0 &&
-                    (flag & MATCH_WORD) != 0 && patdelemiter.wordBreak2(i, pattern)) {
-                // skip the word break
-                int j = i;
-                while (!patdelemiter.wordBreak1(i, pattern))
-                    i--;
-                if (j != pattern.length() && !matchdelemiter.wordBreak2(k, matchstr))
-                    return false;
-                // try match
-                for (int u = k; u >= 0 && (j == pattern.length()
-                        || i == 0
-                        || k - u < MAX_MATCH_BLANK); u--) {
-                    if (!matchdelemiter.wordBreak1(u, matchstr))
-                        continue;
-                    if ((flags & MASK_PAT_BOUNCE) != 0 && u == 0)
-                        continue;
-                    if (matchLastPattern(i, u, z - 1, flags | MASK_PAT_BLOCK)) {
-                        matchstart[z] = u;
-                        matchend[z] = k;
-                        return true;
-                    }
-                    // assure that only single break is skipped
-                    if (j != pattern.length())
+            if ((flags & MASK_PAT_BLOCK) == 0) {
+                if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak2(i, pattern)) {
+                    int j = i;
+
+                    // assure that previous word start was reached
+                    if (j != pattern.length() && !matchdelemiter.wordBreak2(k, matchstr))
                         return false;
-                }
-                return false;
-            } else if ((flags & MASK_PAT_BLOCK) == 0 &&
-                    (flag & MATCH_PART) != 0 && i == pattern.length()) {
-                for (int u = k; u >= 0; u--) {
-                    // try match
-                    if (matchLastPattern(i, u, z - 1, flags | MASK_PAT_BLOCK)) {
-                        matchstart[z] = u;
-                        matchend[z] = k;
-                        return true;
+
+                    // skip the word break
+                    while (!patdelemiter.wordBreak1(i, pattern)) {
+                        int ch = pattern.codePointBefore(i);
+                        i -= Character.charCount(ch);
                     }
-                }
-                return false;
-            } else if (i == 0) {
-                if ((flag & MATCH_WORD) != 0) {
-                    // already handled in loop
-                    return true;
-                } else if ((flag & MATCH_PART) != 0) {
-                    // set end of part
-                    matchstart[z] = 0;
-                    matchend[z] = k;
-                    return true;
-                }
-                return (k == 0);
-            } else if ((ch = pattern.charAt(i - 1)) == CH_ANNONYM_MULT) {
-                int j = i;
-                i--;
-                if ((flag & MATCH_WORD) != 0) {
-                    boolean flagstart = patdelemiter.wordBreak2(i, pattern);
-                    boolean flagend = patdelemiter.wordBreak1(j, pattern);
+
                     int u = k;
-                    if (flagstart && flagend)
-                        u--;
-                    boolean break2 = matchdelemiter.wordBreak1(k, matchstr);
-                    // try match
-                    for (; u >= 0 && k - u < MAX_MATCH_WILDCARD; u--) {
-                        if (matchLastPattern(i, u, z - 1, flags & ~MASK_PAT_BLOCK)) {
+                    for (; ; ) {
+                        if (!matchdelemiter.wordBreak1(u, matchstr)) {
+                            // don't try
+                        } else if ((flags & MASK_PAT_BOUNCE) != 0 && u == 0) {
+                            // don't try
+                        } else {
+                            // try match
+                            if (matchLastPattern(i, u, z - 1, flags | MASK_PAT_BLOCK)) {
+                                matchstart[z] = u;
+                                matchend[z] = k;
+                                return true;
+                            }
+
+                            // assure that only single break is skipped
+                            if (j != pattern.length())
+                                return false;
+                        }
+
+                        if (u > 0) {
+                            int ch = matchstr.codePointBefore(u);
+                            u -= Character.charCount(ch);
+                        } else {
+                            break;
+                        }
+
+                        // inside blanks are bounded
+                        if (j != pattern.length() && i != 0
+                                && k - u >= MAX_MATCH_BLANK)
+                            break;
+                    }
+                    return false;
+                } else if ((flag & MATCH_PART) != 0 && i == pattern.length()) {
+                    int u = k;
+                    for (; ; ) {
+                        // try match
+                        if (matchLastPattern(i, u, z - 1, flags | MASK_PAT_BLOCK)) {
                             matchstart[z] = u;
                             matchend[z] = k;
                             return true;
                         }
-                        // assure that only single break is skipped
-                        if ((!break2 || u != k) && matchdelemiter.wordBreak2(u, matchstr))
-                            return false;
-                    }
-                } else {
-                    // try match
-                    for (int u = k; u >= 0 && k - u < MAX_MATCH_WILDCARD; u--) {
-                        if (matchLastPattern(i, u, z - 1, flags & ~MASK_PAT_BLOCK)) {
-                            matchstart[z] = u;
-                            matchend[z] = k;
-                            return true;
+
+                        if (u > 0) {
+                            int ch = matchstr.codePointBefore(u);
+                            u -= Character.charCount(ch);
+                        } else {
+                            break;
                         }
                     }
+                    return false;
                 }
-                return false;
-            } else if (ch == CH_ANNONYM_SINGLE) {
-                if (k == 0) return false;
-                matchend[z] = k;
-                k--;
-                matchstart[z] = k;
-                z--;
-                i--;
-                flags &= ~MASK_PAT_BLOCK;
+            }
+            if (i > 0) {
+                int ch = pattern.codePointBefore(i);
+                if (ch == CH_ANNONYM_MULT) {
+                    int j = i;
+                    i-= Character.charCount(ch);
+                    if ((flag & MATCH_WORD) != 0) {
+                        boolean f1 = patdelemiter.wordBreak1(j, pattern) &&
+                                        patdelemiter.wordBreak2(i, pattern);
+                        boolean f2 = matchdelemiter.wordBreak1(k, matchstr);
+                        int u = k;
+                        for (; ; ) {
+                            if (f1) {
+                                // don't try
+                                f1 = false;
+                            } else {
+                                // try match
+                                if (matchLastPattern(i, u, z - 1, flags & ~MASK_PAT_BLOCK)) {
+                                    matchstart[z] = u;
+                                    matchend[z] = k;
+                                    return true;
+                                }
+                                // assure that only single break is skipped
+                                if ((!f2 || u != k) && matchdelemiter.wordBreak2(u, matchstr))
+                                    return false;
+                            }
+
+                            if (u > 0) {
+                                ch = matchstr.codePointBefore(u);
+                                u -= Character.charCount(ch);
+                            } else {
+                                break;
+                            }
+
+                            // explicit wildcard multi is bound
+                            if (k - u >= MAX_MATCH_WILDCARD)
+                                break;
+                        }
+                    } else {
+                        int u = k;
+                        for (; ; ) {
+                            // try match
+                            if (matchLastPattern(i, u, z - 1, flags & ~MASK_PAT_BLOCK)) {
+                                matchstart[z] = u;
+                                matchend[z] = k;
+                                return true;
+                            }
+
+                            if (u > 0) {
+                                ch = matchstr.codePointBefore(u);
+                                u -= Character.charCount(ch);
+                            } else {
+                                break;
+                            }
+
+                            // explicit wildcard multi is bound
+                            if (k - u >= MAX_MATCH_WILDCARD)
+                                break;
+                        }
+                    }
+                    return false;
+                } else if (ch == CH_ANNONYM_SINGLE) {
+                    // explicit wildcard single
+                    if (k > 0) {
+                        int ch2 = matchstr.codePointBefore(k);
+                        matchstart[z] = k - Character.charCount(ch2);
+                        matchend[z] = k;
+                        z--;
+                        k -= Character.charCount(ch2);
+                        flags &= ~MASK_PAT_BLOCK;
+                    } else {
+                        return false;
+                    }
+                    i -= Character.charCount(ch);
+                } else {
+                    // compare characters
+                    if (k > 0) {
+                        int ch2 = matchstr.codePointBefore(k);
+                        if ((flag & MATCH_SENSITIV) != 0) {
+                            if (ch != ch2)
+                                return false;
+                        } else {
+                            if (Character.toLowerCase(ch) !=
+                                    Character.toLowerCase(ch2))
+                                return false;
+                        }
+                        k -= Character.charCount(ch2);
+                        flags &= ~MASK_PAT_BLOCK;
+                    } else {
+                        return false;
+                    }
+                    i -= Character.charCount(ch);
+                }
             } else {
-                // single character
-                if (k == 0) return false;
-                k--;
-                i--;
-                if ((flag & MATCH_SENSITIV) != 0) {
-                    if (pattern.charAt(i) != matchstr.charAt(k))
-                        return false;
-                } else {
-                    if (Character.toLowerCase(pattern.charAt(i)) !=
-                            Character.toLowerCase(matchstr.charAt(k)))
-                        return false;
-                }
-                flags &= ~MASK_PAT_BLOCK;
+                break;
             }
         }
+        if ((flag & MATCH_WORD) != 0) {
+            // already handled in loop
+            return true;
+        } else if ((flag & MATCH_PART) != 0) {
+            // set end of part
+            matchstart[z] = 0;
+            matchend[z] = k;
+            return true;
+        }
+        return (k == 0);
     }
 
     /**
@@ -639,6 +769,13 @@ public final class SpecimenSimple extends AbstractSpecimen {
             }
         }
         return buf.toString();
+    }
+
+    public static void main(String[] args) throws ScannerError {
+        String str = "foobar.baz";
+        AbstractSpecimen spec = CompilerSimple.ISO_COMPILERSIMPLE.createSpecimen("foo*.baz");
+        boolean res = spec.matchPattern(0, str, 0);
+        System.out.println("str=" + str + ", spec=" + spec + ", res=" + res);
     }
 
 }

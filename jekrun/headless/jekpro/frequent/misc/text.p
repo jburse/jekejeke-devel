@@ -157,14 +157,14 @@ sys_type_name(9, graph).
 match(S, P) :-
    sys_get_iso_compiler(C),
    sys_create_specimen(C, P, H),
-   sys_match_pattern(H, 0, S, 0).
+   sys_match_pattern(H, S).
 
 :- public match/3.
 match(S, P, O) :-
    sys_get_iso_compiler(C),
    sys_pattern_options(O, Q),
    sys_create_specimen(C, P, Q, H),
-   sys_match_pattern(H, 0, S, 0).
+   sys_match_pattern(H, S).
 
 /**
  * replace(S, P, R, T):
@@ -178,18 +178,37 @@ match(S, P, O) :-
 replace(S, P, R, T) :-
    sys_get_iso_compiler(C),
    sys_create_specimen(C, P, H),
-   sys_match_pattern(H, 0, S, 0),
    sys_set_target(H, R),
-   sys_pattern_replace(H, true, T).
+   sys_pattern_replace(H, S, T).
 
 :- public replace/5.
 replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
    sys_pattern_options(O, Q),
    sys_create_specimen(C, P, Q, H),
-   sys_match_pattern(H, 0, S, 0),
    sys_set_target(H, R),
-   sys_pattern_replace(H, true, T).
+   sys_pattern_replace(H, S, T).
+
+/**
+ * last_replace(S, P, R, T):
+ * last_replace(S, P, R, T, O):
+ * These predicates work similar to the predicates replace/4 and
+ * replace/5 except that they search backwards.
+ */
+:- public last_replace/4.
+last_replace(S, P, R, T) :-
+   sys_get_iso_compiler(C),
+   sys_create_specimen(C, P, H),
+   sys_set_target(H, R),
+   sys_pattern_last_replace(H, S, T).
+
+:- public last_replace/5.
+last_replace(S, P, R, T, O) :-
+   sys_get_iso_compiler(C),
+   sys_pattern_options(O, Q),
+   sys_create_specimen(C, P, Q, H),
+   sys_set_target(H, R),
+   sys_pattern_last_replace(H, S, T).
 
 :- private sys_pattern_options/2.
 sys_pattern_options(O, Q) :-
@@ -234,9 +253,9 @@ sys_pattern_option(O, _, _) :-
 :- virtual sys_create_specimen/4.
 :- foreign(sys_create_specimen/4, 'AbstractCompiler', createSpecimen('String',int)).
 
-:- private sys_match_pattern/4.
-:- virtual sys_match_pattern/4.
-:- foreign(sys_match_pattern/4, 'AbstractPattern', matchPattern(int,'String',int)).
+:- private sys_match_pattern/2.
+:- virtual sys_match_pattern/2.
+:- foreign(sys_match_pattern/2, 'AbstractPattern', matchPattern('String')).
 
 :- private sys_set_target/2.
 :- virtual sys_set_target/2.
@@ -244,7 +263,11 @@ sys_pattern_option(O, _, _) :-
 
 :- private sys_pattern_replace/3.
 :- virtual sys_pattern_replace/3.
-:- foreign(sys_pattern_replace/3, 'AbstractPattern', patternReplace(boolean)).
+:- foreign(sys_pattern_replace/3, 'AbstractPattern', patternReplace('String')).
+
+:- private sys_pattern_last_replace/3.
+:- virtual sys_pattern_last_replace/3.
+:- foreign(sys_pattern_last_replace/3, 'AbstractPattern', patternLastReplace('String')).
 
 :- private sys_get_match_sensitive/1.
 :- foreign_getter(sys_get_match_sensitive/1, 'AbstractSpecimen', 'MATCH_SENSITIV').
