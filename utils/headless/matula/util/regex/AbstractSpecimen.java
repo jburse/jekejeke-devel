@@ -26,8 +26,12 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSpecimen extends AbstractPattern {
-    public static final int MATCH_NEGATIV = 0x00000001;
-    public static final int MATCH_SENSITIV = 0x00000002;
+    public static final int MATCH_MASK = 0x0000000F;
+    public static final int MATCH_WORD = 0x00000001;
+    public static final int MATCH_PART = 0x00000002;
+
+    public static final int MATCH_NEGATIV = 0x00000010;
+    public static final int MATCH_SENSITIV = 0x00000020;
 
     public static final int MASK_PAT_BOUNCE = 0x00000001;
 

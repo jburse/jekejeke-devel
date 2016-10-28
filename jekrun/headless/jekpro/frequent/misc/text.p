@@ -143,7 +143,7 @@ sys_type_name(9, graph).
 :- foreign(atom_upper/2, 'String', toUpperCase).
 
 /******************************************************************/
-/* Shell Pattern Matching                                         */
+/* Pattern Matching                                               */
 /******************************************************************/
 
 /**
@@ -210,38 +210,6 @@ last_replace(S, P, R, T, O) :-
    sys_set_target(H, R),
    sys_pattern_last_replace(H, S, T).
 
-:- private sys_pattern_options/2.
-sys_pattern_options(O, Q) :-
-   sys_get_match_sensitive(M),
-   sys_pattern_options(O, M, Q).
-
-:- private sys_pattern_options/3.
-sys_pattern_options(V, _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_pattern_options([], P, P) :- !.
-sys_pattern_options([X|Y], P, Q) :- !,
-   sys_pattern_option(X, P, H),
-   sys_pattern_options(Y, H, Q).
-sys_pattern_options(L, _, _) :-
-   throw(error(type_error(list,L),_)).
-
-:- private sys_pattern_option/3.
-sys_pattern_option(V, _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_pattern_option(ignore_case(V), _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_pattern_option(ignore_case(true), P, Q) :- !,
-   sys_get_match_sensitive(M),
-   Q is P/\ \M.
-sys_pattern_option(ignore_case(false), P, Q) :- !,
-   sys_get_match_sensitive(M),
-   Q is P\/M.
-sys_pattern_option(O, _, _) :-
-   throw(error(type_error(option,O),_)).
-
 :- private sys_get_iso_compiler/1.
 :- foreign_getter(sys_get_iso_compiler/1, 'CompilerSimple', 'ISO_COMPILERSIMPLE').
 
@@ -269,7 +237,97 @@ sys_pattern_option(O, _, _) :-
 :- virtual sys_pattern_last_replace/3.
 :- foreign(sys_pattern_last_replace/3, 'AbstractPattern', patternLastReplace('String')).
 
+/**
+ * sys_pattern_options(O, Q):
+ * The predicate succeeds in Q for the value of the options O.
+ */
+:- private sys_pattern_options/2.
+sys_pattern_options(O, Q) :-
+   sys_get_match_sensitive(M),
+   sys_pattern_options(O, M, Q).
+
+/**
+ * sys_pattern_options(O, P, Q):
+ * The predicate succeeds in Q for the value of the
+ * options O starting with the default value P.
+ */
+:- private sys_pattern_options/3.
+sys_pattern_options(V, _, _) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+sys_pattern_options([], P, P) :- !.
+sys_pattern_options([X|Y], P, Q) :- !,
+   sys_pattern_option(X, P, H),
+   sys_pattern_options(Y, H, Q).
+sys_pattern_options(L, _, _) :-
+   throw(error(type_error(list,L),_)).
+
+/**
+ * sys_pattern_option(O, P, Q):
+ * The predicate succeeds in Q for the value of the
+ * option O starting with the default value P.
+ */
+:- private sys_pattern_option/3.
+sys_pattern_option(V, _, _) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+sys_pattern_option(boundary(O), P, Q) :- !,
+   sys_option_boundary(O, P, Q).
+sys_pattern_option(ignore_case(O), P, Q) :- !,
+   sys_option_ignore_case(O, P, Q).
+sys_pattern_option(O, _, _) :-
+   throw(error(type_error(option,O),_)).
+
+/**
+ * sys_option_boundary(O, P, Q):
+ * The predicate succeeds in Q for the value of the
+ * boundary option O starting with the default value P.
+ */
+:- private sys_option_boundary/3.
+sys_option_boundary(V, _, _) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+sys_option_boundary(whole, P, Q) :- !,
+   sys_get_match_mask(M),
+   Q is P/\ \M.
+sys_option_boundary(part, P, Q) :- !,
+   sys_get_match_mask(M),
+   sys_get_match_part(N),
+   Q is P/\ \M\/N.
+sys_option_boundary(word, P, Q) :- !,
+   sys_get_match_mask(M),
+   sys_get_match_word(N),
+   Q is P/\ \M\/N.
+sys_option_boundary(O, _, _) :-
+   throw(error(type_error(option,boundary(O)),_)).
+
+/**
+ * sys_option_ignore_case(O, P, Q):
+ * The predicate succeeds in Q for the value of the
+ * ignore case option O starting with the default value P.
+ */
+:- private sys_option_ignore_case/3.
+sys_option_ignore_case(V, _, _) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+sys_option_ignore_case(true, P, Q) :- !,
+   sys_get_match_sensitive(M),
+   Q is P/\ \M.
+sys_option_ignore_case(false, P, Q) :- !,
+   sys_get_match_sensitive(M),
+   Q is P\/M.
+sys_option_ignore_case(O, _, _) :-
+   throw(error(type_error(option,ignore_case(O)),_)).
+
+:- private sys_get_match_mask/1.
+:- foreign_getter(sys_get_match_mask/1, 'AbstractSpecimen', 'MATCH_MASK').
+
+:- private sys_get_match_word/1.
+:- foreign_getter(sys_get_match_word/1, 'AbstractSpecimen', 'MATCH_WORD').
+
+:- private sys_get_match_part/1.
+:- foreign_getter(sys_get_match_part/1, 'AbstractSpecimen', 'MATCH_PART').
+
 :- private sys_get_match_sensitive/1.
 :- foreign_getter(sys_get_match_sensitive/1, 'AbstractSpecimen', 'MATCH_SENSITIV').
-
 

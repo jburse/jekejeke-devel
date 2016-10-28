@@ -33,10 +33,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
     public static final char CH_ANNONYM_MULT = '*';
     public static final char CH_ANNONYM_SINGLE = '?';
 
-    public static final int MATCH_WORD = 0x00000200;
-    public static final int MATCH_PART = 0x00000400;
-    public static final int MATCH_CASE = 0x00000800;
-    public static final int MATCH_QUOTE = 0x00001000;
+    public static final int MATCH_CASE = 0x00000100;
+    public static final int MATCH_QUOTE = 0x00000200;
 
     private static final int MAX_MATCH_BLANK = 15;
     private static final int MAX_MATCH_WILDCARD = 150;
@@ -468,10 +466,10 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 int ch = pattern.codePointBefore(i);
                 if (ch == CH_ANNONYM_MULT) {
                     int j = i;
-                    i-= Character.charCount(ch);
+                    i -= Character.charCount(ch);
                     if ((flag & MATCH_WORD) != 0) {
                         boolean f1 = patdelemiter.wordBreak1(j, pattern) &&
-                                        patdelemiter.wordBreak2(i, pattern);
+                                patdelemiter.wordBreak2(i, pattern);
                         boolean f2 = matchdelemiter.wordBreak1(k, matchstr);
                         int u = k;
                         for (; ; ) {
@@ -673,56 +671,64 @@ public final class SpecimenSimple extends AbstractSpecimen {
         StringBuilder buf = new StringBuilder();
         int z = 0;
         if ((flag & MATCH_SENSITIV) == 0) {
-            int wilds = 0;
+            int wildp = 0;
             int wilde = z < wildstart.length ? wildstart[z] : pattern.length();
-            int matchs = 0;
+            int matchp = 0;
             int matche = z < matchstart.length ? matchstart[z] : matchstr.length();
-            int tar = 0;
-            for (int i = 0; ; i++) {
+            int i = 0;
+            for (; ; i++) {
                 if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, target)) {
-                    while (!patdelemiter.wordBreak2(i, target))
-                        i++;
+                    while (!patdelemiter.wordBreak2(i, target)) {
+                        int ch = target.codePointAt(i);
+                        i += Character.charCount(ch);
+                    }
                     if (i < target.length() || !strip) {
-                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
-                        tar = i;
-                        wilds = wildend[z];
-                        matchs = matchend[z];
+                        buf.append(matchstr, matchstart[z], matchend[z]);
+                        wildp = wildend[z];
+                        matchp = matchend[z];
                         z++;
                         wilde = z < wildstart.length ? wildstart[z] : pattern.length();
                         matche = z < matchstart.length ? matchstart[z] : matchstr.length();
                     }
                 } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
-                    tar = i;
-                    wilds = wildend[z];
-                    matchs = matchend[z];
+                    buf.append(matchstr, matchstart[z], matchend[z]);
+                    wildp = wildend[z];
+                    matchp = matchend[z];
                     z++;
                     wilde = z < wildstart.length ? wildstart[z] : pattern.length();
                     matche = z < matchstart.length ? matchstart[z] : matchstr.length();
                 }
                 if (i < target.length()) {
-                    char ch = target.charAt(i);
+                    int ch = target.codePointAt(i);
                     if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
-                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
-                        tar = i + 1;
-                        wilds = wildend[z];
-                        matchs = matchend[z];
+                        buf.append(matchstr, matchstart[z], matchend[z]);
+                        wildp = wildend[z];
+                        matchp = matchend[z];
                         z++;
                         wilde = z < wildstart.length ? wildstart[z] : pattern.length();
                         matche = z < matchstart.length ? matchstart[z] : matchstr.length();
                     } else {
-                        if (i - tar + wilds < wilde && i - tar + matchs < matche &&
-                                pattern.charAt(i - tar + wilds) != matchstr.charAt(i - tar + matchs)) {
+                        if (wildp < wilde && matchp < matche &&
+                                pattern.codePointAt(wildp) != matchstr.codePointAt(matchp)) {
                             if (Character.isLowerCase(ch)) {
-                                buf.append(Character.toUpperCase(ch));
+                                buf.appendCodePoint(Character.toUpperCase(ch));
                             } else if (Character.isUpperCase(ch)) {
-                                buf.append(Character.toLowerCase(ch));
+                                buf.appendCodePoint(Character.toLowerCase(ch));
                             } else {
-                                buf.append(ch);
+                                buf.appendCodePoint(ch);
                             }
                         } else {
-                            buf.append(ch);
+                            buf.appendCodePoint(ch);
                         }
+                    }
+                    i += Character.charCount(ch);
+                    if (wildp < wilde) {
+                        ch = pattern.codePointAt(wildp);
+                        wildp += Character.charCount(ch);
+                    }
+                    if (matchp < matche) {
+                        ch = pattern.codePointAt(matchp);
+                        matchp += Character.charCount(ch);
                     }
                 } else {
                     break;
@@ -730,52 +736,49 @@ public final class SpecimenSimple extends AbstractSpecimen {
             }
             if ((flag & MATCH_WORD) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(matchend[z - 1]));
+                    buf.append(matchstr, matchend[z - 1], matchstr.length());
             } else if ((flag & MATCH_PART) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
+                    buf.append(matchstr, matchstart[z], matchend[z]);
             }
         } else {
-            for (int i = 0; ; i++) {
+            int i = 0;
+            for (; ; ) {
                 if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, target)) {
-                    while (!patdelemiter.wordBreak2(i, target))
-                        i++;
+                    while (!patdelemiter.wordBreak2(i, target)) {
+                        int ch = target.codePointAt(i);
+                        i += Character.charCount(ch);
+                    }
                     if (i < target.length() || !strip) {
-                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
+                        buf.append(matchstr, matchstart[z], matchend[z]);
                         z++;
                     }
                 } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
+                    buf.append(matchstr, matchstart[z], matchend[z]);
                     z++;
                 }
                 if (i < target.length()) {
-                    char ch = target.charAt(i);
+                    int ch = target.codePointAt(i);
                     if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
-                        buf.append(matchstr.substring(matchstart[z], matchend[z]));
+                        buf.append(matchstr, matchstart[z], matchend[z]);
                         z++;
                     } else {
-                        buf.append(ch);
+                        buf.appendCodePoint(ch);
                     }
+                    i += Character.charCount(ch);
                 } else {
                     break;
                 }
             }
             if ((flag & MATCH_WORD) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(matchend[z - 1]));
+                    buf.append(matchstr, matchend[z - 1], matchstr.length());
             } else if ((flag & MATCH_PART) != 0) {
                 if (!strip)
-                    buf.append(matchstr.substring(matchstart[z], matchend[z]));
+                    buf.append(matchstr, matchstart[z], matchend[z]);
             }
         }
         return buf.toString();
-    }
-
-    public static void main(String[] args) throws ScannerError {
-        String str = "foobar.baz";
-        AbstractSpecimen spec = CompilerSimple.ISO_COMPILERSIMPLE.createSpecimen("foo*.baz");
-        boolean res = spec.matchPattern(0, str, 0);
-        System.out.println("str=" + str + ", spec=" + spec + ", res=" + res);
     }
 
 }
