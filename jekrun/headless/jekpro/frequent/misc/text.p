@@ -4,7 +4,7 @@
  * To use a custom character classifier the predicates code_type/3
  * and char_type/3 can be used.
  *
- * Example:
+ * Examples:
  * ?- char_type(a, X).
  * X = lower
  * ?- char_type('A', X).
@@ -18,6 +18,17 @@
  * The predicates code_lower/2 and code_upper/2 can be used for case
  * conversion of code points. The predicates atom_lower/2 and atom_upper/2
  * can be used for case conversion of atoms.
+ *
+ * Examples:
+ * ?- match('foobarfoo','bar').
+ * No
+ * ?- match('foobarfoo','*bar*').
+ * Yes
+ *
+ * We also provide predicates for pattern matching. The predicate
+ * match/2 takes an atom and matches it against a pattern. The predicate
+ * replace/4 takes a further pattern and produces a new atom. The pattern
+ * language provided by us is inspired by the NEBIS library system.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -171,7 +182,7 @@ match(S, P, O) :-
  * replace(S, P, R, T, O):
  * The predicate succeeds when the atom S matches the shell pattern P,
  * and when replacing the matched pattern by R yields the atom T. The
- * quinary predicate allows specifying match and replace options O.
+ * quinary predicate allows specifying match and replaces options O.
  * for a list of match and replace options see the API documentation.
  */
 :- public replace/4.
@@ -243,8 +254,10 @@ last_replace(S, P, R, T, O) :-
  */
 :- private sys_pattern_options/2.
 sys_pattern_options(O, Q) :-
-   sys_get_match_sensitive(M),
-   sys_pattern_options(O, M, Q).
+   sys_get_match_whole(M),
+   sys_get_match_sensitive(N),
+   P is M\/N,
+   sys_pattern_options(O, P, Q).
 
 /**
  * sys_pattern_options(O, P, Q):
@@ -288,14 +301,15 @@ sys_option_boundary(V, _, _) :-
    var(V),
    throw(error(instantiation_error,_)).
 sys_option_boundary(whole, P, Q) :- !,
-   sys_get_match_mask(M),
-   Q is P/\ \M.
+   sys_get_match_boundary(M),
+   sys_get_match_whole(N),
+   Q is P/\ \M\/N.
 sys_option_boundary(part, P, Q) :- !,
-   sys_get_match_mask(M),
+   sys_get_match_boundary(M),
    sys_get_match_part(N),
    Q is P/\ \M\/N.
 sys_option_boundary(word, P, Q) :- !,
-   sys_get_match_mask(M),
+   sys_get_match_boundary(M),
    sys_get_match_word(N),
    Q is P/\ \M\/N.
 sys_option_boundary(O, _, _) :-
@@ -319,14 +333,17 @@ sys_option_ignore_case(false, P, Q) :- !,
 sys_option_ignore_case(O, _, _) :-
    throw(error(type_error(option,ignore_case(O)),_)).
 
-:- private sys_get_match_mask/1.
-:- foreign_getter(sys_get_match_mask/1, 'AbstractSpecimen', 'MATCH_MASK').
+:- private sys_get_match_boundary/1.
+:- foreign_getter(sys_get_match_boundary/1, 'AbstractSpecimen', 'MATCH_BOUNDARY').
 
-:- private sys_get_match_word/1.
-:- foreign_getter(sys_get_match_word/1, 'AbstractSpecimen', 'MATCH_WORD').
+:- private sys_get_match_whole/1.
+:- foreign_getter(sys_get_match_whole/1, 'AbstractSpecimen', 'MATCH_WHOLE').
 
 :- private sys_get_match_part/1.
 :- foreign_getter(sys_get_match_part/1, 'AbstractSpecimen', 'MATCH_PART').
+
+:- private sys_get_match_word/1.
+:- foreign_getter(sys_get_match_word/1, 'AbstractSpecimen', 'MATCH_WORD').
 
 :- private sys_get_match_sensitive/1.
 :- foreign_getter(sys_get_match_sensitive/1, 'AbstractSpecimen', 'MATCH_SENSITIV').

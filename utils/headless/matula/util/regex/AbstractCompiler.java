@@ -113,7 +113,8 @@ public abstract class AbstractCompiler {
      */
     public AbstractSpecimen createSpecimen(String pat)
             throws ScannerError {
-        return createSpecimen(pat, AbstractSpecimen.MATCH_SENSITIV);
+        return createSpecimen(pat,
+                AbstractSpecimen.MATCH_SENSITIV | AbstractSpecimen.MATCH_WHOLE);
     }
 
     /**
