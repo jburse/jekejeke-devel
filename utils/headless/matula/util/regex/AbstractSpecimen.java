@@ -26,30 +26,25 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSpecimen extends AbstractPattern {
-    public static final int MATCH_BOUNDARY = 0x0000000F;
-    public static final int MATCH_WHOLE = 0x00000000;
+    public static final int MATCH_BDRY = 0x0000000F;
+    public static final int MATCH_WHLE = 0x00000000;
     public static final int MATCH_PART = 0x00000001;
     public static final int MATCH_WORD = 0x00000002;
 
-    public static final int MATCH_NEGATIV = 0x00000010;
-    public static final int MATCH_SENSITIV = 0x00000020;
+    public static final int MATCH_IGCS = 0x00000010;
+    public static final int MATCH_EQSN = 0x00000020;
+    public static final int MATCH_NEGT = 0x00000040;
+    public static final int MATCH_SQTE = 0x00000080;
+
+    public static final int MATCH_STLE = 0x00000F00;
+    public static final int MATCH_CRTE = 0x00000000;
+    public static final int MATCH_PRSE = 0x00000100;
 
     public static final int MASK_PAT_BOUNCE = 0x00000001;
 
-    protected String pattern = "*";
+    protected String pattern;
     protected int flag;
-    protected String target = "*";
-
-    /**
-     * <p>Create an abstract speciment.</p>
-     */
-    public AbstractSpecimen() {
-        try {
-            prepareMatch();
-        } catch (ScannerError x) {
-            throw new RuntimeException("shouldn't happen", x);
-        }
-    }
+    protected String target;
 
     /**
      * <p>Set the pattern.</p>
@@ -118,12 +113,12 @@ public abstract class AbstractSpecimen extends AbstractPattern {
             throws ScannerError;
 
     /**
-     * <p>Move the pattern to the replace target.</p>
+     * <p>Set the replacement target.</p>
      *
-     * @param match The pattern to move.
+     * @param pat The replacement target.
      */
-    public void replaceTo(AbstractSpecimen match) {
-        setTarget(match.getPattern());
+    public void replaceTo(AbstractPattern pat) {
+        setTarget(((AbstractSpecimen) pat).getPattern());
     }
 
     /******************************************************************/

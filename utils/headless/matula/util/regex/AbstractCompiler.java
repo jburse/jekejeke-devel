@@ -31,10 +31,9 @@ import java.io.StringReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractCompiler {
-    public static final int EXPRESSION_SINGLEQUOTE = 0x00000001;
-    public static final int EXPRESSION_EQUALS = 0x00000002;
-
     public static final String ERROR_SYNTAX_SUPERFLUOUS_TOKEN = "superfluous_token";
+    public static final String ERROR_SYNTAX_QUOTED_SINGLE = "quoted_single";
+    public static final String ERROR_SYNTAX_PHRASE_MISSING = "phrase_missing";
 
     protected CodeType patdelemiter;
     protected CompLang remark;
@@ -95,6 +94,28 @@ public abstract class AbstractCompiler {
     }
 
     /**
+     * <p>Make a pattern.</p>
+     * @param pat The string.
+     * @param flag The style and the features.
+     * @return The pattern.
+     */
+    public AbstractPattern makePattern(String pat, int flag)
+            throws ScannerError {
+        switch (flag & AbstractSpecimen.MATCH_STLE) {
+            case AbstractSpecimen.MATCH_CRTE:
+                return createSpecimen(pat, flag);
+            case AbstractSpecimen.MATCH_PRSE:
+                return parseSpecimen(pat, flag);
+            default:
+                throw new IllegalArgumentException("illegal style");
+        }
+    }
+
+    /******************************************************************/
+    /* Create Specimen                                                */
+    /******************************************************************/
+
+    /**
      * <p>Creata a specimen from a string.</p>
      *
      * @param pat   The string.
@@ -113,9 +134,12 @@ public abstract class AbstractCompiler {
      */
     public AbstractSpecimen createSpecimen(String pat)
             throws ScannerError {
-        return createSpecimen(pat,
-                AbstractSpecimen.MATCH_SENSITIV | AbstractSpecimen.MATCH_WHOLE);
+        return createSpecimen(pat, AbstractSpecimen.MATCH_WHLE);
     }
+
+    /******************************************************************/
+    /* Parse Specimen                                                 */
+    /******************************************************************/
 
     /**
      * <p>Parse a specimen from a scanner token.</p>
@@ -165,7 +189,7 @@ public abstract class AbstractCompiler {
      */
     public AbstractSpecimen parseSpecimen(String s)
             throws ScannerError {
-        return parseSpecimen(s, EXPRESSION_EQUALS | EXPRESSION_SINGLEQUOTE);
+        return parseSpecimen(s, AbstractSpecimen.MATCH_IGCS | AbstractSpecimen.MATCH_WORD);
     }
 
 }

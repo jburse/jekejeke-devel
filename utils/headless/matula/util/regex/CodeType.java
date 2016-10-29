@@ -59,6 +59,8 @@ public final class CodeType {
     public static final char LINE_BACKSLASH = '\\';
     public static final char LINE_SINGLE = '\'';
     public static final char LINE_ZERO = '0';
+    public static final char LINE_DOUBLE = '\"';
+    public static final char LINE_BACK = '`';
 
     public static final int SUB_CLASS_WHITESPACE = 0;
     public static final int SUB_CLASS_CONTROL = 1;

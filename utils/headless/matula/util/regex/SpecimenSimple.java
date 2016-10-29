@@ -26,15 +26,8 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecimenSimple extends AbstractSpecimen {
-    public static final String ERROR_SYNTAX_PHRASE_MISSING = "phrase_missing";
-    public static final String ERROR_SYNTAX_QUOTED_SINGLE = "quoted_single";
-    public static final String ERROR_SYNTAX_NOT_SUPPORTED = "not_supported";
-
     public static final char CH_ANNONYM_MULT = '*';
     public static final char CH_ANNONYM_SINGLE = '?';
-
-    public static final int MATCH_CASE = 0x00000100;
-    public static final int MATCH_QUOTE = 0x00000200;
 
     private static final int MAX_MATCH_BLANK = 15;
     private static final int MAX_MATCH_WILDCARD = 150;
@@ -338,7 +331,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     // compare characters
                     if (k < matchstr.length()) {
                         int ch2 = matchstr.codePointAt(k);
-                        if ((flag & MATCH_SENSITIV) != 0) {
+                        if ((flag & MATCH_IGCS) == 0) {
                             if (ch != ch2)
                                 return false;
                         } else {
@@ -539,7 +532,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     // compare characters
                     if (k > 0) {
                         int ch2 = matchstr.codePointBefore(k);
-                        if ((flag & MATCH_SENSITIV) != 0) {
+                        if ((flag & MATCH_IGCS) == 0) {
                             if (ch != ch2)
                                 return false;
                         } else {
@@ -670,7 +663,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
     public String patternReplace(boolean strip) {
         StringBuilder buf = new StringBuilder();
         int z = 0;
-        if ((flag & MATCH_SENSITIV) == 0) {
+        if ((flag & MATCH_IGCS) != 0) {
             int wildp = 0;
             int wilde = z < wildstart.length ? wildstart[z] : pattern.length();
             int matchp = 0;

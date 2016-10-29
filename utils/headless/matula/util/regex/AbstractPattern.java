@@ -76,6 +76,13 @@ public abstract class AbstractPattern {
      */
     public abstract int getMatchBound();
 
+    /**
+     * <p>Set the replacement target.</p>
+     *
+     * @param pat The replacement target.
+     */
+    public abstract void replaceTo(AbstractPattern pat);
+
     /******************************************************************/
     /* Find                                                           */
     /******************************************************************/

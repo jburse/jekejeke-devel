@@ -35,12 +35,12 @@ public final class CompilerSimple extends AbstractCompiler {
         ISO_COMPILERSIMPLE.setRemark(CompLang.ISO_COMPLANG);
         ISO_COMPILERSIMPLE.setMatchDelemiter(CodeType.ISO_CODETYPE);
     }
-    
+
     /**
      * <p>Creata a specimen from a string.</p>
      *
-     * @param pattern   The string.
-     * @param flag The specimen features to use.
+     * @param pattern The string.
+     * @param flag    The specimen features to use.
      * @return The specimen.
      * @throws ScannerError Parsing problem.
      */
@@ -62,65 +62,61 @@ public final class CompilerSimple extends AbstractCompiler {
      * @param expr The expression features to use.
      * @return The specimen.
      * @throws ScannerError Parsing problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     public AbstractSpecimen parseSpecimen(ScannerToken st, int expr)
             throws ScannerError, IOException {
         int flag = 0;
-        if ((expr & EXPRESSION_EQUALS) != 0) {
-            flag |= SpecimenSimple.MATCH_CASE;
+        if ((expr & AbstractSpecimen.MATCH_IGCS) != 0) {
+            flag |= AbstractSpecimen.MATCH_EQSN;
             if ("=".equals(st.getToken())) {
-                flag |= AbstractSpecimen.MATCH_SENSITIV;
                 st.nextToken();
+            } else {
+                flag |= AbstractSpecimen.MATCH_IGCS;
             }
-        } else {
-            flag |= AbstractSpecimen.MATCH_SENSITIV;
         }
         if ("".equals(st.getToken()) ||
                 "(".equals(st.getToken()) ||
                 ")".equals(st.getToken()) ||
                 "!".equals(st.getToken()))
-            throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_PHRASE_MISSING, st.getTokenOffset());
+            throw new ScannerError(ERROR_SYNTAX_PHRASE_MISSING,
+                    st.getTokenOffset());
         String pattern;
-        int pos;
-        if ((expr & EXPRESSION_SINGLEQUOTE) != 0) {
-            flag |= SpecimenSimple.MATCH_QUOTE;
-            if (st.getToken().startsWith("'")) {
-                flag |= SpecimenSimple.MATCH_PART;
+        if ((expr & AbstractSpecimen.MATCH_WORD) != 0) {
+            flag |= AbstractSpecimen.MATCH_SQTE;
+            int ch = st.getToken().codePointAt(0);
+            if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
-                        '\'', st.getTokenOffset() + 1);
-                pos = st.getTokenOffset();
-                st.nextToken();
-            } else if (st.getToken().startsWith("\"")) {
-                flag |= SpecimenSimple.MATCH_WORD;
-                pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
-                        '"', st.getTokenOffset() + 1);
-                pos = st.getTokenOffset();
-                if (st.getDelemiter().singleToken(pattern))
-                    throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_QUOTED_SINGLE, st.getTokenOffset());
-                st.nextToken();
+                        ch, st.getTokenOffset() + 1);
+                if (ch == CodeType.LINE_DOUBLE) {
+                    flag |= SpecimenSimple.MATCH_WORD;
+                } else if (ch == CodeType.LINE_SINGLE) {
+                    flag |= SpecimenSimple.MATCH_PART;
+                } else {
+                    throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
+                            st.getTokenOffset());
+                }
             } else {
                 flag |= SpecimenSimple.MATCH_WORD;
                 pattern = st.getToken();
-                pos = st.getTokenOffset();
-                st.nextToken();
             }
         } else {
-            if (st.getToken().startsWith("'"))
-                throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_NOT_SUPPORTED, st.getTokenOffset());
-            if (st.getToken().startsWith("\"")) {
+            int ch = st.getToken().codePointAt(0);
+            if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
-                        '"', st.getTokenOffset() + 1);
-                pos = st.getTokenOffset();
-                if (st.getDelemiter().singleToken(pattern))
-                    throw new ScannerError(SpecimenSimple.ERROR_SYNTAX_QUOTED_SINGLE, st.getTokenOffset());
-                st.nextToken();
+                        ch, st.getTokenOffset() + 1);
+                if (ch == CodeType.LINE_DOUBLE) {
+                    /* */
+                } else {
+                    throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
+                            st.getTokenOffset());
+                }
             } else {
                 pattern = st.getToken();
-                pos = st.getTokenOffset();
-                st.nextToken();
             }
         }
+        int pos = st.getTokenOffset();
+        st.nextToken();
         SpecimenSimple pm = new SpecimenSimple();
         pm.setPatDelemiter(getPatDelemiter());
         pm.setMatchDelemiter(getMatchDelemiter());

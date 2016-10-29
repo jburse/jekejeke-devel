@@ -217,8 +217,8 @@ public final class CompLang {
                                 throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, offset + i);
                             break;
                         case CodeType.LINE_SINGLE:
-                        case '"':
-                        case '`':
+                        case CodeType.LINE_DOUBLE:
+                        case CodeType.LINE_BACK:
                         case CodeType.LINE_BACKSLASH:
                             buf.appendCodePoint(k);
                             break;
@@ -308,8 +308,8 @@ public final class CompLang {
                         buf.appendCodePoint('v');
                         break;
                     case CodeType.LINE_SINGLE:
-                    case '\"':
-                    case '`':
+                    case CodeType.LINE_DOUBLE:
+                    case CodeType.LINE_BACK:
                     case CodeType.LINE_BACKSLASH:
                         buf.appendCodePoint(k);
                         break;
