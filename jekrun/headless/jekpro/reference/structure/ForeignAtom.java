@@ -145,40 +145,6 @@ public final class ForeignAtom {
     /****************************************************************/
 
     /**
-     * <p>Determine the length of a string in words.</p>
-     *
-     * @param str The string.
-     * @return The length in words.
-     */
-    public static int sysAtomWordLen(String str) {
-        return str.length();
-    }
-
-    /**
-     * <p>Determine a sub string.</p>
-     *
-     * @param str  The string.
-     * @param from The from word index.
-     * @param to   The to word index.
-     * @return The sub string.
-     */
-    public static String sysAtomWordSubstring(String str, int from, int to) {
-        return str.substring(from, to);
-    }
-
-    /**
-     * <p>Determine the length of a sub string in code points.</p>
-     *
-     * @param str  The string.
-     * @param from The from word index.
-     * @param to   The to word index.
-     * @return The length in code points.
-     */
-    public static int sysAtomWordCount(String str, int from, int to) {
-        return str.codePointCount(from, to);
-    }
-
-    /**
      * <p>Enumerate the positions in a string.</p>
      * <p>If to &lt; from enumerate backwards.</p>
      *
@@ -215,39 +181,6 @@ public final class ForeignAtom {
             }
         }
         return pos;
-    }
-
-    /**
-     * <p>Convert a code point position to a word position.</p>
-     * <p>If off &lt; 0 convert backwards.</p>
-     *
-     * @param from The from word index.
-     * @param off  The code point offset.
-     * @return The word position.
-     */
-    public static int sysAtomWordOffset(String str, int from, int off)
-            throws InterpreterMessage {
-        try {
-            return str.offsetByCodePoints(from, off);
-        } catch (IndexOutOfBoundsException x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.representationError("index bounds"));
-        }
-    }
-
-    /**
-     * <p>Check whether a string region matches another string.</p>
-     *
-     * @param str   The string.
-     * @param toff  The offset in words.
-     * @param other The other string.
-     * @param ooff  The other offset in words.
-     * @param len   The length in words.
-     * @return True if the region matches, otherwise false.
-     */
-    public static boolean sysAtomWordMatch(String str, int toff,
-                                           String other, int ooff, int len) {
-        return str.regionMatches(toff, other, ooff, len);
     }
 
     /****************************************************************/

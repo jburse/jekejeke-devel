@@ -380,28 +380,28 @@ number_codes(Number, Codes) :-
 /****************************************************************/
 
 :- private sys_atom_word_len/2.
-:- foreign(sys_atom_word_len/2, 'ForeignAtom',
-      sysAtomWordLen('String')).
+:- virtual sys_atom_word_len/2.
+:- foreign(sys_atom_word_len/2, 'String', length).
 
 :- private sys_atom_word_substring/4.
-:- foreign(sys_atom_word_substring/4, 'ForeignAtom',
-      sysAtomWordSubstring('String',int,int)).
+:- virtual sys_atom_word_substring/4.
+:- foreign(sys_atom_word_substring/4, 'String', substring(int,int)).
 
 :- private sys_atom_word_count/4.
-:- foreign(sys_atom_word_count/4, 'ForeignAtom',
-      sysAtomWordCount('String',int,int)).
+:- virtual sys_atom_word_count/4.
+:- foreign(sys_atom_word_count/4, 'String', codePointCount(int,int)).
 
 :- private sys_atom_word_pos/4.
 :- foreign(sys_atom_word_pos/4, 'ForeignAtom',
       sysAtomWordPos('CallOut','String',int,int)).
 
 :- private sys_atom_word_offset/4.
-:- foreign(sys_atom_word_offset/4, 'ForeignAtom',
-      sysAtomWordOffset('String',int,int)).
+:- virtual sys_atom_word_offset/4.
+:- foreign(sys_atom_word_offset/4, 'String', offsetByCodePoints(int,int)).
 
 :- private sys_atom_word_match/5.
-:- foreign(sys_atom_word_match/5, 'ForeignAtom',
-      sysAtomWordMatch('String',int,'String',int,int)).
+:- virtual sys_atom_word_match/5.
+:- foreign(sys_atom_word_match/5, 'String', regionMatches(int,'String',int,int)).
 
 /****************************************************************/
 /* SWI-Prolog Inspired                                          */
