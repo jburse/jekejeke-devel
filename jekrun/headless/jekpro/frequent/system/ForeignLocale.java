@@ -327,7 +327,7 @@ public final class ForeignLocale {
      * <p>Extract the message parameters.</p>
      * <p>A parameter is extracted according to the messsage pattern:</p>
      * <pre>
-     *     parasq: The argument is converted with Source.shortName() and TermLiteral.toString()
+     *     parasq: The argument is converted with AbstractSource.shortName() and TermLiteral.toString()
      *     paraq: The argument is converted with TermLiteral.toString(FLAG_QUOT,inter)
      *     para: The argument is converted with TermLiteral.toString(0,inter)
      * </pre>

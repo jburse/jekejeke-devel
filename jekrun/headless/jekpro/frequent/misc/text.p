@@ -164,12 +164,14 @@ sys_type_name(9, graph).
  * The ternary predicate allows specifying match options O. For a list
  * of match options see the API documentation.
  */
+% match(+Atom, +Pattern)
 :- public match/2.
 match(S, P) :-
    sys_get_iso_compiler(C),
    sys_create_specimen(C, P, H),
    sys_match_pattern(H, S).
 
+% match(+Atom, +Pattern, +PatternOptions)
 :- public match/3.
 match(S, P, O) :-
    sys_get_iso_compiler(C),
@@ -185,6 +187,7 @@ match(S, P, O) :-
  * quinary predicate allows specifying match and replaces options O.
  * For a list of match and replace options see the API documentation.
  */
+% replace(+Atom, +Pattern, +Pattern, -Atom)
 :- public replace/4.
 replace(S, P, R, T) :-
    sys_get_iso_compiler(C),
@@ -193,6 +196,7 @@ replace(S, P, R, T) :-
    sys_replace_to(H, J),
    sys_pattern_replace(H, S, T).
 
+% replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
 :- public replace/5.
 replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
@@ -208,6 +212,7 @@ replace(S, P, R, T, O) :-
  * These predicates work similar to the predicates replace/4 and
  * replace/5 except that they search backwards.
  */
+% last_replace(+Atom, +Pattern, +Pattern, -Atom)
 :- public last_replace/4.
 last_replace(S, P, R, T) :-
    sys_get_iso_compiler(C),
@@ -216,6 +221,7 @@ last_replace(S, P, R, T) :-
    sys_replace_to(H, J),
    sys_pattern_last_replace(H, S, T).
 
+% last_replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
 :- public last_replace/5.
 last_replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
@@ -256,6 +262,7 @@ last_replace(S, P, R, T, O) :-
  * sys_pattern_options(O, Q):
  * The predicate succeeds in Q for the value of the options O.
  */
+% sys_pattern_options(+PatternOptions, -Integer)
 :- private sys_pattern_options/2.
 sys_pattern_options(O, Q) :-
    sys_get_match_whole(M),
@@ -266,6 +273,7 @@ sys_pattern_options(O, Q) :-
  * The predicate succeeds in Q for the value of the
  * options O starting with the default value P.
  */
+% sys_pattern_options(+PatternOptions, +Integer, -Integer)
 :- private sys_pattern_options/3.
 sys_pattern_options(V, _, _) :-
    var(V),
@@ -283,6 +291,7 @@ sys_pattern_options(L, _, _) :-
  * option O starting with the default value P.
  */
 :- private sys_pattern_option/3.
+% sys_pattern_option(+PatternOption, +Integer, -Integer)
 sys_pattern_option(V, _, _) :-
    var(V),
    throw(error(instantiation_error,_)).
@@ -300,6 +309,7 @@ sys_pattern_option(O, _, _) :-
  * The predicate succeeds in Q for the value of the
  * boundary option O starting with the default value P.
  */
+% sys_option_boundary(+BoundaryOption, +Integer, -Integer)
 :- private sys_option_boundary/3.
 sys_option_boundary(V, _, _) :-
    var(V),
@@ -324,6 +334,7 @@ sys_option_boundary(O, _, _) :-
  * The predicate succeeds in Q for the value of the
  * ignore case option O starting with the default value P.
  */
+% sys_option_ignore_case(+IgnoreCaseFlag, +Integer, -Integer)
 :- private sys_option_ignore_case/3.
 sys_option_ignore_case(V, _, _) :-
    var(V),
@@ -342,6 +353,7 @@ sys_option_ignore_case(O, _, _) :-
  * The predicate succeeds in Q for the value of the
  * style option O starting with the default value P.
  */
+% sys_option_style(+StyleOption, +Integer, -Integer)
 :- private sys_option_style/3.
 sys_option_style(V, _, _) :-
    var(V),
