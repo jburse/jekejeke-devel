@@ -26,12 +26,6 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecimenSimple extends AbstractSpecimen {
-    public static final char CH_ANNONYM_MULT = '*';
-    public static final char CH_ANNONYM_SINGLE = '?';
-
-    private static final int MAX_MATCH_BLANK = 15;
-    private static final int MAX_MATCH_WILDCARD = 150;
-
     private static final int MASK_PAT_BLOCK = 0x00000100;
 
     private int[] wildstart;
@@ -41,6 +35,10 @@ public final class SpecimenSimple extends AbstractSpecimen {
     private String matchstr;
     private int searchpos;
     private int matchbound;
+
+    /******************************************************************/
+    /* Preparation                                                    */
+    /******************************************************************/
 
     /**
      * Count the wild cards. There are implicit and explicit
@@ -62,14 +60,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     int ch = pattern.codePointAt(i);
                     i += Character.charCount(ch);
                 }
-                // add a implicit wildcard
+                // add an implicit wildcard
                 k++;
 
                 // inside blanks are bounded
                 if (j != 0 && i != pattern.length())
                     matchbound += MAX_MATCH_BLANK;
             } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                // add a implicit wildcard
+                // add an implicit wildcard
                 k++;
             }
             if (i < pattern.length()) {
@@ -93,11 +91,12 @@ public final class SpecimenSimple extends AbstractSpecimen {
         if ((flag & MATCH_WORD) != 0) {
             // end was already handled in loop by word break */
         } else if ((flag & MATCH_PART) != 0) {
-            // add a implicit wildcard
+            // add an implicit wildcard
             k++;
         }
         matchstart = new int[k];
         matchend = new int[k];
+
         // now that we know the number of matches we populate wild start and end
         wildstart = new int[k];
         wildend = new int[k];
@@ -113,12 +112,12 @@ public final class SpecimenSimple extends AbstractSpecimen {
                     i += Character.charCount(ch);
                 }
 
-                // add a implicit wildcard
+                // add an implicit wildcard
                 wildstart[k] = j;
                 wildend[k] = i;
                 k++;
             } else if ((flag & MATCH_PART) != 0 && i == 0) {
-                // add a implicit wildcard
+                // add an implicit wildcard
                 wildstart[k] = i;
                 wildend[k] = i;
                 k++;
@@ -141,12 +140,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
         if ((flag & MATCH_WORD) != 0) {
             // end was already handled in loop by word break
         } else if ((flag & MATCH_PART) != 0) {
-            // add a implicit wildcard
+            // add an implicit wildcard
             wildstart[k] = i;
             wildend[k] = i;
             k++;
         }
         if (k != wildstart.length)
+            throw new IllegalArgumentException("prepare problem");
+        if (i != pattern.length())
             throw new IllegalArgumentException("prepare problem");
     }
 
@@ -192,15 +193,15 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, pattern)) {
                     int j = i;
 
-                    // assure that previous word end was reached
-                    if (j != 0 && !matchdelemiter.wordBreak1(k, matchstr))
-                        return false;
-
                     // skip the word break
                     while (!patdelemiter.wordBreak2(i, pattern)) {
                         int ch = pattern.codePointAt(i);
                         i += Character.charCount(ch);
                     }
+
+                    // assure that previous word end was reached
+                    if (j != 0 && !matchdelemiter.wordBreak1(k, matchstr))
+                        return false;
 
                     int u = k;
                     for (; ; ) {

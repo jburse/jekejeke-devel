@@ -759,6 +759,7 @@ public final class ScannerToken {
                             return;
                         continue;
                     }
+                    buf.appendCodePoint(ch);
                     token = buf.toString();
                     return;
                 case CodeType.SUB_CLASS_INVALID:

@@ -3,7 +3,7 @@ package matula.util.regex;
 import java.io.IOException;
 
 /**
- * <p>Compiler for a simple patterns.</p>
+ * <p>Compiler for an advanced patterns.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -27,14 +27,7 @@ import java.io.IOException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class CompilerSimple extends AbstractCompiler {
-    public static final CompilerSimple ISO_COMPILERSIMPLE = new CompilerSimple();
-
-    static {
-        ISO_COMPILERSIMPLE.setPatDelemiter(CodeType.ISO_PAT_CODETYPE);
-        ISO_COMPILERSIMPLE.setRemark(CompLang.ISO_COMPLANG);
-        ISO_COMPILERSIMPLE.setMatchDelemiter(CodeType.ISO_CODETYPE);
-    }
+public final class CompilerAdvanced extends AbstractCompiler {
 
     /**
      * <p>Creata a specimen from a string.</p>
@@ -46,7 +39,7 @@ public final class CompilerSimple extends AbstractCompiler {
      */
     public AbstractSpecimen createSpecimen(String pattern, int flag)
             throws ScannerError {
-        SpecimenSimple pm = new SpecimenSimple();
+        SpecimenAdvanced pm = new SpecimenAdvanced();
         pm.setPatDelemiter(getPatDelemiter());
         pm.setMatchDelemiter(getMatchDelemiter());
         pm.setPattern(pattern);
@@ -56,11 +49,11 @@ public final class CompilerSimple extends AbstractCompiler {
     }
 
     /**
-     * <p>Parse a specimen from a scanner token.</p>
+     * <p>Parse a pattern.</p>
      *
-     * @param st   The scanner token.
-     * @param expr The expression features to use.
-     * @return The specimen.
+     * @param st   The tokenizer.
+     * @param expr The parse features to use.
+     * @return The pattern.
      * @throws ScannerError Parsing problem.
      * @throws IOException  IO error.
      */
@@ -68,11 +61,11 @@ public final class CompilerSimple extends AbstractCompiler {
             throws ScannerError, IOException {
         int flag = 0;
         if ((expr & AbstractSpecimen.MATCH_IGCS) != 0) {
-            flag |= AbstractSpecimen.MATCH_EQSN;
+            flag |= SpecimenAdvanced.MATCH_EQSN;
             if ("=".equals(st.getToken())) {
                 st.nextToken();
             } else {
-                flag |= AbstractSpecimen.MATCH_IGCS;
+                flag |= SpecimenAdvanced.MATCH_IGCS;
             }
         }
         if ("".equals(st.getToken()) ||
@@ -89,15 +82,15 @@ public final class CompilerSimple extends AbstractCompiler {
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
                         ch, st.getTokenOffset() + 1);
                 if (ch == CodeType.LINE_DOUBLE) {
-                    flag |= SpecimenSimple.MATCH_WORD;
+                    flag |= SpecimenAdvanced.MATCH_WORD;
                 } else if (ch == CodeType.LINE_SINGLE) {
-                    flag |= SpecimenSimple.MATCH_PART;
+                    flag |= SpecimenAdvanced.MATCH_PART;
                 } else {
                     throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
                             st.getTokenOffset());
                 }
             } else {
-                flag |= SpecimenSimple.MATCH_WORD;
+                flag |= SpecimenAdvanced.MATCH_WORD;
                 pattern = st.getToken();
             }
         } else {
@@ -117,11 +110,11 @@ public final class CompilerSimple extends AbstractCompiler {
         }
         int pos = st.getTokenOffset();
         st.nextToken();
-        SpecimenSimple pm = new SpecimenSimple();
+        SpecimenAdvanced pm = new SpecimenAdvanced();
         pm.setPatDelemiter(getPatDelemiter());
         pm.setMatchDelemiter(getMatchDelemiter());
-        pm.setPattern(pattern);
         pm.setFlag(flag);
+        pm.setPattern(pattern);
         try {
             pm.prepareMatch();
         } catch (ScannerError x) {

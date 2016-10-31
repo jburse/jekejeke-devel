@@ -42,6 +42,12 @@ public abstract class AbstractSpecimen extends AbstractPattern {
 
     public static final int MASK_PAT_BOUNCE = 0x00000001;
 
+    public static final char CH_ANNONYM_MULT = '*';
+    public static final char CH_ANNONYM_SINGLE = '?';
+
+    protected static final int MAX_MATCH_BLANK = 15;
+    protected static final int MAX_MATCH_WILDCARD = 150;
+
     protected String pattern;
     protected int flag;
     protected String target;
