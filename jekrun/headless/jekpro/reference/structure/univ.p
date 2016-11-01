@@ -75,8 +75,6 @@
  */
 % functor(+-Term, -+Atom, -+Integer)
 % already defined in member
-% :- public functor/3.
-% :- special(functor/3, 'SpecialUniv', 1).
 
 /**
  * arg(K, X, Y): [ISO 8.5.2]
@@ -86,7 +84,7 @@
  */
 % arg(+Integer, +Term, -Term)
 :- public arg/3.
-:- special(arg/3, 'SpecialUniv', 2).
+:- special(arg/3, 'SpecialUniv', 1).
 
 /**
  * set_arg(K, X, Y, Z):
@@ -96,7 +94,7 @@
  */
 % set_arg(+Integer, +Term, +Term, -Term)
 :- public set_arg/4.
-:- special(set_arg/4, 'SpecialUniv', 3).
+:- special(set_arg/4, 'SpecialUniv', 2).
 
 /**
  * X = Y: [ISO 8.2.1]
@@ -104,7 +102,7 @@
  */
 % +Term = +Term
 :- public = /2.
-:- special(= /2, 'SpecialUniv', 4).
+:- special(= /2, 'SpecialUniv', 3).
 
 /**
  * unify_with_occurs_check(X, Y): [ISO 8.2.2]
@@ -112,7 +110,7 @@
  */
 % unify_with_occurs_check(+Term, +Term)
 :- public unify_with_occurs_check/2.
-:- special(unify_with_occurs_check/2, 'SpecialUniv', 5).
+:- special(unify_with_occurs_check/2, 'SpecialUniv', 4).
 
 /**
  * X \= Y: [ISO 8.2.3]
@@ -120,7 +118,7 @@
  */
 % +Term \= +Term
 :- public \= /2.
-:- special(\= /2, 'SpecialUniv', 6).
+:- special(\= /2, 'SpecialUniv', 5).
 
 /**
  * copy_term(X, Y): [ISO 8.5.4]
@@ -128,5 +126,5 @@
  */
 % copy_term(+Term, -Term)
 :- public copy_term/2.
-:- special(copy_term/2, 'SpecialUniv', 7).
+:- special(copy_term/2, 'SpecialUniv', 6).
 

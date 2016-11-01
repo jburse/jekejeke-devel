@@ -114,27 +114,23 @@
  * The predicate succeeds when X is a variable.
  */
 % already defined in member
-% :- public var/1.
-% :- special(var/1, 'SpecialType', 9).
 
 /**
  * nonvar(X): [ISO 8.3.7]
  * The predicate succeeds when X is not a variable, i.e. atomic or compound.
  */
 % already defined in member
-% :- public nonvar/1.
-% :- special(nonvar/1, 'SpecialType', 10).
 
 /**
  * float32(X):
  * The predicate succeeds when X is a float32.
  */
 :- public float32/1.
-:- special(float32/1, 'SpecialType', 11).
+:- special(float32/1, 'SpecialType', 9).
 
 /**
  * float64(X):
  * The predicate succeeds when X is a float64.
  */
 :- public float64/1.
-:- special(float64/1, 'SpecialType', 12).
+:- special(float64/1, 'SpecialType', 10).
