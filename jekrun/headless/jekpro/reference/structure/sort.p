@@ -120,7 +120,9 @@ term_hash(_, _).
 term_hash(T, D, R, H) :-
    sys_term_ground(T, D), !,
    sys_term_hash(T, D, J),
-   H is J mod R.
+   (  R == 0
+   -> H = J
+   ;  H is J mod R).
 term_hash(_, _, _, _).
 
 :- private sys_term_ground/2.

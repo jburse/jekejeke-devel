@@ -399,13 +399,14 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(structure/lexical)).
 :- ensure_loaded(library(structure/univ)).
 :- ensure_loaded(library(structure/atom)).
-:- ensure_loaded(library(structure/sort)).
 
 :- ensure_loaded(library(runtime/meta)).
 :- ensure_loaded(library(runtime/quali)).
 :- ensure_loaded(library(runtime/logic)).
 :- ensure_loaded(library(runtime/dynamic)).
 :- ensure_loaded(library(runtime/session)).
+
+:- ensure_loaded(library(structure/sort)).
 
 :- ensure_loaded(library(standard/apply)).
 :- ensure_loaded(library(standard/bags)).
