@@ -28,4 +28,6 @@ package matula.util.regex;
 public class Match {
     public int start;
     public int end;
+    public int origstart;
+    public int origend;
 }

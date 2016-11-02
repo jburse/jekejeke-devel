@@ -26,6 +26,6 @@ package matula.util.regex;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class MatchName extends Match {
-    String name;
-    int index;
+    public String name;
+    public int index;
 }

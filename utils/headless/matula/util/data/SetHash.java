@@ -190,7 +190,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      */
     public SetEntry<E> predecessor(SetEntry<E> s) {
         SetHashEntry<E> e = (SetHashEntry<E>) s;
-        SetHashEntry<E> h = e.prev;
+        SetHashEntry<E> h = e.next;
         if (h != null)
             return h;
         Object key = e.key;

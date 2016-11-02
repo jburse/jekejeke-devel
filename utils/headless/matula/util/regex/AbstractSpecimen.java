@@ -123,9 +123,7 @@ public abstract class AbstractSpecimen extends AbstractPattern {
      *
      * @param pat The replacement target.
      */
-    public void replaceTo(AbstractPattern pat) {
-        setTarget(((AbstractSpecimen) pat).getPattern());
-    }
+    public abstract void replaceTo(AbstractPattern pat);
 
     /******************************************************************/
     /* Find                                                           */

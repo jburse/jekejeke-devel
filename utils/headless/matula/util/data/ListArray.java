@@ -60,27 +60,28 @@ public final class ListArray<E> {
     }
 
     /**
-     * <p>Returns the index of the first occurence.</p>
+     * <p>Retrieve an element.</p>
      *
-     * @param o The object.
-     * @return The index.
+     * @param i The index.
+     * @return The element.
      */
-    public int indexOf(Object o) {
-        for (int i = 0; i < size; i++)
-            if (o != null ? o.equals(table[i]) : null == table[i])
-                return i;
-        return -1;
+    public E get(int i) {
+        return (E) table[i];
     }
 
     /**
-     * <p>Checks whether the object is contained in the list.</p>
+     * <p>Set an element.</p>
      *
-     * @param o The object.
-     * @return True if the object is contained in the list, otherwise false.
+     * @param i The index.
+     * @param e The element.
      */
-    public boolean contains(Object o) {
-        return indexOf(o) != -1;
+    public void set(int i, E e) {
+        table[i] = e;
     }
+
+    /***************************************************************/
+    /* Add Family                                                  */
+    /***************************************************************/
 
     /**
      * <p>Add an element at the end.</p>
@@ -108,6 +109,37 @@ public final class ListArray<E> {
         size++;
     }
 
+    /***************************************************************/
+    /* Contains Family                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Returns the index of the first occurence.</p>
+     *
+     * @param o The object.
+     * @return The index.
+     */
+    public int indexOf(Object o) {
+        for (int i = 0; i < size; i++)
+            if (o != null ? o.equals(table[i]) : null == table[i])
+                return i;
+        return -1;
+    }
+
+    /**
+     * <p>Checks whether the object is contained in the list.</p>
+     *
+     * @param o The object.
+     * @return True if the object is contained in the list, otherwise false.
+     */
+    public boolean contains(Object o) {
+        return indexOf(o) != -1;
+    }
+
+    /***************************************************************/
+    /* Remove Family                                               */
+    /***************************************************************/
+
     /**
      * <p>Remove an element at a position.</p>
      *
@@ -134,24 +166,24 @@ public final class ListArray<E> {
     }
 
     /**
-     * <p>Retrieve an element.</p>
-     *
-     * @param i The index.
-     * @return The element.
+     * <p>Clear the table.</p>
      */
-    public E get(int i) {
-        return (E) table[i];
+    public void clear() {
+        if (size == 0)
+            return;
+        if (table.length != MIN_SIZE) {
+            table = new Object[MIN_SIZE];
+        } else {
+            int n = Math.min(size, MIN_SIZE);
+            for (int i = 0; i < n; i++)
+                table[i] = null;
+        }
+        size = 0;
     }
 
-    /**
-     * <p>Set an element.</p>
-     *
-     * @param i The index.
-     * @param e The element.
-     */
-    public void set(int i, E e) {
-        table[i] = e;
-    }
+    /***************************************************************/
+    /* Copy Family                                                 */
+    /***************************************************************/
 
     /**
      * <p>Copy elements to an array.</p>
@@ -173,6 +205,10 @@ public final class ListArray<E> {
             System.arraycopy(table, 0, target, pos, size);
     }
 
+    /***************************************************************/
+    /* Resize Helper                                              */
+    /***************************************************************/
+
     /**
      * <p>Resize the list array.</p>
      */
@@ -189,27 +225,11 @@ public final class ListArray<E> {
      *
      * @param s The new size.
      */
-    public void resize(int s) {
+    private void resize(int s) {
         Object[] newtable = new Object[s];
         int k = Math.min(s, table.length);
         System.arraycopy(table, 0, newtable, 0, k);
         table = newtable;
-    }
-
-    /**
-     * <p>Clear the table.</p>
-     */
-    public void clear() {
-        if (size == 0)
-            return;
-        if (table.length != MIN_SIZE) {
-            table = new Object[MIN_SIZE];
-        } else {
-            int n = Math.min(size, MIN_SIZE);
-            for (int i = 0; i < n; i++)
-                table[i] = null;
-        }
-        size = 0;
     }
 
 }
