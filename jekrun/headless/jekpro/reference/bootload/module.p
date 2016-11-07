@@ -406,13 +406,12 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(runtime/dynamic)).
 :- ensure_loaded(library(runtime/session)).
 
-:- ensure_loaded(library(structure/sort)).
-
 :- ensure_loaded(library(standard/apply)).
 :- ensure_loaded(library(standard/bags)).
 :- ensure_loaded(library(standard/expand)).
 :- ensure_loaded(library(standard/dcg)).
 :- ensure_loaded(library(standard/signal)).
+:- ensure_loaded(library(standard/sort)).
 
 :- ensure_loaded(library(stream/stream)).
 :- ensure_loaded(library(stream/byte)).

@@ -158,47 +158,47 @@ sys_type_name(9, graph).
 /******************************************************************/
 
 /**
- * match(S, P):
- * match(S, P, O):
+ * pattern_match(S, P):
+ * pattern_match(S, P, O):
  * The predicate succeeds when the atom S matches the shell pattern P.
  * The ternary predicate allows specifying match options O. For a list
  * of match options see the API documentation.
  */
-% match(+Atom, +Pattern)
-:- public match/2.
-match(S, P) :-
+% pattern_match(+Atom, +Pattern)
+:- public pattern_match/2.
+pattern_match(S, P) :-
    sys_get_iso_compiler(C),
    sys_create_specimen(C, P, H),
    sys_match_pattern(H, S).
 
-% match(+Atom, +Pattern, +PatternOptions)
-:- public match/3.
-match(S, P, O) :-
+% pattern_match(+Atom, +Pattern, +PatternOptions)
+:- public pattern_match/3.
+pattern_match(S, P, O) :-
    sys_get_iso_compiler(C),
    sys_pattern_options(O, Q),
    sys_make_pattern(C, P, Q, H),
    sys_match_pattern(H, S).
 
 /**
- * replace(S, P, R, T):
- * replace(S, P, R, T, O):
+ * pattern_replace(S, P, R, T):
+ * pattern_replace(S, P, R, T, O):
  * The predicate succeeds when the atom S matches the shell pattern P,
  * and when replacing the matched pattern by R yields the atom T. The
  * quinary predicate allows specifying match and replaces options O.
  * For a list of match and replace options see the API documentation.
  */
-% replace(+Atom, +Pattern, +Pattern, -Atom)
-:- public replace/4.
-replace(S, P, R, T) :-
+% pattern_replace(+Atom, +Pattern, +Pattern, -Atom)
+:- public pattern_replace/4.
+pattern_replace(S, P, R, T) :-
    sys_get_iso_compiler(C),
    sys_create_specimen(C, P, H),
    sys_create_specimen(C, R, J),
    sys_replace_to(H, J),
    sys_pattern_replace(H, S, T).
 
-% replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
-:- public replace/5.
-replace(S, P, R, T, O) :-
+% pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
+:- public pattern_replace/5.
+pattern_replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
    sys_pattern_options(O, Q),
    sys_make_pattern(C, P, Q, H),
@@ -207,23 +207,23 @@ replace(S, P, R, T, O) :-
    sys_pattern_replace(H, S, T).
 
 /**
- * last_replace(S, P, R, T):
- * last_replace(S, P, R, T, O):
+ * last_pattern_replace(S, P, R, T):
+ * last_pattern_replacee(S, P, R, T, O):
  * These predicates work similar to the predicates replace/4 and
  * replace/5 except that they search backwards.
  */
-% last_replace(+Atom, +Pattern, +Pattern, -Atom)
-:- public last_replace/4.
-last_replace(S, P, R, T) :-
+% last_pattern_replace(+Atom, +Pattern, +Pattern, -Atom)
+:- public last_pattern_replace/4.
+last_pattern_replace(S, P, R, T) :-
    sys_get_iso_compiler(C),
    sys_create_specimen(C, P, H),
    sys_create_specimen(C, R, J),
    sys_replace_to(H, J),
    sys_pattern_last_replace(H, S, T).
 
-% last_replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
-:- public last_replace/5.
-last_replace(S, P, R, T, O) :-
+% last_pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
+:- public last_pattern_replace/5.
+last_pattern_replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
    sys_pattern_options(O, Q),
    sys_make_pattern(C, P, Q, H),
