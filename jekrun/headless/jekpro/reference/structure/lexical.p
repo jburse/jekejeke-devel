@@ -123,3 +123,20 @@
 % compare(-Atom, +Term, +Term)
 :- public compare/3.
 :- special(compare/3, 'SpecialLexical', 6).
+
+/**
+ * locale_compare(O, X, Y):
+ * locale_compare(C, O, X, Y):
+ * The predicate succceeds when O unifies with the result of locale
+ * comparing X to Y. The result is one of the following atoms <, =
+ * or >. The quaternary predicate allows specifying a locale C.
+ */
+% locale_compare(-Atom, +Term, +Term)
+:- public locale_compare/3.
+locale_compare(O, X, Y) :-
+   current_prolog_flag(sys_locale, C),
+   locale_compare(C, O, X, Y).
+
+% locale_compare(+Atom, -Atom, +Term, +Term)
+:- public locale_compare/4.
+:- special(locale_compare/4, 'SpecialLexical', 7).

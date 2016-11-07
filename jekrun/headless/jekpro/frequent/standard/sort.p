@@ -130,3 +130,35 @@ term_hash(_, _, _, _).
 
 :- public sys_term_hash/3.
 :- special(sys_term_hash/3, 'SpecialSort', 6).
+
+/**
+ * locale_sort(L, R):
+ * locale_sort(C, L, R):
+ * The predicate local sorts the list L and unifies the result with R.
+ * The ternary predicate allows specifying a locale C.
+ */
+% locale_sort(+List, -List)
+:- public locale_sort/2.
+locale_sort(L, R) :-
+   current_prolog_flag(sys_locale, C),
+   locale_sort(C, L, R).
+
+% locale_sort(+Atom, +List, -List)
+:- public locale_sort/3.
+:- special(locale_sort/3, 'SpecialSort', 7).
+
+/**
+ * locale_keysort(L, R):
+ * locale_keysort(C, L, R):
+ * The predicate locale key-sorts the pair list L and unifies the result
+ * with R. The ternary predicate allows specifying a locale C.
+ */
+% locale_keysort(+Pairs, -Pairs)
+:- public locale_keysort/2.
+locale_keysort(L, R) :-
+   current_prolog_flag(sys_locale, C),
+   locale_keysort(C, L, R).
+
+% locale_keysort(+Atom, +Pairs, -Pairs)
+:- public locale_keysort/3.
+:- special(locale_keysort/3, 'SpecialSort', 8).
