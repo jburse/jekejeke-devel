@@ -119,18 +119,10 @@
 
 /**
  * ground(X): [TC2 8.3.10]
- * The predicate succeeds when X is a ground term, i.e. contains no variables.
+ * The predicate succeeds when X is a ground term, i.e. contains
+ * no variables.
  */
 % already defined in member
-
-/**
- * acyclic_term(X): [TC2 8.3.11]
- * The predicate succeeds when X is an acyclic term, i.e. contains no instantiation cycles.
- */
-% acyclic_term(+Term)
-:- public acyclic_term/1.
-:- special(acyclic_term/1, 'SpecialVars', 7).
-
 
 /**
  * sys_get_variable_names(L):
@@ -139,5 +131,13 @@
  */
 % sys_get_variable_names(-VariableNames)
 :- public sys_get_variable_names/1.
-:- special(sys_get_variable_names/1, 'SpecialVars', 8).
+:- special(sys_get_variable_names/1, 'SpecialVars', 7).
 
+/**
+ * acyclic_term(X): [TC2 8.3.11]
+ * The predicate succeeds when X is an acyclic term, i.e. contains
+ * no cycles.
+ */
+% acyclic_term(+Term)
+:- public acyclic_term/1.
+:- special(acyclic_term/1, 'SpecialVars', 8).

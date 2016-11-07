@@ -104,8 +104,7 @@
  * term_hash(T, D, R, H):
  * The predicate succeeds when T is ground and when H unifies with the
  * hash code of T. The predicate also succeeds when T is non-ground, the H
- * argument is then simply ignored. The hash will be in the range from
- * -2147483648 to 2147483647. The quinary perdicate allows specifying a
+ * argument is then simply ignored. The quinary predicate allows specifying a
  * depth D and a modulus R. A negative depth D is interpreted as infinity.
  */
 % term_hash(+Term, -Integer)
