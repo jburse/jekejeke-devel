@@ -51,6 +51,8 @@ public abstract class AbstractSpecimen extends AbstractPattern {
     protected String pattern;
     protected int flag;
     protected String target;
+    protected String matchstr;
+    protected int searchpos;
 
     /**
      * <p>Set the pattern.</p>
@@ -104,6 +106,15 @@ public abstract class AbstractSpecimen extends AbstractPattern {
      */
     public String getTarget() {
         return target;
+    }
+
+    /**
+     * <p>Retrieve the match string.</p>
+     *
+     * @return The match string.
+     */
+    public String getMatchStr() {
+        return matchstr;
     }
 
     /******************************************************************/

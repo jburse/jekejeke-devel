@@ -31,9 +31,16 @@ public final class SpecimenSimple extends AbstractSpecimen {
     private static final int MASK_PAT_BLOCK = 0x00000100;
 
     private Match[] match;
-    private String matchstr;
-    private int searchpos;
     private int matchbound;
+
+    /**
+     * <p>Retreive the matches.</p>
+     *
+     * @return The matches.
+     */
+    public Match[] getMatch() {
+        return match;
+    }
 
     /******************************************************************/
     /* Preparation                                                    */
@@ -543,23 +550,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * @return The match start.
      */
     public int getMatchStart() {
-        return getMatchStart(true);
-    }
-
-    /**
-     * <p>Return the match start position.</p>
-     *
-     * @param strip True if exclude first word break match, otherwise false.
-     * @return The match start.
-     */
-    private int getMatchStart(boolean strip) {
         if ((flag & MATCH_WORD) != 0) {
-            int z = 0;
-            if (strip) {
-                return match[z].end;
-            } else {
-                return match[z].start;
-            }
+            return match[0].end;
         } else if ((flag & MATCH_PART) != 0) {
             return match[0].end;
         } else {
@@ -567,30 +559,14 @@ public final class SpecimenSimple extends AbstractSpecimen {
         }
     }
 
-
     /**
      * <p>Return the match end position.</p>
      *
      * @return The match end.
      */
     public int getMatchEnd() {
-        return getMatchEnd(true);
-    }
-
-    /**
-     * Return the end of the match.
-     *
-     * @param strip True if exclude last word break match, otherwise false.
-     * @return The end.
-     */
-    private int getMatchEnd(boolean strip) {
         if ((flag & MATCH_WORD) != 0) {
-            int z = match.length - 1;
-            if (strip) {
-                return match[z].start;
-            } else {
-                return match[z].end;
-            }
+            return match[(match.length - 1)].start;
         } else if ((flag & MATCH_PART) != 0) {
             return match[match.length - 1].start;
         } else {
@@ -662,14 +638,17 @@ public final class SpecimenSimple extends AbstractSpecimen {
                         int ch = target.codePointAt(i);
                         i += Character.charCount(ch);
                     }
-                    if (i < target.length() || !strip) {
+                    if (!strip) {
+                        buf.append(matchstr, (z == 0 ? 0 : match[z].start),
+                                (z == match.length - 1 ? matchstr.length() : match[z].end));
+                    } else {
                         buf.append(matchstr, match[z].start, match[z].end);
-                        wildp = match[z].origend;
-                        matchp = match[z].end;
-                        z++;
-                        wilde = z < match.length ? match[z].origstart : pattern.length();
-                        matche = z < match.length ? match[z].start : matchstr.length();
                     }
+                    wildp = match[z].origend;
+                    matchp = match[z].end;
+                    z++;
+                    wilde = z < match.length ? match[z].origstart : pattern.length();
+                    matche = z < match.length ? match[z].start : matchstr.length();
                 } else if ((flag & MATCH_PART) != 0 && i == 0) {
                     buf.append(matchstr, match[z].start, match[z].end);
                     wildp = match[z].origend;
@@ -688,8 +667,21 @@ public final class SpecimenSimple extends AbstractSpecimen {
                         wilde = z < match.length ? match[z].origstart : pattern.length();
                         matche = z < match.length ? match[z].start : matchstr.length();
                     } else {
-                        if (wildp < wilde && matchp < matche &&
-                                pattern.codePointAt(wildp) != matchstr.codePointAt(matchp)) {
+                        int chw;
+                        if (wildp < wilde) {
+                            chw = pattern.codePointAt(wildp);
+                            wildp += Character.charCount(chw);
+                        } else {
+                            chw = -1;
+                        }
+                        int chm;
+                        if (matchp < matche) {
+                            chm = matchstr.codePointAt(matchp);
+                            matchp += Character.charCount(chm);
+                        } else {
+                            chm = -1;
+                        }
+                        if (chw != -1 && chm != -1 && chw != chm) {
                             if (Character.isLowerCase(ch)) {
                                 buf.appendCodePoint(Character.toUpperCase(ch));
                             } else if (Character.isUpperCase(ch)) {
@@ -700,14 +692,6 @@ public final class SpecimenSimple extends AbstractSpecimen {
                         } else {
                             buf.appendCodePoint(ch);
                         }
-                        if (wildp < wilde) {
-                            int ch2 = pattern.codePointAt(wildp);
-                            wildp += Character.charCount(ch2);
-                        }
-                        if (matchp < matche) {
-                            int ch2 = matchstr.codePointAt(matchp);
-                            matchp += Character.charCount(ch2);
-                        }
                     }
                     i += Character.charCount(ch);
                 } else {
@@ -715,8 +699,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 }
             }
             if ((flag & MATCH_WORD) != 0) {
-                if (!strip)
-                    buf.append(matchstr, match[z - 1].end, matchstr.length());
+                /* already handled */
             } else if ((flag & MATCH_PART) != 0) {
                 if (!strip)
                     buf.append(matchstr, match[z].start, match[z].end);
@@ -729,10 +712,13 @@ public final class SpecimenSimple extends AbstractSpecimen {
                         int ch = target.codePointAt(i);
                         i += Character.charCount(ch);
                     }
-                    if (i < target.length() || !strip) {
+                    if (!strip) {
+                        buf.append(matchstr, (z == 0 ? 0 : match[z].start),
+                                (z == match.length - 1 ? matchstr.length() : match[z].end));
+                    } else {
                         buf.append(matchstr, match[z].start, match[z].end);
-                        z++;
                     }
+                    z++;
                 } else if ((flag & MATCH_PART) != 0 && i == 0) {
                     buf.append(matchstr, match[z].start, match[z].end);
                     z++;
@@ -751,14 +737,129 @@ public final class SpecimenSimple extends AbstractSpecimen {
                 }
             }
             if ((flag & MATCH_WORD) != 0) {
-                if (!strip)
-                    buf.append(matchstr, match[z - 1].end, matchstr.length());
+                /* already handled */
             } else if ((flag & MATCH_PART) != 0) {
                 if (!strip)
                     buf.append(matchstr, match[z].start, match[z].end);
             }
         }
         return buf.toString();
+    }
+
+    /**
+     * <p>Replace the match according to the replace pattern.</p>
+     * <p>For word and part only the region that matched is replaced.</p>
+     *
+     * @param buf The string builder.
+     */
+    public void patternReplace(StringBuilder buf) {
+        int z = 0;
+        int i = 0;
+        if ((flag & MATCH_IGCS) != 0) {
+            int wildp = 0;
+            int matchp = 0;
+            int wilde = z < match.length ? match[z].origstart : pattern.length();
+            int matche = z < match.length ? match[z].start : matchstr.length();
+            for (; ; ) {
+                if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, target)) {
+                    while (!patdelemiter.wordBreak2(i, target)) {
+                        int ch = target.codePointAt(i);
+                        i += Character.charCount(ch);
+                    }
+                    if (z != 0 && z != match.length - 1)
+                        buf.append(matchstr, match[z].start, match[z].end);
+                    wildp = match[z].origend;
+                    matchp = match[z].end;
+                    z++;
+                    wilde = z < match.length ? match[z].origstart : pattern.length();
+                    matche = z < match.length ? match[z].start : matchstr.length();
+                } else if ((flag & MATCH_PART) != 0 && i == 0) {
+                    /* do nothing */
+                    wildp = match[z].origend;
+                    matchp = match[z].end;
+                    z++;
+                    wilde = z < match.length ? match[z].origstart : pattern.length();
+                    matche = z < match.length ? match[z].start : matchstr.length();
+                }
+                if (i < target.length()) {
+                    int ch = target.codePointAt(i);
+                    if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
+                        buf.append(matchstr, match[z].start, match[z].end);
+                        wildp = match[z].origend;
+                        matchp = match[z].end;
+                        z++;
+                        wilde = z < match.length ? match[z].origstart : pattern.length();
+                        matche = z < match.length ? match[z].start : matchstr.length();
+                    } else {
+                        int chw;
+                        if (wildp < wilde) {
+                            chw = pattern.codePointAt(wildp);
+                            wildp += Character.charCount(chw);
+                        } else {
+                            chw = -1;
+                        }
+                        int chm;
+                        if (matchp < matche) {
+                            chm = matchstr.codePointAt(matchp);
+                            matchp += Character.charCount(chm);
+                        } else {
+                            chm = -1;
+                        }
+                        if (chw != -1 && chm != -1 && chw != chm) {
+                            if (Character.isLowerCase(ch)) {
+                                buf.appendCodePoint(Character.toUpperCase(ch));
+                            } else if (Character.isUpperCase(ch)) {
+                                buf.appendCodePoint(Character.toLowerCase(ch));
+                            } else {
+                                buf.appendCodePoint(ch);
+                            }
+                        } else {
+                            buf.appendCodePoint(ch);
+                        }
+                    }
+                    i += Character.charCount(ch);
+                } else {
+                    break;
+                }
+            }
+            if ((flag & MATCH_WORD) != 0) {
+                /* already handled */
+            } else if ((flag & MATCH_PART) != 0) {
+                /* do nothing */
+            }
+        } else {
+            for (; ; ) {
+                if ((flag & MATCH_WORD) != 0 && patdelemiter.wordBreak1(i, target)) {
+                    while (!patdelemiter.wordBreak2(i, target)) {
+                        int ch = target.codePointAt(i);
+                        i += Character.charCount(ch);
+                    }
+                    if (z != 0 && z != match.length - 1)
+                        buf.append(matchstr, match[z].start, match[z].end);
+                    z++;
+                } else if ((flag & MATCH_PART) != 0 && i == 0) {
+                    /* do nothing */
+                    z++;
+                }
+                if (i < target.length()) {
+                    int ch = target.codePointAt(i);
+                    if (ch == CH_ANNONYM_MULT || ch == CH_ANNONYM_SINGLE) {
+                        buf.append(matchstr, match[z].start, match[z].end);
+                        z++;
+                    } else {
+                        buf.appendCodePoint(ch);
+                    }
+                    i += Character.charCount(ch);
+                } else {
+                    break;
+                }
+            }
+            if ((flag & MATCH_WORD) != 0) {
+                /* already handled */
+            } else if ((flag & MATCH_PART) != 0) {
+                /* do nothing */
+            }
+        }
     }
 
 }

@@ -144,7 +144,11 @@ public abstract class AbstractPattern {
      */
     public String patternReplace(String str) {
         if (matchPattern(0, str, 0)) {
-            return patternReplace(false);
+            StringBuilder buf = new StringBuilder();
+            buf.append(str, 0, getMatchStart());
+            patternReplace(buf);
+            buf.append(str, getMatchEnd(), str.length());
+            return buf.toString();
         } else {
             return null;
         }
@@ -158,7 +162,11 @@ public abstract class AbstractPattern {
      */
     public String patternLastReplace(String str) {
         if (matchLastPattern(str.length(), str, 0)) {
-            return patternReplace(false);
+            StringBuilder buf = new StringBuilder();
+            buf.append(str, 0, getMatchStart());
+            patternReplace(buf);
+            buf.append(str, getMatchEnd(), str.length());
+            return buf.toString();
         } else {
             return null;
         }
@@ -174,22 +182,23 @@ public abstract class AbstractPattern {
         StringBuilder buf = new StringBuilder();
         int k = 0;
         while (matchPattern(k, str, 0)) {
-            buf.append(patternReplace(true));
+            buf.append(str, k, getMatchStart());
+            patternReplace(buf);
             int u = getMatchEnd();
             if (u == k)
                 throw new IllegalArgumentException("problem with matcher");
             k = u;
         }
-        buf.append(str.substring(k));
+        buf.append(str, k, str.length());
         return buf.toString();
     }
 
     /**
-     * <p>Replace the match by the substitution defined by the pattern.</p>
+     * <p>Replace the match according to the replace pattern.</p>
+     * <p>For word and part only the region that matched is replaced.</p>
      *
-     * @param strip Do not include the ending blanks.
-     * @return The replacement.
+     * @param buf The string builder.
      */
-    public abstract String patternReplace(boolean strip);
+    public abstract void patternReplace(StringBuilder buf);
 
 }

@@ -1,5 +1,7 @@
 package matula.util.regex;
 
+import util.sql.SpecimenAdvanced;
+
 /**
  * <p>This class represents a repeat match </p>
  * Warranty & Liability
