@@ -197,6 +197,13 @@ foreign_const(I, C, M) :-
 /***************************************************************/
 
 /**
+ * boolean(X):
+ * The predicate succeeds when X is an atom from the set {true, false}.
+ */
+boolean(true).
+boolean(false).
+
+/**
  * char16(X):
  * The predicate succeeds when X is a character and X is in the
  * range of 0 to 2^16-1.
