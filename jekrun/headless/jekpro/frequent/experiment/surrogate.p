@@ -101,5 +101,4 @@ current_local(N) :-
  */
 % sys_new_surrogate(-Ref)
 :- public sys_new_surrogate/1.
-:- foreign(sys_new_surrogate/1, 'ForeignSurrogate',
-      sysNewSurrogate).
+:- foreign_constructor(sys_new_surrogate/1, 'Object', new).
