@@ -4,23 +4,24 @@
  * operator (=>)/2 for embedded implication. This logical operator takes a
  * construct of the left side which is assumed and goal on the right side
  * which is executed. The predicate (<=)/1 is a variant of the predicate
- * (=>)/2 where the contin-uation is invoked after assuming the construct.
+ * (=>)/2 where the continuation is invoked after assuming the construct.
  * The general forms are:
  *
  * C => G     % Embedded Implication.
  * <= C       % Continuation Variant.
  *
- * The way the interpreter proceeds when assuming the construct C depends
- * on the used con-structs. We currently support the conjunction (/\)/2,
- * the universal quantification (#)/2, the re-tract (-)/1, the verum
- * unit/0 and the falsum zero/0. If none of these constructs is encountered
- * the construct can be either a fact or a rule. Variables that are not
- * universally quantified will then be treated as interclausal.
+ * The way the interpreter proceeds when assuming the construct C depends on
+ * the used constructs. We currently support the backward chaining escape
+ * {}/1, the retract (-)/1, the conjunction (/\)/2, the verum unit/0 and the
+ * falsum zero/0. If none of these constructs is encountered the construct
+ * can be either a fact or a rule, which will be assumed. New head predicates
+ * will be assumed thread locale. Based on the scope and for performance reasons
+ * inter-clausal variables in facts or rules are currently not supported:
  *
- * Example:
- * ?- p(X) => p(Y).
- * Y = X
- * ?- X#p(X) => p(Y).
+ * Examples:
+ * ?- p => p.
+ * Yes
+ * ?- p => ((q :- p) => q).
  * Yes
  *
  * The predicates (=>)/2 and (<=)/1 can be extended by the end-user by
@@ -74,34 +75,16 @@
 /* Embedded Implication                                 */
 /********************************************************/
 
-:- public (-)/1.
-:- meta_predicate -0.
-- _ :-
-   throw(error(existence_error(body,(-)/1),_)).
-
-% already defined in expand.p
-% :- public (/\)/2.
-% :- meta_predicate /\(0,0).
-% /\(_,_) :- throw(error(existence_error(body, (/\)/2), _)).
-% :- set_predicate_property((/\)/2, sys_rule).
-
-% already defined in expand.p
-% :- public unit/0.
-% unit :- throw(error(existence_error(body, unit/0), _)).
-
-:- public zero/0.
-zero :-
-   throw(error(existence_error(body,zero/0),_)).
-
-:- public => /2.
-:- multifile => /2.
-:- meta_predicate -1=>0.
-:- set_predicate_property(=> /2, sys_notrace).
-
 /**
  * {A}:
  * The goal A is checked via backward chaining.
  */
+:- public => /2.
+:- multifile => /2.
+:- discontiguous => /2.
+:- meta_predicate -1=>0.
+:- set_predicate_property(=> /2, sys_notrace).
+
 A => _ :-
    var(A),
    throw(error(instantiation_error,_)).
@@ -113,6 +96,11 @@ A => _ :-
  * -P:
  * The construct retires P.
  */
+:- public (-)/1.
+:- meta_predicate -0.
+- _ :-
+   throw(error(existence_error(body,(-)/1),_)).
+
 - A => _ :-
    var(A),
    throw(error(instantiation_error,_)).
@@ -128,6 +116,12 @@ A => _ :-
  * P /\ Q:
  * The construct assumes P and then Q before solving.
  */
+% already defined in expand.p
+% :- public (/\)/2.
+% :- meta_predicate /\(0,0).
+% /\(_,_) :- throw(error(existence_error(body, (/\)/2), _)).
+% :- set_predicate_property((/\)/2, sys_rule).
+
 A /\ B => C :- !, A =>
       (B => C).
 
@@ -135,6 +129,10 @@ A /\ B => C :- !, A =>
  * unit:
  * The construct does nothing before further solving.
  */
+% already defined in expand.p
+% :- public unit/0.
+% unit :- throw(error(existence_error(body, unit/0), _)).
+
 unit => A :- !,
    call(A).
 
@@ -142,6 +140,10 @@ unit => A :- !,
  * zero:
  * The construct prevents further solving.
  */
+:- public zero/0.
+zero :-
+   throw(error(existence_error(body,zero/0),_)).
+
 zero => _ :- !, fail.
 
 /**

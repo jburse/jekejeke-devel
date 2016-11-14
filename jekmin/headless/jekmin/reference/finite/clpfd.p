@@ -496,7 +496,7 @@ sys_melt_const(Y, D) <=
    {sys_bound_var(X),
     sys_melt_var(X, C),
     integer(C)}, !,
-   {D is C * C}.
+   {D is C*C}.
 + sys_sqrc(X, C) <=
    = sys_sqrv(X, Y),
    {sys_bound_var(Y),
@@ -532,7 +532,7 @@ sys_melt_hook(Y, sys_hook_spez) <=
 sys_melt_const(Y, D) <=
    + sys_const_spez(X, C),
    - sys_sqrv(X, Y),
-   {D is C * C}.
+   {D is C*C}.
 + sys_sqrc(X, C) <=
    + sys_const_spez(Y, C),
    - sys_sqrv(X, Y),
@@ -564,12 +564,12 @@ sys_melt_const(X, 0) <=
    = sys_sqrc(X, 0), !.
 zero <=
    = sys_sqrc(_, C),
-   {sys_bisect(C, D), C =\=
-    D * D}, !.
+   {sys_bisect(C, D),
+    C =\= D*D}, !.
 + (intset:sys_in(X, [H,D], H..D)) <=
    = sys_sqrc(X, C),
    {sys_bisect(C, D),
-    H is - D}.
+    H is -D}.
 
 % sys_impv(+Wrap, +Wrap)
 % sys_impv(X,Y), X*Y = X
@@ -604,7 +604,7 @@ zero <=
    {sys_bound_var(Y),
     sys_melt_var(Y, C),
     integer(C)}, !,
-   {D is C - 1,
+   {D is C-1,
     sys_make_prod(D, X, [], L)}.
 /* Hook Adding */
 sys_melt_hook(X, sys_hook_spez) /\
@@ -639,7 +639,7 @@ sys_melt_hook(Y, sys_hook_spez) <=
    + sys_const_spez(Y, C),
    - sys_impv(X, Y),
    {Y \== X,
-    D is C - 1,
+    D is C-1,
     sys_make_prod(D, X, [], L)}.
 /* Set Update, Directed, Bounds */
 + (intset:sys_in(X, [S], S)) <=
@@ -830,7 +830,7 @@ zero <=
    {C < 0}, !.
 + (intset:sys_in(X, [H,C], H..C)) <=
    = sys_absc(X, C),
-   {H is - C}.
+   {H is -C}.
 
 % residue:sys_current_eq(+Var, -Goal)
 residue:sys_current_eq(V, absv(X, Y)) :-

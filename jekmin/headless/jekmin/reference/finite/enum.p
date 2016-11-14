@@ -247,8 +247,8 @@ sys_abs_bound([], _).
 :- private sys_mem_set/2.
 sys_mem_set([..A,B...], C) :- !,
    above(0, Y),
-   (  C is B + Y
-   ;  C is A - Y).
+   (  C is B+Y
+   ;  C is A-Y).
 sys_mem_set([..A,U|L], C) :- !,
    sys_mem_set2([..A|L], U, C).
 sys_mem_set([U|L], C) :-
@@ -260,8 +260,8 @@ sys_mem_set2(_, U, C) :-
    sys_mem_range(U, C).
 sys_mem_set2([..A,B...], _, C) :- !,
    above(0, Y),
-   (  C is B + Y
-   ;  C is A - Y).
+   (  C is B+Y
+   ;  C is A-Y).
 sys_mem_set2([..A,U|L], _, C) :- !,
    sys_mem_set2([..A|L], U, C).
 sys_mem_set2([U|L], _, C) :-
@@ -272,11 +272,11 @@ sys_mem_set2([U|L], _, C) :-
 sys_mem_range(..., C) :- !,
    above(0, Y),
    (  C is Y
-   ;  C is -1 - Y).
+   ;  C is -1-Y).
 sys_mem_range(..A, C) :- !,
-   B is - A,
+   B is -A,
    above(B, Y),
-   C is - Y.
+   C is -Y.
 sys_mem_range(A..., C) :- !,
    above(A, C).
 sys_mem_range(A..B, C) :- !,
@@ -300,7 +300,7 @@ sys_card_set([U|Y], C) :-
 sys_card_add(..., _, ...) :- !.
 sys_card_add(_, ..., ...) :- !.
 sys_card_add(A, B, C) :-
-   C is A + B.
+   C is A+B.
 
 % sys_card_range(+Range, -Integer)
 :- private sys_card_range/2.
@@ -308,5 +308,5 @@ sys_card_range(..., ...) :- !.
 sys_card_range(.._, ...) :- !.
 sys_card_range(_..., ...) :- !.
 sys_card_range(A..B, C) :- !,
-   C is B-A + 1.
+   C is B-A+1.
 sys_card_range(_, 1).

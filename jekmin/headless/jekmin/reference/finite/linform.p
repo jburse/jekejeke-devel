@@ -147,7 +147,7 @@
 X #= Y :-
    sys_value_expr(Y, P, C),
    sys_value_expr_inv(X, Q, D),
-   K is D - C,
+   K is D-C,
    sys_flip_prod(Q, J),
    sys_add_prod(J, P, E),
    <= + sys_lin(E, K).
@@ -213,7 +213,7 @@ X #>= Y :-
 sys_compare_expr(Y, X, S) :-
    sys_value_expr(Y, P, C),
    sys_value_expr_inv(X, Q, D),
-   K is D - C,
+   K is D-C,
    sys_flip_prod(Q, J),
    sys_add_prod(J, P, E),
    sys_add_set(S, K, T),
@@ -333,18 +333,18 @@ unit <=
 /* GCD Normalisation */
 zero <=
    = sys_lin_agent(_, _, P, T),
-   {sys_gcd_prod(P, G), 0 =\=
-    T rem G}, !.
+   {sys_gcd_prod(P, G),
+    0 =\= T rem G}, !.
 + sys_lin_agent(V, X, R, H) <=
    = sys_lin_agent(V, X, P, T),
    {sys_gcd_prod(P, G)}, !,
    {sys_div_prod(P, G, R),
-    H is T // G}.
+    H is T//G}.
 + sys_lin_agent(V, X, R, H) <=
    = sys_lin_agent(V, X, [A*X|B], T),
    {A < 0}, !,
    {sys_flip_prod([A*X|B], R),
-    H is - T}.
+    H is -T}.
 /* Unification Trigger */
 sys_melt_const(X, A) <=
    = sys_lin_agent(V, X, [1*X], A), !,
@@ -388,7 +388,7 @@ zero <=
     sys_melt_var(X, C),
     integer(C)}, !,
    {sys_pick_prod(B, X, L, [A*Z|D]),
-    H is T - B*C}.
+    H is T-B*C}.
 /* Hook Adding */
 sys_melt_hook(X, sys_hook_lin) <=
    + sys_lin_agent(V, _, _, _),
@@ -417,7 +417,7 @@ sys_melt_hook(X, sys_hook_lin) <=
    - sys_lin_waits(X, V),
    - sys_lin_agent(V, _, L, T),
    {sys_pick_prod(B, X, L, [A*Z|D]),
-    H is T - B*C}.
+    H is T-B*C}.
 /* Set Update, Directed, Bounds */
 + (intset:sys_in(X, L, U)) <=
    + (intset:sys_in(Y, _, E)),
@@ -482,7 +482,7 @@ sys_value_expr(X, [1*B], 0) :-
 sys_value_expr(A+B, E, K) :- !,
    sys_value_expr(A, P, C),
    sys_value_expr(B, Q, D),
-   K is C + D,
+   K is C+D,
    sys_add_prod(Q, P, E).
 
 /**
@@ -492,7 +492,7 @@ sys_value_expr(A+B, E, K) :- !,
 sys_value_expr(A-B, E, K) :- !,
    sys_value_expr(A, P, C),
    sys_value_expr(B, Q, D),
-   K is C - D,
+   K is C-D,
    sys_flip_prod(Q, J),
    sys_add_prod(J, P, E).
 
@@ -502,7 +502,7 @@ sys_value_expr(A-B, E, K) :- !,
  */
 sys_value_expr(-A, E, K) :- !,
    sys_value_expr(A, P, B),
-   K is - B,
+   K is -B,
    sys_flip_prod(P, E).
 
 /**
@@ -554,17 +554,17 @@ sys_value_expr_inv(X, [1*B], 0) :-
 sys_value_expr_inv(A+B, E, K) :- !,
    sys_value_expr_inv(A, P, C),
    sys_value_expr_inv(B, Q, D),
-   K is C + D,
+   K is C+D,
    sys_add_prod(Q, P, E).
 sys_value_expr_inv(A-B, E, K) :- !,
    sys_value_expr_inv(A, P, C),
    sys_value_expr_inv(B, Q, D),
-   K is C - D,
+   K is C-D,
    sys_flip_prod(Q, J),
    sys_add_prod(J, P, E).
 sys_value_expr_inv(-A, E, K) :- !,
    sys_value_expr_inv(A, P, B),
-   K is - B,
+   K is -B,
    sys_flip_prod(P, E).
 sys_value_expr_inv(X*Y, S, H) :- !,
    sys_fresh_var(_, G),
@@ -594,7 +594,7 @@ sys_pretty_lin(P, 0, E) :- !,
    sys_pretty_prod(P, E).
 sys_pretty_lin(P, K, E) :-
    K < 0, !,
-   H is - K,
+   H is -K,
    sys_pretty_prod(P, J),
    sys_pretty_sub(J, H, E).
 sys_pretty_lin(P, K, E) :-
@@ -615,7 +615,7 @@ sys_pretty_prod([A*X|B], D) :-
    A < 0, !,
    sys_pretty_prod(B, C),
    sys_melt_var(X, Y),
-   H is - A,
+   H is -A,
    sys_pretty_sub(C, H*Y, D).
 sys_pretty_prod([A*X|B], D) :-
    sys_pretty_prod(B, C),
@@ -639,8 +639,8 @@ sys_pretty_sub(X, Y, X-Y).
 
 % sys_pretty_in(+Set, +Lin, -Goal)
 sys_pretty_in([..I,J...], [A*X|B], E#\=F) :-
-   K is I + 1,
-   K is J - 1, !,
+   K is I+1,
+   K is J-1, !,
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).
@@ -649,7 +649,7 @@ sys_pretty_in([..I], [A*X|B], E#=<F) :- !,
    sys_flip_prod(B, C),
    sys_pretty_lin(C, I, F).
 sys_pretty_in([I...], [A*X|B], E#>F) :-
-   K is I - 1, !,
+   K is I-1, !,
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).
@@ -670,18 +670,18 @@ sys_pretty_in(S, L, E in F) :-
 :- private sys_mul_lin/9.
 sys_mul_lin([], A, L, C, R, H, _, _, _) :- !,
    sys_mul_prod(L, A, R),
-   H is A * C.
+   H is A*C.
 sys_mul_lin(L, A, [], C, R, H, _, _, _) :- !,
    sys_mul_prod(L, C, R),
-   H is A * C.
+   H is A*C.
 sys_mul_lin(L, A, R, C, B, K, V, W, G) :-
    sys_mul_arg(L, A, [M*E], P, V),
    sys_mul_arg(R, C, [N*F], Q, W),
    <= + (clpfd:sys_mulv(E, F, G)),
-   H is M * N,
-   I is M * Q,
-   J is N * P,
-   K is P * Q,
+   H is M*N,
+   I is M*Q,
+   J is N*P,
+   K is P*Q,
    sys_make_prod(I, E, [], S),
    sys_make_prod(J, F, [], T),
    sys_add_prod(S, T, U),
@@ -729,7 +729,7 @@ sys_add_prod([], X, X) :- !.
 sys_add_prod(X, [], X) :- !.
 sys_add_prod([A*X|B], [C*X|D], J) :- !,
    sys_add_prod(B, D, H),
-   I is A + C,
+   I is A+C,
    sys_make_prod(I, X, H, J).
 sys_add_prod([A*X|B], [C*Y|D], [A*X|H]) :-
    X @> Y, !,
@@ -740,7 +740,7 @@ sys_add_prod(B, [C*Y|D], [C*Y|H]) :-
 % sys_mul_prod(+Prod, +Integer, -Prod)
 sys_mul_prod(_, 0, []) :- !.
 sys_mul_prod([A*X|B], C, [D*X|E]) :-
-   D is A * C,
+   D is A*C,
    sys_mul_prod(B, C, E).
 sys_mul_prod([], _, []).
 
@@ -760,19 +760,19 @@ sys_gcd_prod([A*_], A) :- !,
 sys_gcd_prod([A*_|L], C) :-
    abs(A) =\= 1,
    sys_gcd_prod(L, B),
-   C is gcd(A, B),
+   C is gcd(A,B),
    abs(C) =\= 1.
 
 % sys_flip_prod(+Prod, -Prod)
 sys_flip_prod([], []).
 sys_flip_prod([A*X|B], [C*X|D]) :-
-   C is - A,
+   C is -A,
    sys_flip_prod(B, D).
 
 % sys_div_prod(+Prod, +Integer, -Prod)
 sys_div_prod([], _, []).
 sys_div_prod([A*X|B], E, [C*X|D]) :-
-   C is A // E,
+   C is A//E,
    sys_div_prod(B, E, D).
 
 /**********************************************************/

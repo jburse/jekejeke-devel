@@ -12,46 +12,26 @@
  * The delta computation has functor F/N+1 for an arriving fact with a
  * functor F/N. The forward clause body is a conjunction of literals.
  * Each literal in the body has to be annotated either for delete set
- * inclusion, for delta computation or for both. If a literal is not
- * annotated it is checked in backward chaining fashion. The following
- * annotations are provided:
- *
- * -P   % The literal P is a fact from the database that is removed.
- * +P   % The literal P is a fact that can arrive.
- * =P   % The literal P is a fact that can arrive and that is removed.
- * P    % The literal P is a fact from the database.
- *
- * A surviving arriving fact itself is assumed via hypothetical reasoning.
- * Extending the hypothet-ical reasoning therefore automatically extends
- * the arriving facts that are understood by the annotations (+)/1 and
- * (=)/1. The annotation (-)/1 and (=)/1 can be further extended by adding
- * new clauses to the predicate sys_find_goal/4. The end-user needs to
- * extend the predicate delta_abnormal/1 as well, by patterns for the
- * newly supported retract.
+ * inclusion (-)/1, for delta computation (+)/1 or for both (=)/1. If a
+ * literal is not annotated only its existence in the database is checked.
+ * The set {}/1 constructor can be used to denote a backward chaining
+ * goal. The cut !/0 need not be wrapped.
  *
  * This Jekejeke Prolog module additionally provides the plus sign (+)/1
- * or equality sign (=)/1 not only as a literal annotation but also as a
- * new constructor for hypothetical reasoning. Namely the embedded
- * implication (=>)/2 and the (<=)/1 continuation variant will both
- * trigger the forward chaining closure computation for facts that are
- * wrapped in a plus sign (+)/1 or equality sign (=)/1. The computation
- * iterates over delete set removal, surviving fact assumption and newly
- * implied constructs:
+ * as a new constructor for hypothetical reasoning. Namely the embedded
+ * implication (=>)/2 and the (<=)/1 continuation variant will both trigger
+ * the forward chaining closure computation for surviving arriving facts
+ * that are wrapped in a plus sign (+)/1. The computation will iterate
+ * over the delete set removal, the surviving fact assumption and the
+ * newly implied constructs:
  *
- * Example:
+ * Examples:
  * ?- [user].
- * q(X) <= =p(X).
+ * q(X) <= +p(X).
  *
  * Yes
- * ?- +p(Y) => q(X).
- * Yes
- * ?- =p(Y) => q(X).
- * X = Y
- *
- * The annotation (-)/1 can be extended by the end-user by adding
- * new clauses to the predicate sys_find_goal/4. The end-user needs
- * to extend the predicate delta_abnormal/1 as well, by patterns for
- * the newly supported retract.
+ * ?- +p(a) => q(X).
+ * X = a
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -154,15 +134,14 @@ forward L :-
  * +P:
  * The construct prevents that the literal P is directly assumed.
  * Instead the literal P is treated as a fact that arrives in
- * the forward chaining engine. Interclausal variables are not
- * preserved by this construct.
+ * the forward chaining engine.
  */
 % hypo: <=(+Rule)
 :- public hypo:(<=)/1.
 :- multifile hypo:(<=)/1.
 :- meta_predicate hypo:(<= -1).
 hypo:(<= + X) :- !,
-   sys_post_goal(X, U, G),
+   sys_modext_args(X, U, G),
    findall(U, G, L),
    sys_retire_delta_first(L, X, R, Y),
    sys_hypo_conj([Y|R]).
@@ -198,18 +177,6 @@ sys_retire_delta_second([sys_keep(Z,S)|Y], [Z|T]) :- !,
    sys_retire_ref(S).
 sys_retire_delta_second([], []).
 
-/**
- * sys_post_goal(T, U, G):
- * The predicate succeeds for a goal G that posts the fact T and
- * returns the delta U.
- */
-% sys_post_goal(+Goal, +Term, -Goal)
-:- public sys_post_goal/3.
-:- multifile sys_post_goal/3.
-sys_post_goal(T, U, G) :-
-   \+ delta_abnormal(T), !,
-   sys_modext_args(T, U, G).
-
 /**********************************************************/
 /* Hypothetical Forwarder                                 */
 /**********************************************************/
@@ -219,7 +186,7 @@ sys_post_goal(T, U, G) :-
 :- multifile hypo: => /2.
 :- meta_predicate hypo:(-1=>0).
 hypo:(+ X => B) :- !,
-   sys_post_goal(X, U, G),
+   sys_modext_args(X, U, G),
    findall(U, G, L),
    sys_retire_delta_first(L, X, R, Y),
    sys_hypo_conj([Y|R], B),
@@ -475,49 +442,25 @@ simp:sys_goal_simplification((  + A, _), _) :-
 simp:sys_goal_simplification((  + A,
                                 sys_minus(L, R)),
         (  sys_minus(L, R), C)) :-
-   sys_find_goal(A, true, _, C).
+   sys_replace_site(C, A, clause(A,true)).
 simp:sys_goal_simplification((  + A,
                                 sys_minus(L, R), B),
         (  sys_minus(L, R), D, B)) :-
-   sys_find_goal(A, true, _, D).
+   sys_replace_site(D, A, clause(A,true)).
 simp:sys_goal_simplification((  - A, _), _) :-
    var(A), !, fail.
 simp:sys_goal_simplification((  - A,
                                 sys_minus(L, R)),
         (  sys_minus(L, [P|R]), C)) :-
-   sys_find_goal(A, true, P, C).
+   sys_replace_site(C, A, clause_ref(A,true,P)).
 simp:sys_goal_simplification((  - A,
                                 sys_minus(L, R), B),
         (  sys_minus(L, [P|R]), D, B)) :-
-   sys_find_goal(A, true, P, D).
+   sys_replace_site(D, A, clause_ref(A,true,P)).
 simp:sys_goal_simplification((  A,
                                 sys_minus(L, R)), (  sys_minus(L, R), A)).
 simp:sys_goal_simplification((  A,
                                 sys_minus(L, R), B), (  sys_minus(L, R), A, B)).
-
-/**
- * sys_find_goal(T, B, R, G):
- * The predicate succeeds for a goal G that searches the fact T and
- * returns the body B and the reference R. The predicate is multi-file
- * and can be extended by the end-user.
- */
-% sys_find_goal(+Term, -Goal, -Ref, -Goal)
-:- public sys_find_goal/4.
-:- multifile sys_find_goal/4.
-sys_find_goal(T, B, R, G) :-
-   \+ delta_abnormal(T), !,
-   sys_replace_site(G, T, clause_ref(T,B,R)).
-
-/**
- * delta_abnormal(A):
- * The predicate succeeds for those retracts A that are extended in the
- * (-)/1 or (=)/1 annotation. The predicate is multi-file and can be
- * extended by the end-user.
- */
-%
-:- public delta_abnormal/1.
-:- multifile delta_abnormal/1.
-:- static delta_abnormal/1.
 
 /***********************************************************/
 /* Unification Reduction                                   */
@@ -615,7 +558,7 @@ simp:sys_term_simplification((sys_plus(B) :-
         (E :- G)) :-
    D == U,
    sys_replace_site(G, D, M=sys_drop(B,R)),
-   sys_post_goal(D, M, E),
+   sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
 simp:sys_term_simplification((sys_plus(B) :-
@@ -625,7 +568,7 @@ simp:sys_term_simplification((sys_plus(B) :-
         (:- cosmetic I) /\
         (E :- G)) :-
    sys_replace_site(G, D, M=sys_keep(B,R)),
-   sys_post_goal(D, M, E),
+   sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
 simp:sys_term_simplification((sys_plus(_) :-
@@ -643,7 +586,7 @@ simp:sys_term_simplification((sys_plus(B) :-
    D == U,
    sys_replace_site(G, D, M=sys_drop(B,R)),
    sys_simplify_goal((  E, G), N),
-   sys_post_goal(D, M, F),
+   sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).
 simp:sys_term_simplification((sys_plus(B) :-
@@ -654,7 +597,7 @@ simp:sys_term_simplification((sys_plus(B) :-
         (F :- N)) :-
    sys_replace_site(G, D, M=sys_keep(B,R)),
    sys_simplify_goal((  E, G), N),
-   sys_post_goal(D, M, F),
+   sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).
 simp:sys_term_simplification((sys_plus(_) :-
@@ -675,7 +618,6 @@ user:goal_exposing(P-G, Q-O, -1) :-
    sys_make_indicator(F, A, I),
    predicate_property(I, cosmetic), !,
    sys_expose_helper(P, G, Q, O).
-user:goal_exposing(P-clause_ref(H,_,_), P- -H, 0).
 
 % sys_expose_helper(+Port, +Goal, -Port, -Goal)
 :- private sys_expose_helper/4.

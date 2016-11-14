@@ -232,7 +232,7 @@ sys_reify_in(X, U, B) :-
    var(B), !,
    sys_expr_set(U, S),
    sys_value_expr(X, P, C),
-   H is - C,
+   H is -C,
    sys_add_set(S, H, T),
    sys_fresh_var(B, W),
    sys_comp_set(T, V),
@@ -257,12 +257,12 @@ sys_reify_lin(X, Y, B) :-
    var(B), !,
    sys_value_expr(Y, P, C),
    sys_value_expr_inv(X, Q, D),
-   K is D - C,
+   K is D-C,
    sys_flip_prod(Q, J),
    sys_add_prod(J, P, E),
    sys_fresh_var(B, U),
-   I is K - 1,
-   V is K + 1,
+   I is K-1,
+   V is K+1,
    <= + (intset:sys_in(U, [0..1], 0..1)),
    <= + sys_pit(E, K, U, 0),
    <= + sys_lot(E, [..I,V...], U, 1).
@@ -284,7 +284,7 @@ sys_reify_set(Y, X, S, B) :-
    var(B), !,
    sys_value_expr(Y, P, C),
    sys_value_expr_inv(X, Q, D),
-   K is D - C,
+   K is D-C,
    sys_flip_prod(Q, J),
    sys_add_prod(J, P, E),
    sys_add_set(S, K, T),
@@ -564,18 +564,18 @@ unit <=
 + sys_pit_remove(V) /\
 sys_melt_const(B, C) <=
    = sys_pit_agent(V, _, P, T, B, C),
-   {sys_gcd_prod(P, G), 0 =\=
-    T rem G}, !.
+   {sys_gcd_prod(P, G),
+    0 =\= T rem G}, !.
 + sys_pit_agent(V, X, R, H, B, C) <=
    = sys_pit_agent(V, X, P, T, B, C),
    {sys_gcd_prod(P, G)}, !,
    {sys_div_prod(P, G, R),
-    H is T // G}.
+    H is T//G}.
 + sys_pit_agent(V, X, R, H, C, D) <=
    = sys_pit_agent(V, X, [A*X|B], T, C, D),
    {A < 0}, !,
    {sys_flip_prod([A*X|B], R),
-    H is - T}.
+    H is -T}.
 /* Unification Trigger */
 + sys_at(X, [T], T, B, C) <=
    = sys_pit_agent(V, X, [1*X], T, B, C), !,
@@ -663,7 +663,7 @@ sys_melt_const(F, G) <=
     sys_melt_var(X, C),
     integer(C)}, !,
    {sys_pick_prod(B, X, L, [A*Z|D]),
-    H is T - B*C}.
+    H is T-B*C}.
 + sys_pit_remove(V) /\
 + (clpfd:sys_lin_ref(V, L, T)) <=
    = sys_pit_agent(V, _, L, T, F, G),
@@ -702,7 +702,7 @@ sys_melt_hook(F, sys_hook_pit) <=
    - sys_pit_waits(X, V),
    - sys_pit_agent(V, _, L, T, F, G),
    {sys_pick_prod(B, X, L, [A*Z|D]),
-    H is T - B*C}.
+    H is T-B*C}.
 + sys_pit_remove(V) /\
 + (clpfd:sys_lin_ref(V, L, T)) <=
    + sys_const_pit(F, H),
@@ -939,7 +939,7 @@ sys_melt_const(F, G) <=
     sys_melt_var(X, C),
     integer(C)}, !,
    {sys_pick_prod(B, X, L, [A*Z|D]),
-    H is -B * C,
+    H is -B*C,
     sys_add_set(S, H, W),
     sys_add_range(T, H, U)}.
 + sys_lot_remove(V) /\
@@ -980,7 +980,7 @@ sys_melt_hook(F, sys_hook_lot) <=
    - sys_lot_waits(X, V),
    - sys_lot_agent(V, _, L, S, T, F, G),
    {sys_pick_prod(B, X, L, [A*Z|D]),
-    H is -B * C,
+    H is -B*C,
     sys_add_set(S, H, W),
     sys_add_range(T, H, U)}.
 + sys_lot_remove(V) /\
@@ -1032,7 +1032,7 @@ sys_union_bounds(P, Q, R) :-
 sys_lower_bounds(P, Q, C) :-
    sys_lower_range(P, A),
    sys_lower_range(Q, B),
-   C is min(A, B).
+   C is min(A,B).
 
 % sys_upper_bounds(+Range, +Range, -Integer)
 % Fails if either range does nnot have supremum
@@ -1040,4 +1040,4 @@ sys_lower_bounds(P, Q, C) :-
 sys_upper_bounds(P, Q, C) :-
    sys_upper_range(P, A),
    sys_upper_range(Q, B),
-   C is max(A, B).
+   C is max(A,B).

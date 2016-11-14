@@ -122,7 +122,7 @@ user:goal_expansion(chart(P, I, I), P) :-
    P = !.
 user:goal_expansion(chart([], I, I), true).
 user:goal_expansion(chart(U, I, O), (  Q,
-                                       H is I + 1,
+                                       H is I+1,
                                        chart(B, H, O))) :-
    U = [A|B],
    sys_replace_site(Q, U, 'D'(A,I)).
@@ -142,7 +142,7 @@ user:goal_expansion(sys_sys_chart(P, _, _), _) :-
 user:goal_expansion(sys_sys_chart((  A, B), I, O), (  sys_sys_chart(A, I, H),
                                                       sys_chart(B, H, O))).
 user:goal_expansion(sys_sys_chart(U, I, O), (  + Q,
-                                               {H is I + 1},
+                                               {H is I+1},
                                                sys_chart(B, H, O))) :-
    U = [A|B],
    sys_replace_site(Q, U, 'D'(A,I)).
@@ -203,7 +203,7 @@ user:goal_expansion(sys_chart(P, I, I), P) :-
  */
 user:goal_expansion(sys_chart([], I, I), true).
 user:goal_expansion(sys_chart(U, I, O), (  Q,
-                                           {H is I + 1},
+                                           {H is I+1},
                                            sys_chart(B, H, O))) :-
    U = [A|B],
    sys_replace_site(Q, U, 'D'(A,I)).
@@ -275,7 +275,7 @@ user:term_expansion(chart(U, I, O), chart(B, H, O) /\
                                     + Q) :-
    U = [A|B],
    sys_replace_site(Q, U, 'D'(A,I)),
-   H is I + 1.
+   H is I+1.
 
 /**
  * P:
