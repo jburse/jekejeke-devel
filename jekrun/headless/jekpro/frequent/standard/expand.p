@@ -7,13 +7,11 @@
  * use of the expansion in the body:
  *
  * Example:
- * ?- use_module(library(expand)).
- *
  * ?- [user].
- * :- multifile expand:goal_expansion/2.
- * expand:goal_expansion(writeln(X), (write(X), nl)).
- *
- * hello :- writeln('Hello World!').
+ * :- multifile goal_expansion/2.
+ * :- meta_predicate goal_expansion(0,0).
+ * goal_expansion(writeln(X), (write(X), nl)).
+ *  hello :- writeln('Hello World!').
  * ^D
  *
  * ?- listing(hello/0).
@@ -29,17 +27,19 @@
  * simply leave the term respectively the goal unchanged.
  *
  * The clause expansion is table driven. The predicate property
- * sys_noexpand/allows excluding a meta-predicate from the goal
- * traversal. The predicate property sys_traverse/0 allows including
- * a meta-predicate in the term traversal. Closures are currently not
- * expanded. If the term or goal expansion steps into the colon
- * notation (:)/2 it will look up the meta-declarations for the
- * qualified functor and do the expansion for the rest of the arguments.
+ * sys_noexpand/0 allows excluding a meta-predicate from the goal
+ * or term traversal. Closures are currently not expanded. If the
+ * term or goal expansion steps into the colon notation (:)/2 or
+ * the double colon notation (::)/2 with a sufficiently instantiated
+ * first argument it will look up the meta-declarations for the
+ * qualified predicate name.
  *
  * The result of the expansion can be no clause, a single clause or
  * multiple clauses. No clause is indicated by unit/0 as a result.
  * A single clause is simply returned by itself. Multiple clauses
  * can be conjoined by the operator (/\)/2 and returned this way.
+ * Expansion is also performed along the existential quantifier (^)/2
+ * second argument.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
