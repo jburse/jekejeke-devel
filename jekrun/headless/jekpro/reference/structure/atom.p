@@ -347,7 +347,7 @@ number_chars(Number, Chars) :-
    sys_list_to_atom(Chars, 0, Atom),
    sys_atom_to_number(Atom, Number).
 number_chars(Number, Chars) :-
-   sys_number_to_atom(Number, Atom),
+   sys_number_to_atom(Number, 1, Atom),
    sys_atom_to_list(Atom, 0, Chars).
 
 /**
@@ -364,16 +364,16 @@ number_codes(Number, Codes) :-
    sys_list_to_atom(Codes, 1, Atom),
    sys_atom_to_number(Atom, Number).
 number_codes(Number, Codes) :-
-   sys_number_to_atom(Number, Atom),
+   sys_number_to_atom(Number, 1, Atom),
    sys_atom_to_list(Atom, 1, Codes).
 
 :- private sys_atom_to_number/2.
 :- foreign(sys_atom_to_number/2, 'ForeignAtom',
-      sysAtomToNumber('Interpreter','CallOut','String')).
+      sysAtomToNumber('Interpreter','String')).
 
-:- private sys_number_to_atom/2.
-:- foreign(sys_number_to_atom/2, 'ForeignAtom',
-      sysNumberToAtom('Number')).
+:- private sys_number_to_atom/3.
+:- foreign(sys_number_to_atom/3, 'ForeignAtom',
+      sysNumberToAtom('Number',int)).
 
 /****************************************************************/
 /* 16-bit Word Helpers                                          */
