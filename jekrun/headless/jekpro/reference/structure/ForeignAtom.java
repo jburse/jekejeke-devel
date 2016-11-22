@@ -1,12 +1,21 @@
 package jekpro.reference.structure;
 
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Term;
+import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
+import matula.util.regex.CodeType;
+import matula.util.regex.CompLang;
+import matula.util.regex.ScannerError;
+import matula.util.regex.ScannerToken;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>The foreign predicates for the module atom.</p>
@@ -35,6 +44,14 @@ import jekpro.tools.term.TermCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignAtom {
+    public final static String ERROR_SYNTAX_ILLEGAL_NUMBER = "illegal_number"; /* SWI, e163 */
+    public final static String ERROR_SYNTAX_NUMBER_OVERFLOW = "number_overflow";
+    public final static String ERROR_SYNTAX_CHARACTER_MISSING = "character_missing";
+    public final static String ERROR_SYNTAX_REF_NOT_READABLE = "ref_unreadable";
+
+    public static final int MASK_NUMB_SIGN = 0x00000001;
+    public static final int MASK_NUMB_USCR = 0x00000002;
+
     private static final int REP_CHARS = 0;
     private static final int REP_CODES = 1;
 
@@ -184,33 +201,328 @@ public final class ForeignAtom {
     }
 
     /****************************************************************/
-    /* Number Helpers                                               */
+    /* Number Predicates                                            */
     /****************************************************************/
+
+    /**
+     * <p>Parse a number.</p>
+     *
+     * @param inter The call-in.
+     * @param s     The string.
+     * @return The number.
+     * @throws InterpreterException Error and position.
+     */
+    public static Number sysAtomToNumber(Interpreter inter, String s)
+            throws InterpreterException {
+        Number num;
+        try {
+            int pos = 0;
+            int ch;
+            if (pos < s.length() && (ch = s.codePointAt(pos)) == '-') {
+                pos += Character.charCount(ch);
+                num = toNumber(s.substring(pos),
+                        pos, MASK_NUMB_SIGN);
+                num = neg(num);
+            } else {
+                num = toNumber(s.substring(pos),
+                        pos, MASK_NUMB_SIGN);
+            }
+        } catch (ScannerError y) {
+            String line = ScannerError.linePosition(s, y.getPos());
+            InterpreterMessage x = new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchStack(inter), line, inter));
+        }
+        return num;
+    }
 
     /**
      * <p>Convert a string to a number.</p>
      *
-     * @param inter The call-in.
-     * @param co    The call out.
-     * @param num   The string.
+     * @param str    The string.
+     * @param offset The error offset.
+     * @param mask   The mask.
      * @return The number.
-     * @throws InterpreterException Error and position.
+     * @throws ScannerError Error and position.
      */
-    public static Object sysAtomToNumber(Interpreter inter, CallOut co, String num)
-            throws InterpreterException, InterpreterMessage {
-        return Term.parseNumber(num, inter);
+    public static Number toNumber(String str, int offset, int mask)
+            throws ScannerError {
+        try {
+            int ch = (0 < str.length() ? str.codePointAt(0) : -1);
+            if (ch == CodeType.LINE_ZERO) {
+                int k = Character.charCount(ch);
+                ch = (k < str.length() ? str.codePointAt(k) : -1);
+                switch (ch) {
+                    case ScannerToken.PREFIX_BINARY:
+                        k += Character.charCount(ch);
+                        String val = prepareUnderscore(k, str, offset, mask);
+                        if (val.length() < 63)
+                            return TermAtomic.normBigInteger(Long.parseLong(val, 2));
+                        return TermAtomic.normBigInteger(new BigInteger(val, 2));
+                    case ScannerToken.PREFIX_DECIMAL:
+                        k += Character.charCount(ch);
+                        val = prepareParts(k, str, offset, mask);
+                        return TermAtomic.normBigDecimal(new BigDecimal(val));
+                    case ScannerToken.PREFIX_FLOAT32:
+                        k += Character.charCount(ch);
+                        val = prepareParts(k, str, offset, mask);
+                        return TermAtomic.guardFloat(Float.valueOf(val));
+                    case ScannerToken.PREFIX_OCTAL:
+                        k += Character.charCount(ch);
+                        val = prepareUnderscore(k, str, offset, mask);
+                        if (val.length() < 21)
+                            return TermAtomic.normBigInteger(Long.parseLong(val, 8));
+                        return TermAtomic.normBigInteger(new BigInteger(val, 8));
+                    case ScannerToken.PREFIX_REFERENCE:
+                        throw new ScannerError(ERROR_SYNTAX_REF_NOT_READABLE, k + offset);
+                    case ScannerToken.PREFIX_HEX:
+                        k += Character.charCount(ch);
+                        val = prepareUnderscore(k, str, offset, mask);
+                        if (val.length() < 16)
+                            return TermAtomic.normBigInteger(Long.parseLong(val, 16));
+                        return TermAtomic.normBigInteger(new BigInteger(val, 16));
+                    case CodeType.LINE_SINGLE:
+                        k += Character.charCount(ch);
+                        val = CompLang.resolveEscape(
+                                CodeType.ISO_CODETYPE.resolveDouble(str.substring(k),
+                                        CodeType.LINE_SINGLE, k + offset), CodeType.LINE_SINGLE,
+                                k + offset, false, CodeType.ISO_CODETYPE);
+                        int res;
+                        try {
+                            res = EngineMessage.castCharacter(val);
+                        } catch (EngineMessage x) {
+                            throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, k + offset);
+                        }
+                        return Integer.valueOf(res);
+                    default:
+                        break;
+                }
+            }
+            int j = str.indexOf(ScannerToken.SCAN_PERIOD);
+            if (j != -1) {
+                j += Character.charCount(ScannerToken.SCAN_PERIOD);
+                if (j < str.length() && Character.isDigit(str.codePointAt(j))) {
+                    String val = prepareParts(0, str, offset, mask);
+                    return TermAtomic.guardDouble(Double.valueOf(val));
+                }
+            }
+            String val = prepareUnderscore(0, str, offset, mask);
+            if (val.length() < 19)
+                return TermAtomic.normBigInteger(Long.parseLong(val));
+            return TermAtomic.normBigInteger(new BigInteger(val));
+        } catch (ArithmeticException x) {
+            throw new ScannerError(ERROR_SYNTAX_NUMBER_OVERFLOW, str.length() + offset);
+        } catch (NumberFormatException x) {
+            throw new ScannerError(ERROR_SYNTAX_ILLEGAL_NUMBER, str.length() + offset);
+        }
     }
 
     /**
      * <p>Convert a number to a string.</p>
      *
-     * @param num The number.
+     * @param num   The number.
+     * @param flags The flags.
      * @return The string.
-     * @throws InterpreterMessage Validation error.
      */
-    public static String sysNumberToAtom(Number num)
-            throws InterpreterMessage {
-        return Term.toString(Term.FLAG_QUOTED, num);
+    public static String sysNumberToAtom(Number num, int flags) {
+        if (num instanceof Integer ||
+                num instanceof BigInteger ||
+                num instanceof Double) {
+            return num.toString();
+        } else if (num instanceof Float) {
+            if ((flags & Term.FLAG_QUOTED) != 0) {
+                StringBuilder buf = new StringBuilder();
+                if (Math.signum(num.floatValue()) < 0) {
+                    buf.append(Knowledgebase.OP_SUB);
+                    buf.appendCodePoint(CodeType.LINE_ZERO);
+                    buf.appendCodePoint(ScannerToken.PREFIX_FLOAT32);
+                    buf.append(-num.floatValue());
+                } else {
+                    buf.appendCodePoint(CodeType.LINE_ZERO);
+                    buf.appendCodePoint(ScannerToken.PREFIX_FLOAT32);
+                    buf.append(num.floatValue());
+                }
+                return buf.toString();
+            } else {
+                return num.toString();
+            }
+        } else if (num instanceof Long ||
+                num instanceof BigDecimal) {
+            if ((flags & Term.FLAG_QUOTED) != 0) {
+                BigDecimal d = TermAtomic.widenBigDecimal(num);
+                StringBuilder buf = new StringBuilder();
+                if (d.signum() < 0) {
+                    buf.append(Knowledgebase.OP_SUB);
+                    buf.appendCodePoint(CodeType.LINE_ZERO);
+                    buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
+                    buf.append(d.negate().toString());
+                } else {
+                    buf.appendCodePoint(CodeType.LINE_ZERO);
+                    buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
+                    buf.append(d.toString());
+                }
+                return buf.toString();
+            } else {
+                return num.toString();
+            }
+        } else {
+            throw new IllegalArgumentException("illegal number");
+        }
+    }
+
+    /****************************************************************/
+    /* Number Helpers                                               */
+    /****************************************************************/
+
+    /**
+     * <p>Possible check sign or check underscore and strip underscore.</p>
+     *
+     * @param k      The position.
+     * @param str    The string.
+     * @param offset The offset.
+     * @param mask   The mask.
+     * @return The result.
+     * @throws ScannerError Error and position.
+     */
+    private static String prepareUnderscore(int k, String str,
+                                            int offset, int mask)
+            throws ScannerError {
+        if ((mask & MASK_NUMB_SIGN) != 0)
+            checkSign(k, str, offset);
+        if ((mask & MASK_NUMB_USCR) != 0) {
+            CodeType.ISO_CODETYPE.checkUnderscore(k, str.length(), str, offset);
+            return CodeType.ISO_CODETYPE.stripUnderscore(str.substring(k));
+        } else {
+            return str.substring(k);
+        }
+    }
+
+    /**
+     * <p>Check whether the string does not start with a sign.</p>
+     * <p>We have to check again, since the number conversion accepts it
+     * and toNumber() is also called from number_codes/2.</p>
+     *
+     * @param pos    The index.
+     * @param str    The string.
+     * @param offset The offset.
+     * @throws ScannerError If the string starts with a sign.
+     */
+    private static void checkSign(int pos, String str, int offset)
+            throws ScannerError {
+        if (!(pos < str.length()))
+            return;
+        int ch = str.codePointAt(pos);
+        if (ch == ScannerToken.SCAN_NEG || ch == ScannerToken.SCAN_POS)
+            throw new ScannerError(ERROR_SYNTAX_ILLEGAL_NUMBER, pos + offset);
+    }
+
+    /**
+     * <p>Possible check sign or check underscore in mantissa, fraction
+     * or exponent and strip underscore.</p>
+     *
+     * @param k      The position.
+     * @param str    The string.
+     * @param offset The offset.
+     * @param mask   The mask.
+     * @return The result.
+     * @throws ScannerError Error and position.
+     */
+    private static String prepareParts(int k, String str,
+                                       int offset, int mask)
+            throws ScannerError {
+        if ((mask & MASK_NUMB_SIGN) != 0)
+            checkSign(k, str, offset);
+        if ((mask & MASK_NUMB_USCR) != 0) {
+            checkParts(k, str, offset);
+            return CodeType.ISO_CODETYPE.stripUnderscore(str.substring(k));
+        } else {
+            return str.substring(k);
+        }
+    }
+
+    /**
+     * <p>Check whether the mantissa, fraction and exponent satisfy the
+     * underscore condition.</p>
+     * <p>We have to check again, since we strip underscores and toNumber()
+     * is also called from number_codes/2.</p>
+     *
+     * @param pos    The index.
+     * @param str    The string.
+     * @param offset The offset.
+     * @throws ScannerError If the string starts with a sign.
+     */
+    private static void checkParts(int pos, String str, int offset)
+            throws ScannerError {
+        int k = str.indexOf(ScannerToken.SCAN_PERIOD, pos);
+        if (k != -1) {
+            CodeType.ISO_CODETYPE.checkUnderscore(pos, k, str, offset);
+            pos = k + Character.charCount(ScannerToken.SCAN_PERIOD);
+        }
+        k = indexExponent(pos, str);
+        if (k != -1) {
+            CodeType.ISO_CODETYPE.checkUnderscore(pos, k, str, offset);
+            pos = k + Character.charCount(ScannerToken.SCAN_EXPLOW);
+            int ch;
+            if (pos < str.length() &&
+                    ((ch = str.codePointAt(pos)) == ScannerToken.SCAN_NEG ||
+                            ch == ScannerToken.SCAN_POS)) {
+                pos += Character.charCount(ScannerToken.SCAN_NEG);
+            }
+        }
+        CodeType.ISO_CODETYPE.checkUnderscore(pos, str.length(), str, offset);
+    }
+
+    /**
+     * <p>Find an exponent in a string.</p>
+     *
+     * @param pos The start index.
+     * @param str The string.
+     * @return The index, or -1.
+     */
+    private static int indexExponent(int pos, String str) {
+        for (; pos < str.length(); pos++) {
+            int ch = str.codePointAt(pos);
+            if (ch == ScannerToken.SCAN_EXPLOW ||
+                    ch == ScannerToken.SCAN_EXPCAP)
+                return pos;
+            pos += Character.charCount(ch) - 1;
+        }
+        return -1;
+    }
+
+    /**
+     * <p>Negate the Prolog number.</p>
+     *
+     * @param m The Prolog number.
+     * @return The negated Prolog number.
+     * @throws ArithmeticException Not a Prolog number.
+     */
+    public static Number neg(Number m) throws ArithmeticException {
+        if (m instanceof Integer) {
+            int x = m.intValue();
+            if (x != Integer.MIN_VALUE) {
+                return Integer.valueOf(-x);
+            } else {
+                return BigInteger.valueOf(-(long) x);
+            }
+        } else if (m instanceof BigInteger) {
+            return TermAtomic.normBigInteger(((BigInteger) m).negate());
+        } else if (m instanceof Float) {
+            return TermAtomic.guardFloat(Float.valueOf(-m.floatValue()));
+        } else if (m instanceof Double) {
+            return TermAtomic.guardDouble(Double.valueOf(-m.doubleValue()));
+        } else if (m instanceof Long) {
+            long y = m.longValue();
+            if (y != Long.MIN_VALUE) {
+                return Long.valueOf(-y);
+            } else {
+                return BigDecimal.valueOf(y).negate();
+            }
+        } else {
+            return TermAtomic.normBigDecimal(((BigDecimal) m).negate());
+        }
     }
 
 }
