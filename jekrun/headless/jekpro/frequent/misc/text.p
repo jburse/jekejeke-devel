@@ -55,7 +55,9 @@
  */
 
 :- package(library(jekpro/frequent/misc)).
+:- use_package(foreign(jekpro/frequent/misc)).
 :- use_package(foreign(matula/util/regex)).
+:- use_package(foreign(jekpro/tools/call)).
 
 :- module(text, []).
 
@@ -235,12 +237,12 @@ last_pattern_replace(S, P, R, T, O) :-
 :- foreign_getter(sys_get_iso_compiler/1, 'CompilerSimple', 'ISO_COMPILERSIMPLE').
 
 :- private sys_create_specimen/3.
-:- virtual sys_create_specimen/3.
-:- foreign(sys_create_specimen/3, 'AbstractCompiler', createSpecimen('String')).
+:- foreign(sys_create_specimen/3, 'ForeignText',
+      sysCreateSpecimen('Interpreter','AbstractCompiler','String')).
 
 :- private sys_make_pattern/4.
-:- virtual sys_make_pattern/4.
-:- foreign(sys_make_pattern/4, 'AbstractCompiler', makePattern('String',int)).
+:- foreign(sys_make_pattern/4, 'ForeignText',
+      sysMakePattern('Interpreter','AbstractCompiler','String',int)).
 
 :- private sys_match_pattern/2.
 :- virtual sys_match_pattern/2.

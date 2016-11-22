@@ -207,7 +207,7 @@ public final class ForeignAtom {
     /**
      * <p>Parse a number.</p>
      *
-     * @param inter The call-in.
+     * @param inter The interpreter.
      * @param s     The string.
      * @return The number.
      * @throws InterpreterException Error and position.
@@ -216,16 +216,13 @@ public final class ForeignAtom {
             throws InterpreterException {
         Number num;
         try {
-            int pos = 0;
             int ch;
-            if (pos < s.length() && (ch = s.codePointAt(pos)) == '-') {
-                pos += Character.charCount(ch);
-                num = toNumber(s.substring(pos),
-                        pos, MASK_NUMB_SIGN);
+            if (0< s.length() && (ch = s.codePointAt(0)) == ScannerToken.SCAN_NEG) {
+                int pos = Character.charCount(ch);
+                num = toNumber(s.substring(pos), pos, MASK_NUMB_SIGN);
                 num = neg(num);
             } else {
-                num = toNumber(s.substring(pos),
-                        pos, MASK_NUMB_SIGN);
+                num = toNumber(s, 0, MASK_NUMB_SIGN);
             }
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(s, y.getPos());
