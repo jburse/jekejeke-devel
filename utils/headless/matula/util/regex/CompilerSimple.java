@@ -83,21 +83,41 @@ public final class CompilerSimple extends AbstractCompiler {
                     st.getTokenOffset());
         String pattern;
         if ((expr & AbstractSpecimen.MATCH_WORD) != 0) {
-            flag |= AbstractSpecimen.MATCH_SQTE;
+            flag |= AbstractSpecimen.MATCH_DQTE;
             int ch = st.getToken().codePointAt(0);
             if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
                         ch, st.getTokenOffset() + 1);
                 if (ch == CodeType.LINE_DOUBLE) {
-                    flag |= SpecimenSimple.MATCH_WORD;
+                    flag |= AbstractSpecimen.MATCH_WORD;
                 } else if (ch == CodeType.LINE_SINGLE) {
-                    flag |= SpecimenSimple.MATCH_PART;
+                    flag |= AbstractSpecimen.MATCH_PART;
+                } else if (ch == CodeType.LINE_BACK) {
+                    flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
                     throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
                             st.getTokenOffset());
                 }
             } else {
-                flag |= SpecimenSimple.MATCH_WORD;
+                flag |= AbstractSpecimen.MATCH_WORD;
+                pattern = st.getToken();
+            }
+        } else if ((expr & AbstractSpecimen.MATCH_PART) != 0) {
+            flag |= AbstractSpecimen.MATCH_SQTE;
+            int ch = st.getToken().codePointAt(0);
+            if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
+                pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
+                        ch, st.getTokenOffset() + 1);
+                if (ch == CodeType.LINE_SINGLE) {
+                    flag |= AbstractSpecimen.MATCH_PART;
+                } else if (ch == CodeType.LINE_BACK) {
+                    flag |= AbstractSpecimen.MATCH_WHLE;
+                } else {
+                    throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
+                            st.getTokenOffset());
+                }
+            } else {
+                flag |= AbstractSpecimen.MATCH_PART;
                 pattern = st.getToken();
             }
         } else {
@@ -105,29 +125,24 @@ public final class CompilerSimple extends AbstractCompiler {
             if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
                 pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
                         ch, st.getTokenOffset() + 1);
-                if (ch == CodeType.LINE_DOUBLE) {
-                    /* */
+                if (ch == CodeType.LINE_BACK) {
+                    flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
                     throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
                             st.getTokenOffset());
                 }
             } else {
+                flag |= AbstractSpecimen.MATCH_WHLE;
                 pattern = st.getToken();
             }
         }
-        int pos = st.getTokenOffset();
         st.nextToken();
         SpecimenSimple pm = new SpecimenSimple();
         pm.setPatDelemiter(getPatDelemiter());
         pm.setMatchDelemiter(getMatchDelemiter());
         pm.setPattern(pattern);
         pm.setFlag(flag);
-        try {
-            pm.prepareMatch();
-        } catch (ScannerError x) {
-            x.setPos(x.getPos() + pos);
-            throw x;
-        }
+        pm.prepareMatch();
         return pm;
     }
 

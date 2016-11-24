@@ -308,12 +308,12 @@ public final class ScannerToken {
             }
         }
         token = buf.toString();
-        if (quote == '\'') {
+        if (quote == CodeType.LINE_SINGLE) {
             throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
-        } else if (quote == '`') {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
-        } else {
+        } else if (quote == CodeType.LINE_DOUBLE) {
             throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader));
+        } else {
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
         }
     }
 

@@ -1,5 +1,7 @@
 package matula.util.system;
 
+import matula.util.regex.CodeType;
+
 /**
  * The foreign predicates for the module system/xml.
  * <p/>
@@ -48,7 +50,7 @@ public final class ForeignXml {
         while (pos < n) {
             int ch = s.codePointAt(pos);
             switch (ch) {
-                case '\"':
+                case CodeType.LINE_DOUBLE:
                     if (buf == null)
                         buf = new StringBuilder(s.substring(0, pos));
                     buf.append("&quot;");

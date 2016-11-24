@@ -34,11 +34,13 @@ public abstract class AbstractSpecimen extends AbstractPattern {
     public static final int MATCH_IGCS = 0x00000010;
     public static final int MATCH_EQSN = 0x00000020;
     public static final int MATCH_NEGT = 0x00000040;
-    public static final int MATCH_SQTE = 0x00000080;
 
-    public static final int MATCH_STLE = 0x00000F00;
+    public static final int MATCH_SQTE = 0x00000100;
+    public static final int MATCH_DQTE = 0x00000200;
+
+    public static final int MATCH_STLE = 0x0000F000;
     public static final int MATCH_CRTE = 0x00000000;
-    public static final int MATCH_PRSE = 0x00000100;
+    public static final int MATCH_PRSE = 0x00001000;
 
     public static final int MASK_PAT_BOUNCE = 0x00000001;
 

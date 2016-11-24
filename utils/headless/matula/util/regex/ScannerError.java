@@ -30,6 +30,16 @@ public final class ScannerError extends Exception {
     private int pos;
 
     /**
+     * <p>No stack filling.</p>
+     *
+     * @return This throwable.
+     * @see com.sun.org.apache.xerces.internal.parsers.AbstractDOMParser.Abort
+     */
+    public Throwable fillInStackTrace() {
+        return this;
+    }
+
+    /**
      * <p>Create a scanner error.</p>
      *
      * @param i The error id.
@@ -66,6 +76,10 @@ public final class ScannerError extends Exception {
     public int getPos() {
         return pos;
     }
+
+    /*************************************************************/
+    /* Error Parsing                                             */
+    /*************************************************************/
 
     /**
      * <p>Parse a scanner error.</p>
@@ -113,6 +127,10 @@ public final class ScannerError extends Exception {
             return id;
         }
     }
+
+    /*************************************************************/
+    /* Line Position                                             */
+    /*************************************************************/
 
     /**
      * <p>Generate a line position.</p>

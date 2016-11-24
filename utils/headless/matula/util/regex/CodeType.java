@@ -57,8 +57,8 @@ public final class CodeType {
     public static final char LINE_EOL = '\n';
     public static final char LINE_WIN = '\r';
     public static final char LINE_BACKSLASH = '\\';
-    public static final char LINE_SINGLE = '\'';
     public static final char LINE_ZERO = '0';
+    public static final char LINE_SINGLE = '\'';
     public static final char LINE_DOUBLE = '\"';
     public static final char LINE_BACK = '`';
 

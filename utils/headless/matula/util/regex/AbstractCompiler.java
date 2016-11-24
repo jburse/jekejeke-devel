@@ -1,9 +1,7 @@
 package matula.util.regex;
 
-import matula.util.system.ConnectionReader;
-
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.Reader;
 
 /**
  * <p>Base class for a pattern compiler.</p>
@@ -93,24 +91,6 @@ public abstract class AbstractCompiler {
         return matchdelemiter;
     }
 
-    /**
-     * <p>Make a pattern.</p>
-     * @param pat The string.
-     * @param flag The style and the features.
-     * @return The pattern.
-     */
-    public AbstractPattern makePattern(String pat, int flag)
-            throws ScannerError {
-        switch (flag & AbstractSpecimen.MATCH_STLE) {
-            case AbstractSpecimen.MATCH_CRTE:
-                return createSpecimen(pat, flag);
-            case AbstractSpecimen.MATCH_PRSE:
-                return parseSpecimen(pat, flag);
-            default:
-                throw new IllegalArgumentException("illegal style");
-        }
-    }
-
     /******************************************************************/
     /* Create Specimen                                                */
     /******************************************************************/
@@ -118,7 +98,7 @@ public abstract class AbstractCompiler {
     /**
      * <p>Creata a specimen from a string.</p>
      *
-     * @param pat   The string.
+     * @param pat  The string.
      * @param flag The specimen features to use.
      * @return The specimen.
      * @throws ScannerError Parsing problem.
@@ -129,7 +109,7 @@ public abstract class AbstractCompiler {
     /**
      * <p>Creata a specimen from a string.</p>
      *
-     * @param pat   The string.
+     * @param pat The string.
      * @return The specimen.
      */
     public AbstractSpecimen createSpecimen(String pat)
@@ -156,40 +136,37 @@ public abstract class AbstractCompiler {
     /**
      * <p>Parse a specimen from a string.</p>
      *
-     * @param s    The string to create the specimen from.
+     * @param r    The reader.
      * @param expr The expression features to use.
      * @return The specimen.
      * @throws ScannerError Parsing problem.
+     * @throws IOException  IO error.
      */
-    public AbstractSpecimen parseSpecimen(String s, int expr)
-            throws ScannerError {
-        try {
-            ScannerToken st = new ScannerToken();
-            ConnectionReader cr = new ConnectionReader(new StringReader(s));
-            st.setReader(cr);
-            st.setDelemiter(getPatDelemiter());
-            st.setRemark(getRemark());
-            st.firstToken();
-            AbstractSpecimen matcher = parseSpecimen(st, expr);
-            if (!"".equals(st.getToken()))
-                throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
-                        st.getTokenOffset());
-            return matcher;
-        } catch (IOException x) {
-            throw new RuntimeException("shouldn't happen", x);
-        }
+    public AbstractSpecimen parseSpecimen(Reader r, int expr)
+            throws ScannerError, IOException {
+        ScannerToken st = new ScannerToken();
+        st.setReader(r);
+        st.setDelemiter(getPatDelemiter());
+        st.setRemark(getRemark());
+        st.firstToken();
+        AbstractSpecimen matcher = parseSpecimen(st, expr);
+        if (!"".equals(st.getToken()))
+            throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
+                    st.getTokenOffset());
+        return matcher;
     }
 
     /**
      * <p>Parse a specimen from a string.</p>
      *
-     * @param s  The string to create the specimen from.
+     * @param r The reader.
      * @return The specimen.
      * @throws ScannerError Parsing problem.
+     * @throws IOException  IO error.
      */
-    public AbstractSpecimen parseSpecimen(String s)
-            throws ScannerError {
-        return parseSpecimen(s, AbstractSpecimen.MATCH_IGCS | AbstractSpecimen.MATCH_WORD);
+    public AbstractSpecimen parseSpecimen(Reader r)
+            throws ScannerError, IOException {
+        return parseSpecimen(r, AbstractSpecimen.MATCH_IGCS | AbstractSpecimen.MATCH_WORD);
     }
 
 }

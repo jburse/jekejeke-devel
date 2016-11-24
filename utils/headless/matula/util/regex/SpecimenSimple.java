@@ -50,10 +50,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * Count the wild cards. There are implicit and explicit
      * wildcards. The implicit wildcards are between word
      * breaks. The explicit wildcards are * and ?.
-     *
-     * @throws ScannerError Parsing problem.
      */
-    public void prepareMatch() throws ScannerError {
+    public void prepareMatch() {
         ListArray<Match> vec = new ListArray<Match>();
         int i = 0;
         matchbound = 0;
@@ -580,37 +578,33 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * @return The copy.
      */
     public AbstractSpecimen copyMatcher() {
-        try {
             /* the pattern */
-            SpecimenSimple pm = new SpecimenSimple();
-            pm.setPatDelemiter(patdelemiter);
-            pm.setMatchDelemiter(matchdelemiter);
-            pm.setPattern(pattern);
-            pm.setFlag(flag);
-            pm.prepareMatch();
+        SpecimenSimple pm = new SpecimenSimple();
+        pm.setPatDelemiter(patdelemiter);
+        pm.setMatchDelemiter(matchdelemiter);
+        pm.setPattern(pattern);
+        pm.setFlag(flag);
+        pm.prepareMatch();
 
             /* the target */
-            if (target != null) {
-                SpecimenSimple pr = new SpecimenSimple();
-                pr.setPatDelemiter(patdelemiter);
-                pr.setPattern(target);
-                pr.setFlag(flag);
-                pr.prepareMatch();
-                pm.replaceTo(pr);
-            }
+        if (target != null) {
+            SpecimenSimple pr = new SpecimenSimple();
+            pr.setPatDelemiter(patdelemiter);
+            pr.setPattern(target);
+            pr.setFlag(flag);
+            pr.prepareMatch();
+            pm.replaceTo(pr);
+        }
 
             /* the actual search */
-            for (int i = 0; i < match.length; i++) {
-                pm.match[i].start = match[i].start;
-                pm.match[i].end = match[i].end;
-            }
-            pm.searchpos = searchpos;
-            pm.matchstr = matchstr;
-
-            return pm;
-        } catch (ScannerError x) {
-            throw new RuntimeException(x);
+        for (int i = 0; i < match.length; i++) {
+            pm.match[i].start = match[i].start;
+            pm.match[i].end = match[i].end;
         }
+        pm.searchpos = searchpos;
+        pm.matchstr = matchstr;
+
+        return pm;
     }
 
     /******************************************************************/
