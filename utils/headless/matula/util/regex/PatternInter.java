@@ -120,7 +120,7 @@ public final class PatternInter extends AbstractPattern {
             st.firstToken();
             PatternInter inter = parseInter(st, expr, comp);
             if (!"".equals(st.getToken()))
-                throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
+                throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                         st.getTokenOffset());
             return inter;
         } catch (IOException x) {

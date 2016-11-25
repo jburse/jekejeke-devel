@@ -29,9 +29,11 @@ import java.io.Reader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractCompiler {
-    public static final String ERROR_SYNTAX_SUPERFLUOUS_TOKEN = "superfluous_token";
-    public static final String ERROR_SYNTAX_QUOTED_SINGLE = "quoted_single";
+    public static final String ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED = "end_of_clause_expected";
     public static final String ERROR_SYNTAX_PHRASE_MISSING = "phrase_missing";
+    public static final String ERROR_SYNTAX_WORD_EXPECTED = "word_expected";
+    public static final String ERROR_SYNTAX_PART_EXPECTED = "part_expected";
+    public static final String ERROR_SYNTAX_WHOLE_EXPECTED = "whole_expected";
 
     protected CodeType patdelemiter;
     protected CompLang remark;
@@ -151,7 +153,7 @@ public abstract class AbstractCompiler {
         st.firstToken();
         AbstractSpecimen matcher = parseSpecimen(st, expr);
         if (!"".equals(st.getToken()))
-            throw new ScannerError(ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
+            throw new ScannerError(ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                     st.getTokenOffset());
         return matcher;
     }

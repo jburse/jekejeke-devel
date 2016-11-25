@@ -134,8 +134,8 @@ public final class SpecimenSimple extends AbstractSpecimen {
     public void replaceTo(AbstractPattern pat) {
         SpecimenSimple ss = (SpecimenSimple) pat;
         target = ss.pattern;
-        if (match.length < ss.match.length)
-            throw new IllegalArgumentException("incompatible target");
+        if (match.length != ss.match.length)
+            throw new IllegalArgumentException("incompatible_target");
     }
 
     /******************************************************************/

@@ -95,7 +95,7 @@ public final class CompilerSimple extends AbstractCompiler {
                 } else if (ch == CodeType.LINE_BACK) {
                     flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
-                    throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
+                    throw new ScannerError(ERROR_SYNTAX_WORD_EXPECTED,
                             st.getTokenOffset());
                 }
             } else {
@@ -113,7 +113,7 @@ public final class CompilerSimple extends AbstractCompiler {
                 } else if (ch == CodeType.LINE_BACK) {
                     flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
-                    throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
+                    throw new ScannerError(ERROR_SYNTAX_PART_EXPECTED,
                             st.getTokenOffset());
                 }
             } else {
@@ -128,7 +128,7 @@ public final class CompilerSimple extends AbstractCompiler {
                 if (ch == CodeType.LINE_BACK) {
                     flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
-                    throw new ScannerError(ERROR_SYNTAX_QUOTED_SINGLE,
+                    throw new ScannerError(ERROR_SYNTAX_WHOLE_EXPECTED,
                             st.getTokenOffset());
                 }
             } else {

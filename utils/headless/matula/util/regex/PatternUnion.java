@@ -136,7 +136,7 @@ public final class PatternUnion extends AbstractPattern {
             st.firstToken();
             PatternUnion union = parseUnion(st, expr, comp);
             if (!"".equals(st.getToken()))
-                throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_SUPERFLUOUS_TOKEN,
+                throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                         st.getTokenOffset());
             return union;
         } catch (IOException x) {

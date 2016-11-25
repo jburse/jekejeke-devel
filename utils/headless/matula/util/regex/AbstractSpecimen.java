@@ -131,13 +131,6 @@ public abstract class AbstractSpecimen extends AbstractPattern {
     public abstract void prepareMatch()
             throws ScannerError;
 
-    /**
-     * <p>Set the replacement target.</p>
-     *
-     * @param pat The replacement target.
-     */
-    public abstract void replaceTo(AbstractPattern pat);
-
     /******************************************************************/
     /* Find                                                           */
     /******************************************************************/
