@@ -26,6 +26,7 @@
 :- package(library(jekpro/reference/dispatch)).
 
 :- module(integer, []).
+:- use_module(generic).
 :- use_module(library(misc/elem)).
 /* gcd currently in minlog */
 
@@ -40,35 +41,78 @@ X - Y :-
 
 :- override (+)/3.
 :- public (+)/3.
++(0, Y, Z) :-
+   var(Y), !,
+   Z = Y.
 +(X, Y, Z) :-
-   number(Y), !,
+   var(Y), !,
+   Z = expression(X+Y).
++(X, Y, Z) :-
+   integer(Y), !,
    user: +(X, Y, Z).
 +(Y, rational(A,B), R) :- !,
    user: *(B, Y, H),
    user: +(H, A, C),
    integer: /(C, B, R).
++(0, expression(Y), Z) :- !,
+   Z = expression(Y).
++(X, expression(Y), Z) :- !,
+   Z = expression(X+expression(Y)).
 
 :- override (-)/3.
 :- public (-)/3.
+-(0, Y, Z) :-
+   var(Y), !,
+   Z = expression(-Y).
 -(X, Y, Z) :-
-   number(Y), !,
+   var(Y), !,
+   Z = expression(X-Y).
+-(X, Y, Z) :-
+   integer(Y), !,
    user: -(X, Y, Z).
 -(Y, rational(A,B), R) :- !,
    user: *(B, Y, H),
    user: -(H, A, C),
    integer: /(C, B, R).
+-(0, expression(Y), Z) :- !,
+   Z = expression(-expression(Y)).
+-(X, expression(Y), Z) :- !,
+   Z = expression(X-expression(Y)).
 
 :- override * /3.
 :- public * /3.
+*(0, Y, Z) :-
+   var(Y), !,
+   Z = 0.
+*(1, Y, Z) :-
+   var(Y), !,
+   Z = Y.
+*(-1, Y, Z) :-
+   var(Y), !,
+   Z = expression(-Y).
 *(X, Y, Z) :-
-   number(Y), !,
+   var(Y), !,
+   Z = expression(X*Y).
+*(X, Y, Z) :-
+   integer(Y), !,
    user: *(X, Y, Z).
 *(X, rational(A,B), R) :- !,
    user: *(X, A, H),
    integer: /(H, B, R).
+*(0, expression(_), Z) :- !,
+   Z = 0.
+*(1, expression(Y), Z) :- !,
+   Z = expression(Y).
+*(-1, expression(Y), Z) :- !,
+   Z = expression(-expression(Y)).
+*(X, expression(Y), Z) :- !,
+   Z = expression(X*expression(Y)).
 
 :- override / /3.
 :- public / /3.
+/(X, Y, Z) :-
+   var(Y), !,
+   Z = expression(X/Y).
 /(_, 0, _) :-
    throw(error(evaluation_error(zero_divisor),_)).
 /(X, Y, R) :-
@@ -80,12 +124,57 @@ X - Y :-
 /(X, rational(A,B), R) :- !,
    user: *(X, B, H),
    integer: /(H, A, R).
+/(X, expression(Y), Z) :- !,
+   Z = expression(X/expression(Y)).
 
 :- override ^ /3.
 :- public ^ /3.
 ^(X, Y, Z) :-
-   number(Y), !,
+   var(Y), !,
+   Z = expression(X^Y).
+^(X, Y, Z) :-
+   integer(Y),
+   user:(Y >= 0), !,
    user: ^(X, Y, Z).
+^(X, Y, R) :-
+   integer(Y), !,
+   user:Y - H,
+   user: ^(X, H, Z),
+   integer: /(1, Z, R).
+^(X, rational(A,B), Z) :- !,
+   Z = expression(X^rational(A,B)).
+^(X, expression(Y), Z) :- !,
+   Z = expression(X^expression(Y)).
+
+/*********************************************************************/
+/* Auto Diff                                                         */
+/*********************************************************************/
+
+:- public d/3.
+d(_, _, 0).
+
+:- public s/4.
+s(X, _, _, X).
+
+:- public e/2.
+e(X, X).
+
+:- public m/3.
+m(X, Y, R) :-
+   var(Y), !,
+   R is X*Y.
+m(X, expression(-Y), R) :- !,
+   R is -m(X,Y).
+m(X, expression(Y+Z), R) :- !,
+   R is m(X,Y)+m(X,Z).
+m(X, expression(Y-Z), R) :- !,
+   R is m(X,Y)-m(X,Z).
+m(X, Y, R) :-
+   R is X*Y.
+
+:- public p/3.
+p(X, Y, R) :-
+   R is X^Y.
 
 /*********************************************************************/
 /* Comparison                                                        */
@@ -94,21 +183,21 @@ X - Y :-
 :- override =:= /2.
 :- public =:= /2.
 X =:= Y :-
-   number(Y), !,
+   integer(Y), !,
    user:(X =:= Y).
 _ =:= rational(_,_) :- !, fail.
 
 :- override < /2.
 :- public < /2.
 X < Y :-
-   number(Y), !,
+   integer(Y), !,
    user:(X < Y).
 X < rational(A,B) :- !,
    user: *(X, B, H),
    user:(H < A).
 
 /*********************************************************************/
-/* Comparison                                                        */
+/* Constructor                                                       */
 /*********************************************************************/
 
 :- private make_rational/3.
@@ -120,4 +209,3 @@ make_rational(A, B, rational(C,D)) :-
    user:A - C,
    user:B - D.
 make_rational(A, B, rational(A,B)).
-

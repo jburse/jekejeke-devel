@@ -26,3 +26,178 @@
 :- package(library(jekpro/reference/dispatch)).
 
 :- module(expression, []).
+:- use_module(generic).
+
+/*********************************************************************/
+/* Arithmetic                                                        */
+/*********************************************************************/
+
+:- override (-)/2.
+:- public (-)/2.
+expression(X) - Y :-
+   Y = expression(-expression(X)).
+
+:- override (+)/3.
+:- public (+)/3.
++(expression(X), Y, Z) :-
+   var(Y), !,
+   Z = expression(expression(X)+Y).
++(expression(X), 0, Z) :- !,
+   Z = expression(X).
++(expression(X), Y, Z) :-
+   integer(Y), !,
+   Z = expression(expression(X)+Y).
++(expression(X), rational(A,B), Z) :- !,
+   Z = expression(expression(X)+rational(A,B)).
++(expression(X), expression(Y), Z) :- !,
+   Z = expression(expression(X)+expression(Y)).
+
+:- override (-)/3.
+:- public (-)/3.
+-(expression(X), Y, Z) :-
+   var(Y), !,
+   Z = expression(expression(X)-Y).
+-(expression(X), 0, Z) :- !,
+   Z = expression(X).
+-(expression(X), Y, Z) :-
+   integer(Y), !,
+   Z = expression(expression(X)-Y).
+-(expression(X), rational(A,B), Z) :- !,
+   Z = expression(expression(X)-rational(A,B)).
+-(expression(X), expression(Y), Z) :- !,
+   Z = expression(expression(X)-expression(Y)).
+
+:- override * /3.
+:- public * /3.
+*(expression(X), Y, Z) :-
+   var(Y), !,
+   Z = expression(expression(X)*Y).
+*(expression(_), 0, Z) :- !,
+   Z = 0.
+*(expression(X), 1, Z) :- !,
+   Z = expression(X).
+*(expression(X), -1, Z) :- !,
+   Z = expression(-expression(X)).
+*(expression(X), Y, Z) :-
+   integer(Y), !,
+   Z = expression(expression(X)*Y).
+*(expression(X), rational(A,B), Z) :- !,
+   Z = expression(expression(X)*rational(A,B)).
+*(expression(X), expression(Y), Z) :- !,
+   Z = expression(expression(X)*expression(Y)).
+
+:- override / /3.
+:- public / /3.
+/(expression(X), Y, Z) :-
+   var(Y), !,
+   Z = expression(expression(X)/Y).
+/(expression(X), Y, Z) :-
+   integer(Y), !,
+   Z = expression(expression(X)/Y).
+/(expression(X), rational(A,B), Z) :- !,
+   Z = expression(expression(X)/rational(A,B)).
+/(expression(X), expression(Y), Z) :- !,
+   Z = expression(expression(X)/expression(Y)).
+
+:- override ^ /3.
+:- public ^ /3.
+^(expression(X), Y, Z) :-
+   var(Y), !,
+   Z = expression(expression(X)^Y).
+^(_, 0, Z) :- !,
+   Z = 1.
+^(expression(X), 1, Z) :- !,
+   Z = expression(X).
+^(expression(X), Y, Z) :-
+   integer(Y), !,
+   Z = expression(expression(X)^Y).
+^(expression(X), rational(A,B), Z) :- !,
+   Z = expression(expression(X)^rational(A,B)).
+^(expression(X), expression(Y), Z) :- !,
+   Z = expression(expression(X)^expression(Y)).
+
+/*********************************************************************/
+/* Auto Diff                                                         */
+/*********************************************************************/
+
+:- public d/3.
+d(expression(-X), Y, R) :- !,
+   R is -d(X,Y).
+d(expression(X+Y), Z, R) :- !,
+   R is d(X,Z)+d(Y,Z).
+d(expression(X-Y), Z, R) :- !,
+   R is d(X,Z)-d(Y,Z).
+d(expression(X*Y), Z, R) :- !,
+   R is d(X,Z)*Y+X*d(Y,Z).
+d(expression(X/Y), Z, R) :- !,
+   R is (d(X,Z)*Y-X*d(Y,Z))/Y^2.
+d(expression(X^Y), Z, R) :-
+   integer(Y), !,
+   user:(H is Y-1),
+   R is Y*X^H*d(X,Z).
+
+:- public s/4.
+s(expression(-X), Y, Z, R) :- !,
+   R is -s(X,Y,Z).
+s(expression(X+Y), Z, T, R) :- !,
+   R is s(X,Z,T)+s(Y,Z,T).
+s(expression(X-Y), Z, T, R) :- !,
+   R is s(X,Z,T)-s(Y,Z,T).
+s(expression(X*Y), Z, T, R) :- !,
+   R is s(X,Z,T)*s(Y,Z,T).
+s(expression(X/Y), Z, T, R) :- !,
+   R is s(X,Z,T)/s(Y,Z,T).
+s(expression(X^Y), Z, T, R) :- !,
+   R is s(X,Z,T)^s(Y,Z,T).
+
+:- public e/2.
+e(expression(-X), R) :- !,
+   R is -e(X).
+e(expression(X+Y), R) :- !,
+   R is e(X)+e(Y).
+e(expression(X-Y), R) :- !,
+   R is e(X)-e(Y).
+e(expression(X*Y), R) :- !,
+   R is m(e(X),e(Y)).
+e(expression(X/Y), R) :- !,
+   R is e(X)/e(Y).
+e(expression(X^Y), R) :- !,
+   R is p(e(X),e(Y)).
+
+:- public m/3.
+m(expression(-X), Y, R) :- !,
+   R is -m(X,Y).
+m(expression(X+Y), Z, R) :- !,
+   R is m(X,Z)+m(Y,Z).
+m(expression(X-Y), Z, R) :- !,
+   R is m(X,Z)-m(Y,Z).
+m(X, Y, R) :-
+   var(Y), !,
+   R is X*Y.
+m(X, expression(-Y), R) :- !,
+   R is -m(X,Y).
+m(X, expression(Y+Z), R) :- !,
+   R is m(X,Y)+m(X,Z).
+m(X, expression(Y-Z), R) :- !,
+   R is m(X,Y)-m(X,Z).
+m(X, Y, R) :-
+   R is X*Y.
+
+:- public p/3.
+p(X, Y, R) :-
+   var(Y), !,
+   R is X^Y.
+p(X, Y, R) :-
+   integer(Y),
+   user:(Y > 1),
+   user:(Y rem 2 =:= 1), !,
+   user:(Z is Y-1),
+   R is m(X,p(X,Z)).
+p(X, Y, R) :-
+   integer(Y),
+   user:(Y > 1), !,
+   user:(Z is Y div 2),
+   H is p(X,Z),
+   R is m(H,H).
+p(X, Y, R) :-
+   R is X^Y.

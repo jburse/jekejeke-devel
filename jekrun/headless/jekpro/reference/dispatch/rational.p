@@ -26,6 +26,7 @@
 :- package(library(jekpro/reference/dispatch)).
 
 :- module(rational, []).
+:- use_module(generic).
 
 /*********************************************************************/
 /* Arithmetic                                                        */
@@ -38,6 +39,9 @@ rational(A,B) - rational(C,B) :-
 
 :- override (+)/3.
 :- public (+)/3.
++(X, Y, Z) :-
+   var(Y), !,
+   Z = expression(X+Y).
 +(rational(A,B), Y, R) :-
    integer(Y), !,
    user: *(B, Y, H),
@@ -49,9 +53,14 @@ rational(A,B) - rational(C,B) :-
    user: +(H, J, K),
    user: *(B, D, L),
    integer: /(K, L, R).
++(X, expression(Y), Z) :- !,
+   Z = expression(X+expression(Y)).
 
 :- override (-)/3.
 :- public (-)/3.
+-(X, Y, Z) :-
+   var(Y), !,
+   Z = expression(X-Y).
 -(rational(A,B), Y, R) :-
    integer(Y), !,
    user: *(B, Y, H),
@@ -63,9 +72,14 @@ rational(A,B) - rational(C,B) :-
    user: -(H, J, K),
    user: *(B, D, L),
    integer: /(K, L, R).
+-(X, expression(Y), Z) :- !,
+   Z = expression(X-expression(Y)).
 
 :- override * /3.
 :- public * /3.
+*(X, Y, Z) :-
+   var(Y), !,
+   Z = expression(X*Y).
 *(rational(A,B), Y, R) :-
    integer(Y), !,
    user: *(A, Y, H),
@@ -74,9 +88,14 @@ rational(A,B) - rational(C,B) :-
    user: *(A, C, H),
    user: *(B, D, J),
    integer: /(H, J, R).
+*(X, expression(Y), Z) :- !,
+   Z = expression(X*expression(Y)).
 
 :- override / /3.
 :- public / /3.
+/(X, Y, Z) :-
+   var(Y), !,
+   Z = expression(X/Y).
 /(rational(A,B), Y, R) :-
    integer(Y), !,
    user: *(B, Y, H),
@@ -85,14 +104,58 @@ rational(A,B) - rational(C,B) :-
    user: *(A, D, H),
    user: *(B, C, J),
    integer: /(H, J, R).
+/(X, expression(Y), Z) :- !,
+   Z = expression(X/expression(Y)).
 
 :- override ^ /3.
 :- public ^ /3.
+^(X, Y, Z) :-
+   var(Y), !,
+   Z = expression(X^Y).
 ^(rational(A,B), Y, R) :-
-   integer(Y), !,
+   integer(Y),
+   user:(Y >= 0), !,
    user: ^(A, Y, H),
    user: ^(B, Y, J),
    integer: /(H, J, R).
+^(rational(A,B), Y, R) :-
+   integer(Y), !,
+   user:Y - K,
+   user: ^(A, K, H),
+   user: ^(B, K, J),
+   integer: /(J, H, R).
+^(X, expression(Y), Z) :- !,
+   Z = expression(X^expression(Y)).
+
+/*********************************************************************/
+/* Auto Diff                                                         */
+/*********************************************************************/
+
+:- public d/3.
+d(_, _, 0).
+
+:- public s/4.
+s(X, _, _, X).
+
+:- public e/2.
+e(X, X).
+
+:- public m/3.
+m(X, Y, R) :-
+   var(Y), !,
+   R is X*Y.
+m(X, expression(-Y), R) :- !,
+   R is -m(X,Y).
+m(X, expression(Y+Z), R) :- !,
+   R is m(X,Y)+m(X,Z).
+m(X, expression(Y-Z), R) :- !,
+   R is m(X,Y)-m(X,Z).
+m(X, Y, R) :-
+   R is X*Y.
+
+:- public p/3.
+p(X, Y, R) :-
+   R is X^Y.
 
 /*********************************************************************/
 /* Comparison                                                        */

@@ -38,11 +38,18 @@
 :- override is/2.
 :- public is/2.
 X is E :-
-   number(E), !,
-   E = X.
+   var(E), !,
+   X = E.
+X is E :-
+   integer(E), !,
+   X = E.
 X is E :-
    atom(E), !,
    user:(X is E).
+X is rational(A,B) :- !,
+   X = rational(A,B).
+X is expression(E) :- !,
+   X = expression(E).
 X is E :-
    compound(E), !,
    E =.. [F|L],
@@ -150,14 +157,6 @@ sys_poly_send(Y, F, T) :-
    integer(Y), !,
    M =.. [F,Y|T],
    integer:M.
-sys_poly_send(Y, F, T) :-
-   float(Y), !,
-   M =.. [F,Y|T],
-   float:M.
-sys_poly_send(Y, F, T) :-
-   decimal(Y), !,
-   M =.. [F,Y|T],
-   decimal:M.
 sys_poly_send(Y, F, T) :-
    M =.. [F|T],
    Y::M.
