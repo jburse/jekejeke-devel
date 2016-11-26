@@ -117,9 +117,9 @@ X - Y :-
    throw(error(evaluation_error(zero_divisor),_)).
 /(X, Y, R) :-
    integer(Y), !,
-   H is gcd(X,Y),
-   A is X//H,
-   B is Y//H,
+   user:(H is gcd(X,Y)),
+   user:(A is X//H),
+   user:(B is Y//H),
    make_rational(A, B, R).
 /(X, rational(A,B), R) :- !,
    user: *(X, B, H),

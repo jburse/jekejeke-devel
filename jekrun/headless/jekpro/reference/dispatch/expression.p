@@ -133,7 +133,7 @@ d(expression(X/Y), Z, R) :- !,
    R is (d(X,Z)*Y-X*d(Y,Z))/Y^2.
 d(expression(X^Y), Z, R) :-
    integer(Y), !,
-   user:(H is Y-1),
+   user: -(Y, 1, H),
    R is Y*X^H*d(X,Z).
 
 :- public s/4.
@@ -191,13 +191,14 @@ p(X, Y, R) :-
    integer(Y),
    user:(Y > 1),
    user:(Y rem 2 =:= 1), !,
-   user:(Z is Y-1),
+   user: -(Y, 1, Z),
    R is m(X,p(X,Z)).
 p(X, Y, R) :-
    integer(Y),
    user:(Y > 1), !,
-   user:(Z is Y div 2),
+   user:div(Y, 2, Z),
    H is p(X,Z),
    R is m(H,H).
 p(X, Y, R) :-
    R is X^Y.
+

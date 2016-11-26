@@ -24,6 +24,7 @@
  */
 
 :- package(library(jekpro/reference/dispatch)).
+:- use_package(library(jekpro/frequent/misc)).
 
 :- module(generic, []).
 
@@ -161,3 +162,35 @@ sys_poly_send(Y, F, T) :-
    M =.. [F|T],
    Y::M.
 
+/***********************************************************/
+/* CAS Display Hook                                        */
+/***********************************************************/
+
+:- public residue:sys_portray_eq/2.
+:- multifile residue:sys_portray_eq/2.
+:- meta_predicate residue:sys_portray_eq(0,0).
+residue:sys_portray_eq(_ = X, _) :-
+   var(X), !, fail.
+residue:sys_portray_eq(_ = X, _) :-
+   integer(X), !, fail.
+residue:sys_portray_eq(X = rational(A,B), X is F) :-
+   sys_flatten_eq(rational(A,B), F).
+residue:sys_portray_eq(X = expression(E), X is F) :-
+   sys_flatten_eq(expression(E), F).
+
+:- private sys_flatten_eq/2.
+sys_flatten_eq(X, X) :-
+   var(X), !.
+sys_flatten_eq(X, X) :-
+   integer(X), !.
+sys_flatten_eq(rational(A,B), A/B) :- !.
+sys_flatten_eq(expression(X), Y) :- !,
+   X =.. [F|L],
+   sys_flatten_list(L, R),
+   Y =.. [F|R].
+
+:- private sys_flatten_list/2.
+sys_flatten_list([X|Y], [Z|T]) :-
+   sys_flatten_eq(X, Z),
+   sys_flatten_list(Y, T).
+sys_flatten_list([], []).

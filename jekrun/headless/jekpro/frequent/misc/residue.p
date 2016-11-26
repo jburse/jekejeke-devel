@@ -144,3 +144,13 @@ sys_term_eq_list(T, L) :-
 call_residue(G, L) :-
    call(G),
    sys_term_eq_list(G, L).
+
+/***********************************************************/
+/* CAS Display Hook                                        */
+/***********************************************************/
+
+% sys_portray_eq(+Goal, -Goal)
+:- public sys_portray_eq/2.
+:- multifile sys_portray_eq/2.
+:- meta_predicate sys_portray_eq(0,0).
+:- static sys_portray_eq/2.

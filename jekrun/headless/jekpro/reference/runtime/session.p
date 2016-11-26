@@ -139,6 +139,9 @@ sys_filter_variable_names([X=Y|L], R, S) :-
            T == Y)),
    Z == X, !,
    sys_filter_variable_names(L, R, S).
+sys_filter_variable_names([E|L], R, [F|S]) :-
+   sys_portray_eq(E, F), !,
+   sys_filter_variable_names(L, R, S).
 sys_filter_variable_names([E|L], R, [E|S]) :-
    sys_filter_variable_names(L, R, S).
 sys_filter_variable_names([], L, L).
@@ -167,6 +170,11 @@ sys_show_name_or_eq_list([X]) :-
 % sys_show_name_or_eq(+Eq)
 :- private sys_show_name_or_eq/1.
 :- meta_predicate sys_show_name_or_eq(0).
+sys_show_name_or_eq(X is T) :- !,
+   sys_write_var(X),
+   ttywrite(' is '),
+   sys_get_variable_names(N),
+   ttywrite_term(T, [quoted(true),priority(699),variable_names(N)]).
 sys_show_name_or_eq(X = T) :- !,
    sys_write_var(X),
    ttywrite(' = '),
