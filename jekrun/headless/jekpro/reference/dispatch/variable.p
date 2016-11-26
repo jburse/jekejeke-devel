@@ -25,4 +25,4 @@
 
 :- package(library(jekpro/reference/dispatch)).
 
-:- module(float, []).
+:- module(variable, []).

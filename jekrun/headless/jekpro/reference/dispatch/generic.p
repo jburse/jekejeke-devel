@@ -27,40 +27,9 @@
 
 :- module(generic, []).
 
-:- override infix(is).
-:- public infix(is).
-:- op(700, xfx, is).
-
-:- override infix(=:=).
-:- public infix(=:=).
-:- op(700, xfx, =:=).
-
-:- override infix(=\=).
-:- public infix(=\=).
-:- op(700, xfx, =\=).
-
-:- override infix(=\=).
-:- public infix(=\=).
-:- op(700, xfx, =\=).
-
-:- override infix(<).
-:- public infix(<).
-:- op(700, xfx, <).
-
-:- override infix(=<).
-:- public infix(=<).
-:- op(700, xfx, =<).
-
-:- override infix(>).
-:- public infix(>).
-:- op(700, xfx, >).
-
-:- override infix(>=).
-:- public infix(>=).
-:- op(700, xfx, >=).
-
-:- public infix(-:-).
-:- op(400, yfx, -:-).
+/*********************************************************************/
+/* Arithmetic                                                        */
+/*********************************************************************/
 
 /**
  * X is E:
@@ -77,8 +46,23 @@ X is E :-
 X is E :-
    compound(E), !,
    E =.. [F|L],
-   sys_is_list(L, X, [Y|T]),
-   sys_is_send(Y, F, T).
+   sys_eval_list(L, X, [Y|T]),
+   sys_poly_send(Y, F, T).
+
+/**
+ * sys_eval_list(L, X, R):
+ * The predicate succeeds in R for evaluating the elements of L
+ * and adding the place holder X.
+ */
+:- private sys_eval_list/3.
+sys_eval_list([X|Y], H, [Z|T]) :-
+   Z is X,
+   sys_eval_list(Y, H, T).
+sys_eval_list([], H, [H]).
+
+/*********************************************************************/
+/* Comparison                                                        */
+/*********************************************************************/
 
 /**
  * E =:= F:
@@ -90,7 +74,7 @@ X is E :-
 E =:= F :-
    X is E,
    Y is F,
-   sys_is_send(X, =:=, [Y]).
+   sys_poly_send(X, =:=, [Y]).
 
 /**
  * E =\= F:
@@ -102,7 +86,7 @@ E =:= F :-
 E =\= F :-
    X is E,
    Y is F,
-   \+ sys_is_send(X, =:=, [Y]).
+   \+ sys_poly_send(X, =:=, [Y]).
 
 /**
  * E < F:
@@ -114,7 +98,7 @@ E =\= F :-
 E < F :-
    X is E,
    Y is F,
-   sys_is_send(X, <, [Y]).
+   sys_poly_send(X, <, [Y]).
 
 /**
  * E =< F:
@@ -126,7 +110,7 @@ E < F :-
 E =< F :-
    X is E,
    Y is F,
-   \+ sys_is_send(Y, <, [X]).
+   \+ sys_poly_send(Y, <, [X]).
 
 /**
  * E > F:
@@ -138,7 +122,7 @@ E =< F :-
 E > F :-
    X is E,
    Y is F,
-   sys_is_send(Y, <, [X]).
+   sys_poly_send(Y, <, [X]).
 
 /**
  * E >= F:
@@ -150,38 +134,31 @@ E > F :-
 E >= F :-
    X is E,
    Y is F,
-   \+ sys_is_send(X, <, [Y]).
+   \+ sys_poly_send(X, <, [Y]).
 
 /**
- * sys_is_list(L, X, R):
- * The predicate succeeds in R for evaluating the elements of L
- * and adding the place holder X.
- */
-:- private sys_is_list/3.
-sys_is_list([X|Y], H, [Z|T]) :-
-   Z is X,
-   sys_is_list(Y, H, T).
-sys_is_list([], H, [H]).
-
-/**
- * sys_is_send(Y, F, T):
+ * sys_poly_send(Y, F, T):
  * The predicate succeeds for sending a message with funtor F
  * and arguments T to the object Y.
  */
-:- private sys_is_send/3.
-sys_is_send(Y, F, T) :-
+:- private sys_poly_send/3.
+sys_poly_send(Y, F, T) :-
+   var(Y), !,
+   M =.. [F,Y|T],
+   variable:M.
+sys_poly_send(Y, F, T) :-
    integer(Y), !,
    M =.. [F,Y|T],
    integer:M.
-sys_is_send(Y, F, T) :-
+sys_poly_send(Y, F, T) :-
    float(Y), !,
    M =.. [F,Y|T],
    float:M.
-sys_is_send(Y, F, T) :-
+sys_poly_send(Y, F, T) :-
    decimal(Y), !,
    M =.. [F,Y|T],
    decimal:M.
-sys_is_send(Y, F, T) :-
+sys_poly_send(Y, F, T) :-
    M =.. [F|T],
    Y::M.
 

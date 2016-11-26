@@ -29,6 +29,10 @@
 :- use_module(library(misc/elem)).
 /* gcd currently in minlog */
 
+/*********************************************************************/
+/* Arithmetic                                                        */
+/*********************************************************************/
+
 :- override (-)/2.
 :- public (-)/2.
 X - Y :-
@@ -42,7 +46,7 @@ X - Y :-
 +(Y, rational(A,B), R) :- !,
    user: *(B, Y, H),
    user: +(H, A, C),
-   integer: -:-(C, B, R).
+   integer: /(C, B, R).
 
 :- override (-)/3.
 :- public (-)/3.
@@ -52,7 +56,7 @@ X - Y :-
 -(Y, rational(A,B), R) :- !,
    user: *(B, Y, H),
    user: -(H, A, C),
-   integer: -:-(C, B, R).
+   integer: /(C, B, R).
 
 :- override * /3.
 :- public * /3.
@@ -61,31 +65,31 @@ X - Y :-
    user: *(X, Y, Z).
 *(X, rational(A,B), R) :- !,
    user: *(X, A, H),
-   integer: -:-(H, B, R).
+   integer: /(H, B, R).
 
-:- override -:- /3.
-:- public -:- /3.
--:-(_, 0, _) :-
+:- override / /3.
+:- public / /3.
+/(_, 0, _) :-
    throw(error(evaluation_error(zero_divisor),_)).
--:-(X, Y, R) :-
+/(X, Y, R) :-
    integer(Y), !,
    H is gcd(X,Y),
    A is X//H,
    B is Y//H,
    make_rational(A, B, R).
--:-(X, rational(A,B), R) :- !,
+/(X, rational(A,B), R) :- !,
    user: *(X, B, H),
-   integer: -:-(H, A, R).
+   integer: /(H, A, R).
 
-:- private make_rational/3.
-make_rational(A, -1, B) :- !,
-   user:A - B.
-make_rational(A, 1, A) :- !.
-make_rational(A, B, rational(C,D)) :-
-   user:(B < 0), !,
-   user:A - C,
-   user:B - D.
-make_rational(A, B, rational(A,B)).
+:- override ^ /3.
+:- public ^ /3.
+^(X, Y, Z) :-
+   number(Y), !,
+   user: ^(X, Y, Z).
+
+/*********************************************************************/
+/* Comparison                                                        */
+/*********************************************************************/
 
 :- override =:= /2.
 :- public =:= /2.
@@ -102,3 +106,18 @@ X < Y :-
 X < rational(A,B) :- !,
    user: *(X, B, H),
    user:(H < A).
+
+/*********************************************************************/
+/* Comparison                                                        */
+/*********************************************************************/
+
+:- private make_rational/3.
+make_rational(A, -1, B) :- !,
+   user:A - B.
+make_rational(A, 1, A) :- !.
+make_rational(A, B, rational(C,D)) :-
+   user:(B < 0), !,
+   user:A - C,
+   user:B - D.
+make_rational(A, B, rational(A,B)).
+
