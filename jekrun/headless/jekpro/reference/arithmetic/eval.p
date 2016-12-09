@@ -85,10 +85,10 @@
 :- special(is/2, 'SpecialEval', 0).
 
 /**
- * X[Y1,..,Yn,Z]:
- * The predicate succeeds in Z with the element of term with the
- * subscripts Y1, .., Yn. The term need not be homogenously shaped
- * and the indexes start with one.
+ * X [Y1, .., Yn, Z]:
+ * The predicate succeeds when Z unifies with the element of term
+ * with the subscripts Y1, .., Yn for 1 ≤ n ≤ 7. The term X need
+ * not be homogenously shaped and the indexes start with one.
  */
 :- public []/3.
 :- virtual []/3.
