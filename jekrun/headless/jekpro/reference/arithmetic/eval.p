@@ -70,6 +70,9 @@
 :- public infix(is).
 :- op(700, xfx, is).
 
+:- public postfix([]).
+:- op(100, yf, [[]]).
+
 /**
  * X is Y: [ISO 8.6.1]
  * The predicate succeeds when X unifies with the evaluation of Y.
@@ -80,3 +83,65 @@
 :- sys_get_context(here, C),
    set_predicate_property(is/2, sys_accessible_meta_predicate(C)).
 :- special(is/2, 'SpecialEval', 0).
+
+/**
+ * X[Y1,..,Yn,Z]:
+ * The predicate succeeds in Z with the element of term with the
+ * subscripts Y1, .., Yn. The term need not be homogenously shaped
+ * and the indexes start with one.
+ */
+:- public []/3.
+:- virtual []/3.
+X [Y, Z] :-
+   arg(Y, X, Z).
+
+:- public []/4.
+:- virtual []/4.
+X [Y, Z, T] :-
+   arg(Y, X, H),
+   arg(Z, H, T).
+
+:- public []/5.
+:- virtual []/5.
+X [Y, Z, T, U] :-
+   arg(Y, X, H),
+   arg(Z, H, J),
+   arg(T, J, U).
+
+:- public []/6.
+:- virtual []/6.
+X [Y, Z, T, U, V] :-
+   arg(Y, X, H),
+   arg(Z, H, J),
+   arg(T, J, K),
+   arg(U, K, V).
+
+:- public []/7.
+:- virtual []/7.
+X [Y, Z, T, U, V, W] :-
+   arg(Y, X, H),
+   arg(Z, H, J),
+   arg(T, J, K),
+   arg(U, K, L),
+   arg(V, L, W).
+
+:- public []/8.
+:- virtual []/8.
+X [Y, Z, T, U, V, W, S] :-
+   arg(Y, X, H),
+   arg(Z, H, J),
+   arg(T, J, K),
+   arg(U, K, L),
+   arg(V, L, M),
+   arg(W, M, S).
+
+:- public []/9.
+:- virtual []/9.
+X [Y, Z, T, U, V, W, S, R] :-
+   arg(Y, X, H),
+   arg(Z, H, J),
+   arg(T, J, K),
+   arg(U, K, L),
+   arg(V, L, M),
+   arg(W, M, N),
+   arg(S, N, R).

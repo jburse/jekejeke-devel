@@ -217,7 +217,7 @@ public final class ForeignAtom {
         Number num;
         try {
             int ch;
-            if (0< s.length() && (ch = s.codePointAt(0)) == ScannerToken.SCAN_NEG) {
+            if (0 < s.length() && (ch = s.codePointAt(0)) == ScannerToken.SCAN_NEG) {
                 int pos = Character.charCount(ch);
                 num = toNumber(s.substring(pos), pos, MASK_NUMB_SIGN);
                 num = neg(num);
