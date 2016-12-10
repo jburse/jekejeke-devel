@@ -1,41 +1,43 @@
 /**
  * We provide some predicates that allow listing the Java auto generated
  * members. The auto loader has two functions. Firstly it allows loading
- * a Prolog text when a module has been specified in a (:)/2 invocation.
- * Secondly it allows the automatic generation of interface members
- * for a Java class when class name has been specified in a (:)/2
- * invocation.
+ * a Prolog text when a module or class has been specified in a (:)/2
+ * respectively (::)/2 invocation. Secondly it allows the automatic
+ * generation of interface members for a Java class when class name
+ * has been specified in a (:)/2 respectively (::)/2 invocation.
  *
  * The programming interface documentation of the Jekejeke runtime
  * describes the generated interface members in more detail. Basically
- * we generate a public foreign function for an evaluable function if
- * all arguments are numbers otherwise we generate a public foreign
- * function for a predicate. If the name is overloaded we generate
- * branching Prolog code and if needed a bridge that checks the
- * argument types.
+ * we generate a public foreign function for an evaluable function if all
+ * arguments are numbers otherwise we generate a public foreign function
+ * for a predicate. If the name is overloaded we generate branching Prolog
+ * code. Bridging and tunnelling is automatically provided by the
+ * Prolog interpreter.
  *
  * Example:
  * ?- X is 'Math':'PI'.
  * X = 3.141592653589793
  *
- * ?- system/automatic:generated(eval(_:_/0)).
+ * ?- system/automatic:generated(_:_/1).
  * % Math.class
- * :- module(java/lang/'Math', []).
+ * :- package(foreign(java/lang)).
+ * :- module('Math', []).
  * :- reexport(foreign('Object')).
+ * :- sys_auto_load(foreign('Math')).
  *
- * :- public foreign_constant('E'/0, 'Math', 'E').
+ * :- public foreign_const('E'/1,'Math','E').
  *
- * :- public foreign_constant('PI'/0, 'Math', 'PI').
+ * :- public foreign_const('PI'/1,'Math','PI').
  *
- * :- public foreign_function(random/0, 'Math', random).
+ * :- public foreign_fun(random/1,'Math',random).
  *
  * The usual listing commands listing/0 and listing/1 suppress the
  * automatically generated interface members. The commands generated/0
  * and generated /1 on the other hand allow listing the automatically
- * generated interface members. Only evaluable functions or predicates
- * that match the given pattern are listed. The listing profits from
- * our compact representation by stacked modifiers, shortened import
- * specifiers and shorted class specifiers.
+ * generated interface members. Only predicates that match the given
+ * pattern are listed. The listing profits from our compact representation
+ * by stacked modifiers, shortened import specifiers and shortened
+ * class specifiers.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -71,9 +73,7 @@
 
 /**
  * generated:
- * The predicate lists the user clauses of evaluable functions and
- * predicates. Only automatic evaluable functions and predicates
- * are listed.
+ * The predicate lists the user clauses of automatic predicates.
  */
 % generated
 :- public generated/0.
@@ -83,9 +83,8 @@ generated :-
 
 /**
  * generated(I):
- * The predicate lists the user clauses of evaluable functions and
- * predicates that match the pattern I. Only automatic evaluable
- * functions and predicates are listed.
+ * The predicate lists the user clauses of automatic predicates
+ * match the pattern I.
  */
 % generated(-Indicator)
 :- public generated/1.

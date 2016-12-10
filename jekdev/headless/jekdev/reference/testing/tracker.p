@@ -142,8 +142,8 @@ tracker_batch :- nodebug,
 % sys_add_oknok(+OkNok, +OkNok, -OkNok)
 :- private sys_add_oknok/3.
 sys_add_oknok(A-B, C-D, E-F) :-
-   E is A + C,
-   F is B + D.
+   E is A+C,
+   F is B+D.
 
 % sys_remove_summary
 :- private sys_remove_summary/0.
@@ -262,7 +262,7 @@ sys_analyze_text(InName) :-
          (  Term == end_of_file -> !
          ;  (  at_end_of_stream(InStream)
             -> stream_property(InStream, line_no(L)),
-               Line2 is L + 1
+               Line2 is L+1
             ;  stream_property(InStream, line_no(Line2))),
             sys_find_hit(SrcPin, Line1, Line2, OkNok),
             sys_find_indicator(SrcPin, Line1, Line2, Fun, Arity),

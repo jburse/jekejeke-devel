@@ -1,11 +1,11 @@
 /**
- * When a clause is instantiated a new frame for the variables is created.
- * Practical Prolog systems store additional information in a frame. We
- * provide access to frame properties via frame references. The predicate
- * clause_frame/3 searches a clause and returns a frame reference. These
- * predicates are able to retrieve clauses unrestrictedly, namely it is
- * possible to retrieve clauses from thread local, dynamic or static
- * predicates.
+ * When a clause is instantiated a new frame for the variables is
+ * created. Practical Prolog sys-tems store additional information
+ * in a frame. We provide access to frame properties via frame
+ * references. The predicate rule_frame/3 searches a clause and
+ * returns a frame reference. This predicate is able to retrieve
+ * clauses unrestrictedly, namely it is possible to retrieve clauses
+ * from thread local, dynamic or static predicates.
  *
  * The predicates frame_property/2, set_frame_property/2 and
  * reset_frame_property/2 allow inspecting and modifying frame

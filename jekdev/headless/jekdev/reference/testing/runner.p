@@ -121,8 +121,8 @@
 % sys_add_oknok(+OkNok, +OkNok, -OkNok)
 :- private sys_add_oknok/3.
 sys_add_oknok(A-B, C-D, E-F) :-
-   E is A + C,
-   F is B + D.
+   E is A+C,
+   F is B+D.
 
 % sys_remove_summary
 :- private sys_remove_summary/0.

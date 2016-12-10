@@ -100,7 +100,7 @@ report_begin_html(P, T) :-
    open(P, write, X),
    set_output(X),
    write('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'), nl,
-   write('<html author=\'7\'>'), nl,
+   write('<html author=''7''>'), nl,
    write('  <head>'), nl,
    write('    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'), nl,
    write('    <title editable="comment">'),
@@ -120,8 +120,7 @@ report_end_html :-
 
 % html_zebra_row(+Integer)
 html_zebra_row(N) :-
-   1 =:=
-   N mod 2, !,
+   1 =:= N mod 2, !,
    write('  <tr class="normrow">'), nl.
 html_zebra_row(_) :-
    write('  <tr class="oddrow">'), nl.
@@ -134,22 +133,22 @@ html_pairs_data(A-B) :-
    write('    <td style="text-align: right;">'),
    write(B),
    write('</td>'), nl,
-   S is A + B,
-   A1 is (A*200+S) // (2*S),
-   B1 is 100 - A1,
+   S is A+B,
+   A1 is (A*200+S)//(2*S),
+   B1 is 100-A1,
    write('    <td style="text-align: left;">'),
-   write('<div style=\'float:left; width: '),
+   write('<div style=''float:left; width: '),
    write_atom(A1),
-   write('%; background-color:#50D050\'>&#8203;</div>'),
-   write('<div style=\'float:left; width: '),
+   write('%; background-color:#50D050''>&#8203;</div>'),
+   write('<div style=''float:left; width: '),
    write_atom(B1),
-   write('%; background-color:#D05050\'>&#8203;</div>'),
+   write('%; background-color:#D05050''>&#8203;</div>'),
    write('</td>'), nl.
 
 % html_functor_indicator(+Atom, +Integer)
 html_functor_indicator(F, A) :-
    A < 0, !,
-   A2 is -A - 1,
+   A2 is -A-1,
    write_atom(escape(indicator(F,A2))).
 html_functor_indicator(F, A) :-
    write_atom(escape(indicator(F,A))).

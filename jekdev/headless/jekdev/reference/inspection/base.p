@@ -1,12 +1,21 @@
 /**
- * For debugging purpose it might be necessary to access sources
- * that are not accessible from the top-level. We provide predicates
- * to allow direct access.
+ * For debugging purpose it might be necessary to access sources that
+ * are not accessible from the top-level. We provide predicates to
+ * allow direct access. The directly accessible sources can be tested
+ * and enumerated by the predicate current_base/1.
  *
- * The directly accessible sources can be tested and enumerated
- * by the predicate current_base/1. The predicate sys_callable_slash/2
- * can be used to explicitly invoke to slash (/)/2 notation conversion
- * for a callable.
+ * Examples:
+ * ?- sys_atom_slash(X, a/b/c).
+ * X = 'a.b.c'
+ *
+ * ?- sys_atom_slash('c[][]', X).
+ * X = {{c}}
+ *
+ * The predicate sys_atom_slash/2 can be used to explicitly invoke a
+ * slash (/)/2 notation conversion for an atom. The notation can be
+ * used to denote Prolog text modules and Java Classes. We additionally
+ * support conversion for the {}/1 notation as well, which can be used
+ * to denote Java Array Classes.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -61,11 +70,11 @@ current_base(I) :-
 :- special(sys_current_base_chk/1, 'SpecialBase', 1).
 
 /**
- * sys_callable_slash(S, T):
- * The predicate succeeds when S is a callable of the form
- * ‘s1....sn’(X1, .., Xm) and T is a slash notation atom of the
- * form s1/../sn(X1, .., Xm), for 1 ≤ n and 0 ≤ m.
+ * sys_atom_slash(S, T):
+ * The predicate succeeds when S is an atom of the form ‘s1. .. .sn’
+ * and T is a slash notation atom of the form s1/../sn, for 1 ≤ n. Besides
+ * the (/)/2 operator the {}/1 operator is supported as well.
  */
-% sys_callable_slash(+-Callable, -+Term)
-:- public sys_callable_slash/2.
-:- special(sys_callable_slash/2, 'SpecialBase', 2).
+% sys_atom_slash(+-Atom, -+Term)
+:- public sys_atom_slash/2.
+:- special(sys_atom_slash/2, 'SpecialBase', 2).

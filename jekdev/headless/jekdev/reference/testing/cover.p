@@ -94,15 +94,15 @@ cover_summary :-
 % html_list_summary
 :- private html_list_summary/0.
 html_list_summary :-
-   write('<h1 date=\''),
+   write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'cover.summary.h1', V1),
-   write('\'>'),
+   write('''>'),
    write_atom(escape(V1)),
    write('</h1>'), nl,
-   numbered_solution(bagof(N, U ^ cover_source_view(D, N, U), L), I),
+   numbered_solution(bagof(N, U^cover_source_view(D, N, U), L), I),
    aggregate_all((sum(W1),sum(W2)),
       (  member(N, L),
          cover_source_view(D, N, W1-W2)), (P1,P2)),
@@ -162,7 +162,7 @@ html_list_element(_, _, _).
 % cover_packages.
 :- private cover_packages/0.
 cover_packages :-
-   numbered_solution(bagof(N, U ^ cover_source_view(D, N, U), L), I),
+   numbered_solution(bagof(N, U^cover_source_view(D, N, U), L), I),
    Q is_atom '0'+I+'_'+D+'/package.html',
    write('Generating '),
    write('.'/D), nl,
@@ -174,12 +174,12 @@ cover_packages.
 % html_list_package(+Atom, +List)
 :- private html_list_package/2.
 html_list_package(D, L) :-
-   write('<h1 date=\''),
+   write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'cover.package.h1', V1),
-   write('\'>'),
+   write('''>'),
    write_atom(escape(V1)),
    write(' '),
    write_atom(escape(D)),
@@ -245,7 +245,7 @@ html_list_member(_, _).
 % cover_sources(+RelUrl)
 :- private cover_sources/1.
 cover_sources(Z) :-
-   numbered_solution(bagof(N, U ^ cover_source_view(D, N, U), L), I),
+   numbered_solution(bagof(N, U^cover_source_view(D, N, U), L), I),
    numbered_solution(member(N, L), J),
    T is_atom D+ / +N,
    P is_atom '0'+I+'_'+D+ / +'0'+J+'_'+N+'.html',
@@ -259,12 +259,12 @@ cover_sources(_).
 % html_list_source(+Atom, +Atom, +RelUrl)
 :- private html_list_source/3.
 html_list_source(T, N, Z) :-
-   write('<h1 date=\''),
+   write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'cover.source.h1', V1),
-   write('\'>'),
+   write('''>'),
    write_atom(escape(V1)),
    write(' '),
    write_atom(escape(N)),

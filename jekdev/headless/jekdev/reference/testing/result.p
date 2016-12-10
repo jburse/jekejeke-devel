@@ -95,15 +95,15 @@ result_summary :-
 % html_list_summary
 :- private html_list_summary/0.
 html_list_summary :-
-   write('<h1 date=\''),
+   write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'result.summary.h1', V1),
-   write('\'>'),
+   write('''>'),
    write_atom(escape(V1)),
    write('</h1>'), nl,
-   numbered_solution(bagof(N, U ^ result_suite_view(D, N, U), L), I),
+   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
    aggregate_all((sum(W1),sum(W2)),
       (  member(N, L),
          result_suite_view(D, N, W1-W2)), (P1,P2)),
@@ -163,7 +163,7 @@ html_list_element(_, _, _).
 % result_packages.
 :- private result_packages/0.
 result_packages :-
-   numbered_solution(bagof(N, U ^ result_suite_view(D, N, U), L), I),
+   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
    Q is_atom '0'+I+'_'+D+'/package.html',
    write('Generating '),
    write('.'/D), nl,
@@ -175,12 +175,12 @@ result_packages.
 % html_list_package(+Atom, +List)
 :- private html_list_package/2.
 html_list_package(D, L) :-
-   write('<h1 date=\''),
+   write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'result.package.h1', V1),
-   write('\'>'),
+   write('''>'),
    write_atom(escape(V1)),
    write(' '),
    write_atom(escape(D)),
@@ -246,7 +246,7 @@ html_list_member(_, _).
 % result_suites(+RelUrl)
 :- private result_suites/1.
 result_suites(Z) :-
-   numbered_solution(bagof(N, U ^ result_suite_view(D, N, U), L), I),
+   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
    numbered_solution(member(N, L), J),
    T is_atom D+'_'+N,
    P is_atom '0'+I+'_'+D+ / +'0'+J+'_'+N+'.html',
@@ -260,12 +260,12 @@ result_suites(_).
 % html_list_suite(+Atom, +Atom, +RelUrl)
 :- private html_list_suite/3.
 html_list_suite(T, N, Z) :-
-   write('<h1 date=\''),
+   write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'result.suite.h1', V1),
-   write('\'>'),
+   write('''>'),
    write_atom(escape(V1)),
    write(' '),
    write_atom(escape(N)),
