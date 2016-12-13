@@ -459,13 +459,6 @@ residue:sys_unwrap_eq([A*X|B] #= K, E #= F) :-
 /* Scalar Product Parsing                                 */
 /**********************************************************/
 
-/**
- * I (finite):
- * An integer I represents an integer constant.
- */
-% sys_value_expr(+Expr, -Prod, -Integer)
-sys_value_expr(A, [], A) :-
-   integer(A), !.
 
 /**
  * V (finite):
@@ -474,6 +467,14 @@ sys_value_expr(A, [], A) :-
 sys_value_expr(X, [1*B], 0) :-
    var(X), !,
    sys_fresh_var(X, B).
+
+/**
+ * I (finite):
+ * An integer I represents an integer constant.
+ */
+% sys_value_expr(+Expr, -Prod, -Integer)
+sys_value_expr(A, [], A) :-
+   integer(A), !.
 
 /**
  * A + B (finite):
@@ -528,6 +529,96 @@ sys_value_expr(abs(X), S, H) :- !,
    sys_abs_lin(L, A, S, H, V, G).
 
 /**
+ * T[E1,..,En] (finite):
+ * If T is a term and E1,..,En are integere expressions for 1 ≤ n ≤ 7
+ * then T[E1,..,En] is also a value expression.
+ */
+sys_value_expr(T[E], L, A) :-
+   N is E,
+   arg(N, T, X), !,
+   sys_value_expr(X, L, A).
+sys_value_expr(_[_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr(T[E,F], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y), !,
+   sys_value_expr(Y, L, A).
+sys_value_expr(_[_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr(T[E,F,G], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z), !,
+   sys_value_expr(Z, L, A).
+sys_value_expr(_[_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr(T[E,F,G,H], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V), !,
+   sys_value_expr(V, L, A).
+sys_value_expr(_[_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr(T[E,F,G,H,I], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V),
+   Q is I,
+   arg(Q, V, W), !,
+   sys_value_expr(W, L, A).
+sys_value_expr(_[_,_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr(T[E,F,G,H,I,J], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V),
+   Q is I,
+   arg(Q, V, W),
+   R is J,
+   arg(R, W, S), !,
+   sys_value_expr(S, L, A).
+sys_value_expr(_[_,_,_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr(T[E,F,G,H,I,J,K], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V),
+   Q is I,
+   arg(Q, V, W),
+   R is J,
+   arg(R, W, S),
+   B is K,
+   arg(B, S, U), !,
+   sys_value_expr(U, L, A).
+sys_value_expr(_[_,_,_,_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+
+/**
  * C (finite):
  * A callable C is also a value expression.
  */
@@ -546,11 +637,11 @@ sys_value_expr(A, _, _) :-
  * directed in the opposite.
  */
 % sys_value_expr_inv(+Expr, -Prod, -Integer)
-sys_value_expr_inv(A, [], A) :-
-   integer(A), !.
 sys_value_expr_inv(X, [1*B], 0) :-
    var(X), !,
    sys_fresh_var(X, B).
+sys_value_expr_inv(A, [], A) :-
+   integer(A), !.
 sys_value_expr_inv(A+B, E, K) :- !,
    sys_value_expr_inv(A, P, C),
    sys_value_expr_inv(B, Q, D),
@@ -578,6 +669,90 @@ sys_value_expr_inv(abs(X), S, H) :- !,
    sys_fresh_var(_, V),
    sys_value_expr_inv(X, L, A),
    sys_abs_lin(L, A, S, H, V, G).
+sys_value_expr_inv(T[E], L, A) :-
+   N is E,
+   arg(N, T, X), !,
+   sys_value_expr_inv(X, L, A).
+sys_value_expr_inv(_[_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr_inv(T[E,F], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y), !,
+   sys_value_expr_inv(Y, L, A).
+sys_value_expr_inv(_[_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr_inv(T[E,F,G], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z), !,
+   sys_value_expr_inv(Z, L, A).
+sys_value_expr_inv(_[_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr_inv(T[E,F,G,H], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V), !,
+   sys_value_expr_inv(V, L, A).
+sys_value_expr_inv(_[_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr_inv(T[E,F,G,H,I], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V),
+   Q is I,
+   arg(Q, V, W), !,
+   sys_value_expr_inv(W, L, A).
+sys_value_expr_inv(_[_,_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr_inv(T[E,F,G,H,I,J], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V),
+   Q is I,
+   arg(Q, V, W),
+   R is J,
+   arg(R, W, S), !,
+   sys_value_expr_inv(S, L, A).
+sys_value_expr_inv(_[_,_,_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
+sys_value_expr_inv(T[E,F,G,H,I,J,K], L, A) :-
+   N is E,
+   arg(N, T, X),
+   M is F,
+   arg(M, X, Y),
+   O is G,
+   arg(O, Y, Z),
+   P is H,
+   arg(P, Z, V),
+   Q is I,
+   arg(Q, V, W),
+   R is J,
+   arg(R, W, S),
+   B is K,
+   arg(B, S, U), !,
+   sys_value_expr_inv(U, L, A).
+sys_value_expr_inv(_[_,_,_,_,_,_,_], _, _) :-
+   throw(error(evaluation_error(partial_function),_)).
 sys_value_expr_inv(C, L, A) :-
    sys_callable(C), !,
    X is C,
