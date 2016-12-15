@@ -93,55 +93,57 @@
 :- public []/3.
 :- virtual []/3.
 X [Y, Z] :-
-   arg(Y, X, Z).
+   arg(Y, X, Z), !.
+_ [_, _] :-
+   throw(error(evaluation_error(array_index),_)).
 
 :- public []/4.
 :- virtual []/4.
 X [Y, Z, T] :-
-   arg(Y, X, H),
-   arg(Z, H, T).
+   X [Y, H],
+   H [Z, T].
 
 :- public []/5.
 :- virtual []/5.
 X [Y, Z, T, U] :-
-   arg(Y, X, H),
-   arg(Z, H, J),
-   arg(T, J, U).
+   X [Y, H],
+   H [Z, J],
+   J [T, U].
 
 :- public []/6.
 :- virtual []/6.
 X [Y, Z, T, U, V] :-
-   arg(Y, X, H),
-   arg(Z, H, J),
-   arg(T, J, K),
-   arg(U, K, V).
+   X [Y, H],
+   H [Z, J],
+   J [T, K],
+   K [U, V].
 
 :- public []/7.
 :- virtual []/7.
 X [Y, Z, T, U, V, W] :-
-   arg(Y, X, H),
-   arg(Z, H, J),
-   arg(T, J, K),
-   arg(U, K, L),
-   arg(V, L, W).
+   X [Y, H],
+   H [Z, J],
+   J [T, K],
+   K [U, L],
+   L [V, W].
 
 :- public []/8.
 :- virtual []/8.
 X [Y, Z, T, U, V, W, S] :-
-   arg(Y, X, H),
-   arg(Z, H, J),
-   arg(T, J, K),
-   arg(U, K, L),
-   arg(V, L, M),
-   arg(W, M, S).
+   X [Y, H],
+   H [Z, J],
+   J [T, K],
+   K [U, L],
+   L [V, M],
+   M [W, S].
 
 :- public []/9.
 :- virtual []/9.
 X [Y, Z, T, U, V, W, S, R] :-
-   arg(Y, X, H),
-   arg(Z, H, J),
-   arg(T, J, K),
-   arg(U, K, L),
-   arg(V, L, M),
-   arg(W, M, N),
-   arg(S, N, R).
+   X [Y, H],
+   H [Z, J],
+   J [T, K],
+   K [U, L],
+   L [V, M],
+   M [W, N],
+   N [S, R].

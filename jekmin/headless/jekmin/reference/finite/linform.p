@@ -533,58 +533,46 @@ sys_value_expr(abs(X), S, H) :- !,
  * If T is a term and E1, .., En are integer expressions for 1 ≤ n ≤ 7
  * then T [E1, .., En] is also a value expression.
  */
-sys_value_expr(T[E], L, A) :-
+sys_value_expr(T[E], L, A) :- !,
    N is E,
-   T [N, X], !,
+   T [N, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr(T[E,F], L, A) :-
+sys_value_expr(T[E,F], L, A) :- !,
    N is E,
    M is F,
-   T [N, M, X], !,
+   T [N, M, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr(T[E,F,G], L, A) :-
+sys_value_expr(T[E,F,G], L, A) :- !,
    N is E,
    M is F,
    O is G,
-   T [N, M, O, X], !,
+   T [N, M, O, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr(T[E,F,G,H], L, A) :-
+sys_value_expr(T[E,F,G,H], L, A) :- !,
    N is E,
    M is F,
    O is G,
    P is H,
-   T [N, M, O, P, X], !,
+   T [N, M, O, P, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr(T[E,F,G,H,I], L, A) :-
+sys_value_expr(T[E,F,G,H,I], L, A) :- !,
    N is E,
    M is F,
    O is G,
    P is H,
    Q is I,
-   T [N, M, O, P, Q, X], !,
+   T [N, M, O, P, Q, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_,_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr(T[E,F,G,H,I,J], L, A) :-
+sys_value_expr(T[E,F,G,H,I,J], L, A) :- !,
    N is E,
    M is F,
    O is G,
    P is H,
    Q is I,
    R is J,
-   T [N, M, O, P, Q, R, X], !,
+   T [N, M, O, P, Q, R, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_,_,_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr(T[E,F,G,H,I,J,K], L, A) :-
+sys_value_expr(T[E,F,G,H,I,J,K], L, A) :- !,
    N is E,
    M is F,
    O is G,
@@ -592,10 +580,8 @@ sys_value_expr(T[E,F,G,H,I,J,K], L, A) :-
    Q is I,
    R is J,
    S is K,
-   T [N, M, O, P, Q, R, S, X], !,
+   T [N, M, O, P, Q, R, S, X],
    sys_value_expr(X, L, A).
-sys_value_expr(_[_,_,_,_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
 
 /**
  * C (finite):
@@ -648,58 +634,46 @@ sys_value_expr_inv(abs(X), S, H) :- !,
    sys_fresh_var(_, V),
    sys_value_expr_inv(X, L, A),
    sys_abs_lin(L, A, S, H, V, G).
-sys_value_expr_inv(T[E], L, A) :-
+sys_value_expr_inv(T[E], L, A) :- !,
    N is E,
-   T [N, X], !,
+   T [N, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr_inv(T[E,F], L, A) :-
+sys_value_expr_inv(T[E,F], L, A) :- !,
    N is E,
    M is F,
-   T [N, M, X], !,
+   T [N, M, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr_inv(T[E,F,G], L, A) :-
+sys_value_expr_inv(T[E,F,G], L, A) :- !,
    N is E,
    M is F,
    O is G,
-   T [N, M, O, X], !,
+   T [N, M, O, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr_inv(T[E,F,G,H], L, A) :-
+sys_value_expr_inv(T[E,F,G,H], L, A) :- !,
    N is E,
    M is F,
    O is G,
    P is H,
-   T [N, M, O, P, X], !,
+   T [N, M, O, P, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr_inv(T[E,F,G,H,I], L, A) :-
+sys_value_expr_inv(T[E,F,G,H,I], L, A) :- !,
    N is E,
    M is F,
    O is G,
    P is H,
    Q is I,
-   T [N, M, O, P, Q, X], !,
+   T [N, M, O, P, Q, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_,_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr_inv(T[E,F,G,H,I,J], L, A) :-
+sys_value_expr_inv(T[E,F,G,H,I,J], L, A) :- !,
    N is E,
    M is F,
    O is G,
    P is H,
    Q is I,
    R is J,
-   T [N, M, O, P, Q, R, X], !,
+   T [N, M, O, P, Q, R, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_,_,_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
-sys_value_expr_inv(T[E,F,G,H,I,J,K], L, A) :-
+sys_value_expr_inv(T[E,F,G,H,I,J,K], L, A) :- !,
    N is E,
    M is F,
    O is G,
@@ -707,10 +681,8 @@ sys_value_expr_inv(T[E,F,G,H,I,J,K], L, A) :-
    Q is I,
    R is J,
    S is K,
-   T [N, M, O, P, Q, R, S, X], !,
+   T [N, M, O, P, Q, R, S, X],
    sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(_[_,_,_,_,_,_,_], _, _) :-
-   throw(error(evaluation_error(partial_function),_)).
 sys_value_expr_inv(C, L, A) :-
    sys_callable(C), !,
    X is C,
