@@ -10,7 +10,7 @@ import java.math.BigInteger;
  * <p>This class can also be used to wrap strings, numbers and references.
  * The constructor takes an unwrapped atomic and gives a wrapped atomic.
  * There are two advantages of wrapped atomics. Firstly they fit into the
- * Term class hierarchy. Secondly wrapped strings can carry call-site
+ * AbstractTerm class hierarchy. Secondly wrapped strings can carry call-site
  * information and the polymorphic cache.
  * </p>
  * <p>This class also provides access, guard, normalization and widening
@@ -59,7 +59,7 @@ import java.math.BigInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class TermAtomic extends Term {
+public final class TermAtomic extends AbstractTerm {
     public final static BigInteger MIN_INTEGER = BigInteger.valueOf(Integer.MIN_VALUE);
     public final static BigInteger MAX_INTEGER = BigInteger.valueOf(Integer.MAX_VALUE);
     public final static Float ZERO_FLOAT = Float.valueOf(0.0f);
