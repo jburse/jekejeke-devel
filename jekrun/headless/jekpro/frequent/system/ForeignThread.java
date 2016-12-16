@@ -1,7 +1,7 @@
 package jekpro.frequent.system;
 
 import jekpro.tools.call.*;
-import jekpro.tools.term.Term;
+import jekpro.tools.term.AbstractTerm;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
 
@@ -49,9 +49,9 @@ public final class ForeignThread {
      * @param t     The term.
      * @return The new thread.
      */
-    public static Thread sysThreadNew(Interpreter inter, Term t)
+    public static Thread sysThreadNew(Interpreter inter, AbstractTerm t)
             throws InterpreterMessage {
-        t = Term.copyTermWrapped(inter, t);
+        t = AbstractTerm.copyTermWrapped(inter, t);
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_DISP_INPUT);
         ConnectionReader cr;
@@ -149,7 +149,7 @@ public final class ForeignThread {
      * @param m The message.
      * @throws InterruptedException The current thread was interrupted.
      */
-    public static void sysThreadAbort(Thread t, Term m)
+    public static void sysThreadAbort(Thread t, AbstractTerm m)
             throws InterruptedException {
         InterpreterMessage im = new InterpreterMessage(m);
         synchronized (t) {
@@ -166,7 +166,7 @@ public final class ForeignThread {
      * @param t The thread.
      * @param m The message.
      */
-    public static boolean sysThreadDown(Thread t, Term m) {
+    public static boolean sysThreadDown(Thread t, AbstractTerm m) {
         InterpreterMessage im = new InterpreterMessage(m);
         synchronized (t) {
             if (contrGetSignal(t) == null) {
@@ -187,7 +187,7 @@ public final class ForeignThread {
      * @return True if signal is set, otherwise false.
      * @throws InterruptedException The current thread was interrupted.
      */
-    public static boolean sysThreadDown(Thread t, Term m, long sleep)
+    public static boolean sysThreadDown(Thread t, AbstractTerm m, long sleep)
             throws InterruptedException {
         InterpreterMessage im = new InterpreterMessage(m);
         long when = System.currentTimeMillis() + sleep;

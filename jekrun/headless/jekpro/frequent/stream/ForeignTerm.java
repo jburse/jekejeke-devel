@@ -4,7 +4,7 @@ import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Term;
+import jekpro.tools.term.AbstractTerm;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -39,7 +39,7 @@ import java.io.Writer;
 public final class ForeignTerm {
 
     /****************************************************************/
-    /* Term I/O                                                     */
+    /* AbstractTerm I/O                                                     */
     /****************************************************************/
 
     /**
@@ -56,7 +56,7 @@ public final class ForeignTerm {
     public static void sysWrite(Interpreter inter, CallOut callout,
                                 Writer para, Object val)
             throws IOException, InterpreterMessage, InterpreterException {
-        Term.toString(para, Term.FLAG_NUMBERVARS, inter, val);
+        AbstractTerm.toString(para, AbstractTerm.FLAG_NUMBERVARS, inter, val);
     }
 
     /**
@@ -73,7 +73,7 @@ public final class ForeignTerm {
     public static void sysWriteq(Interpreter inter, CallOut callout,
                                  Writer para, Object val)
             throws IOException, InterpreterMessage, InterpreterException {
-        Term.toString(para, Term.FLAG_NUMBERVARS | Term.FLAG_QUOTED, inter, val);
+        AbstractTerm.toString(para, AbstractTerm.FLAG_NUMBERVARS | AbstractTerm.FLAG_QUOTED, inter, val);
     }
 
     /**
@@ -90,7 +90,7 @@ public final class ForeignTerm {
     public static void sysWriteCanonical(Interpreter inter, CallOut callout,
                                          Writer para, Object val)
             throws IOException, InterpreterMessage, InterpreterException {
-        Term.toString(para, Term.FLAG_QUOTED | Term.FLAG_IGNORE_OPS, inter, val);
+        AbstractTerm.toString(para, AbstractTerm.FLAG_QUOTED | AbstractTerm.FLAG_IGNORE_OPS, inter, val);
     }
 
     /**
@@ -106,9 +106,9 @@ public final class ForeignTerm {
      * @throws InterpreterException Shit happens.
      */
     public static void sysWriteTerm(Interpreter inter, CallOut callout,
-                                    Writer para, Term val, Object opt)
+                                    Writer para, AbstractTerm val, Object opt)
             throws IOException, InterpreterMessage, InterpreterException {
-        Term.toString(para, opt, inter, val);
+        AbstractTerm.toString(para, opt, inter, val);
     }
 
     /**
@@ -125,7 +125,7 @@ public final class ForeignTerm {
     public static Object sysRead(Interpreter inter, CallOut callout,
                                  Reader para)
             throws IOException, InterpreterMessage, InterpreterException {
-        return Term.parseTerm(para, inter);
+        return AbstractTerm.parseTerm(para, inter);
     }
 
     /**
@@ -140,10 +140,10 @@ public final class ForeignTerm {
      * @throws InterpreterMessage   Validation problem or option problem.
      * @throws InterpreterException Validation problem or option problem.
      */
-    public static Term sysReadTerm(Interpreter inter, CallOut callout,
+    public static AbstractTerm sysReadTerm(Interpreter inter, CallOut callout,
                                    Reader para, Object opt)
             throws IOException, InterpreterMessage, InterpreterException {
-        return Term.parseTermWrapped(para, opt, inter);
+        return AbstractTerm.parseTermWrapped(para, opt, inter);
     }
 
 }

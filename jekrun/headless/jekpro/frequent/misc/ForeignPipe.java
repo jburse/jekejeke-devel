@@ -1,7 +1,7 @@
 package jekpro.frequent.misc;
 
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.Term;
+import jekpro.tools.term.AbstractTerm;
 import matula.util.misc.AbstractPipe;
 import matula.util.misc.Queue;
 
@@ -44,9 +44,9 @@ public final class ForeignPipe {
      * @param t     The term.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static void sysPipePut(Interpreter inter, AbstractPipe q, Term t)
+    public static void sysPipePut(Interpreter inter, AbstractPipe q, AbstractTerm t)
             throws InterruptedException {
-        t = Term.copyTermWrapped(inter, t);
+        t = AbstractTerm.copyTermWrapped(inter, t);
         q.put(t);
     }
 
@@ -60,9 +60,9 @@ public final class ForeignPipe {
      * @param t     The term.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static boolean sysPipeOffer(Interpreter inter, Queue q, Term t)
+    public static boolean sysPipeOffer(Interpreter inter, Queue q, AbstractTerm t)
             throws InterruptedException {
-        t = Term.copyTermWrapped(inter, t);
+        t = AbstractTerm.copyTermWrapped(inter, t);
         return q.offer(t);
     }
 
@@ -80,9 +80,9 @@ public final class ForeignPipe {
      * @throws InterruptedException Thread was interrupted.
      */
     public static boolean sysPipeOffer(Interpreter inter, Queue q,
-                                       Term t, long sleep)
+                                       AbstractTerm t, long sleep)
             throws InterruptedException {
-        t = Term.copyTermWrapped(inter, t);
+        t = AbstractTerm.copyTermWrapped(inter, t);
         return q.offer(t, sleep);
     }
 

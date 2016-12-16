@@ -4,8 +4,8 @@ import jekpro.frequent.system.ForeignLocale;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Term;
 import jekpro.tools.term.TermCompound;
 
 import java.io.IOException;
@@ -166,7 +166,7 @@ public final class ForeignConsole {
      * <pre>
      *      [Message|Context]: message(Message) "\n" printContext(Context)
      *      []:                []
-     *      Term:              property('context.unknown') ": " string(Term) "\n"
+     *      AbstractTerm:              property('context.unknown') ": " string(AbstractTerm) "\n"
      * <pre>
      *
      * @param inter  The call-in.
@@ -197,7 +197,7 @@ public final class ForeignConsole {
             } else {
                 wr.write(prop.getProperty("context.unknown"));
                 wr.write(": ");
-                Term.toString(wr, Term.FLAG_QUOTED, inter, term);
+                AbstractTerm.toString(wr, AbstractTerm.FLAG_QUOTED, inter, term);
                 wr.write('\n');
                 wr.flush();
                 return;

@@ -1,7 +1,7 @@
 package jekpro.frequent.misc;
 
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.Term;
+import jekpro.tools.term.AbstractTerm;
 import matula.util.misc.Alarm;
 import matula.util.misc.AlarmEntry;
 
@@ -43,8 +43,8 @@ public final class ForeignTime {
      * @return The alarm entry.
      */
     public static AlarmEntry sysAlarmSchedule(Interpreter inter, Alarm a,
-                                              Term t, long sleep) {
-        t = Term.copyTermWrapped(inter, t);
+                                              AbstractTerm t, long sleep) {
+        t = AbstractTerm.copyTermWrapped(inter, t);
         return a.schedule(t, sleep);
     }
 

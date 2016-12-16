@@ -193,9 +193,9 @@ public final class ForeignLocale {
      * <p>Format a term from properties.</p>
      * <p>The rules are as follows:</p>
      * <pre>
-     *     prop == null: Formatted via Term.toString(FLAG_QUOTED,inter)
-     *     pat == null: Error text and formatted via Term.toString(FLAG_QUOTED,inter)
-     *     temp == null: Error text and formatted via Term.toString(FLAG_QUOTED,inter)
+     *     prop == null: Formatted via AbstractTerm.toString(FLAG_QUOTED,inter)
+     *     pat == null: Error text and formatted via AbstractTerm.toString(FLAG_QUOTED,inter)
+     *     temp == null: Error text and formatted via AbstractTerm.toString(FLAG_QUOTED,inter)
      *     otherwise: Formatted according to message template and message parameters.
      * </pre>
      *
@@ -208,13 +208,13 @@ public final class ForeignLocale {
     public static String messageMake(Interpreter inter, Object term,
                                      Locale locale, Properties prop) {
         if (prop == null)
-            return Term.toString(Term.FLAG_QUOTED, inter, term);
+            return AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term);
         ArrayList<String> pat = messagePattern(term, prop);
         if (pat == null) {
             StringBuilder buf = new StringBuilder();
             buf.append(prop.getProperty("term.pattern"));
             buf.append(": ");
-            buf.append(Term.toString(Term.FLAG_QUOTED, inter, term));
+            buf.append(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term));
             return buf.toString();
         }
         String temp = ForeignLocale.messageTemplate(term, pat, prop);
@@ -222,7 +222,7 @@ public final class ForeignLocale {
             StringBuilder buf = new StringBuilder();
             buf.append(prop.getProperty("term.template"));
             buf.append(": ");
-            buf.append(Term.toString(Term.FLAG_QUOTED, inter, term));
+            buf.append(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term));
             return buf.toString();
         }
         Object[] paras = ForeignLocale.messageParameters(inter, term, pat);
@@ -317,7 +317,7 @@ public final class ForeignLocale {
             if (ForeignLocale.ARGTYPE_ID.equals(pat.get(i))) {
                 Object t = ((TermCompound) term).getArg(i);
                 buf.append('.');
-                buf.append(Term.toString(0, null, t));
+                buf.append(AbstractTerm.toString(0, null, t));
             }
         }
         return prop.getProperty(buf.toString());
@@ -347,7 +347,7 @@ public final class ForeignLocale {
                 if (ForeignLocale.ARGTYPE_PARASQ.equals(argtype)) {
                     paravec.add(shortName((String) t));
                 } else if (ForeignLocale.ARGTYPE_PARAQ.equals(argtype)) {
-                    paravec.add(Term.toString(Term.FLAG_QUOTED, inter, t));
+                    paravec.add(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, t));
                 } else {
                     paravec.add(ForeignLocale.prepareArgument(inter, t));
                 }
@@ -377,7 +377,7 @@ public final class ForeignLocale {
         } else if (!(t instanceof TermCompound) && !(t instanceof TermVar)) {
             return t;
         } else {
-            return Term.toString(0, inter, t);
+            return AbstractTerm.toString(0, inter, t);
         }
     }
 
@@ -449,7 +449,7 @@ public final class ForeignLocale {
                 StringBuilder buf = new StringBuilder();
                 buf.append(prop.getProperty("exception.unknown"));
                 buf.append(": ");
-                buf.append(Term.toString(Term.FLAG_QUOTED, inter, term));
+                buf.append(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term));
                 return buf.toString();
             }
         }

@@ -5,8 +5,8 @@ import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Term;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
 import matula.util.regex.CodeType;
@@ -329,7 +329,7 @@ public final class ForeignAtom {
                 num instanceof Double) {
             return num.toString();
         } else if (num instanceof Float) {
-            if ((flags & Term.FLAG_QUOTED) != 0) {
+            if ((flags & AbstractTerm.FLAG_QUOTED) != 0) {
                 StringBuilder buf = new StringBuilder();
                 if (Math.signum(num.floatValue()) < 0) {
                     buf.append(Knowledgebase.OP_SUB);
@@ -347,7 +347,7 @@ public final class ForeignAtom {
             }
         } else if (num instanceof Long ||
                 num instanceof BigDecimal) {
-            if ((flags & Term.FLAG_QUOTED) != 0) {
+            if ((flags & AbstractTerm.FLAG_QUOTED) != 0) {
                 BigDecimal d = TermAtomic.widenBigDecimal(num);
                 StringBuilder buf = new StringBuilder();
                 if (d.signum() < 0) {

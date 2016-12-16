@@ -1,6 +1,5 @@
 package jekpro.tools.term;
 
-import jekpro.model.molec.PositionKey;
 import jekpro.model.pretty.AbstractSource;
 
 import java.text.Collator;
