@@ -1,7 +1,6 @@
 package jekpro.tools.term;
 
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.molec.SkelAtom;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

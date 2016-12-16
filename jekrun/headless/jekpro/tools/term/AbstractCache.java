@@ -1,7 +1,7 @@
 package jekpro.tools.term;
 
 /**
- * <p>This is the base class for skeletons, except for numbers and references.</p>
+ * <p>The base class for the polymorphic cache.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -26,6 +26,6 @@ package jekpro.tools.term;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractSkel {
-    public static Object VOID_OBJ = new Object();
+public abstract class AbstractCache {
+    public AbstractCache next;
 }
