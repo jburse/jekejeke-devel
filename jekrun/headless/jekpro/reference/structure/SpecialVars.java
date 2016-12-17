@@ -84,7 +84,7 @@ public final class SpecialVars extends Special {
             case SPECIAL_TERM_VARIABLES:
                 Object[] t = ((SkelCompound) en.skel).args;
                 Display d = en.display;
-                EngineVar ev = new EngineVar();
+                EngineVars ev = new EngineVars();
                 ev.varInclude(t[0], d);
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
@@ -95,7 +95,7 @@ public final class SpecialVars extends Special {
             case SPECIAL_TERM_VARIABLES_DIFF:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
-                ev = new EngineVar();
+                ev = new EngineVars();
                 ev.varInclude(t[0], d);
                 en.skel = t[2];
                 en.display = d;
@@ -106,7 +106,7 @@ public final class SpecialVars extends Special {
             case SPECIAL_SYS_TERM_SINGELTONS:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
-                ev = new EngineVar();
+                ev = new EngineVars();
                 ev.singsOf(t[0], d);
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
@@ -124,7 +124,7 @@ public final class SpecialVars extends Special {
             case SPECIAL_SYS_GOAL_GLOBALS:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
-                ev = new EngineVar();
+                ev = new EngineVars();
                 SpecialVars.goalGlobals(t[0], d, ev);
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
@@ -168,7 +168,7 @@ public final class SpecialVars extends Special {
             case SPECIAL_ACYCLIC_TERM:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
-                ev = new EngineVar();
+                ev = new EngineVars();
                 if (!ev.isAcyclic(t[0], d))
                     return false;
                 return r.getNextRaw(u, en);
@@ -221,7 +221,7 @@ public final class SpecialVars extends Special {
      * @param t The goal skeleton.
      * @param d The goal display.
      */
-    private static void goalGlobals(Object t, Display d, EngineVar ev) {
+    private static void goalGlobals(Object t, Display d, EngineVars ev) {
         while (t instanceof SkelVar) {
             BindVar b;
             if ((b = d.bind[((SkelVar) t).id]).display == null)

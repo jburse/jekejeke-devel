@@ -2,6 +2,7 @@ package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
+import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.tools.call.Interpreter;
@@ -285,7 +286,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (!EngineVar.isGroundSkel(t)) {
+            if (!EngineVars.isGroundSkel(t)) {
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
                 } else if (last != d) {
@@ -321,7 +322,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (!EngineVar.isGroundSkel(t)) {
+            if (!EngineVars.isGroundSkel(t)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
@@ -358,7 +359,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (multi && !EngineVar.isGroundSkel(t)) {
+            if (multi && !EngineVars.isGroundSkel(t)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 en.display.bind[sv.id].bindVar(t, d, en);

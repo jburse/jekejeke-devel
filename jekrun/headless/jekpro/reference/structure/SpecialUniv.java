@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
@@ -43,7 +44,6 @@ public final class SpecialUniv extends Special {
     private final static int SPECIAL_UNIFY = 3;
     private final static int SPECIAL_UNIFY_CHECKED = 4;
     private final static int SPECIAL_NOT_UNIFY = 5;
-    private final static int SPECIAL_COPY_TERM = 6;
 
     /**
      * <p>Create a meta special.</p>
@@ -175,22 +175,6 @@ public final class SpecialUniv extends Special {
                 if (en.skel != null)
                     throw (EngineException) en.skel;
                 return r.getNextRaw(u, en);
-            case SPECIAL_COPY_TERM:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                EngineCopy ec = en.enginecopy;
-                if (ec == null) {
-                    ec = new EngineCopy();
-                    en.enginecopy = ec;
-                }
-                ec.vars = null;
-                Object temp2 = ec.copyTerm(temp[0], ref);
-                ec.vars = null;
-                int size = Display.displaySize(temp2);
-                Display ref2 = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-                if (!en.unifyTerm(temp[1], ref, temp2, ref2, r, u))
-                    return false;
-                return r.getNext(u, en);
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -224,7 +208,7 @@ public final class SpecialUniv extends Special {
             en.skel = t2args[i];
             en.display = d2;
             en.deref();
-            if (!EngineVar.isGroundSkel(en.skel)) {
+            if (!EngineVars.isGroundSkel(en.skel)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -236,7 +220,7 @@ public final class SpecialUniv extends Special {
         en.skel = t;
         en.display = d;
         en.deref();
-        if (!EngineVar.isGroundSkel(en.skel)) {
+        if (!EngineVars.isGroundSkel(en.skel)) {
             countvar++;
             if (last == Display.DISPLAY_CONST) {
                 last = en.display;
@@ -276,7 +260,7 @@ public final class SpecialUniv extends Special {
             en.skel = t2args[i];
             en.display = d2;
             en.deref();
-            if (multi && !EngineVar.isGroundSkel(en.skel)) {
+            if (multi && !EngineVars.isGroundSkel(en.skel)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);
@@ -287,7 +271,7 @@ public final class SpecialUniv extends Special {
         en.skel = t;
         en.display = d;
         en.deref();
-        if (multi && !EngineVar.isGroundSkel(en.skel)) {
+        if (multi && !EngineVars.isGroundSkel(en.skel)) {
             SkelVar sv = SkelVar.valueOf(countvar);
             d4.bind[sv.id].bindVar(en.skel, en.display, en);
             en.skel = sv;
@@ -394,7 +378,7 @@ public final class SpecialUniv extends Special {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (!EngineVar.isGroundSkel(en.skel)) {
+            if (!EngineVars.isGroundSkel(en.skel)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -446,7 +430,7 @@ public final class SpecialUniv extends Special {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (multi && !EngineVar.isGroundSkel(en.skel)) {
+            if (multi && !EngineVars.isGroundSkel(en.skel)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d2.bind[sv.id].bindVar(en.skel, en.display, en);
