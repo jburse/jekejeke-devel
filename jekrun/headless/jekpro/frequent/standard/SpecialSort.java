@@ -6,6 +6,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Goal;
 import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.EngineVars;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -248,7 +249,7 @@ public final class SpecialSort extends Special {
         for (SetEntry<Object> entry = set.getLastEntry();
              entry != null; entry = set.predecessor(entry)) {
             Object elem = entry.key;
-            SpecialSort.consValue(AbstractTerm.getSkel(elem), AbstractTerm.getDisplay(elem),
+            SpecialFind.consValue(AbstractTerm.getSkel(elem), AbstractTerm.getDisplay(elem),
                     en.skel, en.display, en);
         }
     }
@@ -381,7 +382,7 @@ public final class SpecialSort extends Special {
                 Display d = en.display;
                 SpecialSort.subValue(AbstractTerm.getSkel(elem), AbstractTerm.getDisplay(elem),
                         AbstractTerm.getSkel(elem2), AbstractTerm.getDisplay(elem2), en);
-                SpecialSort.consValue(en.skel, en.display, t, d, en);
+                SpecialFind.consValue(en.skel, en.display, t, d, en);
             }
         }
     }
@@ -389,34 +390,6 @@ public final class SpecialSort extends Special {
     /********************************************************************/
     /* Cons Helper                                                      */
     /********************************************************************/
-
-    /**
-     * <p>Cons the value to the given term.</p>
-     * <p>The result is returned in skeleton and display.</p>
-     *
-     * @param t2 The term skeleton.
-     * @param d2 The term display.
-     * @param t  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     */
-    public static void consValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineVar.isGroundSkel(t2)) {
-            en.skel = new SkelCompound(en.store.ATOM_CONS, t2, t);
-            en.display = d;
-            return;
-        }
-        if (EngineVar.isGroundSkel(t)) {
-            en.skel = new SkelCompound(en.store.ATOM_CONS, t2, t);
-            en.display = d2;
-            return;
-        }
-        Display d3 = new Display(2);
-        d3.bind[0].bindVar(t2, d2, en);
-        d3.bind[1].bindVar(t, d, en);
-        en.skel = en.store.CELL_CONS;
-        en.display = d3;
-    }
 
     /**
      * <p>Sub the value to the given term.</p>
@@ -429,12 +402,12 @@ public final class SpecialSort extends Special {
      * @param en The engine.
      */
     private static void subValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineVar.isGroundSkel(t2)) {
+        if (EngineVars.isGroundSkel(t2)) {
             en.skel = new SkelCompound(en.store.ATOM_SUB, t2, t);
             en.display = d;
             return;
         }
-        if (EngineVar.isGroundSkel(t)) {
+        if (EngineVars.isGroundSkel(t)) {
             en.skel = new SkelCompound(en.store.ATOM_SUB, t2, t);
             en.display = d2;
             return;
