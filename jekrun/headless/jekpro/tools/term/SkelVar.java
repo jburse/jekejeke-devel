@@ -1,5 +1,7 @@
 package jekpro.tools.term;
 
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindSerno;
 import jekpro.model.molec.Display;
 
 /**
@@ -80,15 +82,6 @@ public final class SkelVar extends AbstractSkel implements Comparable<SkelVar> {
     }
 
     /**
-     * <p>Return a string of a skeleton.</p>
-     *
-     * @return The string.
-     */
-    public String toString() {
-        return SkelVar.sernoToString(id, true);
-    }
-
-    /**
      * <p>The hash code of a vaiable inside a display.</p>
      *
      * @param d The display.
@@ -96,6 +89,23 @@ public final class SkelVar extends AbstractSkel implements Comparable<SkelVar> {
      */
     public int hashCode(Display d) {
         return d.hashCode() * 31 + hashCode();
+    }
+
+    /**
+     * <p>Retrieve the serial number of a variable.</p>
+     *
+     *  @param ref The display.
+     * @param en The engine, or null.
+     * @return The serial number.
+     */
+    public int getValue(Display ref, Engine en) {
+        if (en != null) {
+            if (ref.serno == -1)
+                BindSerno.bindSerno(ref, en);
+            return ref.serno + id;
+        } else {
+            return id;
+        }
     }
 
     /**

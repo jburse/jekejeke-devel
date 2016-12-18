@@ -100,22 +100,13 @@ public final class TermVar extends AbstractTerm {
     }
 
     /**
-     * <p>Convert this var to a string.</p>
-     *
-     * @return The string.
-     */
-    public String toString() {
-        return skel.toString();
-    }
-
-    /**
      * <p>Retrieve the serial number of a variable.</p>
      *
      * @param inter The call-in.
      * @return The serial number.
      */
     public int getValue(Interpreter inter) {
-        return display.getSerno(skel,
+        return skel.getValue(display,
                 inter != null ? (Engine) inter.getEngine() : null);
     }
 

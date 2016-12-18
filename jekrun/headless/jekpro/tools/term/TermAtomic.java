@@ -121,15 +121,6 @@ public final class TermAtomic extends AbstractTerm {
         return skel.equals(t.skel);
     }
 
-    /**
-     * <p>Convert this compound to a string.</p>
-     *
-     * @return The string.
-     */
-    public String toString() {
-        return skel.toString();
-    }
-
     /****************************************************************/
     /* Integer Normalization & Widening                             */
     /****************************************************************/

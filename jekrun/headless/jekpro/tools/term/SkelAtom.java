@@ -105,15 +105,6 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
         return c.compare(fun, o.fun);
     }
 
-    /**
-     * <p>Return a string of a skeleton.</p>
-     *
-     * @return The string.
-     */
-    public String toString() {
-        return fun;
-    }
-
     /********************************************************/
     /* Filler Handling                                      */
     /********************************************************/

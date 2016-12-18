@@ -1,5 +1,8 @@
 package jekpro.tools.term;
 
+import jekpro.model.molec.Display;
+import jekpro.model.pretty.PrologWriter;
+
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>
  * <p/>
@@ -28,4 +31,14 @@ package jekpro.tools.term;
  */
 public abstract class AbstractSkel {
     public static Object VOID_OBJ = new Object();
+
+    /**
+     * <p>Return a string of a skeleton.</p>
+     *
+     * @return The string.
+     */
+    public String toString() {
+        return PrologWriter.toString(this, Display.DISPLAY_CONST, 0);
+    }
+
 }

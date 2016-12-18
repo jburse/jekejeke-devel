@@ -65,15 +65,6 @@ public final class SkelCompound extends AbstractSkel {
     }
 
     /**
-     * <p>Return a string of a skeleton.</p>
-     *
-     * @return The string.
-     */
-    public String toString() {
-        return PrologWriter.toString(this, Display.DISPLAY_CONST, 0);
-    }
-
-    /**
      * <p>Compute the vars for the arguments.</p>
      *
      * @param a The arguments.

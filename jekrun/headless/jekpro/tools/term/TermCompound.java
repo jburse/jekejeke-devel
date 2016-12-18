@@ -1,8 +1,8 @@
 package jekpro.tools.term;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.tools.call.Interpreter;
@@ -148,15 +148,6 @@ public final class TermCompound extends AbstractTerm {
     }
 
     /**
-     * <p>Convert this compound to a string.</p>
-     *
-     * @return The string.
-     */
-    public String toString() {
-        return skel.toString();
-    }
-
-    /**
      * <p>Retrieve the functor of the compound.</p>
      *
      * @return The functor.
@@ -286,7 +277,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (!EngineVars.isGroundSkel(t)) {
+            if (!EngineCopy.isGroundSkel(t)) {
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
                 } else if (last != d) {
@@ -322,7 +313,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (!EngineVars.isGroundSkel(t)) {
+            if (!EngineCopy.isGroundSkel(t)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
@@ -359,7 +350,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (multi && !EngineVars.isGroundSkel(t)) {
+            if (multi && !EngineCopy.isGroundSkel(t)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 en.display.bind[sv.id].bindVar(t, d, en);
