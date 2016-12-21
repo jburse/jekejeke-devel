@@ -29,7 +29,6 @@ public final class CompLang {
     public final static CompLang ISO_COMPLANG = new CompLang();
 
     public static final String OP_SYNTAX_ILLEGAL_ESCAPE = "illegal_escape";
-    public static final String OP_SYNTAX_ILLEGAL_EOL = "illegal_eol";
     public static final String OP_SYNTAX_ILLEGAL_LAYOUT = "illegal_layout";
     public static final String OP_SYNTAX_ILLEGAL_UNICODE = "illegal_unicode";
 
@@ -148,13 +147,12 @@ public final class CompLang {
      * @param str    The token.
      * @param quote  The quote.
      * @param offset The error offset.
-     * @param cont   The cont flag.
      * @param d      The delemiter.
      * @return The resolved token.
      * @throws ScannerError Parsing problem.
      */
-    public static String resolveEscape(String str, int quote, int offset,
-                                       boolean cont, CodeType d)
+    public static String resolveEscape(String str, int quote,
+                                       int offset, CodeType d)
             throws ScannerError {
         StringBuilder buf = null;
         int n = str.length();
@@ -212,15 +210,13 @@ public final class CompLang {
                                 throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                             }
                             break;
-                        case CodeType.LINE_EOL:
-                            if (!cont)
-                                throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, offset + i);
-                            break;
                         case CodeType.LINE_SINGLE:
                         case CodeType.LINE_DOUBLE:
                         case CodeType.LINE_BACK:
                         case CodeType.LINE_BACKSLASH:
                             buf.appendCodePoint(k);
+                            break;
+                        case CodeType.LINE_EOL:
                             break;
                         default:
                             if (Character.digit(k, 8) != -1) {
@@ -249,8 +245,6 @@ public final class CompLang {
                 } else {
                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                 }
-            } else if (k == CodeType.LINE_EOL) {
-                throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, offset + i);
             } else if (k != ' ' && d.isLayout(k)) {
                 throw new ScannerError(OP_SYNTAX_ILLEGAL_LAYOUT, offset + i);
             } else if (!d.isValid(k)) {

@@ -57,6 +57,7 @@ public final class ScannerToken {
     public static final String OP_SYNTAX_END_OF_FILE_IN_VARIABLE = "end_of_file_in_variable"; /* e304 */
     public static final String OP_SYNTAX_END_OF_FILE_IN_STRING = "end_of_file_in_string"; /* e305 */
     public static final String OP_SYNTAX_END_OF_FILE_IN_CHARACTER = "end_of_file_in_character"; /* e304 */
+    public static final String OP_SYNTAX_ILLEGAL_EOL = "illegal_eol";
 
     public static final char PREFIX_REFERENCE = 'r';
     public static final char PREFIX_DECIMAL = 'd';
@@ -231,6 +232,44 @@ public final class ScannerToken {
     /*************************************************************/
 
     /**
+     * <p>Parse a string.</p>
+     * <p>The following string syntax is supported:</p>
+     * <pre>
+     *      string' --> quote { quote quote | strchar } ( eol | quote ).
+     * </pre>
+     *
+     * @throws ScannerError Scanning problem.
+     */
+    private void nextString() throws ScannerError, IOException {
+        int quote = ch;
+        buf.appendCodePoint(ch);
+        ch = getCode();
+        while (ch != CodeType.LINE_EOF) {
+            if (ch == quote) {
+                ch = getCode();
+                if (ch == quote) {
+                    buf.appendCodePoint(ch);
+                    buf.appendCodePoint(ch);
+                    ch = getCode();
+                } else {
+                    token = buf.toString();
+                    return;
+                }
+            } else {
+                nextChar();
+            }
+        }
+        token = buf.toString();
+        if (quote == CodeType.LINE_SINGLE) {
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
+        } else if (quote == CodeType.LINE_DOUBLE) {
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader));
+        } else {
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
+        }
+    }
+
+    /**
      * <p>Parse a string character.</p>
      * <p>The followng string character syntax is supported:</p>
      * <pre>
@@ -269,51 +308,11 @@ public final class ScannerToken {
                     ch = getCode();
                 }
             }
+        } else if (ch == CodeType.LINE_EOL) {
+            throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, OpenOpts.getOffset(reader));
         } else {
             buf.appendCodePoint(ch);
             ch = getCode();
-        }
-    }
-
-    /**
-     * <p>Parse a string.</p>
-     * <p>The following string syntax is supported:</p>
-     * <pre>
-     *      string' --> quote { quote quote | strchar } ( eol | quote ).
-     * </pre>
-     *
-     * @throws ScannerError Scanning problem.
-     */
-    private void nextString() throws ScannerError, IOException {
-        int quote = ch;
-        buf.appendCodePoint(ch);
-        ch = getCode();
-        while (ch != CodeType.LINE_EOF) {
-            if (ch == quote) {
-                ch = getCode();
-                if (ch == quote) {
-                    buf.appendCodePoint(ch);
-                    buf.appendCodePoint(ch);
-                    ch = getCode();
-                } else {
-                    token = buf.toString();
-                    return;
-                }
-            } else if (ch == CodeType.LINE_EOL) {
-                nextChar();
-                token = buf.toString();
-                return;
-            } else {
-                nextChar();
-            }
-        }
-        token = buf.toString();
-        if (quote == CodeType.LINE_SINGLE) {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
-        } else if (quote == CodeType.LINE_DOUBLE) {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader));
-        } else {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
         }
     }
 
