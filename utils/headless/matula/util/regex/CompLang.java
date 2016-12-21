@@ -146,12 +146,13 @@ public final class CompLang {
      *
      * @param str    The token.
      * @param quote  The quote.
+     * @param cont   The continuation escape sequence flag.
      * @param offset The error offset.
      * @param d      The delemiter.
      * @return The resolved token.
      * @throws ScannerError Parsing problem.
      */
-    public static String resolveEscape(String str, int quote,
+    public static String resolveEscape(String str, int quote, boolean cont,
                                        int offset, CodeType d)
             throws ScannerError {
         StringBuilder buf = null;
@@ -217,6 +218,8 @@ public final class CompLang {
                             buf.appendCodePoint(k);
                             break;
                         case CodeType.LINE_EOL:
+                            if (!cont)
+                                throw new ScannerError(ScannerToken.OP_SYNTAX_CONT_ESC_IN_CHARACTER, offset + i);
                             break;
                         default:
                             if (Character.digit(k, 8) != -1) {
@@ -244,6 +247,12 @@ public final class CompLang {
                     }
                 } else {
                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                }
+            } else if (k == CodeType.LINE_EOL) {
+                if (cont) {
+                    throw new ScannerError(ScannerToken.OP_SYNTAX_END_OF_LINE_IN_STRING, offset + i);
+                } else {
+                    throw new ScannerError(ScannerToken.OP_SYNTAX_END_OF_LINE_IN_CHARACTER, offset + i);
                 }
             } else if (k != ' ' && d.isLayout(k)) {
                 throw new ScannerError(OP_SYNTAX_ILLEGAL_LAYOUT, offset + i);

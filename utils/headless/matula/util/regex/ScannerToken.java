@@ -57,7 +57,9 @@ public final class ScannerToken {
     public static final String OP_SYNTAX_END_OF_FILE_IN_VARIABLE = "end_of_file_in_variable"; /* e304 */
     public static final String OP_SYNTAX_END_OF_FILE_IN_STRING = "end_of_file_in_string"; /* e305 */
     public static final String OP_SYNTAX_END_OF_FILE_IN_CHARACTER = "end_of_file_in_character"; /* e304 */
-    public static final String OP_SYNTAX_ILLEGAL_EOL = "illegal_eol";
+    public static final String OP_SYNTAX_END_OF_LINE_IN_STRING = "end_of_line_in_string";
+    public static final String OP_SYNTAX_END_OF_LINE_IN_CHARACTER = "end_of_line_in_character";
+    public static final String OP_SYNTAX_CONT_ESC_IN_CHARACTER = "cont_esc_in_character";
 
     public static final char PREFIX_REFERENCE = 'r';
     public static final char PREFIX_DECIMAL = 'd';
@@ -256,7 +258,7 @@ public final class ScannerToken {
                     return;
                 }
             } else {
-                nextChar();
+                nextChar(true);
             }
         }
         token = buf.toString();
@@ -286,13 +288,16 @@ public final class ScannerToken {
      * </pre>
      * <p>For underscore, lower, upper, other and digit see class CodeType.</p>
      *
+     * @param cont The continuation escape sequence flag.
      * @throws ScannerError Scanning problem.
      */
-    private void nextChar() throws ScannerError, IOException {
+    private void nextChar(boolean cont) throws ScannerError, IOException {
         if (ch == CodeType.LINE_BACKSLASH) {
             buf.appendCodePoint(ch);
             ch = getCode();
             if (ch != CodeType.LINE_EOF) {
+                if (!cont && ch == CodeType.LINE_EOL)
+                    throw new ScannerError(OP_SYNTAX_CONT_ESC_IN_CHARACTER, OpenOpts.getOffset(reader));
                 if (Character.digit(ch, 8) != -1
                         || ch == 'x') {
                     while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
@@ -309,7 +314,11 @@ public final class ScannerToken {
                 }
             }
         } else if (ch == CodeType.LINE_EOL) {
-            throw new ScannerError(OP_SYNTAX_ILLEGAL_EOL, OpenOpts.getOffset(reader));
+            if (cont) {
+                throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_STRING, OpenOpts.getOffset(reader));
+            } else {
+                throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_CHARACTER, OpenOpts.getOffset(reader));
+            }
         } else {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -382,7 +391,7 @@ public final class ScannerToken {
                         ch = getCode();
                     }
                 } else if (ch != CodeType.LINE_EOF) {
-                    nextChar();
+                    nextChar(false);
                 } else {
                     token = buf.toString();
                     throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader));
