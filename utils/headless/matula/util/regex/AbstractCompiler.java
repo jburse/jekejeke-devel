@@ -152,7 +152,7 @@ public abstract class AbstractCompiler {
         st.setRemark(getRemark());
         st.firstToken();
         AbstractSpecimen matcher = parseSpecimen(st, expr);
-        if (!"".equals(st.getToken()))
+        if (st.getHint() != 0 || !"".equals(st.getData()))
             throw new ScannerError(ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                     st.getTokenOffset());
         return matcher;

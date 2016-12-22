@@ -69,30 +69,29 @@ public final class CompilerSimple extends AbstractCompiler {
         int flag = 0;
         if ((expr & AbstractSpecimen.MATCH_IGCS) != 0) {
             flag |= AbstractSpecimen.MATCH_EQSN;
-            if ("=".equals(st.getToken())) {
+            if (st.getHint() == 0 && "=".equals(st.getData())) {
                 st.nextToken();
             } else {
                 flag |= AbstractSpecimen.MATCH_IGCS;
             }
         }
-        if ("".equals(st.getToken()) ||
-                "(".equals(st.getToken()) ||
-                ")".equals(st.getToken()) ||
-                "!".equals(st.getToken()))
+        if (st.getHint() == 0 && ("".equals(st.getData()) ||
+                "(".equals(st.getData()) ||
+                ")".equals(st.getData()) ||
+                "!".equals(st.getData())))
             throw new ScannerError(ERROR_SYNTAX_PHRASE_MISSING,
                     st.getTokenOffset());
         String pattern;
         if ((expr & AbstractSpecimen.MATCH_WORD) != 0) {
             flag |= AbstractSpecimen.MATCH_DQTE;
-            int ch = st.getToken().codePointAt(0);
-            if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
-                pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
-                        ch, st.getTokenOffset() + 1);
-                if (ch == CodeType.LINE_DOUBLE) {
+            if (st.getHint() != 0) {
+                pattern = st.getDelemiter().resolveDouble(st.getData(),
+                        st.getHint(), st.getTokenOffset() + 1);
+                if (st.getHint() == CodeType.LINE_DOUBLE) {
                     flag |= AbstractSpecimen.MATCH_WORD;
-                } else if (ch == CodeType.LINE_SINGLE) {
+                } else if (st.getHint() == CodeType.LINE_SINGLE) {
                     flag |= AbstractSpecimen.MATCH_PART;
-                } else if (ch == CodeType.LINE_BACK) {
+                } else if (st.getHint() == CodeType.LINE_BACK) {
                     flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
                     throw new ScannerError(ERROR_SYNTAX_WORD_EXPECTED,
@@ -100,17 +99,16 @@ public final class CompilerSimple extends AbstractCompiler {
                 }
             } else {
                 flag |= AbstractSpecimen.MATCH_WORD;
-                pattern = st.getToken();
+                pattern = st.getData();
             }
         } else if ((expr & AbstractSpecimen.MATCH_PART) != 0) {
             flag |= AbstractSpecimen.MATCH_SQTE;
-            int ch = st.getToken().codePointAt(0);
-            if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
-                pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
-                        ch, st.getTokenOffset() + 1);
-                if (ch == CodeType.LINE_SINGLE) {
+            if (st.getHint() != 0) {
+                pattern = st.getDelemiter().resolveDouble(st.getData(),
+                        st.getHint(), st.getTokenOffset() + 1);
+                if (st.getHint() == CodeType.LINE_SINGLE) {
                     flag |= AbstractSpecimen.MATCH_PART;
-                } else if (ch == CodeType.LINE_BACK) {
+                } else if (st.getHint() == CodeType.LINE_BACK) {
                     flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
                     throw new ScannerError(ERROR_SYNTAX_PART_EXPECTED,
@@ -118,14 +116,13 @@ public final class CompilerSimple extends AbstractCompiler {
                 }
             } else {
                 flag |= AbstractSpecimen.MATCH_PART;
-                pattern = st.getToken();
+                pattern = st.getData();
             }
         } else {
-            int ch = st.getToken().codePointAt(0);
-            if (st.getDelemiter().getQuotes().indexOf(ch) != -1) {
-                pattern = st.getDelemiter().resolveDouble(st.getToken().substring(1),
-                        ch, st.getTokenOffset() + 1);
-                if (ch == CodeType.LINE_BACK) {
+            if (st.getHint() != 0) {
+                pattern = st.getDelemiter().resolveDouble(st.getData(),
+                        st.getHint(), st.getTokenOffset() + 1);
+                if (st.getHint() == CodeType.LINE_BACK) {
                     flag |= AbstractSpecimen.MATCH_WHLE;
                 } else {
                     throw new ScannerError(ERROR_SYNTAX_WHOLE_EXPECTED,
@@ -133,7 +130,7 @@ public final class CompilerSimple extends AbstractCompiler {
                 }
             } else {
                 flag |= AbstractSpecimen.MATCH_WHLE;
-                pattern = st.getToken();
+                pattern = st.getData();
             }
         }
         st.nextToken();

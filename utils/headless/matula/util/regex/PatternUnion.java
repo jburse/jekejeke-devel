@@ -135,7 +135,7 @@ public final class PatternUnion extends AbstractPattern {
             st.setRemark(comp.getRemark());
             st.firstToken();
             PatternUnion union = parseUnion(st, expr, comp);
-            if (!"".equals(st.getToken()))
+            if (st.getHint() != 0 || !"".equals(st.getData()))
                 throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                         st.getTokenOffset());
             return union;
@@ -171,16 +171,16 @@ public final class PatternUnion extends AbstractPattern {
                                    AbstractCompiler comp)
             throws ScannerError, IOException {
         ListArray<AbstractSpecimen> vec = new ListArray<AbstractSpecimen>();
-        while (!"".equals(st.getToken()) &&
-                !")".equals(st.getToken()) &&
-                !"!".equals(st.getToken())) {
+        while (st.getHint() != 0 || (!"".equals(st.getData()) &&
+                !")".equals(st.getData()) &&
+                !"!".equals(st.getData()))) {
             vec.add(comp.parseSpecimen(st, expr));
         }
-        if ("!".equals(st.getToken())) {
+        if (st.getHint() == 0 && "!".equals(st.getData())) {
             st.nextToken();
-            while (!"".equals(st.getToken()) &&
-                    !")".equals(st.getToken()) &&
-                    !"!".equals(st.getToken())) {
+            while (st.getHint() != 0 || (!"".equals(st.getData()) &&
+                    !")".equals(st.getData()) &&
+                    !"!".equals(st.getData()))) {
                 AbstractSpecimen temp = comp.parseSpecimen(st, expr);
                 temp.setFlag(temp.getFlag() | AbstractSpecimen.MATCH_NEGT);
                 vec.add(temp);
@@ -213,7 +213,7 @@ public final class PatternUnion extends AbstractPattern {
      * @param pat The replacement target.
      */
     public void replaceTo(AbstractPattern pat) {
-        PatternUnion union = (PatternUnion)pat;
+        PatternUnion union = (PatternUnion) pat;
         for (int i = 0; i < matchers.length &&
                 (matchers[i].getFlag() & AbstractSpecimen.MATCH_NEGT) == 0; i++) {
             AbstractSpecimen matcher = union.getMatchers()[i];

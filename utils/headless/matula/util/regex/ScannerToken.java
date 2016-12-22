@@ -82,7 +82,8 @@ public final class ScannerToken {
 
     private Reader reader;
     private int ch;
-    private String token;
+    private int hint;
+    private String data;
     private StringBuilder buf = new StringBuilder();
     private CodeType delemiter;
     private CompLang remark;
@@ -162,12 +163,21 @@ public final class ScannerToken {
     }
 
     /**
-     * <p>Retrieve the current token.</p>
+     * <p>Retrieve the current hint.</p>
      *
-     * @return The current token.
+     * @return The current hint.
      */
-    public String getToken() {
-        return token;
+    public int getHint() {
+        return hint;
+    }
+
+    /**
+     * <p>Retrieve the current data.</p>
+     *
+     * @return The current data.
+     */
+    public String getData() {
+        return data;
     }
 
     /**
@@ -177,11 +187,9 @@ public final class ScannerToken {
      */
     public int getTokenOffset() {
         int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 0);
-        int ch2;
-        if (token.length() > 0 &&
-                delemiter.getQuotes().indexOf(ch2 = token.codePointAt(0)) != -1)
-            k += Character.charCount(ch2);
-        return OpenOpts.getOffset(reader) - k - token.length();
+        if (hint != 0)
+            k += Character.charCount(hint);
+        return OpenOpts.getOffset(reader) - k - data.length();
     }
 
     /**
@@ -244,7 +252,6 @@ public final class ScannerToken {
      */
     private void nextString() throws ScannerError, IOException {
         int quote = ch;
-        buf.appendCodePoint(ch);
         ch = getCode();
         while (ch != CodeType.LINE_EOF) {
             if (ch == quote) {
@@ -254,14 +261,16 @@ public final class ScannerToken {
                     buf.appendCodePoint(ch);
                     ch = getCode();
                 } else {
-                    token = buf.toString();
+                    hint = quote;
+                    data = buf.toString();
                     return;
                 }
             } else {
                 nextChar(true);
             }
         }
-        token = buf.toString();
+        hint = quote;
+        data = buf.toString();
         if (quote == CodeType.LINE_SINGLE) {
             throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
         } else if (quote == CodeType.LINE_DOUBLE) {
@@ -374,11 +383,13 @@ public final class ScannerToken {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     } else {
-                        token = buf.toString();
+                        hint = 0;
+                        data = buf.toString();
                         return;
                     }
                 }
-                token = buf.toString();
+                hint = 0;
+                data = buf.toString();
                 return;
             } else if (ch == CodeType.LINE_SINGLE) {
                 buf.appendCodePoint(ch);
@@ -393,10 +404,12 @@ public final class ScannerToken {
                 } else if (ch != CodeType.LINE_EOF) {
                     nextChar(false);
                 } else {
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader));
                 }
-                token = buf.toString();
+                hint = 0;
+                data = buf.toString();
                 return;
             } else if (ch == PREFIX_DECIMAL || ch == PREFIX_FLOAT32) {
                 buf.appendCodePoint(ch);
@@ -418,7 +431,8 @@ public final class ScannerToken {
                     }
                 }
                 nextExponent();
-                token = buf.toString();
+                hint = 0;
+                data = buf.toString();
                 return;
             }
         }
@@ -440,7 +454,8 @@ public final class ScannerToken {
             /* exponent */
             nextExponent();
         }
-        token = buf.toString();
+        hint = 0;
+        data = buf.toString();
     }
 
     /**
@@ -515,7 +530,8 @@ public final class ScannerToken {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
-            token = buf.toString();
+            hint = 0;
+            data = buf.toString();
         } else {
             String lc = remark.getLineComment();
             skipStr(lc);
@@ -543,7 +559,8 @@ public final class ScannerToken {
                 bc = remark.getBlockCommentEnd();
                 if (bc != null && startsWith(bc)) {
                     consumeStr(bc);
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 }
                 buf.appendCodePoint(ch);
@@ -561,7 +578,8 @@ public final class ScannerToken {
                 ch = getCode();
             }
         }
-        token = buf.toString();
+        hint = 0;
+        data = buf.toString();
         throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT, OpenOpts.getOffset(reader));
     }
 
@@ -586,7 +604,8 @@ public final class ScannerToken {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
-            token = buf.toString();
+            hint = 0;
+            data = buf.toString();
         } else {
             ch = getCode();
             while (ch != CodeType.LINE_EOF &&
@@ -640,7 +659,8 @@ public final class ScannerToken {
                     }
                     buf.appendCodePoint(ch);
                     ch = getCode();
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 case CodeType.SUB_CLASS_UNDERSCORE:
                 case CodeType.SUB_CLASS_LOWER:
@@ -652,7 +672,8 @@ public final class ScannerToken {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 case CodeType.SUB_CLASS_DIGIT:
                     nextNumber();
@@ -678,13 +699,15 @@ public final class ScannerToken {
                         buf.appendCodePoint(ch);
                         ch = getCode();
                     }
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 default:
                     throw new IllegalArgumentException("illegal subclass");
             }
         }
-        token = buf.toString();
+        hint = 0;
+        data = buf.toString();
     }
 
     /**
@@ -739,7 +762,8 @@ public final class ScannerToken {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
-            token = buf.toString();
+            hint = 0;
+            data = buf.toString();
         } else {
             ch = getCode();
             while (ch != CodeType.LINE_EOF &&
@@ -768,7 +792,8 @@ public final class ScannerToken {
                         continue;
                     }
                     buf.appendCodePoint(ch);
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 case CodeType.SUB_CLASS_INVALID:
                 case CodeType.SUB_CLASS_SOLO:
@@ -779,7 +804,8 @@ public final class ScannerToken {
                             return;
                         continue;
                     }
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 case CodeType.SUB_CLASS_UNDERSCORE:
                 case CodeType.SUB_CLASS_LOWER:
@@ -787,13 +813,15 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_OTHER:
                 case CodeType.SUB_CLASS_DIGIT:
                 case CodeType.SUB_CLASS_GRAPHIC:
-                    token = buf.toString();
+                    hint = 0;
+                    data = buf.toString();
                     return;
                 default:
                     throw new IllegalArgumentException("illegal subclass");
             }
         }
-        token = buf.toString();
+        hint = 0;
+        data = buf.toString();
     }
 
     /*************************************************************/

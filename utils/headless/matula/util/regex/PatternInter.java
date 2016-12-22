@@ -119,7 +119,7 @@ public final class PatternInter extends AbstractPattern {
             st.setRemark(comp.getRemark());
             st.firstToken();
             PatternInter inter = parseInter(st, expr, comp);
-            if (!"".equals(st.getToken()))
+            if (st.getHint() != 0 || !"".equals(st.getData()))
                 throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                         st.getTokenOffset());
             return inter;
@@ -156,14 +156,16 @@ public final class PatternInter extends AbstractPattern {
                                            AbstractCompiler comp)
             throws ScannerError, IOException {
         ListArray<PatternUnion> vec = new ListArray<PatternUnion>();
-        while (!"".equals(st.getToken()) && !")".equals(st.getToken())
-                && !"!".equals(st.getToken())) {
+        while (st.getHint() != 0 || (!"".equals(st.getData()) &&
+                !")".equals(st.getData()) &&
+                !"!".equals(st.getData()))) {
             vec.add(parseUnion(st, expr, comp));
         }
-        if ("!".equals(st.getToken())) {
+        if (st.getHint() == 0 && "!".equals(st.getData())) {
             st.nextToken();
-            while (!"".equals(st.getToken()) && !")".equals(st.getToken())
-                    && !"!".equals(st.getToken())) {
+            while (st.getHint() != 0 || (!"".equals(st.getData()) &&
+                    !")".equals(st.getData()) &&
+                    !"!".equals(st.getData()))) {
                 PatternUnion temp = parseUnion(st, expr, comp);
                 temp.setFlag(temp.getFlag() | PatternUnion.UNION_NEGATIV);
                 vec.add(temp);
@@ -189,10 +191,10 @@ public final class PatternInter extends AbstractPattern {
     private static PatternUnion parseUnion(ScannerToken st, int expr,
                                            AbstractCompiler comp)
             throws ScannerError, IOException {
-        if ("(".equals(st.getToken())) {
+        if (st.getHint() == 0 && "(".equals(st.getData())) {
             st.nextToken();
             PatternUnion pu = PatternUnion.parseUnion(st, expr, comp);
-            if (!")".equals(st.getToken()))
+            if (st.getHint() != 0 || !")".equals(st.getData()))
                 throw new ScannerError(ERROR_SYNTAX_RIGHT_PARENTHESIS,
                         st.getTokenOffset());
             st.nextToken();
