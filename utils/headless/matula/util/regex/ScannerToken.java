@@ -61,12 +61,12 @@ public final class ScannerToken {
     public static final String OP_SYNTAX_END_OF_LINE_IN_CHARACTER = "end_of_line_in_character";
     public static final String OP_SYNTAX_CONT_ESC_IN_CHARACTER = "cont_esc_in_character";
 
-    public static final char PREFIX_REFERENCE = 'r';
-    public static final char PREFIX_DECIMAL = 'd';
-    public static final char PREFIX_FLOAT32 = 'f';
     public static final char PREFIX_BINARY = 'b';
     public static final char PREFIX_OCTAL = 'o';
     public static final char PREFIX_HEX = 'x';
+    public static final char PREFIX_REFERENCE = 'r';
+    public static final char PREFIX_DECIMAL = 'd';
+    public static final char PREFIX_FLOAT32 = 'f';
 
     public static final char SCAN_PERIOD = '.';
     public static final char SCAN_NEG = '-';
