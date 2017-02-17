@@ -7,14 +7,12 @@ import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
-import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.math.RoundingMode;
 
 /**
  * <p>Provides additional elementary evaluables.</p>
@@ -43,17 +41,13 @@ import java.math.RoundingMode;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SupplementElem extends Special {
-    private final static int EVALUABLE_ULP = 0;
-    private final static int EVALUABLE_SCALE = 1;
-    private final static int EVALUABLE_PRECISION = 2;
-    private final static int EVALUABLE_UNSCALED_VALUE = 3;
-    private final static int EVALUABLE_GCD = 4;
-    private final static int EVALUABLE_DECIMAL = 5;
-    private final static int EVALUABLE_ADD = 6;
-    private final static int EVALUABLE_SUB = 7;
-    private final static int EVALUABLE_MUL = 8;
-    private final static int EVALUABLE_SLASH = 9;
-    private final static int EVALUABLE_INT_POW = 10;
+    private final static int EVALUABLE_LOG2 = 0;
+    private final static int EVALUABLE_LOG10 = 1;
+    private final static int EVALUABLE_ULP = 2;
+    private final static int EVALUABLE_GCD = 3;
+
+    public static final Double DOUBLE_LOG2 = Double.valueOf(Math.log(2));
+    public static final Double DOUBLE_LOG10 = Double.valueOf(Math.log(10));
 
     /**
      * <p>Create an elementary evaluable.</p>
@@ -80,101 +74,36 @@ public final class SupplementElem extends Special {
                                     Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (id < EVALUABLE_GCD) {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                switch (id) {
-                    case EVALUABLE_ULP:
-                        Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = ulp(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_SCALE:
-                        alfa = EngineMessage.castDecimal(en.skel, en.display);
-                        en.skel = Integer.valueOf(TermAtomic.scale(alfa));
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_PRECISION:
-                        alfa = EngineMessage.castDecimal(en.skel, en.display);
-                        en.skel = Integer.valueOf(TermAtomic.precision(alfa));
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_UNSCALED_VALUE:
-                        alfa = EngineMessage.castDecimal(en.skel, en.display);
-                        en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
-            } else if (id < EVALUABLE_ADD) {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                switch (id) {
-                    case EVALUABLE_GCD:
-                        Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        Number beta = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = gcd(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_DECIMAL:
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        beta = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = decimal(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
-            } else {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
-                switch (id) {
-                    case EVALUABLE_ADD:
-                        Number beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[2], ref, r, u);
-                        Number gamma = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = add(alfa, beta, gamma);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_SUB:
-                        beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[2], ref, r, u);
-                        gamma = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = sub(alfa, beta, gamma);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_MUL:
-                        beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[2], ref, r, u);
-                        gamma = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = mul(alfa, beta, gamma);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_SLASH:
-                        beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[2], ref, r, u);
-                        gamma = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = div(alfa, beta, gamma);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_INT_POW:
-                        beta = EngineMessage.castInteger(en.skel, en.display);
-                        en.computeExpr(temp[2], ref, r, u);
-                        gamma = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = intPow(alfa, beta, gamma);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
+            switch (id) {
+                case EVALUABLE_LOG2:
+                    en.skel = DOUBLE_LOG2;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_LOG10:
+                    en.skel = DOUBLE_LOG10;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_ULP:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = ulp(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_GCD:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    Number beta = EngineMessage.castInteger(en.skel, en.display);
+                    en.skel = gcd(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
@@ -211,8 +140,6 @@ public final class SupplementElem extends Special {
     /********************************************************************/
     /* Additional Binary Number Operations:                             */
     /*      gcd/2: gcd()                                                */
-    /*      round/2: round()                                            */
-    /*      decimal/2: decimal()                                        */
     /********************************************************************/
 
     /**
@@ -268,208 +195,6 @@ public final class SupplementElem extends Special {
             }
         }
         return m << t;
-    }
-
-    /**
-     * <p>Return the round.</p>
-     *
-     * @param m The decimal number.
-     * @param n The new scale.
-     * @return The rounded decimal number.
-     * @throws EngineMessage Not an integer.
-     */
-    private static Number decimal(Number m, Number n) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(n);
-        int y = EngineMessage.castIntValue(n);
-        MathContext mc = new MathContext(y, RoundingMode.HALF_EVEN);
-        if (m instanceof Integer) {
-            return TermAtomic.normBigDecimal(
-                    new BigDecimal(m.intValue(), mc));
-        } else if (m instanceof BigInteger) {
-            return TermAtomic.normBigDecimal(
-                    new BigDecimal((BigInteger)m, mc));
-        } else if (m instanceof Long) {
-            if (mc.getPrecision() != 0 && (TermAtomic.log10(m.longValue()) > mc.getPrecision())) {
-                return TermAtomic.normBigDecimal(
-                        new BigDecimal(m.longValue(), mc));
-            } else {
-                return m;
-            }
-        } else if (m instanceof BigDecimal) {
-            BigDecimal d = (BigDecimal) m;
-            if (mc.getPrecision() != 0 && (d.precision() > mc.getPrecision())) {
-                return TermAtomic.normBigDecimal(new BigDecimal(d.unscaledValue(), d.scale(), mc));
-            } else {
-                return d;
-            }
-        } else {
-            return TermAtomic.normBigDecimal(
-                    new BigDecimal(m.doubleValue(), mc));
-        }
-    }
-
-    /********************************************************************/
-    /* Additional Ternary Number Operations:                            */
-    /*      add/3: add()                                                */
-    /*      sub/3: sub()                                                */
-    /*      mul/3: mul()                                                */
-    /*      div/3: div()                                                */
-    /*      int_pow/3: intPow()                                         */
-    /********************************************************************/
-
-    /**
-     * <p>Add two decimal with some precision.</p>
-     *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
-     * @param p The precision.
-     * @return The result.
-     * @throws EngineMessage Not an integer.
-     */
-    private static Number add(Number m, Number n, Number p) throws EngineMessage {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-                return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
-                return TermAtomic.normBigInteger(
-                        TermAtomic.widenBigInteger(m).add(
-                                TermAtomic.widenBigInteger(n)));
-            case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() +
-                        n.floatValue()));
-            case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() +
-                        n.doubleValue()));
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
-                EngineMessage.checkNotLessThanZero(p);
-                int y = EngineMessage.castIntValue(p);
-                MathContext mc = new MathContext(y, RoundingMode.HALF_EVEN);
-                return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m, mc).add(
-                                TermAtomic.widenBigDecimal(n, mc), mc));
-            default:
-                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
-        }
-    }
-
-    /**
-     * <p>Subtract a decimal by another decimal with some precision.</p>
-     *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
-     * @param p The precision.
-     * @return The result.
-     * @throws EngineMessage Not an integer.
-     */
-    private static Number sub(Number m, Number n, Number p) throws EngineMessage {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-                return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
-                return TermAtomic.normBigInteger(
-                        TermAtomic.widenBigInteger(m).subtract(
-                                TermAtomic.widenBigInteger(n)));
-            case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() -
-                        n.floatValue()));
-            case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() -
-                        n.doubleValue()));
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
-                EngineMessage.checkNotLessThanZero(p);
-                int y = EngineMessage.castIntValue(p);
-                MathContext mc = new MathContext(y, RoundingMode.HALF_EVEN);
-                return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m, mc).subtract(
-                                TermAtomic.widenBigDecimal(n, mc), mc));
-            default:
-                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
-        }
-    }
-
-    /**
-     * <p>Multiply two decimal with some precision.</p>
-     *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
-     * @param p The precision.
-     * @return The result.
-     * @throws EngineMessage Not an integer.
-     */
-    private static Number mul(Number m, Number n, Number p) throws EngineMessage {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-                return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
-                return TermAtomic.normBigInteger(
-                        TermAtomic.widenBigInteger(m).multiply(
-                                TermAtomic.widenBigInteger(n)));
-            case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() *
-                        n.floatValue()));
-            case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() *
-                        n.doubleValue()));
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
-                EngineMessage.checkNotLessThanZero(p);
-                int y = EngineMessage.castIntValue(p);
-                MathContext mc = new MathContext(y, RoundingMode.HALF_EVEN);
-                return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m, mc).multiply(
-                                TermAtomic.widenBigDecimal(n, mc), mc));
-            default:
-                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
-        }
-    }
-
-    /**
-     * <p>Divide a decimal by another decimal with some precision.</p>
-     *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
-     * @param p The precision.
-     * @return The result.
-     * @throws EngineMessage Not an integer.
-     */
-    private static Number div(Number m, Number n, Number p) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(p);
-        int y = EngineMessage.castIntValue(p);
-        MathContext mc = new MathContext(y, RoundingMode.HALF_EVEN);
-        return TermAtomic.normBigDecimal(
-                TermAtomic.widenBigDecimal(m, mc).divide(TermAtomic.widenBigDecimal(n, mc), mc));
-    }
-
-    /**
-     * <p>Raise a decimal to an integer power with some precision.</p>
-     *
-     * @param m The Prolog decimal.
-     * @param n The Prolog integer.
-     * @param p The precision.
-     * @return The result.
-     * @throws EngineMessage Not an integer.
-     */
-    private static Number intPow(Number m, Number n, Number p) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(n);
-        int x = EngineMessage.castIntValue(n);
-        if (m instanceof Integer || m instanceof BigInteger) {
-            return TermAtomic.normBigInteger(
-                    TermAtomic.widenBigInteger(m).pow(x));
-        } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(
-                    (float) Math.pow(m.floatValue(), x)));
-        } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(
-                    Math.pow(m.doubleValue(), x)));
-        } else {
-            EngineMessage.checkNotLessThanZero(p);
-            int y = EngineMessage.castIntValue(p);
-            MathContext mc = new MathContext(y, RoundingMode.HALF_EVEN);
-            return TermAtomic.normBigDecimal(
-                    TermAtomic.widenBigDecimal(m, mc).pow(x, mc));
-        }
     }
 
 }

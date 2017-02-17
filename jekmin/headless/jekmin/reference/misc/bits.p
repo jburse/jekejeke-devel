@@ -2,13 +2,22 @@
  * We provide a couple of additional bitwise operations. The evaluable
  * functions bitcount/1, bitlength/1 and lowestsetbit/1 deal with the
  * determination of certain bits of the given integer. The evaluable
- * functions setbit/2 and clearbit/2 update the given integer in a
- * more efficient way than would be possible with existing logical
- * and shift operations.
+ * function scale/1 and unscaled_value/1 allow accessing the components
+ * of a decimal. The evaluable function precision/1 returns the tenth
+ * logarithm of the unscaled value.
  *
- * The predicate sys_test_bit/2 tests a particular bit in a given
- * integer, again the implementation is more efficient than would
- * be possible with existing logical, shift and test operations.
+ * Examples:
+ * bitlength(333)               --> 9
+ * scale(0d0.000333)            --> 6
+ * unscaled_value(0d0.000333)   --> 3333
+ * precision(0d0.000333)        --> 3
+ *
+ * The evaluable functions setbit/2 and clearbit/2 update the given
+ * integer in a more efficient way than would be possible with existing
+ * logical and shift operations. The predicate sys_test_bit/2 tests a
+ * particular bit in a given integer, again the implementation is more
+ * efficient than would be possible with existing logical, shift and
+ * test operations.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,43 +49,43 @@
 :- module(bits, []).
 
 /**
- * bitcount(X):
- * If X is an integer returns the number of non-zero bits.
+ * bitcount(X, N):
+ * Predicate succeeds in N with the number of non-zero bits of X.
  */
 :- public bitcount/2.
 :- special(bitcount/2, 'SupplementBits', 0).
 
 /**
- * bitlength(X):
- * If X is an integer returns the index of the highest non-zero bit.
+ * bitlength(X, N):
+ * Predicate succeeds in N with the highest non-zero bit of X.
  */
 :- public bitlength/2.
 :- special(bitlength/2, 'SupplementBits', 1).
 
 /**
- * lowestsetbit(X):
- * If X is an integer returns the index of the lowest non-zero bit.
+ * lowestsetbit(X, N):
+ * Predicate succeeds in N with the lowest non-zero bit of X.
  */
 :- public lowestsetbit/2.
 :- special(lowestsetbit/2, 'SupplementBits', 2).
 
 /**
- * setbit(X, Y):
- * If X and Y are integers returns Y with the bit at index X set.
+ * setbit(X, Y, Z):
+ * The predicate succeeds in Z with Y \/ (1 << X).
  */
 :- public setbit/3.
 :- special(setbit/3, 'SupplementBits', 3).
 
 /**
- * clearbit(X,Y):
- * If X and Y are integers returns Y with the bit at index X cleared.
+ * clearbit(X, Y, Z):
+ * The predicate succeeds in Z with Y /\ \ (1 << X).
  */
 :- public clearbit/3.
 :- special(clearbit/3, 'SupplementBits', 4).
 
 /**
  * sys_test_bit(X, Y):
- * Succeeds when Y has the bit at index X set, otherwise fails.
+ * The predicate succeeds when Y /\ (1 << X) =\= 0.
  */
 :- public sys_test_bit/2.
 :- special(sys_test_bit/2, 'SpecialBits', 0).

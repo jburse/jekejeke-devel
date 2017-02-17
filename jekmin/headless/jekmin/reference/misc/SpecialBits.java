@@ -4,9 +4,14 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.TermAtomic;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 /**
  * <p>Provides additional bitwise predicates.</p>
@@ -62,21 +67,31 @@ public final class SpecialBits extends Special {
     public final boolean findFirst(Goal r, DisplayClause u,
                                    Engine en)
             throws EngineMessage, EngineException {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.computeExpr(temp[0], ref, r, u);
-        Number alfa = EngineMessage.castInteger(en.skel, en.display);
-        en.computeExpr(temp[1], ref, r, u);
-        Number beta = EngineMessage.castInteger(en.skel, en.display);
         switch (id) {
             case SPECIAL_SYS_TEST_BIT:
-                if (!testBit(alfa, beta))
+                Object[] temp = ((SkelCompound) en.skel).args;
+                Display ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                Number alfa = EngineMessage.castInteger(en.skel, en.display);
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                Number beta = EngineMessage.castInteger(en.skel, en.display);
+                if (!sysTestBit(alfa, beta))
                     return false;
                 return r.getNextRaw(u, en);
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
     }
+
+
+    /********************************************************************/
+    /* Additional Binary Number Built-in:                               */
+    /*      sys_test_bit/3: sysTestBit()                                */
+    /********************************************************************/
 
     /**
      * <p>Test a bit.</p>
@@ -86,7 +101,7 @@ public final class SpecialBits extends Special {
      * @return The result.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean testBit(Number a, Number b) throws EngineMessage {
+    private static boolean sysTestBit(Number a, Number b) throws EngineMessage {
         EngineMessage.checkNotLessThanZero(a);
         int k = EngineMessage.castIntValue(a);
         if (b instanceof Integer) {

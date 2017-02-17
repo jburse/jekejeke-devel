@@ -21,6 +21,11 @@
  * ulp(0d0.00)     --> 0d0.01
  * gcd(36,24)      --> 12
  *
+ * The default decimal number operations are unlimited precision. We
+ * provide here additional predicates vpa_decimal/3, vpa_add/3,
+ * vpa_sub/3, vpa_mul/3, vpa_div/3 and vpa_int_pow/3 that provide
+ * limited precision basic arithmetic operations.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -51,33 +56,26 @@
 :- module(elem, []).
 
 /**
+ * log2(Y):
+ * Predicate succeeds in Y with the float log(2).
+ */
+:- public log2/1.
+:- special(log2/1, 'SupplementElem', 0).
+
+/**
+ * log10(Y):
+ * Predicate succeeds in Y with the float log(2).
+ */
+:- public log10/1.
+:- special(log10/1, 'SupplementElem', 1).
+
+/**
  * ulp(X, Y):
  * Predicate succeeds in Y with the unit of least precision of
  * the number X.
  */
 :- public ulp/2.
-:- special(ulp/2, 'SupplementElem', 0).
-
-/**
- * scale(X, S):
- * Predicate succeeds in S with the scale of the decimal number X.
- */
-:- public scale/2.
-:- special(scale/2, 'SupplementElem', 1).
-
-/**
- * precision(X, P):
- * Predicate succeeds in P with the precision of the decimal number X.
- */
-:- public precision/2.
-:- special(precision/2, 'SupplementElem', 2).
-
-/**
- * unscaled_value(X, P):
- * Predicate succeeds in P with the unscale value of the decimal number X.
- */
-:- public unscaled_value/2.
-:- special(unscaled_value/2, 'SupplementElem', 3).
+:- special(ulp/2, 'SupplementElem', 2).
 
 /**
  * gcd(X, Y, Z):
@@ -85,52 +83,5 @@
  * integer X and the integer Y.
  */
 :- public gcd/3.
-:- special(gcd/3, 'SupplementElem', 4).
-
-/**
- * decimal(X, P, Z):
- * Predicate succeeds in Z with X converted to decimal with precision P.
- */
-:- public decimal/3.
-:- special(decimal/3, 'SupplementElem', 5).
-
-/**
- * add(X, Y, P, Z):
- * The predicate succeeds in Z with the addition of two number
- * X and Y with some precision P.
- */
-:- public add/4.
-:- special(add/4, 'SupplementElem', 6).
-
-/**
- * sub(X, Y, P, Z):
- * The predicate succeeds in Z with the number X subracted by the
- * number Y with some precision P.
- */
-:- public sub/4.
-:- special(sub/4, 'SupplementElem', 7).
-
-/**
- * mul(X, Y, P, Z):
- * The predicate succeeds in Z with the multiplication of two numbers
- * X and Y with some precision P.
- */
-:- public mul/4.
-:- special(mul/4, 'SupplementElem', 8).
-
-/**
- * div(X, Y, P, Z):
- * The predicate succeeds in Z with the number X divided by the
- * number Y with some precision P.
- */
-:- public div/4.
-:- special(div/4, 'SupplementElem', 9).
-
-/**
- * int_pow(X, N, P, Z):
- * The predicate succeeds in Z with the number X raised to the
- * power of the integer N with some precision P.
- */
-:- public int_pow/4.
-:- special(int_pow/4, 'SupplementElem', 10).
+:- special(gcd/3, 'SupplementElem', 3).
 
