@@ -1,4 +1,4 @@
-package jekmin.reference.decimal;
+package jekmin.frequent.decimal;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Special;
@@ -266,6 +266,9 @@ public class SpecialArith extends Special {
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigDecimal(
                     new BigDecimal((BigInteger) m, mc));
+        } else if (m instanceof Float || m instanceof Double) {
+            return TermAtomic.normBigDecimal(
+                    new BigDecimal(m.doubleValue(), mc));
         } else if (m instanceof Long) {
             if (mc.getPrecision() != 0 &&
                     (TermAtomic.log10(m.longValue()) > mc.getPrecision())) {
@@ -284,8 +287,7 @@ public class SpecialArith extends Special {
                 return d;
             }
         } else {
-            return TermAtomic.normBigDecimal(
-                    new BigDecimal(m.doubleValue(), mc));
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -441,9 +443,11 @@ public class SpecialArith extends Special {
         } else if (m instanceof Double) {
             return TermAtomic.guardDouble(Double.valueOf(
                     Math.pow(m.doubleValue(), x)));
-        } else {
+        } else if (m instanceof Long || m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(
                     TermAtomic.widenBigDecimal(m, mc).pow(x, mc));
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 

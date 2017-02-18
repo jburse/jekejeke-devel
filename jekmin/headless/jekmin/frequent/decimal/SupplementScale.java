@@ -1,6 +1,5 @@
-package jekmin.reference.decimal;
+package jekmin.frequent.decimal;
 
-import jekmin.reference.misc.SpecialBits;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Special;
 import jekpro.model.molec.Display;
