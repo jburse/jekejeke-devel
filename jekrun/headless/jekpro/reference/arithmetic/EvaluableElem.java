@@ -79,118 +79,118 @@ public final class EvaluableElem extends Special {
                                     Engine en)
             throws EngineMessage, EngineException {
         try {
-                switch (id) {
-                    case EVALUABLE_MINUS:
-                        Object[] temp = ((SkelCompound) en.skel).args;
-                        Display ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = neg(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_PLUS:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = alfa;
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_ABS:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = abs(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_SIGN:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = sign(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_FLOAT:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = (alfa instanceof Double ? alfa :
-                                TermAtomic.guardDouble(Double.valueOf(alfa.doubleValue())));
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_DECIMAL:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = decimal(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_FLOAT32:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = (alfa instanceof Float ? alfa :
-                                TermAtomic.guardFloat(Float.valueOf(alfa.floatValue())));
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_ADD:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        Number beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = add(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_SUB:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = sub(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_MUL:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = mul(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_SLASH:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        beta = EngineMessage.castNumber(en.skel, en.display);
-                        en.skel = slash(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_INT_POW:
-                        temp = ((SkelCompound) en.skel).args;
-                        ref = en.display;
-                        en.computeExpr(temp[0], ref, r, u);
-                        alfa = EngineMessage.castNumber(en.skel, en.display);
-                        en.computeExpr(temp[1], ref, r, u);
-                        beta = EngineMessage.castInteger(en.skel, en.display);
-                        en.skel = intPow(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
+            switch (id) {
+                case EVALUABLE_MINUS:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = neg(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_PLUS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = alfa;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_ABS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = abs(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_SIGN:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = sign(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_FLOAT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = (alfa instanceof Double ? alfa :
+                            TermAtomic.guardDouble(Double.valueOf(alfa.doubleValue())));
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_DECIMAL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = decimal(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_FLOAT32:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = (alfa instanceof Float ? alfa :
+                            TermAtomic.guardFloat(Float.valueOf(alfa.floatValue())));
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_ADD:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    Number beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = add(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_SUB:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = sub(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_MUL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = mul(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_SLASH:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = slash(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_INT_POW:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castInteger(en.skel, en.display);
+                    en.skel = intPow(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
         }
@@ -224,8 +224,10 @@ public final class EvaluableElem extends Special {
             } else {
                 return BigDecimal.valueOf(y).negate();
             }
-        } else {
+        } else if (m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(((BigDecimal) m).negate());
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -258,8 +260,10 @@ public final class EvaluableElem extends Special {
             } else {
                 return BigDecimal.valueOf(y).abs();
             }
-        } else {
+        } else if (m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(((BigDecimal) m).abs());
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -283,8 +287,10 @@ public final class EvaluableElem extends Special {
         } else if (m instanceof Long) {
             long y = m.longValue();
             return Long.valueOf(Long.signum(y));
-        } else {
+        } else if (m instanceof BigDecimal) {
             return Long.valueOf(((BigDecimal) m).signum());
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -299,10 +305,12 @@ public final class EvaluableElem extends Special {
             return Long.valueOf(m.intValue());
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigDecimal((BigInteger) m, 0);
+        } else if (m instanceof Float || m instanceof Double) {
+            return TermAtomic.normBigDecimal(new BigDecimal(m.doubleValue()));
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return m;
         } else {
-            return TermAtomic.normBigDecimal(new BigDecimal(m.floatValue()));
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -413,35 +421,38 @@ public final class EvaluableElem extends Special {
     private static Number slash(Number m, Number n) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
-                double e = n.doubleValue();
-                if (e == 0)
+                double b = n.doubleValue();
+                if (b == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / e));
+                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / b));
             case SpecialCompare.CATEGORY_BIG_INTEGER:
-                MathContext mc = MathContext.DECIMAL128;
-                BigDecimal b = TermAtomic.widenBigDecimal(n, mc);
-                if (BigDecimal.ZERO.compareTo(b) == 0)
+                BigDecimal c = TermAtomic.widenBigDecimal(n, MathContext.DECIMAL64);
+                if (BigDecimal.ZERO.compareTo(c) == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                b = TermAtomic.widenBigDecimal(m, mc).divide(b, mc);
-                return TermAtomic.guardDouble(Double.valueOf(b.doubleValue()));
+                c = TermAtomic.widenBigDecimal(m, MathContext.DECIMAL64).divide(c, MathContext.DECIMAL64);
+                return TermAtomic.guardDouble(Double.valueOf(c.doubleValue()));
             case SpecialCompare.CATEGORY_FLOAT:
             case SpecialCompare.CATEGORY_DOUBLE:
+                b = n.doubleValue();
+                if (b == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / b));
             case SpecialCompare.CATEGORY_LONG:
-                e = n.doubleValue();
-                if (e == 0)
+                b = n.doubleValue();
+                if (b == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / e));
+                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / b));
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
-                mc = MathContext.DECIMAL128;
-                b = TermAtomic.widenBigDecimal(n, mc);
-                if (BigDecimal.ZERO.compareTo(b) == 0)
+                c = TermAtomic.widenBigDecimal(n, MathContext.DECIMAL64);
+                if (BigDecimal.ZERO.compareTo(c) == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                b = TermAtomic.widenBigDecimal(m, mc).divide(b, mc);
-                return TermAtomic.guardDouble(Double.valueOf(b.doubleValue()));
+                c = TermAtomic.widenBigDecimal(m, MathContext.DECIMAL64).divide(c, MathContext.DECIMAL64);
+                return TermAtomic.guardDouble(Double.valueOf(c.doubleValue()));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -467,9 +478,11 @@ public final class EvaluableElem extends Special {
         } else if (m instanceof Double) {
             return TermAtomic.guardDouble(Double.valueOf(
                     Math.pow(m.doubleValue(), x)));
-        } else {
+        } else if (m instanceof Long || m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(
                     TermAtomic.widenBigDecimal(m).pow(x));
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 

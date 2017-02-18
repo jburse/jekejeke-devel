@@ -38,12 +38,12 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialCompare extends Special {
-    private final static int SPECIAL_EVAL_EQ = 0;
-    private final static int SPECIAL_EVAL_NQ = 1;
-    private final static int SPECIAL_EVAL_LS = 2;
-    private final static int SPECIAL_EVAL_LQ = 3;
-    private final static int SPECIAL_EVAL_GR = 4;
-    private final static int SPECIAL_EVAL_GQ = 5;
+    private final static int SPECIAL_COMPARE_EQ = 0;
+    private final static int SPECIAL_COMPARE_NQ = 1;
+    private final static int SPECIAL_COMPARE_LS = 2;
+    private final static int SPECIAL_COMPARE_LQ = 3;
+    private final static int SPECIAL_COMPARE_GR = 4;
+    private final static int SPECIAL_COMPARE_GQ = 5;
 
     public static final int CATEGORY_INTEGER = 0;
     public static final int CATEGORY_BIG_INTEGER = 1;
@@ -85,27 +85,27 @@ public final class SpecialCompare extends Special {
         en.computeExpr(temp[1], ref, r, u);
         Number val2 = EngineMessage.castNumber(en.skel, en.display);
         switch (id) {
-            case SPECIAL_EVAL_EQ:
+            case SPECIAL_COMPARE_EQ:
                 if (!SpecialCompare.testEq(val, val2))
                     return false;
                 return r.getNextRaw(u, en);
-            case SPECIAL_EVAL_NQ:
+            case SPECIAL_COMPARE_NQ:
                 if (SpecialCompare.testEq(val, val2))
                     return false;
                 return r.getNextRaw(u, en);
-            case SPECIAL_EVAL_LS:
+            case SPECIAL_COMPARE_LS:
                 if (SpecialCompare.computeCmp(val, val2) >= 0)
                     return false;
                 return r.getNextRaw(u, en);
-            case SPECIAL_EVAL_LQ:
+            case SPECIAL_COMPARE_LQ:
                 if (SpecialCompare.computeCmp(val, val2) > 0)
                     return false;
                 return r.getNextRaw(u, en);
-            case SPECIAL_EVAL_GR:
+            case SPECIAL_COMPARE_GR:
                 if (SpecialCompare.computeCmp(val, val2) <= 0)
                     return false;
                 return r.getNextRaw(u, en);
-            case SPECIAL_EVAL_GQ:
+            case SPECIAL_COMPARE_GQ:
                 if (SpecialCompare.computeCmp(val, val2) < 0)
                     return false;
                 return r.getNextRaw(u, en);
@@ -142,7 +142,7 @@ public final class SpecialCompare extends Special {
                 return TermAtomic.widenBigDecimal(m).compareTo(
                         TermAtomic.widenBigDecimal(n)) == 0;
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -175,7 +175,7 @@ public final class SpecialCompare extends Special {
                 return TermAtomic.widenBigDecimal(m).compareTo(
                         TermAtomic.widenBigDecimal(n));
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
@@ -199,7 +199,7 @@ public final class SpecialCompare extends Special {
         } else if (m instanceof BigDecimal) {
             return SpecialCompare.CATEGORY_BIG_DECIMAL;
         } else {
-            throw new IllegalArgumentException("illegal number");
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
