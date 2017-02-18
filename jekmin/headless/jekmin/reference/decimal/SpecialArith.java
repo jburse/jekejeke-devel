@@ -76,130 +76,135 @@ public class SpecialArith extends Special {
     public final boolean findFirst(Goal r, DisplayClause u,
                                    Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_NEW_CONTEXT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                if (!en.unifyTerm(temp[1], ref, newContext(alfa),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            case SPECIAL_MP_DECIMAL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                MathContext mc = castContext(en.skel, en.display);
-                if (!en.unifyTerm(temp[2], ref, mpDecimal(alfa, mc),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            case SPECIAL_MP_ADD:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                Number beta = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                mc = castContext(en.skel, en.display);
-                if (!en.unifyTerm(temp[3], ref, mpAdd(alfa, beta, mc),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            case SPECIAL_MP_SUB:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                beta = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                mc = castContext(en.skel, en.display);
-                if (!en.unifyTerm(temp[3], ref, mpSub(alfa, beta, mc),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            case SPECIAL_MP_MUL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                beta = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                mc = castContext(en.skel, en.display);
-                if (!en.unifyTerm(temp[3], ref, mpMul(alfa, beta, mc),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            case SPECIAL_MP_SLASH:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                beta = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                mc = castContext(en.skel, en.display);
-                if (!en.unifyTerm(temp[3], ref, mpSlash(alfa, beta, mc),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            case SPECIAL_MP_INT_POW:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                beta = EngineMessage.castNumber(en.skel, en.display);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                mc = castContext(en.skel, en.display);
-                if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, beta, mc),
-                        Display.DISPLAY_CONST, r, u))
-                    return false;
-                return r.getNext(u, en);
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_NEW_CONTEXT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    Number alfa = EngineMessage.castInteger(en.skel, en.display);
+                    if (!en.unifyTerm(temp[1], ref, newContext(alfa),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                case SPECIAL_MP_DECIMAL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    MathContext mc = castContext(en.skel, en.display);
+                    if (!en.unifyTerm(temp[2], ref, mpDecimal(alfa, mc),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                case SPECIAL_MP_ADD:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    Number beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    mc = castContext(en.skel, en.display);
+                    if (!en.unifyTerm(temp[3], ref, mpAdd(alfa, beta, mc),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                case SPECIAL_MP_SUB:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    mc = castContext(en.skel, en.display);
+                    if (!en.unifyTerm(temp[3], ref, mpSub(alfa, beta, mc),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                case SPECIAL_MP_MUL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    mc = castContext(en.skel, en.display);
+                    if (!en.unifyTerm(temp[3], ref, mpMul(alfa, beta, mc),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                case SPECIAL_MP_SLASH:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    mc = castContext(en.skel, en.display);
+                    if (!en.unifyTerm(temp[3], ref, mpSlash(alfa, beta, mc),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                case SPECIAL_MP_INT_POW:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    mc = castContext(en.skel, en.display);
+                    if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, beta, mc),
+                            Display.DISPLAY_CONST, r, u))
+                        return false;
+                    return r.getNext(u, en);
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ArithmeticException x) {
+            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+
         }
     }
 
@@ -249,7 +254,7 @@ public class SpecialArith extends Special {
     /**
      * <p>Return the round.</p>
      *
-     * @param m The decimal number.
+     * @param m  The decimal number.
      * @param mc The math context.
      * @return The rounded decimal number.
      * @throws EngineMessage Not an integer.
@@ -260,7 +265,7 @@ public class SpecialArith extends Special {
                     new BigDecimal(m.intValue(), mc));
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigDecimal(
-                    new BigDecimal((BigInteger)m, mc));
+                    new BigDecimal((BigInteger) m, mc));
         } else if (m instanceof Long) {
             if (mc.getPrecision() != 0 &&
                     (TermAtomic.log10(m.longValue()) > mc.getPrecision())) {
@@ -296,14 +301,14 @@ public class SpecialArith extends Special {
     /**
      * <p>Add two decimal with some precision.</p>
      *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
+     * @param m  The first Prolog decimal.
+     * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
      * @throws EngineMessage Not an integer.
      */
     private static Number mpAdd(Number m, Number n,
-                                 MathContext mc) throws EngineMessage {
+                                MathContext mc) throws EngineMessage {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
@@ -330,14 +335,14 @@ public class SpecialArith extends Special {
     /**
      * <p>Subtract a decimal by another decimal with some precision.</p>
      *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
+     * @param m  The first Prolog decimal.
+     * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
      * @throws EngineMessage Not an integer.
      */
     private static Number mpSub(Number m, Number n,
-                                 MathContext mc) throws EngineMessage {
+                                MathContext mc) throws EngineMessage {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
@@ -364,14 +369,14 @@ public class SpecialArith extends Special {
     /**
      * <p>Multiply two decimal with some precision.</p>
      *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
+     * @param m  The first Prolog decimal.
+     * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
      * @throws EngineMessage Not an integer.
      */
     private static Number mpMul(Number m, Number n,
-                                 MathContext mc) throws EngineMessage {
+                                MathContext mc) throws EngineMessage {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
@@ -398,30 +403,33 @@ public class SpecialArith extends Special {
     /**
      * <p>Divide a decimal by another decimal with some precision.</p>
      *
-     * @param m The first Prolog decimal.
-     * @param n The second Prolog decimal.
+     * @param m  The first Prolog decimal.
+     * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
      * @throws EngineMessage Not an integer.
      */
     private static Number mpSlash(Number m, Number n,
-                                   MathContext mc) throws EngineMessage {
+                                  MathContext mc) throws EngineMessage {
+        BigDecimal b = TermAtomic.widenBigDecimal(n, mc);
+        if (BigDecimal.ZERO.compareTo(b) == 0)
+            throw new ArithmeticException(
+                    EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
         return TermAtomic.normBigDecimal(
-                TermAtomic.widenBigDecimal(m, mc).divide(
-                        TermAtomic.widenBigDecimal(n, mc), mc));
+                TermAtomic.widenBigDecimal(m, mc).divide(b, mc));
     }
 
     /**
      * <p>Raise a decimal to an integer power with some precision.</p>
      *
-     * @param m The Prolog decimal.
-     * @param n The Prolog integer.
+     * @param m  The Prolog decimal.
+     * @param n  The Prolog integer.
      * @param mc The math context.
      * @return The result.
      * @throws EngineMessage Not an integer.
      */
     private static Number mpIntPow(Number m, Number n,
-                                    MathContext mc) throws EngineMessage {
+                                   MathContext mc) throws EngineMessage {
         EngineMessage.checkNotLessThanZero(n);
         int x = EngineMessage.castIntValue(n);
         if (m instanceof Integer || m instanceof BigInteger) {
