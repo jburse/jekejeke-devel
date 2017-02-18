@@ -57,8 +57,7 @@ public final class EvaluableCompare extends Special {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
+    public final void evalEvaluable(Goal r, DisplayClause u, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
@@ -92,9 +91,8 @@ public final class EvaluableCompare extends Special {
      * @param a The first number.
      * @param b The second number.
      * @return The minimum of the two numbers.
-     * @throws EngineMessage Shit happens.
      */
-    private static Number min(Number a, Number b) throws EngineMessage {
+    private static Number min(Number a, Number b) {
         if (SpecialCompare.computeCmp(a, b) < 0) {
             return a;
         } else {
@@ -108,9 +106,8 @@ public final class EvaluableCompare extends Special {
      * @param a The first number.
      * @param b The second number.
      * @return The minimum of the two numbers.
-     * @throws EngineMessage Shit happens.
      */
-    private static Number max(Number a, Number b) throws EngineMessage {
+    private static Number max(Number a, Number b) {
         if (SpecialCompare.computeCmp(a, b) > 0) {
             return a;
         } else {

@@ -2,14 +2,17 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Special;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
-import jekpro.reference.structure.ForeignAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 
 /**
  * <p>The foreign predicates for the module arithmetic/elem.</p>
@@ -76,101 +79,156 @@ public final class EvaluableElem extends Special {
                                     Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (id < EVALUABLE_ADD) {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                Number alfa = EngineMessage.castNumber(en.skel, en.display);
                 switch (id) {
                     case EVALUABLE_MINUS:
-                        en.skel = ForeignAtom.neg(alfa);
+                        Object[] temp = ((SkelCompound) en.skel).args;
+                        Display ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                        en.skel = neg(alfa);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_PLUS:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = alfa;
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_ABS:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = abs(alfa);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_SIGN:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = sign(alfa);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_FLOAT:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = (alfa instanceof Double ? alfa :
                                 TermAtomic.guardDouble(Double.valueOf(alfa.doubleValue())));
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_DECIMAL:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = decimal(alfa);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_FLOAT32:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = (alfa instanceof Float ? alfa :
                                 TermAtomic.guardFloat(Float.valueOf(alfa.floatValue())));
                         en.display = Display.DISPLAY_CONST;
                         return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
-            } else {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
-                Number beta = EngineMessage.castNumber(en.skel, en.display);
-                switch (id) {
                     case EVALUABLE_ADD:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
+                        en.computeExpr(temp[1], ref, r, u);
+                        Number beta = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = add(alfa, beta);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_SUB:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
+                        en.computeExpr(temp[1], ref, r, u);
+                        beta = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = sub(alfa, beta);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_MUL:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
+                        en.computeExpr(temp[1], ref, r, u);
+                        beta = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = mul(alfa, beta);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_SLASH:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
+                        en.computeExpr(temp[1], ref, r, u);
+                        beta = EngineMessage.castNumber(en.skel, en.display);
                         en.skel = slash(alfa, beta);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     case EVALUABLE_INT_POW:
+                        temp = ((SkelCompound) en.skel).args;
+                        ref = en.display;
+                        en.computeExpr(temp[0], ref, r, u);
+                        alfa = EngineMessage.castNumber(en.skel, en.display);
+                        en.computeExpr(temp[1], ref, r, u);
+                        beta = EngineMessage.castInteger(en.skel, en.display);
                         en.skel = intPow(alfa, beta);
                         en.display = Display.DISPLAY_CONST;
                         return;
                     default:
                         throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
                 }
-            }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
         }
     }
 
     /**
-     * <p>Convert the Prolog number to float.</p>
+     * <p>Negate the Prolog number.</p>
      *
-     * @param m The number.
-     * @return The float.
+     * @param m The Prolog number.
+     * @return The negated Prolog number.
+     * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number decimal(Number m) {
+    public static Number neg(Number m) throws ArithmeticException {
         if (m instanceof Integer) {
-            return Long.valueOf(m.intValue());
+            int x = m.intValue();
+            if (x != Integer.MIN_VALUE) {
+                return Integer.valueOf(-x);
+            } else {
+                return BigInteger.valueOf(-(long) x);
+            }
         } else if (m instanceof BigInteger) {
-            return TermAtomic.normBigDecimal((BigInteger) m, 0);
+            return TermAtomic.normBigInteger(((BigInteger) m).negate());
         } else if (m instanceof Float) {
-            return TermAtomic.normBigDecimal(new BigDecimal(m.floatValue()));
+            return TermAtomic.guardFloat(Float.valueOf(-m.floatValue()));
         } else if (m instanceof Double) {
-            return TermAtomic.normBigDecimal(new BigDecimal(m.doubleValue()));
+            return TermAtomic.guardDouble(Double.valueOf(-m.doubleValue()));
+        } else if (m instanceof Long) {
+            long y = m.longValue();
+            if (y != Long.MIN_VALUE) {
+                return Long.valueOf(-y);
+            } else {
+                return BigDecimal.valueOf(y).negate();
+            }
         } else {
-            return m;
+            return TermAtomic.normBigDecimal(((BigDecimal) m).negate());
         }
     }
+
 
     /**
      * <p>Abs the Prolog number.</p>
@@ -179,8 +237,7 @@ public final class EvaluableElem extends Special {
      * @return The absed Prolog number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number abs(Number m)
-            throws ArithmeticException {
+    private static Number abs(Number m) throws ArithmeticException {
         if (m instanceof Integer) {
             int x = Math.abs(m.intValue());
             if (x != Integer.MIN_VALUE) {
@@ -213,8 +270,7 @@ public final class EvaluableElem extends Special {
      * @return The signed Prolog number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number sign(Number m)
-            throws ArithmeticException {
+    public static Number sign(Number m) throws ArithmeticException {
         if (m instanceof Integer) {
             int x = m.intValue();
             return Integer.valueOf(Integer.signum(x));
@@ -233,6 +289,24 @@ public final class EvaluableElem extends Special {
     }
 
     /**
+     * <p>Convert the Prolog number to float.</p>
+     *
+     * @param m The number.
+     * @return The float.
+     */
+    private static Number decimal(Number m) {
+        if (m instanceof Integer) {
+            return Long.valueOf(m.intValue());
+        } else if (m instanceof BigInteger) {
+            return TermAtomic.normBigDecimal((BigInteger) m, 0);
+        } else if (m instanceof Long || m instanceof BigDecimal) {
+            return m;
+        } else {
+            return TermAtomic.normBigDecimal(new BigDecimal(m.floatValue()));
+        }
+    }
+
+    /**
      * <p>Add the two Prolog numbers.</p>
      *
      * @param m The first Prolog number.
@@ -240,8 +314,7 @@ public final class EvaluableElem extends Special {
      * @return The sum of the two numbers.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number add(Number m, Number n)
-            throws ArithmeticException {
+    private static Number add(Number m, Number n) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
@@ -273,8 +346,7 @@ public final class EvaluableElem extends Special {
      * @return The first number subtracted by the second number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number sub(Number m, Number n)
-            throws ArithmeticException {
+    private static Number sub(Number m, Number n) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
@@ -306,8 +378,7 @@ public final class EvaluableElem extends Special {
      * @return The product of the two numbers.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number mul(Number m, Number n)
-            throws ArithmeticException {
+    private static Number mul(Number m, Number n) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
@@ -339,39 +410,66 @@ public final class EvaluableElem extends Special {
      * @return The first number slashed by the second number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number slash(Number m, Number n)
-            throws ArithmeticException, EngineMessage {
-        double e = n.doubleValue();
-        if (e == 0)
-            throw new EngineMessage(EngineMessage.evaluationError(
-                    EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
-        return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / e));
+    private static Number slash(Number m, Number n) throws ArithmeticException {
+        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
+            case SpecialCompare.CATEGORY_INTEGER:
+                double e = n.doubleValue();
+                if (e == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / e));
+            case SpecialCompare.CATEGORY_BIG_INTEGER:
+                MathContext mc = MathContext.DECIMAL128;
+                BigDecimal b = TermAtomic.widenBigDecimal(n, mc);
+                if (BigDecimal.ZERO.compareTo(b) == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                b = TermAtomic.widenBigDecimal(m, mc).divide(b, mc);
+                return TermAtomic.guardDouble(Double.valueOf(b.doubleValue()));
+            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.CATEGORY_LONG:
+                e = n.doubleValue();
+                if (e == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / e));
+            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+                mc = MathContext.DECIMAL128;
+                b = TermAtomic.widenBigDecimal(n, mc);
+                if (BigDecimal.ZERO.compareTo(b) == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                b = TermAtomic.widenBigDecimal(m, mc).divide(b, mc);
+                return TermAtomic.guardDouble(Double.valueOf(b.doubleValue()));
+            default:
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
     }
 
     /**
      * <p>Power the two Prolog number.</p>
      *
-     * @param m The first Prolog number.
-     * @param n The second Prolog number.
+     * @param m The Prolog number.
+     * @param n The Prolog integer.
      * @return The first integer raised to the power of the second integer.
      * @throws EngineMessage Not a Prolog number.
      */
     private static Number intPow(Number m, Number n) throws EngineMessage {
-        EngineMessage.castInteger(n, Display.DISPLAY_CONST);
         EngineMessage.checkNotLessThanZero(n);
         int x = EngineMessage.castIntValue(n);
         if (m instanceof Integer || m instanceof BigInteger) {
-                return TermAtomic.normBigInteger(
-                        TermAtomic.widenBigInteger(m).pow(x));
+            return TermAtomic.normBigInteger(
+                    TermAtomic.widenBigInteger(m).pow(x));
         } else if (m instanceof Float) {
-                return TermAtomic.guardFloat(Float.valueOf(
-                        (float) Math.pow(m.floatValue(), x)));
+            return TermAtomic.guardFloat(Float.valueOf(
+                    (float) Math.pow(m.floatValue(), x)));
         } else if (m instanceof Double) {
             return TermAtomic.guardDouble(Double.valueOf(
                     Math.pow(m.doubleValue(), x)));
         } else {
-                return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m).pow(x));
+            return TermAtomic.normBigDecimal(
+                    TermAtomic.widenBigDecimal(m).pow(x));
         }
     }
 

@@ -1,11 +1,11 @@
 package jekpro.reference.structure;
 
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
@@ -220,7 +220,7 @@ public final class ForeignAtom {
             if (0 < s.length() && (ch = s.codePointAt(0)) == ScannerToken.SCAN_NEG) {
                 int pos = Character.charCount(ch);
                 num = toNumber(s.substring(pos), pos, MASK_NUMB_SIGN);
-                num = neg(num);
+                num = EvaluableElem.neg(num);
             } else {
                 num = toNumber(s, 0, MASK_NUMB_SIGN);
             }
@@ -258,22 +258,12 @@ public final class ForeignAtom {
                         if (val.length() < 63)
                             return TermAtomic.normBigInteger(Long.parseLong(val, 2));
                         return TermAtomic.normBigInteger(new BigInteger(val, 2));
-                    case ScannerToken.PREFIX_DECIMAL:
-                        k += Character.charCount(ch);
-                        val = prepareParts(k, str, offset, mask);
-                        return TermAtomic.normBigDecimal(new BigDecimal(val));
-                    case ScannerToken.PREFIX_FLOAT32:
-                        k += Character.charCount(ch);
-                        val = prepareParts(k, str, offset, mask);
-                        return TermAtomic.guardFloat(Float.valueOf(val));
                     case ScannerToken.PREFIX_OCTAL:
                         k += Character.charCount(ch);
                         val = prepareUnderscore(k, str, offset, mask);
                         if (val.length() < 21)
                             return TermAtomic.normBigInteger(Long.parseLong(val, 8));
                         return TermAtomic.normBigInteger(new BigInteger(val, 8));
-                    case ScannerToken.PREFIX_REFERENCE:
-                        throw new ScannerError(ERROR_SYNTAX_REF_NOT_READABLE, k + offset);
                     case ScannerToken.PREFIX_HEX:
                         k += Character.charCount(ch);
                         val = prepareUnderscore(k, str, offset, mask);
@@ -285,7 +275,7 @@ public final class ForeignAtom {
                         val = CompLang.resolveEscape(
                                 CodeType.ISO_CODETYPE.resolveDouble(str.substring(k),
                                         CodeType.LINE_SINGLE, k + offset), CodeType.LINE_SINGLE,
-                                k + offset, false, CodeType.ISO_CODETYPE);
+                                false, k + offset, CodeType.ISO_CODETYPE);
                         int res;
                         try {
                             res = EngineMessage.castCharacter(val);
@@ -293,6 +283,16 @@ public final class ForeignAtom {
                             throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, k + offset);
                         }
                         return Integer.valueOf(res);
+                    case ScannerToken.PREFIX_REFERENCE:
+                        throw new ScannerError(ERROR_SYNTAX_REF_NOT_READABLE, k + offset);
+                    case ScannerToken.PREFIX_DECIMAL:
+                        k += Character.charCount(ch);
+                        val = prepareParts(k, str, offset, mask);
+                        return TermAtomic.normBigDecimal(new BigDecimal(val));
+                    case ScannerToken.PREFIX_FLOAT32:
+                        k += Character.charCount(ch);
+                        val = prepareParts(k, str, offset, mask);
+                        return TermAtomic.guardFloat(Float.valueOf(val));
                     default:
                         break;
                 }
@@ -329,7 +329,7 @@ public final class ForeignAtom {
                 num instanceof Double) {
             return num.toString();
         } else if (num instanceof Float) {
-            if ((flags & AbstractTerm.FLAG_QUOTED) != 0) {
+            if ((flags & Interpreter.FLAG_QUOTED) != 0) {
                 StringBuilder buf = new StringBuilder();
                 if (Math.signum(num.floatValue()) < 0) {
                     buf.append(Knowledgebase.OP_SUB);
@@ -347,18 +347,19 @@ public final class ForeignAtom {
             }
         } else if (num instanceof Long ||
                 num instanceof BigDecimal) {
-            if ((flags & AbstractTerm.FLAG_QUOTED) != 0) {
-                BigDecimal d = TermAtomic.widenBigDecimal(num);
+            if ((flags & Interpreter.FLAG_QUOTED) != 0) {
                 StringBuilder buf = new StringBuilder();
-                if (d.signum() < 0) {
+                if (EvaluableElem.sign(num).longValue() < 0) {
                     buf.append(Knowledgebase.OP_SUB);
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
-                    buf.append(d.negate().toString());
+                    buf.append(EvaluableElem.neg(num).toString());
+//                    pieceWise(EvaluableElem.neg(num).toString(), buf);
                 } else {
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
-                    buf.append(d.toString());
+                    buf.append(num.toString());
+//                    pieceWise(num.toString(), buf);
                 }
                 return buf.toString();
             } else {
@@ -367,6 +368,24 @@ public final class ForeignAtom {
         } else {
             throw new IllegalArgumentException("illegal number");
         }
+    }
+
+    /**
+     * <p>Append a number piece wise.</p>
+     *
+     * @param str The string.
+     * @param buf The buffer.
+     */
+    private static void pieceWise(String str, StringBuilder buf) {
+        int l = 100 - 6;
+        int k = 0;
+        while (k + l < str.length()) {
+            buf.append(str, k, k + l);
+            buf.append(' ');
+            k += l;
+            l = 100;
+        }
+        buf.append(str, k, str.length());
     }
 
     /****************************************************************/
@@ -487,39 +506,6 @@ public final class ForeignAtom {
             pos += Character.charCount(ch) - 1;
         }
         return -1;
-    }
-
-    /**
-     * <p>Negate the Prolog number.</p>
-     *
-     * @param m The Prolog number.
-     * @return The negated Prolog number.
-     * @throws ArithmeticException Not a Prolog number.
-     */
-    public static Number neg(Number m) throws ArithmeticException {
-        if (m instanceof Integer) {
-            int x = m.intValue();
-            if (x != Integer.MIN_VALUE) {
-                return Integer.valueOf(-x);
-            } else {
-                return BigInteger.valueOf(-(long) x);
-            }
-        } else if (m instanceof BigInteger) {
-            return TermAtomic.normBigInteger(((BigInteger) m).negate());
-        } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(-m.floatValue()));
-        } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(-m.doubleValue()));
-        } else if (m instanceof Long) {
-            long y = m.longValue();
-            if (y != Long.MIN_VALUE) {
-                return Long.valueOf(-y);
-            } else {
-                return BigDecimal.valueOf(y).negate();
-            }
-        } else {
-            return TermAtomic.normBigDecimal(((BigDecimal) m).negate());
-        }
     }
 
 }

@@ -4,6 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -130,7 +131,6 @@ public final class SpecialCompare extends Special {
     public static boolean testEq(Number m, Number n) throws EngineMessage {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
-                return m.intValue() == n.intValue();
             case SpecialCompare.CATEGORY_BIG_INTEGER:
                 return m.equals(n);
             case SpecialCompare.CATEGORY_FLOAT:
@@ -153,17 +153,11 @@ public final class SpecialCompare extends Special {
      * @param n The second Prolog number.
      * @return <0 m < n,  0 m == m, >0 m > n.
      */
-    static int computeCmp(Number m, Number n) throws EngineMessage {
+    static int computeCmp(Number m, Number n) {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
-                int p = m.intValue();
-                int q = n.intValue();
-                if (p < q) return -1;
-                if (p == q) return 0;
-                return 1;
             case SpecialCompare.CATEGORY_BIG_INTEGER:
-                return TermAtomic.widenBigInteger(m).compareTo(
-                        TermAtomic.widenBigInteger(n));
+                return SpecialLexical.compareInteger(m, n);
             case SpecialCompare.CATEGORY_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();

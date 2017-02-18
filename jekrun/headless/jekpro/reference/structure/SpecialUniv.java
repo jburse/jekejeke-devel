@@ -208,7 +208,7 @@ public final class SpecialUniv extends Special {
             en.skel = t2args[i];
             en.display = d2;
             en.deref();
-            if (!EngineVars.isGroundSkel(en.skel)) {
+            if (!EngineCopy.isGroundSkel(en.skel)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -220,7 +220,7 @@ public final class SpecialUniv extends Special {
         en.skel = t;
         en.display = d;
         en.deref();
-        if (!EngineVars.isGroundSkel(en.skel)) {
+        if (!EngineCopy.isGroundSkel(en.skel)) {
             countvar++;
             if (last == Display.DISPLAY_CONST) {
                 last = en.display;
@@ -260,7 +260,7 @@ public final class SpecialUniv extends Special {
             en.skel = t2args[i];
             en.display = d2;
             en.deref();
-            if (multi && !EngineVars.isGroundSkel(en.skel)) {
+            if (multi && !EngineCopy.isGroundSkel(en.skel)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);
@@ -271,7 +271,7 @@ public final class SpecialUniv extends Special {
         en.skel = t;
         en.display = d;
         en.deref();
-        if (multi && !EngineVars.isGroundSkel(en.skel)) {
+        if (multi && !EngineCopy.isGroundSkel(en.skel)) {
             SkelVar sv = SkelVar.valueOf(countvar);
             d4.bind[sv.id].bindVar(en.skel, en.display, en);
             en.skel = sv;
@@ -378,7 +378,7 @@ public final class SpecialUniv extends Special {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (!EngineVars.isGroundSkel(en.skel)) {
+            if (!EngineCopy.isGroundSkel(en.skel)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -430,7 +430,7 @@ public final class SpecialUniv extends Special {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (multi && !EngineVars.isGroundSkel(en.skel)) {
+            if (multi && !EngineCopy.isGroundSkel(en.skel)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d2.bind[sv.id].bindVar(en.skel, en.display, en);

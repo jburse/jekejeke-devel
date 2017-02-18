@@ -350,16 +350,18 @@ public final class SpecialLexical extends Special {
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
     public static int compareInteger(Object alfa, Object beta) {
-        if (!(alfa instanceof BigInteger)) {
-            if (!(beta instanceof BigInteger)) {
+        if (alfa instanceof Integer) {
+            if (beta instanceof Integer) {
                 return ((Integer) alfa).compareTo((Integer) beta);
             } else {
-                return BigInteger.valueOf(((Integer) alfa).intValue()).compareTo((BigInteger) beta);
+                return -((BigInteger) beta).signum();
             }
-        } else if (!(beta instanceof BigInteger)) {
-            return ((BigInteger) alfa).compareTo(BigInteger.valueOf(((Integer) beta).intValue()));
         } else {
-            return ((BigInteger) alfa).compareTo((BigInteger) beta);
+            if (beta instanceof Integer) {
+                return ((BigInteger) alfa).signum();
+            } else {
+                return ((BigInteger) alfa).compareTo((BigInteger) beta);
+            }
         }
     }
 
@@ -392,8 +394,8 @@ public final class SpecialLexical extends Special {
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
     public static int compareDecimal(Object alfa, Object beta) {
-        if (!(alfa instanceof BigDecimal)) {
-            if (!(beta instanceof BigDecimal)) {
+        if (alfa instanceof Long) {
+            if (beta instanceof Long) {
                 return ((Long) alfa).compareTo((Long) beta);
             } else {
                 int k2 = -((BigDecimal) beta).scale();
@@ -402,20 +404,22 @@ public final class SpecialLexical extends Special {
                 BigInteger unscaled2 = ((BigDecimal) beta).unscaledValue();
                 return unscaled1.compareTo(unscaled2);
             }
-        } else if (!(beta instanceof BigDecimal)) {
-            int k2 = ((BigDecimal) alfa).scale();
-            if (k2 != 0) return k2;
-            BigInteger unscaled1 = ((BigDecimal) alfa).unscaledValue();
-            BigInteger unscaled2 = BigInteger.valueOf(((Long) beta).longValue());
-            return unscaled1.compareTo(unscaled2);
         } else {
-            int scale1 = ((BigDecimal) alfa).scale();
-            int scale2 = ((BigDecimal) beta).scale();
-            int k2 = scale1 - scale2;
-            if (k2 != 0) return k2;
-            BigInteger unscaled1 = ((BigDecimal) alfa).unscaledValue();
-            BigInteger unscaled2 = ((BigDecimal) beta).unscaledValue();
-            return unscaled1.compareTo(unscaled2);
+            if (beta instanceof Long) {
+                int k2 = ((BigDecimal) alfa).scale();
+                if (k2 != 0) return k2;
+                BigInteger unscaled1 = ((BigDecimal) alfa).unscaledValue();
+                BigInteger unscaled2 = BigInteger.valueOf(((Long) beta).longValue());
+                return unscaled1.compareTo(unscaled2);
+            } else {
+                int scale1 = ((BigDecimal) alfa).scale();
+                int scale2 = ((BigDecimal) beta).scale();
+                int k2 = scale1 - scale2;
+                if (k2 != 0) return k2;
+                BigInteger unscaled1 = ((BigDecimal) alfa).unscaledValue();
+                BigInteger unscaled2 = ((BigDecimal) beta).unscaledValue();
+                return unscaled1.compareTo(unscaled2);
+            }
         }
     }
 

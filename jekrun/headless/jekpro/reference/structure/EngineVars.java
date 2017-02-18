@@ -44,22 +44,6 @@ public final class EngineVars {
     /****************************************************************/
 
     /**
-     * <p>Check whether the term needs is ground.</p>
-     *
-     * @param t The term.
-     * @return True if the term needs a display.
-     */
-    public static boolean isGroundSkel(Object t) {
-        if (t instanceof SkelVar) {
-            return false;
-        } else if (t instanceof SkelCompound) {
-            return ((SkelCompound) t).vars == null;
-        } else {
-            return true;
-        }
-    }
-
-    /**
      * <p>Collect the vars of the given term in the given var set.</p>
      * <p>Makes use of the vars of the skel compounds.</p>
      *

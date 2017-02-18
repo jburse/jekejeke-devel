@@ -145,7 +145,7 @@ public final class EvaluableRound extends Special {
      * @param m The number.
      * @return The truncated number.
      */
-    private static Number truncate(Number m) throws EngineMessage {
+    private static Number truncate(Number m) {
         if (m instanceof Integer || m instanceof BigInteger) {
             return m;
         } else if (m instanceof Float) {
@@ -163,9 +163,9 @@ public final class EvaluableRound extends Special {
                 return TermAtomic.normBigInteger(new BigDecimal(d).toBigInteger());
             }
         } else if (m instanceof Long) {
-            return m;
+            return TermAtomic.normBigInteger(m.longValue());
         } else {
-            return TermAtomic.normBigDecimal(((BigDecimal) m).toBigInteger(), 0);
+            return TermAtomic.normBigInteger(((BigDecimal) m).toBigInteger());
         }
     }
 
@@ -177,7 +177,7 @@ public final class EvaluableRound extends Special {
      * @param m The number.
      * @return The floored number.
      */
-    private static Number floor(Number m) throws EngineMessage {
+    private static Number floor(Number m) {
         if (m instanceof Integer || m instanceof BigInteger) {
             return m;
         } else if (m instanceof Float) {
@@ -197,10 +197,10 @@ public final class EvaluableRound extends Special {
                         BigDecimal.ROUND_FLOOR).unscaledValue());
             }
         } else if (m instanceof Long) {
-            return m;
+            return TermAtomic.normBigInteger(m.longValue());
         } else {
-            return TermAtomic.normBigDecimal(((BigDecimal) m).setScale(0,
-                    BigDecimal.ROUND_FLOOR));
+            return TermAtomic.normBigInteger(((BigDecimal) m).setScale(0,
+                    BigDecimal.ROUND_FLOOR).unscaledValue());
         }
     }
 
@@ -212,7 +212,7 @@ public final class EvaluableRound extends Special {
      * @param m The number.
      * @return The ceiled number.
      */
-    private static Number ceiling(Number m) throws EngineMessage {
+    private static Number ceiling(Number m) {
         if (m instanceof Integer || m instanceof BigInteger) {
             return m;
         } else if (m instanceof Float) {
@@ -233,10 +233,10 @@ public final class EvaluableRound extends Special {
                         BigDecimal.ROUND_CEILING).unscaledValue());
             }
         } else if (m instanceof Long) {
-            return m;
+            return TermAtomic.normBigInteger(m.longValue());
         } else {
-            return TermAtomic.normBigDecimal(((BigDecimal) m).setScale(0,
-                    BigDecimal.ROUND_CEILING));
+            return TermAtomic.normBigInteger(((BigDecimal) m).setScale(0,
+                    BigDecimal.ROUND_CEILING).unscaledValue());
         }
     }
 
@@ -248,7 +248,7 @@ public final class EvaluableRound extends Special {
      * @param m The number.
      * @return The rounded number.
      */
-    private static Number round(Number m) throws EngineMessage {
+    private static Number round(Number m) {
         if (m instanceof Integer || m instanceof BigInteger) {
             return m;
         } else if (m instanceof Float) {
@@ -268,10 +268,10 @@ public final class EvaluableRound extends Special {
                         BigDecimal.ROUND_HALF_UP).unscaledValue());
             }
         } else if (m instanceof Long) {
-            return m;
+            return TermAtomic.normBigInteger(m.longValue());
         } else {
-            return TermAtomic.normBigDecimal(((BigDecimal) m).setScale(0,
-                    BigDecimal.ROUND_HALF_UP));
+            return TermAtomic.normBigInteger(((BigDecimal) m).setScale(0,
+                    BigDecimal.ROUND_HALF_UP).unscaledValue());
         }
     }
 
@@ -293,26 +293,26 @@ public final class EvaluableRound extends Special {
      * @param a The first number.
      * @param b The second number.
      * @return The first number divided by the second number.
-     * @throws EngineMessage Shit happens.
+     * @throws ArithmeticException Shit happens.
      */
-    private static Number slashSlash(Number a, Number b) throws EngineMessage {
+    private static Number slashSlash(Number a, Number b) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 if (b.intValue() == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger((long) a.intValue() / b.intValue());
             case SpecialCompare.CATEGORY_BIG_INTEGER:
                 if (b instanceof Integer && b.intValue() == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).divide(
                         TermAtomic.widenBigInteger(b)));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
                 if (f == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
                 if (Long.MIN_VALUE <= g && g <= Long.MAX_VALUE) {
                     return TermAtomic.normBigInteger((long) g);
@@ -322,8 +322,8 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
                 if (Long.MIN_VALUE <= e && e <= Long.MAX_VALUE) {
                     return TermAtomic.normBigInteger((long) e);
@@ -334,10 +334,10 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.compareTo(BigDecimal.ZERO) == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
-                return TermAtomic.normBigDecimal(TermAtomic.widenBigDecimal(a).divide(
-                        h, 0, BigDecimal.ROUND_DOWN));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.normBigInteger(TermAtomic.widenBigDecimal(a).divide(
+                        h, 0, BigDecimal.ROUND_DOWN).unscaledValue());
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -353,15 +353,15 @@ public final class EvaluableRound extends Special {
      * @param a The first number.
      * @param b The second number.
      * @return The first number divided by the second number.
-     * @throws EngineMessage Shit happens.
+     * @throws ArithmeticException Shit happens.
      */
-    private static Number div(Number a, Number b) throws EngineMessage {
+    private static Number div(Number a, Number b) {
         switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 int p = b.intValue();
                 if (p == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int q = a.intValue();
                 if ((q < 0) && (p >= 0)) {
                     return TermAtomic.normBigInteger(((long) q - p + 1) / p);
@@ -372,8 +372,8 @@ public final class EvaluableRound extends Special {
                 }
             case SpecialCompare.CATEGORY_BIG_INTEGER:
                 if (b instanceof Integer && b.intValue() == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigInteger k = TermAtomic.widenBigInteger(b);
                 BigInteger j = TermAtomic.widenBigInteger(a);
                 if ((j.compareTo(BigInteger.ZERO) < 0) &&
@@ -390,8 +390,8 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
                 if (f == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
                 if (Long.MIN_VALUE <= g && g <= Long.MAX_VALUE) {
                     return TermAtomic.normBigInteger((long) Math.floor(g));
@@ -402,8 +402,8 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
                 if (Long.MIN_VALUE <= e && e <= Long.MAX_VALUE) {
                     return TermAtomic.normBigInteger((long) Math.floor(e));
@@ -415,10 +415,10 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.compareTo(BigDecimal.ZERO) == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
-                return TermAtomic.normBigDecimal(TermAtomic.widenBigDecimal(a).divide(
-                        h, 0, BigDecimal.ROUND_FLOOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.normBigInteger(TermAtomic.widenBigDecimal(a).divide(
+                        h, 0, BigDecimal.ROUND_FLOOR).unscaledValue());
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -434,44 +434,42 @@ public final class EvaluableRound extends Special {
      * @param a The first number.
      * @param b The second number.
      * @return The remainder of the first number by the second number.
-     * @throws ArithmeticException Not a Prolog number.
-     * @throws EngineMessage       Shit happens.
+     * @throws ArithmeticException Shit happens.
      */
-    private static Number rem(Number a, Number b)
-            throws ArithmeticException, EngineMessage {
+    private static Number rem(Number a, Number b) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 int p = b.intValue();
                 if (p == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger((long) a.intValue() % p);
             case SpecialCompare.CATEGORY_BIG_INTEGER:
                 if (b instanceof Integer && b.intValue() == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(
                         TermAtomic.widenBigInteger(b)));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
                 if (f == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
                 return TermAtomic.guardFloat(Float.valueOf(g % f));
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
                 return TermAtomic.guardDouble(Double.valueOf(e % d));
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.compareTo(BigDecimal.ZERO) == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigDecimal j = TermAtomic.widenBigDecimal(a);
                 return TermAtomic.normBigDecimal(j.subtract(j.divide(
                         h, 0, BigDecimal.ROUND_DOWN).multiply(h)));
@@ -490,17 +488,15 @@ public final class EvaluableRound extends Special {
      * @param a The first number.
      * @param b The second number.
      * @return The remainder of the first number by the second number.
-     * @throws ArithmeticException Not a Prolog number.
-     * @throws EngineMessage       Shit happens.
+     * @throws ArithmeticException       Shit happens.
      */
-    private static Number mod(Number a, Number b)
-            throws ArithmeticException, EngineMessage {
+    private static Number mod(Number a, Number b) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 int u = b.intValue();
                 if (u == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
                 if ((v < 0) != (u < 0)) {
                     long res = (long) v % u;
@@ -514,8 +510,8 @@ public final class EvaluableRound extends Special {
                 }
             case SpecialCompare.CATEGORY_BIG_INTEGER:
                 if (b instanceof Integer && b.intValue() == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 BigInteger q = TermAtomic.widenBigInteger(a);
                 if ((q.compareTo(BigInteger.ZERO) < 0) != (p.compareTo(BigInteger.ZERO) < 0)) {
@@ -531,8 +527,8 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
                 if (f == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
                 if ((g < 0) != (f < 0)) {
                     float res = g % f;
@@ -547,8 +543,8 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
                 if ((e < 0) != (d < 0)) {
                     double res = e % d;
@@ -564,8 +560,8 @@ public final class EvaluableRound extends Special {
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.compareTo(BigDecimal.ZERO) == 0)
-                    throw new EngineMessage(EngineMessage.evaluationError(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR));
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigDecimal j = TermAtomic.widenBigDecimal(a);
                 return TermAtomic.normBigDecimal(j.subtract(j.divide(
                         h, 0, BigDecimal.ROUND_FLOOR).multiply(h)));
