@@ -1,5 +1,20 @@
 /**
- * Real numbers.
+ * This module provides a generic multi precision evaluator. The
+ * predicate main mp/3 allows evaluating an expression for a requested
+ * precision. This module imports the modules poly and trigo, so
+ * that arithmetic and trigonometric functions are already defined.
+ *
+ * Examples:
+ * ?- X is mp(pi, 20).
+ * X = 0d3.1415926535897932384
+ *
+ * ?- X is mp(pi, 40).
+ * X = 0d3.141592653589793238462643383279502884198
+ *
+ * The predicate mp/3 falls back to is/2 when an expression is
+ * undefined. The predicate can be extended by adding clauses to
+ * the multi file predicates mp_math/3 and mp_abnormal/1. The
+ * predicate mp_memo/4 can be used to cache constants.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -49,7 +64,7 @@ mp(E, P, R) :-
 /**
  * mp_math(E, P, R):
  * The predicate succeeds in R with the expression E evaluated to
- * the context P. This predicate is multifile and can be thus
+ * the context P. This predicate is multi file and can be thus
  * extended.
  */
 % mp_math(+Expression, +Context, -Decimal)
@@ -78,8 +93,9 @@ mp_list([], _, []).
 
 /**
  * mp_abnormal(E):
- * The predicate succeeds when E has a non-default handling. This
- * predicate is multifile and can be thus extended.
+ * The predicate succeeds when the expression E has a non-default
+ * handling. This predicate is multi file and can be thus
+ * extended.
  */
 :- multifile mp_abnormal/1.
 :- public mp_abnormal/1.
@@ -88,7 +104,7 @@ mp_list([], _, []).
 /**
  * mp_memo(A, E, P, R):
  * The predicate succeeds in R with the expression E evaluated to
- * the context P. The result is memoized under the name A.
+ * the context P. The result is memorized under the name A.
  */
 % mp_memo(+Atom, +Expression, +Context, -Decimal)
 :- public mp_memo/4.

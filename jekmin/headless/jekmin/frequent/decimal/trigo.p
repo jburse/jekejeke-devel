@@ -1,5 +1,22 @@
 /**
- * Transcendental numbers.
+ * This module provides trigonometric multi precision functions. The
+ * expressions sin/3, cos/3, atan/3, exp/3 and log/3 are implemented
+ * by a range reduction and a Maclaurin respective Taylor series. The
+ * current implementation estimates the number of terms needed for
+ * the Maclaurin respective Taylor series and then applies a Horner schema.
+ *
+ * Examples:
+ * ?- X is mp((1001/1000)**99, 30).
+ * X = 0d1.10401168603473323514396127584
+ *
+ * ?- X is mp(4*acos(sqrt(1/2)), 30).
+ * X = 0d3.14159265358979323846264338330
+ *
+ * The expression atan2/4 is bootstrapped from the expression atan/3.
+ * Further the expressions asin/3 and acos/3 are then bootstrapped from
+ * the expression atan2/4. On the other hand the expression ** /4 is
+ * bootstrapped from the expressions exp/3 and log/3. Speed and accuracy
+ * of the series and the bootstrapping is not yet optimized.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -379,8 +396,9 @@ multi:mp_math(log2, P, R) :- !,
 
 /**
  * mp_abnormal(E):
- * The predicate succeeds when E has a non-default handling. This
- * predicate is multifile and can be thus extended.
+ * The predicate succeeds when the expression E has a non-default
+ * handling. This predicate is multi file and can be thus
+ * extended.
  */
 :- multifile multi:mp_abnormal/1.
 :- public multi:mp_abnormal/1.

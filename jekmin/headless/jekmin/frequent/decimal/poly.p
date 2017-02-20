@@ -1,5 +1,20 @@
 /**
- * Algebraic numbers.
+ * This module provides arithmetic multi precision functions. The arithmetic
+ * expressions decimal/3, +/4, -/4, * /4, //4 and ^/4 delegate to the
+ * module arith. The result of these expressions is the unlimited operation
+ * rounded to the requested precision:
+ *
+ * Examples:
+ * ?- X is mp((1001/1000)^99, 30).
+ * X = 0d1.10401168603473323514396127584
+ *
+ * ?- X is mp(sqrt(2), 30).
+ * X = 0d1.41421356237309504880168872422
+ *
+ * The expression sqrt/3 is implemented by a range reduction and a Taylor
+ * series. The current implementation estimates the number of terms
+ * needed for the Taylor series and then applies a Horner schema. Speed
+ * and accuracy are not yet optimized.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -161,8 +176,9 @@ multi:mp_math(sqrt2, P, R) :- !,
 
 /**
  * mp_abnormal(E):
- * The predicate succeeds when E has a non-default handling. This
- * predicate is multifile and can be thus extended.
+ * The predicate succeeds when the expression E has a non-default
+ * handling. This predicate is multi file and can be thus
+ * extended.
  */
 :- multifile multi:mp_abnormal/1.
 :- public multi:mp_abnormal/1.
