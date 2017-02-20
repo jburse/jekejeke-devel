@@ -43,13 +43,12 @@ import java.math.RoundingMode;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class SpecialArith extends Special {
-    private final static int SPECIAL_NEW_CONTEXT = 0;
-    private final static int SPECIAL_MP_DECIMAL = 1;
-    private final static int SPECIAL_MP_ADD = 2;
-    private final static int SPECIAL_MP_SUB = 3;
-    private final static int SPECIAL_MP_MUL = 4;
-    private final static int SPECIAL_MP_SLASH = 5;
-    private final static int SPECIAL_MP_INT_POW = 6;
+    private final static int SPECIAL_MP_DECIMAL = 0;
+    private final static int SPECIAL_MP_ADD = 1;
+    private final static int SPECIAL_MP_SUB = 2;
+    private final static int SPECIAL_MP_MUL = 3;
+    private final static int SPECIAL_MP_SLASH = 4;
+    private final static int SPECIAL_MP_INT_POW = 5;
 
     /**
      * <p>Create a decimal arithmetic special.</p>
@@ -78,24 +77,13 @@ public class SpecialArith extends Special {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case SPECIAL_NEW_CONTEXT:
+                case SPECIAL_MP_DECIMAL:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     en.skel = temp[0];
                     en.display = ref;
                     en.deref();
-                    Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                    if (!en.unifyTerm(temp[1], ref, newContext(alfa),
-                            Display.DISPLAY_CONST, r, u))
-                        return false;
-                    return r.getNext(u, en);
-                case SPECIAL_MP_DECIMAL:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = temp[1];
                     en.display = ref;
                     en.deref();
@@ -228,25 +216,6 @@ public class SpecialArith extends Special {
     }
 
     /********************************************************************/
-    /* Additional Unary Decimal Built-in:                               */
-    /*      new_conext/2: newContext()                                  */
-    /********************************************************************/
-
-    /**
-     * <p>Create a new context.</p>
-     *
-     * @param m The first operand.
-     * @return The result.
-     * @throws EngineMessage Shit happens.
-     */
-    private static MathContext newContext(Number m)
-            throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(m);
-        int k = EngineMessage.castIntValue(m);
-        return new MathContext(k, RoundingMode.HALF_EVEN);
-    }
-
-    /********************************************************************/
     /* Additional Binary Decimal Built-in:                              */
     /*      mp_decimal/3: mpDecimal()                                 */
     /********************************************************************/
@@ -261,8 +230,13 @@ public class SpecialArith extends Special {
      */
     private static Number mpDecimal(Number m, MathContext mc) throws EngineMessage {
         if (m instanceof Integer) {
-            return TermAtomic.normBigDecimal(
-                    new BigDecimal(m.intValue(), mc));
+            if (mc.getPrecision() != 0 &&
+                    (TermAtomic.log10(m.intValue()) > mc.getPrecision())) {
+                return TermAtomic.normBigDecimal(
+                        new BigDecimal(m.intValue(), mc));
+            } else {
+                return Long.valueOf(m.intValue());
+            }
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigDecimal(
                     new BigDecimal((BigInteger) m, mc));
@@ -432,7 +406,6 @@ public class SpecialArith extends Special {
      */
     private static Number mpIntPow(Number m, Number n,
                                    MathContext mc) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(n);
         int x = EngineMessage.castIntValue(n);
         if (m instanceof Integer || m instanceof BigInteger) {
             return TermAtomic.normBigInteger(

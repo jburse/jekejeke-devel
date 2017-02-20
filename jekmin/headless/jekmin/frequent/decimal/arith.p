@@ -1,5 +1,36 @@
 /**
- * This module provides predicates for arithmetic of decimals.
+ * The default decimal number operations are unlimited precision. We
+ * provide here additional predicates mp_decimal/3, mp_add/3, mp_sub/3,
+ * mp_mul/3, mp_slash/3 and mp_int_pow/3 that provide limited precision
+ * basic arithmetic operations. The predicate mp_decimal/3 reduces the
+ * argument to the requested precision by using the proposed rounding.
+ * It can do this for integer, float and decimal numbers.
+ *
+ * Examples:
+ * ?- X is mp_decimal(1<<10, new_context(3)).
+ * X = 0d1.02E+3
+ * ?- X is mp_decimal(pi, new_context(3)).
+ * X = 0d3.14
+ * ?- X is mp_decimal(0d2.7183, new_context(3)).
+ * X = 0d2.72
+ *
+ * The arithmetic predicates mp_add/3, mp_sub/3, mp_mul/3, mp_slash/3 and
+ * mp_int_pow/3 proceed in that they first round the given arguments to
+ * the requested precision. Then they compute the arithmetic operation
+ * up to the requested precision. The predicate mp_int_pow/3 internally
+ * computes with additional precision. Except for the argument and result
+ * rounding, they don’t introduce additional errors in the computation.
+ *
+ * Examples:
+ * ?- X is mp_decimal(0d2.7183*0d2.7183, new_context(3)).
+ * X = 0d7.39
+ * ?- X is mp_mul(0d2.7183, 0d2.7183, new_context(3)).
+ * X = 0d7.40
+ *
+ * The arithmetic predicates fall back to the ordinary operations if none
+ * of the arguments are decimals and they might thus also produce integer
+ * and float results. There is one exception to this rule for the predicate
+ * mp_slash/3 which always produces a decimal.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,18 +62,11 @@
 :- module(arith, []).
 
 /**
- * new_context(P, C):
- * Predicate succeeds in C with a new math context of precision P.
- */
-:- public new_context/2.
-:- special(new_context/2, 'SpecialArith', 0).
-
-/**
  * mp_decimal(X, P, Z):
  * Predicate succeeds in Z with X converted to decimal with context P.
  */
 :- public mp_decimal/3.
-:- special(mp_decimal/3, 'SpecialArith', 1).
+:- special(mp_decimal/3, 'SpecialArith', 0).
 
 /**
  * mp_add(X, Y, P, Z):
@@ -50,15 +74,15 @@
  * X and Y with context P.
  */
 :- public mp_add/4.
-:- special(mp_add/4, 'SpecialArith', 2).
+:- special(mp_add/4, 'SpecialArith', 1).
 
 /**
  * mp_sub(X, Y, P, Z):
- * The predicate succeeds in Z with the number X subracted by the
+ * The predicate succeeds in Z with the number X subtracted by the
  * number Y with context P.
  */
 :- public mp_sub/4.
-:- special(mp_sub/4, 'SpecialArith', 3).
+:- special(mp_sub/4, 'SpecialArith', 2).
 
 /**
  * mp_mul(X, Y, P, Z):
@@ -66,7 +90,7 @@
  * X and Y with context P.
  */
 :- public mp_mul/4.
-:- special(mp_mul/4, 'SpecialArith', 4).
+:- special(mp_mul/4, 'SpecialArith', 3).
 
 /**
  * mp_slash(X, Y, P, Z):
@@ -74,12 +98,12 @@
  * number Y with context P.
  */
 :- public mp_slash/4.
-:- special(mp_slash/4, 'SpecialArith', 5).
+:- special(mp_slash/4, 'SpecialArith', 4).
 
 /**
  * mp_int_pow(X, N, P, Z):
- * The predicate succeeds in Z with the number X raised to the
+ * The predicate succeeds in Z with the number X rose to the
  * power of the integer N with context P.
  */
 :- public mp_int_pow/4.
-:- special(mp_int_pow/4, 'SpecialArith', 6).
+:- special(mp_int_pow/4, 'SpecialArith', 5).

@@ -12,6 +12,7 @@ import jekpro.tools.term.TermAtomic;
 
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 
 /**
  * <p>This module provides built-ins for access of decimals.</p>
@@ -42,9 +43,10 @@ import java.math.MathContext;
 public class SupplementScale extends Special {
     private final static int EVALUABLE_SCALE = 0;
     private final static int EVALUABLE_UNSCALED_VALUE = 1;
-    private final static int EVALUABLE_PRECISION = 2;
-    private final static int EVALUABLE_REQUESTED = 3;
-    private final static int EVALUABLE_NEW_DECIMAL = 4;
+    private final static int EVALUABLE_NEW_DECIMAL = 2;
+    private final static int EVALUABLE_PRECISION = 3;
+    private final static int EVALUABLE_REQUESTED = 4;
+    private final static int EVALUABLE_NEW_CONTEXT = 5;
 
     /**
      * <p>Create a decimal access special.</p>
@@ -86,6 +88,16 @@ public class SupplementScale extends Special {
                 en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
                 en.display = Display.DISPLAY_CONST;
                 return;
+            case EVALUABLE_NEW_DECIMAL:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.computeExpr(temp[0], ref, r, u);
+                alfa = EngineMessage.castInteger(en.skel, en.display);
+                en.computeExpr(temp[1], ref, r, u);
+                Number beta = EngineMessage.castInteger(en.skel, en.display);
+                en.skel = newDecimal(alfa, beta);
+                en.display = Display.DISPLAY_CONST;
+                return;
             case EVALUABLE_PRECISION:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -102,19 +114,36 @@ public class SupplementScale extends Special {
                 en.skel = Integer.valueOf(mc.getPrecision());
                 en.display = Display.DISPLAY_CONST;
                 return;
-            case EVALUABLE_NEW_DECIMAL:
+            case EVALUABLE_NEW_CONTEXT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 en.computeExpr(temp[0], ref, r, u);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
-                Number beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = newDecimal(alfa, beta);
+                en.skel = newContext(alfa);
                 en.display = Display.DISPLAY_CONST;
                 return;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
+    }
+
+    /********************************************************************/
+    /* Additional Unary Decimal Built-in:                               */
+    /*      new_conext/2: newContext()                                  */
+    /********************************************************************/
+
+    /**
+     * <p>Create a new context.</p>
+     *
+     * @param m The first operand.
+     * @return The result.
+     * @throws EngineMessage Shit happens.
+     */
+    private static MathContext newContext(Number m)
+            throws EngineMessage {
+        EngineMessage.checkNotLessThanZero(m);
+        int k = EngineMessage.castIntValue(m);
+        return new MathContext(k, RoundingMode.HALF_EVEN);
     }
 
     /********************************************************************/
