@@ -329,6 +329,7 @@ mp_atan2(Y, X, P, Z) :-
 /****************************************************************/
 
 % mp_math(+Expression, +Context, -Decimal)
+:- meta_predicate multi:mp_math(#(1),?,?).
 :- multifile multi:mp_math/3.
 :- public multi:mp_math/3.
 multi:mp_math(V, _, _) :-
@@ -336,34 +337,34 @@ multi:mp_math(V, _, _) :-
    throw(error(instantiation_error,_)).
 
 /* special sin, etc.. */
-multi:mp_math(sin(X), P, R) :-
+multi:mp_math(sin(X), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_sin(H, P, R).
-multi:mp_math(cos(X), P, R) :-
+multi:mp_math(cos(X), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_cos(H, P, R).
-multi:mp_math(tan(X), P, R) :-
+multi:mp_math(tan(X), P, R) :- !,
    mp_math(sin(X)/cos(X), P, R).
-multi:mp_math(atan(X), P, R) :-
+multi:mp_math(atan(X), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_atan(H, P, R).
-multi:mp_math(atan2(X,Y), P, R) :-
+multi:mp_math(atan2(X,Y), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_math(decimal(Y), P, J),
    mp_atan2(H, J, P, R).
-multi:mp_math(asin(X), P, R) :-
+multi:mp_math(asin(X), P, R) :- !,
    mp_math(atan2(X,sqrt(1-X^2)), P, R).
-multi:mp_math(acos(X), P, R) :-
+multi:mp_math(acos(X), P, R) :- !,
    mp_math(atan2(sqrt(1-X^2),X), P, R).
 
 /* special exp, etc.. */
-multi:mp_math(exp(X), P, R) :-
+multi:mp_math(exp(X), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_exp(H, P, R).
-multi:mp_math(log(X), P, R) :-
+multi:mp_math(log(X), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_log(H, P, R).
-multi:mp_math(X**Y, P, R) :-
+multi:mp_math(X**Y, P, R) :- !,
    mp_math(exp(log(X)*Y), P, R).
 
 /* constants */
