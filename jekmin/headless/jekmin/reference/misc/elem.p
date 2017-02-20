@@ -21,11 +21,6 @@
  * ulp(0d0.00)     --> 0d0.01
  * gcd(36,24)      --> 12
  *
- * The default decimal number operations are unlimited precision. We
- * provide here additional predicates vpa_decimal/3, vpa_add/3,
- * vpa_sub/3, vpa_mul/3, vpa_div/3 and vpa_int_pow/3 that provide
- * limited precision basic arithmetic operations.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -56,26 +51,12 @@
 :- module(elem, []).
 
 /**
- * log2(Y):
- * Predicate succeeds in Y with the float log(2).
- */
-:- public log2/1.
-:- special(log2/1, 'SupplementElem', 0).
-
-/**
- * log10(Y):
- * Predicate succeeds in Y with the float log(2).
- */
-:- public log10/1.
-:- special(log10/1, 'SupplementElem', 1).
-
-/**
  * ulp(X, Y):
  * Predicate succeeds in Y with the unit of least precision of
  * the number X.
  */
 :- public ulp/2.
-:- special(ulp/2, 'SupplementElem', 2).
+:- special(ulp/2, 'SupplementElem', 0).
 
 /**
  * gcd(X, Y, Z):
@@ -83,5 +64,5 @@
  * integer X and the integer Y.
  */
 :- public gcd/3.
-:- special(gcd/3, 'SupplementElem', 3).
+:- special(gcd/3, 'SupplementElem', 1).
 

@@ -41,13 +41,8 @@ import java.math.MathContext;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SupplementElem extends Special {
-    private final static int EVALUABLE_LOG2 = 0;
-    private final static int EVALUABLE_LOG10 = 1;
-    private final static int EVALUABLE_ULP = 2;
-    private final static int EVALUABLE_GCD = 3;
-
-    public static final Double DOUBLE_LOG2 = Double.valueOf(Math.log(2));
-    public static final Double DOUBLE_LOG10 = Double.valueOf(Math.log(10));
+    private final static int EVALUABLE_ULP = 0;
+    private final static int EVALUABLE_GCD = 1;
 
     /**
      * <p>Create an elementary evaluable.</p>
@@ -75,14 +70,6 @@ public final class SupplementElem extends Special {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case EVALUABLE_LOG2:
-                    en.skel = DOUBLE_LOG2;
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_LOG10:
-                    en.skel = DOUBLE_LOG10;
-                    en.display = Display.DISPLAY_CONST;
-                    return;
                 case EVALUABLE_ULP:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
