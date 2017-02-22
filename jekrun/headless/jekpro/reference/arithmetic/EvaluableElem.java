@@ -13,6 +13,7 @@ import jekpro.tools.term.TermAtomic;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 
 /**
  * <p>The foreign predicates for the module arithmetic/elem.</p>
@@ -54,6 +55,9 @@ public final class EvaluableElem extends Special {
     private final static int EVALUABLE_SLASH = 10;
     private final static int EVALUABLE_INT_POW = 11;
 
+    private final static MathContext MATH_CONTEXT =
+            new MathContext(17, RoundingMode.HALF_EVEN);
+    
     /**
      * <p>Create an evaluable elem.</p>
      *
@@ -427,11 +431,11 @@ public final class EvaluableElem extends Special {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / b));
             case SpecialCompare.CATEGORY_BIG_INTEGER:
-                BigDecimal c = TermAtomic.widenBigDecimal(n, MathContext.DECIMAL64);
+                BigDecimal c = TermAtomic.widenBigDecimal(n, MATH_CONTEXT);
                 if (BigDecimal.ZERO.compareTo(c) == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                c = TermAtomic.widenBigDecimal(m, MathContext.DECIMAL64).divide(c, MathContext.DECIMAL64);
+                c = TermAtomic.widenBigDecimal(m, MATH_CONTEXT).divide(c, MATH_CONTEXT);
                 return TermAtomic.guardDouble(Double.valueOf(c.doubleValue()));
             case SpecialCompare.CATEGORY_FLOAT:
             case SpecialCompare.CATEGORY_DOUBLE:
@@ -447,11 +451,11 @@ public final class EvaluableElem extends Special {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / b));
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
-                c = TermAtomic.widenBigDecimal(n, MathContext.DECIMAL64);
+                c = TermAtomic.widenBigDecimal(n, MATH_CONTEXT);
                 if (BigDecimal.ZERO.compareTo(c) == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                c = TermAtomic.widenBigDecimal(m, MathContext.DECIMAL64).divide(c, MathContext.DECIMAL64);
+                c = TermAtomic.widenBigDecimal(m, MATH_CONTEXT).divide(c, MATH_CONTEXT);
                 return TermAtomic.guardDouble(Double.valueOf(c.doubleValue()));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
