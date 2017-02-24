@@ -14,7 +14,6 @@ import jekpro.tools.term.TermAtomic;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.math.RoundingMode;
 
 /**
  * <p>This module provides built-ins for arithmetic of decimals.</p>
@@ -231,7 +230,7 @@ public class SpecialArith extends Special {
     private static Number mpDecimal(Number m, MathContext mc) throws EngineMessage {
         if (m instanceof Integer) {
             if (mc.getPrecision() != 0 &&
-                    (TermAtomic.log10(m.intValue()) > mc.getPrecision())) {
+                    (SupplementScale.log10(m.intValue()) > mc.getPrecision())) {
                 return TermAtomic.normBigDecimal(
                         new BigDecimal(m.intValue(), mc));
             } else {
@@ -245,7 +244,7 @@ public class SpecialArith extends Special {
                     new BigDecimal(m.doubleValue(), mc));
         } else if (m instanceof Long) {
             if (mc.getPrecision() != 0 &&
-                    (TermAtomic.log10(m.longValue()) > mc.getPrecision())) {
+                    (SupplementScale.log10(m.longValue()) > mc.getPrecision())) {
                 return TermAtomic.normBigDecimal(
                         new BigDecimal(m.longValue(), mc));
             } else {
@@ -301,8 +300,8 @@ public class SpecialArith extends Special {
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m, mc).add(
-                                TermAtomic.widenBigDecimal(n, mc), mc));
+                        SupplementScale.widenBigDecimal(m, mc).add(
+                                SupplementScale.widenBigDecimal(n, mc), mc));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -335,8 +334,8 @@ public class SpecialArith extends Special {
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m, mc).subtract(
-                                TermAtomic.widenBigDecimal(n, mc), mc));
+                        SupplementScale.widenBigDecimal(m, mc).subtract(
+                                SupplementScale.widenBigDecimal(n, mc), mc));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -369,8 +368,8 @@ public class SpecialArith extends Special {
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
-                        TermAtomic.widenBigDecimal(m, mc).multiply(
-                                TermAtomic.widenBigDecimal(n, mc), mc));
+                        SupplementScale.widenBigDecimal(m, mc).multiply(
+                                SupplementScale.widenBigDecimal(n, mc), mc));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -387,12 +386,12 @@ public class SpecialArith extends Special {
      */
     private static Number mpSlash(Number m, Number n,
                                   MathContext mc) throws EngineMessage {
-        BigDecimal b = TermAtomic.widenBigDecimal(n, mc);
+        BigDecimal b = SupplementScale.widenBigDecimal(n, mc);
         if (BigDecimal.ZERO.compareTo(b) == 0)
             throw new ArithmeticException(
                     EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
         return TermAtomic.normBigDecimal(
-                TermAtomic.widenBigDecimal(m, mc).divide(b, mc));
+                SupplementScale.widenBigDecimal(m, mc).divide(b, mc));
     }
 
     /**
@@ -418,7 +417,7 @@ public class SpecialArith extends Special {
                     Math.pow(m.doubleValue(), x)));
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(
-                    TermAtomic.widenBigDecimal(m, mc).pow(x, mc));
+                    SupplementScale.widenBigDecimal(m, mc).pow(x, mc));
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
