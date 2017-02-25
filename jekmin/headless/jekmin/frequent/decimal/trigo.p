@@ -66,9 +66,31 @@ mp_sin(X, P, Y) :-
    X < 0d0, !,
    mp_math(-sin(-X), P, Y).
 mp_sin(X, P, Y) :-
+   X > 0d0.40, !,
+   mod_range(X, K, P, H),
+   mp_sin_case(K, H, P, Y).
+mp_sin(X, P, Y) :-
    K is ceiling(requested(P)/(2*dec_log10(X))),
    init_sin(K, X, P, U),
    mp_sin(U, X, P, Y).
+
+% mp_sin_case(+Integer, +Decimal, +Context, -Decimal)
+mp_sin_case(0, X, P, Y) :-
+   mp_math(sin(X), P, Y).
+mp_sin_case(1, X, P, Y) :-
+   mp_math(sqrt1div2*(cos(X)+sin(X)), P, Y).
+mp_sin_case(2, X, P, Y) :-
+   mp_math(cos(X), P, Y).
+mp_sin_case(3, X, P, Y) :-
+   mp_math(sqrt1div2*(cos(X)-sin(X)), P, Y).
+mp_sin_case(4, X, P, Y) :-
+   mp_math(-sin(X), P, Y).
+mp_sin_case(5, X, P, Y) :-
+   mp_math(sqrt1div2*(-cos(X)-sin(X)), P, Y).
+mp_sin_case(6, X, P, Y) :-
+   mp_math(-cos(X), P, Y).
+mp_sin_case(7, X, P, Y) :-
+   mp_math(sqrt1div2*(-cos(X)+sin(X)), P, Y).
 
 % mp_sin(+Part, +Decimal, +Context, -Decimal)
 :- private mp_sin/4.
@@ -94,6 +116,13 @@ next_sin((L,T), X, P, (K,S)) :-
    ;  V = -X),
    mp_math((T*X*X/(2*K+2)+V)/(2*K+1), P, S).
 
+% mod_range(+Decimal, -Integer, +Context, -Decimal)
+:- public mod_range/4.
+mod_range(X, K, P, Y) :-
+   mp_math((X+pi*0.125)div(pi*0d0.25), P, I),
+   K is I mod 8,
+   mp_math(X-I*(pi*0d0.25), P, Y).
+
 /****************************************************************/
 /* Cosinus                                                      */
 /****************************************************************/
@@ -111,9 +140,31 @@ mp_cos(X, P, Y) :-
    X < 0d0, !,
    mp_math(cos(-X), P, Y).
 mp_cos(X, P, Y) :-
+   X > 0d0.40, !,
+   mod_range(X, K, P, H),
+   mp_cos_case(K, H, P, Y).
+mp_cos(X, P, Y) :-
    K is ceiling(requested(P)/(2*dec_log10(X))),
    init_cos(K, X, P, U),
    mp_cos(U, X, P, Y).
+
+% mp_cos_case(+Integer, +Decimal, +Context, -Decimal)
+mp_cos_case(0, X, P, Y) :-
+   mp_math(cos(X), P, Y).
+mp_cos_case(1, X, P, Y) :-
+   mp_math(sqrt1div2*(cos(X)-sin(X)), P, Y).
+mp_cos_case(2, X, P, Y) :-
+   mp_math(-sin(X), P, Y).
+mp_cos_case(3, X, P, Y) :-
+   mp_math(sqrt1div2*(cos(X)+sin(X)), P, Y).
+mp_cos_case(4, X, P, Y) :-
+   mp_math(-cos(X), P, Y).
+mp_cos_case(5, X, P, Y) :-
+   mp_math(sqrt1div2*(-cos(X)+sin(X)), P, Y).
+mp_cos_case(6, X, P, Y) :-
+   mp_math(sin(X), P, Y).
+mp_cos_case(7, X, P, Y) :-
+   mp_math(sqrt1div2*(cos(X)+sin(X)), P, Y).
 
 % mp_cos(+Part, +Decimal, +Context, -Decimal)
 :- private mp_cos/4.
@@ -157,10 +208,10 @@ mp_atan(X, P, Y) :-
    mp_math(-atan(-X), P, Y).
 mp_atan(X, P, Y) :-
    X > 0d1, !,
-   mp_math(pi/0d2-atan(0d1/X), P, Y).
+   mp_math(pi*0d0.5-atan(0d1/X), P, Y).
 mp_atan(X, P, Y) :-
    X > 0d0.5, !,
-   mp_math(pi/0d4-atan((0d1-X)/(0d1+X)), P, Y).
+   mp_math(pi*0d0.25-atan((0d1-X)/(0d1+X)), P, Y).
 mp_atan(X, P, Y) :-
    K is ceiling(requested(P)/(2*dec_log10(X))),
    init_atan(K, X, P, U),
@@ -207,11 +258,11 @@ mp_exp(X, P, Y) :-
    X < 0d0, !,
    mp_math(0d1/exp(-X), P, Y).
 mp_exp(X, P, Y) :-
-   X > 0d1, !,
+   X >= 0d1, !,
    K is truncate(X),
    mp_math(exp(X-K)*e^K, P, Y).
 mp_exp(X, P, Y) :-
-   X > 0d0.5, !,
+   X >= 0d0.5, !,
    mp_math(exp(X/0d2)^2, P, Y).
 mp_exp(X, P, Y) :-
    K is ceiling(requested(P)/dec_log10(X)),
@@ -337,7 +388,7 @@ mp_atan2(Y, X, P, Z) :-
    mp_math(-atan2(-Y,X), P, Z).
 mp_atan2(Y, X, P, Z) :-
    X < Y, !,
-   mp_math(pi/0d2-atan(X/Y), P, Z).
+   mp_math(pi*0d0.5-atan(X/Y), P, Z).
 mp_atan2(Y, X, P, Z) :-
    mp_math(atan(Y/X), P, Z).
 
@@ -393,6 +444,8 @@ multi:mp_math(log10, P, R) :- !,
    mp_memo(log10, 7*log(5/4)+3*log(32/25), P, R).
 multi:mp_math(log2, P, R) :- !,
    mp_memo(log2, 2*log(5/4)+log(32/25), P, R).
+multi:mp_math(sqrt1div2, P, R) :- !,
+   mp_memo(sqrt1div2, sqrt(1/2), P, R).
 
 /**
  * mp_abnormal(E):
@@ -416,3 +469,4 @@ multi:mp_abnormal(pi).
 multi:mp_abnormal(e).
 multi:mp_abnormal(log10).
 multi:mp_abnormal(log2).
+multi:mp_abnormal(sqrt1div2).
