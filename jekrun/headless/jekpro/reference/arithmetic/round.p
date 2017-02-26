@@ -1,37 +1,49 @@
 /**
  * We supply a number of binary and unary operations that deal
- * with round. We find different rounding modes and different
- * forms of division. The definitions are as follows where /F is
- * a hypothetical exact division. The result is always an integer:
+ * with rounding. We find different rounding modes and we also
+ * find different forms of division. The result type of the evaluable
+ * function integer/1 is always an integer. On the other hand the
+ * result type of the evaluable functions truncate/1, floor/1,
+ * ceiling/1 and round/1 is the same as the argument type:
  *
- * truncate:	towards zero
- * floor:		towards lower infinity
- * ceiling:		towards upper infinity
- * round:		towards nearest neighbour or then away from zero
- * X // Y = truncate(X /F Y)
- * X div Y = floor(X /F Y).
- * X rem Y = X – (X // Y) * Y
- * X mod Y = X – (X div Y) * Y
+ * integer, truncate:	towards zero
+ * floor:			towards lower infinity
+ * ceiling:			towards upper infinity
+ * round:			towards nearest neighbour or then away from zero
  *
  * Examples:
- * floor(-3)		--> -3
- * floor(-3.14)	--> -4
- * floor(-0d3.1415)	--> -4
- * 5 // 2		--> 2
- * 5.0 // 2.0		--> 2
- * 0d5.00 // 2		--> 2
- * (-5) // 2		--> -2
- * (-5) div 2		--> -3
- * 5 rem 2		--> 1
- * 5.0 rem 2.0		--> 1.0
- * 0d5.00 rem 2	--> 0d1.00
- * (-5) rem 2		--> -1
- * (-5) mod 2		--> 1
+ * floor(-3)          --> -3
+ * floor(-3.14)       --> -4
+ * floor(-0d3.1415)   --> -4
  *
- * Each integer division corresponds to a remainder function which is
- * defined again for integer, float and decimal arguments. The result
- * has the same type as the type of arguments. The same widening as
- * already defined for the basic operations applies as well.
+ * The division is based on a hypothetical /F operation. This operation
+ * is approximate for float arguments and exact for integer and decimal
+ * arguments. The result type of the evaluable functions (//)/2 and
+ * (div)/2 is always an integer. On the other hand the result type of
+ * the evaluable functions (rem)/2 and (mod)/2 is the same as the
+ * argument types:
+ *
+ * X // Y = integer(X /F Y).
+ * X div Y = integer(floor(X /F Y)).
+ * X rem Y = X – (X // Y) * Y.
+ * X mod Y = X – (X div Y) * Y.
+ *
+ * Examples:
+ * 5 // 2             --> 2
+ * 5.0 // 2.0         --> 2
+ * 0d5.00 // 2        --> 2
+ * (-5) // 2          --> -2
+ * (-5) div 2         --> -3
+ * 5 rem 2            --> 1
+ * 5.0 rem 2.0        --> 1.0
+ * 0d5.00 rem 2       --> 0d1.00
+ * (-5) rem 2         --> -1
+ * (-5) mod 2         --> 1
+ *
+ * If the arguments of the binary operations have different types the
+ * same widening as already defined for the basic operations is applied.
+ * This means the widening is done towards the big-ger domain of the
+ * two arguments.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -77,18 +89,16 @@
  * integer(X):
  * If X is a number the returns the integer of X.
  */
-% integer: integer -> integer
-% integer: float -> integer
-% integer: decimal -> integer
+% integer: number -> integer
 :- public integer/2.
 :- special(integer/2, 'EvaluableRound', 0).
-
 
 /**
  * truncate(X): [ISO 9.1.7]
  * If X is a number then returns the rounding of X towards zero.
  */
 % truncate: integer -> integer
+% truncate: float32 -> float32
 % truncate: float -> float
 % truncate: decimal -> decimal
 :- public truncate/2.
@@ -100,6 +110,7 @@
  * negative infinity.
  */
 % floor: integer -> integer
+% floor: float32 -> float32
 % floor: float -> float
 % floor: decimal -> decimal
 :- public floor/2.
@@ -111,6 +122,7 @@
  * positive infinity.
  */
 % ceiling integer -> integer
+% ceiling: float32 -> float32
 % ceiling: float -> float
 % ceiling: decimal -> decimal
 :- public ceiling/2.
@@ -123,6 +135,7 @@
  * the rounding away from zero.
  */
 % round: integer -> integer
+% round: float32 -> float32
 % round: float -> float
 % round: decimal -> decimal
 :- public round/2.
@@ -133,9 +146,7 @@
  * If X and Y are both numbers then the function returns
  * the truncated division of X by Y.
  */
-% // : integer x integer -> integer
-% // : float x float -> integer
-% // : decimal x decimal -> integer
+% // : number x number -> integer
 :- public // /3.
 :- special(// /3, 'EvaluableRound', 5).
 
@@ -145,6 +156,7 @@
  * the remainder of X by Y.
  */
 % rem : integer x integer -> integer
+% rem : float32 x float32 -> float32
 % rem : float x float -> float
 % rem : decimal x decimal -> decimal
 :- public rem/3.
@@ -155,9 +167,7 @@
  * If X and Y are both numbers then the function returns
  * the floored division of X by Y.
  */
-% div : integer x integer -> integer
-% div : float x float -> integer
-% div : decimal x decimal -> integer
+% div : number x number -> integer
 :- public div/3.
 :- special(div/3, 'EvaluableRound', 7).
 
@@ -167,6 +177,7 @@
  * the modulus of X by Y.
  */
 % mod : integer x integer -> integer
+% mod : float32 x float32 -> float32
 % mod : float x float -> float
 % mod : decimal x decimal -> decimal
 :- public mod/3.
