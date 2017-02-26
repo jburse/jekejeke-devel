@@ -73,7 +73,7 @@
 :- set_oper_property(infix(:), nspr).
 
 :- public infix(::).
-:- op(600, yfx, ::).
+:- op(600, xfy, ::).
 :- set_oper_property(infix(::), nspl).
 :- set_oper_property(infix(::), nspr).
 

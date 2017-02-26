@@ -99,7 +99,7 @@ dec_decomp(X, 0, X).
 % bin_decomp(+Decimal, +Integer, -Context, -Decimal)
 :- public bin_decomp/4.
 bin_decomp(X, P, E, M) :-
-   E is bitlength(truncate(X))-1,
+   E is bitlength(integer(X))-1,
    E \== 0, !,
    K is 1<<E,
    mp_slash(X, K, P, M).

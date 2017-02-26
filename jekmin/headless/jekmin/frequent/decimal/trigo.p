@@ -70,7 +70,7 @@ mp_sin(X, P, Y) :-
    mod_range(X, K, P, H),
    mp_sin_case(K, H, P, Y).
 mp_sin(X, P, Y) :-
-   K is ceiling(requested(P)/(2*dec_log10(X))),
+   K is integer(ceiling(requested(P)/(2*dec_log10(X)))),
    init_sin(K, X, P, U),
    mp_sin(U, X, P, Y).
 
@@ -144,7 +144,7 @@ mp_cos(X, P, Y) :-
    mod_range(X, K, P, H),
    mp_cos_case(K, H, P, Y).
 mp_cos(X, P, Y) :-
-   K is ceiling(requested(P)/(2*dec_log10(X))),
+   K is integer(ceiling(requested(P)/(2*dec_log10(X)))),
    init_cos(K, X, P, U),
    mp_cos(U, X, P, Y).
 
@@ -213,7 +213,7 @@ mp_atan(X, P, Y) :-
    X > 0d0.5, !,
    mp_math(pi*0d0.25-atan((0d1-X)/(0d1+X)), P, Y).
 mp_atan(X, P, Y) :-
-   K is ceiling(requested(P)/(2*dec_log10(X))),
+   K is integer(ceiling(requested(P)/(2*dec_log10(X)))),
    init_atan(K, X, P, U),
    mp_atan(U, X, P, Y).
 
@@ -259,13 +259,13 @@ mp_exp(X, P, Y) :-
    mp_math(0d1/exp(-X), P, Y).
 mp_exp(X, P, Y) :-
    X >= 0d1, !,
-   K is truncate(X),
+   K is integer(X),
    mp_math(exp(X-K)*e^K, P, Y).
 mp_exp(X, P, Y) :-
-   X >= 0d0.5, !,
+   X > 0d0.5, !,
    mp_math(exp(X/0d2)^2, P, Y).
 mp_exp(X, P, Y) :-
-   K is ceiling(requested(P)/dec_log10(X)),
+   K is integer(ceiling(requested(P)/dec_log10(X))),
    init_exp(K, X, P, U),
    mp_exp(U, X, P, Y).
 
@@ -318,14 +318,14 @@ mp_log(B, D, X, P, Y) :-
    mp_math(0d2/X, P, M),
    L is B+1,
    mp_math(M-0d1, P, Z),
-   K is ceiling(requested(P)/dec_log10(Z)),
+   K is integer(ceiling(requested(P)/dec_log10(Z))),
    init_log(K, Z, P, U),
    mp_log(U, Z, P, H),
    bin_dec_log(L, D, P, J),
    mp_math(J-H, P, Y).
 mp_log(B, D, X, P, Y) :-
    mp_math(X-0d1, P, Z),
-   K is ceiling(requested(P)/dec_log10(Z)),
+   K is integer(ceiling(requested(P)/dec_log10(Z))),
    init_log(K, Z, P, U),
    mp_log(U, Z, P, H),
    bin_dec_log(B, D, P, J),

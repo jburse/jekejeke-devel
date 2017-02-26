@@ -74,14 +74,25 @@
 :- op(400, yfx, rem).
 
 /**
+ * integer(X):
+ * If X is a number the returns the integer of X.
+ */
+% integer: integer -> integer
+% integer: float -> integer
+% integer: decimal -> integer
+:- public integer/2.
+:- special(integer/2, 'EvaluableRound', 0).
+
+
+/**
  * truncate(X): [ISO 9.1.7]
  * If X is a number then returns the rounding of X towards zero.
  */
 % truncate: integer -> integer
-% truncate: float -> integer
-% truncate: decimal -> integer
+% truncate: float -> float
+% truncate: decimal -> decimal
 :- public truncate/2.
-:- special(truncate/2, 'EvaluableRound', 0).
+:- special(truncate/2, 'EvaluableRound', 1).
 
 /**
  * floor(X): [ISO 9.1.7]
@@ -89,10 +100,10 @@
  * negative infinity.
  */
 % floor: integer -> integer
-% floor: float -> integer
-% floor: decimal -> integer
+% floor: float -> float
+% floor: decimal -> decimal
 :- public floor/2.
-:- special(floor/2, 'EvaluableRound', 1).
+:- special(floor/2, 'EvaluableRound', 2).
 
 /**
  * ceiling(X): [ISO 9.1.7]
@@ -100,10 +111,10 @@
  * positive infinity.
  */
 % ceiling integer -> integer
-% ceiling: float -> integer
-% ceiling: decimal -> integer
+% ceiling: float -> float
+% ceiling: decimal -> decimal
 :- public ceiling/2.
-:- special(ceiling/2, 'EvaluableRound', 2).
+:- special(ceiling/2, 'EvaluableRound', 3).
 
 /**
  * round(X): [ISO 9.1.7]
@@ -112,10 +123,10 @@
  * the rounding away from zero.
  */
 % round: integer -> integer
-% round: float -> integer
-% round: decimal -> integer
+% round: float -> float
+% round: decimal -> decimal
 :- public round/2.
-:- special(round/2, 'EvaluableRound', 3).
+:- special(round/2, 'EvaluableRound', 4).
 
 /**
  * X // Y: [ISO 9.1.7]
@@ -126,7 +137,7 @@
 % // : float x float -> integer
 % // : decimal x decimal -> integer
 :- public // /3.
-:- special(// /3, 'EvaluableRound', 4).
+:- special(// /3, 'EvaluableRound', 5).
 
 /**
  * X rem Y: [ISO 9.1.7]
@@ -137,7 +148,7 @@
 % rem : float x float -> float
 % rem : decimal x decimal -> decimal
 :- public rem/3.
-:- special(rem/3, 'EvaluableRound', 5).
+:- special(rem/3, 'EvaluableRound', 6).
 
 /**
  * X div Y: [TC2 9.1.3]
@@ -148,7 +159,7 @@
 % div : float x float -> integer
 % div : decimal x decimal -> integer
 :- public div/3.
-:- special(div/3, 'EvaluableRound', 6).
+:- special(div/3, 'EvaluableRound', 7).
 
 /**
  * X mod Y: [ISO 9.1.7]
@@ -159,4 +170,4 @@
 % mod : float x float -> float
 % mod : decimal x decimal -> decimal
 :- public mod/3.
-:- special(mod/3, 'EvaluableRound', 7).
+:- special(mod/3, 'EvaluableRound', 8).

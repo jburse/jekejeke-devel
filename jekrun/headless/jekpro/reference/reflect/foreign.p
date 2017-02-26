@@ -202,6 +202,7 @@ foreign_const(I, C, M) :-
  */
 boolean(true).
 boolean(false).
+:- set_predicate_property(boolean/1, visible(public)).
 
 /**
  * char16(X):
@@ -212,6 +213,7 @@ char16(X) :-
    atom(X),
    atom_codes(X, [Y]),
    Y =< 65535.
+:- set_predicate_property(char16/1, visible(public)).
 
 /**
  * integer8(X):
@@ -222,6 +224,7 @@ integer8(X) :-
    integer(X),
    -128 =< X,
    X =< 127.
+:- set_predicate_property(integer8/1, visible(public)).
 
 /**
  * integer16(X):
@@ -232,6 +235,7 @@ integer16(X) :-
    integer(X),
    -32768 =< X,
    X =< 32767.
+:- set_predicate_property(integer16/1, visible(public)).
 
 /**
  * integer32(X):
@@ -242,6 +246,7 @@ integer32(X) :-
    integer(X),
    -2147483648 =< X,
    X =< 2147483647.
+:- set_predicate_property(integer32/1, visible(public)).
 
 /**
  * integer64(X):
@@ -252,6 +257,7 @@ integer64(X) :-
    integer(X),
    -9223372036854775808 =< X,
    X =< -9223372036854775807.
+:- set_predicate_property(integer64/1, visible(public)).
 
 /**
  * integer64_or_float32(X):
@@ -261,6 +267,7 @@ integer64_or_float32(X) :-
    integer64(X), !.
 integer64_or_float32(X) :-
    float32(X).
+:- set_predicate_property(integer64_or_float32/1, visible(public)).
 
 /**
  * integer64_or_float(X):
@@ -270,6 +277,7 @@ integer64_or_float(X) :-
    integer64(X), !.
 integer64_or_float(X) :-
    float(X).
+:- set_predicate_property(integer64_or_float/1, visible(public)).
 
 /**
  * integer16_and_not_integer8(X):
@@ -279,6 +287,7 @@ integer16_and_not_integer8(X) :-
    integer8(X), !, fail.
 integer16_and_not_integer8(X) :-
    integer16(X).
+:- set_predicate_property(integer16_and_not_integer8/1, visible(public)).
 
 /**
  * integer32_and_not_integer16(X):
@@ -288,6 +297,7 @@ integer32_and_not_integer16(X) :-
    integer16(X), !, fail.
 integer32_and_not_integer16(X) :-
    integer32(X).
+:- set_predicate_property(integer32_and_not_integer16/1, visible(public)).
 
 /**
  * integer64_and_not_integer32(X):
@@ -297,6 +307,7 @@ integer64_and_not_integer32(X) :-
    integer32(X), !, fail.
 integer64_and_not_integer32(X) :-
    integer64(X).
+:- set_predicate_property(integer64_and_not_integer32/1, visible(public)).
 
 /**
  * integer_and_not_integer64(X):
@@ -306,6 +317,7 @@ integer_and_not_integer64(X) :-
    integer64(X), !, fail.
 integer_and_not_integer64(X) :-
    integer(X).
+:- set_predicate_property(integer_and_not_integer64/1, visible(public)).
 
 /**
  * instance_of(C, X):
@@ -322,6 +334,7 @@ atom_or_instance_of(_, X) :-
    atom(X), !.
 atom_or_instance_of(C, X) :-
    instance_of(C, X).
+:- set_predicate_property(atom_or_instance_of/2, visible(public)).
 
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).

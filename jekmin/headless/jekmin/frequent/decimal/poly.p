@@ -79,14 +79,14 @@ mp_sqrt(B, D, X, P, Y) :-
    mp_math(0d2/X, P, M),
    L is B+1,
    mp_math(M-0d1, P, Z),
-   K is ceiling(requested(P)/dec_log10(Z)),
+   K is integer(ceiling(requested(P)/dec_log10(Z))),
    init_sqrt(K, Z, P, U),
    mp_sqrt(U, Z, P, H),
    bin_dec_sqrt(L, D, P, J),
    mp_math(J/H, P, Y).
 mp_sqrt(B, D, X, P, Y) :-
    mp_math(X-0d1, P, Z),
-   K is ceiling(requested(P)/dec_log10(Z)),
+   K is integer(ceiling(requested(P)/dec_log10(Z))),
    init_sqrt(K, Z, P, U),
    mp_sqrt(U, Z, P, H),
    bin_dec_sqrt(B, D, P, J),
