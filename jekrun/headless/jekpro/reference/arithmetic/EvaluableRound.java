@@ -75,62 +75,89 @@ public final class EvaluableRound extends Special {
                                     Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (id < EVALUABLE_SLASH_SLASH) {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                switch (id) {
-                    case EVALUABLE_INTEGER:
-                        en.skel = integer(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_TRUNCATE:
-                        en.skel = truncate(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_FLOOR:
-                        en.skel = floor(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_CEILING:
-                        en.skel = ceiling(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_ROUND:
-                        en.skel = round(alfa);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
-            } else {
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
-                Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
-                Number beta = EngineMessage.castNumber(en.skel, en.display);
-                switch (id) {
-                    case EVALUABLE_SLASH_SLASH:
-                        en.skel = slashSlash(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_REM:
-                        en.skel = rem(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_DIV:
-                        en.skel = div(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    case EVALUABLE_MOD:
-                        en.skel = mod(alfa, beta);
-                        en.display = Display.DISPLAY_CONST;
-                        return;
-                    default:
-                        throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-                }
+            switch (id) {
+                case EVALUABLE_INTEGER:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = integer(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_TRUNCATE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = truncate(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_FLOOR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = floor(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_CEILING:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = ceiling(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_ROUND:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = round(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_SLASH_SLASH:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    Number beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = slashSlash(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_REM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = rem(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_DIV:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = div(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_MOD:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref, r, u);
+                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    en.computeExpr(temp[1], ref, r, u);
+                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    en.skel = mod(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
@@ -158,7 +185,7 @@ public final class EvaluableRound extends Special {
         } else if (m instanceof Float) {
             float f = m.floatValue();
             if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
-                return TermAtomic.normBigInteger((int) f);
+                return Integer.valueOf((int) f);
             } else {
                 return TermAtomic.normBigInteger(new BigDecimal(f).toBigInteger());
             }
@@ -187,12 +214,18 @@ public final class EvaluableRound extends Special {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf((float)
-                    (f < 0 ? Math.ceil(f) : Math.floor(f))));
+            if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
+                return TermAtomic.guardFloat(Float.valueOf((int) f));
+            } else {
+                return m;
+            }
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(
-                    (d < 0 ? Math.ceil(d) : Math.floor(d))));
+            if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
+                return TermAtomic.guardDouble(Double.valueOf((long) d));
+            } else {
+                return m;
+            }
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -337,7 +370,7 @@ public final class EvaluableRound extends Special {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
                 if (Integer.MIN_VALUE <= g && g <= Integer.MAX_VALUE) {
-                    return TermAtomic.normBigInteger((int) g);
+                    return Integer.valueOf((int) g);
                 } else {
                     return TermAtomic.normBigInteger(new BigDecimal(g).toBigInteger());
                 }
@@ -414,7 +447,7 @@ public final class EvaluableRound extends Special {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
                 if (Integer.MIN_VALUE <= g && g <= Integer.MAX_VALUE) {
-                    return TermAtomic.normBigInteger((int) Math.floor(g));
+                    return Integer.valueOf((int) Math.floor(g));
                 } else {
                     return TermAtomic.normBigInteger(new BigDecimal(g).setScale(0,
                             BigDecimal.ROUND_FLOOR).unscaledValue());
