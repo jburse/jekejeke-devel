@@ -6,7 +6,6 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
-import jekpro.reference.structure.EngineVars;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 
@@ -204,12 +203,12 @@ public final class SpecialFind extends Special {
      * @param en The engine.
      */
     public static void consValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineVars.isGroundSkel(t2)) {
+        if (EngineCopy.isGroundSkel(t2)) {
             en.skel = new SkelCompound(en.store.ATOM_CONS, t2, t);
             en.display = d;
             return;
         }
-        if (EngineVars.isGroundSkel(t)) {
+        if (EngineCopy.isGroundSkel(t)) {
             en.skel = new SkelCompound(en.store.ATOM_CONS, t2, t);
             en.display = d2;
             return;

@@ -3,7 +3,10 @@ package jekpro.frequent.system;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.*;
+import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.TermVar;
 import matula.util.system.ForeignCache;
 
 import java.io.IOException;
@@ -193,9 +196,9 @@ public final class ForeignLocale {
      * <p>Format a term from properties.</p>
      * <p>The rules are as follows:</p>
      * <pre>
-     *     prop == null: Formatted via AbstractTerm.toString(FLAG_QUOTED,inter)
-     *     pat == null: Error text and formatted via AbstractTerm.toString(FLAG_QUOTED,inter)
-     *     temp == null: Error text and formatted via AbstractTerm.toString(FLAG_QUOTED,inter)
+     *     prop == null: Formatted via AbstractTerm.unparseTerm(FLAG_QUOTED,inter)
+     *     pat == null: Error text and formatted via AbstractTerm.unparseTerm(FLAG_QUOTED,inter)
+     *     temp == null: Error text and formatted via AbstractTerm.unparseTerm(FLAG_QUOTED,inter)
      *     otherwise: Formatted according to message template and message parameters.
      * </pre>
      *
@@ -208,13 +211,15 @@ public final class ForeignLocale {
     public static String messageMake(Interpreter inter, Object term,
                                      Locale locale, Properties prop) {
         if (prop == null)
-            return AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term);
+            return (inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
+                    Interpreter.toString(Interpreter.FLAG_QUOTED, term));
         ArrayList<String> pat = messagePattern(term, prop);
         if (pat == null) {
             StringBuilder buf = new StringBuilder();
             buf.append(prop.getProperty("term.pattern"));
             buf.append(": ");
-            buf.append(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term));
+            buf.append((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
+                    Interpreter.toString(Interpreter.FLAG_QUOTED, term)));
             return buf.toString();
         }
         String temp = ForeignLocale.messageTemplate(term, pat, prop);
@@ -222,7 +227,8 @@ public final class ForeignLocale {
             StringBuilder buf = new StringBuilder();
             buf.append(prop.getProperty("term.template"));
             buf.append(": ");
-            buf.append(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term));
+            buf.append((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
+                    Interpreter.toString(Interpreter.FLAG_QUOTED, term)));
             return buf.toString();
         }
         Object[] paras = ForeignLocale.messageParameters(inter, term, pat);
@@ -293,7 +299,7 @@ public final class ForeignLocale {
      * <p>Extract the message template.</p>
      * <p>An id is extracted according to the message pattern:</p>
      * <pre>
-     *     id: The argument is converted with TermLiteral.toString()
+     *     id: The argument is converted with TermLiteral.unparseTerm()
      * </pre>
      *
      * @param term The message term.
@@ -317,7 +323,7 @@ public final class ForeignLocale {
             if (ForeignLocale.ARGTYPE_ID.equals(pat.get(i))) {
                 Object t = ((TermCompound) term).getArg(i);
                 buf.append('.');
-                buf.append(AbstractTerm.toString(0, null, t));
+                buf.append(Interpreter.toString(0, t));
             }
         }
         return prop.getProperty(buf.toString());
@@ -327,12 +333,12 @@ public final class ForeignLocale {
      * <p>Extract the message parameters.</p>
      * <p>A parameter is extracted according to the messsage pattern:</p>
      * <pre>
-     *     parasq: The argument is converted with AbstractSource.shortName() and TermLiteral.toString()
-     *     paraq: The argument is converted with TermLiteral.toString(FLAG_QUOT,inter)
-     *     para: The argument is converted with TermLiteral.toString(0,inter)
+     *     parasq: The argument is converted with AbstractSource.shortName() and TermLiteral.unparseTerm()
+     *     paraq: The argument is converted with TermLiteral.unparseTerm(FLAG_QUOT,inter)
+     *     para: The argument is converted with TermLiteral.unparseTerm(0,inter)
      * </pre>
      *
-     * @param inter The interpreter.
+     * @param inter The interpreter or null.
      * @param term  The message term.
      * @param pat   The message pattern.
      * @return The message parameters.
@@ -347,7 +353,8 @@ public final class ForeignLocale {
                 if (ForeignLocale.ARGTYPE_PARASQ.equals(argtype)) {
                     paravec.add(shortName((String) t));
                 } else if (ForeignLocale.ARGTYPE_PARAQ.equals(argtype)) {
-                    paravec.add(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, t));
+                    paravec.add((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, t) :
+                            Interpreter.toString(Interpreter.FLAG_QUOTED, t)));
                 } else {
                     paravec.add(ForeignLocale.prepareArgument(inter, t));
                 }
@@ -361,7 +368,7 @@ public final class ForeignLocale {
     /**
      * <p>Unpack a term to a Java object.</p>
      *
-     * @param inter The interpreter.
+     * @param inter The interpreter or null.
      * @param t     The argument.
      * @return The Java object.
      */
@@ -377,7 +384,8 @@ public final class ForeignLocale {
         } else if (!(t instanceof TermCompound) && !(t instanceof TermVar)) {
             return t;
         } else {
-            return AbstractTerm.toString(0, inter, t);
+            return (inter != null ? inter.unparseTerm(0, t) :
+                    Interpreter.toString(0, t));
         }
     }
 
@@ -413,7 +421,7 @@ public final class ForeignLocale {
      *      TermLiteral                       property('exception.unknown') ": " string(TermLiteral)
      * </pre>
      *
-     * @param inter  The interpreter.
+     * @param inter  The interpreter or null.
      * @param term   The exception term.
      * @param locale The locale.
      * @param prop   The properties.
@@ -449,7 +457,8 @@ public final class ForeignLocale {
                 StringBuilder buf = new StringBuilder();
                 buf.append(prop.getProperty("exception.unknown"));
                 buf.append(": ");
-                buf.append(AbstractTerm.toString(AbstractTerm.FLAG_QUOTED, inter, term));
+                buf.append((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
+                        Interpreter.toString(Interpreter.FLAG_QUOTED, term)));
                 return buf.toString();
             }
         }

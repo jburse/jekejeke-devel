@@ -4,7 +4,6 @@ import jekpro.frequent.system.ForeignLocale;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 
@@ -87,7 +86,7 @@ public final class ForeignConsole {
     /**
      * <p>Print an exception.</p>
      *
-     * @param inter  The call-in.
+     * @param inter  The interpreter or null.
      * @param wr     The writer.
      * @param term   The exception term.
      * @param locstr The locale.
@@ -113,7 +112,7 @@ public final class ForeignConsole {
      *      term                       errorMake(this) "\n"
      * </pre>
      *
-     * @param inter  The call-in.
+     * @param inter  The interpreter or null.
      * @param wr     The writer.
      * @param term   The exception term.
      * @param locale The locale.
@@ -169,7 +168,7 @@ public final class ForeignConsole {
      *      AbstractTerm:              property('context.unknown') ": " string(AbstractTerm) "\n"
      * <pre>
      *
-     * @param inter  The call-in.
+     * @param inter  The interreter or null.
      * @param wr     The writer.
      * @param term   The context term.
      * @param locale The locale.
@@ -197,7 +196,11 @@ public final class ForeignConsole {
             } else {
                 wr.write(prop.getProperty("context.unknown"));
                 wr.write(": ");
-                AbstractTerm.toString(wr, AbstractTerm.FLAG_QUOTED, inter, term);
+                if (inter != null) {
+                    inter.unparseTerm(wr, Interpreter.FLAG_QUOTED, term);
+                } else {
+                    Interpreter.toString(wr, Interpreter.FLAG_QUOTED, term);
+                }
                 wr.write('\n');
                 wr.flush();
                 return;

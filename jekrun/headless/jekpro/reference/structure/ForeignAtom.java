@@ -354,12 +354,10 @@ public final class ForeignAtom {
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
                     buf.append(EvaluableElem.neg(num).toString());
-//                    pieceWise(EvaluableElem.neg(num).toString(), buf);
                 } else {
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
                     buf.append(num.toString());
-//                    pieceWise(num.toString(), buf);
                 }
                 return buf.toString();
             } else {
@@ -368,24 +366,6 @@ public final class ForeignAtom {
         } else {
             throw new IllegalArgumentException("illegal number");
         }
-    }
-
-    /**
-     * <p>Append a number piece wise.</p>
-     *
-     * @param str The string.
-     * @param buf The buffer.
-     */
-    private static void pieceWise(String str, StringBuilder buf) {
-        int l = 100 - 6;
-        int k = 0;
-        while (k + l < str.length()) {
-            buf.append(str, k, k + l);
-            buf.append(' ');
-            k += l;
-            l = 100;
-        }
-        buf.append(str, k, str.length());
     }
 
     /****************************************************************/

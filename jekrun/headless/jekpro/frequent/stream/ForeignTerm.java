@@ -39,7 +39,7 @@ import java.io.Writer;
 public final class ForeignTerm {
 
     /****************************************************************/
-    /* AbstractTerm I/O                                                     */
+    /* AbstractTerm I/O                                             */
     /****************************************************************/
 
     /**
@@ -56,7 +56,7 @@ public final class ForeignTerm {
     public static void sysWrite(Interpreter inter, CallOut callout,
                                 Writer para, Object val)
             throws IOException, InterpreterMessage, InterpreterException {
-        AbstractTerm.toString(para, AbstractTerm.FLAG_NUMBERVARS, inter, val);
+        inter.unparseTerm(para, Interpreter.FLAG_NUMBERVARS, val);
     }
 
     /**
@@ -73,7 +73,7 @@ public final class ForeignTerm {
     public static void sysWriteq(Interpreter inter, CallOut callout,
                                  Writer para, Object val)
             throws IOException, InterpreterMessage, InterpreterException {
-        AbstractTerm.toString(para, AbstractTerm.FLAG_NUMBERVARS | AbstractTerm.FLAG_QUOTED, inter, val);
+        inter.unparseTerm(para, Interpreter.FLAG_NUMBERVARS | Interpreter.FLAG_QUOTED, val);
     }
 
     /**
@@ -90,7 +90,7 @@ public final class ForeignTerm {
     public static void sysWriteCanonical(Interpreter inter, CallOut callout,
                                          Writer para, Object val)
             throws IOException, InterpreterMessage, InterpreterException {
-        AbstractTerm.toString(para, AbstractTerm.FLAG_QUOTED | AbstractTerm.FLAG_IGNORE_OPS, inter, val);
+        inter.unparseTerm(para, Interpreter.FLAG_QUOTED | Interpreter.FLAG_IGNORE_OPS, val);
     }
 
     /**
@@ -108,7 +108,7 @@ public final class ForeignTerm {
     public static void sysWriteTerm(Interpreter inter, CallOut callout,
                                     Writer para, AbstractTerm val, Object opt)
             throws IOException, InterpreterMessage, InterpreterException {
-        AbstractTerm.toString(para, opt, inter, val);
+        inter.unparseTerm(para, opt, val);
     }
 
     /**
@@ -125,7 +125,7 @@ public final class ForeignTerm {
     public static Object sysRead(Interpreter inter, CallOut callout,
                                  Reader para)
             throws IOException, InterpreterMessage, InterpreterException {
-        return AbstractTerm.parseTerm(para, inter);
+        return inter.parseTerm(para);
     }
 
     /**
@@ -143,7 +143,7 @@ public final class ForeignTerm {
     public static AbstractTerm sysReadTerm(Interpreter inter, CallOut callout,
                                    Reader para, Object opt)
             throws IOException, InterpreterMessage, InterpreterException {
-        return AbstractTerm.parseTermWrapped(para, opt, inter);
+        return inter.parseTermWrapped(para, opt);
     }
 
 }

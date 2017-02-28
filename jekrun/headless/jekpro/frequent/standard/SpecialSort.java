@@ -6,7 +6,6 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Goal;
 import jekpro.reference.structure.EngineLexical;
-import jekpro.reference.structure.EngineVars;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -402,12 +401,12 @@ public final class SpecialSort extends Special {
      * @param en The engine.
      */
     private static void subValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineVars.isGroundSkel(t2)) {
+        if (EngineCopy.isGroundSkel(t2)) {
             en.skel = new SkelCompound(en.store.ATOM_SUB, t2, t);
             en.display = d;
             return;
         }
-        if (EngineVars.isGroundSkel(t)) {
+        if (EngineCopy.isGroundSkel(t)) {
             en.skel = new SkelCompound(en.store.ATOM_SUB, t2, t);
             en.display = d2;
             return;

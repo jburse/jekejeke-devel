@@ -41,6 +41,22 @@ import matula.util.data.MapHash;
 public class EngineCopy {
     public MapHash<TermVar, SkelVar> vars;
 
+    /**
+     * <p>Check whether the term needs is ground.</p>
+     *
+     * @param t The term.
+     * @return True if the term needs a display.
+     */
+    public static boolean isGroundSkel(Object t) {
+        if (t instanceof SkelVar) {
+            return false;
+        } else if (t instanceof SkelCompound) {
+            return ((SkelCompound) t).vars == null;
+        } else {
+            return true;
+        }
+    }
+
     /*******************************************************/
     /* Variable Allocation                                 */
     /*******************************************************/

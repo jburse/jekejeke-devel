@@ -4,7 +4,6 @@ import jekpro.model.molec.EngineMessage;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 
 /**
  * <p>This class can also be used to wrap strings, numbers and references.
@@ -259,17 +258,37 @@ public final class TermAtomic extends AbstractTerm {
     }
 
     /**
-     * <p>Retrieve the precision.</p>
+     * <p>Normalize a long and a scale into a Prolog decimal.</p>
+     * <p>If the scale is 0 and if the mantissa is between MIN_LONG
+     * and MAX_LONG then it is converted into an long. Otherwise
+     * a big decimal is returned.</p>
      *
-     * @param n The decimal.
-     * @return The precision.
+     * @param m The unscaled value
+     * @param s The scale.
+     * @return The normalized result.
      */
-    public static int precision(Number n) {
-        if (n instanceof Long) {
-            return TermAtomic.log10(n.longValue());
-        } else {
-            return ((BigDecimal) n).precision();
-        }
+    public static Number normBigDecimal(long m, int s) {
+        if (s != 0)
+            return BigDecimal.valueOf(m, s);
+        return Long.valueOf(m);
+    }
+
+    /**
+     * <p>Normalize a big integer and a scale into a Prolog decimal.</p>
+     * <p>If the scale is 0 and if the mantissa is between MIN_LONG
+     * and MAX_LONG then it is converted into an long. Otherwise
+     * a big decimal is returned.</p>
+     *
+     * @param m The unscaled value
+     * @param s The scale.
+     * @return The normalized result.
+     */
+    public static Number normBigDecimal(BigInteger m, int s) {
+        if (s != 0)
+            return new BigDecimal(m, s);
+        if (MIN_LONG.compareTo(m) > 0 || m.compareTo(MAX_LONG) > 0)
+            return new BigDecimal(m);
+        return Long.valueOf(m.longValue());
     }
 
     /**
@@ -287,24 +306,6 @@ public final class TermAtomic extends AbstractTerm {
         BigInteger m = d.unscaledValue();
         if (MIN_LONG.compareTo(m) > 0 || m.compareTo(MAX_LONG) > 0)
             return d;
-        return Long.valueOf(m.longValue());
-    }
-
-    /**
-     * <p>Normalize a big integer into a Prolog decimal.</p>
-     * <p>If the scale is 0 and if the mantissa is between MIN_LONG
-     * and MAX_LONG then it is converted into an long. Otherwise
-     * a big decimal is returned.</p>
-     *
-     * @param m The unscaled value
-     * @param s The scale.
-     * @return The normalized result.
-     */
-    public static Number normBigDecimal(BigInteger m, int s) {
-        if (s != 0)
-            return new BigDecimal(m, s);
-        if (MIN_LONG.compareTo(m) > 0 || m.compareTo(MAX_LONG) > 0)
-            return new BigDecimal(m, s);
         return Long.valueOf(m.longValue());
     }
 
@@ -330,86 +331,5 @@ public final class TermAtomic extends AbstractTerm {
             return new BigDecimal(m.doubleValue());
         }
     }
-
-
-    /**
-     * <p>Denormalize the given number to a big decimal.</p>
-     * <p>If the number is of type long then it is converted to a big decimal.</p>
-     * <p>If the number is of type big decimal then it is returned.</p>
-     * <p>Otherwise an exception is thrown.</p>
-     *
-     * @param m  The number.
-     * @param mc The math context.
-     * @return The big decimal.
-     */
-    public static BigDecimal widenBigDecimal(Number m, MathContext mc) {
-        if (m instanceof Integer) {
-            return new BigDecimal(m.intValue(), mc);
-        } else if (m instanceof BigInteger) {
-            return new BigDecimal((BigInteger) m, mc);
-        } else if (m instanceof Long) {
-            if (mc.getPrecision() != 0 && (TermAtomic.log10(m.longValue()) > mc.getPrecision())) {
-                return new BigDecimal(m.longValue(), mc);
-            } else {
-                return BigDecimal.valueOf(m.longValue());
-            }
-        } else if (m instanceof BigDecimal) {
-            BigDecimal d = (BigDecimal) m;
-            if (mc.getPrecision() != 0 && (d.precision() > mc.getPrecision())) {
-                return new BigDecimal(d.unscaledValue(), d.scale(), mc);
-            } else {
-                return d;
-            }
-        } else {
-            return new BigDecimal(m.doubleValue(), mc);
-        }
-    }
-
-    /********************************************************************/
-    /* Some Helpers                                                     */
-    /********************************************************************/
-
-    /**
-     * <p>Ceiling of log base 10 of the absolute value.</p>
-     *
-     * @param x The argument.
-     * @return The logarithm of the argument.
-     */
-    public static int log10(long x) {
-        long[] tab = LONG_TEN_POWERS_TABLE;
-        if (x == Long.MIN_VALUE)
-            return tab.length;
-        if (x < 0)
-            x = -x;
-        if (x < 10)
-            return 1;
-        int r = ((64 - Long.numberOfLeadingZeros(x) + 1) * 1233) >>> 12;
-        return (r >= tab.length || x < tab[r]) ? r : r + 1;
-    }
-
-    /**
-     * <p>The base 10 table.</p>
-     */
-    private static final long[] LONG_TEN_POWERS_TABLE = {
-            1,                     // 0 / 10^0
-            10,                    // 1 / 10^1
-            100,                   // 2 / 10^2
-            1000,                  // 3 / 10^3
-            10000,                 // 4 / 10^4
-            100000,                // 5 / 10^5
-            1000000,               // 6 / 10^6
-            10000000,              // 7 / 10^7
-            100000000,             // 8 / 10^8
-            1000000000,            // 9 / 10^9
-            10000000000L,          // 10 / 10^10
-            100000000000L,         // 11 / 10^11
-            1000000000000L,        // 12 / 10^12
-            10000000000000L,       // 13 / 10^13
-            100000000000000L,      // 14 / 10^14
-            1000000000000000L,     // 15 / 10^15
-            10000000000000000L,    // 16 / 10^16
-            100000000000000000L,   // 17 / 10^17
-            1000000000000000000L   // 18 / 10^18
-    };
 
 }
