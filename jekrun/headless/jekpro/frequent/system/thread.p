@@ -84,7 +84,7 @@
 % thread_new(+Goal, -Thread)
 :- public thread_new/2.
 :- meta_predicate thread_new(0,?).
-:- foreign(thread_new/2, 'ForeignThread', sysThreadNew('Interpreter','Term')).
+:- foreign(thread_new/2, 'ForeignThread', sysThreadNew('Interpreter','AbstractTerm')).
 
 /**
  * thread_start(T):
@@ -102,7 +102,7 @@
  */
 % thread_abort(+Thread, +Message)
 :- public thread_abort/2.
-:- foreign(thread_abort/2, 'ForeignThread', sysThreadAbort('Thread','Term')).
+:- foreign(thread_abort/2, 'ForeignThread', sysThreadAbort('Thread','AbstractTerm')).
 
 /**
  * thread_down(T, M):
@@ -110,7 +110,7 @@
  * message M to the thread T. Otherwise the predicate fails.
  */
 :- public thread_down/2.
-:- foreign(thread_down/2, 'ForeignThread', sysThreadDown('Thread','Term')).
+:- foreign(thread_down/2, 'ForeignThread', sysThreadDown('Thread','AbstractTerm')).
 
 /**
  * thread_downl(T, M, W):
@@ -119,7 +119,7 @@
  */
 % thread_down(+Thread, +Message, +Integer)
 :- public thread_down/3.
-:- foreign(thread_down/3, 'ForeignThread', sysThreadDown('Thread','Term',long)).
+:- foreign(thread_down/3, 'ForeignThread', sysThreadDown('Thread','AbstractTerm',long)).
 
 /**
  * thread_join(T):

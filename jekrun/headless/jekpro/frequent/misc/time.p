@@ -79,7 +79,7 @@
 % alarm_schedule(+Queue, +Term, +Integer, -Entry)
 :- public alarm_schedule/4.
 :- foreign(alarm_schedule/4, 'ForeignTime',
-      sysAlarmSchedule('Interpreter','Alarm','Term',long)).
+      sysAlarmSchedule('Interpreter','Alarm','AbstractTerm',long)).
 
 /**
  * alarm_next(A, O):

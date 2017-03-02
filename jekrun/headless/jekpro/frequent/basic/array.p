@@ -49,9 +49,6 @@
 
 :- module(user, []).
 
-:- public postfix([]).
-:- op(400, yf, [[]]).
-
 /**
  * foreign_dimension(I, C):
  * Succeeds with registering the predicate indicator I as a foreign

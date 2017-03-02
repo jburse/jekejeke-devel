@@ -150,3 +150,16 @@ sys_run_values_rest([K-V|P], J, [V|L], Q) :-
    K == J, !,
    sys_run_values_rest(P, J, L, Q).
 sys_run_values_rest(P, _, [], P).
+
+
+/**********************************************************/
+/* Copy Term                                              */
+/**********************************************************/
+
+/**
+ * copy_term(X, Y): [ISO 8.5.4]
+ * The predicate creates a copy of X and succeeds when the copy unifies with Y.
+ */
+% copy_term(+Term, -Term)
+:- public copy_term/2.
+:- special(copy_term/2, 'SpecialFind', 1).

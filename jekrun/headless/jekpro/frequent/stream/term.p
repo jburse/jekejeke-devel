@@ -176,7 +176,7 @@ write_term(Stream, Term, Opt) :-
    sys_write_term(Stream, Term, Opt).
 
 :- foreign(sys_write_term/3, 'ForeignTerm',
-      sysWriteTerm('Interpreter','CallOut','Writer','Term','Object')).
+      sysWriteTerm('Interpreter','CallOut','Writer','AbstractTerm','Object')).
 
 /**
  * read(E): [ISO 8.14.1]

@@ -300,7 +300,7 @@ phrase_expansion(U, I, O, (  U, Q)) :-
  * The grammar connective succeeds when the terminals A1, …, An can be consumed.
  */
 :- public []/2.
-[](_, _) :-
+_ [_] :-
    throw(error(existence_error(body,[]/2),_)).
 
 phrase_expansion(U, I, O, Q) :-
