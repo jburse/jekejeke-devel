@@ -1,16 +1,10 @@
 /**
  * We provide a couple of additional bitwise operations. The evaluable
  * functions bitcount/1, bitlength/1 and lowestsetbit/1 deal with the
- * determination of certain bits of the given integer. The evaluable
- * function scale/1 and unscaled_value/1 allow accessing the components
- * of a decimal. The evaluable function precision/1 returns the tenth
- * logarithm of the unscaled value.
+ * determination of certain bits of the given integer.
  *
  * Examples:
  * bitlength(333)               --> 9
- * scale(0d0.000333)            --> 6
- * unscaled_value(0d0.000333)   --> 3333
- * precision(0d0.000333)        --> 3
  *
  * The evaluable functions setbit/2 and clearbit/2 update the given
  * integer in a more efficient way than would be possible with existing
