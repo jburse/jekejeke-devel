@@ -1,14 +1,10 @@
-package jekpro.platform.swing;
+package jekpro.platform.android;
 
+import android.os.SystemClock;
+import jekpro.model.molec.EngineMessage;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
-
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
-import java.util.Iterator;
+import jekpro.tools.term.*;
 
 /**
  * <p>Provides built-in predicates for statistics.</p>
@@ -60,7 +56,7 @@ public final class ForeignStatistics {
 
     /**
      * <p>Retrieve a statistic.</p>
-     * <p>Swing version.</p>
+     * <p>Android version.</p>
      *
      * @param name The name.
      * @return The value, or null.
@@ -77,32 +73,11 @@ public final class ForeignStatistics {
         } else if (OP_STATISTIC_FREE.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().freeMemory());
         } else if (OP_STATISTIC_UPTIME.equals(name)) {
-            return TermAtomic.normBigInteger(ManagementFactory.getRuntimeMXBean().getUptime());
+            return TermAtomic.normBigInteger(SystemClock.uptimeMillis());
         } else if (OP_STATISTIC_GCTIME.equals(name)) {
-            Iterator<GarbageCollectorMXBean> iter =
-                    ManagementFactory.getGarbageCollectorMXBeans().iterator();
-            long gcsum = 0;
-            boolean has = false;
-            while (iter.hasNext()) {
-                GarbageCollectorMXBean gb = iter.next();
-                long gctime = gb.getCollectionTime();
-                if (gctime != -1) {
-                    gcsum += gctime;
-                    has = true;
-                }
-            }
-            if (has) {
-                return TermAtomic.normBigInteger(gcsum);
-            } else {
-                return null;
-            }
+            return null;
         } else if (OP_STATISTIC_TIME.equals(name)) {
-            ThreadMXBean tb = ManagementFactory.getThreadMXBean();
-            if (tb.isThreadCpuTimeEnabled()) {
-                return TermAtomic.normBigInteger(tb.getCurrentThreadCpuTime() / 1000000L);
-            } else {
-                return null;
-            }
+            return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
         } else if (OP_STATISTIC_PROCESSORS.equals(name)) {
             return Integer.valueOf(Runtime.getRuntime().availableProcessors());
         } else if (OP_STATISTIC_WALL.equals(name)) {
