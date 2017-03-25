@@ -35,6 +35,7 @@
 :- module(user, []).
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
+:- use_module(library(system/shell)).
 :- sys_load_resource(gestalt).
 
 /**
@@ -68,12 +69,19 @@ statistics(K, V) :-
 % statistics
 :- public statistics/0.
 statistics :-
-   statistics(X, Y),
+   statistics(X, H),
+   sys_convert(X, H, Y),
    sys_get_lang(gestalt, P),
    message_make(P, statistics(X,Y), M),
    ttywrite(M), ttynl, fail.
 statistics.
 :- set_predicate_property(statistics/0, sys_notrace).
+
+% sys_convert(+Atom, +Value, -Value)
+:- private sys_convert/3.
+sys_convert(wall, X, Y) :- !,
+   get_time(X, Y).
+sys_convert(_, X, X).
 
 /**
  * time(A):
@@ -96,7 +104,8 @@ time(G) :-
 :- private sys_time_record/1.
 sys_time_record(T) :-
    sys_end_time_record(T),
-   sys_time_record(T, X, Y),
+   sys_time_record(T, X, H),
+   sys_convert(X, H, Y),
    sys_get_lang(gestalt, P),
    message_make(P, time(X,Y), M),
    ttywrite(M), fail.
@@ -113,21 +122,19 @@ sys_time_record(T, K, V) :-
    sys_get_record_stat(T, K, V).
 
 :- private sys_make_time_record/1.
-:- foreign(sys_make_time_record/1, 'ForeignStatistics',
-      sysMakeTimeRecord).
+:- foreign_constructor(sys_make_time_record/1, 'TimeRecord', new).
 
 :- private sys_start_time_record/1.
-:- foreign(sys_start_time_record/1, 'ForeignStatistics',
-      sysStartTimeRecord('Object')).
+:- virtual sys_start_time_record/1.
+:- foreign(sys_start_time_record/1, 'TimeRecord', start).
 
 :- private sys_end_time_record/1.
-:- foreign(sys_end_time_record/1, 'ForeignStatistics',
-      sysEndTimeRecord('Object')).
+:- virtual sys_end_time_record/1.
+:- foreign(sys_end_time_record/1, 'TimeRecord', end).
 
 :- private sys_list_record_stats/1.
-:- foreign(sys_list_record_stats/1, 'ForeignStatistics',
-      sysListRecordStats).
+:- foreign(sys_list_record_stats/1, 'TimeRecord', sysListRecordStats).
 
 :- private sys_get_record_stat/3.
-:- foreign(sys_get_record_stat/3, 'ForeignStatistics',
-      sysGetRecordStat('Object','String')).
+:- virtual sys_get_record_stat/3.
+:- foreign(sys_get_record_stat/3, 'TimeRecord', getStat('String')).

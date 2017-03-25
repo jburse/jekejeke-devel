@@ -1,10 +1,10 @@
 package jekpro.platform.android;
 
 import android.os.SystemClock;
-import jekpro.model.molec.EngineMessage;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.*;
+import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.TermCompound;
 
 /**
  * The foreign predicates for the module stats.
