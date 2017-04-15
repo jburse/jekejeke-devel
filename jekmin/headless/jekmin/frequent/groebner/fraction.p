@@ -1,0 +1,593 @@
+/**
+ * Symbolic fraction.
+ *
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ *
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ *
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ *
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
+ */
+
+:- package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekpro/frequent/misc)).
+
+:- module(fraction, []).
+:- reexport('../gauss/element').
+
+:- use_module(library(misc/elem)).
+:- use_module(library(basic/lists)).
+:- use_module(generic).
+:- use_module(polynom).
+:- use_module(rational).
+
+:- use_module(library(experiment/attr)).
+:- use_module(library(experiment/trail)).
+
+/*********************************************************************/
+/* Arithmetic                                                        */
+/*********************************************************************/
+
+/**
+ * -(P, Q):
+ * The predicate succeeds in Q with the P negated.
+ */
+% -(+Fracton, -Fracton)
+:- override (-)/2.
+:- public (-)/2.
+fraction(A,B) - fraction(C,B) :-
+   C is -A.
+
+/**
+ * +(P, Q, R):
+ * The predicate succeeds in R with the sum of P and Q.
+ */
+% +(+Fracton, +Internal, -Internal)
+:- override (+)/3.
+:- public (+)/3.
++(fraction(A,B), Y, R) :-
+   integer(Y), !,
+   fraction: +(fraction(A,B), fraction(Y,1), R).
++(fraction(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   fraction: +(fraction(A,B), fraction(Y,1), R).
++(fraction(A,B), rational(C,D), R) :- !,
+   fraction: +(fraction(A,B), fraction(rational(C,D),1), R).
++(fraction(A,B), polynom(C,D), R) :- !,
+   fraction: +(fraction(A,B), fraction(polynom(C,D),1), R).
++(fraction(A,B), fraction(C,D), R) :-
+   H is A*D+B*C,
+   J is B*D,
+   make_fraction(H, J, R).
+
+/**
+ * -(P, Q, R):
+ * The predicate succeeds in R with P subtracted by Q.
+ */
+% -(+Fracton, +Internal, -Internal)
+:- override (-)/3.
+:- public (-)/3.
+-(fraction(A,B), Y, R) :-
+   integer(Y), !,
+   fraction: -(fraction(A,B), fraction(Y,1), R).
+-(fraction(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   fraction: -(fraction(A,B), fraction(Y,1), R).
+-(fraction(A,B), rational(C,D), R) :- !,
+   fraction: -(fraction(A,B), fraction(rational(C,D),1), R).
+-(fraction(A,B), polynom(C,D), R) :- !,
+   fraction: -(fraction(A,B), fraction(polynom(C,D),1), R).
+-(fraction(A,B), fraction(C,D), R) :-
+   H is A*D-B*C,
+   J is B*D,
+   make_fraction(H, J, R).
+
+/**
+ * *(P, Q, R):
+ * The predicate succeeds in R with the product of P and Q.
+ */
+% *(+Fracton, +Internal, -Internal)
+:- override * /3.
+:- public * /3.
+*(fraction(A,B), Y, R) :-
+   integer(Y), !,
+   fraction: *(fraction(A,B), fraction(Y,1), R).
+*(fraction(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   fraction: *(fraction(A,B), fraction(Y,1), R).
+*(fraction(A,B), rational(C,D), R) :- !,
+   fraction: *(fraction(A,B), fraction(rational(C,D),1), R).
+*(fraction(A,B), polynom(C,D), R) :- !,
+   fraction: *(fraction(A,B), fraction(polynom(C,D),1), R).
+*(fraction(A,B), fraction(C,D), R) :-
+   H is A*C,
+   J is B*D,
+   make_fraction(H, J, R).
+
+/**
+ * /(P, Q, R):
+ * The predicate succeeds in R with P divided by Q.
+ */
+% /(+Fracton, +Internal, -Internal)
+:- override / /3.
+:- public / /3.
+/(fraction(A,B), Y, R) :-
+   integer(Y), !,
+   fraction: /(fraction(A,B), fraction(Y,1), R).
+/(fraction(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   fraction: /(fraction(A,B), fraction(Y,1), R).
+/(fraction(A,B), rational(C,D), R) :- !,
+   fraction: /(fraction(A,B), fraction(rational(C,D),1), R).
+/(fraction(A,B), polynom(C,D), R) :- !,
+   fraction: /(fraction(A,B), fraction(polynom(C,D),1), R).
+/(fraction(A,B), fraction(C,D), R) :-
+   H is A*D,
+   J is B*C,
+   make_fraction(H, J, R).
+
+/**
+ * ^(P, Q, R):
+ * The predicate succeeds in R with P raised by Q.
+ */
+% ^(+Fracton, +Integer, -Internal)
+:- override ^ /3.
+:- public ^ /3.
+^(fraction(A,B), Y, R) :-
+   user:(Y < 0), !,
+   user:Y - Z,
+   H is A^Z,
+   J is B^Z,
+   new_fraction(J, H, R).
+^(_, 0, R) :- !,
+   R = 1.
+^(fraction(A,B), Y, fraction(H,J)) :-
+   H is A^Y,
+   J is B^Y.
+
+/*********************************************************************/
+/* Basic Comparison                                                  */
+/*********************************************************************/
+
+:- override gen_eq/2.
+:- public gen_eq/2.
+gen_eq(fraction(A,B), fraction(C,D)) :-
+   A =:= C,
+   B =:= D.
+
+/*********************************************************************/
+/* Polynomial Normlization                                           */
+/*********************************************************************/
+
+% make_fraction(+Internal, +Internal, -Internal)
+make_fraction(_, 0, _) :-
+   throw(error(evaluation_error(zero_divisor),_)).
+make_fraction(0, _, R) :- !,
+   R = 0.
+make_fraction(F, G, R) :-
+   sys_poly_norm(F, G, A, B),
+   new_fraction(A, B, R).
+
+% sys_poly_norm(+Internal, +Internal, -Internal, -Internal)
+:- private sys_poly_norm/4.
+sys_poly_norm(F, G, A, B) :-
+   sys_poly_lcm(F, G, K),
+   sys_poly_div(K, G, A, _),
+   sys_poly_div(K, F, B, _).
+
+% sys_poly_lcm(+Internal, +Internal, -Internal)
+:- private sys_poly_lcm/3.
+sys_poly_lcm(A, B, C) :-
+   S is A*Z,
+   T is B*(1-Z),
+   sys_poly_groeb([S,T], L),
+   sys_poly_min(L, C).
+
+/**
+ * sys_poly_div(F, G, K, M):
+ * The predicate succeeds in K and M, with the separation of
+ * F along G such that F = K*G+M.
+ */
+% sys_poly_div(+Internal, +Internal, -Internal, -Internal)
+:- private sys_poly_div/4.
+sys_poly_div(F, G, K, M) :-
+   sys_poly_head(G, H),
+   sys_poly_comb(F, H, I, N),
+   I \== 0, !,
+   J is N-I*(G-H),
+   sys_poly_div(J, G, L, M),
+   K is I+L.
+sys_poly_div(F, _, 0, F).
+
+/*********************************************************************/
+/* Polynomial Groebner                                               */
+/*********************************************************************/
+
+% sys_poly_groeb(+List, -List)
+:- public sys_poly_groeb/2.
+sys_poly_groeb(L, R) :-
+   length(L, N),
+   sys_init_pairs(N, P),
+   sys_poly_groeb(L, P, R).
+
+% sys_init_pairs(+Integer, -List)
+:- private sys_init_pairs/2.
+sys_init_pairs(1, []) :- !.
+sys_init_pairs(N, L) :-
+   M is N-1,
+   sys_init_pairs(M, H),
+   sys_nudge_pairs(H, K),
+   sys_new_pairs(M, K, L).
+
+% sys_poly_groeb(+List, +List, -List)
+:- private sys_poly_groeb/3.
+sys_poly_groeb([F], _, L) :- !,
+   L = [F].
+sys_poly_groeb(L, P, T) :-
+   nth0(I, L, 0, S), !,
+   sys_shrink_pairs(P, I, Q),
+   sys_poly_groeb(S, Q, T).
+sys_poly_groeb(L, P, V) :-
+   nth0(J, L, F, S),
+   member(G, S),
+   sys_poly_head(G, H),
+   sys_poly_comb(F, H, K, N),
+   K \== 0, !,
+   M is N-K*(G-H),
+   nth0(J, U, M, S),
+   sys_poly_groeb(U, P, V).
+sys_poly_groeb(L, P, R) :-
+   last(P, (I,J), H), !,
+   nth0(I, L, X),
+   nth0(J, L, Y),
+   sys_poly_pair(X, Y, Z),
+   length(L, N),
+   sys_nudge_pairs(H, K),
+   sys_new_pairs(N, K, Q),
+   sys_poly_groeb([Z|L], Q, R).
+sys_poly_groeb(L, _, L).
+
+% sys_new_pairs(+Integer, +List, -List)
+:- private sys_new_pairs/3.
+sys_new_pairs(0, L, L) :- !.
+sys_new_pairs(N, L, [(0,N)|R]) :-
+   user: -(N, 1, M),
+   sys_new_pairs(M, L, R).
+
+% sys_nudge_pairs(+List, -List)
+:- private sys_nudge_pairs/2.
+sys_nudge_pairs([(A,B)|L], [(C,D)|R]) :-
+   user: +(A, 1, C),
+   user: +(B, 1, D),
+   sys_nudge_pairs(L, R).
+sys_nudge_pairs([], []).
+
+% sys_shrink_pairs(+List, +Integer, -List)
+:- private sys_shrink_pairs/3.
+sys_shrink_pairs([(K,_)|L], K, R) :- !,
+   sys_shrink_pairs(L, K, R).
+sys_shrink_pairs([(_,K)|L], K, R) :- !,
+   sys_shrink_pairs(L, K, R).
+sys_shrink_pairs([(A,B)|L], K, [(C,D)|R]) :-
+   sys_shrink_index(A, K, C),
+   sys_shrink_index(B, K, D),
+   sys_shrink_pairs(L, K, R).
+sys_shrink_pairs([], _, []).
+
+% sys_shrink_index(+Integer, +Integer, -Integer)
+:- private sys_shrink_index/3.
+sys_shrink_index(A, K, C) :-
+   user:(A > K), !,
+   user: -(A, 1, C).
+sys_shrink_index(A, _, A).
+
+/*********************************************************************/
+/* Polynomial Buchberger                                             */
+/*********************************************************************/
+
+% sys_poly_pair(+Internal, +Internal, -Internal)
+:- private sys_poly_pair/3.
+sys_poly_pair(X, Y, Z) :-
+   sys_poly_head(X, H),
+   sys_poly_head(Y, J),
+   sys_head_gcd(H, J, K),
+   sys_head_div(H, K, U),
+   sys_head_div(J, K, V),
+   Z is X*V-Y*U.
+
+% sys_head_div(+Monomial, +Monomial, -Internal)
+:- private sys_head_div/3.
+sys_head_div(rational(A,B), rational(C,D), X) :- !,
+   user: //(A, C, H),
+   user: //(B, D, J),
+   new_rational(H, J, X).
+sys_head_div(polynom(A,[N-B]), rational(C,D), X) :- !,
+   sys_head_div(B, rational(C,D), H),
+   sys_make_poly(A, [N-H], X).
+sys_head_div(rational(_,_), polynom(_,_), _) :-
+   throw(error(illegal_state,_)).
+sys_head_div(polynom(A,[N-B]), polynom(C,D), X) :-
+   A @> C, !,
+   sys_head_div(B, polynom(C,D), H),
+   sys_make_poly(A, [N-H], X).
+sys_head_div(polynom(A,[N-B]), polynom(A,[M-D]), X) :- !,
+   sys_head_div(B, D, H),
+   user: -(N, M, K),
+   sys_make_poly(A, [K-H], X).
+sys_head_div(polynom(_,_), polynom(_,_), _) :-
+   throw(error(illegal_state,_)).
+
+% sys_head_gcd(+Monomial, +Monomial, -Monomial)
+:- private sys_head_gcd/3.
+sys_head_gcd(rational(A,B), rational(C,D), X) :- !,
+   gcd(A, C, H),
+   gcd(B, D, J),
+   X = rational(H,J).
+sys_head_gcd(polynom(_,[_-B]), rational(C,D), X) :- !,
+   sys_head_gcd(B, rational(C,D), X).
+sys_head_gcd(rational(A,B), polynom(_,[_-D]), X) :- !,
+   sys_head_gcd(rational(A,B), D, X).
+sys_head_gcd(polynom(A,[_-B]), polynom(C,D), X) :-
+   A @> C, !,
+   sys_head_gcd(B, polynom(C,D), X).
+sys_head_gcd(polynom(A,[N-B]), polynom(A,[M-D]), X) :- !,
+   sys_head_gcd(B, D, H),
+   user:min(N, M, K),
+   X = polynom(A,[K-H]).
+sys_head_gcd(polynom(A,B), polynom(_,[_-D]), X) :-
+   sys_head_gcd(polynom(A,B), D, X).
+
+/*********************************************************************/
+/* Polynomial Ordering                                               */
+/*********************************************************************/
+
+% sys_poly_min(+List, -Internal)
+:- private sys_poly_min/2.
+sys_poly_min([X,Y|L], R) :-
+   sys_poly_min([Y|L], H),
+   sys_poly_compare(O, X, H),
+   O \== <, !,
+   R = H.
+sys_poly_min([X|_], X).
+
+% sys_poly_compare(-Ordering, +Internal, +Internal)
+:- private sys_poly_compare/3.
+sys_poly_compare(O, F, G) :-
+   sys_poly_head(F, H),
+   sys_poly_head(G, J),
+   sys_head_compare(O, H, J).
+
+% sys_head_compare(-Ordering, +Monominal, +Monomial)
+:- private sys_head_compare/3.
+sys_head_compare(O, rational(_,_), rational(_,_)) :- !,
+   O = = .
+sys_head_compare(O, polynom(_,_), rational(_,_)) :- !,
+   O = > .
+sys_head_compare(O, rational(_,_), polynom(_,_)) :- !,
+   O = < .
+sys_head_compare(O, polynom(A,_), polynom(C,_)) :-
+   A @> C, !,
+   O = > .
+sys_head_compare(O, polynom(A,B), polynom(A,D)) :- !,
+   sys_coeff_compare(O, B, D).
+sys_head_compare(<, _, _).
+
+% sys_coeff_compare(-Ordering, +List, +List)
+:- private sys_coeff_compare/3.
+sys_coeff_compare(O, [N-_], [M-_]) :-
+   user:(N > M), !,
+   O = > .
+sys_coeff_compare(O, [N-A], [N-B]) :- !,
+   sys_head_compare(O, A, B).
+sys_coeff_compare(<, _, _).
+
+/*********************************************************************/
+/* Polynomial Combing                                                */
+/*********************************************************************/
+
+/**
+ * sys_poly_comb(P, M, K, N):
+ * The predicate succeeds in K and N, with the separation of
+ * P along M such that P = K*M+N.
+ */
+% sys_poly_comb(+Internal, +Monomial, -Internal, -Internal)
+:- private sys_poly_comb/4.
+sys_poly_comb(E, rational(A,B), K, M) :- !,
+   K is E/rational(A,B),
+   M = 0.
+sys_poly_comb(A, polynom(C,D), K, M) :-
+   sys_freezer(A),
+   A @> C, !,
+   sys_coeff_comb([1-1], polynom(C,D), R, S),
+   sys_make_poly(A, R, K),
+   sys_make_poly(A, S, M).
+sys_poly_comb(A, polynom(A,[N-C]), K, M) :-
+   sys_freezer(A), !,
+   sys_same_comb([1-1], N, C, R, S),
+   sys_make_poly(A, R, K),
+   sys_make_poly(A, S, M).
+sys_poly_comb(A, _, K, M) :-
+   sys_freezer(A), !,
+   K = 0,
+   M = A.
+sys_poly_comb(E, _, K, M) :-
+   integer(E), !,
+   K = 0,
+   M = E.
+sys_poly_comb(rational(A,B), _, K, M) :- !,
+   K = 0,
+   M = rational(A,B).
+sys_poly_comb(polynom(A,B), polynom(C,D), K, M) :-
+   A @> C, !,
+   sys_coeff_comb(B, polynom(C,D), R, S),
+   sys_make_poly(A, R, K),
+   sys_make_poly(A, S, M).
+sys_poly_comb(polynom(A,B), polynom(A,[N-C]), K, M) :- !,
+   sys_same_comb(B, N, C, R, S),
+   sys_make_poly(A, R, K),
+   sys_make_poly(A, S, M).
+sys_poly_comb(E, _, 0, E).
+
+% sys_same_comb(+List, +Integer, +Monomial, -List, -List) :-
+:- private sys_same_comb/5.
+sys_same_comb([N-A|L], J, G, P, Q) :-
+   user:(N >= J), !,
+   sys_poly_comb(A, G, K, M),
+   sys_same_comb(L, J, G, R, S),
+   user: -(N, J, I),
+   sys_make_map(R, I, K, P),
+   sys_make_map(S, N, M, Q).
+sys_same_comb(L, _, _, [], L).
+
+% sys_coeff_comb(+List, +Monomial, -List, -List)
+:- private sys_coeff_comb/4.
+sys_coeff_comb([N-A|L], G, P, Q) :-
+   sys_poly_comb(A, G, K, M),
+   sys_coeff_comb(L, G, R, S),
+   sys_make_map(R, N, K, P),
+   sys_make_map(S, N, M, Q).
+sys_coeff_comb([], _, [], []).
+
+/**
+ * sys_poly_head(P, M):
+ * The predicate succeeds in M with the greatest monomial of P.
+ */
+% sys_poly_head(+Internal, -Monomial)
+:- private sys_poly_head/2.
+sys_poly_head(E, X) :-
+   sys_freezer(E), !,
+   X = polynom(E,[1-rational(1,1)]).
+sys_poly_head(E, X) :-
+   integer(E), !,
+   X = rational(E,1).
+sys_poly_head(rational(A,B), X) :- !,
+   X = rational(A,B).
+sys_poly_head(polynom(A,[N-B|_]), polynom(A,[N-C])) :-
+   sys_poly_head(B, C).
+
+/*********************************************************************/
+/* Arithmetic Helper                                                 */
+/*********************************************************************/
+
+% new_fraction(+Internal, +Internal, -Internal)
+new_fraction(U, V, R) :-
+   sys_poly_denom(U, H),
+   sys_poly_denom(V, J),
+   user: *(H, J, P),
+   gcd(H, J, Q),
+   user: //(P, Q, K),
+   sys_poly_sign(V, S),
+   user: *(K, S, T),
+   T \== 1, !,
+   A is T*U,
+   B is T*V,
+   new_fraction2(A, B, R).
+new_fraction(U, V, R) :-
+   new_fraction2(U, V, R).
+
+% new_fraction2(+Internal, +Internal, -Internal)
+:- private new_fraction2/3.
+new_fraction2(A, 1, R) :- !,
+   R = A.
+new_fraction2(A, B, fraction(A,B)).
+
+% sys_poly_denom(+Internal, -Integer)
+:- private sys_poly_denom/2.
+sys_poly_denom(E, X) :-
+   sys_freezer(E), !,
+   X = 1.
+sys_poly_denom(E, X) :-
+   integer(E), !,
+   X = 1.
+sys_poly_denom(rational(_,B), X) :- !,
+   X = B.
+sys_poly_denom(polynom(_,B), X) :-
+   sys_coeff_denom(B, X).
+
+% sys_coeff_denom(+List, -Integer)
+:- private sys_coeff_denom/2.
+sys_coeff_denom([_-A|L], K) :-
+   sys_poly_denom(A, H),
+   sys_coeff_denom(L, J),
+   user: *(H, J, P),
+   gcd(H, J, Q),
+   user: //(P, Q, K).
+sys_coeff_denom([], 1).
+
+% sys_poly_sign(+Internal -Integer)
+:- private sys_poly_sign/2.
+sys_poly_sign(E, X) :-
+   sys_freezer(E), !,
+   X = 1.
+sys_poly_sign(E, X) :-
+   integer(E), !,
+   user:sign(E, X).
+sys_poly_sign(rational(A,_), X) :- !,
+   user:sign(A, X).
+sys_poly_sign(polynom(_,L), X) :-
+   last(L, _-B),
+   sys_poly_sign(B, X).
+
+/*********************************************************************/
+/* CAS Display Hook                                                  */
+/*********************************************************************/
+
+/**
+ * sys_portray_eq(F, G):
+ * The predicate succeeds in G with a custom form of F.
+ */
+% sys_portray_eq(+Goal, -Goal)
+:- public residue:sys_portray_eq/2.
+:- multifile residue:sys_portray_eq/2.
+:- meta_predicate residue:sys_portray_eq(0,0).
+residue:sys_portray_eq(_ = X, _) :-
+   var(X), !, fail.
+residue:sys_portray_eq(X = fraction(A,B), X is H/J) :- !,
+   sys_portray_magnitude(A, H),
+   sys_portray_magnitude(B, J).
+
+% sys_portray_magnitude(+Internal, -Extrernal)
+:- private sys_portray_magnitude/2.
+sys_portray_magnitude(X, Y) :-
+   residue:sys_portray_eq(_ = X, _ is Y), !.
+sys_portray_magnitude(X, X).
+
+/*********************************************************************/
+/* Generic Hook                                                      */
+/*********************************************************************/
+
+/**
+ * X is E:
+ * The predicate succeeds in evaluating E by using polymorphism.
+ */
+% is(-Internal, +Expr)
+:- override generic:is/2.
+:- multifile generic:is/2.
+:- public generic:is/2.
+:- meta_predicate generic:(?is#(1)).
+generic:(X is E) :-
+   var(E), !,
+   sys_ensure_serno(E),
+   sys_freeze_var(E, X).
+generic:(X is fraction(A,B)) :- !,
+   X = fraction(A,B).
+
+:- multifile generic:is_abnormal/1.
+:- public generic:is_abnormal/1.
+generic:is_abnormal(fraction(_,_)).

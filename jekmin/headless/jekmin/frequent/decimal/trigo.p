@@ -75,6 +75,7 @@ mp_sin(X, P, Y) :-
    mp_sin(U, X, P, Y).
 
 % mp_sin_case(+Integer, +Decimal, +Context, -Decimal)
+:- private mp_sin_case/4.
 mp_sin_case(0, X, P, Y) :-
    mp_math(sin(X), P, Y).
 mp_sin_case(1, X, P, Y) :-
@@ -149,6 +150,7 @@ mp_cos(X, P, Y) :-
    mp_cos(U, X, P, Y).
 
 % mp_cos_case(+Integer, +Decimal, +Context, -Decimal)
+:- private mp_cos_case/4.
 mp_cos_case(0, X, P, Y) :-
    mp_math(cos(X), P, Y).
 mp_cos_case(1, X, P, Y) :-
