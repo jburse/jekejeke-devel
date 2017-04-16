@@ -1,5 +1,33 @@
 /**
- * Symbolic vector.
+ * This module provides vectors of element columns. A vector is a
+ * compound with varying number of elements which can be constants
+ * or symbolic expressions. An element can be accessed by the
+ * predicate []/3. The first element has the index one. The arity
+ * of the vector can be queried by the predicate len/2. Vectors can
+ * be created by the two special forms [_ | _] and {_ | _} introduced
+ * in the module element.
+ *
+ * Examples:
+ * ?- X is [A,B,C], Y is len(X).
+ * X is [A,B,C],
+ * Y = 3
+ * ?- X is [A,B,C], Z is X[2].
+ * X is [A,B,C],
+ * Z is B
+ *
+ * The predicate sum/2 can be used to compute the sum of the elements
+ * of a vector. Further aggregate functions are currently not provided.
+ * This module further provides some rudimentary arithmetic such as
+ * sign change, addition and subtraction. Other operations such as
+ * scalar product or transposing are currently not provided. Error
+ * handling is rudimentary.
+ *
+ * The vector based consing returns a matrix. The consing does currently
+ * not check that the second argument is a proper list and that all
+ * elements of the list are vectors. The intention here is to use the
+ * consing to only create homogenous matrixes of vectors. The reader
+ * interested in the methods of the matrix should browse into the
+ * module matrix.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,7 +71,7 @@
 
 /**
  * .(X, Y, Z):
- * The predicate unifies in Z the consing of X and Y.
+ * The predicate succeeds in Z with the consing of X and Y.
  */
 % .(+Vector, +List, -Matrice)
 :- public '.'/3.
@@ -52,7 +80,7 @@
 
 /**
  * X[Y, Z]:
- * The predicate unifies Z with the Y-the element
+ * The predicate succeeds in Z with the Y-the element
  * of the vector X.
  */
 % [](+Vector, +Integer, -Element)
@@ -64,7 +92,7 @@ X [Y, Z] :-
 
 /**
  * len(X, Y):
- * The predicate unifies Y with the number of elements
+ * The predicate succeeds in Y with the number of elements
  * in the vector X.
  */
 % len(+Vector, -Integer)
@@ -74,7 +102,7 @@ len(X, Y) :-
 
 /**
  * sum(X, Y):
- * The predicate unifies Y with the sum of elements
+ * The predicate succeeds in Y with the sum of elements
  * in the vector X.
  */
 % sum(+Vector, -Internal)
@@ -96,7 +124,7 @@ sys_sum_vector([], 0).
 
 /**
  * -(X, Y):
- * The predicate unifies Y with the sign changed vector X.
+ * The predicate succeeds in Y with the sign changed vector X.
  */
 % -(+Vector, -Vector)
 :- override (-)/2.
@@ -107,7 +135,7 @@ X - Y :-
 
 /**
  * +(X, Y, Z):
- * The predicate unifies Z with the sum of the vector X and
+ * The predicate succeeds in Z with the sum of the vector X and
  * the vector Y.
  */
 % +(+Vector, +Internal, -Vector)
@@ -121,7 +149,7 @@ X - Y :-
 
 /**
  * -(X, Y, Z):
- * The predicate unifizes Z with the the vector X subtracted
+ * The predicate succeeds in Z with the vector X subtracted
  * by the vector Y.
  */
 % -(+Vector, +Internal, -Vector)

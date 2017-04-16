@@ -1,8 +1,42 @@
 /**
- * Symbolic matrice. Matrice inversion from here:
+ * This module provides matrixes of vector rows. A matrix is a
+ * compound with varying number of vectors. A vector can be
+ * accessed by the predicate []/3. The first vector has the
+ * index one. An element can be accessed by the predicate []/4.
+ * The first element in each vector has the index one. The arity
+ * of the matrix can be queried by the predicate len/2. Vectors
+ * can be created by the two special forms [_ | _] and {_ | _}
+ * introduced in the module element.
  *
- " Hoidn, H.P., Kirchgraber, U. and Marti, J.: Linear Algebra,
- * 3. Auflage, Verlag der Fachvereine Zürich, 1983
+ * Examples:
+ * ?- X is [[A,B],[C,D]], Y is X[2][1].
+ * X is [[A,B],[C,D]],
+ * Y is C
+ * ?- X is [[A,B],[C,D]], Y is X[2,1].
+ * X is [[A,B],[C,D]],
+ * Y is C
+ *
+ * This module provides arithmetic for matrixes. Besides change sign,
+ * addition and subtraction, we also find multiplication, division and
+ * power. The multiplication uses the usual multiplication sign (*)/2
+ * despite the fact that matrix multiplication is not commutative. Power
+ * is defined for an integer exponent. Operations such as transposing
+ * are currently not provided.
+ *
+ * Examples:
+ * ?- X is [[1,1/2],[1/2,1/3]], Y is X^(-1).
+ * X is [[1,1/2],[1/2,1/3]],
+ * Y is [[4,-6],[-6,12]]
+ * ?- X is [[1,1/A],[1,1]], Y is X^(-1).
+ * X is [[1,1/A],[1,1]],
+ * Y is [[-A/(1-A),1/(1-A)],[A/(1-A),-A/(1-A)]]
+ *
+ * The matrix inversion is implemented by an exchange step method. It
+ * works for constant and symbol expression elements. We have not yet
+ * implemented pivot search so that the current implementation might
+ * not find an inversion even if there exists one. Error handling is
+ * rudimentary. Cancellation does not yet generate non-zero
+ * side conditions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -46,8 +80,8 @@
 
 /**
  * X[Y, Z]:
- * The predicate unifies Z with the Y-the vector
- * of the matrice X.
+ * The predicate succeeds in Z with the Y-the vector
+ * of the matrix X.
  */
 % [](+Matrice, +Integer, -Vector)
 :- override []/3.
@@ -58,8 +92,8 @@ X [Y, Z] :-
 
 /**
  * X[Y, Z, T]:
- * The predicate unifies T with the Z-the element
- * of the Y-the vector of the matrice X.
+ * The predicate succeeds in T with the Z-the element
+ * of the Y-the vector of X.
  */
 % [](+Matrice, +Integer, +Integer, -Element)
 :- override []/4.
@@ -72,8 +106,8 @@ X [Y, Z, T] :-
 
 /**
  * len(X, Y):
- * The predicate unifies Y with the number of vectors
- * in the matrice X.
+ * The predicate succeeds in Y with the number of vectors
+ * in the matrix X.
  */
 % len(+Matrice, -Integer)
 :- public len/2.
@@ -86,7 +120,7 @@ len(X, Y) :-
 
 /**
  * -(X, Y):
- * The predicate unifies Y with the sign changed matrice X.
+ * The predicate succeeds in Y with the sign changed matrix X.
  */
 % -(+Matrice, -Matrice)
 :- override (-)/2.
@@ -97,8 +131,8 @@ X - Y :-
 
 /**
  * +(X, Y, Z):
- * The predicate unifies Z with the sum of the matrice X and
- * the matrice Y.
+ * The predicate succeeds in Z with the sum of the matrix X and
+ * the matrix Y.
  */
 % +(+Matrice, +Internal, -Matrice)
 :- override (+)/3.
@@ -111,8 +145,8 @@ X - Y :-
 
 /**
  * -(X, Y, Z):
- * The predicate unifizes Z with the the matrice X subtracted
- * by the matrice Y.
+ * The predicate succeeds in Z with the matrix X subtracted
+ * by the matrix Y.
  */
 % -(+Matrice, +Internal, -Matrice)
 :- override (-)/3.
@@ -125,8 +159,8 @@ X - Y :-
 
 /**
  * *(X, Y, Z):
- * The predicate unifies Z with the product of the matrice X followed
- * by tbe matrice Y.
+ * The predicate unifies Z with the product of the matrix X followed
+ * by the matrix Y.
  */
 % *(+Matrice, +Internal, -Matrice)
 :- override * /3.
@@ -140,8 +174,9 @@ X - Y :-
    Z is {{sum({X[I,K]*Y[K,J]|between(1, L, K)})|between(1, N, J)}|between(1, M, I)}.
 
 /**
- * /(P, Q, R):
- * The predicate succeeds in R with P divided by Q.
+ * /(X, Y, Z):
+ * The predicate succeeds in Z with the matrix X divided
+ * by the matrix Y.
  */
 % /(+Matrice, +Internal, -Matrice)
 :- override / /3.
@@ -180,7 +215,7 @@ sys_matrice_step(_, X, X).
 
 /**
  * ^(X, Y, Z):
- * The predicate unifies Z with the Y-the power of the matrice X.
+ * The predicate succeeds in Z with the Y-the power of the matrix X.
  */
 % ^(+Matrice, +Integer, -Matrice)
 :- override ^ /3.

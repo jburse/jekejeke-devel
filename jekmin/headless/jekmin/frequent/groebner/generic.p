@@ -88,7 +88,7 @@
 
 /**
  * X is E:
- * The predicate succeeds in evaluating E by using polymorphism.
+ * The predicate succeeds in X in evaluating E by using polymorphism.
  */
 % is(-Internal, +Expr)
 :- override is/2.
