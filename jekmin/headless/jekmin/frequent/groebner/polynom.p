@@ -1,5 +1,23 @@
 /**
- * Symbolic polynom.
+ * This module provides symbolic polynomials. The module is responsible
+ * for the reduction rules that perform simplification. The result
+ * can be also an integer, rational or fraction. In case that some
+ * extra arguments is a fraction, the rules delegate to the fraction
+ * methods since a polynom can be easily also viewed as a fraction.
+ * In case some extra argument is an integer or rational, this argument
+ * is viewed as a polynom.
+ *
+ * Examples:
+ * ?- X is (1+A)^2.
+ * X is 1+2*A+A^2
+ * ?- X is (1+A)/(1+A)^2.
+ * X is 1/(1+A)
+ *
+ * The reduction rules are just predicates inside the polynom module
+ * with a Python first argument for the method receiver. We provide
+ * reduction rules for basic arithmetic. Special functions are
+ * currently not supported. Equality is also realized by the same
+ * mechanism. Error handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -1,5 +1,24 @@
 /**
- * Symbolic fraction.
+ * This module provides symbolic fractions. The module is responsible
+ * for the reduction rules that perform simplification. The result
+ * can be also an integer, rational or polynom. In case some extra
+ * argument is an integer, rational or polynom, this argument is
+ * viewed as a fraction. Common factors among the numerator and
+ * denumerator are determined by a Gröbner Basis algorithm
+ * and cancelled.
+ *
+ * Examples:
+ * ?- X is 1/A+1/B.
+ * X is (A+B)/(A*B)
+ * ?- X is (A*B^2-B)/(A^2*B-A).
+ * X is B/A
+ *
+ * The reduction rules are just predicates inside the fraction module
+ * with a Python first argument for the method receiver. We provide
+ * reduction rules for basic arithmetic. Special functions are currently
+ * not supported. Equality is also realized by the same mechanism. Error
+ * handling is rudimentary. Cancellation does not yet generate
+ * non-zero side conditions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

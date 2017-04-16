@@ -1,5 +1,42 @@
 /**
- * Generic expression dispatcher.
+ * This module provides symbolic expressions evaluation. The main
+ * operation of on a symbolic expression is its reduction. The
+ * reduction is driven by the constructors of the symbolic expression
+ * itself. Polymorphic dispatch is used to delegate to the methods
+ * of the corresponding constructors depending on the class of the
+ * first argument of the constructor.
+ *
+ * This allows for two main functionalities. If the first argument
+ * of the constructor is a constant and if the other arguments are
+ * also constants the constructor can perform partial evaluation. If
+ * the first argument of the constructor is a symbolic expressions or
+ * if some of the other arguments are symbolic expressions the constructor
+ * can perform simplification.
+ *
+ * Examples:
+ * ?- X is 1/2+1/3.        % partial evaluation
+ * X is 5/6
+ * ?- X is 2*A-A.          % simplification
+ * X is A
+ *
+ * The main predicate is is/2. By importing this module the built-in
+ * is/2 will be overloaded. This predicate will perform the symbolic
+ * expression reduction. A further main predicates are (=:=)/2 and
+ * (=\=)/2 again overloading the corresponding built-ins. The predicates
+ * perform a polymorphic dispatch to an equality method of the class
+ * of the first argument.
+ *
+ * Examples:
+ * ?- X is deriv(A^2,A).
+ * X is 2*A
+ * ?- X is [0,1,2], 3 =:= len(X).
+ * X is [0,1,2]
+ *
+ * Not all constructors can be reduced by the default polymorphic
+ * dispatch. Some constructors are special forms and need customized
+ * handling. For this purpose the default polymorphic dispatch has to
+ * be informed, that it doesn’t need to do some handling. This is done
+ * by adding a rule to the predicate is_abnormal/1.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -103,18 +140,8 @@ sys_poly_send(Y, F, T) :-
    M =.. [F|T],
    Y::M.
 
-/**
- * is_abnormal(E):
- * The predicate succeeds when the expression E has a non-default
- * handling. This predicate is multi file and can be thus
- * extended.
- */
-:- multifile is_abnormal/1.
-:- public is_abnormal/1.
-:- static is_abnormal/1.
-
 /*********************************************************************/
-/* Comparison                                                        */
+/* Equality                                                          */
 /*********************************************************************/
 
 /**
@@ -141,51 +168,16 @@ E =\= F :-
    Y is F,
    \+ sys_poly_send(X, gen_eq, [Y]).
 
-/**
- * E < F:
- * The preicate succeeds when evaluating E by using polymorphism
- * is less than evaluating F by using polymorphism.
- */
-:- override < /2.
-:- public < /2.
-E < F :-
-   X is E,
-   Y is F,
-   sys_poly_send(X, gen_ls, [Y]).
+/*********************************************************************/
+/* Extensibility                                                     */
+/*********************************************************************/
 
 /**
- * E =< F:
- * The preicate succeeds when evaluating E by using polymorphism
- * is less or equal than evaluating F by using polymorphism.
+ * is_abnormal(E):
+ * The predicate succeeds when the expression E has a non-default
+ * handling. This predicate is multi file and can be thus
+ * extended.
  */
-:- override =< /2.
-:- public =< /2.
-E =< F :-
-   X is E,
-   Y is F,
-   \+ sys_poly_send(Y, gen_ls, [X]).
-
-/**
- * E > F:
- * The preicate succeeds when evaluating E by using polymorphism
- * is greater than evaluating F by using polymorphism.
- */
-:- override > /2.
-:- public > /2.
-E > F :-
-   X is E,
-   Y is F,
-   sys_poly_send(Y, gen_ls, [X]).
-
-/**
- * E >= F:
- * The preicate succeeds when evaluating E by using polymorphism
- * is greater or equal than evaluating F by using polymorphism.
- */
-:- override >= /2.
-:- public >= /2.
-E >= F :-
-   X is E,
-   Y is F,
-   \+ sys_poly_send(X, gen_ls, [Y]).
-
+:- multifile is_abnormal/1.
+:- public is_abnormal/1.
+:- static is_abnormal/1.

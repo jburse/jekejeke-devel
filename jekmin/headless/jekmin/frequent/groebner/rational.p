@@ -1,5 +1,23 @@
 /**
- * Rational value.
+ * This module provides rational constants. The module is responsible
+ * for the reduction rules that perform partial evaluation. The result
+ * can be also an integer. In case that some extra arguments is not rational,
+ * the rules delegate to the polynom and fraction methods since a
+ * rational can be easily also viewed as a polynom or fraction.
+ *
+ * Examples:
+ * ?- X is 2/3*(3/2).
+ * X = 1
+ * ?- X is 1/2+1/3.
+ * X is 5/6
+ * ?- X is 1/2*(Y+2).
+ * X is 1+1/2*Y
+ *
+ * The reduction rules are just predicates inside the rational
+ * module with a Python first argument for the method receiver. We
+ * provide reduction rules for basic arithmetic. Special functions
+ * are currently not supported. Equality is also realized by the same
+ * mechanism. Error handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

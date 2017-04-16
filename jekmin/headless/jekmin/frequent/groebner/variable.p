@@ -1,5 +1,21 @@
 /**
- * Symbolic variable.
+ * This module provides symbolic variables. The module is responsible
+ * for the reduction rules that perform simplification. The result can
+ * be also an integer, polynomial or fraction. The rules delegate to the
+ * polynom and fraction methods since a variable can be easily also
+ * viewed as a polynom or fraction.
+ *
+ * Examples:
+ * ?- X is A-A.
+ * X = 0
+ * ?- X is A*A.
+ * X is A^2
+ *
+ * The reduction rules are just predicates inside the variable module
+ * with a Python first argument for the method receiver. We provide
+ * reduction rules for basic arithmetic. Special functions are currently
+ * not supported. Equality is also realized by the same mechanism. Error
+ * handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -1,5 +1,22 @@
 /**
- * Integer value.
+ * This module provides integer constants. The module is responsible
+ * for the reduction rules that perform partial evaluation. In case
+ * that some extra arguments is not integer or the reduction demands
+ * it, the rules delegate to the rational, polynom and fraction
+ * methods since an integer can be easily also viewed as a rational,
+ * polynom or fraction.
+ *
+ * Examples:
+ * ?- X is 1+2.
+ * X = 3
+ * ?- X is 1+1/2.
+ * X is 3/2
+ *
+ * The reduction rules are just predicates inside the integer module
+ * with a Python first argument for the method receiver. We provide
+ * reduction rules for basic arithmetic. Bitwise operations and special
+ * functions are currently not supported. Equality is also realized by
+ * the same mechanism. Error handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
