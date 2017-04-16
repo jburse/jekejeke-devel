@@ -1,8 +1,20 @@
 /**
- * Expression substitution.
+ * This module provides symbolic substitution. The substitution
+ * operator subst/3 takes an original reduced expression, a replacement
+ * variable and a replacement expression. It will re-execute the
+ * constructors in the original reduced expression and replace every
+ * occurrence of the replacement variable by the replacement expression.
  *
- * Note: No support for special functions yet, hence polynomial
- * substitution very simple for the case of A @< X.
+ * Example:
+ * ?- X is A^2-B*A+B^2, Y is subst(X,A,2).
+ * X is A^2-A*B+B^2,
+ * Y is 4-2*B+B^2
+ *
+ * Since the constructors of the original expression are re-executed
+ * the substitution operator might cause new partial evaluations or
+ * simplifications. At the moment we provide substitution only for
+ * elements, substitution for vectors and matrices has not yet been
+ * implemented. Accordingly we do not yet support some special functions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

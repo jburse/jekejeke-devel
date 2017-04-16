@@ -1,8 +1,22 @@
 /**
- * Expression derivation.
+ * This module provides symbolic differentiation. The differentiation
+ * operator deriv/2 takes an original reduced expression and a
+ * varying variable. It will re-execute the constructors in the
+ * original reduced expression by their differential counterpart
+ * constructors and treat variables different from the varying
+ * variable as constant.
  *
- * Note: No support for special functions yet, hence polynomial
- * derivative very simple for the case of A @< X.
+ * Example:
+ * ?- X is A^2-B*A+B^2, Y is deriv(X,A).
+ * X is A^2-A*B+B^2,
+ * Y is 2*A-B
+ *
+ * Since the differential counterpart constructors of the original
+ * expression are re-executed the differentiation operator might
+ * cause new partial evaluations or simplifications. At the moment
+ * we provide differentiation only for elements, differentiation for
+ * vectors and matrices has not yet been implemented. Accordingly
+ * we do not yet support some special functions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -42,7 +56,7 @@
 
 /**
  * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivaton dP/dX.
+ * The predicate succeeds in Q with the derivation dP/dX.
  */
 % integer:deriv(+Integer, +Variable, -Internal)
 :- public integer:deriv/3.
@@ -54,7 +68,7 @@ integer:deriv(_, _, 0).
 
 /**
  * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivaton dP/dX.
+ * The predicate succeeds in Q with the derivation dP/dX.
  */
 % rational:deriv(+Rational, +Variable, -Internal)
 :- public rational:deriv/3.
@@ -66,7 +80,7 @@ rational:deriv(_, _, 0).
 
 /**
  * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivaton dP/dX.
+ * The predicate succeeds in Q with the derivation dP/dX.
  */
 % variable:deriv(+Variable, +Variable, -Internal)
 :- public variable:deriv/3.
@@ -80,7 +94,7 @@ variable:deriv(X, _, X).
 
 /**
  * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivaton dP/dX.
+ * The predicate succeeds in Q with the derivation dP/dX.
  */
 % polynom:deriv(+Polynom, +Variable, -Internal)
 :- public polynom:deriv/3.
@@ -117,7 +131,7 @@ sys_coeff_deriv([], _, []).
 
 /**
  * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivaton dP/dX.
+ * The predicate succeeds in Q with the derivation dP/dX.
  */
 % fraction:deriv(+Fraction, +Variable, -Internal)
 :- public fraction:deriv/3.

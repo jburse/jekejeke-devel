@@ -1,5 +1,31 @@
 /**
- * Series expansion.
+ * This module provides symbolic series development. The substitution
+ * and the differential operator are the building blocks for the
+ * development of series. The operator taylor/3 can be used to develop
+ * a Taylor series. It takes an original reduced expression, a varying
+ * variable and the number of desired summands.
+ *
+ * Examples:
+ * ?- X is 1/(1+A), Y is taylor(X,A,5).
+ * X is 1/(1+A),
+ * Y is 1-A+A^2-A^3+A^4-A^5
+ * ?- X is 1/(1+A), Y is laurent(X,A,5).
+ * X is 1/(1+A),
+ * Y is (1-A+A^2-A^3+A^4)/A^5
+ *
+ * By default the Taylor series is developed at the point zero (0),
+ * known as Maclaurin series. There is a variant operator taylor/4
+ * with a further argument for the point where the series should be
+ * developed. The operator laurent/[3,4] produce a Laurent series.
+ * Error handling is rudimentary. Cancellation does not yet generate
+ * non-zero side conditions.
+ *
+ * We do not yet support some special functions. The series operators
+ * are realized without any limes operator. Limes calculation is
+ * implicit in our polynomial division since common roots are cancelled.
+ * We do not yet provide some computation for the remainder term,
+ * the convergence radius of the infinite series or a symbolic form
+ * for the infinite series.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -34,8 +60,10 @@
 
 /**
  * taylor(P, X, N, Q):
- * The predicate succeeds in Q with the maclaurin series
- * of P along the variable X for N summands.
+ * taylor(P, X, N, R, Q):
+ * The predicate succeeds in Q with the Taylor series
+ * of P along the variable X for N summands. The quinary
+ * predicate allows specifying the point R.
  */
 % element:taylor(+Internal, +Variable, +Integer, -Internal)
 :- public element:taylor/4.
@@ -52,11 +80,6 @@ sys_maclaurin_horner(P, X, N, M, R) :-
    sys_maclaurin_horner(Q, X, K, M, H),
    R is X*H/K+subst(P,X,0).
 
-/**
- * taylor(P, X, N, R, Q):
- * The predicate succeeds in Q with the taylor series
- * of P along the variable X for N summands at point R.
- */
 % element:taylor(+Internal, +Variable, +Integer, +Internal, -Internal)
 :- public element:taylor/5.
 element:taylor(P, X, N, R, S) :-
@@ -74,8 +97,10 @@ sys_taylor_horner(P, X, N, M, R, S) :-
 
 /**
  * laurent(P, X, N, Q):
- * The predicate suceeds in Q with the laurent series
- * of P along the variable X for N summands.
+ * laurent(P, X, N, R, Q):
+ * The predicate succeeds in Q with the Laurent series
+ * of P along the variable X for N summands. The quinary
+ * predicate allows specifying the point R.
  */
 % element:laurent(+Internal, +Variable, +Integer, -Internal)
 :- public element:laurent/4.
@@ -84,11 +109,6 @@ element:laurent(P, X, N, R) :-
    J is taylor(H,Y,N),
    R is subst(J,Y,1/X).
 
-/**
- * laurent(P, X, N, R, Q):
- * The predicate suceeds in Q with the laurent series
- * of P along the variable X for N summands at point R.
- */
 % element:laurent(+Internal, +Variable, +Integer, +Internal, -Internal)
 :- public element:laurent/5.
 element:laurent(P, X, N, R, S) :-
