@@ -506,48 +506,58 @@ sys_poly_head(polynom(A,[N-B|_]), polynom(A,[N-C])) :-
 
 % new_fraction(+Internal, +Internal, -Internal)
 new_fraction(U, V, R) :-
-   sys_poly_denom(U, H),
-   sys_poly_denom(V, J),
-   user: *(H, J, P),
-   gcd(H, J, Q),
-   user: //(P, Q, K),
-   sys_poly_sign(V, S),
-   user: *(K, S, T),
-   T \== 1, !,
-   A is T*U,
-   B is T*V,
+   sys_poly_common(U, H),
+   sys_poly_common(V, J),
+   sys_make_common(H, J, rational(P,Q)),
+   new_rational(Q, P, K),
+   K \== 1, !,
+   A is K*U,
+   B is K*V,
    new_fraction2(A, B, R).
 new_fraction(U, V, R) :-
    new_fraction2(U, V, R).
 
 % new_fraction2(+Internal, +Internal, -Internal)
 :- private new_fraction2/3.
+new_fraction2(A, -1, R) :- !,
+   R is -A.
 new_fraction2(A, 1, R) :- !,
    R = A.
+new_fraction2(U, V, R) :-
+   sys_poly_sign(V, S),
+   S \== 1, !,
+   A is -U,
+   B is -V,
+   R = fraction(A,B).
 new_fraction2(A, B, fraction(A,B)).
 
-% sys_poly_denom(+Internal, -Integer)
-:- private sys_poly_denom/2.
-sys_poly_denom(E, X) :-
+% sys_poly_common(+Internal, -Rational)
+:- private sys_poly_common/2.
+sys_poly_common(E, X) :-
    sys_freezer(E), !,
-   X = 1.
-sys_poly_denom(E, X) :-
+   X = rational(1,1).
+sys_poly_common(E, X) :-
    integer(E), !,
-   X = 1.
-sys_poly_denom(rational(_,B), X) :- !,
-   X = B.
-sys_poly_denom(polynom(_,B), X) :-
-   sys_coeff_denom(B, X).
+   X = rational(E,1).
+sys_poly_common(rational(A,B), X) :- !,
+   X = rational(A,B).
+sys_poly_common(polynom(_,B), X) :-
+   sys_coeff_common(B, X).
 
-% sys_coeff_denom(+List, -Integer)
-:- private sys_coeff_denom/2.
-sys_coeff_denom([_-A|L], K) :-
-   sys_poly_denom(A, H),
-   sys_coeff_denom(L, J),
-   user: *(H, J, P),
-   gcd(H, J, Q),
-   user: //(P, Q, K).
-sys_coeff_denom([], 1).
+% sys_coeff_common(+List, -Rational)
+:- private sys_coeff_common/2.
+sys_coeff_common([_-A,C|L], K) :- !,
+   sys_poly_common(A, H),
+   sys_coeff_common([C|L], J),
+   sys_make_common(H, J, K).
+sys_coeff_common([_-A], H) :-
+   sys_poly_common(A, H).
+
+% sys_make_common(+Rational, +Rational, -Rational)
+:- private sys_make_common/3.
+sys_make_common(rational(A,B), rational(C,D), rational(E,F)) :-
+   gcd(A, C, E),
+   lcm(B, D, F).
 
 % sys_poly_sign(+Internal -Integer)
 :- private sys_poly_sign/2.
