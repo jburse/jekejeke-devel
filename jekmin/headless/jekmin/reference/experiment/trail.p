@@ -79,3 +79,11 @@
 % sys_bound_var(+Ref)
 :- public sys_bound_var/1.
 :- special(sys_bound_var/1, 'SpecialUndo', 3).
+
+/**
+ * sys_freezer(R):
+ * The predicate succeeds when R is a reference to a variable.
+ */
+% sys_freezer(+Term)
+:- public sys_freezer/1.
+:- special(sys_freezer/1, 'SpecialUndo', 4).

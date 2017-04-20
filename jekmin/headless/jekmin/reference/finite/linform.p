@@ -459,7 +459,6 @@ residue:sys_unwrap_eq([A*X|B] #= K, E #= F) :-
 /* Scalar Product Parsing                                 */
 /**********************************************************/
 
-
 /**
  * V (finite):
  * An native Prolog variable V represents an integer variable.

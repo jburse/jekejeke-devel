@@ -66,3 +66,15 @@
 :- public gcd/3.
 :- special(gcd/3, 'SupplementElem', 1).
 
+/**
+ * lcm(X, Y, Z):
+ * Predicate succeeds in Z with the least common multiple of the
+ * integer X and the integer Y.
+ */
+:- public lcm/3.
+lcm(_, 0, R) :- !,
+   R = 0.
+lcm(0, _, R) :- !,
+   R = 0.
+lcm(X, Y, R) :-
+   R is X//gcd(X,Y)*Y.
