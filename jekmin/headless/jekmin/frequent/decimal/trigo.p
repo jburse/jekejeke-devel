@@ -418,14 +418,6 @@ multi:mp_math(tan(X), P, R) :- !,
 multi:mp_math(atan(X), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_atan(H, P, R).
-multi:mp_math(atan2(X,Y), P, R) :- !,
-   mp_math(decimal(X), P, H),
-   mp_math(decimal(Y), P, J),
-   mp_atan2(H, J, P, R).
-multi:mp_math(asin(X), P, R) :- !,
-   mp_math(atan2(X,sqrt(1-X^2)), P, R).
-multi:mp_math(acos(X), P, R) :- !,
-   mp_math(atan2(sqrt(1-X^2),X), P, R).
 
 /* special exp, etc.. */
 multi:mp_math(exp(X), P, R) :- !,
@@ -436,6 +428,16 @@ multi:mp_math(log(X), P, R) :- !,
    mp_log(H, P, R).
 multi:mp_math(X**Y, P, R) :- !,
    mp_math(exp(log(X)*Y), P, R).
+
+/* special atan2, etc.. */
+multi:mp_math(atan2(X,Y), P, R) :- !,
+   mp_math(decimal(X), P, H),
+   mp_math(decimal(Y), P, J),
+   mp_atan2(H, J, P, R).
+multi:mp_math(asin(X), P, R) :- !,
+   mp_math(atan2(X,sqrt(1-X^2)), P, R).
+multi:mp_math(acos(X), P, R) :- !,
+   mp_math(atan2(sqrt(1-X^2),X), P, R).
 
 /* constants */
 multi:mp_math(pi, P, R) :- !,
