@@ -118,6 +118,15 @@ mp_memo(A, E, P, R) :-
    assertz(mp_cache(A, N, H)),
    R = H.
 
+/**
+ * mp_clear.
+ * The predicate succeeds in clearing the memo cache.
+ */
+% mp_clear
+:- public mp_clear/0.
+mp_clear :-
+   retractall(mp_cache(_, _, _)).
+
 % mp_cache(+Atom, +Integer, -Decimal)
 :- private mp_cache/3.
 :- thread_local mp_cache/3.

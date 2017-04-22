@@ -95,5 +95,3 @@
  */
 :- public new_context/2.
 :- special(new_context/2, 'SupplementScale', 5).
-
-

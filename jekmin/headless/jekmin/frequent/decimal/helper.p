@@ -96,7 +96,7 @@ dec_decomp(X, 0, X).
  * The predicate succeeds in E and M with the 2 exponent and mantissa of X
  * with precision P.
  */
-% bin_decomp(+Decimal, +Integer, -Context, -Decimal)
+% bin_decomp(+Decimal, +Context, -Integer, -Decimal)
 :- public bin_decomp/4.
 bin_decomp(X, P, E, M) :-
    E is bitlength(integer(X))-1,
