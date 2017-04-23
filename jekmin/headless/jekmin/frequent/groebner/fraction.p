@@ -51,6 +51,7 @@
 :- reexport('../gauss/element').
 
 :- use_module(library(misc/elem)).
+:- use_module(library(misc/residue)).
 :- use_module(library(basic/lists)).
 :- use_module(generic).
 :- use_module(polynom).
@@ -578,24 +579,19 @@ sys_poly_sign(polynom(_,L), X) :-
 /*********************************************************************/
 
 /**
- * sys_portray_eq(F, G):
- * The predicate succeeds in G with a custom form of F.
+ * sys_printable_value(F, G):
+ * The predicate succeeds in G with a custom form of F. The
+ * predicate should be extended for custom forms.
  */
-% sys_portray_eq(+Goal, -Goal)
-:- public residue:sys_portray_eq/2.
-:- multifile residue:sys_portray_eq/2.
-:- meta_predicate residue:sys_portray_eq(0,0).
-residue:sys_portray_eq(_ = X, _) :-
+% sys_printable_value(+Term, -Term)
+:- public residue:sys_printable_value/2.
+:- multifile residue:sys_printable_value/2.
+residue:sys_printable_value(X, _) :-
    var(X), !, fail.
-residue:sys_portray_eq(X = fraction(A,B), X is H/J) :- !,
-   sys_portray_magnitude(A, H),
-   sys_portray_magnitude(B, J).
-
-% sys_portray_magnitude(+Internal, -Extrernal)
-:- private sys_portray_magnitude/2.
-sys_portray_magnitude(X, Y) :-
-   residue:sys_portray_eq(_ = X, _ is Y), !.
-sys_portray_magnitude(X, X).
+residue:sys_printable_value(fraction(A,B), F) :- !,
+   printable(A, H),
+   printable(B, J),
+   F = H/J.
 
 /*********************************************************************/
 /* Generic Hook                                                      */

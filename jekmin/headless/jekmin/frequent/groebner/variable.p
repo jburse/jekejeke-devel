@@ -178,13 +178,13 @@ gen_eq(X, Y) :-
 /*********************************************************************/
 
 /**
- * sys_portray_eq(F, G):
- * The predicate succeeds in G with a custom form of F.
+ * sys_printable_value(F, G):
+ * The predicate succeeds in G with a custom form of F. The
+ * predicate should be extended for custom forms.
  */
-% sys_portray_eq(+Goal, -Goal)
-:- public residue:sys_portray_eq/2.
-:- multifile residue:sys_portray_eq/2.
-:- meta_predicate residue:sys_portray_eq(0,0).
-residue:sys_portray_eq(X = E, X is F) :-
+% sys_printable_value(+Term, -Term)
+:- public residue:sys_printable_value/2.
+:- multifile residue:sys_printable_value/2.
+residue:sys_printable_value(E, F) :-
    sys_freezer(E), !,
    sys_melt_var(E, F).

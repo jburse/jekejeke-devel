@@ -173,18 +173,3 @@ X - Y :-
 gen_eq(X, Y) :-
    integer(Y),
    user:(X =:= Y).
-
-/***********************************************************/
-/* CAS Display Hook                                        */
-/***********************************************************/
-
-/**
- * sys_portray_eq(F, G):
- * The predicate succeeds in G with a custom form of F.
- */
-% sys_portray_eq(+Goal, -Goal)
-:- public residue:sys_portray_eq/2.
-:- multifile residue:sys_portray_eq/2.
-:- meta_predicate residue:sys_portray_eq(0,0).
-residue:sys_portray_eq(_ = X, _) :-
-   integer(X), !, fail.

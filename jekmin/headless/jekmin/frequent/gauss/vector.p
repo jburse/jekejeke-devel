@@ -61,7 +61,7 @@
 
 :- use_module('../groebner/generic').
 :- use_module(library(advanced/arith)).
-
+:- use_module(library(misc/residue)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
 
@@ -166,16 +166,16 @@ X - Y :-
 /***********************************************************/
 
 /**
- * sys_portray_eq(F, G):
- * The predicate succeeds in G with a custom form of F.
+ * sys_printable_value(F, G):
+ * The predicate succeeds in G with a custom form of F. The
+ * predicate should be extended for custom forms.
  */
-% sys_portray_eq(+Goal, -Goal)
-:- public residue:sys_portray_eq/2.
-:- multifile residue:sys_portray_eq/2.
-:- meta_predicate residue:sys_portray_eq(0,0).
-residue:sys_portray_eq(_ = X, _) :-
+% sys_printable_value(+Term, -Term)
+:- public residue:sys_printable_value/2.
+:- multifile residue:sys_printable_value/2.
+residue:sys_printable_value(X, _) :-
    var(X), !, fail.
-residue:sys_portray_eq(X = F, X is G) :-
+residue:sys_printable_value(F, G) :-
    functor(F, vector, _), !,
    F =.. [_|H],
    sys_portray_vector(H, G).
@@ -183,9 +183,7 @@ residue:sys_portray_eq(X = F, X is G) :-
 % sys_portray_vector(+List, -List)
 :- private sys_portray_vector/2.
 sys_portray_vector([X|L], [Y|R]) :-
-   residue:sys_portray_eq(_ = X, _ is Y), !,
-   sys_portray_vector(L, R).
-sys_portray_vector([X|L], [X|R]) :-
+   printable(X, Y),
    sys_portray_vector(L, R).
 sys_portray_vector([], []).
 

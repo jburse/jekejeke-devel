@@ -219,16 +219,16 @@ new_rational(A, B, rational(A,B)).
 /*********************************************************************/
 
 /**
- * sys_portray_eq(F, G):
- * The predicate succeeds in G with a custom form of F.
+ * sys_printable_value(F, G):
+ * The predicate succeeds in G with a custom form of F. The
+ * predicate should be extended for custom forms.
  */
-% sys_portray_eq(+Goal, -Goal)
-:- public residue:sys_portray_eq/2.
-:- multifile residue:sys_portray_eq/2.
-:- meta_predicate residue:sys_portray_eq(0,0).
-residue:sys_portray_eq(_ = X, _) :-
+% sys_printable_value(+Term, -Term)
+:- public residue:sys_printable_value/2.
+:- multifile residue:sys_printable_value/2.
+residue:sys_printable_value(X, _) :-
    var(X), !, fail.
-residue:sys_portray_eq(X = rational(A,B), X is F) :- !,
+residue:sys_printable_value(rational(A,B), F) :- !,
    F = A/B.
 
 /*********************************************************************/

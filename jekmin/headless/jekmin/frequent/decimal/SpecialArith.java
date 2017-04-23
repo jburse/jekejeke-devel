@@ -387,7 +387,7 @@ public class SpecialArith extends Special {
     private static Number mpSlash(Number m, Number n,
                                   MathContext mc) throws EngineMessage {
         BigDecimal b = SupplementScale.widenBigDecimal(n, mc);
-        if (BigDecimal.ZERO.compareTo(b) == 0)
+        if (b.signum() == 0)
             throw new ArithmeticException(
                     EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
         return TermAtomic.normBigDecimal(
@@ -416,8 +416,11 @@ public class SpecialArith extends Special {
             return TermAtomic.guardDouble(Double.valueOf(
                     Math.pow(m.doubleValue(), x)));
         } else if (m instanceof Long || m instanceof BigDecimal) {
-            return TermAtomic.normBigDecimal(
-                    SupplementScale.widenBigDecimal(m, mc).pow(x, mc));
+            BigDecimal b = SupplementScale.widenBigDecimal(m, mc);
+            if (x < 0 && b.signum() == 0)
+                throw new ArithmeticException(
+                        EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+            return TermAtomic.normBigDecimal(b.pow(x, mc));
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
