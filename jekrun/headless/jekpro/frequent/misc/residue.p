@@ -37,6 +37,7 @@
 
 :- module(residue, []).
 :- use_module(library(advanced/sets)).
+:- use_module(library(misc/residue)).
 
 /***********************************************************/
 /* Constraints Retrieval Hooks                             */
@@ -149,8 +150,23 @@ call_residue(G, L) :-
 /* CAS Display Hook                                        */
 /***********************************************************/
 
-% sys_portray_eq(+Goal, -Goal)
-:- public sys_portray_eq/2.
-:- multifile sys_portray_eq/2.
-:- meta_predicate sys_portray_eq(0,0).
-:- static sys_portray_eq/2.
+/**
+ * printable(F, G):
+ * The predicate succeeds in G with a custom form of F.
+ */
+% printable(+Internal, -Expertanl)
+:- public printable/2.
+printable(E, F) :-
+   sys_printable_value(E, H), !,
+   F = H.
+printable(E, E).
+
+/**
+ * sys_printable_value(F, G):
+ * The predicate succeeds in G with a custom form of F. The
+ * predicate should be extended for custom forms.
+ */
+% sys_printable_value(+Term, -Term)
+:- public sys_printable_value/2.
+:- multifile sys_printable_value/2.
+:- static sys_printable_value/2.
