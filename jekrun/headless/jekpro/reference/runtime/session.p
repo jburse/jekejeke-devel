@@ -139,8 +139,8 @@ sys_filter_variable_names([X=Y|L], R, S) :-
            T == Y)),
    Z == X, !,
    sys_filter_variable_names(L, R, S).
-sys_filter_variable_names([E|L], R, [F|S]) :-
-   sys_portray_eq(E, F), !,
+sys_filter_variable_names([X=Y|L], R, [X is Z|S]) :-
+   sys_printable_value(Y, Z), !,
    sys_filter_variable_names(L, R, S).
 sys_filter_variable_names([E|L], R, [E|S]) :-
    sys_filter_variable_names(L, R, S).
