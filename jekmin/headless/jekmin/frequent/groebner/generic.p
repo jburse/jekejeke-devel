@@ -169,6 +169,58 @@ E =\= F :-
    \+ sys_poly_send(X, gen_eq, [Y]).
 
 /*********************************************************************/
+/* Comparison                                                        */
+/*********************************************************************/
+
+/**
+ * E < F:
+ * The preicate succeeds when evaluating E by using polymorphism
+ * is less than evaluating F by using polymorphism.
+ */
+:- override < /2.
+:- public < /2.
+E < F :-
+   X is E,
+   Y is F,
+   sys_poly_send(X, gen_ls, [Y]).
+
+/**
+ * E =< F:
+ * The preicate succeeds when evaluating E by using polymorphism
+ * is less or equal than evaluating F by using polymorphism.
+ */
+:- override =< /2.
+:- public =< /2.
+E =< F :-
+   X is E,
+   Y is F,
+   \+ sys_poly_send(Y, gen_ls, [X]).
+
+/**
+ * E > F:
+ * The preicate succeeds when evaluating E by using polymorphism
+ * is greater than evaluating F by using polymorphism.
+ */
+:- override > /2.
+:- public > /2.
+E > F :-
+   X is E,
+   Y is F,
+   sys_poly_send(Y, gen_ls, [X]).
+
+/**
+ * E >= F:
+ * The preicate succeeds when evaluating E by using polymorphism
+ * is greater or equal than evaluating F by using polymorphism.
+ */
+:- override >= /2.
+:- public >= /2.
+E >= F :-
+   X is E,
+   Y is F,
+   \+ sys_poly_send(X, gen_ls, [Y]).
+
+/*********************************************************************/
 /* Extensibility                                                     */
 /*********************************************************************/
 

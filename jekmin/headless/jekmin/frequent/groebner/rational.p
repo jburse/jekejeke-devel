@@ -179,7 +179,7 @@ rational(A,B) - rational(C,B) :-
    user: ^(B, Y, J).
 
 /*********************************************************************/
-/* Basic Comparison                                                  */
+/* Equalty & Comparison                                              */
 /*********************************************************************/
 
 :- override gen_eq/2.
@@ -187,6 +187,17 @@ rational(A,B) - rational(C,B) :-
 gen_eq(rational(A,B), rational(C,D)) :-
    user:(A =:= C),
    user:(B =:= D).
+
+:- override gen_ls/2.
+:- public gen_ls/2.
+gen_ls(rational(A,B), X) :-
+   integer(X), !,
+   user: *(B, X, H),
+   user:(A < H).
+gen_ls(rational(A,B), rational(C,D)) :-
+   user: *(D, A, H),
+   user: *(B, C, J),
+   user:(H < J).
 
 /*********************************************************************/
 /* Arithmetic Helper                                                 */
@@ -254,3 +265,12 @@ generic:(X is rational(A,B)) :- !,
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
 generic:is_abnormal(rational(_,_)).
+
+/*********************************************************************/
+/* User Evaluation                                                   */
+/*********************************************************************/
+
+% rational(+Integer, +Integer, -Float)
+:- public user:rational/3.
+user:rational(A, B, D) :-
+   user: /(A, B, D).

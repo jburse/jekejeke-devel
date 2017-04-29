@@ -165,7 +165,7 @@ X - Y :-
    user: ^(X, Y, Z).
 
 /*********************************************************************/
-/* Basic Comparison                                                  */
+/* Equalty & Comparison                                              */
 /*********************************************************************/
 
 :- override gen_eq/2.
@@ -173,3 +173,12 @@ X - Y :-
 gen_eq(X, Y) :-
    integer(Y),
    user:(X =:= Y).
+
+:- override gen_ls/2.
+:- public gen_ls/2.
+gen_ls(X, Y) :-
+   integer(Y), !,
+   user:(X < Y).
+gen_ls(X, rational(A,B)) :-
+   user: *(B, X, H),
+   user:(H < A).
