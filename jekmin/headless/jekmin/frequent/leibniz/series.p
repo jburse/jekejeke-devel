@@ -65,7 +65,7 @@
  * of P along the variable X for N summands. The quinary
  * predicate allows specifying the point R.
  */
-% element:taylor(+Internal, +Variable, +Integer, -Internal)
+% element:taylor(+Element, +Variable, +Integer, -Internal)
 :- public element:taylor/4.
 element:taylor(P, X, N, R) :-
    sys_maclaurin_horner(P, X, 0, N, R).
@@ -80,7 +80,7 @@ sys_maclaurin_horner(P, X, N, M, R) :-
    sys_maclaurin_horner(Q, X, K, M, H),
    R is X*H/K+subst(P,X,0).
 
-% element:taylor(+Internal, +Variable, +Integer, +Internal, -Internal)
+% element:taylor(+Element, +Variable, +Integer, +Internal, -Internal)
 :- public element:taylor/5.
 element:taylor(P, X, N, R, S) :-
    sys_taylor_horner(P, X, 0, N, R, S).
@@ -102,14 +102,14 @@ sys_taylor_horner(P, X, N, M, R, S) :-
  * of P along the variable X for N summands. The quinary
  * predicate allows specifying the point R.
  */
-% element:laurent(+Internal, +Variable, +Integer, -Internal)
+% element:laurent(+Element, +Variable, +Integer, -Internal)
 :- public element:laurent/4.
 element:laurent(P, X, N, R) :-
    H is subst(P,X,1/Y),
    J is taylor(H,Y,N),
    R is subst(J,Y,1/X).
 
-% element:laurent(+Internal, +Variable, +Integer, +Internal, -Internal)
+% element:laurent(+Element, +Variable, +Integer, +Internal, -Internal)
 :- public element:laurent/5.
 element:laurent(P, X, N, R, S) :-
    H is subst(P,X,1/Y),

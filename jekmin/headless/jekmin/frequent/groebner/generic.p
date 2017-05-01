@@ -11,7 +11,8 @@
  * also constants the constructor can perform partial evaluation. If
  * the first argument of the constructor is a symbolic expressions or
  * if some of the other arguments are symbolic expressions the constructor
- * can perform simplification.
+ * can perform simplification. The predicate is/2 performs the symbolic
+ * expression reduction.
  *
  * Examples:
  * ?- X is 1/2+1/3.        % partial evaluation
@@ -19,18 +20,19 @@
  * ?- X is 2*A-A.          % simplification
  * X is A
  *
- * The main predicate is is/2. By importing this module the built-in
- * is/2 will be overloaded. This predicate will perform the symbolic
- * expression reduction. A further main predicates are (=:=)/2 and
- * (=\=)/2 again overloading the corresponding built-ins. The predicates
- * perform a polymorphic dispatch to an equality method of the class
- * of the first argument.
+ * The predicates (=:=)/2 and (=\=)/2 check for syntactic equality of the
+ * normal form from reduction. The predicates perform a polymorphic
+ * dispatch to an equality method of the class of the first argument.
+ * The predicates (<)/2, (=<)/2, (>)/2 and (>=)/2 allow comparison of
+ * integers and rational numbers. The predicates perform a polymorphic
+ * dispatch to a less method on the class of the first argument. All
+ * the predicates mentioned so far override the usual built-in predicates.
  *
  * Examples:
- * ?- X is deriv(A^2,A).
- * X is 2*A
- * ?- X is [0,1,2], 3 =:= len(X).
- * X is [0,1,2]
+ * ?- A*2 =:=  deriv(A^2,A).
+ * Yes
+ * ?- X is [0,1,2], 3 < len(X).
+ * No
  *
  * Not all constructors can be reduced by the default polymorphic
  * dispatch. Some constructors are special forms and need customized
@@ -65,8 +67,14 @@
 % ?- sys_add_path('file:/Projects/Jekejeke/Prototyping/experiment/other/').
 
 :- package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/gauss)).
 
 :- module(generic, []).
+
+:- override prefix(-).
+:- public prefix(-).
+:- op(500, fx, -).
+
 /* for the residue hooks */
 :- sys_auto_load(variable).
 :- sys_auto_load(integer).
@@ -78,9 +86,11 @@
 :- sys_auto_load('../leibniz/deriv').
 :- sys_auto_load('../leibniz/subst').
 :- sys_auto_load('../leibniz/series').
+:- sys_load_resource(safety).
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
+:- sys_add_resource(safety).
 
 /*********************************************************************/
 /* Arithmetic                                                        */
@@ -141,7 +151,7 @@ sys_poly_send(Y, F, T) :-
    Y::M.
 
 /*********************************************************************/
-/* Equality                                                          */
+/* Equality & Comparison                                             */
 /*********************************************************************/
 
 /**
@@ -168,13 +178,9 @@ E =\= F :-
    Y is F,
    \+ sys_poly_send(X, gen_eq, [Y]).
 
-/*********************************************************************/
-/* Comparison                                                        */
-/*********************************************************************/
-
 /**
  * E < F:
- * The preicate succeeds when evaluating E by using polymorphism
+ * The predicate succeeds when evaluating E by using polymorphism
  * is less than evaluating F by using polymorphism.
  */
 :- override < /2.
@@ -186,7 +192,7 @@ E < F :-
 
 /**
  * E =< F:
- * The preicate succeeds when evaluating E by using polymorphism
+ * The predicate succeeds when evaluating E by using polymorphism
  * is less or equal than evaluating F by using polymorphism.
  */
 :- override =< /2.
@@ -198,7 +204,7 @@ E =< F :-
 
 /**
  * E > F:
- * The preicate succeeds when evaluating E by using polymorphism
+ * The predicate succeeds when evaluating E by using polymorphism
  * is greater than evaluating F by using polymorphism.
  */
 :- override > /2.
@@ -210,7 +216,7 @@ E > F :-
 
 /**
  * E >= F:
- * The preicate succeeds when evaluating E by using polymorphism
+ * The predicate succeeds when evaluating E by using polymorphism
  * is greater or equal than evaluating F by using polymorphism.
  */
 :- override >= /2.
@@ -219,6 +225,30 @@ E >= F :-
    X is E,
    Y is F,
    \+ sys_poly_send(X, gen_ls, [Y]).
+
+/**
+ * min(X, Y, Z):
+ * The predicate succeeds in Z with the minimum of X and Y.
+ */
+% element:min(+Element, +Internal,-Internal)
+:- override element:min/3.
+:- public element:min/3.
+element:min(X, Y, Z) :-
+   X < Y, !,
+   Z = X.
+element:min(_, X, X).
+
+/**
+ * max(X, Y, Z):
+ * The predicate succeeds in Z with the maximum of X and Y.
+ */
+% element:max(+Element, +Internal,-Internal)
+:- override element:max/3.
+:- public element:max/3.
+element:max(X, Y, Z) :-
+   X < Y, !,
+   Z = Y.
+element:max(X, _, X).
 
 /*********************************************************************/
 /* Extensibility                                                     */

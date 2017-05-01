@@ -54,6 +54,7 @@
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
+:- use_module(library(misc/residue)).
 
 /*********************************************************************/
 /* Arithmetic                                                        */
@@ -305,19 +306,11 @@ sys_pretty_poly([], _, 0).
 sys_pretty_expr(E, X) :-
    sys_freezer(E), !,
    X = E.
-sys_pretty_expr(E, -X) :-
-   integer(E),
-   user:(E < 0), !,
-   user:E - X.
 sys_pretty_expr(E, X) :-
    integer(E), !,
-   X = E.
-sys_pretty_expr(rational(A,B), X) :-
-   user:(A < 0), !,
-   user:A - C,
-   X = - (C/B).
+   printable(E, X).
 sys_pretty_expr(rational(A,B), X) :- !,
-   X = A/B.
+   printable(rational(A,B), X).
 sys_pretty_expr(polynom(A,B), X) :-
    sys_pretty_poly(B, A, X).
 
@@ -388,24 +381,6 @@ sys_melt_list([E|L], [X|R]) :-
    sys_melt_expr(E, X),
    sys_melt_list(L, R).
 sys_melt_list([], []).
-
-/*********************************************************************/
-/* Equality                                                          */
-/*********************************************************************/
-
-:- override gen_eq/2.
-:- public gen_eq/2.
-gen_eq(polynom(A,B), polynom(C,D)) :-
-   A == C,
-   sys_polynom_eq(B, D).
-
-% sys_polynom_eq(+Map, +Map)
-:- private sys_polynom_eq/2.
-sys_polynom_eq([N-A|L], [M-B|R]) :-
-   user:(N =:= M),
-   A =:= B,
-   sys_polynom_eq(L, R).
-sys_polynom_eq([], []).
 
 /*********************************************************************/
 /* Generic Hook                                                      */

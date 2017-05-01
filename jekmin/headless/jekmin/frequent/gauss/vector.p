@@ -108,15 +108,51 @@ len(X, Y) :-
 % sum(+Vector, -Internal)
 :- public sum/2.
 sum(X, Y) :-
-   X =.. [_|L],
-   sys_sum_vector(L, Y).
+   X =.. [_,A|L],
+   sys_sum_vector(L, A, Y).
 
-% sys_sum_vector(+List, -Internal)
-:- private sys_sum_vector/2.
-sys_sum_vector([X|L], R) :-
-   sys_sum_vector(L, H),
-   R is X+H.
-sys_sum_vector([], 0).
+% sys_sum_vector(+List, +Internal, -Internal)
+:- private sys_sum_vector/3.
+sys_sum_vector([X|L], A, R) :-
+   H is A+X,
+   sys_sum_vector(L, H, R).
+sys_sum_vector([], R, R).
+
+/**
+ * min(X, Y):
+ * The predicate succeeds in Y with the minimum of the
+ * elements in the vector X.
+ */
+% min(+Vector, -Internal)
+:- public min/2.
+min(X, Y) :-
+   X =.. [_,A|L],
+   sys_min_vector(L, A, Y).
+
+% sys_min_vector(+List, +Internal, -Internal)
+:- private sys_min_vector/3.
+sys_min_vector([X|L], A, R) :-
+   H is min(A,X),
+   sys_min_vector(L, H, R).
+sys_min_vector([], R, R).
+
+/**
+ * max(X, Y):
+ * The predicate succeeds in Y with the maximum of the
+ * elements in the vector X.
+ */
+% max(+Vector, -Internal)
+:- public max/2.
+max(X, Y) :-
+   X =.. [_,A|L],
+   sys_max_vector(L, A, Y).
+
+% sys_max_vector(+List, +Internal, -Internal)
+:- private sys_max_vector/3.
+sys_max_vector([X|L], A, R) :-
+   H is max(A,X),
+   sys_max_vector(L, H, R).
+sys_max_vector([], R, R).
 
 /***********************************************************/
 /* Basic Arithmetic                                        */

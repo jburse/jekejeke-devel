@@ -165,20 +165,70 @@ X - Y :-
    user: ^(X, Y, Z).
 
 /*********************************************************************/
+/* Rounding                                                          */
+/*********************************************************************/
+
+/**
+ * floor(P, Q):
+ * The predicate succeeds in Q with the floor of P.
+ */
+% floor(+Integer, -Integer)
+:- override floor/2.
+:- public floor/2.
+floor(X, X).
+
+/**
+ * trunc(P, Q):
+ * The predicate succeeds in Q with the trunc of P.
+ */
+% trunc(+Integer, -Integer)
+:- override trunc/2.
+:- public trunc/2.
+trunc(X, X).
+
+/*********************************************************************/
 /* Equalty & Comparison                                              */
 /*********************************************************************/
 
 :- override gen_eq/2.
 :- public gen_eq/2.
 gen_eq(X, Y) :-
-   integer(Y),
+   integer(Y), !,
    user:(X =:= Y).
+gen_eq(_, rational(_,_)) :- !, fail.
+gen_eq(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
 
 :- override gen_ls/2.
 :- public gen_ls/2.
 gen_ls(X, Y) :-
    integer(Y), !,
    user:(X < Y).
-gen_ls(X, rational(A,B)) :-
+gen_ls(X, rational(A,B)) :- !,
    user: *(B, X, H),
    user:(H < A).
+gen_ls(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+/*********************************************************************/
+/* CAS Display Hook                                                  */
+/*********************************************************************/
+
+/**
+ * sys_printable_value(F, G):
+ * The predicate succeeds in G with a custom form of F. The
+ * predicate should be extended for custom forms.
+ */
+% sys_printable_value(+Term, -Term)
+:- public residue:sys_printable_value/2.
+:- multifile residue:sys_printable_value/2.
+residue:sys_printable_value(X, _) :-
+   var(X), !, fail.
+residue:sys_printable_value(E, X) :-
+   integer(E),
+   user:(E < 0), !,
+   user:E - F,
+   X = -F.
+residue:sys_printable_value(E, X) :-
+   integer(E), !,
+   X = E.

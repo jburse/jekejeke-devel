@@ -48,6 +48,7 @@
 :- reexport('../gauss/element').
 
 :- use_module(library(misc/elem)).
+:- use_module(generic).
 :- use_module(fraction).
 
 :- use_module(library(experiment/attr)).
@@ -179,14 +180,42 @@ rational(A,B) - rational(C,B) :-
    user: ^(B, Y, J).
 
 /*********************************************************************/
+/* Rounding                                                          */
+/*********************************************************************/
+
+/**
+ * floor(P, Q):
+ * The predicate succeeds in Q with the floor of P.
+ */
+% floor(+Rational, -Integer)
+:- override floor/2.
+:- public floor/2.
+floor(rational(A,B), X) :-
+   user:div(A, B, X).
+
+/**
+ * trunc(P, Q):
+ * The predicate succeeds in Q with the trunc of P.
+ */
+% trunc(+Rational, -Integer)
+:- override trunc/2.
+:- public trunc/2.
+trunc(rational(A,B), X) :-
+   user: //(A, B, X).
+
+/*********************************************************************/
 /* Equalty & Comparison                                              */
 /*********************************************************************/
 
 :- override gen_eq/2.
 :- public gen_eq/2.
-gen_eq(rational(A,B), rational(C,D)) :-
+gen_eq(_, X) :-
+   integer(X), !, fail.
+gen_eq(rational(A,B), rational(C,D)) :- !,
    user:(A =:= C),
    user:(B =:= D).
+gen_eq(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
 
 :- override gen_ls/2.
 :- public gen_ls/2.
@@ -194,10 +223,12 @@ gen_ls(rational(A,B), X) :-
    integer(X), !,
    user: *(B, X, H),
    user:(A < H).
-gen_ls(rational(A,B), rational(C,D)) :-
+gen_ls(rational(A,B), rational(C,D)) :- !,
    user: *(D, A, H),
    user: *(B, C, J),
    user:(H < J).
+gen_ls(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
 
 /*********************************************************************/
 /* Arithmetic Helper                                                 */
@@ -239,8 +270,28 @@ new_rational(A, B, rational(A,B)).
 :- multifile residue:sys_printable_value/2.
 residue:sys_printable_value(X, _) :-
    var(X), !, fail.
-residue:sys_printable_value(rational(A,B), F) :- !,
-   F = A/B.
+residue:sys_printable_value(rational(A,B), X) :-
+   user: //(A, B, H),
+   user:(H =\= 0), !,
+   user: *(B, H, J),
+   user: -(A, J, R),
+   sys_make_trunc(H, R, B, X).
+residue:sys_printable_value(rational(A,B), X) :-
+   user:(A < 0), !,
+   user:A - C,
+   X = -C/B.
+residue:sys_printable_value(rational(A,B), X) :- !,
+   X = A/B.
+
+% sys_make_trunc(+Integer, +Integer, +Integer, -External)
+:- private sys_make_trunc/4.
+sys_make_trunc(H, R, B, X) :-
+   user:(H < 0), !,
+   user:H - K,
+   user:R - S,
+   X = -K-S/B.
+sys_make_trunc(H, R, B, X) :-
+   X = H+R/B.
 
 /*********************************************************************/
 /* Generic Hook                                                      */

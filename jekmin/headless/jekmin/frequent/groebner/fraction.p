@@ -46,6 +46,7 @@
 
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekpro/frequent/misc)).
+:- use_package(library(jekmin/frequent/gauss)).
 
 :- module(fraction, []).
 :- reexport('../gauss/element').
@@ -182,14 +183,18 @@ fraction(A,B) - fraction(C,B) :-
    J is B^Y.
 
 /*********************************************************************/
-/* Equality                                                          */
+/* Rounding                                                          */
 /*********************************************************************/
 
-:- override gen_eq/2.
-:- public gen_eq/2.
-gen_eq(fraction(A,B), fraction(C,D)) :-
-   A =:= C,
-   B =:= D.
+/**
+ * quorem(P, Q, R):
+ * The predicate succeeds in R with quotient and remainder of P divided by Q.
+ */
+% element:quorem(+Element, +Internal, -Internal)
+:- public element:quorem/3.
+element:quorem(P, Q, R) :-
+   sys_poly_div(P, Q, A, B),
+   R = vector(A,B).
 
 /*********************************************************************/
 /* Polynomial Normlization                                           */
@@ -588,10 +593,38 @@ sys_poly_sign(polynom(_,L), X) :-
 :- multifile residue:sys_printable_value/2.
 residue:sys_printable_value(X, _) :-
    var(X), !, fail.
+residue:sys_printable_value(fraction(A,B), F) :-
+   sys_poly_div(A, B, Q, R),
+   Q \== 0, !,
+   new_fraction(R, B, Z),
+   sys_make_quorem(Q, Z, F).
+residue:sys_printable_value(fraction(A,B), F) :-
+   sys_poly_sign(A, S),
+   S \== 1, !,
+   C is -A,
+   printable(C, H),
+   printable(B, J),
+   F = -H/J.
 residue:sys_printable_value(fraction(A,B), F) :- !,
    printable(A, H),
    printable(B, J),
    F = H/J.
+
+% sys_make_quorem(+Internal, +Fraction, -External)
+:- private sys_make_quorem/3.
+sys_make_quorem(Q, fraction(R,B), F) :-
+   sys_poly_sign(R, S),
+   S \== 1, !,
+   T is -R,
+   printable(Q, K),
+   printable(T, H),
+   printable(B, J),
+   F = K-H/J.
+sys_make_quorem(Q, fraction(R,B), F) :-
+   printable(Q, K),
+   printable(R, H),
+   printable(B, J),
+   F = K+H/J.
 
 /*********************************************************************/
 /* Generic Hook                                                      */
