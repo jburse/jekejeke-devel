@@ -45,7 +45,7 @@
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(variable, []).
-:- reexport('../gauss/element').
+:- reexport('../gauss/ring').
 
 :- use_module(library(experiment/trail)).
 :- use_module(generic).

@@ -47,11 +47,11 @@
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekpro/frequent/misc)).
 :- use_package(library(jekmin/frequent/gauss)).
+:- use_package(library(jekmin/reference/misc)).
 
 :- module(fraction, []).
 :- reexport('../gauss/element').
 
-:- use_module(library(misc/elem)).
 :- use_module(library(misc/residue)).
 :- use_module(library(basic/lists)).
 :- use_module(generic).
@@ -183,20 +183,6 @@ fraction(A,B) - fraction(C,B) :-
    J is B^Y.
 
 /*********************************************************************/
-/* Rounding                                                          */
-/*********************************************************************/
-
-/**
- * quorem(P, Q, R):
- * The predicate succeeds in R with quotient and remainder of P divided by Q.
- */
-% element:quorem(+Element, +Internal, -Internal)
-:- public element:quorem/3.
-element:quorem(P, Q, R) :-
-   sys_poly_div(P, Q, A, B),
-   R = vector(A,B).
-
-/*********************************************************************/
 /* Polynomial Normlization                                           */
 /*********************************************************************/
 
@@ -217,7 +203,7 @@ sys_poly_norm(F, G, A, B) :-
    sys_poly_div(K, F, B, _).
 
 % sys_poly_lcm(+Internal, +Internal, -Internal)
-:- private sys_poly_lcm/3.
+:- public sys_poly_lcm/3.
 sys_poly_lcm(A, B, C) :-
    S is A*Z,
    T is B*(1-Z),
@@ -230,7 +216,7 @@ sys_poly_lcm(A, B, C) :-
  * F along G such that F = K*G+M.
  */
 % sys_poly_div(+Internal, +Internal, -Internal, -Internal)
-:- private sys_poly_div/4.
+:- public sys_poly_div/4.
 sys_poly_div(F, G, K, M) :-
    sys_poly_head(G, H),
    sys_poly_comb(F, H, I, N),
@@ -361,8 +347,8 @@ sys_head_div(polynom(_,_), polynom(_,_), _) :-
 % sys_head_gcd(+Monomial, +Monomial, -Monomial)
 :- private sys_head_gcd/3.
 sys_head_gcd(rational(A,B), rational(C,D), X) :- !,
-   gcd(A, C, H),
-   gcd(B, D, J),
+   elem:gcd(A, C, H),
+   elem:gcd(B, D, J),
    X = rational(H,J).
 sys_head_gcd(polynom(_,[_-B]), rational(C,D), X) :- !,
    sys_head_gcd(B, rational(C,D), X).
@@ -562,8 +548,8 @@ sys_coeff_common([_-A], H) :-
 % sys_make_common(+Rational, +Rational, -Rational)
 :- private sys_make_common/3.
 sys_make_common(rational(A,B), rational(C,D), rational(E,F)) :-
-   gcd(A, C, E),
-   lcm(B, D, F).
+   elem:gcd(A, C, E),
+   elem:lcm(B, D, F).
 
 % sys_poly_sign(+Internal -Integer)
 :- private sys_poly_sign/2.

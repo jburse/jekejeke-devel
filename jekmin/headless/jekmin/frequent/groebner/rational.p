@@ -43,11 +43,11 @@
 
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekpro/frequent/misc)).
+:- use_package(library(jekmin/reference/misc)).
 
 :- module(rational, []).
-:- reexport('../gauss/element').
+:- reexport('../gauss/ordered').
 
-:- use_module(library(misc/elem)).
 :- use_module(generic).
 :- use_module(fraction).
 
@@ -184,6 +184,16 @@ rational(A,B) - rational(C,B) :-
 /*********************************************************************/
 
 /**
+ * integer(P, Q):
+ * The predicate succeeds in Q with the integer of P.
+ */
+% integer(+Rational, -Integer)
+:- override integer/2.
+:- public integer/2.
+integer(rational(A,B), X) :-
+   user: //(A, B, X).
+
+/**
  * floor(P, Q):
  * The predicate succeeds in Q with the floor of P.
  */
@@ -194,19 +204,25 @@ floor(rational(A,B), X) :-
    user:div(A, B, X).
 
 /**
- * trunc(P, Q):
- * The predicate succeeds in Q with the trunc of P.
+ * ceiling(P, Q):
+ * The predicate succeeds in Q with the ceiling of P.
  */
-% trunc(+Rational, -Integer)
-:- override trunc/2.
-:- public trunc/2.
-trunc(rational(A,B), X) :-
-   user: //(A, B, X).
+% ceiling(+Rational, -Integer)
+:- override ceiling/2.
+:- public ceiling/2.
+ceiling(rational(A,B), X) :-
+   user: -(B, 1, H),
+   user: +(A, H, J),
+   user:div(J, B, X).
 
 /*********************************************************************/
 /* Equalty & Comparison                                              */
 /*********************************************************************/
 
+/**
+ * gen_eq(X, Y):
+ * The predicate succeeds when X equals Y.
+ */
 :- override gen_eq/2.
 :- public gen_eq/2.
 gen_eq(_, X) :-
@@ -217,6 +233,10 @@ gen_eq(rational(A,B), rational(C,D)) :- !,
 gen_eq(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
+/**
+ * gen_ls(X, Y):
+ * The predicate succeeds when X is less than Y.
+ */
 :- override gen_ls/2.
 :- public gen_ls/2.
 gen_ls(rational(A,B), X) :-
@@ -240,7 +260,7 @@ make_rational(_, 0, _) :-
 make_rational(0, _, R) :- !,
    R = 0.
 make_rational(A, B, C) :-
-   gcd(A, B, H),
+   elem:gcd(A, B, H),
    user: //(A, H, J),
    user: //(B, H, K),
    new_rational(J, K, C).
@@ -275,7 +295,7 @@ residue:sys_printable_value(rational(A,B), X) :-
    user:(H =\= 0), !,
    user: *(B, H, J),
    user: -(A, J, R),
-   sys_make_trunc(H, R, B, X).
+   sys_make_integer(H, R, B, X).
 residue:sys_printable_value(rational(A,B), X) :-
    user:(A < 0), !,
    user:A - C,
@@ -283,14 +303,14 @@ residue:sys_printable_value(rational(A,B), X) :-
 residue:sys_printable_value(rational(A,B), X) :- !,
    X = A/B.
 
-% sys_make_trunc(+Integer, +Integer, +Integer, -External)
-:- private sys_make_trunc/4.
-sys_make_trunc(H, R, B, X) :-
+% sys_make_integer(+Integer, +Integer, +Integer, -External)
+:- private sys_make_integer/4.
+sys_make_integer(H, R, B, X) :-
    user:(H < 0), !,
    user:H - K,
    user:R - S,
    X = -K-S/B.
-sys_make_trunc(H, R, B, X) :-
+sys_make_integer(H, R, B, X) :-
    X = H+R/B.
 
 /*********************************************************************/

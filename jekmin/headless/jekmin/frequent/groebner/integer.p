@@ -46,7 +46,7 @@
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(integer, []).
-:- reexport('../gauss/element').
+:- reexport('../gauss/ordered').
 
 :- use_module(generic).
 :- use_module(library(experiment/trail)).
@@ -169,6 +169,15 @@ X - Y :-
 /*********************************************************************/
 
 /**
+ * integer(P, Q):
+ * The predicate succeeds in Q with the integer of P.
+ */
+% integer(+Integer, -Integer)
+:- override integer/2.
+:- public integer/2.
+integer(X, X).
+
+/**
  * floor(P, Q):
  * The predicate succeeds in Q with the floor of P.
  */
@@ -178,18 +187,22 @@ X - Y :-
 floor(X, X).
 
 /**
- * trunc(P, Q):
- * The predicate succeeds in Q with the trunc of P.
+ * ceiling(P, Q):
+ * The predicate succeeds in Q with the ceiling of P.
  */
-% trunc(+Integer, -Integer)
-:- override trunc/2.
-:- public trunc/2.
-trunc(X, X).
+% ceiling(+Integer, -Integer)
+:- override ceiling/2.
+:- public ceiling/2.
+ceiling(X, X).
 
 /*********************************************************************/
 /* Equalty & Comparison                                              */
 /*********************************************************************/
 
+/**
+ * gen_eq(X, Y):
+ * The predicate succeeds when X equals Y.
+ */
 :- override gen_eq/2.
 :- public gen_eq/2.
 gen_eq(X, Y) :-
@@ -199,6 +212,10 @@ gen_eq(_, rational(_,_)) :- !, fail.
 gen_eq(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
+/**
+ * gen_ls(X, Y):
+ * The predicate succeeds when X is less than Y.
+ */
 :- override gen_ls/2.
 :- public gen_ls/2.
 gen_ls(X, Y) :-

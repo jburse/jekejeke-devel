@@ -75,6 +75,9 @@
 :- public prefix(-).
 :- op(500, fx, -).
 
+:- reexport('../gauss/ordered').
+:- reexport('../gauss/ring').
+
 /* for the residue hooks */
 :- sys_auto_load(variable).
 :- sys_auto_load(integer).
@@ -149,106 +152,6 @@ sys_poly_send(Y, F, T) :-
 sys_poly_send(Y, F, T) :-
    M =.. [F|T],
    Y::M.
-
-/*********************************************************************/
-/* Equality & Comparison                                             */
-/*********************************************************************/
-
-/**
- * E =:= F:
- * The predicate succeeds when evaluating E and F by using
- * polymorphism gives the same result.
- */
-:- override =:= /2.
-:- public =:= /2.
-E =:= F :-
-   X is E,
-   Y is F,
-   sys_poly_send(X, gen_eq, [Y]).
-
-/**
- * E =\= F:
- * The predicate succeeds when evaluating E and F by using
- * polymorphism dont give the same result.
- */
-:- override =\= /2.
-:- public =\= /2.
-E =\= F :-
-   X is E,
-   Y is F,
-   \+ sys_poly_send(X, gen_eq, [Y]).
-
-/**
- * E < F:
- * The predicate succeeds when evaluating E by using polymorphism
- * is less than evaluating F by using polymorphism.
- */
-:- override < /2.
-:- public < /2.
-E < F :-
-   X is E,
-   Y is F,
-   sys_poly_send(X, gen_ls, [Y]).
-
-/**
- * E =< F:
- * The predicate succeeds when evaluating E by using polymorphism
- * is less or equal than evaluating F by using polymorphism.
- */
-:- override =< /2.
-:- public =< /2.
-E =< F :-
-   X is E,
-   Y is F,
-   \+ sys_poly_send(Y, gen_ls, [X]).
-
-/**
- * E > F:
- * The predicate succeeds when evaluating E by using polymorphism
- * is greater than evaluating F by using polymorphism.
- */
-:- override > /2.
-:- public > /2.
-E > F :-
-   X is E,
-   Y is F,
-   sys_poly_send(Y, gen_ls, [X]).
-
-/**
- * E >= F:
- * The predicate succeeds when evaluating E by using polymorphism
- * is greater or equal than evaluating F by using polymorphism.
- */
-:- override >= /2.
-:- public >= /2.
-E >= F :-
-   X is E,
-   Y is F,
-   \+ sys_poly_send(X, gen_ls, [Y]).
-
-/**
- * min(X, Y, Z):
- * The predicate succeeds in Z with the minimum of X and Y.
- */
-% element:min(+Element, +Internal,-Internal)
-:- override element:min/3.
-:- public element:min/3.
-element:min(X, Y, Z) :-
-   X < Y, !,
-   Z = X.
-element:min(_, X, X).
-
-/**
- * max(X, Y, Z):
- * The predicate succeeds in Z with the maximum of X and Y.
- */
-% element:max(+Element, +Internal,-Internal)
-:- override element:max/3.
-:- public element:max/3.
-element:max(X, Y, Z) :-
-   X < Y, !,
-   Z = Y.
-element:max(X, _, X).
 
 /*********************************************************************/
 /* Extensibility                                                     */
