@@ -1,4 +1,29 @@
 /**
+ * This module provides ordered elements. The module realizes a base class
+ * for the classes rep-resented by the module integer and the module
+ * rational from the package groebner. The predicates (=:=)/2 and (=\=)/2
+ * check equality of integers and rational numbers. The predicates (<)/2,
+ * (=<)/2, (>)/2 and (>=)/2 allow comparison of integers and rational numbers.
+ * The predicates override the usual built-in predicates.
+ *
+ * Examples:
+ * ?- -9/5 > -2.
+ * Yes
+ * ?- X is [0,1,2], 3 < len(X).
+ * No
+ *
+ * The predicates perform a polymorphic dispatch to the method gen_eq/2
+ * respective gen_ls/2 on the class of the first argument. If a method is
+ * not found comparison aborts. If a method is found, the class of the
+ * second argument is checked. Derived from (<)/2 we also provide
+ * constructors min/2 and max/2 to determine the minimum respective maximum.
+ *
+ * Further there are the constructors integer/1, floor/1 and ceiling/1
+ * that will find and return an integer near the given integer or rational
+ * number. The constructor integer/1 rounds toward zero, the constructor
+ * floor/1 rounds towards negative infinity and the constructor ceiling/1
+ * rounds towards positive infinity.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -24,6 +49,7 @@
  */
 
 :- package(library(jekmin/frequent/gauss)).
+:- use_package(library(jekmin/frequent/groebner)).
 
 :- module(ordered, []).
 :- reexport(ring).
@@ -31,7 +57,7 @@
 :- use_module('../groebner/generic').
 
 /*********************************************************************/
-/* Equality & Comparison                                             */
+/* Comparison                                                        */
 /*********************************************************************/
 
 /**
@@ -107,7 +133,7 @@ E >= F :-
    \+ sys_poly_send(X, gen_ls, [Y]).
 
 /*********************************************************************/
-/* Maximum/Minimum                                                  */
+/* Maximum/Minimum                                                   */
 /*********************************************************************/
 
 /**
@@ -134,3 +160,136 @@ max(X, Y, Z) :-
    Z = Y.
 max(X, _, X).
 
+/*********************************************************************/
+/* Equalty                                                           */
+/*********************************************************************/
+
+/**
+ * gen_eq(X, Y):
+ * The predicate succeeds when X equals Y.
+ */
+:- public integer:gen_eq/2.
+integer:gen_eq(X, Y) :-
+   integer(Y), !,
+   user:(X =:= Y).
+integer:gen_eq(_, rational(_,_)) :- !, fail.
+integer:gen_eq(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+/**
+ * gen_eq(X, Y):
+ * The predicate succeeds when X equals Y.
+ */
+:- public rational:gen_eq/2.
+rational:gen_eq(_, X) :-
+   integer(X), !, fail.
+rational:gen_eq(rational(A,B), rational(C,D)) :- !,
+   user:(A =:= C),
+   user:(B =:= D).
+rational:gen_eq(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+/*********************************************************************/
+/* Less                                                              */
+/*********************************************************************/
+
+/**
+ * gen_ls(X, Y):
+ * The predicate succeeds when X is less than Y.
+ */
+:- public integer:gen_ls/2.
+integer:gen_ls(X, Y) :-
+   integer(Y), !,
+   user:(X < Y).
+integer:gen_ls(X, rational(A,B)) :- !,
+   user: *(B, X, H),
+   user:(H < A).
+integer:gen_ls(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+/**
+ * gen_ls(X, Y):
+ * The predicate succeeds when X is less than Y.
+ */
+:- public rational:gen_ls/2.
+rational:gen_ls(rational(A,B), X) :-
+   integer(X), !,
+   user: *(B, X, H),
+   user:(A < H).
+rational:gen_ls(rational(A,B), rational(C,D)) :- !,
+   user: *(D, A, H),
+   user: *(B, C, J),
+   user:(H < J).
+rational:gen_ls(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+/*********************************************************************/
+/* Integer                                                           */
+/*********************************************************************/
+
+/**
+ * integer(P, Q):
+ * The predicate succeeds in Q with the integer of P.
+ */
+% integer(+Integer, -Integer)
+:- override integer:integer/2.
+:- public integer:integer/2.
+integer:integer(X, X).
+
+/**
+ * integer(P, Q):
+ * The predicate succeeds in Q with the integer of P.
+ */
+% integer(+Rational, -Integer)
+:- override rational:integer/2.
+:- public rational:integer/2.
+rational:integer(rational(A,B), X) :-
+   user: //(A, B, X).
+
+/*********************************************************************/
+/* Floor                                                             */
+/*********************************************************************/
+
+/**
+ * floor(P, Q):
+ * The predicate succeeds in Q with the floor of P.
+ */
+% floor(+Integer, -Integer)
+:- override integer:floor/2.
+:- public integer:floor/2.
+integer:floor(X, X).
+
+/**
+ * floor(P, Q):
+ * The predicate succeeds in Q with the floor of P.
+ */
+% floor(+Rational, -Integer)
+:- override rational:floor/2.
+:- public rational:floor/2.
+rational:floor(rational(A,B), X) :-
+   user:div(A, B, X).
+
+/*********************************************************************/
+/* Ceiling                                                           */
+/*********************************************************************/
+
+/**
+ * ceiling(P, Q):
+ * The predicate succeeds in Q with the ceiling of P.
+ */
+% ceiling(+Integer, -Integer)
+:- override integer:ceiling/2.
+:- public integer:ceiling/2.
+integer:ceiling(X, X).
+
+/**
+ * ceiling(P, Q):
+ * The predicate succeeds in Q with the ceiling of P.
+ */
+% ceiling(+Rational, -Integer)
+:- override rational:ceiling/2.
+:- public rational:ceiling/2.
+rational:ceiling(rational(A,B), X) :-
+   user: -(B, 1, H),
+   user: +(A, H, J),
+   user:div(J, B, X).

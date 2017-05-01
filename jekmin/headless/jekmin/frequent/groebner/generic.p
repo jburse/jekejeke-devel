@@ -20,20 +20,6 @@
  * ?- X is 2*A-A.          % simplification
  * X is A
  *
- * The predicates (=:=)/2 and (=\=)/2 check for syntactic equality of the
- * normal form from reduction. The predicates perform a polymorphic
- * dispatch to an equality method of the class of the first argument.
- * The predicates (<)/2, (=<)/2, (>)/2 and (>=)/2 allow comparison of
- * integers and rational numbers. The predicates perform a polymorphic
- * dispatch to a less method on the class of the first argument. All
- * the predicates mentioned so far override the usual built-in predicates.
- *
- * Examples:
- * ?- A*2 =:=  deriv(A^2,A).
- * Yes
- * ?- X is [0,1,2], 3 < len(X).
- * No
- *
  * Not all constructors can be reduced by the default polymorphic
  * dispatch. Some constructors are special forms and need customized
  * handling. For this purpose the default polymorphic dispatch has to

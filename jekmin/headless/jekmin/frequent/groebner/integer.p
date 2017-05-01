@@ -165,69 +165,6 @@ X - Y :-
    user: ^(X, Y, Z).
 
 /*********************************************************************/
-/* Rounding                                                          */
-/*********************************************************************/
-
-/**
- * integer(P, Q):
- * The predicate succeeds in Q with the integer of P.
- */
-% integer(+Integer, -Integer)
-:- override integer/2.
-:- public integer/2.
-integer(X, X).
-
-/**
- * floor(P, Q):
- * The predicate succeeds in Q with the floor of P.
- */
-% floor(+Integer, -Integer)
-:- override floor/2.
-:- public floor/2.
-floor(X, X).
-
-/**
- * ceiling(P, Q):
- * The predicate succeeds in Q with the ceiling of P.
- */
-% ceiling(+Integer, -Integer)
-:- override ceiling/2.
-:- public ceiling/2.
-ceiling(X, X).
-
-/*********************************************************************/
-/* Equalty & Comparison                                              */
-/*********************************************************************/
-
-/**
- * gen_eq(X, Y):
- * The predicate succeeds when X equals Y.
- */
-:- override gen_eq/2.
-:- public gen_eq/2.
-gen_eq(X, Y) :-
-   integer(Y), !,
-   user:(X =:= Y).
-gen_eq(_, rational(_,_)) :- !, fail.
-gen_eq(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
-
-/**
- * gen_ls(X, Y):
- * The predicate succeeds when X is less than Y.
- */
-:- override gen_ls/2.
-:- public gen_ls/2.
-gen_ls(X, Y) :-
-   integer(Y), !,
-   user:(X < Y).
-gen_ls(X, rational(A,B)) :- !,
-   user: *(B, X, H),
-   user:(H < A).
-gen_ls(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
-
-/*********************************************************************/
 /* CAS Display Hook                                                  */
 /*********************************************************************/
 

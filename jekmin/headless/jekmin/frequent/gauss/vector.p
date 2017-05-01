@@ -15,12 +15,12 @@
  * X is [A,B,C],
  * Z is B
  *
- * The predicate sum/2 can be used to compute the sum of the elements
- * of a vector. Further aggregate functions are currently not provided.
- * This module further provides some rudimentary arithmetic such as
- * sign change, addition and subtraction. Other operations such as
- * scalar product or transposing are currently not provided. Error
- * handling is rudimentary.
+ * The predicate sum/2, min/2 and max/2 can be used to compute the sum,
+ * minimum or maximum of the elements of a vector. Further aggregate
+ * functions are currently not provided. This module further provides
+ * some rudimentary arithmetic such as sign change, addition and subtraction.
+ * Other operations such as scalar product or transposing are currently
+ * not provided. Error handling is rudimentary.
  *
  * The vector based consing returns a matrix. The consing does currently
  * not check that the second argument is a proper list and that all
