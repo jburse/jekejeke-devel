@@ -1,21 +1,5 @@
 /**
- * This module provides symbolic variables. The module is responsible
- * for the reduction rules that perform simplification. The result can
- * be also an integer, polynomial or fraction. The rules delegate to the
- * polynom and fraction methods since a variable can be easily also
- * viewed as a polynom or fraction.
- *
- * Examples:
- * ?- X is A-A.
- * X = 0
- * ?- X is A*A.
- * X is A^2
- *
- * The reduction rules are just predicates inside the variable module
- * with a Python first argument for the method receiver. We provide
- * reduction rules for basic arithmetic. Special functions are currently
- * not supported. Equality is also realized by the same mechanism. Error
- * handling is rudimentary.
+ * This module provides radical sum constants.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,14 +27,16 @@
 
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekpro/frequent/misc)).
+:- use_package(library(jekmin/reference/misc)).
 
-:- module(variable, []).
-:- reexport('../gauss/ring').
+:- module(radical, []).
+:- reexport('../gauss/ordered').
 
-:- use_module(library(experiment/trail)).
 :- use_module(generic).
-:- use_module(polynom).
-:- use_module(fraction).
+:- use_module(rational).
+
+:- use_module(library(misc/residue)).
+:- use_module(library(basic/lists)).
 
 /*********************************************************************/
 /* Arithmetic                                                        */
@@ -60,107 +46,280 @@
  * -(P, Q):
  * The predicate succeeds in Q with the P negated.
  */
-% -(+Variable, -Polynom)
+% -(+Radical, -Radical)
 :- override (-)/2.
 :- public (-)/2.
-A - polynom(A,[1- -1]).
+radical(A,B) - radical(C,D) :-
+   C is -A,
+   sys_radical_neg(B, D).
 
 /**
  * +(P, Q, R):
  * The predicate succeeds in R with the sum of P and Q.
  */
-% +(+Variable, +Internal, -Internal)
+% +(+Radical, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, R) :-
-   integer(Y), !,
-   sys_make_coeff([], 0, Y, L),
-   polynom: +(polynom(X,[1-1]), polynom(X,L), R).
-+(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: +(polynom(X,[1-1]), polynom(Y,[1-1]), R).
-+(X, rational(A,B), R) :- !,
-   polynom: +(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
-+(X, polynom(A,B), R) :- !,
-   polynom: +(polynom(X,[1-1]), polynom(A,B), R).
-+(X, fraction(A,B), R) :- !,
-   fraction: +(fraction(X,1), fraction(A,B), R).
++(radical(A,B), X, R) :-
+   integer(X), !,
+   H is A+X,
+   R = radical(H,B).
++(radical(A,B), rational(C,D), R) :- !,
+   H is A+rational(C,D),
+   R = radical(H,B).
++(radical(A,B), radical(C,D), R) :-
+   H is A+C,
+   sys_radical_add(B, D, J),
+   sys_make_radical(H, J, R).
 
 /**
  * -(P, Q, R):
  * The predicate succeeds in R with P subtracted by Q.
  */
-% -(+Variable, +Internal, -Internal)
+% -(+Radical, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, R) :-
-   integer(Y), !,
-   sys_make_coeff([], 0, Y, L),
-   polynom: -(polynom(X,[1-1]), polynom(X,L), R).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: -(polynom(X,[1-1]), polynom(Y,[1-1]), R).
--(X, rational(A,B), R) :- !,
-   polynom: -(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
--(X, polynom(A,B), R) :- !,
-   polynom: -(polynom(X,[1-1]), polynom(A,B), R).
--(X, fraction(A,B), R) :- !,
-   fraction: -(fraction(X,1), fraction(A,B), R).
+-(radical(A,B), X, R) :-
+   integer(X), !,
+   H is A-X,
+   R = radical(H,B).
+-(radical(A,B), rational(C,D), R) :- !,
+   H is A-rational(C,D),
+   R = radical(H,B).
+-(radical(A,B), radical(C,D), R) :-
+   H is A-C,
+   sys_radical_sub(B, D, J),
+   sys_make_radical(H, J, R).
 
 /**
  * *(P, Q, R):
  * The predicate succeeds in R with the product of P and Q.
  */
-% *(+Variable, +Internal, -Internal)
+% *(+Radical, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(X, Y, R) :-
-   integer(Y), !,
-   sys_make_coeff([], 0, Y, L),
-   polynom: *(polynom(X,[1-1]), polynom(X,L), R).
-*(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: *(polynom(X,[1-1]), polynom(Y,[1-1]), R).
-*(X, rational(A,B), R) :- !,
-   polynom: *(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
-*(X, polynom(A,B), R) :- !,
-   polynom: *(polynom(X,[1-1]), polynom(A,B), R).
-*(X, fraction(A,B), R) :- !,
-   fraction: *(fraction(X,1), fraction(A,B), R).
+*(radical(A,B), X, R) :-
+   integer(X), !,
+   sys_radical_lift(X, B, L),
+   H is A*X,
+   sys_make_radical(H, L, R).
+*(radical(A,B), rational(C,D), R) :- !,
+   sys_radical_lift(rational(C,D), B, L),
+   H is A*rational(C,D),
+   sys_make_radical(H, L, R).
+*(radical(A,B), radical(C,D), R) :-
+   sys_radical_lift(A, D, K),
+   sys_radical_lift(C, B, L),
+   sys_radical_add(L, K, M),
+   sys_radical_mul(B, D, N, V),
+   sys_radical_add(M, N, U),
+   H is A*C+V,
+   sys_make_radical(H, U, R).
 
 /**
  * /(P, Q, R):
  * The predicate succeeds in R with P divided by Q.
  */
-% /(+Variable, +Internal, -Internal)
+% /(+Integer, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
 /(X, Y, R) :-
    integer(Y), !,
    R is X*(1/Y).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
-   make_fraction(X, Y, R).
-/(X, rational(A,B), R) :- !,
-   R is X*(1/rational(A,B)).
-/(X, polynom(A,B), R) :- !,
-   make_fraction(X, polynom(A,B), R).
-/(X, fraction(A,B), R) :- !,
-   fraction: /(fraction(X,1), fraction(A,B), R).
+/(X, rational(C,D), R) :- !,
+   R is X*(1/rational(C,D)).
+/(X, radical(C,D), R) :-
+   sys_swinnerton_dyer(radical(C,D), S),
+   R is X*S/(radical(C,D)*S).
 
 /**
  * ^(P, Q, R):
  * The predicate succeeds in R with P raised by Q.
  */
-% ^(+Variable, +Integer, -Internal)
+% ^(+Radical, +Integer, -Internal)
 :- override ^ /3.
 :- public ^ /3.
-^(X, Y, R) :-
+^(P, Y, R) :-
    user:(Y < 0), !,
    user:Y - Z,
-   R is 1/X^Z.
-^(X, Y, R) :-
-   sys_make_poly(X, [Y-1], R).
+   R is 1/P^Z.
+^(_, 0, R) :- !,
+   R = 1.
+^(P, 1, R) :- !,
+   R = P.
+^(P, 2, R) :- !,
+   R is P*P.
+^(P, N, R) :-
+   user:mod(N, 2, 1), !,
+   user: -(N, 1, M),
+   R is P^M*P.
+^(P, N, R) :-
+   user: //(N, 2, M),
+   H is P^M,
+   R is H*H.
+
+/*********************************************************************/
+/* Swinnerton-Dyer Polynomial                                        */
+/*********************************************************************/
+
+% sys_swinnerton_dyer(+Radical, -Internal)
+sys_swinnerton_dyer(radical(A,B), R) :-
+   sys_swinnerton_dyer(B, A, [], 1, R).
+
+% sys_swinnerton_dyer(+Map, +Internal, +Map, +Integer, -Internal)
+:- private sys_swinnerton_dyer/5.
+sys_swinnerton_dyer([A-S,C|L], B, U, 1, R) :- !,
+   user:S - T,
+   sys_swinnerton_dyer([C|L], B, [A-T|U], 0, P),
+   sys_swinnerton_dyer([C|L], B, [A-S|U], 1, Q),
+   R is P*Q.
+sys_swinnerton_dyer([A-S,C|L], B, U, 0, R) :- !,
+   user:S - T,
+   sys_swinnerton_dyer([C|L], B, [A-T|U], 0, P),
+   sys_swinnerton_dyer([C|L], B, [A-S|U], 0, Q),
+   R is P*Q.
+sys_swinnerton_dyer([A-S], B, L, 1, R) :- !,
+   user:S - T,
+   reverse([A-T|L], H),
+   R = radical(B,H).
+sys_swinnerton_dyer([A-S], B, L, 0, R) :-
+   user:S - T,
+   reverse([A-T|L], H),
+   reverse([A-S|L], J),
+   R is radical(B,H)*radical(B,J).
+
+/*********************************************************************/
+/* Arithmetic Helper                                                 */
+/*********************************************************************/
+
+% sys_radical_neg(+Map, -Map)
+sys_radical_neg([A-S|L], [A-T|R]) :-
+   user:S - T,
+   sys_radical_neg(L, R).
+sys_radical_neg([], []).
+
+% sys_radical_add(+Map, +Map, -Map)
+:- private sys_radical_add/3.
+sys_radical_add([A-S|L], H, R) :-
+   sys_radical_add2(A, S, H, J), !,
+   sys_radical_add(L, J, R).
+sys_radical_add([A-S|L], H, U) :-
+   sys_radical_add(L, H, R),
+   sys_make_sqrt2(R, A, S, U).
+sys_radical_add([], A, A).
+
+% sys_radical_add2(+Internal, +Integer, +Map, -Map)
+:- private sys_radical_add2/4.
+sys_radical_add2(A, S, [B-T|L], U) :-
+   H is A/B,
+   has_sqrt(H, R), !,
+   J is T+S*R,
+   sys_make_sqrt(J, B, L, U).
+sys_radical_add2(A, S, [B-T|L], U) :-
+   sys_radical_add2(A, S, L, R),
+   sys_make_sqrt2(R, B, T, U).
+
+% sys_radical_sub(+Map, +Map, -Map)
+:- private sys_radical_sub/3.
+sys_radical_sub([A-S|L], H, R) :-
+   sys_radical_sub2(A, S, H, J), !,
+   sys_radical_sub(L, J, R).
+sys_radical_sub([A-S|L], H, U) :-
+   sys_radical_sub(L, H, R),
+   sys_make_sqrt2(R, A, S, U).
+sys_radical_sub([], A, B) :-
+   sys_radical_neg(A, B).
+
+% sys_radical_sub2(+Internal, +Integer, +Map, -Map)
+:- private sys_radical_sub2/4.
+sys_radical_sub2(A, S, [B-T|L], U) :-
+   H is A/B,
+   has_sqrt(H, R), !,
+   J is T-S*R,
+   sys_make_sqrt(J, B, L, U).
+sys_radical_sub2(A, S, [B-T|L], U) :-
+   sys_radical_sub2(A, S, L, R),
+   sys_make_sqrt2(R, B, T, U).
+
+% sys_radical_lift(+Internal, +Map, -Map)
+sys_radical_lift(0, _, R) :- !,
+   R = [].
+sys_radical_lift(X, L, R) :-
+   A is X*X,
+   S is sign(X),
+   sys_radical_up(L, A, S, R).
+
+% sys_radical_up(+Map, +Internal, +Integer, -Map)
+:- private sys_radical_up/4.
+sys_radical_up([B-T|L], A, S, [H-J|R]) :-
+   H is A*B,
+   user: *(S, T, J),
+   sys_radical_up(L, A, S, R).
+sys_radical_up([], _, _, []).
+
+% sys_radical_mul(+Map, +Map, -Map, -Internal)
+:- private sys_radical_mul/4.
+sys_radical_mul([B-T|L], R, S, V) :-
+   sys_radical_scale(R, B, T, H, C),
+   sys_radical_mul(L, R, J, D),
+   sys_radical_add(H, J, S),
+   V is C+D.
+sys_radical_mul([], _, [], 0).
+
+% sys_radical_scale(+Map, +Internal, +Integer, -Map, -Internal)
+:- private sys_radical_scale/5.
+sys_radical_scale([B-T|L], A, S, U, V) :-
+   sys_radical_scale(L, A, S, R, C),
+   H is A*B,
+   user: *(S, T, J),
+   sys_radical_scale2(H, J, R, C, U, V).
+sys_radical_scale([], _, _, [], 0).
+
+% sys_radical_scale2(+Internal, +Integer, +Map, +Internal, -Map, -Internal)
+:- private sys_radical_scale2/6.
+sys_radical_scale2(A, S, L, B, U, V) :-
+   has_sqrt(A, R), !,
+   U = L,
+   V is B+S*R.
+sys_radical_scale2(A, S, L, B, [A-S|L], B).
+
+/*********************************************************************/
+/* Radicals                                                          */
+/*********************************************************************/
+
+% has_sqrt(+Internal, -Internal)
+has_sqrt(X, Y) :-
+   integer(X), !,
+   elem:isqrt(X, Y),
+   user: *(Y, Y, H),
+   user:(X =:= H).
+has_sqrt(rational(A,B), R) :-
+   has_sqrt(A, X),
+   has_sqrt(B, Y),
+   make_rational(X, Y, R).
+
+% sys_make_radical(+Internal, +List, -Internal)
+sys_make_radical(A, [], R) :- !,
+   R = A.
+sys_make_radical(A, L, radical(A,L)).
+
+% sys_make_sqrt(+Internal, +Internal, +Map, -Map)
+:- private sys_make_sqrt/4.
+sys_make_sqrt(0, _, L, R) :- !,
+   R = L.
+sys_make_sqrt(J, B, L, R) :-
+   S is sign(J),
+   A is J*J*B,
+   sys_make_sqrt2(L, A, S, R).
+
+% sys_make_sqrt2(+Map, +Internal, +Integer, -Map)
+:- private sys_make_sqrt2/4.
+sys_make_sqrt2([B-T|L], A, S, R) :-
+   A < B, !,
+   R = [A-S,B-T|L].
+sys_make_sqrt2([B-T|L], A, S, [B-T|R]) :-
+   sys_make_sqrt2(L, A, S, R).
+sys_make_sqrt2([], A, S, [A-S]).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */
@@ -174,6 +333,48 @@ A - polynom(A,[1- -1]).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(E, F) :-
-   sys_freezer(E), !,
-   sys_melt_var(E, F).
+residue:sys_printable_value(X, _) :-
+   var(X), !, fail.
+residue:sys_printable_value(radical(0,[A- -1|L]), R) :- !,
+   printable(A, H),
+   sys_radical_printable(L, -sqrt(H), R).
+residue:sys_printable_value(radical(0,[A-1|L]), R) :- !,
+   printable(A, H),
+   sys_radical_printable(L, sqrt(H), R).
+residue:sys_printable_value(radical(A,L), R) :- !,
+   printable(A, H),
+   sys_radical_printable(L, H, R).
+
+% sys_radical_printable(+List, +External, -External)
+:- private sys_radical_printable/3.
+sys_radical_printable([A- -1|L], J, R) :- !,
+   printable(A, H),
+   sys_radical_printable(L, J-sqrt(H), R).
+sys_radical_printable([A-1|L], J, R) :-
+   printable(A, H),
+   sys_radical_printable(L, J+sqrt(H), R).
+sys_radical_printable([], A, A).
+
+/*********************************************************************/
+/* Generic Hook                                                      */
+/*********************************************************************/
+
+/**
+ * X is E:
+ * The predicate succeeds in evaluating E by using polymorphism.
+ */
+% is(-Internal, +Expr)
+:- override generic:is/2.
+:- multifile generic:is/2.
+:- public generic:is/2.
+:- meta_predicate generic:(?is#(1)).
+generic:(X is E) :-
+   var(E), !,
+   sys_ensure_serno(E),
+   sys_freeze_var(E, X).
+generic:(X is radical(A,B)) :- !,
+   X = radical(A,B).
+
+:- multifile generic:is_abnormal/1.
+:- public generic:is_abnormal/1.
+generic:is_abnormal(radical(_,_)).
