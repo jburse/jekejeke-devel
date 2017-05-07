@@ -133,7 +133,17 @@ public final class SupplementBits extends Special {
      */
     private static Number bitCount(Number m) {
         if (m instanceof Integer) {
-            return Integer.valueOf(Integer.bitCount(Math.abs(m.intValue())));
+            int x = m.intValue();
+            if (x != Integer.MIN_VALUE) {
+                int k = Integer.valueOf(Integer.bitCount(Math.abs(x)));
+                if (x < 0) {
+                    return k + Integer.numberOfTrailingZeros(Math.abs(x)) - 1;
+                } else {
+                    return k;
+                }
+            } else {
+                return 31;
+            }
         } else {
             return Integer.valueOf(((BigInteger) m).bitCount());
         }
@@ -147,7 +157,17 @@ public final class SupplementBits extends Special {
      */
     private static Number bitLength(Number m) {
         if (m instanceof Integer) {
-            return Integer.valueOf(32 - Integer.numberOfLeadingZeros(Math.abs(m.intValue())));
+            int x = m.intValue();
+            if (x != Integer.MIN_VALUE) {
+                int k = Integer.valueOf(32 - Integer.numberOfLeadingZeros(Math.abs(x)));
+                if (x < 0 && Integer.bitCount(Math.abs(x)) == 1) {
+                    return k - 1;
+                } else {
+                    return k;
+                }
+            } else {
+                return 31;
+            }
         } else {
             return Integer.valueOf(((BigInteger) m).bitLength());
         }
@@ -161,11 +181,15 @@ public final class SupplementBits extends Special {
      */
     private static Number lowestSetBit(Number m) {
         if (m instanceof Integer) {
-            int k = Math.abs(m.intValue());
-            if (k == 0) {
-                return Integer.valueOf(-1);
+            int x = m.intValue();
+            if (x != Integer.MIN_VALUE) {
+                if (x == 0) {
+                    return Integer.valueOf(-1);
+                } else {
+                    return Integer.valueOf(Integer.numberOfTrailingZeros(x));
+                }
             } else {
-                return Integer.valueOf(Integer.numberOfTrailingZeros(k));
+                return 31;
             }
         } else {
             return Integer.valueOf(((BigInteger) m).getLowestSetBit());
