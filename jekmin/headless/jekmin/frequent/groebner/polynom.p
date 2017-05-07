@@ -16,8 +16,7 @@
  * The reduction rules are just predicates inside the polynom module
  * with a Python first argument for the method receiver. We provide
  * reduction rules for basic arithmetic. Special functions are
- * currently not supported. Equality is also realized by the same
- * mechanism. Error handling is rudimentary.
+ * currently not supported. Error handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

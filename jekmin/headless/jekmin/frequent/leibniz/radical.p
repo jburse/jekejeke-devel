@@ -1,5 +1,22 @@
 /**
- * This module provides radical sum constants.
+ * This module provides radical constants. The module is responsible
+ * for the reduction rules that perform partial evaluation. The result
+ * can be also an integer or a rational. In case that some extra
+ 3 argument is not radical, the rules do not yet delegate to the
+ * polynom and fraction methods, since we did not yet implement
+ * this part. The reciprocal of a radical constant is calculated with
+ * the help of a Swinnerton-Dyer polynomial.
+ *
+ * Example:
+ * ?- X is 1/(sqrt(3)+sqrt(2)).
+ * X is -sqrt(2)+sqrt(3)
+ *
+ * The reduction rules are just predicates inside the rational module
+ * with a Python first argument for the method receiver. We provide
+ * reduction rules for basic arithmetic. Radical constants are modelled
+ * as arbitrary long square root sums but nesting of radicals is not
+ * yet supported. Special functions are currently not supported. Error
+ * handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

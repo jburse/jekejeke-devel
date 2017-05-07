@@ -11,11 +11,11 @@
  * ?- X is 1/2*(Y+2).
  * X is 1+1/2*Y
  *
- * The reduction rules are just predicates inside the rational
- * module with a Python first argument for the method receiver. We
- * provide reduction rules for basic arithmetic. Special functions
- * are currently not supported. Equality is also realized by the same
- * mechanism. Error handling is rudimentary.
+ * The reduction rules are just predicates inside the rational module
+ * with a Python first argument for the method receiver. We provide
+ * reduction rules for basic arithmetic. The only special function
+ * supported so far is the sqrt/1 constructor. Other special functions
+ * are currently not supported. Error handling is rudimentary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
