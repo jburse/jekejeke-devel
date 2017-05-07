@@ -16,7 +16,8 @@
  * respective gen_ls/2 on the class of the first argument. If a method is
  * not found comparison aborts. If a method is found, the class of the
  * second argument is checked. Derived from (<)/2 we also provide
- * constructors min/2 and max/2 to determine the minimum respective maximum.
+ * constructors min/2, max/2, abs/2 and sign/2 to determine
+ * corresponding values.
  *
  * Further there are the constructors integer/1, floor/1 and ceiling/1
  * that will find and return an integer near the given integer or rational
@@ -159,6 +160,33 @@ max(X, Y, Z) :-
    X < Y, !,
    Z = Y.
 max(X, _, X).
+
+/**
+ * abs(X, Y):
+ * The predicate succeeds in Z with the absolute of X.
+ */
+% abs(+Ordered, -Ordered)
+:- override abs/2.
+:- public abs/2.
+abs(X, Y) :-
+   X < 0, !,
+   Y is -X.
+abs(X, X).
+
+/**
+ * sign(X, Y):
+ * The predicate succeeds in Z with the sign of X.
+ */
+% sign(+Ordered, -Ordered)
+:- override sign/2.
+:- public sign/2.
+sign(X, Y) :-
+   X < 0, !,
+   Y = -1.
+sign(X, Y) :-
+   X > 0, !,
+   Y = 1.
+sign(_, 0).
 
 /*********************************************************************/
 /* Equalty                                                           */

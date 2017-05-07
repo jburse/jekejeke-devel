@@ -9,17 +9,20 @@
  * ulp: float -> float
  * ulp: decimal -> decimal
  * gcd: integer x integer -> integer
+ * isqrt: integer -> integer
  *
  * The ulp operation makes use of the ulp() function of the Java Math
  * library. The gcd operation implements a binary gcd algorithm for
  * 32-bit integers and otherwise delegates to the Java BigInteger
- * gcd operation implementation.
+ * gcd operation implementation. The isqrt evaluable function uses a
+ * logarithmic bisection method.
  *
  * Examples:
  * ulp(0)          --> 1
  * ulp(0.0)        --> 4.9E-324
  * ulp(0d0.00)     --> 0d0.01
  * gcd(36,24)      --> 12
+ * isqrt(7)        --> 8
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

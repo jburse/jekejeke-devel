@@ -78,12 +78,12 @@ X - Y :-
 +(X, Y, Z) :-
    integer(Y), !,
    user: +(X, Y, Z).
++(X, rational(A,B), R) :- !,
+   rational: +(rational(X,1), rational(A,B), R).
 +(X, Y, R) :-
    sys_freezer(Y), !,
    sys_make_map([], 0, X, L),
    polynom: +(polynom(Y,L), polynom(Y,[1-1]), R).
-+(X, rational(A,B), R) :- !,
-   rational: +(rational(X,1), rational(A,B), R).
 +(X, polynom(A,B), R) :- !,
    sys_make_map([], 0, X, L),
    polynom: +(polynom(A,L), polynom(A,B), R).
@@ -122,12 +122,12 @@ X - Y :-
 *(X, Y, Z) :-
    integer(Y), !,
    user: *(X, Y, Z).
+*(X, rational(A,B), R) :- !,
+   rational: *(rational(X,1), rational(A,B), R).
 *(X, Y, R) :-
    sys_freezer(Y), !,
    sys_make_map([], 0, X, L),
    polynom: *(polynom(Y,L), polynom(Y,[1-1]), R).
-*(X, rational(A,B), R) :- !,
-   rational: *(rational(X,1), rational(A,B), R).
 *(X, polynom(A,B), R) :- !,
    sys_make_map([], 0, X, L),
    polynom: *(polynom(A,L), polynom(A,B), R).

@@ -204,7 +204,7 @@ sys_poly_norm(F, G, A, B) :-
    sys_poly_div(K, F, B, _).
 
 % sys_poly_lcm(+Internal, +Internal, -Internal)
-:- public sys_poly_lcm/3.
+:- private sys_poly_lcm/3.
 sys_poly_lcm(A, B, C) :-
    S is A*Z,
    T is B*(1-Z),
