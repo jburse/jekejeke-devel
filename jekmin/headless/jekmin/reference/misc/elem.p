@@ -49,10 +49,11 @@
 :- use_package(foreign(jekmin/reference/misc)).
 
 :- module(elem, []).
+:- use_module(bits).
 
 /**
  * ulp(X, Y):
- * Predicate succeeds in Y with the unit of least precision of
+ * The predicate succeeds in Y with the unit of least precision of
  * the number X.
  */
 :- public ulp/2.
@@ -60,7 +61,7 @@
 
 /**
  * gcd(X, Y, Z):
- * Predicate succeeds in Z with the greatest common divisor of the
+ * The predicate succeeds in Z with the greatest common divisor of the
  * integer X and the integer Y.
  */
 :- public gcd/3.
@@ -68,7 +69,7 @@
 
 /**
  * lcm(X, Y, Z):
- * Predicate succeeds in Z with the least common multiple of the
+ * The predicate succeeds in Z with the least common multiple of the
  * integer X and the integer Y.
  */
 :- public lcm/3.
@@ -78,3 +79,37 @@ lcm(0, _, R) :- !,
    R = 0.
 lcm(X, Y, R) :-
    R is X//gcd(X,Y)*Y.
+
+/**
+ * isqrt(X, Y):
+ * The predicate succeeds in Y with the integer square root of X.
+ */
+:- public isqrt/2.
+isqrt(X, _) :-
+   X < 0,
+   throw(error(evaluation_error(undefined),_)).
+isqrt(0, R) :- !,
+   R = 0.
+isqrt(X, Y) :-
+   Lo is 1<<((bitlength(X)-1)//2),
+   Hi is Lo*2,
+   sys_bisect(Lo, Hi, X, Y).
+
+% sys_bisect(+Integer, +Integer, +Integer, -Integer)
+:- private sys_bisect/4.
+sys_bisect(Lo, Hi, X, Y) :-
+   Lo+1 < Hi, !,
+   M is (Lo+Hi)//2,
+   S is M*M,
+   sys_bisect(S, Lo, Hi, M, X, Y).
+sys_bisect(Lo, _, _, Lo).
+
+% sys_bisect(+Integer, +Integer, +Integer, +Integer, +Integer, -Integer)
+:- private sys_bisect/6.
+sys_bisect(S, Lo, _, M, X, Y) :-
+   S > X, !,
+   sys_bisect(Lo, M, X, Y).
+sys_bisect(S, _, Hi, M, X, Y) :-
+   S < X, !,
+   sys_bisect(M, Hi, X, Y).
+sys_bisect(_, _, _, Y, _, Y).

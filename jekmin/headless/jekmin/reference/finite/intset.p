@@ -81,7 +81,7 @@
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/ref)).
 :- use_module(library(experiment/attr)).
-:- use_module(library(misc/bits)).
+:- use_module(library(misc/elem)).
 :- use_module(helper).
 :- use_module(linform).
 
@@ -1502,20 +1502,22 @@ sys_root_range(..0, 0) :- !.
 sys_root_range(..A, _) :-
    A < 0, !, fail.
 sys_root_range(..A, H..B) :- !,
-   sys_bisect(A, B),
+   B is isqrt(A),
    H is -B.
 sys_root_range(_..0, 0) :- !.
 sys_root_range(_..A, _) :-
    A < 0, !, fail.
 sys_root_range(_..A, H..B) :- !,
-   sys_bisect(A, B),
+   B is isqrt(A),
    H is -B.
 sys_root_range(0, 0) :- !.
 sys_root_range(A, _) :-
-   sys_bisect(A, B),
+   A < 0, !, fail.
+sys_root_range(A, _) :-
+   B is isqrt(A),
    A =\= B*B, !, fail.
 sys_root_range(A, H..B) :-
-   sys_bisect(A, B),
+   B is isqrt(A),
    H is -B.
 
 % sys_prem_range(+Range, -Range)
@@ -1551,25 +1553,6 @@ sys_conc_range(A..B, ...) :-
 sys_conc_range(_.._, 1) :- !.
 sys_conc_range(0, ...) :- !.
 sys_conc_range(_, 1) :- !.
-
-% sys_bisect(+Integer, -Integer)
-sys_bisect(X, Y) :-
-   Lo is 1<<((bitlength(X)-1)//2),
-   Hi is Lo*2,
-   sys_bisect(Lo, Hi, X, Y).
-
-% sys_bisect(+Integer, +Integer, +Integer, -Integer)
-:- private sys_bisect/4.
-sys_bisect(Lo, Hi, X, Y) :-
-   Lo+1 < Hi, !,
-   M is (Lo+Hi)//2,
-   S is M*M,
-   (  S > X
-   -> sys_bisect(Lo, M, X, Y)
-   ;  S < X
-   -> sys_bisect(M, Hi, X, Y)
-   ;  M = Y).
-sys_bisect(Lo, _, _, Lo).
 
 /************************************************/
 /* Absolute Function                            */

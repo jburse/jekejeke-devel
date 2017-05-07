@@ -72,6 +72,7 @@
 :- use_module(library(minimal/hypo)).
 :- use_module(library(minimal/delta)).
 :- use_module(library(misc/struc)).
+:- use_module(library(misc/elem)).
 :- use_module(library(experiment/surrogate)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/ref)).
@@ -564,11 +565,14 @@ sys_melt_const(X, 0) <=
    = sys_sqrc(X, 0), !.
 zero <=
    = sys_sqrc(_, C),
-   {sys_bisect(C, D),
+   {C < 0}, !.
+zero <=
+   = sys_sqrc(_, C),
+   {D is isqrt(C),
     C =\= D*D}, !.
 + (intset:sys_in(X, [H,D], H..D)) <=
    = sys_sqrc(X, C),
-   {sys_bisect(C, D),
+   {D is isqrt(C),
     H is -D}.
 
 % sys_impv(+Wrap, +Wrap)
