@@ -70,6 +70,7 @@
 :- sys_auto_load(rational).
 :- sys_auto_load(polynom).
 :- sys_auto_load(fraction).
+:- sys_auto_load(radical).
 :- sys_auto_load('../gauss/matrice').
 :- sys_auto_load('../gauss/vector').
 :- sys_auto_load('../leibniz/deriv').

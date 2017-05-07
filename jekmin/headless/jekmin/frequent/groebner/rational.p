@@ -50,6 +50,7 @@
 
 :- use_module(generic).
 :- use_module(fraction).
+:- use_module(radical).
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
@@ -78,15 +79,18 @@ rational(A,B) - rational(C,B) :-
 +(rational(A,B), Y, R) :-
    integer(Y), !,
    rational: +(rational(A,B), rational(Y,1), R).
-+(rational(A,B), Y, R) :-
-   sys_freezer(Y), !,
-   polynom: +(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
 +(rational(A,B), rational(C,D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: +(H, J, K),
    user: *(B, D, L),
    make_rational(K, L, R).
++(X, radical(A,B), R) :- !,
+   H is X+A,
+   R = radical(H,B).
++(rational(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   polynom: +(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
 +(rational(A,B), polynom(C,D), R) :- !,
    polynom: +(polynom(C,[0-rational(A,B)]), polynom(C,D), R).
 +(rational(A,B), fraction(C,D), R) :-
@@ -102,15 +106,19 @@ rational(A,B) - rational(C,B) :-
 -(rational(A,B), Y, R) :-
    integer(Y), !,
    rational: -(rational(A,B), rational(Y,1), R).
--(rational(A,B), Y, R) :-
-   sys_freezer(Y), !,
-   polynom: -(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
 -(rational(A,B), rational(C,D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: -(H, J, K),
    user: *(B, D, L),
    make_rational(K, L, R).
+-(X, radical(A,B), R) :- !,
+   H is X-A,
+   sys_radical_neg(B, C),
+   R = radical(H,C).
+-(rational(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   polynom: -(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
 -(rational(A,B), polynom(C,D), R) :- !,
    polynom: -(polynom(C,[0-rational(A,B)]), polynom(C,D), R).
 -(rational(A,B), fraction(C,D), R) :-
@@ -126,13 +134,17 @@ rational(A,B) - rational(C,B) :-
 *(rational(A,B), Y, R) :-
    integer(Y), !,
    rational: *(rational(A,B), rational(Y,1), R).
-*(rational(A,B), Y, R) :-
-   sys_freezer(Y), !,
-   polynom: *(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
 *(rational(A,B), rational(C,D), R) :- !,
    user: *(A, C, H),
    user: *(B, D, J),
    make_rational(H, J, R).
+*(X, radical(A,B), R) :- !,
+   sys_radical_lift(X, B, L),
+   H is X*A,
+   sys_make_radical(H, L, R).
+*(rational(A,B), Y, R) :-
+   sys_freezer(Y), !,
+   polynom: *(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
 *(rational(A,B), polynom(C,D), R) :- !,
    polynom: *(polynom(C,[0-rational(A,B)]), polynom(C,D), R).
 *(rational(A,B), fraction(C,D), R) :-
@@ -148,15 +160,18 @@ rational(A,B) - rational(C,B) :-
 /(rational(A,B), Y, R) :-
    integer(Y), !,
    rational: /(rational(A,B), rational(Y,1), R).
-/(rational(A,B), Y, R) :-
-   sys_freezer(Y), !,
-   make_fraction(rational(A,B), Y, R).
 /(rational(A,B), rational(C,D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    make_rational(H, J, R).
-/(rational(A,B), polynom(C,D), R) :- !,
-   make_fraction(rational(A,B), polynom(C,D), R).
+/(X, radical(C,D), R) :- !,
+   sys_swinnerton_dyer(radical(C,D), S),
+   R is X*S/(radical(C,D)*S).
+/(X, Y, R) :-
+   sys_freezer(Y), !,
+   new_fraction(X, Y, R).
+/(X, polynom(C,D), R) :- !,
+   new_fraction(X, polynom(C,D), R).
 /(rational(A,B), fraction(C,D), R) :-
    fraction: /(fraction(rational(A,B),1), fraction(C,D), R).
 
@@ -180,6 +195,25 @@ rational(A,B) - rational(C,B) :-
    user: ^(B, Y, J).
 
 /*********************************************************************/
+/* Radicals                                                          */
+/*********************************************************************/
+
+/**
+ * sqrt(P, Q):
+ * The predicate succeeds in Q with the square root of P.
+ */
+% sqrt(+Rational, -Radical)
+:- override sqrt/2.
+:- public sqrt/2.
+sqrt(rational(A,_), _) :-
+   A < 0,
+   throw(error(evaluation_error(undefined),_)).
+sqrt(rational(A,B), R) :-
+   has_sqrt(rational(A,B), X), !,
+   R = X.
+sqrt(X, radical(0,[X-1])).
+
+/*********************************************************************/
 /* Arithmetic Helper                                                 */
 /*********************************************************************/
 
@@ -199,10 +233,11 @@ new_rational(A, -1, B) :- !,
    user:A - B.
 new_rational(A, 1, R) :- !,
    R = A.
-new_rational(A, B, rational(C,D)) :-
+new_rational(A, B, R) :-
    user:(B < 0), !,
    user:A - C,
-   user:B - D.
+   user:B - D,
+   R = rational(C,D).
 new_rational(A, B, rational(A,B)).
 
 /*********************************************************************/

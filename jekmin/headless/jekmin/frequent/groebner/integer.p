@@ -53,6 +53,7 @@
 :- use_module(rational).
 :- use_module(polynom).
 :- use_module(fraction).
+:- use_module(radical).
 
 /*********************************************************************/
 /* Arithmetic                                                        */
@@ -80,12 +81,15 @@ X - Y :-
    user: +(X, Y, Z).
 +(X, rational(A,B), R) :- !,
    rational: +(rational(X,1), rational(A,B), R).
++(X, radical(A,B), R) :- !,
+   H is X+A,
+   R = radical(H,B).
 +(X, Y, R) :-
    sys_freezer(Y), !,
-   sys_make_map([], 0, X, L),
+   sys_make_coeff([], 0, X, L),
    polynom: +(polynom(Y,L), polynom(Y,[1-1]), R).
 +(X, polynom(A,B), R) :- !,
-   sys_make_map([], 0, X, L),
+   sys_make_coeff([], 0, X, L),
    polynom: +(polynom(A,L), polynom(A,B), R).
 +(X, fraction(A,B), R) :-
    fraction: +(fraction(X,1), fraction(A,B), R).
@@ -100,14 +104,18 @@ X - Y :-
 -(X, Y, Z) :-
    integer(Y), !,
    user: -(X, Y, Z).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   sys_make_map([], 0, X, L),
-   polynom: -(polynom(Y,L), polynom(Y,[1-1]), R).
 -(X, rational(A,B), R) :- !,
    rational: -(rational(X,1), rational(A,B), R).
+-(X, radical(A,B), R) :- !,
+   H is X-A,
+   sys_radical_neg(B, C),
+   R = radical(H,C).
+-(X, Y, R) :-
+   sys_freezer(Y), !,
+   sys_make_coeff([], 0, X, L),
+   polynom: -(polynom(Y,L), polynom(Y,[1-1]), R).
 -(X, polynom(A,B), R) :- !,
-   sys_make_map([], 0, X, L),
+   sys_make_coeff([], 0, X, L),
    polynom: -(polynom(A,L), polynom(A,B), R).
 -(X, fraction(A,B), R) :-
    fraction: -(fraction(X,1), fraction(A,B), R).
@@ -124,12 +132,16 @@ X - Y :-
    user: *(X, Y, Z).
 *(X, rational(A,B), R) :- !,
    rational: *(rational(X,1), rational(A,B), R).
+*(X, radical(A,B), R) :- !,
+   sys_radical_lift(X, B, L),
+   H is X*A,
+   sys_make_radical(H, L, R).
 *(X, Y, R) :-
    sys_freezer(Y), !,
-   sys_make_map([], 0, X, L),
+   sys_make_coeff([], 0, X, L),
    polynom: *(polynom(Y,L), polynom(Y,[1-1]), R).
 *(X, polynom(A,B), R) :- !,
-   sys_make_map([], 0, X, L),
+   sys_make_coeff([], 0, X, L),
    polynom: *(polynom(A,L), polynom(A,B), R).
 *(X, fraction(A,B), R) :-
    fraction: *(fraction(X,1), fraction(A,B), R).
@@ -144,13 +156,16 @@ X - Y :-
 /(X, Y, Z) :-
    integer(Y), !,
    make_rational(X, Y, Z).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
-   make_fraction(X, Y, R).
 /(X, rational(A,B), R) :- !,
    rational: /(rational(X,1), rational(A,B), R).
+/(X, radical(C,D), R) :- !,
+   sys_swinnerton_dyer(radical(C,D), S),
+   R is X*S/(radical(C,D)*S).
+/(X, Y, R) :-
+   sys_freezer(Y), !,
+   new_fraction(X, Y, R).
 /(X, polynom(A,B), R) :- !,
-   make_fraction(X, polynom(A,B), R).
+   new_fraction(X, polynom(A,B), R).
 /(X, fraction(A,B), R) :-
    fraction: /(fraction(X,1), fraction(A,B), R).
 
@@ -163,6 +178,25 @@ X - Y :-
 :- public ^ /3.
 ^(X, Y, Z) :-
    user: ^(X, Y, Z).
+
+/*********************************************************************/
+/* Radicals                                                          */
+/*********************************************************************/
+
+/**
+ * sqrt(P, Q):
+ * The predicate succeeds in Q with the square root of P.
+ */
+% sqrt(+Integer, -Radical)
+:- override sqrt/2.
+:- public sqrt/2.
+sqrt(X, _) :-
+   X < 0,
+   throw(error(evaluation_error(undefined),_)).
+sqrt(X, R) :-
+   has_sqrt(X, Y), !,
+   R = Y.
+sqrt(X, radical(0,[X-1])).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */

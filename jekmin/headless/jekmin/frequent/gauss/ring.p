@@ -165,8 +165,8 @@ sys_same_comb([N-A|L], J, G, P, Q) :-
    sys_poly_comb(A, G, K, M),
    sys_same_comb(L, J, G, R, S),
    user: -(N, J, I),
-   sys_make_map(R, I, K, P),
-   sys_make_map(S, N, M, Q).
+   sys_make_coeff(R, I, K, P),
+   sys_make_coeff(S, N, M, Q).
 sys_same_comb(L, _, _, [], L).
 
 % sys_coeff_comb(+List, +Monomial, -List, -List)
@@ -174,6 +174,6 @@ sys_same_comb(L, _, _, [], L).
 sys_coeff_comb([N-A|L], G, P, Q) :-
    sys_poly_comb(A, G, K, M),
    sys_coeff_comb(L, G, R, S),
-   sys_make_map(R, N, K, P),
-   sys_make_map(S, N, M, Q).
+   sys_make_coeff(R, N, K, P),
+   sys_make_coeff(S, N, M, Q).
 sys_coeff_comb([], _, [], []).

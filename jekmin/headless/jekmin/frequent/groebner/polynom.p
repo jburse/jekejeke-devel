@@ -80,13 +80,13 @@ polynom(A,B) - R :-
 :- public (+)/3.
 +(polynom(A,B), Y, R) :-
    integer(Y), !,
-   sys_make_map([], 0, Y, L),
+   sys_make_coeff([], 0, Y, L),
    polynom: +(polynom(A,B), polynom(A,L), R).
++(polynom(A,B), rational(C,D), R) :- !,
+   polynom: +(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
 +(polynom(A,B), Y, R) :-
    sys_freezer(Y), !,
    polynom: +(polynom(A,B), polynom(Y,[1-1]), R).
-+(polynom(A,B), rational(C,D), R) :- !,
-   polynom: +(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
 +(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_add(B, [0-polynom(C,D)], H),
@@ -109,13 +109,13 @@ polynom(A,B) - R :-
 :- public (-)/3.
 -(polynom(A,B), Y, R) :-
    integer(Y), !,
-   sys_make_map([], 0, Y, L),
+   sys_make_coeff([], 0, Y, L),
    polynom: -(polynom(A,B), polynom(A,L), R).
+-(polynom(A,B), rational(C,D), R) :- !,
+   polynom: -(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
 -(polynom(A,B), Y, R) :-
    sys_freezer(Y), !,
    polynom: -(polynom(A,B), polynom(Y,[1-1]), R).
--(polynom(A,B), rational(C,D), R) :- !,
-   polynom: -(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
 -(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_sub(B, [0-polynom(C,D)], H),
@@ -138,13 +138,13 @@ polynom(A,B) - R :-
 :- public * /3.
 *(polynom(A,B), Y, R) :-
    integer(Y), !,
-   sys_make_map([], 0, Y, L),
+   sys_make_coeff([], 0, Y, L),
    polynom: *(polynom(A,B), polynom(A,L), R).
+*(polynom(A,B), rational(C,D), R) :- !,
+   polynom: *(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
 *(polynom(A,B), Y, R) :-
    sys_freezer(Y), !,
    polynom: *(polynom(A,B), polynom(Y,[1-1]), R).
-*(polynom(A,B), rational(C,D), R) :- !,
-   polynom: *(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
 *(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_mul(B, [0-polynom(C,D)], H),
@@ -165,14 +165,14 @@ polynom(A,B) - R :-
 % /(+Polynom, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(polynom(A,B), Y, R) :-
+/(X, Y, R) :-
    integer(Y), !,
-   R is polynom(A,B)*(1/Y).
+   R is X*(1/Y).
+/(X, rational(C,D), R) :- !,
+   R is X*(1/rational(C,D)).
 /(polynom(A,B), Y, R) :-
    sys_freezer(Y), !,
    make_fraction(polynom(A,B), Y, R).
-/(polynom(A,B), rational(C,D), R) :- !,
-   R is polynom(A,B)*(1/rational(C,D)).
 /(polynom(A,B), polynom(C,D), R) :- !,
    make_fraction(polynom(A,B), polynom(C,D), R).
 /(polynom(A,B), fraction(C,D), R) :-
@@ -188,10 +188,13 @@ polynom(A,B) - R :-
 ^(P, Y, R) :-
    user:(Y < 0), !,
    user:Y - Z,
-   H is P^Z,
-   new_fraction(1, H, R).
+   R is 1/P^Z.
 ^(_, 0, R) :- !,
    R = 1.
+^(P, 1, R) :- !,
+   R = P.
+^(P, 2, R) :- !,
+   R is P*P.
 ^(P, N, R) :-
    user:mod(N, 2, 1), !,
    user: -(N, 1, M),
@@ -220,7 +223,7 @@ sys_poly_add([N-A|L], [M-B|R], [N-A|S]) :-
 sys_poly_add([N-A|L], [N-B|R], T) :- !,
    C is A+B,
    sys_poly_add(L, R, H),
-   sys_make_map(H, N, C, T).
+   sys_make_coeff(H, N, C, T).
 sys_poly_add([N-A|L], [M-B|R], [M-B|S]) :-
    sys_poly_add([N-A|L], R, S).
 sys_poly_add([], L, L) :- !.
@@ -234,7 +237,7 @@ sys_poly_sub([N-A|L], [M-B|R], [N-A|S]) :-
 sys_poly_sub([N-A|L], [N-B|R], T) :- !,
    C is A-B,
    sys_poly_sub(L, R, H),
-   sys_make_map(H, N, C, T).
+   sys_make_coeff(H, N, C, T).
 sys_poly_sub([N-A|L], [M-B|R], [M-C|S]) :-
    C is -B,
    sys_poly_sub([N-A|L], R, S).
@@ -258,10 +261,11 @@ sys_poly_scale([N-A|L], M, B, [K-C|R]) :-
    sys_poly_scale(L, M, B, R).
 sys_poly_scale([], _, _, []).
 
-% sys_make_map(+Map, +Integer, +Internal, -Map)
-:- public sys_make_map/4.
-sys_make_map(L, _, 0, L) :- !.
-sys_make_map(L, N, A, [N-A|L]).
+% sys_make_coeff(+Map, +Integer, +Internal, -Map)
+:- public sys_make_coeff/4.
+sys_make_coeff(L, _, 0, R) :- !,
+   R = L.
+sys_make_coeff(L, N, A, [N-A|L]).
 
 % sys_make_poly(+Ref, +Map, -Internal)
 :- public sys_make_poly/3.

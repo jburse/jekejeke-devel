@@ -122,7 +122,7 @@ sys_poly_deriv([], []).
 sys_coeff_deriv([N-A|L], X, R) :-
    B is deriv(A,X),
    sys_coeff_deriv(L, X, H),
-   sys_make_map(H, N, B, R).
+   sys_make_coeff(H, N, B, R).
 sys_coeff_deriv([], _, []).
 
 /*********************************************************************/
