@@ -25,15 +25,16 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- package(library(jekmin/frequent/groebner)).
+:- package(library(jekmin/frequent/leibniz)).
+:- use_package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekpro/frequent/misc)).
 :- use_package(library(jekmin/reference/misc)).
 
 :- module(radical, []).
 :- reexport('../gauss/ordered').
 
-:- use_module(generic).
-:- use_module(rational).
+:- use_module('../groebner/generic').
+:- use_module('../groebner/rational').
 
 :- use_module(library(misc/residue)).
 :- use_module(library(basic/lists)).
@@ -163,26 +164,27 @@ radical(A,B) - radical(C,D) :-
 /*********************************************************************/
 
 % sys_swinnerton_dyer(+Radical, -Internal)
+:- public sys_swinnerton_dyer/2.
 sys_swinnerton_dyer(radical(A,B), R) :-
-   sys_swinnerton_dyer(B, A, [], 1, R).
+   sys_swinnerton_dyer2(B, A, [], 1, R).
 
-% sys_swinnerton_dyer(+Map, +Internal, +Map, +Integer, -Internal)
-:- private sys_swinnerton_dyer/5.
-sys_swinnerton_dyer([A-S,C|L], B, U, 1, R) :- !,
+% sys_swinnerton_dyer2(+Map, +Internal, +Map, +Integer, -Internal)
+:- private sys_swinnerton_dyer2/5.
+sys_swinnerton_dyer2([A-S,C|L], B, U, 1, R) :- !,
    user:S - T,
-   sys_swinnerton_dyer([C|L], B, [A-T|U], 0, P),
-   sys_swinnerton_dyer([C|L], B, [A-S|U], 1, Q),
+   sys_swinnerton_dyer2([C|L], B, [A-T|U], 0, P),
+   sys_swinnerton_dyer2([C|L], B, [A-S|U], 1, Q),
    R is P*Q.
-sys_swinnerton_dyer([A-S,C|L], B, U, 0, R) :- !,
+sys_swinnerton_dyer2([A-S,C|L], B, U, 0, R) :- !,
    user:S - T,
-   sys_swinnerton_dyer([C|L], B, [A-T|U], 0, P),
-   sys_swinnerton_dyer([C|L], B, [A-S|U], 0, Q),
+   sys_swinnerton_dyer2([C|L], B, [A-T|U], 0, P),
+   sys_swinnerton_dyer2([C|L], B, [A-S|U], 0, Q),
    R is P*Q.
-sys_swinnerton_dyer([A-S], B, L, 1, R) :- !,
+sys_swinnerton_dyer2([A-S], B, L, 1, R) :- !,
    user:S - T,
    reverse([A-T|L], H),
    R = radical(B,H).
-sys_swinnerton_dyer([A-S], B, L, 0, R) :-
+sys_swinnerton_dyer2([A-S], B, L, 0, R) :-
    user:S - T,
    reverse([A-T|L], H),
    reverse([A-S|L], J),
@@ -193,6 +195,7 @@ sys_swinnerton_dyer([A-S], B, L, 0, R) :-
 /*********************************************************************/
 
 % sys_radical_neg(+Map, -Map)
+:- public sys_radical_neg/2.
 sys_radical_neg([A-S|L], [A-T|R]) :-
    user:S - T,
    sys_radical_neg(L, R).
@@ -242,6 +245,7 @@ sys_radical_sub2(A, S, [B-T|L], U) :-
    sys_make_sqrt2(R, B, T, U).
 
 % sys_radical_lift(+Internal, +Map, -Map)
+:- public sys_radical_lift/3.
 sys_radical_lift(0, _, R) :- !,
    R = [].
 sys_radical_lift(X, L, R) :-
@@ -288,6 +292,7 @@ sys_radical_scale2(A, S, L, B, [A-S|L], B).
 /*********************************************************************/
 
 % has_sqrt(+Internal, -Internal)
+:- public has_sqrt/2.
 has_sqrt(X, Y) :-
    integer(X), !,
    elem:isqrt(X, Y),
@@ -299,6 +304,7 @@ has_sqrt(rational(A,B), R) :-
    make_rational(X, Y, R).
 
 % sys_make_radical(+Internal, +List, -Internal)
+:- public sys_make_radical/3.
 sys_make_radical(A, [], R) :- !,
    R = A.
 sys_make_radical(A, L, radical(A,L)).

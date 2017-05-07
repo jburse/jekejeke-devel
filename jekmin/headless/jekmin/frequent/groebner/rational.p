@@ -42,6 +42,7 @@
  */
 
 :- package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekpro/frequent/misc)).
 :- use_package(library(jekmin/reference/misc)).
 
@@ -50,7 +51,7 @@
 
 :- use_module(generic).
 :- use_module(fraction).
-:- use_module(radical).
+:- use_module('../leibniz/radical').
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
@@ -218,6 +219,7 @@ sqrt(X, radical(0,[X-1])).
 /*********************************************************************/
 
 % make_rational(+Integer, +Integer, -Internal)
+:- public make_rational/3.
 make_rational(_, 0, _) :-
    throw(error(evaluation_error(zero_divisor),_)).
 make_rational(0, _, R) :- !,

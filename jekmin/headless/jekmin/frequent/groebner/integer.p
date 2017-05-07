@@ -43,6 +43,7 @@
  */
 
 :- package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(integer, []).
@@ -53,7 +54,7 @@
 :- use_module(rational).
 :- use_module(polynom).
 :- use_module(fraction).
-:- use_module(radical).
+:- use_module('../leibniz/radical').
 
 /*********************************************************************/
 /* Arithmetic                                                        */

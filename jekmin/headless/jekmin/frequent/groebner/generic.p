@@ -70,12 +70,12 @@
 :- sys_auto_load(rational).
 :- sys_auto_load(polynom).
 :- sys_auto_load(fraction).
-:- sys_auto_load(radical).
 :- sys_auto_load('../gauss/matrice').
 :- sys_auto_load('../gauss/vector').
 :- sys_auto_load('../leibniz/deriv').
 :- sys_auto_load('../leibniz/subst').
 :- sys_auto_load('../leibniz/series').
+:- sys_auto_load('../leibniz/radical').
 :- sys_load_resource(safety).
 
 :- use_module(library(experiment/attr)).
