@@ -77,9 +77,9 @@ rational(A,B) - rational(C,B) :-
 % +(+Rational, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(rational(A,B), Y, R) :-
++(X, Y, R) :-
    integer(Y), !,
-   rational: +(rational(A,B), rational(Y,1), R).
+   rational: +(X, rational(Y,1), R).
 +(rational(A,B), rational(C,D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -87,15 +87,14 @@ rational(A,B) - rational(C,B) :-
    user: *(B, D, L),
    make_rational(K, L, R).
 +(X, radical(A,B), R) :- !,
-   H is X+A,
-   R = radical(H,B).
-+(rational(A,B), Y, R) :-
+   radical: +(radical(X,[]), radical(A,B), R).
++(X, Y, R) :-
    sys_freezer(Y), !,
-   polynom: +(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
-+(rational(A,B), polynom(C,D), R) :- !,
-   polynom: +(polynom(C,[0-rational(A,B)]), polynom(C,D), R).
-+(rational(A,B), fraction(C,D), R) :-
-   fraction: +(fraction(rational(A,B),1), fraction(C,D), R).
+   polynom: +(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
++(X, polynom(C,D), R) :- !,
+   polynom: +(polynom(C,[0-X]), polynom(C,D), R).
++(X, fraction(C,D), R) :-
+   fraction: +(fraction(X,1), fraction(C,D), R).
 
 /**
  * -(P, Q, R):
@@ -104,9 +103,9 @@ rational(A,B) - rational(C,B) :-
 % -(+Rational, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(rational(A,B), Y, R) :-
+-(X, Y, R) :-
    integer(Y), !,
-   rational: -(rational(A,B), rational(Y,1), R).
+   rational: -(X, rational(Y,1), R).
 -(rational(A,B), rational(C,D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -114,16 +113,14 @@ rational(A,B) - rational(C,B) :-
    user: *(B, D, L),
    make_rational(K, L, R).
 -(X, radical(A,B), R) :- !,
-   H is X-A,
-   sys_radical_neg(B, C),
-   R = radical(H,C).
--(rational(A,B), Y, R) :-
+   radical: -(radical(X,[]), radical(A,B), R).
+-(X, Y, R) :-
    sys_freezer(Y), !,
-   polynom: -(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
--(rational(A,B), polynom(C,D), R) :- !,
-   polynom: -(polynom(C,[0-rational(A,B)]), polynom(C,D), R).
--(rational(A,B), fraction(C,D), R) :-
-   fraction: -(fraction(rational(A,B),1), fraction(C,D), R).
+   polynom: -(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
+-(X, polynom(C,D), R) :- !,
+   polynom: -(polynom(C,[0-X]), polynom(C,D), R).
+-(X, fraction(C,D), R) :-
+   fraction: -(fraction(X,1), fraction(C,D), R).
 
 /**
  * *(P, Q, R):
@@ -132,24 +129,22 @@ rational(A,B) - rational(C,B) :-
 % *(+Rational, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(rational(A,B), Y, R) :-
+*(X, Y, R) :-
    integer(Y), !,
-   rational: *(rational(A,B), rational(Y,1), R).
+   rational: *(X, rational(Y,1), R).
 *(rational(A,B), rational(C,D), R) :- !,
    user: *(A, C, H),
    user: *(B, D, J),
    make_rational(H, J, R).
 *(X, radical(A,B), R) :- !,
-   sys_radical_lift(X, B, L),
-   H is X*A,
-   sys_make_radical(H, L, R).
-*(rational(A,B), Y, R) :-
+   radical: *(radical(X,[]), radical(A,B), R).
+*(X, Y, R) :-
    sys_freezer(Y), !,
-   polynom: *(polynom(Y,[0-rational(A,B)]), polynom(Y,[1-1]), R).
-*(rational(A,B), polynom(C,D), R) :- !,
-   polynom: *(polynom(C,[0-rational(A,B)]), polynom(C,D), R).
-*(rational(A,B), fraction(C,D), R) :-
-   fraction: *(fraction(rational(A,B),1), fraction(C,D), R).
+   polynom: *(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
+*(X, polynom(C,D), R) :- !,
+   polynom: *(polynom(C,[0-X]), polynom(C,D), R).
+*(X, fraction(C,D), R) :-
+   fraction: *(fraction(X,1), fraction(C,D), R).
 
 /**
  * /(P, Q, R):
@@ -158,23 +153,22 @@ rational(A,B) - rational(C,B) :-
 % /(+Rational, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(rational(A,B), Y, R) :-
+/(X, Y, R) :-
    integer(Y), !,
-   rational: /(rational(A,B), rational(Y,1), R).
+   rational: /(X, rational(Y,1), R).
 /(rational(A,B), rational(C,D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    make_rational(H, J, R).
-/(X, radical(C,D), R) :- !,
-   sys_swinnerton_dyer(radical(C,D), S),
-   R is X*S/(radical(C,D)*S).
+/(X, radical(A,B), R) :- !,
+   radical: /(radical(X,[]), radical(A,B), R).
 /(X, Y, R) :-
    sys_freezer(Y), !,
    new_fraction(X, Y, R).
 /(X, polynom(C,D), R) :- !,
    new_fraction(X, polynom(C,D), R).
-/(rational(A,B), fraction(C,D), R) :-
-   fraction: /(fraction(rational(A,B),1), fraction(C,D), R).
+/(X, fraction(C,D), R) :-
+   fraction: /(fraction(X,1), fraction(C,D), R).
 
 /**
  * ^(P, Q, R):

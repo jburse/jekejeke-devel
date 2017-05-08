@@ -53,6 +53,7 @@
 :- use_module('../groebner/generic').
 :- use_module('../groebner/rational').
 
+:- use_module(library(experiment/trail)).
 :- use_module(library(misc/residue)).
 :- use_module(library(basic/lists)).
 
@@ -78,17 +79,20 @@ radical(A,B) - radical(C,D) :-
 % +(+Radical, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(radical(A,B), X, R) :-
-   integer(X), !,
-   H is A+X,
-   R = radical(H,B).
-+(radical(A,B), rational(C,D), R) :- !,
-   H is A+rational(C,D),
-   R = radical(H,B).
-+(radical(A,B), radical(C,D), R) :-
++(X, Y, R) :-
+   integer(Y), !,
+   radical: +(X, radical(Y,[]), R).
++(X, rational(C,D), R) :- !,
+   radical: +(X, radical(rational(C,D),[]), R).
++(radical(A,B), radical(C,D), R) :- !,
    H is A+C,
    sys_radical_add(B, D, J),
    sys_make_radical(H, J, R).
++(X, Y, R) :-
+   sys_freezer(Y), !,
+   polynom: +(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
++(X, polynom(C,D), R) :-
+   polynom: +(polynom(C,[0-X]), polynom(C,D), R).
 
 /**
  * -(P, Q, R):
@@ -97,17 +101,20 @@ radical(A,B) - radical(C,D) :-
 % -(+Radical, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(radical(A,B), X, R) :-
-   integer(X), !,
-   H is A-X,
-   R = radical(H,B).
--(radical(A,B), rational(C,D), R) :- !,
-   H is A-rational(C,D),
-   R = radical(H,B).
--(radical(A,B), radical(C,D), R) :-
+-(X, Y, R) :-
+   integer(Y), !,
+   radical: -(X, radical(Y,[]), R).
+-(X, rational(C,D), R) :- !,
+   radical: -(X, radical(rational(C,D),[]), R).
+-(radical(A,B), radical(C,D), R) :- !,
    H is A-C,
    sys_radical_sub(B, D, J),
    sys_make_radical(H, J, R).
+-(X, Y, R) :-
+   sys_freezer(Y), !,
+   polynom: -(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
+-(X, polynom(C,D), R) :-
+   polynom: -(polynom(C,[0-X]), polynom(C,D), R).
 
 /**
  * *(P, Q, R):
@@ -116,16 +123,12 @@ radical(A,B) - radical(C,D) :-
 % *(+Radical, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(radical(A,B), X, R) :-
-   integer(X), !,
-   sys_radical_lift(X, B, L),
-   H is A*X,
-   sys_make_radical(H, L, R).
-*(radical(A,B), rational(C,D), R) :- !,
-   sys_radical_lift(rational(C,D), B, L),
-   H is A*rational(C,D),
-   sys_make_radical(H, L, R).
-*(radical(A,B), radical(C,D), R) :-
+*(X, Y, R) :-
+   integer(Y), !,
+   radical: *(X, radical(Y,[]), R).
+*(X, rational(C,D), R) :- !,
+   radical: *(X, radical(rational(C,D),[]), R).
+*(radical(A,B), radical(C,D), R) :- !,
    sys_radical_lift(A, D, K),
    sys_radical_lift(C, B, L),
    sys_radical_add(L, K, M),
@@ -133,6 +136,11 @@ radical(A,B) - radical(C,D) :-
    sys_radical_add(M, N, U),
    H is A*C+V,
    sys_make_radical(H, U, R).
+*(X, Y, R) :-
+   sys_freezer(Y), !,
+   polynom: *(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
+*(X, polynom(C,D), R) :-
+   polynom: *(polynom(C,[0-X]), polynom(C,D), R).
 
 /**
  * /(P, Q, R):

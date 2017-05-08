@@ -83,8 +83,7 @@ X - Y :-
 +(X, rational(A,B), R) :- !,
    rational: +(rational(X,1), rational(A,B), R).
 +(X, radical(A,B), R) :- !,
-   H is X+A,
-   R = radical(H,B).
+   radical: +(radical(X,[]), radical(A,B), R).
 +(X, Y, R) :-
    sys_freezer(Y), !,
    sys_make_coeff([], 0, X, L),
@@ -108,9 +107,7 @@ X - Y :-
 -(X, rational(A,B), R) :- !,
    rational: -(rational(X,1), rational(A,B), R).
 -(X, radical(A,B), R) :- !,
-   H is X-A,
-   sys_radical_neg(B, C),
-   R = radical(H,C).
+   radical: -(radical(X,[]), radical(A,B), R).
 -(X, Y, R) :-
    sys_freezer(Y), !,
    sys_make_coeff([], 0, X, L),
@@ -134,9 +131,7 @@ X - Y :-
 *(X, rational(A,B), R) :- !,
    rational: *(rational(X,1), rational(A,B), R).
 *(X, radical(A,B), R) :- !,
-   sys_radical_lift(X, B, L),
-   H is X*A,
-   sys_make_radical(H, L, R).
+   radical: *(radical(X,[]), radical(A,B), R).
 *(X, Y, R) :-
    sys_freezer(Y), !,
    sys_make_coeff([], 0, X, L),
@@ -159,9 +154,8 @@ X - Y :-
    make_rational(X, Y, Z).
 /(X, rational(A,B), R) :- !,
    rational: /(rational(X,1), rational(A,B), R).
-/(X, radical(C,D), R) :- !,
-   sys_swinnerton_dyer(radical(C,D), S),
-   R is X*S/(radical(C,D)*S).
+/(X, radical(A,B), R) :- !,
+   radical: /(radical(X,[]), radical(A,B), R).
 /(X, Y, R) :-
    sys_freezer(Y), !,
    new_fraction(X, Y, R).

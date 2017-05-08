@@ -134,3 +134,15 @@ sys_coeff_subst([], N, C, A, _, _, S) :-
 :- public fraction:subst/4.
 fraction:subst(fraction(A,B), X, R, S) :-
    S is subst(A,X,R)/subst(B,X,R).
+
+/*********************************************************************/
+/* Radical                                                           */
+/*********************************************************************/
+
+/**
+ * subst(P, X, R, Q):
+ * The predicate succeeds in Q with the substitution P[X/R].
+ */
+% radical:subst(+Rational, +Variable, +Internal, -Internal)
+:- public radical:subst/4.
+radical:subst(X, _, _, X).

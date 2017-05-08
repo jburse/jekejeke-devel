@@ -43,6 +43,7 @@
  */
 
 :- package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(polynom, []).
@@ -83,9 +84,11 @@ polynom(A,B) - R :-
    polynom: +(polynom(A,B), polynom(A,L), R).
 +(polynom(A,B), rational(C,D), R) :- !,
    polynom: +(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
-+(polynom(A,B), Y, R) :-
++(polynom(A,B), radical(C,D), R) :- !,
+   polynom: +(polynom(A,B), polynom(A,[0-radical(C,D)]), R).
++(X, Y, R) :-
    sys_freezer(Y), !,
-   polynom: +(polynom(A,B), polynom(Y,[1-1]), R).
+   polynom: +(X, polynom(Y,[1-1]), R).
 +(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_add(B, [0-polynom(C,D)], H),
@@ -93,11 +96,11 @@ polynom(A,B) - R :-
 +(polynom(A,B), polynom(A,D), R) :- !,
    sys_poly_add(B, D, H),
    sys_make_poly(A, H, R).
-+(polynom(C,D), polynom(A,B), R) :- !,
-   sys_poly_add([0-polynom(C,D)], B, H),
++(X, polynom(A,B), R) :- !,
+   sys_poly_add([0-X], B, H),
    sys_make_poly(A, H, R).
-+(polynom(A,B), fraction(C,D), R) :-
-   fraction: +(fraction(polynom(A,B),1), fraction(C,D), R).
++(X, fraction(C,D), R) :-
+   fraction: +(fraction(X,1), fraction(C,D), R).
 
 /**
  * -(P, Q, R):
@@ -112,9 +115,11 @@ polynom(A,B) - R :-
    polynom: -(polynom(A,B), polynom(A,L), R).
 -(polynom(A,B), rational(C,D), R) :- !,
    polynom: -(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
--(polynom(A,B), Y, R) :-
+-(polynom(A,B), radical(C,D), R) :- !,
+   polynom: -(polynom(A,B), polynom(A,[0-radical(C,D)]), R).
+-(X, Y, R) :-
    sys_freezer(Y), !,
-   polynom: -(polynom(A,B), polynom(Y,[1-1]), R).
+   polynom: -(X, polynom(Y,[1-1]), R).
 -(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_sub(B, [0-polynom(C,D)], H),
@@ -122,11 +127,11 @@ polynom(A,B) - R :-
 -(polynom(A,B), polynom(A,D), R) :- !,
    sys_poly_sub(B, D, H),
    sys_make_poly(A, H, R).
--(polynom(C,D), polynom(A,B), R) :- !,
-   sys_poly_sub([0-polynom(C,D)], B, H),
+-(X, polynom(A,B), R) :- !,
+   sys_poly_sub([0-X], B, H),
    sys_make_poly(A, H, R).
--(polynom(A,B), fraction(C,D), R) :-
-   fraction: -(fraction(polynom(A,B),1), fraction(C,D), R).
+-(X, fraction(C,D), R) :-
+   fraction: -(fraction(X,1), fraction(C,D), R).
 
 /**
  * *(P, Q, R):
@@ -141,9 +146,11 @@ polynom(A,B) - R :-
    polynom: *(polynom(A,B), polynom(A,L), R).
 *(polynom(A,B), rational(C,D), R) :- !,
    polynom: *(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
-*(polynom(A,B), Y, R) :-
+*(polynom(A,B), radical(C,D), R) :- !,
+   polynom: *(polynom(A,B), polynom(A,[0-radical(C,D)]), R).
+*(X, Y, R) :-
    sys_freezer(Y), !,
-   polynom: *(polynom(A,B), polynom(Y,[1-1]), R).
+   polynom: *(X, polynom(Y,[1-1]), R).
 *(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_mul(B, [0-polynom(C,D)], H),
@@ -151,11 +158,11 @@ polynom(A,B) - R :-
 *(polynom(A,B), polynom(A,D), R) :- !,
    sys_poly_mul(B, D, H),
    sys_make_poly(A, H, R).
-*(polynom(C,D), polynom(A,B), R) :- !,
-   sys_poly_mul([0-polynom(C,D)], B, H),
+*(X, polynom(A,B), R) :- !,
+   sys_poly_mul([0-X], B, H),
    sys_make_poly(A, H, R).
-*(polynom(A,B), fraction(C,D), R) :-
-   fraction: *(fraction(polynom(A,B),1), fraction(C,D), R).
+*(X, fraction(C,D), R) :-
+   fraction: *(fraction(X,1), fraction(C,D), R).
 
 /**
  * /(P, Q, R):
@@ -169,13 +176,15 @@ polynom(A,B) - R :-
    R is X*(1/Y).
 /(X, rational(C,D), R) :- !,
    R is X*(1/rational(C,D)).
-/(polynom(A,B), Y, R) :-
+/(X, radical(C,D), R) :- !,
+   R is X*(1/radical(C,D)).
+/(X, Y, R) :-
    sys_freezer(Y), !,
-   make_fraction(polynom(A,B), Y, R).
-/(polynom(A,B), polynom(C,D), R) :- !,
-   make_fraction(polynom(A,B), polynom(C,D), R).
-/(polynom(A,B), fraction(C,D), R) :-
-   fraction: /(fraction(polynom(A,B),1), fraction(C,D), R).
+   make_fraction(X, Y, R).
+/(X, polynom(C,D), R) :- !,
+   make_fraction(X, polynom(C,D), R).
+/(X, fraction(C,D), R) :-
+   fraction: /(fraction(X,1), fraction(C,D), R).
 
 /**
  * ^(P, Q, R):
@@ -314,6 +323,8 @@ sys_pretty_expr(E, X) :-
    printable(E, X).
 sys_pretty_expr(rational(A,B), X) :- !,
    printable(rational(A,B), X).
+sys_pretty_expr(radical(A,B), X) :- !,
+   printable(radical(A,B), X).
 sys_pretty_expr(polynom(A,B), X) :-
    sys_pretty_poly(B, A, X).
 

@@ -41,6 +41,7 @@
  */
 
 :- package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(variable, []).
@@ -75,11 +76,13 @@ A - polynom(A,[1- -1]).
    integer(Y), !,
    sys_make_coeff([], 0, Y, L),
    polynom: +(polynom(X,[1-1]), polynom(X,L), R).
++(X, rational(A,B), R) :- !,
+   polynom: +(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
++(x, radical(A,B), R) :- !,
+   polynom: +(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
 +(X, Y, R) :-
    sys_freezer(Y), !,
    polynom: +(polynom(X,[1-1]), polynom(Y,[1-1]), R).
-+(X, rational(A,B), R) :- !,
-   polynom: +(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
 +(X, polynom(A,B), R) :- !,
    polynom: +(polynom(X,[1-1]), polynom(A,B), R).
 +(X, fraction(A,B), R) :- !,
@@ -96,11 +99,13 @@ A - polynom(A,[1- -1]).
    integer(Y), !,
    sys_make_coeff([], 0, Y, L),
    polynom: -(polynom(X,[1-1]), polynom(X,L), R).
+-(X, rational(A,B), R) :- !,
+   polynom: -(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
+-(X, radical(A,B), R) :- !,
+   polynom: -(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
 -(X, Y, R) :-
    sys_freezer(Y), !,
    polynom: -(polynom(X,[1-1]), polynom(Y,[1-1]), R).
--(X, rational(A,B), R) :- !,
-   polynom: -(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
 -(X, polynom(A,B), R) :- !,
    polynom: -(polynom(X,[1-1]), polynom(A,B), R).
 -(X, fraction(A,B), R) :- !,
@@ -117,11 +122,13 @@ A - polynom(A,[1- -1]).
    integer(Y), !,
    sys_make_coeff([], 0, Y, L),
    polynom: *(polynom(X,[1-1]), polynom(X,L), R).
+*(X, rational(A,B), R) :- !,
+   polynom: *(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
+*(X, radical(A,B), R) :- !,
+   polynom: *(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
 *(X, Y, R) :-
    sys_freezer(Y), !,
    polynom: *(polynom(X,[1-1]), polynom(Y,[1-1]), R).
-*(X, rational(A,B), R) :- !,
-   polynom: *(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
 *(X, polynom(A,B), R) :- !,
    polynom: *(polynom(X,[1-1]), polynom(A,B), R).
 *(X, fraction(A,B), R) :- !,
@@ -137,11 +144,13 @@ A - polynom(A,[1- -1]).
 /(X, Y, R) :-
    integer(Y), !,
    R is X*(1/Y).
+/(X, rational(A,B), R) :- !,
+   R is X*(1/rational(A,B)).
+/(X, radical(A,B), R) :- !,
+   R is X*(1/radical(A,B)).
 /(X, Y, R) :-
    sys_freezer(Y), !,
    make_fraction(X, Y, R).
-/(X, rational(A,B), R) :- !,
-   R is X*(1/rational(A,B)).
 /(X, polynom(A,B), R) :- !,
    make_fraction(X, polynom(A,B), R).
 /(X, fraction(A,B), R) :- !,

@@ -138,3 +138,14 @@ sys_coeff_deriv([], _, []).
 fraction:deriv(fraction(A,B), X, R) :-
    R is (deriv(A,X)-deriv(B,X)*fraction(A,B))/B.
 
+/*********************************************************************/
+/* Radical                                                           */
+/*********************************************************************/
+
+/**
+ * deriv(P, X, Q):
+ * The predicate succeeds in Q with the derivation dP/dX.
+ */
+% radical:deriv(+Rational, +Variable, -Internal)
+:- public radical:deriv/3.
+radical:deriv(_, _, 0).

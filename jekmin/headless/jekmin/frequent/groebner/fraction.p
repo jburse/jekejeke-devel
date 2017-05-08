@@ -82,16 +82,16 @@ fraction(A,B) - fraction(C,B) :-
 % +(+Fracton, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(fraction(A,B), Y, R) :-
++(X, Y, R) :-
    integer(Y), !,
-   fraction: +(fraction(A,B), fraction(Y,1), R).
-+(fraction(A,B), Y, R) :-
+   fraction: +(X, fraction(Y,1), R).
++(X, rational(C,D), R) :- !,
+   fraction: +(X, fraction(rational(C,D),1), R).
++(X, Y, R) :-
    sys_freezer(Y), !,
-   fraction: +(fraction(A,B), fraction(Y,1), R).
-+(fraction(A,B), rational(C,D), R) :- !,
-   fraction: +(fraction(A,B), fraction(rational(C,D),1), R).
-+(fraction(A,B), polynom(C,D), R) :- !,
-   fraction: +(fraction(A,B), fraction(polynom(C,D),1), R).
+   fraction: +(X, fraction(Y,1), R).
++(X, polynom(C,D), R) :- !,
+   fraction: +(X, fraction(polynom(C,D),1), R).
 +(fraction(A,B), fraction(C,D), R) :-
    H is A*D+B*C,
    J is B*D,
@@ -104,16 +104,16 @@ fraction(A,B) - fraction(C,B) :-
 % -(+Fracton, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(fraction(A,B), Y, R) :-
+-(X, Y, R) :-
    integer(Y), !,
-   fraction: -(fraction(A,B), fraction(Y,1), R).
--(fraction(A,B), Y, R) :-
+   fraction: -(X, fraction(Y,1), R).
+-(X, rational(C,D), R) :- !,
+   fraction: -(X, fraction(rational(C,D),1), R).
+-(X, Y, R) :-
    sys_freezer(Y), !,
-   fraction: -(fraction(A,B), fraction(Y,1), R).
--(fraction(A,B), rational(C,D), R) :- !,
-   fraction: -(fraction(A,B), fraction(rational(C,D),1), R).
--(fraction(A,B), polynom(C,D), R) :- !,
-   fraction: -(fraction(A,B), fraction(polynom(C,D),1), R).
+   fraction: -(X, fraction(Y,1), R).
+-(X, polynom(C,D), R) :- !,
+   fraction: -(X, fraction(polynom(C,D),1), R).
 -(fraction(A,B), fraction(C,D), R) :-
    H is A*D-B*C,
    J is B*D,
@@ -126,16 +126,16 @@ fraction(A,B) - fraction(C,B) :-
 % *(+Fracton, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(fraction(A,B), Y, R) :-
+*(X, Y, R) :-
    integer(Y), !,
-   fraction: *(fraction(A,B), fraction(Y,1), R).
-*(fraction(A,B), Y, R) :-
+   fraction: *(X, fraction(Y,1), R).
+*(X, rational(C,D), R) :- !,
+   fraction: *(X, fraction(rational(C,D),1), R).
+*(X, Y, R) :-
    sys_freezer(Y), !,
-   fraction: *(fraction(A,B), fraction(Y,1), R).
-*(fraction(A,B), rational(C,D), R) :- !,
-   fraction: *(fraction(A,B), fraction(rational(C,D),1), R).
-*(fraction(A,B), polynom(C,D), R) :- !,
-   fraction: *(fraction(A,B), fraction(polynom(C,D),1), R).
+   fraction: *(X, fraction(Y,1), R).
+*(X, polynom(C,D), R) :- !,
+   fraction: *(X, fraction(polynom(C,D),1), R).
 *(fraction(A,B), fraction(C,D), R) :-
    H is A*C,
    J is B*D,
@@ -148,16 +148,16 @@ fraction(A,B) - fraction(C,B) :-
 % /(+Fracton, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(fraction(A,B), Y, R) :-
+/(X, Y, R) :-
    integer(Y), !,
-   fraction: /(fraction(A,B), fraction(Y,1), R).
-/(fraction(A,B), Y, R) :-
+   fraction: /(X, fraction(Y,1), R).
+/(X, rational(C,D), R) :- !,
+   fraction: /(X, fraction(rational(C,D),1), R).
+/(X, Y, R) :-
    sys_freezer(Y), !,
-   fraction: /(fraction(A,B), fraction(Y,1), R).
-/(fraction(A,B), rational(C,D), R) :- !,
-   fraction: /(fraction(A,B), fraction(rational(C,D),1), R).
-/(fraction(A,B), polynom(C,D), R) :- !,
-   fraction: /(fraction(A,B), fraction(polynom(C,D),1), R).
+   fraction: /(X, fraction(Y,1), R).
+/(X, polynom(C,D), R) :- !,
+   fraction: /(X, fraction(polynom(C,D),1), R).
 /(fraction(A,B), fraction(C,D), R) :-
    H is A*D,
    J is B*C,
