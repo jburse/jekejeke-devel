@@ -47,7 +47,7 @@
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(polynom, []).
-:- reexport('../gauss/ring').
+:- reexport(../gauss/ring).
 
 :- use_module(generic).
 :- use_module(fraction).

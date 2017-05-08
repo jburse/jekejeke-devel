@@ -68,7 +68,7 @@
 
 :- module(matrice, []).
 
-:- use_module('../groebner/generic').
+:- use_module(../groebner/generic).
 :- use_module(library(advanced/arith)).
 :- use_module(library(misc/residue)).
 :- use_module(library(experiment/attr)).

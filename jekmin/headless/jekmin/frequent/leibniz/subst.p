@@ -45,8 +45,8 @@
 
 :- module(deriv, []).
 
-:- use_module('../groebner/polynom').
-:- use_module('../groebner/generic').
+:- use_module(../groebner/polynom).
+:- use_module(../groebner/generic).
 
 /*********************************************************************/
 /* Integer                                                           */

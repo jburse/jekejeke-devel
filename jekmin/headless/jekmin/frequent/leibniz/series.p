@@ -56,7 +56,7 @@
 
 :- module(series, []).
 
-:- use_module('../groebner/generic').
+:- use_module(../groebner/generic).
 
 /**
  * taylor(P, X, N, Q):

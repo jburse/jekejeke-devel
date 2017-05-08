@@ -55,7 +55,7 @@
 :- module(ordered, []).
 :- reexport(ring).
 
-:- use_module('../groebner/generic').
+:- use_module(../groebner/generic).
 
 /*********************************************************************/
 /* Comparison                                                        */

@@ -48,10 +48,11 @@
 :- use_package(library(jekmin/reference/misc)).
 
 :- module(radical, []).
-:- reexport('../gauss/ordered').
+:- reexport(../gauss/ordered).
 
-:- use_module('../groebner/generic').
-:- use_module('../groebner/rational').
+:- use_module(../groebner/generic).
+:- use_module(../groebner/rational).
+:- use_module(../groebner/fraction).
 
 :- use_module(library(experiment/trail)).
 :- use_module(library(misc/residue)).
@@ -87,12 +88,14 @@ radical(A,B) - radical(C,D) :-
 +(radical(A,B), radical(C,D), R) :- !,
    H is A+C,
    sys_radical_add(B, D, J),
-   sys_make_radical(H, J, R).
+   sys_new_radical(H, J, R).
 +(X, Y, R) :-
    sys_freezer(Y), !,
    polynom: +(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
-+(X, polynom(C,D), R) :-
++(X, polynom(C,D), R) :- !,
    polynom: +(polynom(C,[0-X]), polynom(C,D), R).
++(X, fraction(C,D), R) :-
+   fraction: +(fraction(X,1), fraction(C,D), R).
 
 /**
  * -(P, Q, R):
@@ -109,12 +112,14 @@ radical(A,B) - radical(C,D) :-
 -(radical(A,B), radical(C,D), R) :- !,
    H is A-C,
    sys_radical_sub(B, D, J),
-   sys_make_radical(H, J, R).
+   sys_new_radical(H, J, R).
 -(X, Y, R) :-
    sys_freezer(Y), !,
    polynom: -(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
--(X, polynom(C,D), R) :-
+-(X, polynom(C,D), R) :- !,
    polynom: -(polynom(C,[0-X]), polynom(C,D), R).
+-(X, fraction(C,D), R) :-
+   fraction: -(fraction(X,1), fraction(C,D), R).
 
 /**
  * *(P, Q, R):
@@ -135,12 +140,14 @@ radical(A,B) - radical(C,D) :-
    sys_radical_mul(B, D, N, V),
    sys_radical_add(M, N, U),
    H is A*C+V,
-   sys_make_radical(H, U, R).
+   sys_new_radical(H, U, R).
 *(X, Y, R) :-
    sys_freezer(Y), !,
    polynom: *(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
-*(X, polynom(C,D), R) :-
+*(X, polynom(C,D), R) :- !,
    polynom: *(polynom(C,[0-X]), polynom(C,D), R).
+*(X, fraction(C,D), R) :-
+   fraction: *(fraction(X,1), fraction(C,D), R).
 
 /**
  * /(P, Q, R):
@@ -154,9 +161,16 @@ radical(A,B) - radical(C,D) :-
    R is X*(1/Y).
 /(X, rational(C,D), R) :- !,
    R is X*(1/rational(C,D)).
-/(X, radical(C,D), R) :-
+/(X, radical(C,D), R) :- !,
    sys_swinnerton_dyer(radical(C,D), S),
    R is X*S/(radical(C,D)*S).
+/(X, Y, R) :-
+   sys_freezer(Y), !,
+   new_fraction(X, Y, R).
+/(X, polynom(C,D), R) :- !,
+   new_fraction(X, polynom(C,D), R).
+/(X, fraction(C,D), R) :-
+   fraction: /(fraction(X,1), fraction(C,D), R).
 
 /**
  * ^(P, Q, R):
@@ -185,11 +199,34 @@ radical(A,B) - radical(C,D) :-
    R is H*H.
 
 /*********************************************************************/
+/* Radicals                                                          */
+/*********************************************************************/
+
+% make_radical(+Ordered, -Internal)
+:- public make_radical/2.
+make_radical(X, R) :-
+   has_sqrt(X, Y), !,
+   R = Y.
+make_radical(X, radical(0,[X-1])).
+
+% has_sqrt(+Ordered, -Ordered)
+:- private has_sqrt/2.
+has_sqrt(X, Y) :-
+   integer(X), !,
+   elem:isqrt(X, Y),
+   user: *(Y, Y, H),
+   user:(X =:= H).
+has_sqrt(rational(A,B), R) :-
+   has_sqrt(A, X),
+   has_sqrt(B, Y),
+   make_rational(X, Y, R).
+
+/*********************************************************************/
 /* Swinnerton-Dyer Polynomial                                        */
 /*********************************************************************/
 
 % sys_swinnerton_dyer(+Radical, -Internal)
-:- public sys_swinnerton_dyer/2.
+:- private sys_swinnerton_dyer/2.
 sys_swinnerton_dyer(radical(A,B), R) :-
    sys_swinnerton_dyer2(B, A, [], 1, R).
 
@@ -233,7 +270,7 @@ sys_radical_add([A-S|L], H, R) :-
    sys_radical_add(L, J, R).
 sys_radical_add([A-S|L], H, U) :-
    sys_radical_add(L, H, R),
-   sys_make_sqrt2(R, A, S, U).
+   sys_radical_insert(R, A, S, U).
 sys_radical_add([], A, A).
 
 % sys_radical_add2(+Internal, +Integer, +Map, -Map)
@@ -242,10 +279,10 @@ sys_radical_add2(A, S, [B-T|L], U) :-
    H is A/B,
    has_sqrt(H, R), !,
    J is T+S*R,
-   sys_make_sqrt(J, B, L, U).
+   sys_radical_sqrt(J, B, L, U).
 sys_radical_add2(A, S, [B-T|L], U) :-
    sys_radical_add2(A, S, L, R),
-   sys_make_sqrt2(R, B, T, U).
+   sys_radical_insert(R, B, T, U).
 
 % sys_radical_sub(+Map, +Map, -Map)
 :- private sys_radical_sub/3.
@@ -254,7 +291,7 @@ sys_radical_sub([A-S|L], H, R) :-
    sys_radical_sub(L, J, R).
 sys_radical_sub([A-S|L], H, U) :-
    sys_radical_sub(L, H, R),
-   sys_make_sqrt2(R, A, S, U).
+   sys_radical_insert(R, A, S, U).
 sys_radical_sub([], A, B) :-
    sys_radical_neg(A, B).
 
@@ -264,27 +301,10 @@ sys_radical_sub2(A, S, [B-T|L], U) :-
    H is A/B,
    has_sqrt(H, R), !,
    J is T-S*R,
-   sys_make_sqrt(J, B, L, U).
+   sys_radical_sqrt(J, B, L, U).
 sys_radical_sub2(A, S, [B-T|L], U) :-
    sys_radical_sub2(A, S, L, R),
-   sys_make_sqrt2(R, B, T, U).
-
-% sys_radical_lift(+Internal, +Map, -Map)
-:- public sys_radical_lift/3.
-sys_radical_lift(0, _, R) :- !,
-   R = [].
-sys_radical_lift(X, L, R) :-
-   A is X*X,
-   S is sign(X),
-   sys_radical_up(L, A, S, R).
-
-% sys_radical_up(+Map, +Internal, +Integer, -Map)
-:- private sys_radical_up/4.
-sys_radical_up([B-T|L], A, S, [H-J|R]) :-
-   H is A*B,
-   user: *(S, T, J),
-   sys_radical_up(L, A, S, R).
-sys_radical_up([], _, _, []).
+   sys_radical_insert(R, B, T, U).
 
 % sys_radical_mul(+Map, +Map, -Map, -Internal)
 :- private sys_radical_mul/4.
@@ -313,44 +333,49 @@ sys_radical_scale2(A, S, L, B, U, V) :-
 sys_radical_scale2(A, S, L, B, [A-S|L], B).
 
 /*********************************************************************/
-/* Radicals                                                          */
+/* Builders                                                         */
 /*********************************************************************/
 
-% has_sqrt(+Internal, -Internal)
-:- public has_sqrt/2.
-has_sqrt(X, Y) :-
-   integer(X), !,
-   elem:isqrt(X, Y),
-   user: *(Y, Y, H),
-   user:(X =:= H).
-has_sqrt(rational(A,B), R) :-
-   has_sqrt(A, X),
-   has_sqrt(B, Y),
-   make_rational(X, Y, R).
-
-% sys_make_radical(+Internal, +List, -Internal)
-:- public sys_make_radical/3.
-sys_make_radical(A, [], R) :- !,
+% sys_new_radical(+Internal, +Map, -Internal)
+:- private sys_new_radical/3.
+sys_new_radical(A, [], R) :- !,
    R = A.
-sys_make_radical(A, L, radical(A,L)).
+sys_new_radical(A, L, radical(A,L)).
 
-% sys_make_sqrt(+Internal, +Internal, +Map, -Map)
-:- private sys_make_sqrt/4.
-sys_make_sqrt(0, _, L, R) :- !,
+% sys_radical_sqrt(+Internal, +Internal, +Map, -Map)
+:- private sys_radical_sqrt/4.
+sys_radical_sqrt(0, _, L, R) :- !,
    R = L.
-sys_make_sqrt(J, B, L, R) :-
+sys_radical_sqrt(J, B, L, R) :-
    S is sign(J),
    A is J*J*B,
-   sys_make_sqrt2(L, A, S, R).
+   sys_radical_insert(L, A, S, R).
 
-% sys_make_sqrt2(+Map, +Internal, +Integer, -Map)
-:- private sys_make_sqrt2/4.
-sys_make_sqrt2([B-T|L], A, S, R) :-
+% sys_radical_insert(+Map, +Internal, +Integer, -Map)
+:- private sys_radical_insert/4.
+sys_radical_insert([B-T|L], A, S, R) :-
    A < B, !,
    R = [A-S,B-T|L].
-sys_make_sqrt2([B-T|L], A, S, [B-T|R]) :-
-   sys_make_sqrt2(L, A, S, R).
-sys_make_sqrt2([], A, S, [A-S]).
+sys_radical_insert([B-T|L], A, S, [B-T|R]) :-
+   sys_radical_insert(L, A, S, R).
+sys_radical_insert([], A, S, [A-S]).
+
+% sys_radical_lift(+Internal, +Map, -Map)
+:- private sys_radical_lift/3.
+sys_radical_lift(0, _, R) :- !,
+   R = [].
+sys_radical_lift(X, L, R) :-
+   A is X*X,
+   S is sign(X),
+   sys_radical_up(L, A, S, R).
+
+% sys_radical_up(+Map, +Internal, +Integer, -Map)
+:- private sys_radical_up/4.
+sys_radical_up([B-T|L], A, S, [H-J|R]) :-
+   H is A*B,
+   user: *(S, T, J),
+   sys_radical_up(L, A, S, R).
+sys_radical_up([], _, _, []).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */

@@ -57,7 +57,7 @@
 
 :- module(element, []).
 
-:- use_module('../groebner/generic').
+:- use_module(../groebner/generic).
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).

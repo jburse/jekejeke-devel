@@ -47,14 +47,14 @@
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(integer, []).
-:- reexport('../gauss/ordered').
+:- reexport(../gauss/ordered).
 
 :- use_module(generic).
 :- use_module(library(experiment/trail)).
 :- use_module(rational).
 :- use_module(polynom).
 :- use_module(fraction).
-:- use_module('../leibniz/radical').
+:- use_module(../leibniz/radical).
 
 /*********************************************************************/
 /* Arithmetic                                                        */
@@ -189,9 +189,7 @@ sqrt(X, _) :-
    X < 0,
    throw(error(evaluation_error(undefined),_)).
 sqrt(X, R) :-
-   has_sqrt(X, Y), !,
-   R = Y.
-sqrt(X, radical(0,[X-1])).
+   make_radical(X, R).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */

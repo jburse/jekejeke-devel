@@ -45,7 +45,7 @@
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(variable, []).
-:- reexport('../gauss/ring').
+:- reexport(../gauss/ring).
 
 :- use_module(library(experiment/trail)).
 :- use_module(generic).
@@ -78,7 +78,7 @@ A - polynom(A,[1- -1]).
    polynom: +(polynom(X,[1-1]), polynom(X,L), R).
 +(X, rational(A,B), R) :- !,
    polynom: +(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
-+(x, radical(A,B), R) :- !,
++(X, radical(A,B), R) :- !,
    polynom: +(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
 +(X, Y, R) :-
    sys_freezer(Y), !,

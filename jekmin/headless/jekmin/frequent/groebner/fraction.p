@@ -49,14 +49,15 @@
 :- use_package(library(jekmin/reference/misc)).
 
 :- module(fraction, []).
-:- reexport('../gauss/element').
+:- reexport(../gauss/element).
 
 :- use_module(library(misc/residue)).
 :- use_module(library(basic/lists)).
 :- use_module(generic).
 :- use_module(polynom).
 :- use_module(rational).
-:- use_module('../gauss/ring').
+:- use_module(../gauss/ring).
+:- use_module(../leibniz/radical).
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
@@ -87,6 +88,8 @@ fraction(A,B) - fraction(C,B) :-
    fraction: +(X, fraction(Y,1), R).
 +(X, rational(C,D), R) :- !,
    fraction: +(X, fraction(rational(C,D),1), R).
++(X, radical(C,D), R) :- !,
+   fraction: +(X, fraction(radical(C,D),1), R).
 +(X, Y, R) :-
    sys_freezer(Y), !,
    fraction: +(X, fraction(Y,1), R).
@@ -109,6 +112,8 @@ fraction(A,B) - fraction(C,B) :-
    fraction: -(X, fraction(Y,1), R).
 -(X, rational(C,D), R) :- !,
    fraction: -(X, fraction(rational(C,D),1), R).
+-(X, radical(C,D), R) :- !,
+   fraction: -(X, fraction(radical(C,D),1), R).
 -(X, Y, R) :-
    sys_freezer(Y), !,
    fraction: -(X, fraction(Y,1), R).
@@ -131,6 +136,8 @@ fraction(A,B) - fraction(C,B) :-
    fraction: *(X, fraction(Y,1), R).
 *(X, rational(C,D), R) :- !,
    fraction: *(X, fraction(rational(C,D),1), R).
+*(X, radical(C,D), R) :- !,
+   fraction: *(X, fraction(radical(C,D),1), R).
 *(X, Y, R) :-
    sys_freezer(Y), !,
    fraction: *(X, fraction(Y,1), R).
@@ -153,6 +160,8 @@ fraction(A,B) - fraction(C,B) :-
    fraction: /(X, fraction(Y,1), R).
 /(X, rational(C,D), R) :- !,
    fraction: /(X, fraction(rational(C,D),1), R).
+/(X, radical(C,D), R) :- !,
+   fraction: /(X, fraction(radical(C,D),1), R).
 /(X, Y, R) :-
    sys_freezer(Y), !,
    fraction: /(X, fraction(Y,1), R).
@@ -209,6 +218,35 @@ sys_poly_lcm(A, B, C) :-
    T is B*(1-Z),
    sys_poly_groeb([S,T], L),
    sys_poly_min(L, C).
+
+% new_fraction(+Internal, +Internal, -Internal)
+:- public new_fraction/3.
+new_fraction(U, V, R) :-
+   sys_poly_common(U, H),
+   sys_poly_common(V, J),
+   sys_join_common(H, J, P),
+   sys_make_common(P, K),
+   K \== 1, !,
+   L is 1/K,
+   A is L*U,
+   B is L*V,
+   new_fraction2(A, B, R).
+new_fraction(U, V, R) :-
+   new_fraction2(U, V, R).
+
+% new_fraction2(+Internal, +Internal, -Internal)
+:- private new_fraction2/3.
+new_fraction2(A, -1, R) :- !,
+   R is -A.
+new_fraction2(A, 1, R) :- !,
+   R = A.
+new_fraction2(U, V, R) :-
+   sys_poly_sign(V, S),
+   S \== 1, !,
+   A is -U,
+   B is -V,
+   R = fraction(A,B).
+new_fraction2(A, B, fraction(A,B)).
 
 /*********************************************************************/
 /* Polynomial Groebner                                               */
@@ -306,47 +344,41 @@ sys_poly_pair(X, Y, Z) :-
    sys_head_div(J, K, V),
    Z is X*V-Y*U.
 
-% sys_head_div(+Monomial, +Monomial, -Internal)
-:- private sys_head_div/3.
-sys_head_div(rational(A,B), rational(C,D), X) :- !,
-   user: //(A, C, H),
-   user: //(B, D, J),
-   new_rational(H, J, X).
-sys_head_div(polynom(A,[N-B]), rational(C,D), X) :- !,
-   sys_head_div(B, rational(C,D), H),
-   sys_make_poly(A, [N-H], X).
-sys_head_div(rational(_,_), polynom(_,_), _) :-
-   throw(error(illegal_state,_)).
-sys_head_div(polynom(A,[N-B]), polynom(C,D), X) :-
-   A @> C, !,
-   sys_head_div(B, polynom(C,D), H),
-   sys_make_poly(A, [N-H], X).
-sys_head_div(polynom(A,[N-B]), polynom(A,[M-D]), X) :- !,
-   sys_head_div(B, D, H),
-   user: -(N, M, K),
-   sys_make_poly(A, [K-H], X).
-sys_head_div(polynom(_,_), polynom(_,_), _) :-
-   throw(error(illegal_state,_)).
-
 % sys_head_gcd(+Monomial, +Monomial, -Monomial)
 :- private sys_head_gcd/3.
-sys_head_gcd(rational(A,B), rational(C,D), X) :- !,
-   elem:gcd(A, C, H),
-   elem:gcd(B, D, J),
-   X = rational(H,J).
-sys_head_gcd(polynom(_,[_-B]), rational(C,D), X) :- !,
-   sys_head_gcd(B, rational(C,D), X).
-sys_head_gcd(rational(A,B), polynom(_,[_-D]), X) :- !,
-   sys_head_gcd(rational(A,B), D, X).
-sys_head_gcd(polynom(A,[_-B]), polynom(C,D), X) :-
+sys_head_gcd(polynom(A,[_-B]), polynom(C,D), R) :-
    A @> C, !,
-   sys_head_gcd(B, polynom(C,D), X).
-sys_head_gcd(polynom(A,[N-B]), polynom(A,[M-D]), X) :- !,
+   sys_head_gcd(B, polynom(C,D), R).
+sys_head_gcd(polynom(A,[N-B]), polynom(A,[M-D]), R) :- !,
    sys_head_gcd(B, D, H),
    user:min(N, M, K),
-   X = polynom(A,[K-H]).
-sys_head_gcd(polynom(A,B), polynom(_,[_-D]), X) :-
-   sys_head_gcd(polynom(A,B), D, X).
+   R = polynom(A,[K-H]).
+sys_head_gcd(polynom(A,B), polynom(_,[_-D]), R) :- !,
+   sys_head_gcd(polynom(A,B), D, R).
+sys_head_gcd(polynom(_,[_-B]), Y, R) :- !,
+   sys_head_gcd(B, Y, R).
+sys_head_gcd(X, polynom(_,[_-D]), R) :- !,
+   sys_head_gcd(X, D, R).
+sys_head_gcd(_, _, 1).
+
+% sys_head_div(+Monomial, +Monomial, -Internal)
+:- private sys_head_div/3.
+sys_head_div(polynom(A,[N-B]), polynom(C,D), R) :-
+   A @> C, !,
+   sys_head_div(B, polynom(C,D), H),
+   sys_make_poly(A, [N-H], R).
+sys_head_div(polynom(A,[N-B]), polynom(A,[M-D]), R) :- !,
+   sys_head_div(B, D, H),
+   user: -(N, M, K),
+   sys_make_poly(A, [K-H], R).
+sys_head_div(polynom(_,_), polynom(_,_), _) :-
+   throw(error(illegal_state,_)).
+sys_head_div(polynom(A,[N-B]), Y, R) :- !,
+   sys_head_div(B, Y, H),
+   sys_make_poly(A, [N-H], R).
+sys_head_div(_, polynom(_,_), _) :-
+   throw(error(illegal_state,_)).
+sys_head_div(X, _, X).
 
 /*********************************************************************/
 /* Polynomial Ordering                                               */
@@ -370,18 +402,18 @@ sys_poly_compare(O, F, G) :-
 
 % sys_head_compare(-Ordering, +Monominal, +Monomial)
 :- private sys_head_compare/3.
-sys_head_compare(O, rational(_,_), rational(_,_)) :- !,
-   O = = .
-sys_head_compare(O, polynom(_,_), rational(_,_)) :- !,
-   O = > .
-sys_head_compare(O, rational(_,_), polynom(_,_)) :- !,
-   O = < .
 sys_head_compare(O, polynom(A,_), polynom(C,_)) :-
    A @> C, !,
    O = > .
 sys_head_compare(O, polynom(A,B), polynom(A,D)) :- !,
    sys_coeff_compare(O, B, D).
-sys_head_compare(<, _, _).
+sys_head_compare(O, polynom(_,_), polynom(_,_)) :- !,
+   O = < .
+sys_head_compare(O, polynom(_,_), _) :- !,
+   O = > .
+sys_head_compare(O, _, polynom(_,_)) :- !,
+   O = < .
+sys_head_compare(=, _, _).
 
 % sys_coeff_compare(-Ordering, +List, +List)
 :- private sys_coeff_compare/3.
@@ -396,74 +428,105 @@ sys_coeff_compare(<, _, _).
 /* Arithmetic Helper                                                 */
 /*********************************************************************/
 
-% new_fraction(+Internal, +Internal, -Internal)
-new_fraction(U, V, R) :-
-   sys_poly_common(U, H),
-   sys_poly_common(V, J),
-   sys_make_common(H, J, rational(P,Q)),
-   new_rational(Q, P, K),
-   K \== 1, !,
-   A is K*U,
-   B is K*V,
-   new_fraction2(A, B, R).
-new_fraction(U, V, R) :-
-   new_fraction2(U, V, R).
-
-% new_fraction2(+Internal, +Internal, -Internal)
-:- private new_fraction2/3.
-new_fraction2(A, -1, R) :- !,
-   R is -A.
-new_fraction2(A, 1, R) :- !,
-   R = A.
-new_fraction2(U, V, R) :-
-   sys_poly_sign(V, S),
-   S \== 1, !,
-   A is -U,
-   B is -V,
-   R = fraction(A,B).
-new_fraction2(A, B, fraction(A,B)).
-
-% sys_poly_common(+Internal, -Rational)
+% sys_poly_common(+Internal, -Common)
 :- private sys_poly_common/2.
-sys_poly_common(E, X) :-
-   sys_freezer(E), !,
-   X = rational(1,1).
-sys_poly_common(E, X) :-
-   integer(E), !,
-   X = rational(E,1).
-sys_poly_common(rational(A,B), X) :- !,
-   X = rational(A,B).
-sys_poly_common(polynom(_,B), X) :-
-   sys_coeff_common(B, X).
+sys_poly_common(X, R) :-
+   integer(X), !,
+   R = rational(X,1).
+sys_poly_common(rational(A,B), R) :- !,
+   R = rational(A,B).
+sys_poly_common(radical(0,B), R) :- !,
+   sys_radical_common(B, J),
+   R = radical(0,[J-1]).
+sys_poly_common(radical(A,B), R) :- !,
+   sys_poly_common(A, H),
+   sys_radical_common(B, J),
+   R = radical(H,[J-1]).
+sys_poly_common(X, R) :-
+   sys_freezer(X), !,
+   R = rational(1,1).
+sys_poly_common(polynom(_,B), R) :-
+   sys_coeff_common(B, R).
 
-% sys_coeff_common(+List, -Rational)
+% sys_coeff_common(+Map, -Common)
 :- private sys_coeff_common/2.
 sys_coeff_common([_-A,C|L], K) :- !,
    sys_poly_common(A, H),
    sys_coeff_common([C|L], J),
-   sys_make_common(H, J, K).
+   sys_join_common(H, J, K).
 sys_coeff_common([_-A], H) :-
    sys_poly_common(A, H).
 
-% sys_make_common(+Rational, +Rational, -Rational)
-:- private sys_make_common/3.
-sys_make_common(rational(A,B), rational(C,D), rational(E,F)) :-
+% sys_radical_common(+Map, -Common)
+:- private sys_radical_common/2.
+sys_radical_common([A-_,C|L], K) :- !,
+   sys_poly_common(A, H),
+   sys_radical_common([C|L], J),
+   sys_join_common(H, J, K).
+sys_radical_common([A-_], H) :-
+   sys_poly_common(A, H).
+
+/*********************************************************************/
+/* Builders                                                          */
+/*********************************************************************/
+
+% sys_join_common(+Common, +Common, -Common)
+:- private sys_join_common/3.
+sys_join_common(0, Y, R) :- !,
+   R = Y.
+sys_join_common(X, 0, R) :- !,
+   R = X.
+sys_join_common(rational(A,B), rational(C,D), R) :- !,
    elem:gcd(A, C, E),
-   elem:lcm(B, D, F).
+   elem:lcm(B, D, F),
+   R = rational(E,F).
+sys_join_common(radical(U,[P-1]), radical(V,[Q-1]), R) :-
+   sys_join_common(U, V, W),
+   sys_join_common(P, Q, S),
+   R = radical(W,[S-1]).
+sys_join_common(radical(U,[P-1]), Y, R) :- !,
+   sys_join_common(U, Y, W),
+   R = radical(W,[P-1]).
+sys_join_common(X, radical(V,[Q-1]), R) :- !,
+   sys_join_common(X, V, W),
+   R = radical(W,[Q-1]).
+
+% sys_make_common(+Common, -Internal)
+:- private sys_make_common/2.
+sys_make_common(rational(A,B), R) :- !,
+   new_rational(A, B, R).
+sys_make_common(radical(0,[Q-1]), R) :- !,
+   sys_make_common(Q, W),
+   make_radical(W, R).
+sys_make_common(radical(P,[Q-1]), R) :-
+   sys_sqrt_common(P, U),
+   sys_join_common(U, Q, V),
+   sys_make_common(V, W),
+   make_radical(W, R).
+
+% sys_sqrt_common(+Rational, -Rational)
+:- private sys_sqrt_common/2.
+sys_sqrt_common(rational(A,B), rational(C,D)) :-
+   user: *(A, A, C),
+   user: *(B, B, D).
 
 % sys_poly_sign(+Internal -Integer)
 :- private sys_poly_sign/2.
-sys_poly_sign(E, X) :-
-   sys_freezer(E), !,
-   X = 1.
-sys_poly_sign(E, X) :-
-   integer(E), !,
-   user:sign(E, X).
-sys_poly_sign(rational(A,_), X) :- !,
-   user:sign(A, X).
-sys_poly_sign(polynom(_,L), X) :-
+sys_poly_sign(X, R) :-
+   integer(X), !,
+   user:sign(X, R).
+sys_poly_sign(rational(A,_), R) :- !,
+   user:sign(A, R).
+sys_poly_sign(radical(0,[_-S|_]), R) :- !,
+   user:sign(S, R).
+sys_poly_sign(radical(A,_), R) :- !,
+   sys_poly_sign(A, R).
+sys_poly_sign(X, R) :-
+   sys_freezer(X), !,
+   R = 1.
+sys_poly_sign(polynom(_,L), R) :-
    last(L, _-B),
-   sys_poly_sign(B, X).
+   sys_poly_sign(B, R).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */

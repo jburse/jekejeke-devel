@@ -46,8 +46,8 @@
 :- module(ring, []).
 :- reexport(element).
 
-:- use_module('../groebner/generic').
-:- use_module('../groebner/polynom').
+:- use_module(../groebner/generic).
+:- use_module(../groebner/polynom).
 
 :- use_module(library(experiment/trail)).
 
@@ -100,14 +100,16 @@ sys_poly_div(F, _, 0, F).
  */
 % sys_poly_head(+Internal, -Monomial)
 :- public sys_poly_head/2.
-sys_poly_head(E, X) :-
-   sys_freezer(E), !,
-   X = polynom(E,[1-rational(1,1)]).
-sys_poly_head(E, X) :-
-   integer(E), !,
-   X = rational(E,1).
-sys_poly_head(rational(A,B), X) :- !,
-   X = rational(A,B).
+sys_poly_head(X, R) :-
+   integer(X), !,
+   R = X.
+sys_poly_head(rational(A,B), R) :- !,
+   R = rational(A,B).
+sys_poly_head(radical(A,B), R) :- !,
+   R = radical(A,B).
+sys_poly_head(X, R) :-
+   sys_freezer(X), !,
+   R = polynom(X,[1-1]).
 sys_poly_head(polynom(A,[N-B|_]), polynom(A,[N-C])) :-
    sys_poly_head(B, C).
 
@@ -122,8 +124,15 @@ sys_poly_head(polynom(A,[N-B|_]), polynom(A,[N-C])) :-
  */
 % sys_poly_comb(+Internal, +Monomial, -Internal, -Internal)
 :- public sys_poly_comb/4.
+sys_poly_comb(E, Y, K, M) :-
+   integer(Y), !,
+   K is E/Y,
+   M = 0.
 sys_poly_comb(E, rational(A,B), K, M) :- !,
    K is E/rational(A,B),
+   M = 0.
+sys_poly_comb(E, radical(A,B), K, M) :- !,
+   K is E/radical(A,B),
    M = 0.
 sys_poly_comb(A, polynom(C,D), K, M) :-
    sys_freezer(A),
@@ -136,17 +145,20 @@ sys_poly_comb(A, polynom(A,[N-C]), K, M) :-
    sys_same_comb([1-1], N, C, R, S),
    sys_make_poly(A, R, K),
    sys_make_poly(A, S, M).
-sys_poly_comb(A, _, K, M) :-
-   sys_freezer(A), !,
+sys_poly_comb(X, _, K, M) :-
+   integer(X), !,
    K = 0,
-   M = A.
-sys_poly_comb(E, _, K, M) :-
-   integer(E), !,
-   K = 0,
-   M = E.
+   M = X.
 sys_poly_comb(rational(A,B), _, K, M) :- !,
    K = 0,
    M = rational(A,B).
+sys_poly_comb(radical(A,B), _, K, M) :- !,
+   K = 0,
+   M = radical(A,B).
+sys_poly_comb(X, _, K, M) :-
+   sys_freezer(X), !,
+   K = 0,
+   M = X.
 sys_poly_comb(polynom(A,B), polynom(C,D), K, M) :-
    A @> C, !,
    sys_coeff_comb(B, polynom(C,D), R, S),

@@ -47,11 +47,11 @@
 :- use_package(library(jekmin/reference/misc)).
 
 :- module(rational, []).
-:- reexport('../gauss/ordered').
+:- reexport(../gauss/ordered).
 
 :- use_module(generic).
 :- use_module(fraction).
-:- use_module('../leibniz/radical').
+:- use_module(../leibniz/radical).
 
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
@@ -203,10 +203,8 @@ rational(A,B) - rational(C,B) :-
 sqrt(rational(A,_), _) :-
    A < 0,
    throw(error(evaluation_error(undefined),_)).
-sqrt(rational(A,B), R) :-
-   has_sqrt(rational(A,B), X), !,
-   R = X.
-sqrt(X, radical(0,[X-1])).
+sqrt(X, R) :-
+   make_radical(X, R).
 
 /*********************************************************************/
 /* Arithmetic Helper                                                 */
