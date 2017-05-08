@@ -154,7 +154,7 @@ call_residue(G, L) :-
  * printable(F, G):
  * The predicate succeeds in G with a custom form of F.
  */
-% printable(+Internal, -Expertanl)
+% printable(+Term, -Term)
 :- public printable/2.
 printable(E, F) :-
    sys_printable_value(E, H), !,

@@ -10,7 +10,14 @@
  * answer loop similarly like issuing an end of file. The system predicate
  * abort/1 only terminates the current query but continues the loop. The
  * system predicate close/1 recursively terminates all query answering
- * loops. The system predicate version/0 displays a version banner.
+ * loops.
+ *
+ * The system predicate version/0 displays a version banner. Top-level
+ * answers are displayed with the operator (=)/2. For custom forms
+ * delivered by a printable hook the operator (is)/2 is displayed. For
+ * custom constraints delivered by an equation hook the corresponding
+ * operator is displayed. For printable and equation hooks see the
+ * module residue.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

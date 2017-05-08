@@ -240,11 +240,11 @@ public final class EvaluableElem extends Special {
      */
     private static Number abs(Number m) throws ArithmeticException {
         if (m instanceof Integer) {
-            int x = Math.abs(m.intValue());
+            int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
-                return Integer.valueOf(x);
+                return Integer.valueOf(Math.abs(x));
             } else {
-                return BigInteger.valueOf(-(long) x);
+                return BigInteger.valueOf(Math.abs((long)x));
             }
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigInteger(((BigInteger) m).abs());

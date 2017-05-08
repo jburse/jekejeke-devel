@@ -80,6 +80,9 @@
 :- sys_get_context(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
+:- sys_op(400, fx, ../).
+:- set_oper_property(prefix(../), visible(public)).
+
 /********************************************************/
 /* Class Path Modification & Access                     */
 /********************************************************/
@@ -279,8 +282,10 @@ sys_path_norm(Slash, _) :-
 sys_path_norm(X, Path) :-
    sys_atom(X), !,
    sys_eq(X, Path).
-sys_path_norm(X, Path) :-
-   sys_eq(X, Dir/Name), !,
+sys_path_norm(../Dir, Path) :- !,
+   sys_path_norm(Dir, Y),
+   sys_atom_concat(../, Y, Path).
+sys_path_norm(Dir/Name, Path) :- !,
    sys_path_norm(Dir, Y),
    sys_atom_concat(Y, /, H),
    sys_atom_concat(H, Name, Path).
