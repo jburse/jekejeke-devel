@@ -260,7 +260,7 @@ sys_swinnerton_dyer2([A-S], B, L, 0, R) :-
 /*********************************************************************/
 
 % sys_radical_neg(+Map, -Map)
-:- public sys_radical_neg/2.
+:- private sys_radical_neg/2.
 sys_radical_neg([A-S|L], [A-T|R]) :-
    user:S - T,
    sys_radical_neg(L, R).

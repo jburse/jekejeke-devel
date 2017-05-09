@@ -57,6 +57,7 @@
 :- reexport(ring).
 
 :- use_module(../groebner/generic).
+:- use_module(../leibniz/radical).
 
 /*********************************************************************/
 /* Comparison                                                        */
@@ -182,12 +183,36 @@ abs(X, X).
 :- override sign/2.
 :- public sign/2.
 sign(X, Y) :-
-   X < 0, !,
-   Y = -1.
-sign(X, Y) :-
-   X > 0, !,
+   integer(X), !,
+   user:sign(X, Y).
+sign(rational(A,_), Y) :- !,
+   user:sign(A, Y).
+sign(radical(A,B), Y) :-
+   A >= 0,
+   sys_sqrt_same(B, 1), !,
    Y = 1.
-sign(_, 0).
+sign(radical(A,B), Y) :-
+   A =< 0,
+   sys_sqrt_same(B, -1), !,
+   Y = -1.
+sign(radical(A,B), Y) :-
+   A < 0, !,
+   Y is -sign(-radical(A,B)).
+sign(radical(A,B), Y) :-
+   sys_sqrt_plus(B, C),
+   Y is sign(radical(A,B)*radical(A,C)).
+
+% sys_sqrt_same(+Map, +Integer)
+:- private sys_sqrt_same/2.
+sys_sqrt_same([_-S|L], S) :-
+   sys_sqrt_same(L, S).
+sys_sqrt_same([], _).
+
+% sys_sqrt_plus(+Map, -Map)
+:- private sys_sqrt_plus/2.
+sys_sqrt_plus([A-_|L], [A-1|R]) :-
+   sys_sqrt_plus(L, R).
+sys_sqrt_plus([], []).
 
 /*********************************************************************/
 /* Equalty                                                           */
@@ -257,6 +282,8 @@ integer:gen_ls(X, Y) :-
 integer:gen_ls(X, rational(A,B)) :- !,
    user: *(B, X, H),
    user:(H < A).
+integer:gen_ls(X, radical(C,D)) :- !,
+   1 =:= sign(radical(C,D)-X).
 integer:gen_ls(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
@@ -265,15 +292,32 @@ integer:gen_ls(_, _) :-
  * The predicate succeeds when X is less than Y.
  */
 :- public rational:gen_ls/2.
-rational:gen_ls(rational(A,B), X) :-
-   integer(X), !,
-   user: *(B, X, H),
+rational:gen_ls(rational(A,B), Y) :-
+   integer(Y), !,
+   user: *(B, Y, H),
    user:(A < H).
 rational:gen_ls(rational(A,B), rational(C,D)) :- !,
    user: *(D, A, H),
    user: *(B, C, J),
    user:(H < J).
+rational:gen_ls(X, radical(C,D)) :- !,
+   1 =:= sign(radical(C,D)-X).
 rational:gen_ls(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+/**
+ * gen_ls(X, Y):
+ * The predicate succeeds when X is less than Y.
+ */
+:- public radical:gen_ls/2.
+radical:gen_ls(X, Y) :-
+   integer(Y), !,
+   1 =:= sign(Y-X).
+radical:gen_ls(X, rational(C,D)) :- !,
+   1 =:= sign(rational(C,D)-X).
+radical:gen_ls(X, radical(C,D)) :- !,
+   1 =:= sign(radical(C,D)-X).
+radical:gen_ls(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
 /*********************************************************************/
