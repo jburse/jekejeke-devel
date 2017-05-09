@@ -50,6 +50,7 @@
  */
 
 :- package(library(jekmin/frequent/gauss)).
+:- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekmin/frequent/groebner)).
 
 :- module(ordered, []).
@@ -201,6 +202,7 @@ integer:gen_eq(X, Y) :-
    integer(Y), !,
    user:(X =:= Y).
 integer:gen_eq(_, rational(_,_)) :- !, fail.
+integer:gen_eq(_, radical(_,_)) :- !, fail.
 integer:gen_eq(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
@@ -214,8 +216,31 @@ rational:gen_eq(_, X) :-
 rational:gen_eq(rational(A,B), rational(C,D)) :- !,
    user:(A =:= C),
    user:(B =:= D).
+rational:gen_eq(_, radical(_,_)) :- !, fail.
 rational:gen_eq(_, _) :-
    throw(error(evaluation_error(ordered),_)).
+
+/**
+ * gen_eq(X, Y):
+ * The predicate succeeds when X equals Y.
+ */
+:- public radical:gen_eq/2.
+radical:gen_eq(_, X) :-
+   integer(X), !, fail.
+radical:gen_eq(_, rational(_,_)) :- !, fail.
+radical:gen_eq(radical(A,B), radical(C,D)) :- !,
+   A =:= C,
+   sys_radical_eq(B, D).
+radical:gen_eq(_, _) :-
+   throw(error(evaluation_error(ordered),_)).
+
+% sys_radical_eq(+Map, +Map)
+:- private sys_radical_eq/2.
+sys_radical_eq([A-S|L], [B-T|R]) :-
+   user:(S =:= T),
+   A =:= B,
+   sys_radical_eq(L, R).
+sys_radical_eq([], []).
 
 /*********************************************************************/
 /* Less                                                              */
