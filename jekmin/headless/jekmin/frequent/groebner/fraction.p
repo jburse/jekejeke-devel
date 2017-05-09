@@ -222,6 +222,13 @@ sys_poly_lcm(A, B, C) :-
 % new_fraction(+Internal, +Internal, -Internal)
 :- public new_fraction/3.
 new_fraction(U, V, R) :-
+   integer(V), !,
+   R is U/V.
+new_fraction(U, rational(C,D), R) :- !,
+   R is U/rational(C,D).
+new_fraction(U, radical(C,D), R) :- !,
+   R is U/radical(C,D).
+new_fraction(U, V, R) :-
    sys_poly_common(U, H),
    sys_poly_common(V, J),
    sys_join_common(H, J, P),
@@ -236,10 +243,6 @@ new_fraction(U, V, R) :-
 
 % new_fraction2(+Internal, +Internal, -Internal)
 :- private new_fraction2/3.
-new_fraction2(A, -1, R) :- !,
-   R is -A.
-new_fraction2(A, 1, R) :- !,
-   R = A.
 new_fraction2(U, V, R) :-
    sys_poly_sign(V, S),
    S \== 1, !,
