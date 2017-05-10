@@ -61,6 +61,7 @@
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/stack)).
 :- use_module(library(testing/runner)).
+:- use_module(helper).
 
 :- public text/1.
 :- multifile text/1.
@@ -138,12 +139,6 @@ tracker_batch :- nodebug,
 % cover_summary(OkNok)
 :- public cover_summary/1.
 :- dynamic cover_summary/1.
-
-% sys_add_oknok(+OkNok, +OkNok, -OkNok)
-:- private sys_add_oknok/3.
-sys_add_oknok(A-B, C-D, E-F) :-
-   E is A+C,
-   F is B+D.
 
 % sys_remove_summary
 :- private sys_remove_summary/0.

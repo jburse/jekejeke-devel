@@ -40,11 +40,11 @@
 :- package(library(jekdev/reference/testing)).
 
 :- module(result, []).
+
 :- use_module(library(basic/lists)).
-:- use_module(library(advanced/aggregate)).
-:- use_module(library(testing/runner)).
 :- use_module(library(system/locale)).
 :- use_module(library(system/shell)).
+:- use_module(runner).
 :- use_module(helper).
 :- sys_load_resource(testing).
 
@@ -59,26 +59,8 @@
 result_batch(Z) :- result_summary, result_packages,
    result_suites(Z).
 
-% result_suite_view(-+Atom, -+Atom, --Pair)
-:- private result_suite_view/3.
-result_suite_view(Directory, Name, OkNok) :-
-   var(Directory),
-   var(Name), !,
-   result_suite(Suite, OkNok),
-   split_suite(Suite, Directory, Name).
-result_suite_view(Directory, Name, OkNok) :-
-   Suite is_atom Directory+'_'+Name,
-   result_suite(Suite, OkNok).
-
-% split_suite(+Atom, +Atom, -Atom)
-:- private split_suite/3.
-split_suite(Suite, Directory, Name) :-
-   sub_atom(Suite, A, _, B, '_'),
-   sub_atom(Suite, 0, A, _, Directory),
-   sub_atom(Suite, _, B, 0, Name).
-
 /*************************************************************/
-/* HTML Summary                                              */
+/* HTML Result Summary                                       */
 /*************************************************************/
 
 % result_summary
@@ -104,9 +86,9 @@ html_list_summary :-
    write_atom(escape(V1)),
    write('</h1>'), nl,
    numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
-   aggregate_all((sum(W1),sum(W2)),
-      (  member(N, L),
-         result_suite_view(D, N, W1-W2)), (P1,P2)),
+   findall(W, (  member(N, L),
+                 result_suite_view(D, N, W)), V),
+   sys_sum_oknok(V, Z),
    R is_atom '0'+I+'_'+D+'/package.html',
    get_property(P, 'result.summary.h2', V2),
    write('<h2>'),
@@ -136,7 +118,7 @@ html_list_summary :-
    html_list_element(R, D, L),
    write('  <tr class="headrow">'), nl,
    write('  <td>Total</td>'), nl,
-   html_pairs_data(P1-P2),
+   html_pairs_data(Z),
    write('  </tr>'), nl,
    write('</table>'), nl, fail.
 html_list_summary.

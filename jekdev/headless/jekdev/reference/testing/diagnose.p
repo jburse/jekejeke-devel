@@ -35,8 +35,8 @@
 
 :- module(diagnose, []).
 :- use_module(library(stream/console)).
-:- use_module(library(testing/runner)).
 :- use_module(library(inspection/frame)).
+:- use_module(runner).
 
 /*************************************************************/
 /* List Suites                                               */
@@ -133,12 +133,8 @@ list_test_case_data(_, _, _, _).
 :- public diagnose_online/0.
 diagnose_online :- list_result_suite,
    write('Suite: '), flush_output,
-   read_line(Suite),
+   read(Suite),
    list_result_predicate(Suite),
-   write('Functor: '), flush_output,
-   read_line(Fun),
-   write('Arity: '), flush_output,
-   read_line(ArityStr),
-   atom_codes(ArityStr, Codes),
-   number_codes(Arity, Codes),
+   write('Functor/Arity: '), flush_output,
+   read(Fun/Arity),
    list_result(Fun, Arity, Suite).

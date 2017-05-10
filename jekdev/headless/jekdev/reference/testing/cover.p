@@ -40,12 +40,13 @@
 :- package(library(jekdev/reference/testing)).
 
 :- module(cover, []).
+
 :- use_module(library(basic/lists)).
-:- use_module(library(advanced/aggregate)).
-:- use_module(library(testing/tracker)).
 :- use_module(library(system/locale)).
 :- use_module(library(system/shell)).
+:- use_module(tracker).
 :- use_module(helper).
+:- sys_load_resource(testing).
 
 /**
  * cover_batch(R):
@@ -58,26 +59,8 @@
 cover_batch(Z) :- cover_summary, cover_packages,
    cover_sources(Z).
 
-% cover_source_view(-+Atom, -+Atom, --Pair)
-:- private cover_source_view/3.
-cover_source_view(Directory, Name, OkNok) :-
-   var(Directory),
-   var(Name), !,
-   cover_source(Source, OkNok),
-   split_source(Source, Directory, Name).
-cover_source_view(Directory, Name, OkNok) :-
-   Source is_atom Directory+ / +Name,
-   cover_source(Source, OkNok).
-
-% split_source(+Atom, +Atom, -Atom)
-:- private split_source/3.
-split_source(Source, Directory, Name) :-
-   sub_atom(Source, A, _, B, /),
-   sub_atom(Source, 0, A, _, Directory),
-   sub_atom(Source, _, B, 0, Name).
-
 /*************************************************************/
-/* HTML Summary                                              */
+/* HTML Cover Summary                                        */
 /*************************************************************/
 
 % cover_summary
@@ -103,9 +86,9 @@ html_list_summary :-
    write_atom(escape(V1)),
    write('</h1>'), nl,
    numbered_solution(bagof(N, U^cover_source_view(D, N, U), L), I),
-   aggregate_all((sum(W1),sum(W2)),
-      (  member(N, L),
-         cover_source_view(D, N, W1-W2)), (P1,P2)),
+   findall(W, (  member(N, L),
+                 cover_source_view(D, N, W)), V),
+   sys_sum_oknok(V, Z),
    R is_atom '0'+I+'_'+D+'/package.html',
    get_property(P, 'cover.summary.h2', V2),
    write('<h2>'),
@@ -135,7 +118,7 @@ html_list_summary :-
    html_list_element(R, D, L),
    write('  <tr class="headrow">'), nl,
    write('  <td>Total</td>'), nl,
-   html_pairs_data(P1-P2),
+   html_pairs_data(Z),
    write('  </tr>'), nl,
    write('</table>'), nl, fail.
 html_list_summary.

@@ -101,6 +101,7 @@
 
 :- module(runner, []).
 :- use_module(library(inspection/frame)).
+:- use_module(helper).
 
 :- public ref/4.
 :- multifile ref/4.
@@ -117,12 +118,6 @@
 % result_summary(-OkNok)
 :- public result_summary/1.
 :- dynamic result_summary/1.
-
-% sys_add_oknok(+OkNok, +OkNok, -OkNok)
-:- private sys_add_oknok/3.
-sys_add_oknok(A-B, C-D, E-F) :-
-   E is A+C,
-   F is B+D.
 
 % sys_remove_summary
 :- private sys_remove_summary/0.
@@ -226,6 +221,7 @@ sys_test_body(_, 0-1).
 :- public runner_batch/0.
 runner_batch :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_remove_summary,
    rule_frame(case(Fun, Arity, Suite, Case), Body, _),
+                                                  %   write('Case='), write(Case), nl,
    sys_test_body(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),
    sys_update_predicate(Fun, Arity, Suite, OkNok),
