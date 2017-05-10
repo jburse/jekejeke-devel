@@ -50,9 +50,10 @@
 :- use_module(../groebner/polynom).
 
 :- use_module(library(experiment/trail)).
+:- use_module(library(basic/lists)).
 
 /*********************************************************************/
-/* Quotient & Remainder                                              */
+/* Facade                                                            */
 /*********************************************************************/
 
 /**
@@ -73,6 +74,24 @@ quorem(A, B, Q, R) :-
 :- public gen_div/4.
 gen_div(A, B, Q, R) :-
    sys_poly_div(A, B, Q, R).
+
+/**
+ * reduced(A, R, F):
+ * The predicate succeeds with reduced R and factor F of A.
+ */
+:- public reduced/3.
+reduced(A, R, F) :-
+   X is A,
+   sys_poly_send(X, gen_red, [R,F]).
+
+/**
+ * gen_red(A, R, F):
+ * The predicate succeeds with reduced R and factor F of A.
+ */
+% gen_red(+Ring, -Internal, -Ordered)
+:- public gen_red/3.
+gen_red(A, R, F) :-
+   sys_poly_reduced(A, R, F).
 
 /*********************************************************************/
 /* Division                                                          */
@@ -101,17 +120,25 @@ sys_poly_div(F, _, 0, F).
 % sys_poly_head(+Internal, -Monomial)
 :- public sys_poly_head/2.
 sys_poly_head(X, R) :-
-   integer(X), !,
-   R = X.
-sys_poly_head(rational(A,B), R) :- !,
-   R = rational(A,B).
-sys_poly_head(radical(A,B), R) :- !,
-   R = radical(A,B).
-sys_poly_head(X, R) :-
    sys_freezer(X), !,
    R = polynom(X,[1-1]).
-sys_poly_head(polynom(A,[N-B|_]), polynom(A,[N-C])) :-
-   sys_poly_head(B, C).
+sys_poly_head(polynom(A,[N-B|_]), R) :- !,
+   sys_poly_head(B, C),
+   R = polynom(A,[N-C]).
+sys_poly_head(X, X).
+
+/**
+ * sys_poly_factor(P, F):
+ * The predicate succeeds in F with the factor of P.
+ */
+% sys_poly_factor(+Internal, -Ordered)
+:- public sys_poly_factor/2.
+sys_poly_factor(X, R) :-
+   sys_freezer(X), !,
+   R = 1.
+sys_poly_factor(polynom(_,[_-B|_]), R) :- !,
+   sys_poly_factor(B, R).
+sys_poly_factor(X, X).
 
 /*********************************************************************/
 /* Polynomial Combing                                                */
@@ -124,16 +151,6 @@ sys_poly_head(polynom(A,[N-B|_]), polynom(A,[N-C])) :-
  */
 % sys_poly_comb(+Internal, +Monomial, -Internal, -Internal)
 :- public sys_poly_comb/4.
-sys_poly_comb(E, Y, K, M) :-
-   integer(Y), !,
-   K is E/Y,
-   M = 0.
-sys_poly_comb(E, rational(A,B), K, M) :- !,
-   K is E/rational(A,B),
-   M = 0.
-sys_poly_comb(E, radical(A,B), K, M) :- !,
-   K is E/radical(A,B),
-   M = 0.
 sys_poly_comb(A, polynom(C,D), K, M) :-
    sys_freezer(A),
    A @> C, !,
@@ -145,20 +162,6 @@ sys_poly_comb(A, polynom(A,[N-C]), K, M) :-
    sys_same_comb([1-1], N, C, R, S),
    sys_make_poly(A, R, K),
    sys_make_poly(A, S, M).
-sys_poly_comb(X, _, K, M) :-
-   integer(X), !,
-   K = 0,
-   M = X.
-sys_poly_comb(rational(A,B), _, K, M) :- !,
-   K = 0,
-   M = rational(A,B).
-sys_poly_comb(radical(A,B), _, K, M) :- !,
-   K = 0,
-   M = radical(A,B).
-sys_poly_comb(X, _, K, M) :-
-   sys_freezer(X), !,
-   K = 0,
-   M = X.
 sys_poly_comb(polynom(A,B), polynom(C,D), K, M) :-
    A @> C, !,
    sys_coeff_comb(B, polynom(C,D), R, S),
@@ -168,7 +171,11 @@ sys_poly_comb(polynom(A,B), polynom(A,[N-C]), K, M) :- !,
    sys_same_comb(B, N, C, R, S),
    sys_make_poly(A, R, K),
    sys_make_poly(A, S, M).
-sys_poly_comb(E, _, 0, E).
+sys_poly_comb(X, polynom(_,_), K, M) :- !,
+   K = 0,
+   M = X.
+sys_poly_comb(X, Y, K, 0) :-
+   K is X/Y.
 
 % sys_same_comb(+List, +Integer, +Monomial, -List, -List) :-
 :- private sys_same_comb/5.
@@ -189,3 +196,46 @@ sys_coeff_comb([N-A|L], G, P, Q) :-
    sys_make_coeff(R, N, K, P),
    sys_make_coeff(S, N, M, Q).
 sys_coeff_comb([], _, [], []).
+
+/*********************************************************************/
+/* Reduction                                                         */
+/*********************************************************************/
+
+% sys_poly_reduced(+Ring, -Internal, -Ordered)
+:- public sys_poly_reduced/3.
+sys_poly_reduced(A, R, F) :-
+   sys_poly_factor(A, K),
+   K \== 1,
+   K \== -1, !,
+   L is 1/K,
+   B is L*A,
+   sys_poly_reduced2(B, K, R, F).
+sys_poly_reduced(A, R, F) :-
+   sys_poly_reduced2(A, 1, R, F).
+
+% sys_poly_reduced2(+Internal, +Ordered, -Internal, -Ordered)
+:- public sys_poly_reduced2/4.
+sys_poly_reduced2(R, F, T, H) :-
+   sys_poly_sign(R, S),
+   S \== 1, !,
+   T is -R,
+   H is -F.
+sys_poly_reduced2(R, F, R, F).
+
+% sys_poly_sign(+Internal -Integer)
+:- public sys_poly_sign/2.
+sys_poly_sign(X, R) :-
+   integer(X), !,
+   user:sign(X, R).
+sys_poly_sign(rational(A,_), R) :- !,
+   user:sign(A, R).
+sys_poly_sign(radical(0,[_-S|_]), R) :- !,
+   user:sign(S, R).
+sys_poly_sign(radical(A,_), R) :- !,
+   sys_poly_sign(A, R).
+sys_poly_sign(X, R) :-
+   sys_freezer(X), !,
+   R = 1.
+sys_poly_sign(polynom(_,L), R) :-
+   last(L, _-B),
+   sys_poly_sign(B, R).

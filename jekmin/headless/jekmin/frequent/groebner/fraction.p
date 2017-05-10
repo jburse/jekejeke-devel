@@ -229,11 +229,9 @@ new_fraction(U, rational(C,D), R) :- !,
 new_fraction(U, radical(C,D), R) :- !,
    R is U/radical(C,D).
 new_fraction(U, V, R) :-
-   sys_poly_common(U, H),
-   sys_poly_common(V, J),
-   sys_join_common(H, J, P),
-   sys_make_common(P, K),
-   K \== 1, !,
+   sys_poly_factor(V, K),
+   K \== 1,
+   K \== -1, !,
    L is 1/K,
    A is L*U,
    B is L*V,
@@ -426,110 +424,6 @@ sys_coeff_compare(O, [N-_], [M-_]) :-
 sys_coeff_compare(O, [N-A], [N-B]) :- !,
    sys_head_compare(O, A, B).
 sys_coeff_compare(<, _, _).
-
-/*********************************************************************/
-/* Arithmetic Helper                                                 */
-/*********************************************************************/
-
-% sys_poly_common(+Internal, -Common)
-:- private sys_poly_common/2.
-sys_poly_common(X, R) :-
-   integer(X), !,
-   R = rational(X,1).
-sys_poly_common(rational(A,B), R) :- !,
-   R = rational(A,B).
-sys_poly_common(radical(0,B), R) :- !,
-   sys_radical_common(B, J),
-   R = radical(0,[J-1]).
-sys_poly_common(radical(A,B), R) :- !,
-   sys_poly_common(A, H),
-   sys_radical_common(B, J),
-   R = radical(H,[J-1]).
-sys_poly_common(X, R) :-
-   sys_freezer(X), !,
-   R = rational(1,1).
-sys_poly_common(polynom(_,B), R) :-
-   sys_coeff_common(B, R).
-
-% sys_coeff_common(+Map, -Common)
-:- private sys_coeff_common/2.
-sys_coeff_common([_-A,C|L], K) :- !,
-   sys_poly_common(A, H),
-   sys_coeff_common([C|L], J),
-   sys_join_common(H, J, K).
-sys_coeff_common([_-A], H) :-
-   sys_poly_common(A, H).
-
-% sys_radical_common(+Map, -Common)
-:- private sys_radical_common/2.
-sys_radical_common([A-_,C|L], K) :- !,
-   sys_poly_common(A, H),
-   sys_radical_common([C|L], J),
-   sys_join_common(H, J, K).
-sys_radical_common([A-_], H) :-
-   sys_poly_common(A, H).
-
-/*********************************************************************/
-/* Builders                                                          */
-/*********************************************************************/
-
-% sys_join_common(+Common, +Common, -Common)
-:- private sys_join_common/3.
-sys_join_common(0, Y, R) :- !,
-   R = Y.
-sys_join_common(X, 0, R) :- !,
-   R = X.
-sys_join_common(rational(A,B), rational(C,D), R) :- !,
-   elem:gcd(A, C, E),
-   elem:lcm(B, D, F),
-   R = rational(E,F).
-sys_join_common(radical(U,[P-1]), radical(V,[Q-1]), R) :-
-   sys_join_common(U, V, W),
-   sys_join_common(P, Q, S),
-   R = radical(W,[S-1]).
-sys_join_common(radical(U,[P-1]), Y, R) :- !,
-   sys_join_common(U, Y, W),
-   R = radical(W,[P-1]).
-sys_join_common(X, radical(V,[Q-1]), R) :- !,
-   sys_join_common(X, V, W),
-   R = radical(W,[Q-1]).
-
-% sys_make_common(+Common, -Internal)
-:- private sys_make_common/2.
-sys_make_common(rational(A,B), R) :- !,
-   new_rational(A, B, R).
-sys_make_common(radical(0,[Q-1]), R) :- !,
-   sys_make_common(Q, W),
-   make_radical(W, R).
-sys_make_common(radical(P,[Q-1]), R) :-
-   sys_sqrt_common(P, U),
-   sys_join_common(U, Q, V),
-   sys_make_common(V, W),
-   make_radical(W, R).
-
-% sys_sqrt_common(+Rational, -Rational)
-:- private sys_sqrt_common/2.
-sys_sqrt_common(rational(A,B), rational(C,D)) :-
-   user: *(A, A, C),
-   user: *(B, B, D).
-
-% sys_poly_sign(+Internal -Integer)
-:- private sys_poly_sign/2.
-sys_poly_sign(X, R) :-
-   integer(X), !,
-   user:sign(X, R).
-sys_poly_sign(rational(A,_), R) :- !,
-   user:sign(A, R).
-sys_poly_sign(radical(0,[_-S|_]), R) :- !,
-   user:sign(S, R).
-sys_poly_sign(radical(A,_), R) :- !,
-   sys_poly_sign(A, R).
-sys_poly_sign(X, R) :-
-   sys_freezer(X), !,
-   R = 1.
-sys_poly_sign(polynom(_,L), R) :-
-   last(L, _-B),
-   sys_poly_sign(B, R).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */
