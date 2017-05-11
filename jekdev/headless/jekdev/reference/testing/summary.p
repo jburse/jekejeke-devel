@@ -1,6 +1,5 @@
 /**
- * This module allows the batch reporting of a summar for the
- * test results and the coverage analysis.
+ * This module allows the batch reporting a summary.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,7 +39,7 @@
 
 /**
  * summary_batch:
- * The predciates generates a file into the location pointed
+ * The predicate generates a file into the location pointed
  * by the base_url Prolog flag.
  */
 % summary_batch
