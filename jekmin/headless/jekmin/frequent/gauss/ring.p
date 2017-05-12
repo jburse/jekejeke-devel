@@ -1,21 +1,24 @@
 /**
- * This module provides ring elements. The module realizes a base class
- * for the classes repre-sented by the module ordered from this module
- * and the module variable and the module polynom from the
- 3 package groebner.
+ * This module provides ring elements. The module realizes a base
+ * class for the classes represented by the module ordered from this
+ * module and the module variable and the module polynom from the
+ * package groebner. Common factors in polynomial fractions are
+ * determined and cancelled in the module fraction from the
+ * package groebner.
  *
  * Examples:
- * ?- quorem(X^2-1,X-1,Q,R).
- * Q is 1+X,
- * R is 0
- * ?- quorem(X^2-2*Y^2,X-Y,Q,R).
+ * ?- reduced(2*X^2-3, R, F).
+ * R is 1+1/2-X^2,
+ * F is – 2
+ * ?- quorem(X^2-2*Y^2, X-Y, Q, R).
  * Q is 2*X+2*Y,
  * R is -X^2
  *
- * Common factors in polynomial fractions are determined and cancelled
- * in the module fraction from the package groebner. The realized Gröbner
- * Basis algorithm uses multivariate polynomial division which we expose
- * here by the predicate quorem/4.
+ * The new denominator is given in reduced form. We expose here the
+ * computation by the predicate reduced/3. The common factor is determined
+ * via a Gröbner Basis algorithm. The algorithm itself makes use of
+ * multivariate polynomial division among other computations. We expose
+ * here the former computation by the predicate quorem/4.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -57,6 +60,24 @@
 /*********************************************************************/
 
 /**
+ * reduced(A, R, F):
+ * The predicate succeeds with reduced R and factor F of A.
+ */
+:- public reduced/3.
+reduced(A, R, F) :-
+   X is A,
+   sys_poly_send(X, gen_red, [R,F]).
+
+/**
+ * gen_red(A, R, F):
+ * The predicate succeeds with reduced R and factor F of A.
+ */
+% gen_red(+Ring, -Internal, -Ordered)
+:- public gen_red/3.
+gen_red(A, R, F) :-
+   sys_poly_reduced(A, R, F).
+
+/**
  * quorem(A, B, Q, R):
  * The predicate succeeds with quotient Q and remainder R of A divided by B.
  */
@@ -74,24 +95,6 @@ quorem(A, B, Q, R) :-
 :- public gen_div/4.
 gen_div(A, B, Q, R) :-
    sys_poly_div(A, B, Q, R).
-
-/**
- * reduced(A, R, F):
- * The predicate succeeds with reduced R and factor F of A.
- */
-:- public reduced/3.
-reduced(A, R, F) :-
-   X is A,
-   sys_poly_send(X, gen_red, [R,F]).
-
-/**
- * gen_red(A, R, F):
- * The predicate succeeds with reduced R and factor F of A.
- */
-% gen_red(+Ring, -Internal, -Ordered)
-:- public gen_red/3.
-gen_red(A, R, F) :-
-   sys_poly_reduced(A, R, F).
 
 /*********************************************************************/
 /* Division                                                          */

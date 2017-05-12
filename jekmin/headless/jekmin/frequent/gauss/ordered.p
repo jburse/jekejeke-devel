@@ -52,6 +52,7 @@
 :- package(library(jekmin/frequent/gauss)).
 :- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/reference/misc)).
 
 :- module(ordered, []).
 :- reexport(ring).
@@ -321,29 +322,6 @@ radical:gen_ls(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
 /*********************************************************************/
-/* Integer                                                           */
-/*********************************************************************/
-
-/**
- * integer(P, Q):
- * The predicate succeeds in Q with the integer of P.
- */
-% integer(+Integer, -Integer)
-:- override integer:integer/2.
-:- public integer:integer/2.
-integer:integer(X, X).
-
-/**
- * integer(P, Q):
- * The predicate succeeds in Q with the integer of P.
- */
-% integer(+Rational, -Integer)
-:- override rational:integer/2.
-:- public rational:integer/2.
-rational:integer(rational(A,B), X) :-
-   user: //(A, B, X).
-
-/*********************************************************************/
 /* Floor                                                             */
 /*********************************************************************/
 
@@ -365,6 +343,47 @@ integer:floor(X, X).
 :- public rational:floor/2.
 rational:floor(rational(A,B), X) :-
    user:div(A, B, X).
+
+/**
+ * floor(P, Q):
+ * The predicate suceeds in Q with the floor of P.
+ */
+% floor(+Radical, -Integer)
+:- override radical:floor/2.
+:- public radical:floor/2.
+radical:floor(radical(A,B), X) :-
+   sys_radical_lower(B, H),
+   K is floor(A)+H,
+   sys_radical_search(K, radical(A,B), X).
+
+% sys_radical_lower(+Map, -Integer)
+:- private sys_radical_lower/2.
+sys_radical_lower([A-1|L], K) :- !,
+   sys_radical_lower(L, H),
+   sys_sqrt_lower(A, J),
+   user: +(H, J, K).
+sys_radical_lower([A- -1|L], K) :-
+   sys_radical_lower(L, H),
+   sys_sqrt_lower(A, I),
+   user: +(I, 1, J),
+   user: -(H, J, K).
+sys_radical_lower([], 0).
+
+% sys_sqrt_lower(+Ordered, -Integer)
+:- private sys_sqrt_lower/2.
+sys_sqrt_lower(X, Y) :-
+   integer(X), !,
+   elem:isqrt(X, Y).
+sys_sqrt_lower(rational(A,B), Y) :-
+   elem:isqrt(A, B, Y).
+
+% sys_radical_search(+Integer, +Radical, -Integer)
+:- private sys_radical_search/3.
+sys_radical_search(N, X, Y) :-
+   user: +(N, 1, M),
+   M =< X, !,
+   sys_radical_search(M, X, Y).
+sys_radical_search(N, _, N).
 
 /*********************************************************************/
 /* Ceiling                                                           */
@@ -390,3 +409,49 @@ rational:ceiling(rational(A,B), X) :-
    user: -(B, 1, H),
    user: +(A, H, J),
    user:div(J, B, X).
+
+/**
+ * ceiling(P, Q):
+ * The predicate suceeds in Q with the floor of P.
+ */
+% ceiling(+Radical, -Integer)
+:- override radical:ceiling/2.
+:- public radical:ceiling/2.
+radical:ceiling(X, Y) :-
+   Y is -floor(-X).
+
+/*********************************************************************/
+/* Integer                                                           */
+/*********************************************************************/
+
+/**
+ * integer(P, Q):
+ * The predicate succeeds in Q with the integer of P.
+ */
+% integer(+Integer, -Integer)
+:- override integer:integer/2.
+:- public integer:integer/2.
+integer:integer(X, X).
+
+/**
+ * integer(P, Q):
+ * The predicate succeeds in Q with the integer of P.
+ */
+% integer(+Rational, -Integer)
+:- override rational:integer/2.
+:- public rational:integer/2.
+rational:integer(rational(A,B), X) :-
+   user: //(A, B, X).
+
+/**
+ * integer(P, Q):
+ * The predicate suceeds in Q with the floor of P.
+ */
+% integer(+Radical, -Integer)
+:- override radical:integer/2.
+:- public radical:integer/2.
+radical:integer(X, Y) :-
+   X >= 0, !,
+   Y is floor(X).
+radical:integer(X, Y) :-
+   Y is -floor(-X).
