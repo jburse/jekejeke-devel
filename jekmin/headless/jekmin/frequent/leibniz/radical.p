@@ -205,6 +205,19 @@ radical(A,B) - radical(C,D) :-
 /* Radicals                                                          */
 /*********************************************************************/
 
+/**
+ * sqrt(P, Q):
+ * The predicate succeeds in Q with the square root of P.
+ */
+% sqrt(+Radical, -Radical)
+:- override sqrt/2.
+:- public sqrt/2.
+sqrt(X, _) :-
+   X < 0,
+   throw(error(evaluation_error(undefined),_)).
+sqrt(X, R) :-
+   make_radical(X, R).
+
 % make_radical(+Ordered, -Internal)
 :- public make_radical/2.
 make_radical(X, R) :-
@@ -219,10 +232,50 @@ has_sqrt(X, Y) :-
    elem:isqrt(X, Y),
    user: *(Y, Y, H),
    user:(X =:= H).
-has_sqrt(rational(A,B), R) :-
+has_sqrt(rational(A,B), R) :- !,
    has_sqrt(A, X),
    has_sqrt(B, Y),
    make_rational(X, Y, R).
+has_sqrt(radical(A,B), R) :-
+   sys_split_radical(radical(A,B), P, Q),
+   D is (P*P-Q*Q)/4,
+   D >= 0,
+   has_sqrt(D, H),
+   R is sqrt(P/2+H)+sign(Q)*sqrt(P/2-H).
+
+/*****************************************************************/
+/* Split a Radical                                               */
+/*****************************************************************/
+
+% sys_split_radical(+Radical, -Radical, -Radicall)
+:- private sys_split_radical/3.
+sys_split_radical(radical(A,[B-S|L]), U, V) :-
+   sys_split_sqrt(L, B, P, Q),
+   sys_new_radical(A, P, U),
+   V = radical(0,[B-S|Q]).
+
+% sys_split_sqrt(+Map, +Ordered, -Map, -Map)
+:- private sys_split_sqrt/4.
+sys_split_sqrt([A-T|L], B, U, V) :-
+   sys_split_sqrt(L, B, P, Q),
+   sys_triage_product(P, Q, B, A, T, U, V).
+sys_split_sqrt([], _, [], []).
+
+% sys_triage_product(+Map, +Map, +Ordered, +Integer, +Pair, -Map, -Map)
+:- private sys_triage_product/7.
+sys_triage_product(P, Q, B, A, T, U, V) :-
+   sys_find_product(P, B, A), !,
+   U = P,
+   V = [A-T|Q].
+sys_triage_product(P, Q, _, A, T, [A-T|P], Q).
+
+% sys_find_product(+Map, +Ordered, +Ordered)
+:- private sys_find_product/3.
+sys_find_product([C-_|_], B, A) :-
+   H is A/(B*C),
+   has_sqrt(H, _), !.
+sys_find_product([_|L], B, A) :-
+   sys_find_product(L, B, A).
 
 /*********************************************************************/
 /* Swinnerton-Dyer Polynomial                                        */
