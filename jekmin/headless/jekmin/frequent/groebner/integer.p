@@ -45,6 +45,7 @@
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekpro/frequent/misc)).
+:- use_package(library(jekmin/reference/misc)).
 
 :- module(integer, []).
 :- reexport(../gauss/ordered).
@@ -186,7 +187,7 @@ X - Y :-
 :- override sqrt/2.
 :- public sqrt/2.
 sqrt(X, _) :-
-   X < 0,
+   user:(X < 0),
    throw(error(evaluation_error(undefined),_)).
 sqrt(X, R) :-
    make_radical(X, R).

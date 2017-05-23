@@ -201,7 +201,7 @@ rational(A,B) - rational(C,B) :-
 :- override sqrt/2.
 :- public sqrt/2.
 sqrt(rational(A,_), _) :-
-   A < 0,
+   user:(A < 0),
    throw(error(evaluation_error(undefined),_)).
 sqrt(X, R) :-
    make_radical(X, R).
@@ -218,9 +218,12 @@ make_rational(0, _, R) :- !,
    R = 0.
 make_rational(A, B, C) :-
    elem:gcd(A, B, H),
+   H \== 1, !,
    user: //(A, H, J),
    user: //(B, H, K),
    new_rational(J, K, C).
+make_rational(A, B, C) :-
+   new_rational(A, B, C).
 
 % new_rational(+Integer, +Integer, -Internal)
 new_rational(A, -1, B) :- !,

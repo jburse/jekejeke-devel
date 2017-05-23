@@ -442,8 +442,8 @@ residue:sys_printable_value(X, _) :-
 residue:sys_printable_value(fraction(A,B), F) :-
    sys_poly_div(A, B, Q, R),
    Q \== 0, !,
-   new_fraction(R, B, Z),
-   sys_make_quorem(Q, Z, F).
+   printable(Q, K),
+   sys_make_addition(K, fraction(R,B), F).
 residue:sys_printable_value(fraction(A,B), F) :-
    sys_poly_sign(A, S),
    S \== 1, !,
@@ -456,18 +456,16 @@ residue:sys_printable_value(fraction(A,B), F) :- !,
    printable(B, J),
    F = H/J.
 
-% sys_make_quorem(+Internal, +Fraction, -External)
-:- private sys_make_quorem/3.
-sys_make_quorem(Q, fraction(R,B), F) :-
+% sys_make_addition(+External, +Fraction, -External)
+:- private sys_make_addition/3.
+sys_make_addition(K, fraction(R,B), F) :-
    sys_poly_sign(R, S),
    S \== 1, !,
    T is -R,
-   printable(Q, K),
    printable(T, H),
    printable(B, J),
    F = K-H/J.
-sys_make_quorem(Q, fraction(R,B), F) :-
-   printable(Q, K),
+sys_make_addition(K, fraction(R,B), F) :-
    printable(R, H),
    printable(B, J),
    F = K+H/J.

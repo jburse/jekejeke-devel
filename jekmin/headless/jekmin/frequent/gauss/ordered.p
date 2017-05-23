@@ -188,32 +188,92 @@ sign(X, Y) :-
    user:sign(X, Y).
 sign(rational(A,_), Y) :- !,
    user:sign(A, Y).
+sign(radical(0,[_-S]), Y) :- !,
+   Y is sign(S).
 sign(radical(A,B), Y) :-
-   A >= 0,
-   sys_sqrt_same(B, 1), !,
-   Y = 1.
-sign(radical(A,B), Y) :-
-   A =< 0,
-   sys_sqrt_same(B, -1), !,
-   Y = -1.
-sign(radical(A,B), Y) :-
-   A < 0, !,
-   Y is -sign(-radical(A,B)).
-sign(radical(A,B), Y) :-
-   sys_sqrt_plus(B, C),
-   Y is sign(radical(A,B)*radical(A,C)).
+   sys_split_radical(radical(A,B), P, Q),
+   U is sign(P),
+   V is sign(Q),
+   sys_radical_sign(U, V, P, Q, Y).
 
-% sys_sqrt_same(+Map, +Integer)
-:- private sys_sqrt_same/2.
-sys_sqrt_same([_-S|L], S) :-
-   sys_sqrt_same(L, S).
-sys_sqrt_same([], _).
+% sys_radical_sign(+Integer, +Integer, +Radical, +Radical, -Integer)
+:- private sys_radical_sign/5.
+sys_radical_sign(U, V, _, _, Y) :-
+   user:(U =:= V), !,
+   Y = U.
+sys_radical_sign(U, _, P, Q, Y) :-
+   Y is U*sign(P*P-Q*Q).
 
-% sys_sqrt_plus(+Map, -Map)
-:- private sys_sqrt_plus/2.
-sys_sqrt_plus([A-_|L], [A-1|R]) :-
-   sys_sqrt_plus(L, R).
-sys_sqrt_plus([], []).
+/*********************************************************************/
+/* Dependence Splitting                                              */
+/*********************************************************************/
+
+% sys_split_radical(+Radical, -Radical, -Radicall)
+:- public sys_split_radical/3.
+sys_split_radical(radical(A,[B-S|L]), U, V) :-
+   sys_split_sqrt(L, B, P, Q),
+   sys_new_radical(A, P, U),
+   V = radical(0,[B-S|Q]).
+
+% sys_split_sqrt(+Map, +Ordered, -Map, -Map)
+:- private sys_split_sqrt/4.
+sys_split_sqrt([A-T|L], B, U, V) :-
+   sys_split_sqrt(L, B, P, Q),
+   sys_triage_product(P, Q, B, A, T, U, V).
+sys_split_sqrt([], _, [], []).
+
+% sys_triage_product(+Map, +Map, +Ordered, +Integer, +Pair, -Map, -Map)
+:- private sys_triage_product/7.
+sys_triage_product(P, Q, B, A, T, U, V) :-
+   sys_find_product(P, B, A), !,
+   U = P,
+   V = [A-T|Q].
+sys_triage_product(P, Q, _, A, T, [A-T|P], Q).
+
+% sys_find_product(+Map, +Ordered, +Ordered)
+:- private sys_find_product/3.
+sys_find_product([C-_|_], B, A) :-
+   sys_radical_level(A, P),
+   sys_radical_level(B, Q),
+   user:(P =:= Q),
+   sys_radical_level(C, R),
+   user:(P =:= R),
+   D is B*C/A,
+   make_radical(D, H),
+   sys_radical_level(H, W),
+   user:(W =< P), !.
+sys_find_product([_|L], B, A) :-
+   sys_find_product(L, B, A).
+
+/*********************************************************************/
+/* Nesting Level                                                     */
+/*********************************************************************/
+
+% sys_radical_level(+Radical, -Integer)
+:- public sys_radical_level/2.
+sys_radical_level(X, Y) :-
+   integer(X), !,
+   Y = 0.
+sys_radical_level(rational(_,_), Y) :- !,
+   Y = 0.
+sys_radical_level(radical(_,[A-_|L]), Y) :-
+   sys_radical_level(A, H),
+   sys_sqrt_level(L, H, J),
+   user: +(J, 1, Y).
+
+% sys_sqrt_level(+Map, +Integer, -Integer)
+:- private sys_sqrt_level/3.
+sys_sqrt_level([A-_|L], H, J) :-
+   sys_radical_level(A, I),
+   user:max(H, I, K),
+   sys_sqrt_level(L, K, J).
+sys_sqrt_level([], H, H).
+
+% sys_new_radical(+Internal, +Map, -Internal)
+:- public sys_new_radical/3.
+sys_new_radical(A, [], R) :- !,
+   R = A.
+sys_new_radical(A, L, radical(A,L)).
 
 /*********************************************************************/
 /* Equalty                                                           */
@@ -358,24 +418,19 @@ radical:floor(radical(A,B), X) :-
 
 % sys_radical_lower(+Map, -Integer)
 :- private sys_radical_lower/2.
-sys_radical_lower([A-1|L], K) :- !,
+sys_radical_lower([A-S|L], K) :-
+   S < 0, !,
    sys_radical_lower(L, H),
-   sys_sqrt_lower(A, J),
-   user: +(H, J, K).
-sys_radical_lower([A- -1|L], K) :-
-   sys_radical_lower(L, H),
-   sys_sqrt_lower(A, I),
+   B is floor(S*S*A),
+   elem:isqrt(B, I),
    user: +(I, 1, J),
    user: -(H, J, K).
+sys_radical_lower([A-S|L], K) :-
+   sys_radical_lower(L, H),
+   B is floor(S*S*A),
+   elem:isqrt(B, J),
+   user: +(H, J, K).
 sys_radical_lower([], 0).
-
-% sys_sqrt_lower(+Ordered, -Integer)
-:- private sys_sqrt_lower/2.
-sys_sqrt_lower(X, Y) :-
-   integer(X), !,
-   elem:isqrt(X, Y).
-sys_sqrt_lower(rational(A,B), Y) :-
-   elem:isqrt(A, B, Y).
 
 % sys_radical_search(+Integer, +Radical, -Integer)
 :- private sys_radical_search/3.
