@@ -166,7 +166,7 @@ A - polynom(A,[1- -1]).
 ^(X, Y, R) :-
    user:(Y < 0), !,
    user:Y - Z,
-   R is 1/X^Z.
+   R is (1/X)^Z.
 ^(X, Y, R) :-
    sys_make_poly(X, [Y-1], R).
 

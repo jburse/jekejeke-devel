@@ -182,9 +182,8 @@ fraction(A,B) - fraction(C,B) :-
 ^(fraction(A,B), Y, R) :-
    user:(Y < 0), !,
    user:Y - Z,
-   H is A^Z,
-   J is B^Z,
-   new_fraction(J, H, R).
+   new_fraction(B, A, H),
+   R is H^Z.
 ^(_, 0, R) :- !,
    R = 1.
 ^(fraction(A,B), Y, fraction(H,J)) :-
@@ -196,16 +195,18 @@ fraction(A,B) - fraction(C,B) :-
 /*********************************************************************/
 
 % make_fraction(+Internal, +Internal, -Internal)
-make_fraction(_, 0, _) :-
-   throw(error(evaluation_error(zero_divisor),_)).
-make_fraction(0, _, R) :- !,
-   R = 0.
 make_fraction(F, G, R) :-
    sys_poly_norm(F, G, A, B),
    new_fraction(A, B, R).
 
 % sys_poly_norm(+Internal, +Internal, -Internal, -Internal)
 :- private sys_poly_norm/4.
+sys_poly_norm(0, _, A, B) :- !,
+   A = 0,
+   B = 1.
+sys_poly_norm(_, 0, A, B) :- !,
+   A = 1,
+   B = 0.
 sys_poly_norm(F, G, A, B) :-
    sys_poly_lcm(F, G, K),
    sys_poly_div(K, G, A, _),
@@ -221,6 +222,10 @@ sys_poly_lcm(A, B, C) :-
 
 % new_fraction(+Internal, +Internal, -Internal)
 :- public new_fraction/3.
+new_fraction(_, 0, _) :-
+   throw(error(evaluation_error(zero_divisor),_)).
+new_fraction(0, _, R) :- !,
+   R = 0.
 new_fraction(U, V, R) :-
    integer(V), !,
    R is U/V.

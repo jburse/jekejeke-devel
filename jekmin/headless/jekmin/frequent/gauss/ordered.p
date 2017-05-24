@@ -189,7 +189,7 @@ sign(X, Y) :-
 sign(rational(A,_), Y) :- !,
    user:sign(A, Y).
 sign(radical(0,[_-S]), Y) :- !,
-   Y is sign(S).
+   Y = S.
 sign(radical(A,B), Y) :-
    sys_split_radical(radical(A,B), P, Q),
    U is sign(P),
@@ -202,7 +202,8 @@ sys_radical_sign(U, V, _, _, Y) :-
    user:(U =:= V), !,
    Y = U.
 sys_radical_sign(U, _, P, Q, Y) :-
-   Y is U*sign(P*P-Q*Q).
+   H is sign(P^2-Q^2),
+   user: *(U, H, Y).
 
 /*********************************************************************/
 /* Dependence Splitting                                              */
@@ -411,6 +412,8 @@ rational:floor(rational(A,B), X) :-
 % floor(+Radical, -Integer)
 :- override radical:floor/2.
 :- public radical:floor/2.
+radical:floor(radical(0,[A-S]), X) :- !,
+   sys_radical_lower([A-S], X).
 radical:floor(radical(A,B), X) :-
    sys_radical_lower(B, H),
    K is floor(A)+H,
@@ -418,16 +421,15 @@ radical:floor(radical(A,B), X) :-
 
 % sys_radical_lower(+Map, -Integer)
 :- private sys_radical_lower/2.
-sys_radical_lower([A-S|L], K) :-
-   S < 0, !,
+sys_radical_lower([A- -1|L], K) :- !,
    sys_radical_lower(L, H),
-   B is floor(S*S*A),
+   B is floor(A),
    elem:isqrt(B, I),
    user: +(I, 1, J),
    user: -(H, J, K).
-sys_radical_lower([A-S|L], K) :-
+sys_radical_lower([A-1|L], K) :-
    sys_radical_lower(L, H),
-   B is floor(S*S*A),
+   B is floor(A),
    elem:isqrt(B, J),
    user: +(H, J, K).
 sys_radical_lower([], 0).

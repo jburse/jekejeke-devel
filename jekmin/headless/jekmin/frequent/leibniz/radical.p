@@ -188,7 +188,7 @@ radical(A,B) - radical(C,D) :-
 ^(P, Y, R) :-
    user:(Y < 0), !,
    user:Y - Z,
-   R is 1/P^Z.
+   R is (1/P)^Z.
 ^(_, 0, R) :- !,
    R = 1.
 ^(P, 1, R) :- !,
@@ -239,7 +239,7 @@ make_radical(radical(0,[A-S]), R) :- !,
    R = radical(0,[radical(0,[A-S])-1]).
 make_radical(radical(A,B), R) :-
    sys_split_radical(radical(A,B), P, Q),
-   D is P*P-Q*Q,
+   D is P^2-Q^2,
    D >= 0,
    sys_radical_level(D, V),
    make_radical(D, H),
@@ -360,11 +360,11 @@ sys_radical_sqrt(0, _, L, R) :- !,
 sys_radical_sqrt(X, B, L, R) :-
    integer(X), !,
    H is X^2*B,
-   J is sign(X),
+   user:sign(X, J),
    sys_radical_insert(L, H, J, R).
 sys_radical_sqrt(rational(C,D), B, L, R) :- !,
    H is rational(C,D)^2*B,
-   J is sign(rational(C,D)),
+   user:sign(C, J),
    sys_radical_insert(L, H, J, R).
 sys_radical_sqrt(radical(0,[A-S]), B, L, R) :- !,
    H is A*B,
@@ -372,8 +372,8 @@ sys_radical_sqrt(radical(0,[A-S]), B, L, R) :- !,
 sys_radical_sqrt(radical(C,D), B, L, R) :-
    sys_split_radical(radical(C,D), P, Q),
    K is 1/(P-Q),
-   H is K*K*B,
-   J is sign(K)*(P*P-Q*Q),
+   H is K^2*B,
+   J is sign(K)*(P^2-Q^2),
    sys_radical_sqrt(J, H, L, R).
 
 % sys_radical_insert(+Map, +Internal, +Integer, -Map)

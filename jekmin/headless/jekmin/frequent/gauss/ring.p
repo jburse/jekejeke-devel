@@ -233,7 +233,7 @@ sys_poly_sign(X, R) :-
 sys_poly_sign(rational(A,_), R) :- !,
    user:sign(A, R).
 sys_poly_sign(radical(0,[_-S|_]), R) :- !,
-   R is sign(S).
+   user:sign(S, R).
 sys_poly_sign(radical(A,_), R) :- !,
    R is sign(A).
 sys_poly_sign(X, R) :-

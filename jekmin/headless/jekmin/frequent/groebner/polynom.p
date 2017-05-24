@@ -196,7 +196,7 @@ polynom(A,B) - R :-
 ^(P, Y, R) :-
    user:(Y < 0), !,
    user:Y - Z,
-   R is 1/P^Z.
+   R is (1/P)^Z.
 ^(_, 0, R) :- !,
    R = 1.
 ^(P, 1, R) :- !,
