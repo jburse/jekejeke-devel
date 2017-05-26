@@ -59,6 +59,7 @@
 
 :- use_module(../groebner/generic).
 :- use_module(../leibniz/radical).
+:- use_module(library(basic/lists)).
 
 /*********************************************************************/
 /* Comparison                                                        */
@@ -191,64 +192,71 @@ sign(rational(A,_), Y) :- !,
 sign(radical(0,[_-S]), Y) :- !,
    Y = S.
 sign(radical(A,B), Y) :-
-   sys_split_radical(radical(A,B), P, Q),
+   sys_split_radical(radical(A,B), P, R, Q, _),
    U is sign(P),
    V is sign(Q),
-   sys_radical_sign(U, V, P, Q, Y).
-
-% sys_radical_sign(+Integer, +Integer, +Radical, +Radical, -Integer)
-:- private sys_radical_sign/5.
-sys_radical_sign(U, V, _, _, Y) :-
-   user:(U =:= V), !,
-   Y = U.
-sys_radical_sign(U, _, P, Q, Y) :-
-   H is sign(P^2-Q^2),
-   user: *(U, H, Y).
+   (  user:(U =:= V)
+   -> Y = U
+   ;  H is sign(P^2-R*Q^2),
+      user: *(U, H, Y)).
 
 /*********************************************************************/
 /* Dependence Splitting                                              */
 /*********************************************************************/
 
-% sys_split_radical(+Radical, -Radical, -Radicall)
-:- public sys_split_radical/3.
-sys_split_radical(radical(A,[B-S|L]), U, V) :-
-   sys_split_sqrt(L, B, P, Q),
+% sys_split_radical(+Radical, -Internal, -Internal, -Internal, -Radical)
+:- public sys_split_radical/5.
+sys_split_radical(radical(A,[B-S|L]), U, B, V, radical(A,[B-T|R])) :-
+   sys_split_sqrt(L, B, P, Q, R),
    sys_new_radical(A, P, U),
-   V = radical(0,[B-S|Q]).
+   sys_new_radical(S, Q, V),
+   user:S - T.
 
-% sys_split_sqrt(+Map, +Ordered, -Map, -Map)
-:- private sys_split_sqrt/4.
-sys_split_sqrt([A-T|L], B, U, V) :-
-   sys_split_sqrt(L, B, P, Q),
-   sys_triage_product(P, Q, B, A, T, U, V).
-sys_split_sqrt([], _, [], []).
+% sys_split_sqrt(+Map, +Internal, -Map, -Map, -Map)
+:- private sys_split_sqrt/5.
+sys_split_sqrt([A-S|L], B, U, V, W) :-
+   sys_split_sqrt(L, B, P, Q, R),
+   D is A/B,
+   (  member(C-_, P),
+      sys_test_lindep(C, D, _)
+   -> U = P,
+      V = [D-S|Q],
+      user:S - T,
+      W = [A-T|R]
+   ;  U = [A-S|P],
+      V = Q,
+      W = [A-S|R]).
+sys_split_sqrt([], _, [], [], []).
 
-% sys_triage_product(+Map, +Map, +Ordered, +Integer, +Pair, -Map, -Map)
-:- private sys_triage_product/7.
-sys_triage_product(P, Q, B, A, T, U, V) :-
-   sys_find_product(P, B, A), !,
-   U = P,
-   V = [A-T|Q].
-sys_triage_product(P, Q, _, A, T, [A-T|P], Q).
-
-% sys_find_product(+Map, +Ordered, +Ordered)
-:- private sys_find_product/3.
-sys_find_product([C-_|_], B, A) :-
+% sys_test_lindep(+Internal, +Internal, -Internal)
+:- public sys_test_lindep/3.
+sys_test_lindep(A, B, H) :-
    sys_radical_level(A, P),
    sys_radical_level(B, Q),
    user:(P =:= Q),
-   sys_radical_level(C, R),
-   user:(P =:= R),
-   D is B*C/A,
+   D is A/B,
    make_radical(D, H),
    sys_radical_level(H, W),
-   user:(W =< P), !.
-sys_find_product([_|L], B, A) :-
-   sys_find_product(L, B, A).
+   user:(W =< P).
 
 /*********************************************************************/
 /* Nesting Level                                                     */
 /*********************************************************************/
+
+% sys_sqrt_base(+Radical, +Integer, -Integer)
+:- public sys_sqrt_base/3.
+sys_sqrt_base(X, _, Y) :-
+   integer(X), !,
+   Y = 0.
+sys_sqrt_base(rational(_,_), _, Y) :- !,
+   Y = 0.
+sys_sqrt_base(radical(A,B), N, Y) :-
+   sys_split_radical(radical(A,B), P, R, _, _),
+   sys_radical_level(R, M),
+   user:(N =:= M), !,
+   sys_sqrt_base(P, N, H),
+   user: +(H, 1, Y).
+sys_sqrt_base(radical(_,_), _, 0).
 
 % sys_radical_level(+Radical, -Integer)
 :- public sys_radical_level/2.
