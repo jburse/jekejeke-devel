@@ -44,6 +44,7 @@
 
 :- package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/gauss)).
 
 :- module(deriv, []).
 
@@ -51,32 +52,16 @@
 :- use_module(../groebner/generic).
 
 /*********************************************************************/
-/* Integer                                                           */
+/* Derivative                                                        */
 /*********************************************************************/
 
 /**
  * deriv(P, X, Q):
  * The predicate succeeds in Q with the derivation dP/dX.
  */
-% integer:deriv(+Integer, +Variable, -Internal)
-:- public integer:deriv/3.
-integer:deriv(_, _, 0).
-
-/*********************************************************************/
-/* Rational                                                          */
-/*********************************************************************/
-
-/**
- * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivation dP/dX.
- */
-% rational:deriv(+Rational, +Variable, -Internal)
-:- public rational:deriv/3.
-rational:deriv(_, _, 0).
-
-/*********************************************************************/
-/* Variable                                                          */
-/*********************************************************************/
+% ordered:deriv(+Ordered, +Variable, -Integer)
+:- public ordered:deriv/3.
+ordered:deriv(_, _, 0).
 
 /**
  * deriv(P, X, Q):
@@ -87,10 +72,6 @@ rational:deriv(_, _, 0).
 variable:deriv(X, X, R) :- !,
    R = 1.
 variable:deriv(X, _, X).
-
-/*********************************************************************/
-/* Polynom                                                           */
-/*********************************************************************/
 
 /**
  * deriv(P, X, Q):
@@ -125,10 +106,6 @@ sys_coeff_deriv([N-A|L], X, R) :-
    sys_make_coeff(H, N, B, R).
 sys_coeff_deriv([], _, []).
 
-/*********************************************************************/
-/* Fraction                                                          */
-/*********************************************************************/
-
 /**
  * deriv(P, X, Q):
  * The predicate succeeds in Q with the derivation dP/dX.
@@ -139,13 +116,56 @@ fraction:deriv(fraction(A,B), X, R) :-
    R is (deriv(A,X)-deriv(B,X)*fraction(A,B))/B.
 
 /*********************************************************************/
-/* Radical                                                           */
+/* Integral                                                          */
 /*********************************************************************/
 
 /**
- * deriv(P, X, Q):
- * The predicate succeeds in Q with the derivation dP/dX.
+ * integ(P, X, Q):
+ * The predicate succeeds in Q with the integral integ P dX.
  */
-% radical:deriv(+Rational, +Variable, -Internal)
-:- public radical:deriv/3.
-radical:deriv(_, _, 0).
+% ordered:integ(+Ordered, +Variable, -Internal)
+:- public ordered:integ/3.
+ordered:integ(X, Y, Z) :-
+   Z is X*Y.
+
+/**
+ * integ(P, X, Q):
+ * The predicate succeeds in Q with the integral integ P dX.
+ */
+% variable:integ(+Variable, +Variable, -Internal)
+:- public variable:integ/3.
+variable:integ(X, X, R) :- !,
+   R is X^2/2.
+variable:integ(X, Y, Z) :-
+   Z is X*Y.
+
+/**
+ * integ(P, X, Q):
+ * The predicate succeeds in Q with the integation dP/dX.
+ */
+% polynom:integ(+Polynom, +Variable, -Internal)
+:- public polynom:integ/3.
+polynom:integ(polynom(A,B), X, R) :-
+   A @> X, !,
+   sys_coeff_integ(B, X, H),
+   R = polynom(A,H).
+polynom:integ(polynom(X,B), X, R) :- !,
+   sys_poly_integ(B, H),
+   R = polynom(X,H).
+polynom:integ(X, Y, Z) :-
+   Z is X*Y.
+
+% sys_poly_integ(+Map, -Map)
+:- private sys_poly_integ/2.
+sys_poly_integ([N-A|L], [M-B|R]) :-
+   user: +(N, 1, M),
+   B is A/M,
+   sys_poly_integ(L, R).
+sys_poly_integ([], []).
+
+% sys_coeff_integ(+Map, +Variable, -Map)
+:- private sys_coeff_integ/3.
+sys_coeff_integ([N-A|L], X, [N-B|R]) :-
+   B is integ(A,X),
+   sys_coeff_integ(L, X, R).
+sys_coeff_integ([], _, []).

@@ -168,8 +168,9 @@ radical(A,B) - radical(C,D) :-
    B is 1/A,
    R is X*radical(0,[B-S]).
 /(X, radical(C,D), Y) :- !,
-   sys_split_radical(radical(C,D), P, R, Q, S),
-   Y is X*S/(P^2-R*Q^2).
+   sys_split_radical(radical(C,D), P, Q),
+   sys_split_middle(radical(C,D), R),
+   Y is X*(P-radical(0,[R-1])*Q)/(P^2-R*Q^2).
 /(X, Y, R) :-
    sys_freezer(Y), !,
    new_fraction(X, Y, R).
@@ -238,7 +239,8 @@ make_radical(rational(A,B), R) :-
 make_radical(radical(0,[A-S]), R) :- !,
    R = radical(0,[radical(0,[A-S])-1]).
 make_radical(radical(A,B), Y) :-
-   sys_split_radical(radical(A,B), P, R, Q, _),
+   sys_split_radical(radical(A,B), P, Q),
+   sys_split_middle(radical(A,B), R),
    D is P^2-R*Q^2,
    D >= 0,
    sys_radical_level(D, V),
@@ -246,9 +248,9 @@ make_radical(radical(A,B), Y) :-
    sys_radical_level(H, W),
    user:(W =< V),
    sys_radical_level(R, N),
-   sys_sqrt_base(P, N, Z),
+   sys_radical_base(P, N, Z),
    S is (P+H)/2,
-   sys_sqrt_base(S, N, O),
+   sys_radical_base(S, N, O),
    user:(O =< Z), !,
    make_radical(S, J),
    T is (P-H)/2,

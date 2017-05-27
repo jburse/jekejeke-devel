@@ -192,41 +192,38 @@ sign(rational(A,_), Y) :- !,
 sign(radical(0,[_-S]), Y) :- !,
    Y = S.
 sign(radical(A,B), Y) :-
-   sys_split_radical(radical(A,B), P, R, Q, _),
+   sys_split_radical(radical(A,B), P, Q),
    U is sign(P),
    V is sign(Q),
    (  user:(U =:= V)
    -> Y = U
-   ;  H is sign(P^2-R*Q^2),
+   ;  sys_split_middle(radical(A,B), R),
+      H is sign(P^2-R*Q^2),
       user: *(U, H, Y)).
 
 /*********************************************************************/
 /* Dependence Splitting                                              */
 /*********************************************************************/
 
-% sys_split_radical(+Radical, -Internal, -Internal, -Internal, -Radical)
-:- public sys_split_radical/5.
-sys_split_radical(radical(A,[B-S|L]), U, B, V, radical(A,[B-T|R])) :-
-   sys_split_sqrt(L, B, P, Q, R),
+% sys_split_radical(+Radical, -Internal, -Internal)
+:- public sys_split_radical/3.
+sys_split_radical(radical(A,[B-S|L]), U, V) :-
+   sys_split_sqrt(L, B, P, Q),
    sys_new_radical(A, P, U),
-   sys_new_radical(S, Q, V),
-   user:S - T.
+   sys_new_radical(S, Q, V).
 
-% sys_split_sqrt(+Map, +Internal, -Map, -Map, -Map)
-:- private sys_split_sqrt/5.
-sys_split_sqrt([A-S|L], B, U, V, W) :-
-   sys_split_sqrt(L, B, P, Q, R),
+% sys_split_sqrt(+Map, +Internal, -Map, -Map)
+:- private sys_split_sqrt/4.
+sys_split_sqrt([A-S|L], B, U, V) :-
+   sys_split_sqrt(L, B, P, Q),
    D is A/B,
    (  member(C-_, P),
       sys_test_lindep(C, D, _)
    -> U = P,
-      V = [D-S|Q],
-      user:S - T,
-      W = [A-T|R]
+      V = [D-S|Q]
    ;  U = [A-S|P],
-      V = Q,
-      W = [A-S|R]).
-sys_split_sqrt([], _, [], [], []).
+      V = Q).
+sys_split_sqrt([], _, [], []).
 
 % sys_test_lindep(+Internal, +Internal, -Internal)
 :- public sys_test_lindep/3.
@@ -239,26 +236,47 @@ sys_test_lindep(A, B, H) :-
    sys_radical_level(H, W),
    user:(W =< P).
 
+% sys_new_radical(+Internal, +Map, -Internal)
+:- public sys_new_radical/3.
+sys_new_radical(A, [], R) :- !,
+   R = A.
+sys_new_radical(A, L, radical(A,L)).
+
 /*********************************************************************/
 /* Nesting Level                                                     */
 /*********************************************************************/
 
-% sys_sqrt_base(+Radical, +Integer, -Integer)
-:- public sys_sqrt_base/3.
-sys_sqrt_base(X, _, Y) :-
+/**
+ * sys_radical_base(P, N, B):
+ * The predicate succeeds in B with the base width of the ordered
+ * elememt P, for the nesting level N.
+ */
+% sys_radical_base(+Ordered, +Integer, -Integer)
+:- public sys_radical_base/3.
+sys_radical_base(X, _, Y) :-
    integer(X), !,
    Y = 0.
-sys_sqrt_base(rational(_,_), _, Y) :- !,
+sys_radical_base(rational(_,_), _, Y) :- !,
    Y = 0.
-sys_sqrt_base(radical(A,B), N, Y) :-
-   sys_split_radical(radical(A,B), P, R, _, _),
+sys_radical_base(radical(A,B), N, Y) :-
+   sys_split_middle(radical(A,B), R),
    sys_radical_level(R, M),
    user:(N =:= M), !,
-   sys_sqrt_base(P, N, H),
+   sys_split_radical(radical(A,B), P, _),
+   sys_radical_base(P, N, H),
    user: +(H, 1, Y).
-sys_sqrt_base(radical(_,_), _, 0).
+sys_radical_base(radical(_,_), _, 0).
 
-% sys_radical_level(+Radical, -Integer)
+% sys_split_middle(+Radical, -Internal)
+:- public sys_split_middle/2.
+sys_split_middle(radical(_,[B-_|_]), B).
+
+/**
+ * sys_radical_level(P, N):
+ * The predicate succeeds in N with the nesting level of the ordered
+ * elememt P.
+ */
+% sys_radical_level(+Ordered, -Integer)
 :- public sys_radical_level/2.
 sys_radical_level(X, Y) :-
    integer(X), !,
@@ -277,12 +295,6 @@ sys_sqrt_level([A-_|L], H, J) :-
    user:max(H, I, K),
    sys_sqrt_level(L, K, J).
 sys_sqrt_level([], H, H).
-
-% sys_new_radical(+Internal, +Map, -Internal)
-:- public sys_new_radical/3.
-sys_new_radical(A, [], R) :- !,
-   R = A.
-sys_new_radical(A, L, radical(A,L)).
 
 /*********************************************************************/
 /* Equalty                                                           */
@@ -510,7 +522,7 @@ rational:integer(rational(A,B), X) :-
 
 /**
  * integer(P, Q):
- * The predicate suceeds in Q with the floor of P.
+ * The predicate suceeds in Q with the integer of P.
  */
 % integer(+Radical, -Integer)
 :- override radical:integer/2.
@@ -520,3 +532,48 @@ radical:integer(X, Y) :-
    Y is floor(X).
 radical:integer(X, Y) :-
    Y is -floor(-X).
+
+/*********************************************************************/
+/* Float                                                             */
+/*********************************************************************/
+
+/**
+ * float(P, Q):
+ * The predicate succeeds in Q with the float of P.
+ */
+% float(+Integer, -Float)
+:- override integer:float/2.
+:- public integer:float/2.
+integer:float(X, Y) :-
+   user:float(X, Y).
+
+/**
+ * float(P, Q):
+ * The predicate succeeds in Q with the float of P.
+ */
+% float(+Rational, -Float)
+:- override rational:float/2.
+:- public rational:float/2.
+rational:float(rational(A,B), X) :-
+   user: /(A, B, X).
+
+/**
+ * float(P, Q):
+ * The predicate suceeds in Q with the float of P.
+ */
+% float(+Radical, -Float)
+:- override radical:float/2.
+:- public radical:float/2.
+radical:float(radical(A,B), Y) :-
+   X is float(A),
+   sys_sqrt_float(B, X, Y).
+
+% sys_sqrt_float(+Map, +Float, -Float)
+:- private sys_sqrt_float/3.
+sys_sqrt_float([A-S|L], X, T) :-
+   Y is float(A),
+   user:sqrt(Y, H),
+   user: *(S, H, J),
+   user: +(X, J, Z),
+   sys_sqrt_float(L, Z, T).
+sys_sqrt_float([], X, X).

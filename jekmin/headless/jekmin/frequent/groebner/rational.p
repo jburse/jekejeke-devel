@@ -297,12 +297,3 @@ generic:(X is rational(A,B)) :- !,
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
 generic:is_abnormal(rational(_,_)).
-
-/*********************************************************************/
-/* User Evaluation                                                   */
-/*********************************************************************/
-
-% rational(+Integer, +Integer, -Float)
-:- public user:rational/3.
-user:rational(A, B, D) :-
-   user: /(A, B, D).

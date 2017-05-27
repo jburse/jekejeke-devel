@@ -42,6 +42,7 @@
 
 :- package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekmin/frequent/groebner)).
+:- use_package(library(jekmin/frequent/gauss)).
 
 :- module(deriv, []).
 
@@ -49,32 +50,16 @@
 :- use_module(../groebner/generic).
 
 /*********************************************************************/
-/* Integer                                                           */
+/* Substitution                                                      */
 /*********************************************************************/
 
 /**
  * subst(P, X, R, Q):
  * The predicate succeeds in Q with the substitution P[X/R].
  */
-% integer:subst(+Integer, +Variable, +Internal, -Internal)
-:- public integer:subst/4.
-integer:subst(X, _, _, X).
-
-/*********************************************************************/
-/* Rational                                                          */
-/*********************************************************************/
-
-/**
- * subst(P, X, R, Q):
- * The predicate succeeds in Q with the substitution P[X/R].
- */
-% rational:subst(+Rational, +Variable, +Internal, -Internal)
-:- public rational:subst/4.
-rational:subst(X, _, _, X).
-
-/*********************************************************************/
-/* Variable                                                          */
-/*********************************************************************/
+% ordered:subst(+Ordered, +Variable, +Internal, -Ordered)
+:- public ordered:subst/4.
+ordered:subst(X, _, _, X).
 
 /**
  * subst(P, X, R, Q):
@@ -85,10 +70,6 @@ rational:subst(X, _, _, X).
 variable:subst(X, X, R, S) :- !,
    S = R.
 variable:subst(X, _, _, X).
-
-/*********************************************************************/
-/* Polynom                                                           */
-/*********************************************************************/
 
 /**
  * subst(P, X, R, Q):
@@ -122,10 +103,6 @@ sys_coeff_subst([M-B|L], N, C, A, X, R, S) :-
 sys_coeff_subst([], N, C, A, _, _, S) :-
    S is A^N*C.
 
-/*********************************************************************/
-/* Fraction                                                          */
-/*********************************************************************/
-
 /**
  * subst(P, X, R, Q):
  * The predicate succeeds in Q with the substitution P[X/R].
@@ -134,15 +111,3 @@ sys_coeff_subst([], N, C, A, _, _, S) :-
 :- public fraction:subst/4.
 fraction:subst(fraction(A,B), X, R, S) :-
    S is subst(A,X,R)/subst(B,X,R).
-
-/*********************************************************************/
-/* Radical                                                           */
-/*********************************************************************/
-
-/**
- * subst(P, X, R, Q):
- * The predicate succeeds in Q with the substitution P[X/R].
- */
-% radical:subst(+Rational, +Variable, +Internal, -Internal)
-:- public radical:subst/4.
-radical:subst(X, _, _, X).
