@@ -168,9 +168,8 @@ radical(A,B) - radical(C,D) :-
    B is 1/A,
    R is X*radical(0,[B-S]).
 /(X, radical(C,D), Y) :- !,
-   sys_split_radical(radical(C,D), P, Q),
-   sys_split_middle(radical(C,D), R),
-   Y is X*(P-radical(0,[R-1])*Q)/(P^2-R*Q^2).
+   sys_radical_triage(radical(C,D), P, Q),
+   Y is X*(P-Q)/(P^2-Q^2).
 /(X, Y, R) :-
    sys_freezer(Y), !,
    new_fraction(X, Y, R).
@@ -194,8 +193,11 @@ radical(A,B) - radical(C,D) :-
    R = 1.
 ^(P, 1, R) :- !,
    R = P.
-^(P, 2, R) :- !,
-   R is P*P.
+^(radical(0,[A-_]), 2, R) :- !,
+   R = A.
+^(X, 2, Y) :- !,
+   sys_radical_split(X, P, Q),
+   Y is P^2+2*P*Q+Q^2.
 ^(P, N, R) :-
    user:mod(N, 2, 1), !,
    user: -(N, 1, M),
@@ -203,7 +205,20 @@ radical(A,B) - radical(C,D) :-
 ^(P, N, R) :-
    user: //(N, 2, M),
    H is P^M,
-   R is H*H.
+   R is H^2.
+
+% sys_radical_split(+Radical, -Internal, -Internal)
+:- private sys_radical_split/3.
+sys_radical_split(radical(A,B), P, Q) :-
+   sys_sqrt_split(B, U, V),
+   sys_new_radical(A, U, P),
+   sys_new_radical(0, V, Q).
+
+% sys_sqrt_split(+Map, -Map, -Map)
+:- private sys_sqrt_split/3.
+sys_sqrt_split([B-S,A-T|L], [A-T|P], [B-S|Q]) :- !,
+   sys_sqrt_split(L, P, Q).
+sys_sqrt_split(L, [], L).
 
 /*********************************************************************/
 /* Radicals                                                          */
@@ -239,15 +254,14 @@ make_radical(rational(A,B), R) :-
 make_radical(radical(0,[A-S]), R) :- !,
    R = radical(0,[radical(0,[A-S])-1]).
 make_radical(radical(A,B), Y) :-
-   sys_split_radical(radical(A,B), P, Q),
-   sys_split_middle(radical(A,B), R),
-   D is P^2-R*Q^2,
+   sys_radical_triage(radical(A,B), P, Q),
+   D is P^2-Q^2,
    D >= 0,
    sys_radical_level(D, V),
    make_radical(D, H),
    sys_radical_level(H, W),
    user:(W =< V),
-   sys_radical_level(R, N),
+   sys_radical_midlevel(radical(A,B), N),
    sys_radical_base(P, N, Z),
    S is (P+H)/2,
    sys_radical_base(S, N, O),
@@ -284,8 +298,14 @@ sys_radical_add([], A, A).
 :- private sys_radical_add2/4.
 sys_radical_add2(A, S, [B-T|L], U) :-
    sys_test_lindep(A, B, H), !,
-   J is T+S*H,
-   sys_radical_sqrt(J, B, L, U).
+   user: *(T, S, V),
+   K is A+2*V*H+B,
+   (  K \== 0
+   -> (  V \== 1
+      -> W is T*sign(B-A)
+      ;  W = T),
+      sys_radical_insert(L, K, W, U)
+   ;  U = L).
 sys_radical_add2(A, S, [B-T|L], U) :-
    sys_radical_add2(A, S, L, R),
    sys_radical_insert(R, B, T, U).
@@ -305,8 +325,14 @@ sys_radical_sub([], A, B) :-
 :- private sys_radical_sub2/4.
 sys_radical_sub2(A, S, [B-T|L], U) :-
    sys_test_lindep(A, B, H), !,
-   J is T-S*H,
-   sys_radical_sqrt(J, B, L, U).
+   user: *(T, S, V),
+   K is A-2*V*H+B,
+   (  K \== 0
+   -> (  V \== -1
+      -> W is T*sign(B-A)
+      ;  W = T),
+      sys_radical_insert(L, K, W, U)
+   ;  U = L).
 sys_radical_sub2(A, S, [B-T|L], U) :-
    sys_radical_sub2(A, S, L, R),
    sys_radical_insert(R, B, T, U).
@@ -346,15 +372,6 @@ sys_radical_plus(radical(C,D), L, B, U, V) :-
 /*********************************************************************/
 /* Builders                                                         */
 /*********************************************************************/
-
-% sys_radical_sqrt(+Internal, +Internal, +Map, -Map)
-:- private sys_radical_sqrt/4.
-sys_radical_sqrt(0, _, L, R) :- !,
-   R = L.
-sys_radical_sqrt(X, B, L, R) :-
-   H is X^2*B,
-   J is sign(X),
-   sys_radical_insert(L, H, J, R).
 
 % sys_radical_insert(+Map, +Internal, +Integer, -Map)
 :- private sys_radical_insert/4.

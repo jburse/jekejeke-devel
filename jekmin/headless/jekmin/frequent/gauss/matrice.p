@@ -232,6 +232,10 @@ sys_matrice_step(_, X, X).
             (  user:(I =:= J)
             -> V = 1
             ;  V = 0)}|between(1, L, I)}.
+^(P, 1, R) :- !,
+   R = P.
+^(P, 2, R) :- !,
+   R is P*P.
 ^(X, Y, R) :-
    user:mod(Y, 2, 1), !,
    user: -(Y, 1, Z),
@@ -239,7 +243,7 @@ sys_matrice_step(_, X, X).
 ^(X, Y, R) :-
    user: //(Y, 2, Z),
    H is X^Z,
-   R is H*H.
+   R is H^2.
 
 /***********************************************************/
 /* CAS Display Hook                                        */
