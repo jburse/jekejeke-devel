@@ -276,8 +276,6 @@ sys_init_pairs(N, L) :-
 
 % sys_poly_groeb(+List, +List, -List)
 :- private sys_poly_groeb/3.
-sys_poly_groeb([F], _, L) :- !,
-   L = [F].
 sys_poly_groeb(L, P, T) :-
    nth0(I, L, 0, S), !,
    sys_shrink_pairs(P, I, Q),
@@ -292,12 +290,12 @@ sys_poly_groeb(L, P, V) :-
    nth0(J, U, M, S),
    sys_poly_groeb(U, P, V).
 sys_poly_groeb(L, P, R) :-
-   last(P, (I,J), H), !,
+   sys_pair_best(P, L, (I,J), _, H), !,
    nth0(I, L, X),
    nth0(J, L, Y),
    sys_poly_pair(X, Y, Z),
-   length(L, N),
    sys_nudge_pairs(H, K),
+   length(L, N),
    sys_new_pairs(N, K, Q),
    sys_poly_groeb([Z|L], Q, R).
 sys_poly_groeb(L, _, L).
@@ -337,7 +335,40 @@ sys_shrink_index(A, K, C) :-
 sys_shrink_index(A, _, A).
 
 /*********************************************************************/
-/* Polynomial Buchberger                                             */
+/* Pair Sorting                                                      */
+/*********************************************************************/
+
+% sys_pair_best(+List, +List, -Pair, -Integer, -List)
+:- private sys_pair_best/5.
+sys_pair_best([A,Q|R], L, C, F, J) :-
+   sys_pair_best([Q|R], L, B, E, H),
+   sys_pair_score(A, L, D),
+   (  sys_head_compare(>, D, E)
+   -> C = A,
+      F = D,
+      J = [B|H]
+   ;  C = B,
+      F = E,
+      J = [A|H]).
+sys_pair_best([A], L, A, D, []) :-
+   sys_pair_score(A, L, D).
+
+% sys_pair_score(+Pair, +List, -Integer)
+:- private sys_pair_score/3.
+sys_pair_score((I,J), L, D) :-
+   nth0(I, L, X),
+   nth0(J, L, Y),
+   sys_poly_score(X, Y, D).
+
+% sys_poly_score(+Internal, +Internal, -Integer)
+:- private sys_poly_score/3.
+sys_poly_score(X, Y, K) :-
+   sys_poly_head(X, H),
+   sys_poly_head(Y, J),
+   sys_head_gcd(H, J, K).
+
+/*********************************************************************/
+/* Buchberger S-Polynomial                                           */
 /*********************************************************************/
 
 % sys_poly_pair(+Internal, +Internal, -Internal)

@@ -109,8 +109,10 @@ len(X, Y) :-
 % sum(+Vector, -Internal)
 :- public sum/2.
 sum(X, Y) :-
-   X =.. [_,A|L],
-   sys_sum_vector(L, A, Y).
+   X =.. [_|L],
+   (  L = [A|B]
+   -> sys_sum_vector(B, A, Y)
+   ;  Y = 0).
 
 % sys_sum_vector(+List, +Internal, -Internal)
 :- private sys_sum_vector/3.

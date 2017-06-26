@@ -57,9 +57,11 @@
 :- use_module(../groebner/rational).
 :- use_module(../groebner/fraction).
 
-:- use_module(library(experiment/trail)).
 :- use_module(library(misc/residue)).
 :- use_module(library(basic/lists)).
+
+:- use_module(library(experiment/attr)).
+:- use_module(library(experiment/trail)).
 
 /*********************************************************************/
 /* Arithmetic                                                        */

@@ -14,8 +14,8 @@
  * The ulp operation makes use of the ulp() function of the Java Math
  * library. The gcd operation implements a binary gcd algorithm for
  * 32-bit integers and otherwise delegates to the Java BigInteger
- * gcd operation implementation. The isqrt evaluable function uses a
- * logarithmic bisection method.
+ * gcd operation implementation. The isqrt evaluable function uses
+ * a logarithmic bisection method
  *
  * Examples:
  * ulp(0)          --> 1
@@ -116,38 +116,3 @@ sys_bisect(S, _, Hi, M, X, Y) :-
    S < X, !,
    sys_bisect(M, Hi, X, Y).
 sys_bisect(_, _, _, Y, _, Y).
-
-/**
- * isqrt(X, Y, Z):
- * The predicate succeeds in Z with the integer square root of X/Y.
- */
-:- public isqrt/3.
-isqrt(X, _, _) :-
-   X < 0,
-   throw(error(evaluation_error(undefined),_)).
-isqrt(X, Y, R) :-
-   X < Y, !,
-   R = 0.
-isqrt(X, Y, Z) :-
-   Lo is 1<<((bitlength(X)-1-bitlength(Y-1))//2),
-   Hi is Lo*4,
-   sys_bisect(Lo, Hi, X, Y, Z).
-
-% sys_bisect(+Integer, +Integer, +Integer, +Integer, -Integer)
-:- private sys_bisect/5.
-sys_bisect(Lo, Hi, X, Y, Z) :-
-   Lo+1 < Hi, !,
-   M is (Lo+Hi)//2,
-   S is Y*M*M,
-   sys_bisect(S, Lo, Hi, M, X, Y, Z).
-sys_bisect(Lo, _, _, _, Lo).
-
-% sys_bisect(+Integer, +Integer, +Integer, +Integer, +Integer, +Integer, -Integer)
-:- private sys_bisect/7.
-sys_bisect(S, Lo, _, M, X, Y, Z) :-
-   S > X, !,
-   sys_bisect(Lo, M, X, Y, Z).
-sys_bisect(S, _, Hi, M, X, Y, Z) :-
-   S < X, !,
-   sys_bisect(M, Hi, X, Y, Z).
-sys_bisect(_, _, _, Z, _, _, Z).

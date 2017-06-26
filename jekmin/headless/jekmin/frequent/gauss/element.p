@@ -105,6 +105,8 @@ generic:(X is E) :-
  * The special form succeeds in X in evaluating F and the elements of G
  * by using polymorphism and then creating a compound.
  */
+generic:(X is []) :- !,
+   X = vector.
 generic:(X is [F|G]) :- !,
    A is F,
    sys_eval_list(G, [], B),
@@ -115,13 +117,16 @@ generic:(X is [F|G]) :- !,
  * whenever G succeeds, making copies and then creating a compound.
  */
 generic:(X is {H}) :- !,
-   findall(Y, Y is H, [A|B]),
-   sys_poly_send(A, '.', [B,X]).
+   findall(Y, Y is H, L),
+   (  L = [A|B]
+   -> sys_poly_send(A, '.', [B,X])
+   ;  X = vector).
 generic:(X is (F|G)) :- !, G,
    X is F.
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
+generic:is_abnormal([]).
 generic:is_abnormal([_|_]).
 generic:is_abnormal({_}).
 generic:is_abnormal((_|_)).

@@ -57,6 +57,8 @@
 
 :- module(generic, []).
 
+% we could use '\x221A\' for square root.
+
 :- override prefix(-).
 :- public prefix(-).
 :- op(500, fx, -).

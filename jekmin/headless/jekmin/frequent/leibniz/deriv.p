@@ -18,6 +18,11 @@
  * vectors and matrices has not yet been implemented. Accordingly
  * we do not yet support some special functions.
  *
+ * We also have implemented a primitive integration predicate integ/3.
+ * The predicate currently only accepts polynomial arguments and
+ * returns the indeterminate integral. It can be combined with the
+ * subst/3 predicate to compute determinate integrals.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
