@@ -33,7 +33,6 @@ public final class SetHashLink<E> extends AbstractSet<E> {
     private static final int MIN_SIZE = 2;
 
     SetHashLinkEntry<E>[] table = new SetHashLinkEntry[MIN_SIZE];
-    public int size;
     SetHashLinkEntry<E> first;
     SetHashLinkEntry<E> last;
 

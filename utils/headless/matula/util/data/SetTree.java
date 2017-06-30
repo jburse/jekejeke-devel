@@ -29,9 +29,8 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SetTree<E> extends AbstractSet<E> {
-    final Comparator<E> comparator;
+    private final Comparator<E> comparator;
     SetTreeEntry<E> root;
-    public int size;
 
     /**
      * <p>Create a map tree.</p>
@@ -252,6 +251,7 @@ public final class SetTree<E> extends AbstractSet<E> {
      */
     public void clear() {
         root = null;
+        size = 0;
     }
 
     /**********************************************************************/

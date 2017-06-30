@@ -274,7 +274,7 @@ public final class PatternInter extends AbstractPattern {
             }
             if ((min.getFlag() & PatternUnion.UNION_NEGATIV) == 0) {
                 int u;
-                if ((u = pos.indexOf(min)) != -1) {
+                if ((u = pos.indexOf(min)) >= 0) {
                     pos.remove(u);
                     matcher.remove(u);
                 }
@@ -346,7 +346,7 @@ public final class PatternInter extends AbstractPattern {
             }
             if ((max.getFlag() & PatternUnion.UNION_NEGATIV) == 0) {
                 int u;
-                if ((u = pos.indexOf(max)) != -1) {
+                if ((u = pos.indexOf(max)) >= 0) {
                     pos.remove(u);
                     matcher.remove(u);
                 }

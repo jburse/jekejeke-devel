@@ -44,7 +44,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ListArray<E> {
+public class ListArray<E> {
     public static final int MIN_SIZE = 2;
 
     public Object[] table = new Object[MIN_SIZE];
@@ -117,7 +117,7 @@ public final class ListArray<E> {
      * <p>Returns the index of the first occurence.</p>
      *
      * @param o The object.
-     * @return The index.
+     * @return The index, or -1.
      */
     public int indexOf(Object o) {
         for (int i = 0; i < size; i++)
@@ -133,7 +133,7 @@ public final class ListArray<E> {
      * @return True if the object is contained in the list, otherwise false.
      */
     public boolean contains(Object o) {
-        return indexOf(o) != -1;
+        return indexOf(o) >= 0;
     }
 
     /***************************************************************/
@@ -161,7 +161,7 @@ public final class ListArray<E> {
      */
     public void remove(Object o) {
         int k = indexOf(o);
-        if (k != -1)
+        if (k >= 0)
             remove(k);
     }
 
@@ -230,6 +230,25 @@ public final class ListArray<E> {
         int k = Math.min(s, table.length);
         System.arraycopy(table, 0, newtable, 0, k);
         table = newtable;
+    }
+
+    /**
+     * <p>Returns a string representation of this list array.</p>
+     *
+     * @return A string representation of this list array.
+     */
+    public String toString() {
+        if (size==0)
+            return "[]";
+        StringBuilder buf = new StringBuilder();
+        buf.append("[");
+        buf.append(get(0));
+        for (int i=1; i<size; i++) {
+            buf.append(",");
+            buf.append(get(i));
+        }
+        buf.append("]");
+        return buf.toString();
     }
 
 }

@@ -32,7 +32,6 @@ public final class SetHash<E> extends AbstractSet<E> {
     private static final int MIN_SIZE = 2;
 
     SetHashEntry<E>[] table = new SetHashEntry[MIN_SIZE];
-    public int size;
 
     /**
      * <p>Retrieve the stored key.</p>

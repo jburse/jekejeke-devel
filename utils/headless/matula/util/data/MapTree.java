@@ -257,6 +257,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
      */
     public void clear() {
         root = null;
+        size = 0;
     }
 
     /**********************************************************************/

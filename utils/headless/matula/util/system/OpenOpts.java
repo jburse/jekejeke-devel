@@ -317,10 +317,12 @@ public final class OpenOpts {
                 if (!"".equals(inm))
                     con.setRequestProperty("If-None-Match", inm);
                 if (con instanceof HttpURLConnection) {
-                    int response = ((HttpURLConnection) con).getResponseCode();
-                    if (response == HttpURLConnection.HTTP_UNAVAILABLE)
+                    int res = ((HttpURLConnection) con).getResponseCode();
+                    if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
+                        throw new LicenseError(LicenseError.ERROR_LICENSE_INTERNAL_ERROR);
+                    if (res == HttpURLConnection.HTTP_UNAVAILABLE)
                         throw new LicenseError(LicenseError.ERROR_LICENSE_SERVICE_UNAVAILABLE);
-                    if (response == HttpURLConnection.HTTP_NOT_MODIFIED)
+                    if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
                         return null;
                 }
 
@@ -770,13 +772,15 @@ public final class OpenOpts {
                     /* Workaround for https://code.google.com/p/android/issues/detail?id=61013 */
                     con.addRequestProperty("Accept-Encoding", "identity");
                     ((HttpURLConnection) con).setRequestMethod("HEAD");
-                    int response = ((HttpURLConnection) con).getResponseCode();
-                    if (response == HttpURLConnection.HTTP_UNAVAILABLE)
+                    int res = ((HttpURLConnection) con).getResponseCode();
+                    if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
                         return false;
-                    if (response == HttpURLConnection.HTTP_NOT_MODIFIED)
+                    if (res == HttpURLConnection.HTTP_UNAVAILABLE)
+                        return false;
+                    if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
                         return false;
                     /* spare an IOException */
-                    if (response != HttpURLConnection.HTTP_OK)
+                    if (res != HttpURLConnection.HTTP_OK)
                         return false;
                 }
 

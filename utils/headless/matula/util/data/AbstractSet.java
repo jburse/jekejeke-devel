@@ -1,5 +1,7 @@
 package matula.util.data;
 
+import qa.anon.rank.bean.Sort;
+
 /**
  * <p>The base class for the sets.</p>
  * </p>
@@ -27,6 +29,7 @@ package matula.util.data;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSet<E> {
+    public int size;
 
     /**
      * <p>Retrieve the stored key.</p>
@@ -119,6 +122,28 @@ public abstract class AbstractSet<E> {
             target[pos] = entry.key;
             pos++;
         }
+    }
+
+    /**
+     * <p>Returns a string representation of this list array.</p>
+     *
+     * @return A string representation of this list array.
+     */
+    public String toString() {
+        SetEntry<E> entry = getFirstEntry();
+        if (entry == null)
+            return "[]";
+        StringBuilder buf = new StringBuilder();
+        buf.append("[");
+        buf.append(entry.key);
+        entry = successor(entry);
+        while (entry != null) {
+            buf.append(",");
+            buf.append(entry.key);
+            entry = successor(entry);
+        }
+        buf.append("]");
+        return buf.toString();
     }
 
 }
