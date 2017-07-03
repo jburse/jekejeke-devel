@@ -171,6 +171,11 @@ X - Y :-
 % ^(+Integer, +Integer, -Integer)
 :- override ^ /3.
 :- public ^ /3.
+^(X, Y, R) :-
+   user:(Y < 0), !,
+   user:Y - J,
+   user: ^(X, J, H),
+   make_rational(1, H, R).
 ^(X, Y, Z) :-
    user: ^(X, Y, Z).
 
