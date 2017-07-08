@@ -181,17 +181,24 @@ abs(X, X).
  * sign(X, Y):
  * The predicate succeeds in Z with the sign of X.
  */
-% sign(+Ordered, -Ordered)
-:- override sign/2.
-:- public sign/2.
-sign(X, Y) :-
-   integer(X), !,
+% sign(+Integer, -Integer)
+:- override integer:sign/2.
+:- public integer:sign/2.
+integer:sign(X, Y) :-
    user:sign(X, Y).
-sign(rational(A,_), Y) :- !,
+
+% sign(+Rational, -Integer)
+:- override rational:sign/2.
+:- public rational:sign/2.
+rational:sign(rational(A,_), Y) :-
    user:sign(A, Y).
-sign(radical(0,[_-S]), Y) :- !,
+
+% sign(+Radical, -Integer)
+:- override radical:sign/2.
+:- public radical:sign/2.
+radical:sign(radical(0,[_-S]), Y) :- !,
    Y = S.
-sign(radical(A,B), Y) :-
+radical:sign(radical(A,B), Y) :-
    sys_radical_triage(radical(A,B), P, Q),
    U is sign(P),
    V is sign(Q),
@@ -329,6 +336,7 @@ sys_sqrt_level([], H, H).
  * gen_eq(X, Y):
  * The predicate succeeds when X equals Y.
  */
+% gen_eq(+Integer, +Ordered)
 :- public integer:gen_eq/2.
 integer:gen_eq(X, Y) :-
    integer(Y), !,
@@ -338,10 +346,7 @@ integer:gen_eq(_, radical(_,_)) :- !, fail.
 integer:gen_eq(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
-/**
- * gen_eq(X, Y):
- * The predicate succeeds when X equals Y.
- */
+% gen_eq(+Rational, +Ordered)
 :- public rational:gen_eq/2.
 rational:gen_eq(_, X) :-
    integer(X), !, fail.
@@ -352,10 +357,7 @@ rational:gen_eq(_, radical(_,_)) :- !, fail.
 rational:gen_eq(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
-/**
- * gen_eq(X, Y):
- * The predicate succeeds when X equals Y.
- */
+% gen_eq(+Radical, +Ordered)
 :- public radical:gen_eq/2.
 radical:gen_eq(_, X) :-
    integer(X), !, fail.
@@ -382,6 +384,7 @@ sys_radical_eq([], []).
  * gen_ls(X, Y):
  * The predicate succeeds when X is less than Y.
  */
+% gen_ls(+Integer, +Ordered)
 :- public integer:gen_ls/2.
 integer:gen_ls(X, Y) :-
    integer(Y), !,
@@ -394,10 +397,7 @@ integer:gen_ls(X, radical(C,D)) :- !,
 integer:gen_ls(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
-/**
- * gen_ls(X, Y):
- * The predicate succeeds when X is less than Y.
- */
+% gen_ls(+Rational, +Ordered)
 :- public rational:gen_ls/2.
 rational:gen_ls(rational(A,B), Y) :-
    integer(Y), !,
@@ -412,10 +412,7 @@ rational:gen_ls(X, radical(C,D)) :- !,
 rational:gen_ls(_, _) :-
    throw(error(evaluation_error(ordered),_)).
 
-/**
- * gen_ls(X, Y):
- * The predicate succeeds when X is less than Y.
- */
+% gen_ls(+Radical, +Ordered)
 :- public radical:gen_ls/2.
 radical:gen_ls(X, Y) :-
    integer(Y), !,
@@ -440,20 +437,12 @@ radical:gen_ls(_, _) :-
 :- public integer:floor/2.
 integer:floor(X, X).
 
-/**
- * floor(P, Q):
- * The predicate succeeds in Q with the floor of P.
- */
 % floor(+Rational, -Integer)
 :- override rational:floor/2.
 :- public rational:floor/2.
 rational:floor(rational(A,B), X) :-
    user:div(A, B, X).
 
-/**
- * floor(P, Q):
- * The predicate suceeds in Q with the floor of P.
- */
 % floor(+Radical, -Integer)
 :- override radical:floor/2.
 :- public radical:floor/2.
@@ -500,10 +489,6 @@ sys_radical_search(N, _, N).
 :- public integer:ceiling/2.
 integer:ceiling(X, X).
 
-/**
- * ceiling(P, Q):
- * The predicate succeeds in Q with the ceiling of P.
- */
 % ceiling(+Rational, -Integer)
 :- override rational:ceiling/2.
 :- public rational:ceiling/2.
@@ -512,10 +497,6 @@ rational:ceiling(rational(A,B), X) :-
    user: +(A, H, J),
    user:div(J, B, X).
 
-/**
- * ceiling(P, Q):
- * The predicate suceeds in Q with the floor of P.
- */
 % ceiling(+Radical, -Integer)
 :- override radical:ceiling/2.
 :- public radical:ceiling/2.
@@ -535,20 +516,12 @@ radical:ceiling(X, Y) :-
 :- public integer:integer/2.
 integer:integer(X, X).
 
-/**
- * integer(P, Q):
- * The predicate succeeds in Q with the integer of P.
- */
 % integer(+Rational, -Integer)
 :- override rational:integer/2.
 :- public rational:integer/2.
 rational:integer(rational(A,B), X) :-
    user: //(A, B, X).
 
-/**
- * integer(P, Q):
- * The predicate suceeds in Q with the integer of P.
- */
 % integer(+Radical, -Integer)
 :- override radical:integer/2.
 :- public radical:integer/2.
@@ -572,20 +545,12 @@ radical:integer(X, Y) :-
 integer:float(X, Y) :-
    user:float(X, Y).
 
-/**
- * float(P, Q):
- * The predicate succeeds in Q with the float of P.
- */
 % float(+Rational, -Float)
 :- override rational:float/2.
 :- public rational:float/2.
 rational:float(rational(A,B), X) :-
    user: /(A, B, X).
 
-/**
- * float(P, Q):
- * The predicate suceeds in Q with the float of P.
- */
 % float(+Radical, -Float)
 :- override radical:float/2.
 :- public radical:float/2.

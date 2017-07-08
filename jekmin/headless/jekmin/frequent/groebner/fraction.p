@@ -284,7 +284,7 @@ sys_poly_groeb(L, P, V) :-
    nth0(J, L, F, S),
    member(G, S),
    sys_poly_head(G, H),
-   sys_poly_comb(F, H, K, N),
+   sys_poly_div(F, H, K, N),
    K \== 0, !,
    M is N-K*(G-H),
    nth0(J, U, M, S),
@@ -300,13 +300,6 @@ sys_poly_groeb(L, P, R) :-
    sys_poly_groeb([Z|L], Q, R).
 sys_poly_groeb(L, _, L).
 
-% sys_new_pairs(+Integer, +List, -List)
-:- private sys_new_pairs/3.
-sys_new_pairs(0, L, L) :- !.
-sys_new_pairs(N, L, [(0,N)|R]) :-
-   user: -(N, 1, M),
-   sys_new_pairs(M, L, R).
-
 % sys_nudge_pairs(+List, -List)
 :- private sys_nudge_pairs/2.
 sys_nudge_pairs([(A,B)|L], [(C,D)|R]) :-
@@ -314,6 +307,13 @@ sys_nudge_pairs([(A,B)|L], [(C,D)|R]) :-
    user: +(B, 1, D),
    sys_nudge_pairs(L, R).
 sys_nudge_pairs([], []).
+
+% sys_new_pairs(+Integer, +List, -List)
+:- private sys_new_pairs/3.
+sys_new_pairs(0, L, L) :- !.
+sys_new_pairs(N, L, [(0,N)|R]) :-
+   user: -(N, 1, M),
+   sys_new_pairs(M, L, R).
 
 % sys_shrink_pairs(+List, +Integer, -List)
 :- private sys_shrink_pairs/3.

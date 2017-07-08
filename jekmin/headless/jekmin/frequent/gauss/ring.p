@@ -253,30 +253,48 @@ sys_poly_sign(polynom(_,L), R) :-
    sys_poly_sign(B, R).
 
 /*********************************************************************/
-/* Polynomial Degree                                                 */
+/* Polynomial Characteristics                                        */
 /*********************************************************************/
 
 /**
+ * hipow(P, X, D):
+ * The predicate succeeds in D with the maximum degree of P in the variable X.
+ */
+% hipow(+Ordered, -Integer)
+:- public ordered:hipow/3.
+ordered:hipow(_, _, 0).
+
+% hipow(+Variable, -Integer)
+:- public variable:hipow/3.
+variable:hipow(X, X, R) :- !,
+   R = 1.
+variable:hipow(_, _, 0).
+
+% hipow(+Ordered, -Integer)
+:- public polynom:hipow/3.
+polynom:hipow(polynom(A,B), X, R) :-
+   A @> X, !,
+   R is max({hipow(C,X)|member(_-C, B)}).
+polynom:hipow(polynom(X,[N-_|_]), X, R) :- !,
+   R = N.
+polynom:hipow(_, _, 0).
+
+/**
  * degree(P, D):
  * The predicate succeeds in D with the maximum monomial degree of P.
  */
+% degree(+Ordered, -Integer)
 :- public ordered:degree/2.
 ordered:degree(_, 0).
 
-/**
- * degree(P, D):
- * The predicate succeeds in D with the maximum monomial degree of P.
- */
+% degree(+Variable, -Integer)
 :- public variable:degree/2.
 variable:degree(_, 1).
 
-/**
- * degree(P, D):
- * The predicate succeeds in D with the maximum monomial degree of P.
- */
+% degree(+Polynom, -Integer)
 :- public polynom:degree/2.
-polynom:degree(polynom(_,A), D) :-
-   D is max({N+degree(B)|member(N-B, A)}).
+polynom:degree(polynom(_,A), R) :-
+   R is max({N+degree(B)|member(N-B, A)}).
 
 /*********************************************************************/
 /* Random Polynomials                                                */
