@@ -197,9 +197,9 @@ radical(A,B) - radical(C,D) :-
    R = P.
 ^(radical(0,[A-_]), 2, R) :- !,
    R = A.
-^(X, 2, Y) :- !,
+^(X, 2, R) :- !,
    sys_radical_split(X, P, Q),
-   Y is P^2+2*P*Q+Q^2.
+   R is P^2+2*P*Q+Q^2.
 ^(P, N, R) :-
    user:mod(N, 2, 1), !,
    user: -(N, 1, M),
@@ -218,7 +218,7 @@ sys_radical_split(radical(A,B), P, Q) :-
 
 % sys_sqrt_split(+Map, -Map, -Map)
 :- private sys_sqrt_split/3.
-sys_sqrt_split([B-S,A-T|L], [A-T|P], [B-S|Q]) :- !,
+sys_sqrt_split([X,Y|L], [Y|P], [X|Q]) :- !,
    sys_sqrt_split(L, P, Q).
 sys_sqrt_split(L, [], L).
 

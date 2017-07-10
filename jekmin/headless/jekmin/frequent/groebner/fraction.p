@@ -403,16 +403,16 @@ sys_head_gcd(_, _, 1).
 sys_head_div(polynom(A,[N-B]), polynom(C,D), R) :-
    A @> C, !,
    sys_head_div(B, polynom(C,D), H),
-   sys_make_poly(A, [N-H], R).
+   sys_make_poly([N-H], A, R).
 sys_head_div(polynom(A,[N-B]), polynom(A,[M-D]), R) :- !,
    sys_head_div(B, D, H),
    user: -(N, M, K),
-   sys_make_poly(A, [K-H], R).
+   sys_make_poly([K-H], A, R).
 sys_head_div(polynom(_,_), polynom(_,_), _) :-
    throw(error(illegal_state,_)).
 sys_head_div(polynom(A,[N-B]), Y, R) :- !,
    sys_head_div(B, Y, H),
-   sys_make_poly(A, [N-H], R).
+   sys_make_poly([N-H], A, R).
 sys_head_div(_, polynom(_,_), _) :-
    throw(error(illegal_state,_)).
 sys_head_div(X, _, X).

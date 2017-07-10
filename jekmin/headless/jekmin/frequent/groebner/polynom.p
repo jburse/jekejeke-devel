@@ -69,7 +69,7 @@
 :- public (-)/2.
 polynom(A,B) - R :-
    sys_poly_neg(B, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 
 /**
  * +(P, Q, R):
@@ -92,13 +92,13 @@ polynom(A,B) - R :-
 +(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_add(B, [0-polynom(C,D)], H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 +(polynom(A,B), polynom(A,D), R) :- !,
    sys_poly_add(B, D, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 +(X, polynom(A,B), R) :- !,
    sys_poly_add([0-X], B, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 +(X, fraction(C,D), R) :-
    fraction: +(fraction(X,1), fraction(C,D), R).
 
@@ -123,13 +123,13 @@ polynom(A,B) - R :-
 -(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_sub(B, [0-polynom(C,D)], H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 -(polynom(A,B), polynom(A,D), R) :- !,
    sys_poly_sub(B, D, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 -(X, polynom(A,B), R) :- !,
    sys_poly_sub([0-X], B, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 -(X, fraction(C,D), R) :-
    fraction: -(fraction(X,1), fraction(C,D), R).
 
@@ -154,13 +154,13 @@ polynom(A,B) - R :-
 *(polynom(A,B), polynom(C,D), R) :-
    A @> C, !,
    sys_poly_mul(B, [0-polynom(C,D)], H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 *(polynom(A,B), polynom(A,D), R) :- !,
    sys_poly_mul(B, D, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 *(X, polynom(A,B), R) :- !,
    sys_poly_mul([0-X], B, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 *(X, fraction(C,D), R) :-
    fraction: *(fraction(X,1), fraction(C,D), R).
 
@@ -201,8 +201,13 @@ polynom(A,B) - R :-
    R = 1.
 ^(P, 1, R) :- !,
    R = P.
-^(P, 2, R) :- !,
-   R is P*P.
+^(polynom(A,[N-B]), 2, R) :- !,
+   user: *(N, 2, M),
+   C is B^2,
+   R = polynom(A,[M-C]).
+^(X, 2, R) :- !,
+   sys_poly_split(X, P, Q),
+   R is P^2+2*P*Q+Q^2.
 ^(P, N, R) :-
    user:mod(N, 2, 1), !,
    user: -(N, 1, M),
@@ -211,6 +216,19 @@ polynom(A,B) - R :-
    user: //(N, 2, M),
    H is P^M,
    R is H^2.
+
+% sys_poly_split(+Polynom, -Internal, -Internal)
+:- private sys_poly_split/3.
+sys_poly_split(polynom(A,B), P, Q) :-
+   sys_coeff_split(B, U, V),
+   sys_make_poly(U, A, P),
+   sys_make_poly(V, A, Q).
+
+% sys_coeff_split(+Map, -Map, -Map)
+:- private sys_coeff_split/3.
+sys_coeff_split([X,Y|L], [X|P], [Y|Q]) :- !,
+   sys_coeff_split(L, P, Q).
+sys_coeff_split(L, [], L).
 
 /*********************************************************************/
 /* Arithmetic Helper                                                 */
@@ -275,15 +293,15 @@ sys_make_coeff(L, _, 0, R) :- !,
    R = L.
 sys_make_coeff(L, N, A, [N-A|L]).
 
-% sys_make_poly(+Ref, +Map, -Internal)
+% sys_make_poly(+Map, +Ref, -Internal)
 :- public sys_make_poly/3.
-sys_make_poly(_, [], R) :- !,
+sys_make_poly([], _, R) :- !,
    R = 0.
-sys_make_poly(A, [1-1], R) :- !,
+sys_make_poly([1-1], A, R) :- !,
    R = A.
-sys_make_poly(_, [0-A], R) :- !,
+sys_make_poly([0-A], _, R) :- !,
    R = A.
-sys_make_poly(A, B, polynom(A,B)).
+sys_make_poly(B, A, polynom(A,B)).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */

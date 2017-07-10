@@ -87,10 +87,10 @@ variable:deriv(X, _, X).
 polynom:deriv(polynom(A,B), X, R) :-
    A @> X, !,
    sys_coeff_deriv(B, X, H),
-   sys_make_poly(A, H, R).
+   sys_make_poly(H, A, R).
 polynom:deriv(polynom(X,B), X, R) :- !,
    sys_poly_deriv(B, H),
-   sys_make_poly(X, H, R).
+   sys_make_poly(H, X, R).
 polynom:deriv(_, _, 0).
 
 % sys_poly_deriv(+Map, -Map)

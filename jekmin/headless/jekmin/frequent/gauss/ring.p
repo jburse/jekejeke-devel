@@ -167,22 +167,22 @@ sys_poly_comb(A, polynom(C,D), K, M) :-
    sys_freezer(A),
    A @> C, !,
    sys_coeff_comb([1-1], polynom(C,D), R, S),
-   sys_make_poly(A, R, K),
-   sys_make_poly(A, S, M).
+   sys_make_poly(R, A, K),
+   sys_make_poly(S, A, M).
 sys_poly_comb(A, polynom(A,[N-C]), K, M) :-
    sys_freezer(A), !,
    sys_same_comb([1-1], N, C, R, S),
-   sys_make_poly(A, R, K),
-   sys_make_poly(A, S, M).
+   sys_make_poly(R, A, K),
+   sys_make_poly(S, A, M).
 sys_poly_comb(polynom(A,B), polynom(C,D), K, M) :-
    A @> C, !,
    sys_coeff_comb(B, polynom(C,D), R, S),
-   sys_make_poly(A, R, K),
-   sys_make_poly(A, S, M).
+   sys_make_poly(R, A, K),
+   sys_make_poly(S, A, M).
 sys_poly_comb(polynom(A,B), polynom(A,[N-C]), K, M) :- !,
    sys_same_comb(B, N, C, R, S),
-   sys_make_poly(A, R, K),
-   sys_make_poly(A, S, M).
+   sys_make_poly(R, A, K),
+   sys_make_poly(S, A, M).
 sys_poly_comb(X, polynom(_,_), K, M) :- !,
    K = 0,
    M = X.
