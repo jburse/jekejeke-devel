@@ -31,7 +31,14 @@ package matula.util.data;
 public final class SetHash<E> extends AbstractSet<E> {
     private static final int MIN_SIZE = 2;
 
-    SetHashEntry<E>[] table = new SetHashEntry[MIN_SIZE];
+    SetHashEntry<E>[] table;
+
+    /**
+     * <p>Create a set hash.</p>
+     */
+    public SetHash() {
+        reinitialize();
+    }
 
     /**
      * <p>Retrieve the stored key.</p>
@@ -257,6 +264,18 @@ public final class SetHash<E> extends AbstractSet<E> {
                 table[i] = null;
         }
         size = 0;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * Reset to initial default state.  Called by clone and readObject.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        table = new SetHashEntry[MIN_SIZE];
     }
 
 }

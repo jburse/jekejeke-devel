@@ -1,7 +1,5 @@
 package matula.util.data;
 
-import qa.anon.rank.bean.Sort;
-
 /**
  * <p>The base class for the sets.</p>
  * </p>
@@ -124,6 +122,10 @@ public abstract class AbstractSet<E> {
         }
     }
 
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
     /**
      * <p>Returns a string representation of this list array.</p>
      *
@@ -144,6 +146,32 @@ public abstract class AbstractSet<E> {
         }
         buf.append("]");
         return buf.toString();
+    }
+
+    /**
+     * <p>Create a shallow copy.</p>
+     *
+     * @return The shallow copy.
+     */
+    public Object clone() {
+        AbstractSet<E> res;
+        try {
+            res = (AbstractSet<E>) super.clone();
+        } catch (CloneNotSupportedException x) {
+            throw new RuntimeException("internal error", x);
+        }
+        res.reinitialize();
+        for (SetEntry<E> entry = getFirstEntry();
+             entry != null; entry = successor(entry))
+            res.putKey(entry.key);
+        return res;
+    }
+
+    /**
+     * Reset to initial default state.  Called by clone and readObject.
+     */
+    void reinitialize() {
+        size = 0;
     }
 
 }

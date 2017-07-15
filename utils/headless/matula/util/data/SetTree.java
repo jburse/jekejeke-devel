@@ -39,6 +39,7 @@ public final class SetTree<E> extends AbstractSet<E> {
      */
     public SetTree(Comparator<E> c) {
         comparator = c;
+        reinitialize();
     }
 
     /**
@@ -131,7 +132,7 @@ public final class SetTree<E> extends AbstractSet<E> {
         // If strictly internal, copy successor's element to p and then make p
         // point to successor.
         if (p.left != null && p.right != null) {
-            SetTreeEntry<E> s = (SetTreeEntry<E>)successor(p);
+            SetTreeEntry<E> s = (SetTreeEntry<E>) successor(p);
             p.key = s.key;
             p = s;
         } // p has 2 children
@@ -423,6 +424,18 @@ public final class SetTree<E> extends AbstractSet<E> {
     // Copied from Java Tree
     private static <E> SetTreeEntry<E> rightOf(SetTreeEntry<E> p) {
         return (p == null) ? null : p.right;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * Reset to initial default state.  Called by clone and readObject.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        root = null;
     }
 
 }

@@ -27,6 +27,7 @@ package matula.util.data;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractMap<K, V> {
+    public int size;
 
     /**
      * <p>Find the key in the map.</p>
@@ -120,6 +121,63 @@ public abstract class AbstractMap<K, V> {
             target[pos] = entry;
             pos++;
         }
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Returns a string representation of this list array.</p>
+     *
+     * @return A string representation of this list array.
+     */
+    public String toString() {
+        MapEntry<K, V> entry = getFirstEntry();
+        if (entry == null)
+            return "{}";
+        StringBuilder buf = new StringBuilder();
+        buf.append("{");
+        buf.append(entry.key);
+        buf.append(":");
+        buf.append(entry.value);
+        entry = successor(entry);
+        while (entry != null) {
+            buf.append(",");
+            buf.append(entry.key);
+            buf.append(":");
+            buf.append(entry.value);
+            entry = successor(entry);
+        }
+        buf.append("}");
+        return buf.toString();
+    }
+
+
+    /**
+     * <p>Create a shallow copy.</p>
+     *
+     * @return The shallow copy.
+     */
+    public Object clone() {
+        AbstractMap<K, V> res;
+        try {
+            res = (AbstractMap<K, V>) super.clone();
+        } catch (CloneNotSupportedException x) {
+            throw new RuntimeException("internal error", x);
+        }
+        res.reinitialize();
+        for (MapEntry<K, V> entry = getFirstEntry();
+             entry != null; entry = successor(entry))
+            res.put(entry.key, entry.value);
+        return res;
+    }
+
+    /**
+     * Reset to initial default state.
+     */
+    void reinitialize() {
+        size = 0;
     }
 
 }

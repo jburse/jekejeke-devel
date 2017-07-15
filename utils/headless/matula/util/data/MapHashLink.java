@@ -29,10 +29,16 @@ package matula.util.data;
 public class MapHashLink<K, V> extends AbstractMap<K, V> {
     private static final int MIN_SIZE = 2;
 
-    MapHashLinkEntry<K, V>[] table = new MapHashLinkEntry[MIN_SIZE];
-    public int size;
+    MapHashLinkEntry<K, V>[] table;
     MapHashLinkEntry<K, V> first;
     MapHashLinkEntry<K, V> last;
+
+    /**
+     * <p>Create a map hash link.</p>
+     */
+    public MapHashLink() {
+        reinitialize();
+    }
 
     /**
      * <p>Retrieve a value for a key.</p>
@@ -246,6 +252,18 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         size = 0;
         first = null;
         last = null;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * Reset to initial default state.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        table = new MapHashLinkEntry[MIN_SIZE];
     }
 
 }

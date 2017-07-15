@@ -232,23 +232,44 @@ public class ListArray<E> {
         table = newtable;
     }
 
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
     /**
      * <p>Returns a string representation of this list array.</p>
      *
      * @return A string representation of this list array.
      */
     public String toString() {
-        if (size==0)
+        if (size == 0)
             return "[]";
         StringBuilder buf = new StringBuilder();
         buf.append("[");
         buf.append(get(0));
-        for (int i=1; i<size; i++) {
+        for (int i = 1; i < size; i++) {
             buf.append(",");
             buf.append(get(i));
         }
         buf.append("]");
         return buf.toString();
+    }
+
+    /**
+     * <p>Create a shallow copy.</p>
+     *
+     * @return The shallow copy.
+     */
+    public Object clone() {
+        ListArray<?> res;
+        try {
+            res = (ListArray<?>) super.clone();
+        } catch (CloneNotSupportedException x) {
+            throw new RuntimeException("internal error", x);
+        }
+        res.table = new Object[table.length];
+        System.arraycopy(table, 0, res.table, 0, table.length);
+        return res;
     }
 
 }

@@ -32,9 +32,16 @@ package matula.util.data;
 public final class SetHashLink<E> extends AbstractSet<E> {
     private static final int MIN_SIZE = 2;
 
-    SetHashLinkEntry<E>[] table = new SetHashLinkEntry[MIN_SIZE];
+    SetHashLinkEntry<E>[] table;
     SetHashLinkEntry<E> first;
     SetHashLinkEntry<E> last;
+
+    /**
+     * <p>Create a set hash link.</p>
+     */
+    public SetHashLink() {
+        reinitialize();
+    }
 
     /**
      * <p>Retrieve the stored key.</p>
@@ -244,6 +251,18 @@ public final class SetHashLink<E> extends AbstractSet<E> {
         size = 0;
         first = null;
         last = null;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * Reset to initial default state.  Called by clone and readObject.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        table = new SetHashLinkEntry[MIN_SIZE];
     }
 
 }

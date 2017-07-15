@@ -31,8 +31,14 @@ package matula.util.data;
 public final class MapHash<K, V> extends AbstractMap<K, V> {
     private static final int MIN_SIZE = 2;
 
-    MapHashEntry<K, V>[] table = new MapHashEntry[MIN_SIZE];
-    public int size;
+    MapHashEntry<K, V>[] table;
+
+    /**
+     * <p>Create a map hash.</p>
+     */
+    public MapHash() {
+        reinitialize();
+    }
 
     /**
      * <p>Find the key in the map.</p>
@@ -135,7 +141,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      * @param s The entry, not null.
      */
     public void removeEntry(MapEntry<K, V> s) {
-        MapHashEntry<K, V> e = (MapHashEntry<K, V>)s;
+        MapHashEntry<K, V> e = (MapHashEntry<K, V>) s;
         Object key = e.key;
         int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
                 (table.length - 1) : 0);
@@ -306,6 +312,18 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
                 table[i] = null;
         }
         size = 0;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * Reset to initial default state.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        table = new MapHashEntry[MIN_SIZE];
     }
 
 }

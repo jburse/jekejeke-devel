@@ -31,7 +31,6 @@ import java.util.Comparator;
 public final class MapTree<K, V> extends AbstractMap<K, V> {
     final Comparator<K> comparator;
     MapTreeEntry<K, V> root;
-    public int size;
 
     /**
      * <p>Create a map tree.</p>
@@ -40,6 +39,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
      */
     public MapTree(Comparator<K> c) {
         comparator = c;
+        reinitialize();
     }
 
     /**
@@ -136,7 +136,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
         // If strictly internal, copy successor's element to p and then make p
         // point to successor.
         if (p.left != null && p.right != null) {
-            MapTreeEntry<K, V> s = (MapTreeEntry<K, V>)successor(p);
+            MapTreeEntry<K, V> s = (MapTreeEntry<K, V>) successor(p);
             p.key = s.key;
             p.value = s.value;
             p = s;
@@ -429,6 +429,18 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
     // Copied from Java Tree
     private static <K, V> MapTreeEntry<K, V> rightOf(MapTreeEntry<K, V> p) {
         return (p == null) ? null : p.right;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * Reset to initial default state.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        root = null;
     }
 
 }
