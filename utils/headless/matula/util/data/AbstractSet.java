@@ -30,6 +30,15 @@ public abstract class AbstractSet<E> {
     public int size;
 
     /**
+     * <p>Retrieve size.</p>
+     *
+     * @return The size.
+     */
+    public int size() {
+        return size;
+    }
+
+    /**
      * <p>Retrieve the stored key.</p>
      *
      * @param key The search key, can be null.

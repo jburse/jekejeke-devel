@@ -131,6 +131,15 @@ public class XmlScanner<T extends XmlMachine> {
     }
 
     /**
+     * <p>Set the tag type.</p>
+     *
+     * @param t The tag type.
+     */
+    public void setType(String t) {
+        mach.setType(t);
+    }
+
+    /**
      * <p>Convenience method to check the actual tag type.</p>
      * <p>Will check the actual tag type ignoring case.</p>
      *
@@ -186,6 +195,16 @@ public class XmlScanner<T extends XmlMachine> {
     }
 
     /**
+     * <p>Set an attibute name.</p>
+     *
+     * @param i The index.
+     * @param a The atrribute name,
+     */
+    public void setAttr(int i, String a) {
+        mach.setAttr(i, a);
+    }
+
+    /**
      * Retrieve the nth attribute value. Can be retrieved when the
      * result type is RES_TAG.
      *
@@ -205,6 +224,15 @@ public class XmlScanner<T extends XmlMachine> {
      */
     public int indexAttr(String a) {
         return mach.indexAttr(a);
+    }
+
+    /**
+     * <p>Remove an attribute value pair.</p>
+     *
+     * @param i The index.
+     */
+    public void removeAttrValue(int i) {
+        mach.removeAttrValue(i);
     }
 
 }

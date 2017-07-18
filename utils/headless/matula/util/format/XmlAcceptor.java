@@ -3,6 +3,7 @@ package matula.util.format;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
@@ -181,6 +182,8 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
             }
         } catch (ScannerError x) {
             throw new RuntimeException("problem writing", x);
+        } catch (InterruptedIOException x) {
+            Thread.currentThread().interrupt();
         } catch (IOException x) {
             setError();
         }
@@ -197,6 +200,8 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
                 nextTagOrText();
         } catch (ScannerError x) {
             throw new RuntimeException("problem writing", x);
+        } catch (InterruptedIOException x) {
+            Thread.currentThread().interrupt();
         } catch (IOException x) {
             setError();
         }

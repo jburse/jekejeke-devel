@@ -29,7 +29,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SetHashLink<E> extends AbstractSet<E> {
+public class SetHashLink<E> extends AbstractSet<E> {
     private static final int MIN_SIZE = 2;
 
     SetHashLinkEntry<E>[] table;

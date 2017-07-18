@@ -52,8 +52,8 @@ public class XmlMachine {
     public static final int STATE_AFTER = 11;
     public static final int STATE_BEFORE = 12;
 
-    public static final String XML_BUFFER_OVERFLOW = "buffer_overflow";
-    public static final String XML_PREMATURE_END = "premature_end";
+    public static final String XML_BUFFER_OVERFLOW = "xml_buffer_overflow";
+    public static final String XML_PREMATURE_END = "xml_premature_end";
 
     public static final String VALUE_EMPTY = "";
 
@@ -79,13 +79,13 @@ public class XmlMachine {
      * <p>Fill the character into the local buffer.</p>
      *
      * @param ch The character.
-     * @throws ScannerError When the buffer is overrun.
+     * @throws RuntimeException When the buffer is overrun.
      */
-    private void fill(int ch) throws ScannerError {
+    private void fill(int ch) {
         if (top < MAX_JUNK) {
             text[top++] = (char) ch;
         } else {
-            throw new ScannerError(XML_BUFFER_OVERFLOW);
+            throw new RuntimeException(XML_BUFFER_OVERFLOW);
         }
     }
 
@@ -236,6 +236,14 @@ public class XmlMachine {
                     String temp = new String(text, off, top - off);
                     attr.add(temp);
                     state = XmlMachine.STATE_BEFORE;
+                } else if (ch == '/') {
+                    if (top == off) {
+                        /* */
+                    } else {
+                        String temp = new String(text, off, top - off);
+                        attr.add(temp);
+                        state = XmlMachine.STATE_BEFORE;
+                    }
                 } else if (ch == '=') {
                     String temp = new String(text, off, top - off);
                     attr.add(temp);
@@ -390,6 +398,15 @@ public class XmlMachine {
     }
 
     /**
+     * <p>Set the tag type.</p>
+     *
+     * @param t The tag type.
+     */
+    public void setType(String t) {
+        type = t;
+    }
+
+    /**
      * <p>Convenience method to check the actual tag type.</p>
      * <p>Will check the actual tag type ignoring case.</p>
      *
@@ -422,6 +439,16 @@ public class XmlMachine {
     }
 
     /**
+     * <p>Set an attibute name.</p>
+     *
+     * @param i The index.
+     * @param a The atrribute name,
+     */
+    public void setAttr(int i, String a) {
+        attr.set(i, a);
+    }
+
+    /**
      * <p>Retrieve the nth attribute value. Can be retrieved when the
      * result type is RES_TAG.</p>
      *
@@ -447,6 +474,16 @@ public class XmlMachine {
                 return i;
         }
         return -1;
+    }
+
+    /**
+     * <p>Remove an attribute value pair.</p>
+     *
+     * @param i The index.
+     */
+    public void removeAttrValue(int i) {
+        attr.remove(i);
+        value.remove(i);
     }
 
     /**
