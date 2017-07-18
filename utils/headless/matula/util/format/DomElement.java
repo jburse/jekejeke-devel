@@ -153,13 +153,7 @@ public final class DomElement extends DomNode {
         if (n != 0 &&
                 "".equals(dr.getValueAt(n - 1)) &&
                 dr.getAttr(n - 1).equals(DomReader.STRING_SLASH)) {
-            String temp = dr.getAttr(n - 1);
-            temp = temp.substring(0, temp.length() - 1);
-            if (!"".equals(temp)) {
-                dr.setAttr(n - 1, temp);
-            } else {
-                dr.removeAttrValue(n - 1);
-            }
+            dr.removeAttrValue(n - 1);
             return true;
         } else {
             return false;

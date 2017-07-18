@@ -439,16 +439,6 @@ public class XmlMachine {
     }
 
     /**
-     * <p>Set an attibute name.</p>
-     *
-     * @param i The index.
-     * @param a The atrribute name,
-     */
-    public void setAttr(int i, String a) {
-        attr.set(i, a);
-    }
-
-    /**
      * <p>Retrieve the nth attribute value. Can be retrieved when the
      * result type is RES_TAG.</p>
      *
