@@ -488,4 +488,32 @@ public final class ForeignAtom {
         return -1;
     }
 
+    /****************************************************************/
+    /* Term Conversion                                              */
+    /****************************************************************/
+
+    /**
+     * <p>Parse a term from a string.</p>
+     *
+     * @param inter The interpreter.
+     * @param s The string.
+     * @return The term.
+     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static Object sysParseTerm(Interpreter inter, String s)
+            throws InterpreterMessage, InterpreterException {
+        return inter.parseTerm(s);
+    }
+
+    /**
+     * <p>Unparse a term into a string</p>
+     * @param inter The interpreter.
+     * @param t The term.
+     * @return The string.
+     */
+    public static String sysUnparseTerm(Interpreter inter, Object t) {
+        return inter.unparseTerm(Interpreter.FLAG_QUOTED, t);
+    }
+
 }

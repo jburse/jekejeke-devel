@@ -1,7 +1,9 @@
 /**
  * This module provides a couple of simple utilities to deal with
  * the generation and parsing of XML texts. The predicate text_escape/2
- * can be used to escape and un-escape texts.
+ * can be used to escape and un-escape texts. The predicate text_escape/2
+ * will escape the characters '"<>&' and the character 0xA0. It is
+ * suitable for attribute values in double quotes and for texts.
  *
  * Examples:
  * ?- text_escape('&lt;abc&gt;', X).
@@ -9,9 +11,30 @@
  * ?- text_escape(X, '&amp;lt;abc&amp;gt;').
  * X = '&lt;abc&gt;'
  *
- * The predicate text_escape/2 will escape the characters '"<>&' and
- * the character 0xA0. It is suitable for attribute values in double
- * quotes and for texts.
+ * The rest of the predicates deal with reading/writing a DOM models
+ * and accessing/modifying a DOM model. When reading/writing a DOM
+ * model the retain flag indicates whether only tags (0) or tags and
+ * text (1) should be read or written. A DOM model is referenced by a
+ * Prolog reference data type and automatically reclaimed by the Java GC.
+ *
+ * Examples:
+ * ?- open('data.xml', read, S), elem_new(D),
+ *    node_load(D, S, 0), close(S), assertz(my_data(D)).
+ * S = 0r22126bf,
+ * D = 0r682136cf
+ * ?- my_data(D), current_output(S), node_store(D, S, '', 0), nl.
+ * &lt;root&gt;
+ *     &lt;node attr="value1"/&gt;
+ *     &lt;node attr="value2"/&gt;
+ * &lt;/root&gt;
+ * D = 0r682136cf,
+ * S = 0r3fc82f6e
+ *
+ * The predicates elem_attr/2 and elem_child/2 return their results by
+ * backtracking and they use a logical cursor. The DOM model is thus
+ * similarly accessed as the facts and rules from a Prolog knowledge base.
+ * It is also supported that the DOM model is accessed and modified
+ * concurrently by multiple threads.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,8 +62,16 @@
 
 :- package(library(jekpro/frequent/system)).
 :- use_package(foreign(matula/util/system)).
+:- use_package(foreign(matula/util/format)).
+:- use_package(foreign(java/io)).
+:- use_package(foreign(jekpro/frequent/system)).
+:- use_package(foreign(jekpro/tools/call)).
 
 :- module(xml, []).
+
+/****************************************************************/
+/* Entity Conversion                                            */
+/****************************************************************/
 
 /**
  * text_escape(T, E):
@@ -63,3 +94,182 @@ text_escape(X, Y) :-
 :- private sys_text_unescape/2.
 :- foreign(sys_text_unescape/2, 'ForeignXml',
       sysTextUnescape('String')).
+
+/*******************************************************************/
+/* Node Access & Modification                                      */
+/*******************************************************************/
+
+/**
+ * node_clear(D):
+ * The predicate succeeds in emptying the DOM node D.
+ */
+% node_clear(+DomNode)
+:- public node_clear/1.
+:- virtual node_clear/1.
+:- foreign(node_clear/1, 'DomNode', clear).
+
+/**
+ * node_load(D, S, R):
+ * The predicate succeeds in loading the stream S into the DOM
+ * node D with retain flags R.
+ */
+% node_load(+DomNode, +Stream, +Integer)
+:- public node_load/3.
+:- virtual node_load/3.
+:- foreign(node_load/3, 'DomNode', load('Reader',int)).
+
+/**
+ * node_store(D, S, C, R):
+ * The predicate succeeds in storing the DOM node D into the
+ * stream S with comment C and retain flags R.
+ */
+% node_store(+DomNode, +Stream, +Atom, +Integer)
+:- public node_store/4.
+:- virtual node_store/4.
+:- foreign(node_store/4, 'DomNode', store('Writer','String',int)).
+
+/**
+ * node_get_parent(D, C):
+ * The predicate succeeds in C with the parent of the DOM node D.
+ */
+% node_get_parent(+DomNode, -DomElement)
+:- public node_get_parent/2.
+:- virtual node_get_parent/2.
+:- foreign(node_get_parent/2, 'DomNode', getParent).
+
+/**
+ * node_is_elem(D):
+ * The predicate succeeds if the DOM node D is a DOM element.
+ */
+% node_is_elem(+DomNode)
+:- public node_is_elem/1.
+:- foreign(node_is_elem/1, 'ForeignDom', sysNodeIsElem('DomNode')).
+
+/**
+ * node_is_text(D):
+ * The predicate succeeds if the DOM node D is a DOM text.
+ */
+% node_is_text(+DomNode)
+:- public node_is_text/1.
+:- foreign(node_is_text/1, 'ForeignDom', sysNodeIsText('DomNode')).
+
+/*******************************************************************/
+/* Element Access & Modification                                   */
+/*******************************************************************/
+
+/**
+ * elem_new(D):
+ * The predicate succeeds in D with a new DOM element.
+ */
+% elem_new(-DomElement)
+:- public elem_new/1.
+:- foreign_constructor(elem_new/1, 'DomElement', new).
+
+/**
+ * elem_get_name(D, N):
+ * The predicate succeeds in N with the name of the DOM element D.
+ */
+% elem_get_name(+DomElement, -Atom)
+:- public elem_get_name/2.
+:- virtual elem_get_name/2.
+:- foreign(elem_get_name/2, 'DomElement', getName).
+
+/**
+ * elem_set_name(D, N):
+ * The predicate succeeds in setting the name of the DOM element D to N.
+ */
+% elem_set_name(+DomElement, +Atom)
+:- public elem_set_name/2.
+:- virtual elem_set_name/2.
+:- foreign(elem_set_name/2, 'DomElement', setName('String')).
+
+/**
+ * elem_get_attr(D, A, V):
+ * The predicate succeeds in V with the attribute A of the DOM element D.
+ */
+% elem_get_attr(+DomElement, +Atom, -Atom)
+:- public elem_get_attr/3.
+:- virtual elem_get_attr/3.
+:- foreign(elem_get_attr/3, 'DomElement', getAttr('String')).
+
+/**
+ * elem_set_attr(D, A, V):
+ * The predicate succeeds in setting the attribute A of the DOM element D to V.
+ */
+% elem_set_attr(+DomElement, +Atom, +Atom)
+:- public elem_set_attr/3.
+:- virtual elem_set_attr/3.
+:- foreign(elem_set_attr/3, 'DomElement', setAttr('String','String')).
+
+/**
+ * elem_remove_attr(D, A):
+ * The predicate succeeds in removing the attribute A from the DOM element D.
+ */
+% elem_remove_attr(+DomElement, +Atom)
+:- public elem_remove_attr/2.
+:- virtual elem_remove_attr/2.
+:- foreign(elem_remove_attr/2, 'DomElement', removeAttr('String')).
+
+/**
+ * elem_attr(D, A):
+ * The predicate succeeds in A for all the attribute names of the DOM element D.
+ */
+% elem_attr(+DomElement, -Atom)
+:- public elem_attr/2.
+:- foreign(elem_attr/2, 'ForeignDom', sysElemAttr('CallOut','DomElement')).
+
+/**
+ * elem_add_child(D, C):
+ * The predicate succeeds in adding the child C to the DOM element D.
+ */
+% elem_add_child(+DomElement, +DomNode)
+:- public elem_add_child/2.
+:- virtual elem_add_child/2.
+:- foreign(elem_add_child/2, 'DomElement', addChild('DomNode')).
+
+/**
+ * elem_remove_child(D, C):
+ * The predicate succeeds in removing the child C from the DOM element D.
+ */
+% elem_remove_child(+DomElement, +DomNode)
+:- public elem_remove_child/2.
+:- virtual elem_remove_child/2.
+:- foreign(elem_remove_child/2, 'DomElement', removeChild('DomNode')).
+
+/**
+ * elem_child(D, C):
+ * The predicate succeeds in C for all the children of the DOM element D.
+ */
+% elem_child(+DomElement, -DomNode)
+:- public elem_child/2.
+:- foreign(elem_child/2, 'ForeignDom', sysElemChild('CallOut','DomElement')).
+
+/*******************************************************************/
+/* Text Access & Modification                                      */
+/*******************************************************************/
+
+/**
+ * text_new(D):
+ * The predicate succeeds in D with a new DOM text.
+ */
+% text_new(-DomText)
+:- public text_new/1.
+:- foreign_constructor(text_new/1, 'DomText', new).
+
+/**
+ * text_get_data(D, T):
+ * The predicate succeeds in T with the data of the DOM text D.
+ */
+% text_get_data(+DomText, -Atom)
+:- public text_get_data/2.
+:- virtual text_get_data/2.
+:- foreign(text_get_data/2, 'DomText', getData).
+
+/**
+ * text_set_data(D, T):
+ * The predicate succeeds in setting the data of the DOM text D to T.
+ */
+% text_set_data(+DomText, +Atom)
+:- public text_set_data/2.
+:- virtual text_set_data/2.
+:- foreign(text_set_data/2, 'DomText', setData('String')).
