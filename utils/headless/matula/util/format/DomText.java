@@ -49,7 +49,7 @@ public final class DomText extends DomNode {
      * @param d The data.
      */
     public void setData(String d) {
-        if (data==null)
+        if (data == null)
             throw new NullPointerException("data missing");
         data = d;
     }

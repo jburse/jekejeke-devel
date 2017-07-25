@@ -2,7 +2,6 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.data.SetEntry;
 import matula.util.data.SetHashLink;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
@@ -53,26 +52,17 @@ public final class DomElement extends DomNode {
     /**
      * <p>Set the name.</p>
      *
-     * @param t The name.
+     * @param n The name.
      */
-    public void setName(String t) {
-        if (t == null)
+    public void setName(String n) {
+        if (n == null)
             throw new NullPointerException("name missing");
-        name = t;
-    }
-
-    /**
-     * <p>Reintialize this dom element.</p>
-     */
-    void reinitialize() {
-        name = "";
-        attributes.clear();
-        children.clear();
-        cached = null;
+        name = n;
     }
 
     /**
      * <p>Load a dom element.</p>
+     * <p>Not synchronized, uses cut-over.</p>
      *
      * @param dr The dom reader.
      * @throws IOException  Shit happens.
@@ -86,18 +76,30 @@ public final class DomElement extends DomNode {
                 if (dr.getType().startsWith(DomReader.STRING_SLASH))
                     throw new ScannerError(DomReader.DOM_START_MISSING);
                 boolean closed = checkClosed(dr);
-                name = dr.getType();
+                String type = dr.getType();
+                MapHashLink<String, String> as = new MapHashLink<String, String>();
                 for (int i = 0; i < dr.getAttrCount(); i++) {
-                    if (attributes.get(dr.getAttr(i)) != null)
+                    if (as.get(dr.getAttr(i)) != null)
                         throw new ScannerError(DomReader.DOM_DUPLICATE_ATTRIBUTE);
-                    String temp = dr.getValueAt(i);
-                    temp = ForeignXml.sysTextUnescape(XmlMachine.stripValue(temp));
-                    attributes.put(dr.getAttr(i), temp);
+                    String value = dr.getValueAt(i);
+                    value = ForeignXml.sysTextUnescape(XmlMachine.stripValue(value));
+                    as.put(dr.getAttr(i), value);
                 }
                 dr.nextTagOrText();
+                SetHashLink<DomNode> cs;
                 if (!closed) {
-                    loadChildren(dr);
-                    checkEnd(dr);
+                    cs = loadChildren(dr);
+                    checkEnd(type, dr);
+                } else {
+                    cs = new SetHashLink<DomNode>();
+                }
+                name = type;
+                synchronized (this) {
+                    attributes = as;
+                }
+                synchronized (this) {
+                    children = cs;
+                    cached = null;
                 }
                 break;
             case XmlMachine.RES_EOF:
@@ -112,28 +114,31 @@ public final class DomElement extends DomNode {
      * <p>Load the children.</p>
      *
      * @param dr The dom reader.
+     * @return The children.
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    private void loadChildren(DomReader dr) throws IOException, ScannerError {
+    private SetHashLink<DomNode> loadChildren(DomReader dr)
+            throws IOException, ScannerError {
+        SetHashLink<DomNode> res = new SetHashLink<DomNode>();
         for (; ; ) {
             switch (dr.getRes()) {
                 case XmlMachine.RES_TEXT:
                     DomText dt = new DomText();
-                    dt.load(dr);
                     dt.parent = this;
-                    children.putKey(dt);
+                    dt.load(dr);
+                    res.putKey(dt);
                     break;
                 case XmlMachine.RES_TAG:
                     if (dr.getType().startsWith(DomReader.STRING_SLASH))
-                        return;
+                        return res;
                     DomElement dh = new DomElement();
-                    dh.load(dr);
                     dh.parent = this;
-                    children.putKey(dh);
+                    dh.load(dr);
+                    res.putKey(dh);
                     break;
                 case XmlMachine.RES_EOF:
-                    return;
+                    return res;
                 default:
                     throw new IllegalArgumentException("illegal res");
             }
@@ -148,7 +153,7 @@ public final class DomElement extends DomNode {
      * @param dr The dom reader.
      * @return True of the tag is closed, otherwise false.
      */
-    private boolean checkClosed(DomReader dr) throws ScannerError {
+    private static boolean checkClosed(DomReader dr) {
         int n = dr.getAttrCount();
         if (n != 0 &&
                 "".equals(dr.getValueAt(n - 1)) &&
@@ -164,10 +169,12 @@ public final class DomElement extends DomNode {
      * <p>Check whether the actual tag is an end tag.</p>
      * <p>As a side effect a correct tag is consumed.</p>
      *
+     * @param type The type.
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    private void checkEnd(DomReader dr) throws ScannerError, IOException {
+    private static void checkEnd(String type, DomReader dr)
+            throws ScannerError, IOException {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DomReader.DOM_END_MISSING);
@@ -178,7 +185,7 @@ public final class DomElement extends DomNode {
                     throw new ScannerError(DomReader.DOM_ATTRIBUTES_UNEXPECTED);
                 String temp = dr.getType();
                 temp = temp.substring(1);
-                if (!name.equals(temp))
+                if (!type.equals(temp))
                     throw new ScannerError(DomReader.DOM_TYPE_MISMATCH);
                 dr.nextTagOrText();
                 break;
@@ -191,6 +198,7 @@ public final class DomElement extends DomNode {
 
     /**
      * <p>Store this dom element.</p>
+     * <p>Not synchronized, uses cursors.</p>
      *
      * @param dw The dom writer.
      * @throws IOException Shit happens.
@@ -198,29 +206,36 @@ public final class DomElement extends DomNode {
     void store(DomWriter dw) throws IOException {
         dw.writer.write("<");
         dw.writer.write(name);
-        for (MapEntry<String, String> entry = attributes.getFirstEntry();
-             entry != null; entry = attributes.successor(entry)) {
+
+        String[] names = snapshotAttrs();
+        for (int i = 0; i < names.length; i++) {
+            String name = names[i];
+            String value = getAttr(name);
+            if (value == null)
+                continue;
             dw.writer.write(" ");
-            dw.writer.write(entry.key);
-            if (!"".equals(entry.value)) {
+            dw.writer.write(name);
+            if (!"".equals(value)) {
                 dw.writer.write("=\"");
-                dw.writer.write(ForeignXml.sysTextEscape(entry.value));
+                dw.writer.write(ForeignXml.sysTextEscape(value));
                 dw.writer.write("\"");
             }
         }
-        if (children.size() == 0) {
+
+        DomNode[] nodes = snapshotChildren();
+        if (nodes.length == 0) {
             dw.writer.write("/>");
         } else {
             if ((dw.ret & DomReader.MASK_TEXT) != 0) {
                 dw.writer.write(">");
-                storeChildren(dw);
+                storeChildren(nodes, dw);
                 dw.writer.write("</");
                 dw.writer.write(name);
                 dw.writer.write(">");
             } else {
                 dw.writer.write(">\n");
                 dw.incIndent();
-                storeChildren(dw);
+                storeChildren(nodes, dw);
                 dw.decIndent();
                 dw.writeIndent();
                 dw.writer.write("</");
@@ -230,21 +245,22 @@ public final class DomElement extends DomNode {
         }
     }
 
-
     /**
      * <p>Store the childeren.</p>
      *
-     * @param dw The dom writer.
+     * @param nodes The nodes.
+     * @param dw    The dom writer.
      * @throws IOException Shit happens.
      */
-    private void storeChildren(DomWriter dw) throws IOException {
-        for (SetEntry<DomNode> entry = children.getFirstEntry();
-             entry != null; entry = children.successor(entry)) {
+    private static void storeChildren(DomNode[] nodes, DomWriter dw)
+            throws IOException {
+        for (int i = 0; i < nodes.length; i++) {
+            DomNode node = nodes[i];
             if ((dw.ret & DomReader.MASK_TEXT) != 0) {
-                entry.key.store(dw);
+                node.store(dw);
             } else {
                 dw.writeIndent();
-                entry.key.store(dw);
+                node.store(dw);
                 dw.writer.write("\n");
             }
         }

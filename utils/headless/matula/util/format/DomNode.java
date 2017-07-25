@@ -73,16 +73,8 @@ public abstract class DomNode {
     /*****************************************************/
 
     /**
-     * <p>Clear this dom node.</p>
-     */
-    public void clear() {
-        synchronized (this) {
-            reinitialize();
-        }
-    }
-
-    /**
      * <p>Load this dom node.</p>
+     * <p>Not synchronized, uses cut-over.</p>
      *
      * @param reader The input stream.
      * @param ret    The return flags.
@@ -95,14 +87,13 @@ public abstract class DomNode {
         dr.setReader(reader);
         dr.ret=ret;
         dr.nextTagOrText();
-        synchronized (this) {
-            load(dr);
-        }
+        load(dr);
         dr.checkEof();
     }
 
     /**
      * <p>Store this dom node.</p>
+     * <p>Not synchronized, uses cursors.</p>
      *
      * @param writer  The writer.
      * @param comment The comment
@@ -115,18 +106,12 @@ public abstract class DomNode {
         dw.ret=ret;
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
-        synchronized (this) {
-            store(dw);
-        }
+        store(dw);
     }
 
     /**
-     * <p>Reintialize this dom node.</p>
-     */
-    abstract void reinitialize();
-
-    /**
      * <p>Load a dom node.</p>
+     * <p>Not synchronized, uses cut-over.</p>
      *
      * @param dr The dom reader.
      * @throws IOException  Shit happens.
@@ -137,6 +122,7 @@ public abstract class DomNode {
 
     /**
      * <p>Store this dom node.</p>
+     * <p>Not synchronized, uses cursors.</p>
      *
      * @param dw The dom writer.
      * @throws IOException Shit happens.
