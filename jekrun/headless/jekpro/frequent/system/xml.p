@@ -100,15 +100,6 @@ text_escape(X, Y) :-
 /*******************************************************************/
 
 /**
- * node_clear(D):
- * The predicate succeeds in emptying the DOM node D.
- */
-% node_clear(+DomNode)
-:- public node_clear/1.
-:- virtual node_clear/1.
-:- foreign(node_clear/1, 'DomNode', clear).
-
-/**
  * node_load(D, S, R):
  * The predicate succeeds in loading the stream S into the DOM
  * node D with retain flags R.
