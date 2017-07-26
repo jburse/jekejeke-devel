@@ -3,6 +3,7 @@ package jekpro.tools.term;
 import jekpro.model.pretty.AbstractSource;
 
 import java.text.Collator;
+import java.util.Comparator;
 
 /**
  * <p>This class provides an atom.</p>
@@ -101,7 +102,7 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
      * @param c The collator.
      * @return <0 less, 0 equal, >0 greater
      */
-    public int compareTo(SkelAtom o, Collator c) {
+    public int compareTo(SkelAtom o, Comparator c) {
         return c.compare(fun, o.fun);
     }
 

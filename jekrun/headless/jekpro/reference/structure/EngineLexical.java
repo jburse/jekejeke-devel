@@ -7,6 +7,7 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.regex.IgnoreCase;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -40,20 +41,17 @@ import java.util.Locale;
  */
 public final class EngineLexical implements Comparator<Object> {
     private final Engine engine;
-    private final Collator collator;
+    private final Comparator cmp;
 
     /**
      * <p>Create a engine lexical.</p>
      *
-     * @param t  The locale skeleton.
-     * @param d  The locale display.
+     * @param c The comparator.
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
      */
-    public EngineLexical(Object t, Display d, Engine en)
-            throws EngineMessage {
+    public EngineLexical(Comparator c, Engine en) {
         engine = en;
-        collator = collatorAtom(t, d, en);
+        cmp = c;
     }
 
     /**
@@ -118,13 +116,13 @@ public final class EngineLexical implements Comparator<Object> {
                         return ((Comparable) alfa).compareTo(beta);
                     throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
                 case SpecialLexical.CMP_TYPE_ATOM:
-                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta), collator);
+                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta), cmp);
                 case SpecialLexical.CMP_TYPE_COMPOUND:
                     Object[] t1 = ((SkelCompound) alfa).args;
                     Object[] t2 = ((SkelCompound) beta).args;
                     k = t1.length - t2.length;
                     if (k != 0) return k;
-                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym, collator);
+                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym, cmp);
                     if (k != 0) return k;
                     i = 0;
                     for (; i < t1.length - 1; i++) {
@@ -149,15 +147,19 @@ public final class EngineLexical implements Comparator<Object> {
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */
-    private static Collator collatorAtom(Object t, Display d, Engine en)
+    public static Comparator comparatorAtom(Object t, Display d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
         en.deref();
         EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
-        Locale loc = ForeignLocale.stringToLocale(fun);
-        return Collator.getInstance(loc);
+        if ("IGNORE_CASE".equals(fun)) {
+            return IgnoreCase.DEFAULT;
+        } else {
+            Locale loc = ForeignLocale.stringToLocale(fun);
+            return Collator.getInstance(loc);
+        }
     }
 
 }

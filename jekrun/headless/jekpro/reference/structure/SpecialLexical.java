@@ -10,6 +10,7 @@ import jekpro.tools.term.SkelVar;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Comparator;
 
 /**
  * <p>Provides built-in predicates for lexical comparison.</p>
@@ -135,9 +136,10 @@ public final class SpecialLexical extends Special {
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
+                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
                     witmolec = SpecialLexical.comparisonAtom(
-                            new EngineLexical(temp[0], ref, en)
-                                .localeCompareTerm(temp[2], ref, temp[3], ref), en);
+                            new EngineLexical(cmp, en)
+                                    .localeCompareTerm(temp[2], ref, temp[3], ref), en);
                     if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST, r, u))
                         return false;
                     return r.getNext(u, en);
