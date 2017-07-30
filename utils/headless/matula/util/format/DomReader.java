@@ -42,8 +42,6 @@ final class DomReader extends XmlScanner<XmlMachine> {
     static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
 
-    static final int MASK_TEXT = 0x00000001;
-
     int ret;
 
     /**
@@ -64,7 +62,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
         for (; ; ) {
             switch (getRes()) {
                 case XmlMachine.RES_TEXT:
-                    if ((ret & MASK_TEXT) != 0)
+                    if ((ret & DomNode.MASK_TEXT) != 0)
                         return;
                     checkWhitespace();
                     super.nextTagOrText();

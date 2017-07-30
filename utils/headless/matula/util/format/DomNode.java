@@ -33,6 +33,9 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class DomNode {
+    public static final int MASK_TEXT = 0x00000001;
+    public static final int MASK_LIST = 0x00000002;
+
     DomElement parent;
     private boolean lock;
 
@@ -85,9 +88,13 @@ public abstract class DomNode {
             throws IOException, ScannerError {
         DomReader dr = new DomReader();
         dr.setReader(reader);
-        dr.ret=ret;
+        dr.ret = ret;
         dr.nextTagOrText();
-        load(dr);
+        if ((ret & MASK_LIST) != 0) {
+            ((DomElement) this).loadChildren(dr);
+        } else {
+            load(dr);
+        }
         dr.checkEof();
     }
 
@@ -97,16 +104,21 @@ public abstract class DomNode {
      *
      * @param writer  The writer.
      * @param comment The comment
-     * @param ret    The return flags.
+     * @param ret     The return flags.
      */
     public void store(Writer writer, String comment, int ret)
             throws IOException {
         DomWriter dw = new DomWriter();
-        dw.writer=writer;
-        dw.ret=ret;
+        dw.writer = writer;
+        dw.ret = ret;
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
-        store(dw);
+        if ((ret & MASK_LIST) != 0) {
+            ((DomElement) this).storeChildren(dw);
+        } else {
+            store(dw);
+        }
+        writer.flush();
     }
 
     /**

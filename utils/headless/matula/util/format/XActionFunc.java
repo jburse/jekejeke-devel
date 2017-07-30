@@ -1,12 +1,7 @@
 package matula.util.format;
 
-import matula.util.system.ForeignXml;
-
-import java.io.IOException;
-import java.io.Writer;
-
 /**
- * <p>This class provides a dom writer.</p>
+ * <p>This class is the base class of xquery functions.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,46 +26,20 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DomWriter {
-    private static final int OFFSET_INCREMENT = 4;
-
-    Writer writer;
-    int ret;
-    int offset;
+public abstract class XActionFunc {
 
     /**
-     * <p>Increment the indent.</p>
-     */
-    void incIndent() {
-        offset += OFFSET_INCREMENT;
-    }
-
-    /**
-     * <p>Decrement the indent.</p>
-     */
-    void decIndent() {
-        offset -= OFFSET_INCREMENT;
-    }
-
-    /**
-     * <p>Write the indent.</p>
+     * <p>Perform this xquery function on a dom element.</p>
      *
-     * @throws IOException Shit happens.
+     * @param e The dom element.
      */
-    void writeIndent() throws IOException {
-        for (int i = 0; i < offset; i++)
-            writer.write(" ");
-    }
+    abstract void updateElement(DomElement e);
 
     /**
-     * <p>Write a time stamp.</p>
+     * <p>Convert this xquery function to a string.</p>
      *
-     * @throws IOException Shit happens.
+     * @return The string.
      */
-    void writeComment(String comment) throws IOException {
-        writer.write("<!-- ");
-        writer.write(ForeignXml.sysTextEscape(comment));
-        writer.write(" -->\n");
-    }
+    public abstract String toString();
 
 }

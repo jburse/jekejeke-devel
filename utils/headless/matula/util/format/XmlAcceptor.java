@@ -40,7 +40,7 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
      * <p>Create an xml acceptor for the given writer.</p>
      *
      * @param w The writer.
-     *          @param m The xml machine.
+     * @param m The xml machine.
      */
     public XmlAcceptor(Writer w, T m) {
         super(w);

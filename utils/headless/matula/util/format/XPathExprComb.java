@@ -33,8 +33,17 @@ public final class XPathExprComb extends XPathExpr {
     public static final int CONBINATION_AND = 0;
     public static final int COMBINATION_OR = 1;
 
-    private MapHashLink<String, XPathExpr> preds = new MapHashLink<String, XPathExpr>();
+    private MapHashLink<String, XPathExpr> exprs = new MapHashLink<String, XPathExpr>();
     private int combination;
+
+    /**
+     * <p>Retrieve the size.</p>
+     *
+     * @return The size.
+     */
+    int size() {
+        return exprs.size();
+    }
 
     /**
      * <p>Create a new xpath combination expression.</p>
@@ -48,55 +57,55 @@ public final class XPathExprComb extends XPathExpr {
     /**
      * <p>Add an element name predicate.</p>
      *
-     * @param name The name.
+     * @param n The name.
      */
-    public void whereName(String name) {
-        whereExpr(name, new XPathExprPrim(name, XPathExprPrim.PRIMITIVE_NAME));
+    public void whereName(String n) {
+        whereExpr(n, new XPathExprPrim(n, XPathExprPrim.PRIMITIVE_NAME));
     }
 
     /**
      * <p>Add an element attribute predicate.</p>
      *
-     * @param key   The key.
-     * @param value The value.
+     * @param k The key.
+     * @param v The value.
      */
-    public void whereAttr(String key, String value) {
-        whereExpr(key, new XPathExprPrim(key, value, XPathExprPrim.PRIMITIVE_ATTR));
+    public void whereAttr(String k, String v) {
+        whereExpr(k, new XPathExprPrim(k, v, XPathExprPrim.PRIMITIVE_ATTR));
     }
 
     /**
-     * <p>Add a predicate combintion.</p>
+     * <p>Add an xpath expression.</p>
      *
-     * @param slot The slot name.
-     * @param pred The predicate.
+     * @param s The slot name.
+     * @param e The xath expression.
      */
-    public void whereExpr(String slot, XPathExpr pred) {
-        MapEntry<String, XPathExpr> entry = preds.getEntry(slot);
+    public void whereExpr(String s, XPathExpr e) {
+        MapEntry<String, XPathExpr> entry = exprs.getEntry(s);
         if (entry != null) {
-            entry.value = pred;
+            entry.value = e;
         } else {
-            preds.put(slot, pred);
+            exprs.put(s, e);
         }
     }
 
     /**
-     * <p>Check whether an element is satisfied by this location.</p>
+     * <p>Check whether a dom element satisfies this xpath expression.</p>
      *
-     * @param e The element.
-     * @return True if the element is satisfied by this location, otherwise false.
+     * @param e The dom element.
+     * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
     boolean checkElement(DomElement e) {
         switch (combination) {
             case CONBINATION_AND:
-                for (MapEntry<String, XPathExpr> entry = preds.getFirstEntry();
-                     entry != null; entry = preds.successor(entry)) {
+                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                     entry != null; entry = exprs.successor(entry)) {
                     if (!entry.value.checkElement(e))
                         return false;
                 }
                 return true;
             case COMBINATION_OR:
-                for (MapEntry<String, XPathExpr> entry = preds.getFirstEntry();
-                     entry != null; entry = preds.successor(entry)) {
+                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                     entry != null; entry = exprs.successor(entry)) {
                     if (entry.value.checkElement(e))
                         return true;
                 }
@@ -107,7 +116,7 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Convert this location to a string.</p>
+     * <p>Convert this xpath expression to a string.</p>
      *
      * @return The string.
      */
@@ -116,8 +125,8 @@ public final class XPathExprComb extends XPathExpr {
             case CONBINATION_AND:
                 StringBuilder buf = new StringBuilder();
                 boolean first = true;
-                for (MapEntry<String, XPathExpr> entry = preds.getFirstEntry();
-                     entry != null; entry = preds.successor(entry)) {
+                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                     entry != null; entry = exprs.successor(entry)) {
                     if (first) {
                         buf.append(entry.value.toString());
                         first = false;
@@ -131,8 +140,8 @@ public final class XPathExprComb extends XPathExpr {
             case COMBINATION_OR:
                 buf = new StringBuilder();
                 first = true;
-                for (MapEntry<String, XPathExpr> entry = preds.getFirstEntry();
-                     entry != null; entry = preds.successor(entry)) {
+                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                     entry != null; entry = exprs.successor(entry)) {
                     if (first) {
                         if (!(entry.value instanceof XPathExprPrim))
                             buf.append("(");

@@ -1,8 +1,6 @@
 package matula.util.format;
 
-import matula.util.data.MapEntry;
-import matula.util.data.MapHashLink;
-import matula.util.data.SetHashLink;
+import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
@@ -35,10 +33,10 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomElement extends DomNode {
-    private String name = "";
-    private MapHashLink<String, String> attributes = new MapHashLink<String, String>();
-    private SetHashLink<DomNode> children = new SetHashLink<DomNode>();
-    private DomNode[] cached;
+    private String name = XmlMachine.VALUE_EMPTY;
+    private ListArray<String> attr = new ListArray<String>();
+    private ListArray<String> value = new ListArray<String>();
+    private ListArray<DomNode> children = new ListArray<DomNode>();
 
     /**
      * <p>Retrieve the name.</p>
@@ -61,6 +59,16 @@ public final class DomElement extends DomNode {
     }
 
     /**
+     * <p>Check the name.</p>
+     *
+     * @param n The name.
+     * @return True if the name matches, otherwise false.
+     */
+    public boolean isName(String n) {
+        return name.equalsIgnoreCase(n);
+    }
+
+    /**
      * <p>Load a dom element.</p>
      * <p>Not synchronized, uses cut-over.</p>
      *
@@ -77,71 +85,33 @@ public final class DomElement extends DomNode {
                     throw new ScannerError(DomReader.DOM_START_MISSING);
                 boolean closed = checkClosed(dr);
                 String type = dr.getType();
-                MapHashLink<String, String> as = new MapHashLink<String, String>();
+                ListArray<String> as = new ListArray<String>();
+                ListArray<String> vs = new ListArray<String>();
                 for (int i = 0; i < dr.getAttrCount(); i++) {
-                    if (as.get(dr.getAttr(i)) != null)
+                    if (XmlMachine.indexAttr(as, dr.getAttr(i)) != -1)
                         throw new ScannerError(DomReader.DOM_DUPLICATE_ATTRIBUTE);
-                    String value = dr.getValueAt(i);
-                    value = ForeignXml.sysTextUnescape(XmlMachine.stripValue(value));
-                    as.put(dr.getAttr(i), value);
-                }
-                dr.nextTagOrText();
-                SetHashLink<DomNode> cs;
-                if (!closed) {
-                    cs = loadChildren(dr);
-                    checkEnd(type, dr);
-                } else {
-                    cs = new SetHashLink<DomNode>();
+                    String val = dr.getValueAt(i);
+                    val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(val));
+                    as.add(dr.getAttr(i));
+                    vs.add(val);
                 }
                 name = type;
                 synchronized (this) {
-                    attributes = as;
+                    attr = as;
+                    value = vs;
                 }
-                synchronized (this) {
-                    children = cs;
-                    cached = null;
+                dr.nextTagOrText();
+                if (!closed) {
+                    loadChildren(dr);
+                    checkEnd(type, dr);
+                } else {
+                    clearChildren();
                 }
                 break;
             case XmlMachine.RES_EOF:
                 throw new ScannerError(DomReader.DOM_START_MISSING);
             default:
                 throw new IllegalArgumentException("illegal res");
-        }
-    }
-
-
-    /**
-     * <p>Load the children.</p>
-     *
-     * @param dr The dom reader.
-     * @return The children.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
-     */
-    private SetHashLink<DomNode> loadChildren(DomReader dr)
-            throws IOException, ScannerError {
-        SetHashLink<DomNode> res = new SetHashLink<DomNode>();
-        for (; ; ) {
-            switch (dr.getRes()) {
-                case XmlMachine.RES_TEXT:
-                    DomText dt = new DomText();
-                    dt.parent = this;
-                    dt.load(dr);
-                    res.putKey(dt);
-                    break;
-                case XmlMachine.RES_TAG:
-                    if (dr.getType().startsWith(DomReader.STRING_SLASH))
-                        return res;
-                    DomElement dh = new DomElement();
-                    dh.parent = this;
-                    dh.load(dr);
-                    res.putKey(dh);
-                    break;
-                case XmlMachine.RES_EOF:
-                    return res;
-                default:
-                    throw new IllegalArgumentException("illegal res");
-            }
         }
     }
 
@@ -210,32 +180,31 @@ public final class DomElement extends DomNode {
         String[] names = snapshotAttrs();
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            String value = getAttr(name);
-            if (value == null)
+            String val = getAttr(name);
+            if (val == null)
                 continue;
             dw.writer.write(" ");
             dw.writer.write(name);
-            if (!"".equals(value)) {
+            if (!"".equals(val)) {
                 dw.writer.write("=\"");
-                dw.writer.write(ForeignXml.sysTextEscape(value));
+                dw.writer.write(ForeignXml.sysTextEscape(val));
                 dw.writer.write("\"");
             }
         }
 
-        DomNode[] nodes = snapshotChildren();
-        if (nodes.length == 0) {
+        if (sizeChildren() == 0) {
             dw.writer.write("/>");
         } else {
-            if ((dw.ret & DomReader.MASK_TEXT) != 0) {
+            if ((dw.ret & MASK_TEXT) != 0) {
                 dw.writer.write(">");
-                storeChildren(nodes, dw);
+                storeChildren(dw);
                 dw.writer.write("</");
                 dw.writer.write(name);
                 dw.writer.write(">");
             } else {
                 dw.writer.write(">\n");
                 dw.incIndent();
-                storeChildren(nodes, dw);
+                storeChildren(dw);
                 dw.decIndent();
                 dw.writeIndent();
                 dw.writer.write("</");
@@ -245,18 +214,86 @@ public final class DomElement extends DomNode {
         }
     }
 
+    /*****************************************************/
+    /* Children Store/Load                               */
+    /*****************************************************/
+
+    /**
+     * <p>Load a dom element.</p>
+     * <p>Not synchronized, uses cut-over.</p>
+     *
+     * @param dr The dom reader.
+     * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
+     */
+    void loadChildren(DomReader dr) throws IOException, ScannerError {
+        ListArray<DomNode> cs = loadChildren2(dr);
+        for (int i = 0; i < cs.size(); i++) {
+            DomNode node = cs.get(i);
+            node.parent = this;
+        }
+        synchronized (this) {
+            children = cs;
+        }
+    }
+
+    /**
+     * <p>Load the children.</p>
+     *
+     * @param dr The dom reader.
+     * @return The children.
+     * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
+     */
+    private static ListArray<DomNode> loadChildren2(DomReader dr)
+            throws IOException, ScannerError {
+        ListArray<DomNode> res = new ListArray<DomNode>();
+        for (; ; ) {
+            switch (dr.getRes()) {
+                case XmlMachine.RES_TEXT:
+                    DomText dt = new DomText();
+                    dt.load(dr);
+                    res.add(dt);
+                    break;
+                case XmlMachine.RES_TAG:
+                    if (dr.getType().startsWith(DomReader.STRING_SLASH))
+                        return res;
+                    DomElement dh = new DomElement();
+                    dh.load(dr);
+                    res.add(dh);
+                    break;
+                case XmlMachine.RES_EOF:
+                    return res;
+                default:
+                    throw new IllegalArgumentException("illegal res");
+            }
+        }
+    }
+
+    /**
+     * <p>Clear the elements.</p>
+     *
+     * <p>Not synchronized, uses cut-over.</p>
+     */
+    void clearChildren() {
+        ListArray<DomNode> cs = new ListArray<DomNode>();
+        synchronized (this) {
+            children = cs;
+        }
+    }
+
     /**
      * <p>Store the childeren.</p>
      *
-     * @param nodes The nodes.
-     * @param dw    The dom writer.
+     * @param dw The dom writer.
      * @throws IOException Shit happens.
      */
-    private static void storeChildren(DomNode[] nodes, DomWriter dw)
+    void storeChildren(DomWriter dw)
             throws IOException {
+        DomNode[] nodes = snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
-            if ((dw.ret & DomReader.MASK_TEXT) != 0) {
+            if ((dw.ret & MASK_TEXT) != 0) {
                 node.store(dw);
             } else {
                 dw.writeIndent();
@@ -264,6 +301,15 @@ public final class DomElement extends DomNode {
                 dw.writer.write("\n");
             }
         }
+    }
+
+    /**
+     * <p>Retrieve the number of elements.</p>
+     *
+     * @return The number of elements.
+     */
+    int sizeChildren() {
+        return children.size();
     }
 
     /*****************************************************/
@@ -280,7 +326,12 @@ public final class DomElement extends DomNode {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            return attributes.get(key);
+            int k = XmlMachine.indexAttr(attr, key);
+            if (k != -1) {
+                return value.get(k);
+            } else {
+                return null;
+            }
         }
     }
 
@@ -288,20 +339,21 @@ public final class DomElement extends DomNode {
      * <p>Add the key to the map.</p>
      * <p>Entry is create at the bottom.</p>
      *
-     * @param key   The key.
-     * @param value The value.
+     * @param key The key.
+     * @param val The value.
      */
-    public void setAttr(String key, String value) {
+    public void setAttr(String key, String val) {
         if (key == null)
             throw new NullPointerException("key missing");
-        if (value == null)
+        if (val == null)
             throw new NullPointerException("value missing");
         synchronized (this) {
-            MapEntry<String, String> entry = attributes.getEntry(key);
-            if (entry != null) {
-                entry.value = value;
+            int k = XmlMachine.indexAttr(attr, key);
+            if (k != -1) {
+                value.set(k, val);
             } else {
-                attributes.put(key, value);
+                attr.add(key);
+                value.add(val);
             }
         }
     }
@@ -315,8 +367,11 @@ public final class DomElement extends DomNode {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            if (attributes.get(key) != null)
-                attributes.remove(key);
+            int k = XmlMachine.indexAttr(attr, key);
+            if (k != -1) {
+                attr.remove(k);
+                value.remove(k);
+            }
         }
     }
 
@@ -328,8 +383,8 @@ public final class DomElement extends DomNode {
     public String[] snapshotAttrs() {
         String[] res;
         synchronized (this) {
-            res = new String[attributes.size()];
-            attributes.toArrayKeys(res);
+            res = new String[attr.size()];
+            attr.toArray(res);
         }
         return res;
     }
@@ -342,6 +397,7 @@ public final class DomElement extends DomNode {
      * <p>Add a child.</p>
      *
      * @param dh The child.
+     * @throws InterruptedException Transaction was interrupted.
      */
     public boolean addChild(DomNode dh) throws InterruptedException {
         if (dh == null)
@@ -351,8 +407,7 @@ public final class DomElement extends DomNode {
             if (dh.parent != null)
                 return false;
             synchronized (this) {
-                children.putKey(dh);
-                cached = null;
+                children.add(dh);
             }
             dh.parent = this;
         } finally {
@@ -365,6 +420,7 @@ public final class DomElement extends DomNode {
      * <p>Remoe a child.</p>
      *
      * @param dh The child.
+     * @throws InterruptedException Transaction was interrupted.
      */
     public boolean removeChild(DomNode dh) throws InterruptedException {
         if (dh == null)
@@ -375,7 +431,6 @@ public final class DomElement extends DomNode {
                 return false;
             synchronized (this) {
                 children.remove(dh);
-                cached = null;
             }
             dh.parent = null;
         } finally {
@@ -390,16 +445,10 @@ public final class DomElement extends DomNode {
      * @return The children snapshot.
      */
     public DomNode[] snapshotChildren() {
-        DomNode[] res = cached;
-        if (res != null)
-            return res;
+        DomNode[] res;
         synchronized (this) {
-            res = cached;
-            if (res != null)
-                return res;
             res = new DomNode[children.size()];
             children.toArray(res);
-            cached = res;
         }
         return res;
     }

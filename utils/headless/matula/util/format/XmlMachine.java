@@ -59,7 +59,7 @@ public class XmlMachine {
 
     private char[] text = new char[MAX_JUNK];
     private int top;
-    private String type;
+    private String type = VALUE_EMPTY;
     private int off;
     private ListArray<String> attr = new ListArray<String>();
     private ListArray<String> value = new ListArray<String>();
@@ -414,7 +414,7 @@ public class XmlMachine {
      * @return true if actual tag type matches parameter.
      */
     public boolean isType(String t) {
-        return t.equalsIgnoreCase(type);
+        return type.equalsIgnoreCase(t);
     }
 
     /**
@@ -457,13 +457,7 @@ public class XmlMachine {
      * @return The index, or -1.
      */
     public int indexAttr(String a) {
-        int m = attr.size();
-        for (int i = 0; i < m; i++) {
-            String n = attr.get(i);
-            if (n.equalsIgnoreCase(a))
-                return i;
-        }
-        return -1;
+        return indexAttr(attr, a);
     }
 
     /**
@@ -474,6 +468,54 @@ public class XmlMachine {
     public void removeAttrValue(int i) {
         attr.remove(i);
         value.remove(i);
+    }
+
+    /**
+     * <p>Retrieve an actual tag argument.</p>
+     * <p>Can be retrieved when the result type is RES_TAG.</p>
+     * <p>The attribute name will be matched ignore case.</p>
+     *
+     * @param a The attribute name
+     * @return The value or null if attribute is not present.
+     */
+    public String getValue(String a) {
+        int k = indexAttr(attr, a);
+        if (k == -1) return null;
+        return ForeignXml.sysTextUnescape(stripValue(getValueAt(k)));
+    }
+
+    /**
+     * <p>Retrieve the an attribute value.</p>
+     *
+     * @param a The attribute name.
+     * @param d The default attribute value.
+     * @return The attribute value.
+     */
+    public String getValue(String a, String d) {
+        String v = getValue(a);
+        if (v == null) v = d;
+        return v;
+    }
+
+    /**************************************************************/
+    /* Attribute Helper                                           */
+    /**************************************************************/
+
+    /**
+     * <p>Find the index of an attribute.</p>
+     * <p>The case of the attribute is ignored.</p>
+     *
+     * @param a The attribute.
+     * @return The index, or -1.
+     */
+    public static int indexAttr(ListArray<String> l, String a) {
+        int m = l.size();
+        for (int i = 0; i < m; i++) {
+            String n = l.get(i);
+            if (n.equalsIgnoreCase(a))
+                return i;
+        }
+        return -1;
     }
 
     /**
@@ -492,33 +534,6 @@ public class XmlMachine {
         } else {
             return v;
         }
-    }
-
-    /**
-     * <p>Retrieve an actual tag argument.</p>
-     * <p>Can be retrieved when the result type is RES_TAG.</p>
-     * <p>The attribute name will be matched ignore case.</p>
-     *
-     * @param a The attribute name
-     * @return The value or null if attribute is not present.
-     */
-    public String getValue(String a) {
-        int k = indexAttr(a);
-        if (k == -1) return null;
-        return ForeignXml.sysTextUnescape(stripValue(getValueAt(k)));
-    }
-
-    /**
-     * <p>Retrieve the an attribute value.</p>
-     *
-     * @param a The attribute name.
-     * @param d The default attribute value.
-     * @return The attribute value.
-     */
-    public String getValue(String a, String d) {
-        String v = getValue(a);
-        if (v == null) v = d;
-        return v;
     }
 
 }

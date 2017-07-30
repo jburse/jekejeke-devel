@@ -1,7 +1,7 @@
 package matula.util.format;
 
 /**
- * <p>This predicate implements an xpath primitive expression.</p>
+ * <p>This class represents an xquery update function.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -26,75 +26,72 @@ package matula.util.format;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XPathExprPrim extends XPathExpr {
-    public static final int PRIMITIVE_NAME = 0;
-    public static final int PRIMITIVE_ATTR = 1;
+public final class XActionFuncUpdate extends XActionFunc {
+    public static final int UPDATE_NAME = 0;
+    public static final int UPDATE_ATTR = 1;
 
     private String keyorname;
     private String value;
-    private int primitive;
+    private int update;
 
     /**
-     * <p>>Create a new xpath primitive expression.</p>
+     * <p>>Create a new xquery update.</p>
      *
      * @param n The name.
-     * @param p The type of primitive.
+     * @param u The type of update.
      */
-    public XPathExprPrim(String n, int p) {
+    public XActionFuncUpdate(String n, int u) {
         if (n == null)
             throw new NullPointerException("name missing");
         keyorname = n;
-        primitive = p;
+        update = u;
     }
 
     /**
-     * <p>>Create a new xpath primitive expression.</p>
+     * <p>>Create a new xquery update.</p>
      *
      * @param k The key.
      * @param v The value.
-     * @param p The type of primitive.
+     * @param u The type of update.
      */
-    public XPathExprPrim(String k, String v, int p) {
+    public XActionFuncUpdate(String k, String v, int u) {
         if (k == null)
             throw new NullPointerException("key missing");
         if (v == null)
             throw new NullPointerException("value missing");
         keyorname = k;
         value = v;
-        primitive = p;
+        update = u;
     }
 
     /**
-     * <p>Check whether a dom element satisfies this xpath expression.</p>
+     * <p>Perform this xquery function on a dom element.</p>
      *
      * @param e The dom element.
-     * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
-    boolean checkElement(DomElement e) {
-        switch (primitive) {
-            case PRIMITIVE_NAME:
-                if (!e.isName(keyorname))
-                    return false;
-                return true;
-            case PRIMITIVE_ATTR:
-                if (!value.equals(e.getAttr(keyorname)))
-                    return false;
-                return true;
+    void updateElement(DomElement e) {
+        switch (update) {
+            case UPDATE_NAME:
+                e.setName(keyorname);
+                break;
+            case UPDATE_ATTR:
+                e.setAttr(keyorname, value);
+                break;
             default:
-                throw new IllegalArgumentException("illegal primitive");
+                throw new IllegalArgumentException("illegal update");
         }
     }
 
     /**
-     * <p>Convert this xpath expression to a string.</p>
+     * <p>Convert this xquery function to a string.</p>
      *
      * @return The string.
      */
     public String toString() {
-        switch (primitive) {
-            case PRIMITIVE_NAME:
+        switch (update) {
+            case UPDATE_NAME:
                 return keyorname;
-            case PRIMITIVE_ATTR:
+            case UPDATE_ATTR:
                 StringBuilder buf = new StringBuilder();
                 buf.append("@");
                 buf.append(keyorname);
@@ -103,7 +100,7 @@ public final class XPathExprPrim extends XPathExpr {
                 buf.append("\"");
                 return buf.toString();
             default:
-                throw new IllegalArgumentException("illegal primitive");
+                throw new IllegalArgumentException("illegal update");
         }
     }
 

@@ -132,29 +132,6 @@ public abstract class AbstractMap<K, V> {
         }
     }
 
-    /**
-     * <p>Copy the hash map keys to an array.</p>
-     *
-     * @param target The array.
-     */
-    public void toArrayKeys(K[] target) {
-        toArrayKeys(target, 0);
-    }
-
-    /**
-     * <p>Copy the hash map keys to an array.</p>
-     *
-     * @param target The array.
-     * @param pos    The start index.
-     */
-    public void toArrayKeys(K[] target, int pos) {
-        for (MapEntry<K, V> entry = getFirstEntry();
-             entry != null; entry = successor(entry)) {
-            target[pos] = entry.key;
-            pos++;
-        }
-    }
-
     /***************************************************************/
     /* Object Protocol                                             */
     /***************************************************************/

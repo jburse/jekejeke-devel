@@ -29,11 +29,18 @@ package matula.util.format;
 public abstract class XPathExpr {
 
     /**
-     * <p>Check whether an element is satisfied by this location.</p>
+     * <p>Check whether a dom element satisfies this xpath expression.</p>
      *
-     * @param e The element.
-     * @return True if the element is satisfied by this location, otherwise false.
+     * @param e The dom element.
+     * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
     abstract boolean checkElement(DomElement e);
+
+    /**
+     * <p>Convert this xpath expression to a string.</p>
+     *
+     * @return The string.
+     */
+    public abstract String toString();
 
 }
