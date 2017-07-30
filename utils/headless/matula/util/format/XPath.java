@@ -29,28 +29,41 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XPath {
-    private ListArray<XPathExprComb> locs = new ListArray<XPathExprComb>();
     private ListArray<ChoicePoint> hits = new ListArray<ChoicePoint>();
 
+    /**
+     * <p>Retrieve the number of xpath choices.</p>
+     *
+     * @return The number of xpath choices.
+     */
+    public int size() {
+        return hits.size();
+    }
+
     /*****************************************************/
-    /* XPath Expressions                                 */
+    /* Choice Points                                     */
     /*****************************************************/
 
     /**
      * <p>Add a new child xpath expression.</p>
      */
     public void whereChild() {
-        locs.add(new XPathExprComb(XPathExprComb.CONBINATION_AND));
-        hits.add(new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILDREN));
+        hits.add(new ChoicePoint(new XPathExprComb(XPathExprComb.CONBINATION_AND),
+                ChoicePoint.CHOICEPOINT_CHILDREN));
     }
 
     /**
      * <p>Add a new parent xpath expression.</p>
      */
     public void whereParent() {
-        locs.add(new XPathExprComb(XPathExprComb.CONBINATION_AND));
-        hits.add(new ChoicePoint(ChoicePoint.CHOICEPOINT_PARENT));
+        hits.add(new ChoicePoint(null,
+                ChoicePoint.CHOICEPOINT_PARENT));
     }
+
+
+    /*****************************************************/
+    /* XPath Expressions                                 */
+    /*****************************************************/
 
     /**
      * <p>Add an element name predicate.</p>
@@ -58,7 +71,7 @@ public final class XPath {
      * @param n The name.
      */
     public void whereName(String n) {
-        locs.get(locs.size() - 1).whereName(n);
+        hits.get(hits.size() - 1).whereName(n);
     }
 
     /**
@@ -68,7 +81,7 @@ public final class XPath {
      * @param v The value.
      */
     public void whereAttr(String k, String v) {
-        locs.get(locs.size() - 1).whereAttr(k, v);
+        hits.get(hits.size() - 1).whereAttr(k, v);
     }
 
     /**
@@ -78,7 +91,7 @@ public final class XPath {
      * @param p The xath expression.
      */
     public void whereExpr(String s, XPathExpr p) {
-        locs.get(locs.size() - 1).whereExpr(s, p);
+        hits.get(hits.size() - 1).whereExpr(s, p);
     }
 
     /*****************************************************/
@@ -93,33 +106,17 @@ public final class XPath {
      * @return The found dom element, or null.
      */
     public DomElement findFirst(int pos, DomElement e) {
-        if (pos == locs.size())
+        if (pos == hits.size())
             return e;
         ChoicePoint hit = hits.get(pos);
-        switch (hit.getChoice()) {
-            case ChoicePoint.CHOICEPOINT_CHILDREN:
-                DomNode[] children = e.snapshotChildren();
-                for (int i = 0; i < children.length; i++) {
-                    DomNode child = children[i];
-                    if (!(child instanceof DomElement))
-                        continue;
-                    e = (DomElement) child;
-                    if (!locs.get(pos).checkElement(e))
-                        continue;
-                    e = findFirst(pos + 1, e);
-                    if (e != null) {
-                        hit.setChildren(children);
-                        hit.setPos(i);
-                        return e;
-                    }
-                }
-                return null;
-            case ChoicePoint.CHOICEPOINT_PARENT:
-                DomElement parent = e.getParent();
-                return findFirst(pos + 1, parent);
-            default:
-                throw new IllegalArgumentException("illegal choice");
+        e = hit.findFirst(e);
+        while (e != null) {
+            e = findFirst(pos + 1, e);
+            if (e != null)
+                return e;
+            e = hit.findNext();
         }
+        return null;
     }
 
     /**
@@ -130,28 +127,12 @@ public final class XPath {
     public DomElement findNext() {
         for (int pos = hits.size() - 1; pos >= 0; pos--) {
             ChoicePoint hit = hits.get(pos);
-            switch (hit.getChoice()) {
-                case ChoicePoint.CHOICEPOINT_CHILDREN:
-                    DomNode[] children = hit.getChildren();
-                    for (int i = hit.getPos() + 1; i < children.length; i++) {
-                        DomNode child = children[i];
-                        if (!(child instanceof DomElement))
-                            continue;
-                        DomElement e = (DomElement) child;
-                        if (!locs.get(pos).checkElement(e))
-                            continue;
-                        e = findFirst(pos + 1, e);
-                        if (e != null) {
-                            hit.setPos(i);
-                            return e;
-                        }
-                    }
-                    hit.setChildren(null);
-                    break;
-                case ChoicePoint.CHOICEPOINT_PARENT:
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal choice");
+            DomElement e = hit.findNext();
+            while (e != null) {
+                e = findFirst(pos + 1, e);
+                if (e != null)
+                    return e;
+                e = hit.findNext();
             }
         }
         return null;
@@ -163,15 +144,7 @@ public final class XPath {
     public void findClose() {
         for (int pos = hits.size() - 1; pos >= 0; pos--) {
             ChoicePoint hit = hits.get(pos);
-            switch (hit.getChoice()) {
-                case ChoicePoint.CHOICEPOINT_CHILDREN:
-                    hit.setChildren(null);
-                    break;
-                case ChoicePoint.CHOICEPOINT_PARENT:
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal choice");
-            }
+            hit.findClose();
         }
     }
 
@@ -186,20 +159,11 @@ public final class XPath {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < locs.size(); i++) {
-            ChoicePoint hit = hits.get(i);
-            switch (hit.getChoice()) {
-                case ChoicePoint.CHOICEPOINT_CHILDREN:
-                    break;
-                case ChoicePoint.CHOICEPOINT_PARENT:
-                    buf.append("..");
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal choice");
-            }
+        for (int i = 0; i < hits.size(); i++) {
             if (i != 0)
                 buf.append("/");
-            buf.append(locs.get(i).toString());
+            ChoicePoint hit = hits.get(i);
+            buf.append(hit.toString());
         }
         return buf.toString();
     }

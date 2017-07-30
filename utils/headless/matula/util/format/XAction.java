@@ -32,14 +32,41 @@ public final class XAction {
     private ListArray<XActionFuncAggregate> acts = new ListArray<XActionFuncAggregate>();
 
     /**
-     * <p>Create a new xpath.</p>
+     * <p>Retrieve the number of xaction functions.</p>
+     *
+     * @return The number of xaction functions.
      */
-    public XAction() {
-        acts.add(new XActionFuncAggregate(XActionFuncAggregate.AGGEGATE_SEQ));
+    public int size() {
+        return acts.size();
     }
 
     /*****************************************************/
     /* XAction Functions                                 */
+    /*****************************************************/
+
+    /**
+     * <p>Add a new insert xaction.</p>
+     */
+    public void calcInsert() {
+        acts.add(new XActionFuncAggregate(XActionFuncAggregate.ACTION_INSERT));
+    }
+
+    /**
+     * <p>Add a new delete xaction.</p>
+     */
+    public void calcDelete() {
+        acts.add(new XActionFuncAggregate(XActionFuncAggregate.ACTION_DELETE));
+    }
+
+    /**
+     * <p>Add a new update xaction.</p>
+     */
+    public void calcUpdate() {
+        acts.add(new XActionFuncAggregate(XActionFuncAggregate.ACTION_UPDATE));
+    }
+
+    /*****************************************************/
+    /* XAction Updates                                   */
     /*****************************************************/
 
     /**
@@ -71,20 +98,6 @@ public final class XAction {
         acts.get(acts.size() - 1).calcFunc(s, f);
     }
 
-    /**
-     * <p>Add a new child xquery function.</p>
-     */
-    public void calcAdd() {
-        acts.add(new XActionFuncAggregate(XActionFuncAggregate.AGGEGATE_SEQ));
-    }
-
-    /**
-     * <p>Remove the last xquery function.</p>
-     */
-    public void calcRemove() {
-        acts.remove(acts.size() - 1);
-    }
-
     /*****************************************************/
     /* Modify Helper                                     */
     /*****************************************************/
@@ -97,15 +110,25 @@ public final class XAction {
      */
     public void performActions(DomElement e)
             throws InterruptedException {
-        if (acts.size() == 0) {
-            e.getParent().removeChild(e);
-        } else {
-            acts.get(0).updateElement(e);
-            for (int i = 1; i < acts.size(); i++) {
-                DomElement e2 = new DomElement();
-                e.getParent().addChild(e2);
-                e = e2;
-                acts.get(i).updateElement(e);
+        for (int i = 0; i < acts.size(); i++) {
+            XActionFuncAggregate act = acts.get(i);
+            switch (act.getAction()) {
+                case XActionFuncAggregate.ACTION_INSERT:
+                    DomElement e2 = new DomElement();
+                    act.updateElement(e2);
+                    e.getParent().addChild(e2);
+                    e = e2;
+                    break;
+                case XActionFuncAggregate.ACTION_DELETE:
+                    e2 = e.getParent();
+                    e2.removeChild(e);
+                    e = e2;
+                    break;
+                case XActionFuncAggregate.ACTION_UPDATE:
+                    act.updateElement(e);
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal action");
             }
         }
     }
@@ -124,7 +147,21 @@ public final class XAction {
         for (int i = 0; i < acts.size(); i++) {
             if (i != 0)
                 buf.append("/");
-            buf.append(acts.get(i).toString());
+            XActionFuncAggregate act = acts.get(i);
+            switch (act.getAction()) {
+                case XActionFuncAggregate.ACTION_INSERT:
+                    buf.append(act.toString());
+                    break;
+                case XActionFuncAggregate.ACTION_DELETE:
+                    buf.append("..");
+                    break;
+                case XActionFuncAggregate.ACTION_UPDATE:
+                    buf.append(".");
+                    buf.append(act.toString());
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal action");
+            }
         }
         return buf.toString();
     }

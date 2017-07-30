@@ -37,15 +37,6 @@ public final class XPathExprComb extends XPathExpr {
     private int combination;
 
     /**
-     * <p>Retrieve the size.</p>
-     *
-     * @return The size.
-     */
-    int size() {
-        return exprs.size();
-    }
-
-    /**
      * <p>Create a new xpath combination expression.</p>
      *
      * @param c The type of combination.

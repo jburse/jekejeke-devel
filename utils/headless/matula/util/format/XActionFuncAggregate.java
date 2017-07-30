@@ -30,19 +30,12 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XActionFuncAggregate extends XActionFunc {
-    public static final int AGGEGATE_SEQ = 0;
+    public static final int ACTION_INSERT = 0;
+    public static final int ACTION_DELETE = 1;
+    public static final int ACTION_UPDATE = 2;
 
     private MapHashLink<String, XActionFunc> funcs = new MapHashLink<String, XActionFunc>();
-    private int aggregate;
-
-    /**
-     * <p>Retrieve the size.</p>
-     *
-     * @return The size.
-     */
-    int size() {
-        return funcs.size();
-    }
+    private int action;
 
     /**
      * <p>Create a new xquery aggregate function.</p>
@@ -50,8 +43,21 @@ public final class XActionFuncAggregate extends XActionFunc {
      * @param a The type of aggegate.
      */
     public XActionFuncAggregate(int a) {
-        aggregate = a;
+        action = a;
     }
+
+    /**
+     * <p>Retrieve the action.</p>
+     *
+     * @return The action.
+     */
+    public int getAction() {
+        return action;
+    }
+
+    /*****************************************************/
+    /* XAction Updates                                   */
+    /*****************************************************/
 
     /**
      * <p>Add an element name action.</p>
@@ -105,25 +111,20 @@ public final class XActionFuncAggregate extends XActionFunc {
      * @return The string.
      */
     public String toString() {
-        switch (aggregate) {
-            case AGGEGATE_SEQ:
-                StringBuilder buf = new StringBuilder();
-                boolean first = true;
-                for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
-                     entry != null; entry = funcs.successor(entry)) {
-                    if (first) {
-                        buf.append(entry.value.toString());
-                        first = false;
-                    } else {
-                        buf.append("[");
-                        buf.append(entry.value.toString());
-                        buf.append("]");
-                    }
-                }
-                return buf.toString();
-            default:
-                throw new IllegalArgumentException("illegal aggregate");
+        StringBuilder buf = new StringBuilder();
+        boolean first = true;
+        for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
+             entry != null; entry = funcs.successor(entry)) {
+            if (first) {
+                buf.append(entry.value.toString());
+                first = false;
+            } else {
+                buf.append("[");
+                buf.append(entry.value.toString());
+                buf.append("]");
+            }
         }
+        return buf.toString();
     }
 
 }
