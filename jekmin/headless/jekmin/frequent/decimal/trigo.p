@@ -118,9 +118,9 @@ next_sin((L,T), X, P, (K,S)) :-
    mp_math((T*X*X/(2*K+2)+V)/(2*K+1), P, S).
 
 % mod_range(+Decimal, -Integer, +Context, -Decimal)
-:- public mod_range/4.
+:- private mod_range/4.
 mod_range(X, K, P, Y) :-
-   mp_math((X+pi*0.125)div(pi*0d0.25), P, I),
+   mp_math((X+pi*0d0.125)div(pi*0d0.25), P, I),
    K is I mod 8,
    mp_math(X-I*(pi*0d0.25), P, Y).
 
@@ -158,7 +158,7 @@ mp_cos_case(1, X, P, Y) :-
 mp_cos_case(2, X, P, Y) :-
    mp_math(-sin(X), P, Y).
 mp_cos_case(3, X, P, Y) :-
-   mp_math(sqrt1div2*(cos(X)+sin(X)), P, Y).
+   mp_math(sqrt1div2*(-cos(X)-sin(X)), P, Y).
 mp_cos_case(4, X, P, Y) :-
    mp_math(-cos(X), P, Y).
 mp_cos_case(5, X, P, Y) :-
