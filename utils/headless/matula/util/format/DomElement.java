@@ -272,7 +272,7 @@ public final class DomElement extends DomNode {
 
     /**
      * <p>Clear the elements.</p>
-     *
+     * <p>
      * <p>Not synchronized, uses cut-over.</p>
      */
     void clearChildren() {
@@ -381,12 +381,12 @@ public final class DomElement extends DomNode {
      * @return The snapshot.
      */
     public String[] snapshotAttrs() {
-        String[] res;
+        String[] names;
         synchronized (this) {
-            res = new String[attr.size()];
-            attr.toArray(res);
+            names = new String[attr.size()];
+            attr.toArray(names);
         }
-        return res;
+        return names;
     }
 
     /*****************************************************/
@@ -445,12 +445,68 @@ public final class DomElement extends DomNode {
      * @return The children snapshot.
      */
     public DomNode[] snapshotChildren() {
-        DomNode[] res;
+        DomNode[] nodes;
         synchronized (this) {
-            res = new DomNode[children.size()];
-            children.toArray(res);
+            nodes = new DomNode[children.size()];
+            children.toArray(nodes);
+        }
+        return nodes;
+    }
+
+    /**
+     * <p>Retrieve the child at some index.</p>
+     *
+     * @param i The index.
+     * @return The child, or null.
+     */
+    public DomNode getChildAt(int i) {
+        DomNode node;
+        synchronized (this) {
+            if (i < 0)
+                return null;
+            if (i >= children.size())
+                return null;
+            node = children.get(i);
+        }
+        return node;
+    }
+
+    /**
+     * <p>Retrieve the child index.</p>
+     *
+     * @param dh The child.
+     * @return The index.
+     */
+    public int getChildIndex(DomNode dh) {
+        int res;
+        synchronized (this) {
+            res = children.indexOf(dh);
         }
         return res;
+    }
+
+    /**
+     * <p>Add a child at some index.</p>
+     *
+     * @param i The index.
+     * @param dh The child.
+     * @throws InterruptedException Transaction was interrupted.
+     */
+    public boolean addChild(int i, DomNode dh) throws InterruptedException {
+        if (dh == null)
+            throw new NullPointerException("child missing");
+        dh.beginReparent();
+        try {
+            if (dh.parent != null)
+                return false;
+            synchronized (this) {
+                children.add(i, dh);
+            }
+            dh.parent = this;
+        } finally {
+            dh.endReparent();
+        }
+        return true;
     }
 
 }

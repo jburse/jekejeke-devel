@@ -29,7 +29,7 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XAction {
-    private ListArray<XActionFuncAggregate> acts = new ListArray<XActionFuncAggregate>();
+    private ListArray<XActionFuncAggr> acts = new ListArray<XActionFuncAggr>();
 
     /**
      * <p>Retrieve the number of xaction functions.</p>
@@ -48,21 +48,35 @@ public final class XAction {
      * <p>Add a new insert xaction.</p>
      */
     public void calcInsert() {
-        acts.add(new XActionFuncAggregate(XActionFuncAggregate.ACTION_INSERT));
+        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_INSERT);
+        acts.add(xfa);
     }
 
     /**
      * <p>Add a new delete xaction.</p>
      */
     public void calcDelete() {
-        acts.add(new XActionFuncAggregate(XActionFuncAggregate.ACTION_DELETE));
+        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_DELETE);
+        acts.add(xfa);
     }
 
     /**
      * <p>Add a new update xaction.</p>
      */
     public void calcUpdate() {
-        acts.add(new XActionFuncAggregate(XActionFuncAggregate.ACTION_UPDATE));
+        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_UPDATE);
+        acts.add(xfa);
+    }
+
+    /**
+     * <p>Add a new index insert xaction.</p>
+     *
+     * @param i The index.
+     */
+    public void calcInsertIndex(int i) {
+        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_INSERT_INDEX);
+        xfa.setPos(i);
+        acts.add(xfa);
     }
 
     /*****************************************************/
@@ -111,21 +125,27 @@ public final class XAction {
     public void performActions(DomElement e)
             throws InterruptedException {
         for (int i = 0; i < acts.size(); i++) {
-            XActionFuncAggregate act = acts.get(i);
+            XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {
-                case XActionFuncAggregate.ACTION_INSERT:
+                case XActionFuncAggr.ACTION_INSERT:
                     DomElement e2 = new DomElement();
                     act.updateElement(e2);
                     e.getParent().addChild(e2);
                     e = e2;
                     break;
-                case XActionFuncAggregate.ACTION_DELETE:
+                case XActionFuncAggr.ACTION_DELETE:
                     e2 = e.getParent();
                     e2.removeChild(e);
                     e = e2;
                     break;
-                case XActionFuncAggregate.ACTION_UPDATE:
+                case XActionFuncAggr.ACTION_UPDATE:
                     act.updateElement(e);
+                    break;
+                case XActionFuncAggr.ACTION_INSERT_INDEX:
+                    e2 = new DomElement();
+                    act.updateElement(e2);
+                    e.getParent().addChild(act.getPos(), e2);
+                    e = e2;
                     break;
                 default:
                     throw new IllegalArgumentException("illegal action");
@@ -147,16 +167,22 @@ public final class XAction {
         for (int i = 0; i < acts.size(); i++) {
             if (i != 0)
                 buf.append("/");
-            XActionFuncAggregate act = acts.get(i);
+            XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {
-                case XActionFuncAggregate.ACTION_INSERT:
+                case XActionFuncAggr.ACTION_INSERT:
                     buf.append(act.toString());
                     break;
-                case XActionFuncAggregate.ACTION_DELETE:
+                case XActionFuncAggr.ACTION_DELETE:
                     buf.append("..");
                     break;
-                case XActionFuncAggregate.ACTION_UPDATE:
+                case XActionFuncAggr.ACTION_UPDATE:
                     buf.append(".");
+                    buf.append(act.toString());
+                    break;
+                case XActionFuncAggr.ACTION_INSERT_INDEX:
+                    buf.append("[");
+                    buf.append(act.getPos());
+                    buf.append("]");
                     buf.append(act.toString());
                     break;
                 default:

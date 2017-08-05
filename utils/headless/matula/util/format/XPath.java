@@ -48,18 +48,29 @@ public final class XPath {
      * <p>Add a new child xpath expression.</p>
      */
     public void whereChild() {
-        hits.add(new ChoicePoint(new XPathExprComb(XPathExprComb.CONBINATION_AND),
-                ChoicePoint.CHOICEPOINT_CHILDREN));
+        ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILDREN);
+        cp.setExpr(new XPathExprComb(XPathExprComb.CONBINATION_AND));
+        hits.add(cp);
     }
 
     /**
      * <p>Add a new parent xpath expression.</p>
      */
     public void whereParent() {
-        hits.add(new ChoicePoint(null,
-                ChoicePoint.CHOICEPOINT_PARENT));
+        ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_PARENT);
+        hits.add(cp);
     }
 
+    /**
+     * <p>Add a new index child xpath expression.</p>
+     *
+     * @param i The index.
+     */
+    public void whereChildIndex(int i) {
+        ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILD_INDEX);
+        cp.setPos(i);
+        hits.add(cp);
+    }
 
     /*****************************************************/
     /* XPath Expressions                                 */

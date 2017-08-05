@@ -29,20 +29,22 @@ import matula.util.data.MapHashLink;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XActionFuncAggregate extends XActionFunc {
+public final class XActionFuncAggr extends XActionFunc {
     public static final int ACTION_INSERT = 0;
     public static final int ACTION_DELETE = 1;
     public static final int ACTION_UPDATE = 2;
+    public static final int ACTION_INSERT_INDEX = 3;
 
     private MapHashLink<String, XActionFunc> funcs = new MapHashLink<String, XActionFunc>();
     private int action;
+    private int pos;
 
     /**
      * <p>Create a new xquery aggregate function.</p>
      *
      * @param a The type of aggegate.
      */
-    public XActionFuncAggregate(int a) {
+    XActionFuncAggr(int a) {
         action = a;
     }
 
@@ -51,8 +53,26 @@ public final class XActionFuncAggregate extends XActionFunc {
      *
      * @return The action.
      */
-    public int getAction() {
+    int getAction() {
         return action;
+    }
+
+    /**
+     * <p>Set the index.</p>
+     *
+     * @param i The index.
+     */
+    void setPos(int i) {
+        pos = i;
+    }
+
+    /**
+     * <p>Retrieve the index.</p>
+     *
+     * @return The index.
+     */
+    int getPos() {
+        return pos;
     }
 
     /*****************************************************/
@@ -64,7 +84,7 @@ public final class XActionFuncAggregate extends XActionFunc {
      *
      * @param n The name.
      */
-    public void calcName(String n) {
+    void calcName(String n) {
         calcFunc(n, new XActionFuncUpdate(n, XActionFuncUpdate.UPDATE_NAME));
     }
 
@@ -74,7 +94,7 @@ public final class XActionFuncAggregate extends XActionFunc {
      * @param k The key.
      * @param v The value.
      */
-    public void calcAttr(String k, String v) {
+    void calcAttr(String k, String v) {
         calcFunc(k, new XActionFuncUpdate(k, v, XActionFuncUpdate.UPDATE_ATTR));
     }
 
@@ -84,7 +104,7 @@ public final class XActionFuncAggregate extends XActionFunc {
      * @param s The slot name.
      * @param f The xquery update.
      */
-    public void calcFunc(String s, XActionFunc f) {
+    void calcFunc(String s, XActionFunc f) {
         MapEntry<String, XActionFunc> entry = funcs.getEntry(s);
         if (entry != null) {
             entry.value = f;

@@ -27,8 +27,9 @@ package matula.util.format;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class ChoicePoint {
-    public static final int CHOICEPOINT_CHILDREN = 0;
-    public static final int CHOICEPOINT_PARENT = 1;
+    static final int CHOICEPOINT_CHILDREN = 0;
+    static final int CHOICEPOINT_PARENT = 1;
+    static final int CHOICEPOINT_CHILD_INDEX = 2;
 
     private DomNode[] children;
     private int pos;
@@ -40,9 +41,26 @@ final class ChoicePoint {
      *
      * @param c The type of choice.
      */
-    public ChoicePoint(XPathExprComb e, int c) {
-        expr = e;
+    ChoicePoint(int c) {
         choice = c;
+    }
+
+    /**
+     * <p>Set the expression.</p>
+     *
+     * @param e The expression.
+     */
+    void setExpr(XPathExprComb e) {
+        expr = e;
+    }
+
+    /**
+     * <p>Set the index.</p>
+     *
+     * @param i The index.
+     */
+    void setPos(int i) {
+        pos = i;
     }
 
     /*****************************************************/
@@ -54,7 +72,7 @@ final class ChoicePoint {
      *
      * @param n The name.
      */
-    public void whereName(String n) {
+    void whereName(String n) {
         expr.whereName(n);
     }
 
@@ -64,7 +82,7 @@ final class ChoicePoint {
      * @param k The key.
      * @param v The value.
      */
-    public void whereAttr(String k, String v) {
+    void whereAttr(String k, String v) {
         expr.whereAttr(k, v);
     }
 
@@ -74,7 +92,7 @@ final class ChoicePoint {
      * @param s The slot name.
      * @param e The xath expression.
      */
-    public void whereExpr(String s, XPathExpr e) {
+    void whereExpr(String s, XPathExpr e) {
         expr.whereExpr(s, e);
     }
 
@@ -106,6 +124,11 @@ final class ChoicePoint {
                 return null;
             case ChoicePoint.CHOICEPOINT_PARENT:
                 return e.getParent();
+            case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
+                DomNode node = e.getChildAt(pos);
+                if (!(node instanceof DomElement))
+                    return null;
+                return (DomElement) node;
             default:
                 throw new IllegalArgumentException("illegal choice");
         }
@@ -134,6 +157,8 @@ final class ChoicePoint {
                 return null;
             case ChoicePoint.CHOICEPOINT_PARENT:
                 return null;
+            case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
+                return null;
             default:
                 throw new IllegalArgumentException("illegal choice");
         }
@@ -148,6 +173,8 @@ final class ChoicePoint {
                 children = null;
                 break;
             case ChoicePoint.CHOICEPOINT_PARENT:
+                break;
+            case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
                 break;
             default:
                 throw new IllegalArgumentException("illegal choice");
@@ -169,6 +196,8 @@ final class ChoicePoint {
                 return expr.toString();
             case ChoicePoint.CHOICEPOINT_PARENT:
                 return "..";
+            case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
+                return "[" + pos + "]";
             default:
                 throw new IllegalArgumentException("illegal choice");
         }
