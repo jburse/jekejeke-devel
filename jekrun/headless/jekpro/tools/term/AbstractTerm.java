@@ -1,21 +1,14 @@
 package jekpro.tools.term;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.Intermediate;
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.regex.ScannerError;
-import matula.util.system.OpenOpts;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
 
 /**
  * <p>This class provides writing, reading, unification and copying
@@ -209,6 +202,17 @@ public abstract class AbstractTerm {
     /****************************************************************/
 
     /**
+     * <p>Retrieve the current bind.</p>
+     *
+     * @param inter The interpreter.
+     * @return The current bind.
+     */
+    public static Bind markBind(Interpreter inter) {
+        Engine en = (Engine) inter.getEngine();
+        return en.bind;
+    }
+
+    /**
      * <p>Unify the this term for another term.</p>
      * <p>Occurs check is not performed.</p>
      *
@@ -251,6 +255,42 @@ public abstract class AbstractTerm {
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
         return res;
+    }
+
+    /**
+     * <p>Release variable bindings done during unification.</p>
+     *
+     * @param inter The interpreter.
+     * @param mark  The marked bind.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void releaseBind(Interpreter inter, Bind mark)
+            throws InterpreterException {
+        CallOut co = inter.getCallOut();
+        Intermediate r;
+        DisplayClause u;
+        if (co == null) {
+            r = null;
+            u = null;
+        } else {
+            r = co.getGoalSkel();
+            u = co.getGoalDisplay();
+        }
+        Engine en = (Engine) inter.getEngine();
+        Engine backuse = en.visor.setInuse(en);
+        Thread backthread = en.visor.setFence(Thread.currentThread());
+        try {
+            en.skel = null;
+            en.releaseBind(r, u, mark);
+            if (en.skel != null)
+                throw (EngineException) en.skel;
+        } catch (EngineException x) {
+            en.visor.setFence(backthread);
+            en.visor.setInuse(backuse);
+            throw new InterpreterException(x);
+        }
+        en.visor.setFence(backthread);
+        en.visor.setInuse(backuse);
     }
 
     /**
