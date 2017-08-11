@@ -53,6 +53,8 @@ public final class FlagAPI extends AbstractFlag {
     public final static String OP_FLAG_BASE_URL = "base_url";
     public final static String OP_FLAG_SYS_LOCALE = "sys_locale";
     public final static String OP_FLAG_SYS_BELONGS_TO = "sys_belongs_to";
+    public final static String OP_FLAG_SYS_CPU_COUNT = "sys_cpu_count";
+    public final static String OP_FLAG_SYS_RUNTIME_VERSION = "sys_runtime_version";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_DISP_INPUT = 1;
@@ -65,6 +67,8 @@ public final class FlagAPI extends AbstractFlag {
     private static final int FLAG_BASE_URL = 8;
     private static final int FLAG_SYS_LOCALE = 9;
     private static final int FLAG_SYS_BELONGS_TO = 10;
+    private static final int FLAG_SYS_CPU_COUNT = 11;
+    private static final int FLAG_SYS_RUNTIME_VERSION = 12;
 
     /**
      * <p>Create a flag.</p>
@@ -93,6 +97,8 @@ public final class FlagAPI extends AbstractFlag {
         prologflags.put(OP_FLAG_BASE_URL, new FlagAPI(FLAG_BASE_URL));
         prologflags.put(OP_FLAG_SYS_LOCALE, new FlagAPI(FLAG_SYS_LOCALE));
         prologflags.put(OP_FLAG_SYS_BELONGS_TO, new FlagAPI(FLAG_SYS_BELONGS_TO));
+        prologflags.put(OP_FLAG_SYS_CPU_COUNT, new FlagAPI(FLAG_SYS_CPU_COUNT));
+        prologflags.put(OP_FLAG_SYS_RUNTIME_VERSION, new FlagAPI(FLAG_SYS_RUNTIME_VERSION));
         return prologflags;
     }
 
@@ -130,6 +136,10 @@ public final class FlagAPI extends AbstractFlag {
             case FLAG_SYS_BELONGS_TO:
                 val = en.store.belongsto;
                 return val != null ? val : en.store.ATOM_NULL;
+            case FLAG_SYS_CPU_COUNT:
+                return Integer.valueOf(Runtime.getRuntime().availableProcessors());
+            case FLAG_SYS_RUNTIME_VERSION:
+                return System.getProperty("java.vm.specification.version");
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -225,6 +235,12 @@ public final class FlagAPI extends AbstractFlag {
             case FLAG_SYS_BELONGS_TO:
                 en.store.belongsto = castRefOrNull(m, d, en);
                 return true;
+            case FLAG_SYS_CPU_COUNT:
+                /* can't modify */
+                return false;
+            case FLAG_SYS_RUNTIME_VERSION:
+                /* can't modify */
+                return false;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

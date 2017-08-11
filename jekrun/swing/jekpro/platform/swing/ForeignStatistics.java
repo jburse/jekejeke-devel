@@ -37,25 +37,21 @@ import java.util.Iterator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignStatistics {
-    private final static String OP_STATISTIC_RUNTIME = "runtime";
     private final static String OP_STATISTIC_MAX = "max";
     private final static String OP_STATISTIC_USED = "used";
     private final static String OP_STATISTIC_FREE = "free";
     final static String OP_STATISTIC_UPTIME = "uptime";
     final static String OP_STATISTIC_GCTIME = "gctime";
     final static String OP_STATISTIC_TIME = "time";
-    private final static String OP_STATISTIC_PROCESSORS = "processors";
     final static String OP_STATISTIC_WALL = "wall";
 
     private final static String[] OP_STATISTICS = {
-            OP_STATISTIC_RUNTIME,
             OP_STATISTIC_MAX,
             OP_STATISTIC_USED,
             OP_STATISTIC_FREE,
             OP_STATISTIC_UPTIME,
             OP_STATISTIC_GCTIME,
             OP_STATISTIC_TIME,
-            OP_STATISTIC_PROCESSORS,
             OP_STATISTIC_WALL};
 
     /*********************************************************************/
@@ -87,9 +83,7 @@ public final class ForeignStatistics {
      * @throws InterpreterMessage Validation error.
      */
     public static Object sysGetStat(String name) throws InterpreterMessage {
-        if (OP_STATISTIC_RUNTIME.equals(name)) {
-            return System.getProperty("java.vm.specification.version");
-        } else if (OP_STATISTIC_MAX.equals(name)) {
+        if (OP_STATISTIC_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
         } else if (OP_STATISTIC_USED.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().totalMemory() -
@@ -123,8 +117,6 @@ public final class ForeignStatistics {
             } else {
                 return null;
             }
-        } else if (OP_STATISTIC_PROCESSORS.equals(name)) {
-            return Integer.valueOf(Runtime.getRuntime().availableProcessors());
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
         } else {

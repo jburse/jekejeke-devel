@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.model.builtin.Property;
+import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.inter.Special;
@@ -86,7 +86,7 @@ public final class SpecialVars extends Special {
                 ev.varInclude(t[0], d);
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
-                Property.consSet(ev.vars, en);
+                AbstractProperty.consSet(ev.vars, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);
@@ -97,7 +97,7 @@ public final class SpecialVars extends Special {
                 ev.varInclude(t[0], d);
                 en.skel = t[2];
                 en.display = d;
-                Property.consSet(ev.vars, en);
+                AbstractProperty.consSet(ev.vars, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);
@@ -108,7 +108,7 @@ public final class SpecialVars extends Special {
                 ev.singsOf(t[0], d);
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
-                Property.consSet(ev.anon, en);
+                AbstractProperty.consSet(ev.anon, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);
@@ -126,7 +126,7 @@ public final class SpecialVars extends Special {
                 SpecialVars.goalGlobals(t[0], d, ev);
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
-                Property.consSet(ev.vars, en);
+                AbstractProperty.consSet(ev.vars, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);

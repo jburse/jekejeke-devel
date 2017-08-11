@@ -46,6 +46,7 @@ public final class Flag extends AbstractFlag {
     public final static String OP_FLAG_DOUBLE_QUOTES = "double_quotes"; /* ISO */
     public final static String OP_FLAG_BACK_QUOTES = "back_quotes";
     public final static String OP_FLAG_SINGLE_QUOTES = "single_quotes";
+    public final static String OP_FLAG_SYS_ACT_STATUS = "sys_act_status";
 
     private static final int FLAG_SYS_CHOICE_POINT = 0;
     private static final int FLAG_SYS_BODY_VARIABLE = 1;
@@ -104,7 +105,7 @@ public final class Flag extends AbstractFlag {
         prologflags.put("max_code", new Flag(FLAG_MAX_CODE));
         prologflags.put("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
         prologflags.put("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
-        prologflags.put("sys_act_status", new Flag(FLAG_SYS_ACT_STATUS));
+        prologflags.put(OP_FLAG_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
         prologflags.put(OP_FLAG_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
         prologflags.put("sys_variables", new Flag(FLAG_SYS_VARIABLES));
         prologflags.put("sys_choices", new Flag(FLAG_SYS_CHOICES));

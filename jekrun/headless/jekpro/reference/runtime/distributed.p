@@ -72,7 +72,7 @@
 :- public horde/1.
 :- meta_predicate horde(0).
 horde(T) :-
-   statistics(processors, N),
+   current_prolog_flag(sys_cpu_count, N),
    horde(T, N).
 % horde(+Quant, +Integer)
 :- public horde/2.
@@ -102,7 +102,7 @@ horde2(J, S, N) :-
 :- public balance/1.
 :- meta_predicate balance(0).
 balance(P) :-
-   statistics(processors, N),
+   current_prolog_flag(sys_cpu_count, N),
    balance(P, N).
 % balance(+Quant, +Integer)
 :- public balance/2.
@@ -127,7 +127,7 @@ balance(P, N) :-
 :- public setup_balance/1.
 :- meta_predicate setup_balance(0).
 setup_balance(Q) :-
-   statistics(processors, N),
+   current_prolog_flag(sys_cpu_count, N),
    setup_balance(Q, N).
 % setup_balance(+Quant, +Integer)
 :- public setup_balance/2.
