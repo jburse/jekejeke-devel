@@ -1,11 +1,13 @@
 package jekpro.reference.structure;
 
+import jekpro.model.molec.Bind;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
@@ -198,6 +200,89 @@ public final class ForeignAtom {
             }
         }
         return pos;
+    }
+
+    /**
+     * <p>Enumerate the positions in a string.</p>
+     * <p>If to &lt; from enumerate backwards.</p>
+     *
+     * @param inter The interpreter.
+     * @param co    The call out.
+     * @param str   The string.
+     * @param cfrom The from codepoint index.
+     * @param from  The from word index.
+     * @param to    The to word index.
+     * @param cout  The codepoint position.
+     * @return The word position.
+     * @throws InterpreterMessage   Shit hapens.
+     * @throws InterpreterException Shit hapens.
+     */
+    public static Integer sysAtomWordPos(Interpreter inter, CallOut co, String str,
+                                         int cfrom, int from,
+                                         int to, AbstractTerm cout)
+            throws InterpreterMessage, InterpreterException {
+        DataAtom da;
+        int cpos;
+        int pos;
+        if (co.getFirst()) {
+            da = null;
+            cpos = cfrom;
+            pos = from;
+        } else {
+            da = (DataAtom) co.getData();
+            cpos = da.cpos;
+            pos = da.pos;
+            if (to < from) {
+                int ch = str.codePointBefore(pos);
+                cpos--;
+                pos = pos - Character.charCount(ch);
+            } else {
+                int ch = str.codePointAt(pos);
+                cpos++;
+                pos = pos + Character.charCount(ch);
+            }
+        }
+        Bind mark = AbstractTerm.markBind(inter);
+        while (!AbstractTerm.unifyTerm(inter, cout, Integer.valueOf(cpos))) {
+            AbstractTerm.releaseBind(inter, mark);
+            if (to < from) {
+                if (pos > to) {
+                    int ch = str.codePointBefore(pos);
+                    cpos--;
+                    pos = pos - Character.charCount(ch);
+                } else {
+                    return null;
+                }
+            } else {
+                if (pos < to) {
+                    int ch = str.codePointAt(pos);
+                    cpos++;
+                    pos = pos + Character.charCount(ch);
+                } else {
+                    return null;
+                }
+            }
+        }
+        if (to < from) {
+            if (pos > to) {
+                if (da == null)
+                    da = new DataAtom();
+                da.cpos = cpos;
+                da.pos = pos;
+                co.setData(da);
+                co.setRetry(true);
+            }
+        } else {
+            if (pos < to) {
+                if (da == null)
+                    da = new DataAtom();
+                da.cpos = cpos;
+                da.pos = pos;
+                co.setData(da);
+                co.setRetry(true);
+            }
+        }
+        return Integer.valueOf(pos);
     }
 
     /****************************************************************/
@@ -496,9 +581,9 @@ public final class ForeignAtom {
      * <p>Parse a term from a string.</p>
      *
      * @param inter The interpreter.
-     * @param s The string.
+     * @param s     The string.
      * @return The term.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public static Object sysParseTerm(Interpreter inter, String s)
@@ -508,8 +593,9 @@ public final class ForeignAtom {
 
     /**
      * <p>Unparse a term into a string</p>
+     *
      * @param inter The interpreter.
-     * @param t The term.
+     * @param t     The term.
      * @return The string.
      */
     public static String sysUnparseTerm(Interpreter inter, Object t) {

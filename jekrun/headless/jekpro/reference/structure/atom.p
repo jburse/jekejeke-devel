@@ -59,6 +59,7 @@
 
 :- use_package(foreign(jekpro/reference/structure)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/tools/term)).
 
 :- module(user, []).
 
@@ -120,11 +121,10 @@ sub_atom(Str, Off, Len, Sub) :-
    var(Len),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
-   sys_atom_word_pos(Str, 0, Count, Pos2),
-   sys_atom_word_count(Str, 0, Pos2, Off),
-   sys_atom_word_pos(Str, Pos2, Count, Pos),
+   sys_atom_word_pos(Str, 0, 0, Count, Off, Pos2),
+   sys_atom_word_pos(Str, Off, Pos2, Count, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len).
+   Len is Help-Off.
 sub_atom(Str, Off, Len, Sub) :-
    var(Off),
    var(Sub), !,
@@ -171,12 +171,12 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off2),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
-   sys_atom_word_pos(Str, 0, Count, Pos2),
-   sys_atom_word_count(Str, 0, Pos2, Off),
-   sys_atom_word_pos(Str, Pos2, Count, Pos),
+   sys_atom_word_count(Str, 0, Count, Temp),
+   sys_atom_word_pos(Str, 0, 0, Count, Off, Pos2),
+   sys_atom_word_pos(Str, Off, Pos2, Count, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len),
-   sys_atom_word_count(Str, Pos, Count, Off2).
+   Len is Help-Off,
+   Off2 is Temp-Help.
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Off2),
@@ -403,6 +403,10 @@ number_codes(Number, Codes) :-
 :- virtual sys_atom_word_match/5.
 :- foreign(sys_atom_word_match/5, 'String', regionMatches(int,'String',int,int)).
 
+:- public sys_atom_word_pos/6.
+:- foreign(sys_atom_word_pos/6, 'ForeignAtom',
+      sysAtomWordPos('Interpreter','CallOut','String',int,int,int,'AbstractTerm')).
+
 /****************************************************************/
 /* SWI-Prolog Inspired                                          */
 /****************************************************************/
@@ -491,11 +495,12 @@ last_sub_atom(Str, Len, Off2, Sub) :-
    var(Off2),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
-   sys_atom_word_pos(Str, Count, 0, Pos2),
-   sys_atom_word_pos(Str, Count, Pos2, Pos),
+   sys_atom_word_count(Str, 0, Count, Temp),
+   sys_atom_word_pos(Str, Temp, Count, 0, Off, Pos2),
+   sys_atom_word_pos(Str, Temp, Count, Pos2, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len),
-   sys_atom_word_count(Str, Pos, Count, Off2).
+   Len is Help-Off,
+   Off2 is Temp-Help.
 last_sub_atom(Str, Len, Off2, Sub) :-
    var(Off2),
    var(Sub), !,
@@ -550,12 +555,12 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off2),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
-   sys_atom_word_pos(Str, Count, 0, Pos2),
-   sys_atom_word_count(Str, 0, Pos2, Off),
-   sys_atom_word_pos(Str, Count, Pos2, Pos),
+   sys_atom_word_count(Str, 0, Count, Temp),
+   sys_atom_word_pos(Str, Temp, Count, 0, Off, Pos2),
+   sys_atom_word_pos(Str, Temp, Count, Pos2, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len),
-   sys_atom_word_count(Str, Pos, Count, Off2).
+   Len is Help-Off,
+   Off2 is Temp-Help.
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Off2),
