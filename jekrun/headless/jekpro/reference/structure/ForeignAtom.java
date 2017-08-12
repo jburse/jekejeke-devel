@@ -217,72 +217,29 @@ public final class ForeignAtom {
      * @throws InterpreterMessage   Shit hapens.
      * @throws InterpreterException Shit hapens.
      */
-    public static Integer sysAtomWordPos(Interpreter inter, CallOut co, String str,
-                                         int cfrom, int from,
+    public static Integer sysAtomWordPos(Interpreter inter, CallOut co,
+                                         String str, int cfrom, int from,
                                          int to, AbstractTerm cout)
             throws InterpreterMessage, InterpreterException {
-        DataAtom da;
-        int cpos;
-        int pos;
+        AtomCursor da;
         if (co.getFirst()) {
-            da = null;
-            cpos = cfrom;
-            pos = from;
+            da = new AtomCursor(str, cfrom, from, to);
+            co.setData(da);
         } else {
-            da = (DataAtom) co.getData();
-            cpos = da.cpos;
-            pos = da.pos;
-            if (to < from) {
-                int ch = str.codePointBefore(pos);
-                cpos--;
-                pos = pos - Character.charCount(ch);
-            } else {
-                int ch = str.codePointAt(pos);
-                cpos++;
-                pos = pos + Character.charCount(ch);
-            }
+            da = (AtomCursor) co.getData();
         }
-        Bind mark = AbstractTerm.markBind(inter);
-        while (!AbstractTerm.unifyTerm(inter, cout, Integer.valueOf(cpos))) {
-            AbstractTerm.releaseBind(inter, mark);
-            if (to < from) {
-                if (pos > to) {
-                    int ch = str.codePointBefore(pos);
-                    cpos--;
-                    pos = pos - Character.charCount(ch);
-                } else {
-                    return null;
-                }
-            } else {
-                if (pos < to) {
-                    int ch = str.codePointAt(pos);
-                    cpos++;
-                    pos = pos + Character.charCount(ch);
-                } else {
-                    return null;
-                }
-            }
-        }
-        if (to < from) {
-            if (pos > to) {
-                if (da == null)
-                    da = new DataAtom();
-                da.cpos = cpos;
-                da.pos = pos;
-                co.setData(da);
+        while (da.hasMoreElements()) {
+            Integer val1 = da.getCFrom();
+            Integer val2 = da.nextElement();
+            Bind mark = AbstractTerm.markBind(inter);
+            if (AbstractTerm.unifyTerm(inter, cout, val1)) {
                 co.setRetry(true);
-            }
-        } else {
-            if (pos < to) {
-                if (da == null)
-                    da = new DataAtom();
-                da.cpos = cpos;
-                da.pos = pos;
-                co.setData(da);
-                co.setRetry(true);
+                return val2;
+            } else {
+                AbstractTerm.releaseBind(inter, mark);
             }
         }
-        return Integer.valueOf(pos);
+        return null;
     }
 
     /****************************************************************/
