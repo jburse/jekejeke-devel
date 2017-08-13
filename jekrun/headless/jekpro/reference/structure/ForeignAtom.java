@@ -173,33 +173,20 @@ public final class ForeignAtom {
      * @param to   The to word index.
      * @return The word position.
      */
-    public static int sysAtomWordPos(CallOut co, String str,
-                                     int from, int to) {
-        int pos;
+    public static Integer sysAtomWordPos(CallOut co, String str,
+                                         int from, int to) {
+        AtomCursor ac;
         if (co.getFirst()) {
-            pos = from;
+            ac = new AtomCursor(str, 0, from, to);
+            co.setData(ac);
         } else {
-            pos = ((Integer) co.getData()).intValue();
-            if (to < from) {
-                int ch = str.codePointBefore(pos);
-                pos = pos - Character.charCount(ch);
-            } else {
-                int ch = str.codePointAt(pos);
-                pos = pos + Character.charCount(ch);
-            }
+            ac = (AtomCursor) co.getData();
         }
-        if (to < from) {
-            if (pos > to) {
-                co.setData(Integer.valueOf(pos));
-                co.setRetry(true);
-            }
-        } else {
-            if (pos < to) {
-                co.setData(Integer.valueOf(pos));
-                co.setRetry(true);
-            }
+        if (ac.hasMoreElements()) {
+            co.setRetry(true);
+            return ac.nextElement();
         }
-        return pos;
+        return null;
     }
 
     /**
@@ -221,16 +208,16 @@ public final class ForeignAtom {
                                          String str, int cfrom, int from,
                                          int to, AbstractTerm cout)
             throws InterpreterMessage, InterpreterException {
-        AtomCursor da;
+        AtomCursor ac;
         if (co.getFirst()) {
-            da = new AtomCursor(str, cfrom, from, to);
-            co.setData(da);
+            ac = new AtomCursor(str, cfrom, from, to);
+            co.setData(ac);
         } else {
-            da = (AtomCursor) co.getData();
+            ac = (AtomCursor) co.getData();
         }
-        while (da.hasMoreElements()) {
-            Integer val1 = da.getCFrom();
-            Integer val2 = da.nextElement();
+        while (ac.hasMoreElements()) {
+            Integer val1 = ac.getCFrom();
+            Integer val2 = ac.nextElement();
             Bind mark = AbstractTerm.markBind(inter);
             if (AbstractTerm.unifyTerm(inter, cout, val1)) {
                 co.setRetry(true);
