@@ -131,37 +131,36 @@ sub_atom(Str, Off, Len, Sub) :-
    sys_atom_word_len(Str, Count),
    Len2 is -Len,
    sys_atom_word_offset(Str, Count, Len2, Count2),
-   sys_atom_word_pos(Str, 0, Count2, Pos),
-   sys_atom_word_offset(Str, Pos, Len, Pos2),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, 0, Pos, Off).
+   sys_atom_word_pos(Str, 0, 0, Count2, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub).
 sub_atom(Str, Off, Len, Sub) :-
    var(Off), !,
+   sys_atom_word_len(Str, Count),
    sys_atom_word_len(Sub, Count1),
    sys_atom_word_count(Sub, 0, Count1, Len),
-   sys_atom_word_len(Str, Count2),
-   Count is Count2-Count1,
-   sys_atom_word_pos(Str, 0, Count, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count1),
-   sys_atom_word_count(Str, 0, Pos, Off).
+   Len2 is -Len,
+   sys_atom_word_offset(Str, Count, Len2, Count2),
+   sys_atom_word_pos(Str, 0, 0, Count2, Off, Pos2),
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1).
 sub_atom(Str, Off, Len, Sub) :-
    var(Len),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
    sys_atom_word_offset(Str, 0, Off, Pos2),
-   sys_atom_word_pos(Str, Pos2, Count, Pos),
+   sys_atom_word_pos(Str, Off, Pos2, Count, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len).
+   Len is Help-Off.
 sub_atom(Str, Off, Len, Sub) :-
    var(Sub), !,
-   sys_atom_word_offset(Str, 0, Off, Pos1),
-   sys_atom_word_offset(Str, Pos1, Len, Pos2),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub).
+   sys_atom_word_offset(Str, 0, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub).
 sub_atom(Str, Off, Len, Sub) :-
-   sys_atom_word_len(Sub, Count),
-   sys_atom_word_count(Sub, 0, Count, Len),
+   sys_atom_word_len(Sub, Count1),
+   sys_atom_word_count(Sub, 0, Count1, Len),
    sys_atom_word_offset(Str, 0, Off, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count).
+   sys_atom_word_match(Str, Pos, Sub, 0, Count1).
 
 % sub_atom(+Atom, +-Integer, +-Integer, +-Integer, -+Atom)
 :- public sub_atom/5.
@@ -184,89 +183,90 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
    sys_atom_word_len(Str, Count),
    Len2 is -Len,
    sys_atom_word_offset(Str, Count, Len2, Count2),
-   sys_atom_word_pos(Str, 0, Count2, Pos),
-   sys_atom_word_offset(Str, Pos, Len, Pos2),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, 0, Pos, Off),
-   sys_atom_word_count(Str, Pos2, Count, Off2).
+   sys_atom_word_count(Str, 0, Count2, Temp2),
+   sys_atom_word_pos(Str, 0, 0, Count2, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   Off2 is Temp2-Off.
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Off2), !,
+   sys_atom_word_len(Str, Count),
    sys_atom_word_len(Sub, Count1),
    sys_atom_word_count(Sub, 0, Count1, Len),
-   sys_atom_word_len(Str, Count2),
-   Count is Count2-Count1,
-   sys_atom_word_pos(Str, 0, Count, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count1),
-   sys_atom_word_count(Str, 0, Pos, Off),
-   Pos1 is Pos+Count1,
-   sys_atom_word_count(Str, Pos1, Count2, Off2).
+   Len2 is -Len,
+   sys_atom_word_offset(Str, Count, Len2, Count2),
+   sys_atom_word_count(Str, 0, Count2, Temp2),
+   sys_atom_word_pos(Str, 0, 0, Count2, Off, Pos2),
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
+   Off2 is Temp2-Off.
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Len),
    var(Sub), !,                                             % not in sub_atom/4.
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
-   sys_atom_word_pos(Str, 0, Pos2, Pos),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, Pos, Pos2, Len),
-   sys_atom_word_count(Str, 0, Pos, Off).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   sys_atom_word_count(Str, 0, Pos, Temp2),
+   sys_atom_word_pos(Str, 0, 0, Pos, Off, Pos2),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   Len is Temp2-Off.
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Sub), !,                                             % not in sub_atom/4.
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
+   sys_atom_word_offset(Str, Count, Off1, Pos),
    Len1 is -Len,
-   sys_atom_word_offset(Str, Pos2, Len1, Pos1),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub),
-   sys_atom_word_count(Str, 0, Pos1, Off).
+   sys_atom_word_offset(Str, Pos, Len1, Pos2),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   sys_atom_word_count(Str, 0, Pos2, Off).
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off), !,                                             % not in sub_atom/4.
-   sys_atom_word_len(Sub, Count),
-   sys_atom_word_count(Sub, 0, Count, Len),
-   sys_atom_word_len(Str, Count1),
+   sys_atom_word_len(Str, Count),
+   sys_atom_word_len(Sub, Count1),
+   sys_atom_word_count(Sub, 0, Count1, Len),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count1, Off1, Pos),
-   Pos1 is Pos-Count,
-   sys_atom_word_match(Str, Pos1, Sub, 0, Count),
-   sys_atom_word_count(Str, 0, Pos1, Off).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   Pos2 is Pos-Count1,
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
+   sys_atom_word_count(Str, 0, Pos2, Off).
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Len),
    var(Off2),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
    sys_atom_word_offset(Str, 0, Off, Pos2),
-   sys_atom_word_pos(Str, Pos2, Count, Pos),
+   sys_atom_word_count(Str, Pos2, Count, Temp2),
+   sys_atom_word_pos(Str, Off, Pos2, Count, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len),
-   sys_atom_word_count(Str, Pos, Count, Off2).
+   Len is Help-Off,
+   Off2 is Temp2-Len.
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off2),
    var(Sub), !,
-   sys_atom_word_offset(Str, 0, Off, Pos1),
-   sys_atom_word_offset(Str, Pos1, Len, Pos2),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub),
+   sys_atom_word_offset(Str, 0, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
    sys_atom_word_len(Str, Count),
-   sys_atom_word_count(Str, Pos2, Count, Off2).
+   sys_atom_word_count(Str, Pos, Count, Off2).
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Len),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
-   sys_atom_word_offset(Str, 0, Off, Pos1),
+   sys_atom_word_offset(Str, 0, Off, Pos2),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub),
-   sys_atom_word_count(Str, Pos1, Pos2, Len).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   sys_atom_word_count(Str, Pos2, Pos, Len).
 sub_atom(Str, Off, Len, Off2, Sub) :-
-   sys_atom_word_len(Sub, Count),
-   sys_atom_word_count(Sub, 0, Count, Len),
+   sys_atom_word_len(Sub, Count1),
+   sys_atom_word_count(Sub, 0, Count1, Len),
    sys_atom_word_offset(Str, 0, Off, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count),
-   Pos1 is Pos+Count,
-   sys_atom_word_len(Str, Count1),
-   sys_atom_word_count(Str, Pos1, Count1, Off2).
+   sys_atom_word_match(Str, Pos, Sub, 0, Count1),
+   Pos2 is Pos+Count1,
+   sys_atom_word_len(Str, Count),
+   sys_atom_word_count(Str, Pos2, Count, Off2).
 
 /****************************************************************/
 /* Codes & Chars Conversion                                     */
@@ -403,7 +403,7 @@ number_codes(Number, Codes) :-
 :- virtual sys_atom_word_match/5.
 :- foreign(sys_atom_word_match/5, 'String', regionMatches(int,'String',int,int)).
 
-:- public sys_atom_word_pos/6.
+:- private sys_atom_word_pos/6.
 :- foreign(sys_atom_word_pos/6, 'ForeignAtom',
       sysAtomWordPos('Interpreter','CallOut','String',int,int,int,'AbstractTerm')).
 
@@ -507,45 +507,48 @@ last_sub_atom(Str, Len, Off2, Sub) :-
    sys_atom_word_len(Str, Count),
    Len2 is -Len,
    sys_atom_word_offset(Str, Count, Len2, Count2),
-   sys_atom_word_pos(Str, Count2, 0, Pos),
-   sys_atom_word_offset(Str, Pos, Len, Pos2),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, Pos2, Count, Off2).
+   sys_atom_word_count(Str, 0, Count2, Temp2),
+   sys_atom_word_pos(Str, Temp2, Count2, 0, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   Off2 is Temp2-Off.
 last_sub_atom(Str, Len, Off2, Sub) :-
    var(Off2), !,
+   sys_atom_word_len(Str, Count),
    sys_atom_word_len(Sub, Count1),
    sys_atom_word_count(Sub, 0, Count1, Len),
-   sys_atom_word_len(Str, Count2),
-   Count is Count2-Count1,
-   sys_atom_word_pos(Str, Count, 0, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count1),
-   Pos1 is Pos+Count1,
-   sys_atom_word_count(Str, Pos1, Count2, Off2).
+   Len2 is -Len,
+   sys_atom_word_offset(Str, Count, Len2, Count2),
+   sys_atom_word_count(Str, 0, Count2, Temp2),
+   sys_atom_word_pos(Str, Temp2, Count2, 0, Off, Pos2),
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
+   Off2 is Temp2-Off.
 last_sub_atom(Str, Len, Off2, Sub) :-
    var(Len),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
-   sys_atom_word_pos(Str, Pos2, 0, Pos),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, Pos, Pos2, Len).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   sys_atom_word_count(Str, 0, Pos, Temp2),
+   sys_atom_word_pos(Str, Temp2, Pos, 0, Off, Pos2),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   Len is Temp2-Off.
 last_sub_atom(Str, Len, Off2, Sub) :-
    var(Sub), !,
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
+   sys_atom_word_offset(Str, Count, Off1, Pos),
    Len1 is -Len,
-   sys_atom_word_offset(Str, Pos2, Len1, Pos1),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub).
+   sys_atom_word_offset(Str, Pos, Len1, Pos2),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub).
 last_sub_atom(Str, Len, Off2, Sub) :-
-   sys_atom_word_len(Sub, Count),
-   sys_atom_word_count(Sub, 0, Count, Len),
-   sys_atom_word_len(Str, Count1),
+   sys_atom_word_len(Str, Count),
+   sys_atom_word_len(Sub, Count1),
+   sys_atom_word_count(Sub, 0, Count1, Len),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count1, Off1, Pos),
-   Pos1 is Pos-Count,
-   sys_atom_word_match(Str, Pos1, Sub, 0, Count).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   Pos2 is Pos-Count1,
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1).
 
 % last_sub_atom(+Atom, +-Integer, +-Integer, +-Integer, -+Atom)
 :- public last_sub_atom/5.
@@ -568,89 +571,90 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-
    sys_atom_word_len(Str, Count),
    Len2 is -Len,
    sys_atom_word_offset(Str, Count, Len2, Count2),
-   sys_atom_word_pos(Str, Count2, 0, Pos),
-   sys_atom_word_offset(Str, Pos, Len, Pos2),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, 0, Pos, Off),
-   sys_atom_word_count(Str, Pos2, Count, Off2).
+   sys_atom_word_count(Str, 0, Count2, Temp2),
+   sys_atom_word_pos(Str, Temp2, Count2, 0, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   Off2 is Temp2-Off.
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Off2), !,
+   sys_atom_word_len(Str, Count),
    sys_atom_word_len(Sub, Count1),
    sys_atom_word_count(Sub, 0, Count1, Len),
-   sys_atom_word_len(Str, Count2),
-   Count is Count2-Count1,
-   sys_atom_word_pos(Str, Count, 0, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count1),
-   sys_atom_word_count(Str, 0, Pos, Off),
-   Pos1 is Pos+Count1,
-   sys_atom_word_count(Str, Pos1, Count2, Off2).
+   Len2 is -Len,
+   sys_atom_word_offset(Str, Count, Len2, Count2),
+   sys_atom_word_count(Str, 0, Count2, Temp2),
+   sys_atom_word_pos(Str, Temp2, Count2, 0, Off, Pos2),
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
+   Off2 is Temp2-Off.
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Len),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
-   sys_atom_word_pos(Str, Pos2, 0, Pos),
-   sys_atom_word_substring(Str, Pos, Pos2, Sub),
-   sys_atom_word_count(Str, Pos, Pos2, Len),
-   sys_atom_word_count(Str, 0, Pos, Off).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   sys_atom_word_count(Str, 0, Pos, Temp2),
+   sys_atom_word_pos(Str, Temp2, Pos, 0, Off, Pos2),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   Len is Temp2-Off.
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
+   sys_atom_word_offset(Str, Count, Off1, Pos),
    Len1 is -Len,
-   sys_atom_word_offset(Str, Pos2, Len1, Pos1),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub),
-   sys_atom_word_count(Str, 0, Pos1, Off).
+   sys_atom_word_offset(Str, Pos, Len1, Pos2),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   sys_atom_word_count(Str, 0, Pos2, Off).
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off), !,
-   sys_atom_word_len(Sub, Count),
-   sys_atom_word_count(Sub, 0, Count, Len),
-   sys_atom_word_len(Str, Count1),
+   sys_atom_word_len(Str, Count),
+   sys_atom_word_len(Sub, Count1),
+   sys_atom_word_count(Sub, 0, Count1, Len),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count1, Off1, Pos),
-   Pos1 is Pos-Count,
-   sys_atom_word_match(Str, Pos1, Sub, 0, Count),
-   sys_atom_word_count(Str, 0, Pos1, Off).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   Pos2 is Pos-Count1,
+   sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
+   sys_atom_word_count(Str, 0, Pos2, Off).
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Len),
    var(Off2),
    var(Sub), !,                                             % not in last_sub_atom/4
    sys_atom_word_len(Str, Count),
+   sys_atom_word_count(Str, 0, Count, Temp),
    sys_atom_word_offset(Str, 0, Off, Pos2),
-   sys_atom_word_pos(Str, Count, Pos2, Pos),
+   sys_atom_word_pos(Str, Temp, Count, Pos2, Help, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
-   sys_atom_word_count(Str, Pos2, Pos, Len),
-   sys_atom_word_count(Str, Pos, Count, Off2).
+   Len is Help-Off,
+   Off2 is Temp-Help.
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off2),
    var(Sub), !,                                             % not in last_sub_atom/4
-   sys_atom_word_offset(Str, 0, Off, Pos1),
-   sys_atom_word_offset(Str, Pos1, Len, Pos2),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub),
+   sys_atom_word_offset(Str, 0, Off, Pos2),
+   sys_atom_word_offset(Str, Pos2, Len, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
    sys_atom_word_len(Str, Count),
-   sys_atom_word_count(Str, Pos2, Count, Off2).
+   sys_atom_word_count(Str, Pos, Count, Off2).
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Len),
    var(Sub), !,
    sys_atom_word_len(Str, Count),
-   sys_atom_word_offset(Str, 0, Off, Pos1),
+   sys_atom_word_offset(Str, 0, Off, Pos2),
    Off1 is -Off2,
-   sys_atom_word_offset(Str, Count, Off1, Pos2),
-   sys_atom_word_substring(Str, Pos1, Pos2, Sub),
-   sys_atom_word_count(Str, Pos1, Pos2, Len).
+   sys_atom_word_offset(Str, Count, Off1, Pos),
+   sys_atom_word_substring(Str, Pos2, Pos, Sub),
+   sys_atom_word_count(Str, Pos2, Pos, Len).
 last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
-   sys_atom_word_len(Sub, Count),
-   sys_atom_word_count(Sub, 0, Count, Len),
+   sys_atom_word_len(Sub, Count1),
+   sys_atom_word_count(Sub, 0, Count1, Len),
    sys_atom_word_offset(Str, 0, Off, Pos),
-   sys_atom_word_match(Str, Pos, Sub, 0, Count),
-   Pos1 is Pos+Count,
-   sys_atom_word_len(Str, Count1),
-   sys_atom_word_count(Str, Pos1, Count1, Off2).
+   sys_atom_word_match(Str, Pos, Sub, 0, Count1),
+   Pos2 is Pos+Count1,
+   sys_atom_word_len(Str, Count),
+   sys_atom_word_count(Str, Pos2, Count, Off2).
 
 /****************************************************************/
 /* Term Conversion                                              */

@@ -391,8 +391,8 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(arithmetic/elem)).
 :- ensure_loaded(library(arithmetic/round)).
 :- ensure_loaded(library(arithmetic/bits)).
-:- ensure_loaded(library(arithmetic/trigo)).
 :- ensure_loaded(library(arithmetic/compare)).
+:- ensure_loaded(library(arithmetic/trigo)).
 
 :- ensure_loaded(library(structure/type)).
 :- ensure_loaded(library(structure/vars)).

@@ -50,8 +50,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @return The stored key or null.
      */
     public E getKey(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashLinkEntry<E> e;
         for (e = table[i]; e != null &&
@@ -62,14 +61,13 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Find the key in the map.</p>
+     * <p>Find the entry in the set.</p>
      *
      * @param key The key.
      * @return The entry, or null.
      */
     public SetEntry<E> getEntry(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashLinkEntry<E> e;
         for (e = table[i]; e != null &&
@@ -87,8 +85,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @param key The key, can be null.
      */
     public void putKey(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
         e.next = table[i];
@@ -115,8 +112,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @param key The key.
      */
     public void putKeyFirst(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
         e.next = table[i];
@@ -141,8 +137,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @param key The key.
      */
     public void remove(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashLinkEntry<E> e;
         SetHashLinkEntry<E> b = null;
@@ -175,24 +170,31 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Compute the index of a key.</p>
+     *
+     * @param key The key.
+     * @return The index.
+     */
+    public int index(E key) {
+        return (key != null ? HashScrambler.murmur(key.hashCode()) &
+                (table.length - 1) : 0);
+    }
+
+    /**
      * <p>Resize the hash table.</p>
      *
      * @param s The new size.
      */
     private void resize(int s) {
-        SetHashLinkEntry<E>[] newtable = new SetHashLinkEntry[s];
+        table = new SetHashLinkEntry[s];
 
         SetHashLinkEntry<E> e = first;
         while (e != null) {
-            Object key = e.key;
-            int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                    (s - 1) : 0);
-            e.next = newtable[i];
-            newtable[i] = e;
+            int i = index(e.key);
+            e.next = table[i];
+            table[i] = e;
             e = e.after;
         }
-
-        table = newtable;
     }
 
     /**

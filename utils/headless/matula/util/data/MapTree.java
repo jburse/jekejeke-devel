@@ -43,7 +43,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Retrieve a value for a key.</p>
+     * <p>Find the key in the map.</p>
      *
      * @param key The key.
      * @return The value.
@@ -64,7 +64,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Retrieve an entry for a key.</p>
+     * <p>Find the key in the map.</p>
      *
      * @param key The key.
      * @return The entry.

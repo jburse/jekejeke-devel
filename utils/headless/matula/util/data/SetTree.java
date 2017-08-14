@@ -64,7 +64,7 @@ public final class SetTree<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Find the key in the map.</p>
+     * <p>Find the entry in the set.</p>
      *
      * @param key The key.
      * @return The entry, or null.
@@ -120,7 +120,7 @@ public final class SetTree<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Remove the key from the map.</p>
+     * <p>Remove the key from the set.</p>
      *
      * @param key The key.
      */

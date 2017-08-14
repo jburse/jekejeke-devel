@@ -47,8 +47,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @return The stored key or null.
      */
     public E getKey(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashEntry<E> e;
         for (e = table[i]; e != null &&
@@ -59,14 +58,13 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Find the key in the map.</p>
+     * <p>Find the entry in the set.</p>
      *
      * @param key The key.
      * @return The entry, or null.
      */
     public SetEntry<E> getEntry(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashEntry<E> e;
         for (e = table[i]; e != null &&
@@ -83,8 +81,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @param key The key, can be null.
      */
     public void putKey(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashEntry<E> e = new SetHashEntry<E>(key);
         SetHashEntry<E> f = table[i];
@@ -99,13 +96,12 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Remove the key from the map.</p>
+     * <p>Remove the key from the set.</p>
      *
      * @param key The key.
      */
     public void remove(E key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         SetHashEntry<E> e;
         for (e = table[i]; e != null &&
@@ -142,32 +138,40 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Compute the index of a key.</p>
+     *
+     * @param key The key.
+     * @return The index.
+     */
+    public int index(E key) {
+        return (key != null ? HashScrambler.murmur(key.hashCode()) &
+                (table.length - 1) : 0);
+    }
+
+    /**
      * <p>Resize the hash table.</p>
      *
      * @param s The new size.
      */
     private void resize(int s) {
-        SetHashEntry<E>[] newtable = new SetHashEntry[s];
+        SetHashEntry<E>[] oldtable = table;
+        table = new SetHashEntry[s];
 
-        for (int i = 0; i < table.length; i++) {
-            SetHashEntry<E> e = table[i];
+        for (int i = 0; i < oldtable.length; i++) {
+            SetHashEntry<E> e = oldtable[i];
             while (e != null) {
                 SetHashEntry<E> b = e;
                 e = b.next;
-                Object key = b.key;
-                int j = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                        (s - 1) : 0);
+                int j = index(b.key);
 
                 b.prev = null;
-                SetHashEntry<E> f = newtable[j];
+                SetHashEntry<E> f = table[j];
                 if (f != null)
                     f.prev = b;
                 b.next = f;
-                newtable[j] = b;
+                table[j] = b;
             }
         }
-
-        table = newtable;
     }
 
     /**
@@ -199,9 +203,7 @@ public final class SetHash<E> extends AbstractSet<E> {
         SetHashEntry<E> h = e.next;
         if (h != null)
             return h;
-        Object key = e.key;
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(e.key);
         return getPrevEntry(i - 1);
     }
 
@@ -216,9 +218,7 @@ public final class SetHash<E> extends AbstractSet<E> {
         SetHashEntry<E> h = e.next;
         if (h != null)
             return h;
-        Object key = e.key;
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(e.key);
         return getNextEntry(i + 1);
     }
 

@@ -41,14 +41,13 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Retrieve a value for a key.</p>
+     * <p>Find the key in the map.</p>
      *
      * @param key The key.
      * @return The value.
      */
     public V get(K key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashLinkEntry<K, V> e;
         for (e = table[i]; e != null &&
@@ -61,14 +60,13 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Retrieve an entry for a key.</p>
+     * <p>Find the key in the map.</p>
      *
      * @param key The key.
      * @return The entry.
      */
     public MapEntry<K, V> getEntry(K key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashLinkEntry<K, V> e;
         for (e = table[i]; e != null &&
@@ -87,8 +85,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * @return The new enry.
      */
     public MapEntry<K, V> put(K key, V value) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashLinkEntry<K, V> e = new MapHashLinkEntry<K, V>(key, value);
         e.next = table[i];
@@ -116,8 +113,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * @param value The value.
      */
     public void putFirst(K key, V value) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashLinkEntry<K, V> e = new MapHashLinkEntry<K, V>(key, value);
         e.next = table[i];
@@ -142,8 +138,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * @param key The key.
      */
     public void remove(K key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashLinkEntry<K, V> e;
         MapHashLinkEntry<K, V> b = null;
@@ -176,24 +171,31 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
     }
 
     /**
+     * <p>Compute the index of a key.</p>
+     *
+     * @param key The key.
+     * @return The index.
+     */
+    public int index(K key) {
+        return (key != null ? HashScrambler.murmur(key.hashCode()) &
+                (table.length - 1) : 0);
+    }
+
+    /**
      * <p>Resize the hash table.</p>
      *
      * @param s The new size.
      */
     private void resize(int s) {
-        MapHashLinkEntry<K, V>[] newtable = new MapHashLinkEntry[s];
+        table = new MapHashLinkEntry[s];
 
         MapHashLinkEntry<K, V> e = last;
         while (e != null) {
-            Object key = e.key;
-            int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                    (s - 1) : 0);
-            e.next = newtable[i];
-            newtable[i] = e;
+            int i = index(e.key);
+            e.next = table[i];
+            table[i] = e;
             e = e.before;
         }
-
-        table = newtable;
     }
 
     /**

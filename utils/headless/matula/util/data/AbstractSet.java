@@ -47,7 +47,7 @@ public abstract class AbstractSet<E> {
     public abstract E getKey(E key);
 
     /**
-     * <p>Find the key in the map.</p>
+     * <p>Find the entry in the set.</p>
      *
      * @param key The key.
      * @return The entry, or null.

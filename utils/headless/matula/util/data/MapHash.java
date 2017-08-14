@@ -47,8 +47,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      * @return The value, or null.
      */
     public V get(K key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashEntry<K, V> e;
         for (e = table[i]; e != null &&
@@ -61,14 +60,13 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Find the key in the map.</p>
+     * <p>Find the entry in the map.</p>
      *
      * @param key The key.
      * @return The entry, or null.
      */
     public MapEntry<K, V> getEntry(K key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashEntry<K, V> e;
         for (e = table[i]; e != null &&
@@ -86,8 +84,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      * @return The new enry.
      */
     public MapEntry<K, V> put(K key, V value) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashEntry<K, V> e = new MapHashEntry<K, V>(key, value);
         MapHashEntry<K, V> f = table[i];
@@ -109,8 +106,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      * @param key The key.
      */
     public void remove(K key) {
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(key);
 
         MapHashEntry<K, V> e;
         for (e = table[i]; e != null &&
@@ -142,9 +138,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      */
     public void removeEntry(MapEntry<K, V> s) {
         MapHashEntry<K, V> e = (MapHashEntry<K, V>) s;
-        Object key = e.key;
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(e.key);
 
         MapHashEntry<K, V> f = e.prev;
         MapHashEntry<K, V> g = e.next;
@@ -195,27 +189,24 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      * @param s The new size.
      */
     private void resize(int s) {
-        MapHashEntry<K, V>[] newtable = new MapHashEntry[s];
+        MapHashEntry<K, V>[] oldtable = table;
+        table = new MapHashEntry[s];
 
-        for (int i = 0; i < table.length; i++) {
-            MapHashEntry<K, V> e = table[i];
+        for (int i = 0; i < oldtable.length; i++) {
+            MapHashEntry<K, V> e = oldtable[i];
             while (e != null) {
                 MapHashEntry<K, V> b = e;
                 e = b.next;
-                Object key = b.key;
-                int j = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                        (s - 1) : 0);
+                int j = index(b.key);
 
                 b.prev = null;
-                MapHashEntry<K, V> f = newtable[j];
+                MapHashEntry<K, V> f = table[j];
                 if (f != null)
                     f.prev = b;
                 b.next = f;
-                newtable[j] = b;
+                table[j] = b;
             }
         }
-
-        table = newtable;
     }
 
     /**
@@ -247,9 +238,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
         MapHashEntry<K, V> h = e.next;
         if (h != null)
             return h;
-        Object key = e.key;
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(e.key);
         return getPrevEntry(i - 1);
     }
 
@@ -264,9 +253,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
         MapHashEntry<K, V> h = e.next;
         if (h != null)
             return h;
-        Object key = e.key;
-        int i = (key != null ? HashScrambler.murmur(key.hashCode()) &
-                (table.length - 1) : 0);
+        int i = index(e.key);
         return getNextEntry(i + 1);
     }
 

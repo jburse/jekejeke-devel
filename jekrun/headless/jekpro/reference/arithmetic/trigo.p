@@ -143,4 +143,12 @@
  * result is in radians.
  */
 :- public atan2/3.
-:- foreign_fun(atan2/3, 'Math', atan2(double,double)).
+atan2(X, Y, _) :-
+   X =:= 0,
+   Y =:= 0,
+   throw(error(evaluation_error(undefined),_)).
+atan2(X, Y, Z) :-
+   Z is sys_atan2(X,Y).
+
+:- private sys_atan2/3.
+:- foreign_fun(sys_atan2/3, 'Math', atan2(double,double)).
