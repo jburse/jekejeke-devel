@@ -98,9 +98,9 @@ public final class XPathExprPrim extends XPathExpr {
                 StringBuilder buf = new StringBuilder();
                 buf.append("@");
                 buf.append(keyorname);
-                buf.append("=\"");
+                buf.append("=\'");
                 buf.append(value);
-                buf.append("\"");
+                buf.append("\'");
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal primitive");

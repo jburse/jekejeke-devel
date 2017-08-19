@@ -308,7 +308,7 @@ public final class DomElement extends DomNode {
      *
      * @return The number of elements.
      */
-    int sizeChildren() {
+    public int sizeChildren() {
         return children.size();
     }
 
@@ -397,6 +397,7 @@ public final class DomElement extends DomNode {
      * <p>Add a child.</p>
      *
      * @param dh The child.
+     * @return True if add succeeded, otherwise false.
      * @throws InterruptedException Transaction was interrupted.
      */
     public boolean addChild(DomNode dh) throws InterruptedException {
@@ -456,12 +457,14 @@ public final class DomElement extends DomNode {
     /**
      * <p>Retrieve the child at some index.</p>
      *
-     * @param i The index.
+     * @param i The index, negative index counts from last.
      * @return The child, or null.
      */
     public DomNode getChildAt(int i) {
         DomNode node;
         synchronized (this) {
+            if (i < 0)
+                i += children.size();
             if (i < 0)
                 return null;
             if (i >= children.size())
@@ -488,8 +491,9 @@ public final class DomElement extends DomNode {
     /**
      * <p>Add a child at some index.</p>
      *
-     * @param i The index.
+     * @param i  The index, negative index counts from last.
      * @param dh The child.
+     * @return True if add succeeded, otherwise false.
      * @throws InterruptedException Transaction was interrupted.
      */
     public boolean addChild(int i, DomNode dh) throws InterruptedException {
@@ -500,6 +504,12 @@ public final class DomElement extends DomNode {
             if (dh.parent != null)
                 return false;
             synchronized (this) {
+                if (i < 0)
+                    i += children.size() + 1;
+                if (i < 0)
+                    return false;
+                if (i > children.size())
+                    return false;
                 children.add(i, dh);
             }
             dh.parent = this;

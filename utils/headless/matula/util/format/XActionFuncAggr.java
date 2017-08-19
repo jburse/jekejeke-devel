@@ -30,10 +30,9 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XActionFuncAggr extends XActionFunc {
-    public static final int ACTION_INSERT = 0;
-    public static final int ACTION_DELETE = 1;
-    public static final int ACTION_UPDATE = 2;
-    public static final int ACTION_INSERT_INDEX = 3;
+    public static final int ACTION_DELETE = 0;
+    public static final int ACTION_UPDATE = 1;
+    public static final int ACTION_INSERT_INDEX = 2;
 
     private MapHashLink<String, XActionFunc> funcs = new MapHashLink<String, XActionFunc>();
     private int action;

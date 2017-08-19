@@ -45,14 +45,6 @@ public final class XAction {
     /*****************************************************/
 
     /**
-     * <p>Add a new insert xaction.</p>
-     */
-    public void calcInsert() {
-        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_INSERT);
-        acts.add(xfa);
-    }
-
-    /**
      * <p>Add a new delete xaction.</p>
      */
     public void calcDelete() {
@@ -127,14 +119,8 @@ public final class XAction {
         for (int i = 0; i < acts.size(); i++) {
             XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {
-                case XActionFuncAggr.ACTION_INSERT:
-                    DomElement e2 = new DomElement();
-                    act.updateElement(e2);
-                    e.getParent().addChild(e2);
-                    e = e2;
-                    break;
                 case XActionFuncAggr.ACTION_DELETE:
-                    e2 = e.getParent();
+                    DomElement e2 = e.getParent();
                     e2.removeChild(e);
                     e = e2;
                     break;
@@ -169,9 +155,6 @@ public final class XAction {
                 buf.append("/");
             XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {
-                case XActionFuncAggr.ACTION_INSERT:
-                    buf.append(act.toString());
-                    break;
                 case XActionFuncAggr.ACTION_DELETE:
                     buf.append("..");
                     break;
