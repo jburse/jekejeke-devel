@@ -29,7 +29,7 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XPath {
-    private ListArray<ChoicePoint> hits = new ListArray<ChoicePoint>();
+    private ListArray<ChoicePoint> cps = new ListArray<ChoicePoint>();
 
     /**
      * <p>Retrieve the number of xpath choices.</p>
@@ -37,7 +37,16 @@ public final class XPath {
      * @return The number of xpath choices.
      */
     public int size() {
-        return hits.size();
+        return cps.size();
+    }
+
+    /**
+     * <p>Retrieve the choice points.</p>
+     *
+     * @return The choice points.
+     */
+    public ListArray<ChoicePoint> getChoicePoints() {
+        return cps;
     }
 
     /*****************************************************/
@@ -50,7 +59,7 @@ public final class XPath {
     public void whereChild() {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILDREN);
         cp.setExpr(new XPathExprComb(XPathExprComb.CONBINATION_AND));
-        hits.add(cp);
+        cps.add(cp);
     }
 
     /**
@@ -58,7 +67,7 @@ public final class XPath {
      */
     public void whereParent() {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_PARENT);
-        hits.add(cp);
+        cps.add(cp);
     }
 
     /**
@@ -69,7 +78,7 @@ public final class XPath {
     public void whereChildIndex(int i) {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILD_INDEX);
         cp.setPos(i);
-        hits.add(cp);
+        cps.add(cp);
     }
 
     /*****************************************************/
@@ -82,7 +91,7 @@ public final class XPath {
      * @param n The name.
      */
     public void whereName(String n) {
-        hits.get(hits.size() - 1).whereName(n);
+        cps.get(cps.size() - 1).whereName(n);
     }
 
     /**
@@ -92,7 +101,7 @@ public final class XPath {
      * @param v The value.
      */
     public void whereAttr(String k, String v) {
-        hits.get(hits.size() - 1).whereAttr(k, v);
+        cps.get(cps.size() - 1).whereAttr(k, v);
     }
 
     /**
@@ -102,7 +111,7 @@ public final class XPath {
      * @param p The xath expression.
      */
     public void whereExpr(String s, XPathExpr p) {
-        hits.get(hits.size() - 1).whereExpr(s, p);
+        cps.get(cps.size() - 1).whereExpr(s, p);
     }
 
     /*****************************************************/
@@ -117,9 +126,9 @@ public final class XPath {
      * @return The found dom element, or null.
      */
     public DomElement findFirst(int pos, DomElement e) {
-        if (pos == hits.size())
+        if (pos == cps.size())
             return e;
-        ChoicePoint hit = hits.get(pos);
+        ChoicePoint hit = cps.get(pos);
         e = hit.findFirst(e);
         while (e != null) {
             e = findFirst(pos + 1, e);
@@ -136,8 +145,8 @@ public final class XPath {
      * @return The found dom element, or null.
      */
     public DomElement findNext() {
-        for (int pos = hits.size() - 1; pos >= 0; pos--) {
-            ChoicePoint hit = hits.get(pos);
+        for (int pos = cps.size() - 1; pos >= 0; pos--) {
+            ChoicePoint hit = cps.get(pos);
             DomElement e = hit.findNext();
             while (e != null) {
                 e = findFirst(pos + 1, e);
@@ -153,8 +162,8 @@ public final class XPath {
      * <p>Close the cursor.</p>
      */
     public void findClose() {
-        for (int pos = hits.size() - 1; pos >= 0; pos--) {
-            ChoicePoint hit = hits.get(pos);
+        for (int pos = cps.size() - 1; pos >= 0; pos--) {
+            ChoicePoint hit = cps.get(pos);
             hit.findClose();
         }
     }
@@ -170,10 +179,10 @@ public final class XPath {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < hits.size(); i++) {
+        for (int i = 0; i < cps.size(); i++) {
             if (i != 0)
                 buf.append("/");
-            ChoicePoint hit = hits.get(i);
+            ChoicePoint hit = cps.get(i);
             buf.append(hit.toString());
         }
         return buf.toString();

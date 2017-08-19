@@ -44,7 +44,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ListArray<E> {
+public class ListArray<E> implements Cloneable {
     public static final int MIN_SIZE = 2;
 
     public Object[] table = new Object[MIN_SIZE];

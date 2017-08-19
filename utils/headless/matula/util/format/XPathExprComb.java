@@ -46,6 +46,28 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
+     * <p>Retrieve the type of combination.</p>
+     *
+     * @return The type of combination.
+     */
+    public int getCombination() {
+        return combination;
+    }
+
+    /**
+     * <p>Retrieve the expressions.</p>
+     *
+     * @return The expressions.
+     */
+    public MapHashLink<String, XPathExpr> getExprs() {
+        return exprs;
+    }
+
+    /*****************************************************/
+    /* XPath Expressions                                 */
+    /*****************************************************/
+
+    /**
      * <p>Add an element name predicate.</p>
      *
      * @param n The name.

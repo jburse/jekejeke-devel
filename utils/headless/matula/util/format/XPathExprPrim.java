@@ -65,6 +65,24 @@ public final class XPathExprPrim extends XPathExpr {
     }
 
     /**
+     * <p>Retrieve the type of primitive.</p>
+     *
+     * @return The type of primitive.
+     */
+    public int getPrimitive() {
+        return primitive;
+    }
+
+    /**
+     * <p>Retrieve the key or name.</p>
+     *
+     * @return The key or name.
+     */
+    public String getKeyOrName() {
+        return keyorname;
+    }
+
+    /**
      * <p>Check whether a dom element satisfies this xpath expression.</p>
      *
      * @param e The dom element.

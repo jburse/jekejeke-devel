@@ -26,10 +26,10 @@ package matula.util.format;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ChoicePoint {
-    static final int CHOICEPOINT_CHILDREN = 0;
-    static final int CHOICEPOINT_PARENT = 1;
-    static final int CHOICEPOINT_CHILD_INDEX = 2;
+public final class ChoicePoint {
+    public static final int CHOICEPOINT_CHILDREN = 0;
+    public static final int CHOICEPOINT_PARENT = 1;
+    public static final int CHOICEPOINT_CHILD_INDEX = 2;
 
     private DomNode[] children;
     private int pos;
@@ -61,6 +61,24 @@ final class ChoicePoint {
      */
     void setPos(int i) {
         pos = i;
+    }
+
+    /**
+     * <p>Retrieve the choice.</p>
+     *
+     * @return The choice.
+     */
+    public int getChoice() {
+        return choice;
+    }
+
+    /**
+     * <p>Retrieve the expression.</p>
+     *
+     * @return The expression.
+     */
+    public XPathExprComb getExpr() {
+        return expr;
     }
 
     /*****************************************************/
