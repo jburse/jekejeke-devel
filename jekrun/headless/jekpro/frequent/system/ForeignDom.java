@@ -64,16 +64,16 @@ public final class ForeignDom {
      * @return The attribute names.
      */
     public static String sysElemAttr(CallOut co, DomElement dh) {
-        DomCursor<String> attributes;
+        DomCursor<String> dc;
         if (co.getFirst()) {
-            attributes = new DomCursor<String>(dh.snapshotAttrs());
-            co.setData(attributes);
+            dc = new DomCursor<String>(dh.snapshotAttrs());
+            co.setData(dc);
         } else {
-            attributes = (DomCursor<String>) co.getData();
+            dc = (DomCursor<String>) co.getData();
         }
-        if (attributes.hasMoreElements()) {
+        if (dc.hasMoreElements()) {
             co.setRetry(true);
-            return attributes.nextElement();
+            return dc.nextElement();
         }
         return null;
     }
@@ -86,16 +86,16 @@ public final class ForeignDom {
      * @return The attribute names.
      */
     public static DomNode sysElemChild(CallOut co, DomElement dh) {
-        DomCursor<DomNode> children;
+        DomCursor<DomNode> dc;
         if (co.getFirst()) {
-            children = new DomCursor<DomNode>(dh.snapshotChildren());
-            co.setData(children);
+            dc = new DomCursor<DomNode>(dh.snapshotChildren());
+            co.setData(dc);
         } else {
-            children = (DomCursor<DomNode>) co.getData();
+            dc = (DomCursor<DomNode>) co.getData();
         }
-        if (children.hasMoreElements()) {
+        if (dc.hasMoreElements()) {
             co.setRetry(true);
-            return children.nextElement();
+            return dc.nextElement();
         }
         return null;
     }

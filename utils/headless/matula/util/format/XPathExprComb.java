@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
 
 /**
  * <p>This class represents an xpath combination expression.</p>
@@ -106,8 +107,10 @@ public final class XPathExprComb extends XPathExpr {
      *
      * @param e The dom element.
      * @return True if th dom element satisfies this xpath expression, otherwise false.
+     * @throws ScannerError Shit happens
      */
-    boolean checkElement(DomElement e) {
+    boolean checkElement(DomElement e)
+            throws ScannerError {
         switch (combination) {
             case CONBINATION_AND:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();

@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.regex.ScannerError;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +72,9 @@ public final class ForeignCache {
                             state = STATE_LOADED;
                             prop.put(ATTR_STATE, state);
                         } catch (LicenseError x) {
+                            state = STATE_FAILED;
+                            prop.put(ATTR_STATE, state);
+                        } catch (ScannerError x) {
                             state = STATE_FAILED;
                             prop.put(ATTR_STATE, state);
                         } catch (IOException x) {
@@ -157,7 +161,7 @@ public final class ForeignCache {
      */
     public static void loadProperties(AbstractRecognizer know,
                                       String adr, Properties prop)
-            throws LicenseError, IOException {
+            throws LicenseError, IOException, ScannerError {
         OpenOpts opts = new OpenOpts();
         opts.setFlags(opts.getFlags() | OpenOpts.MASK_OPEN_BINR);
         InputStream in = (InputStream) opts.openRead(know, adr);

@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.regex.ScannerError;
 
 import java.io.*;
 import java.net.*;
@@ -178,7 +179,7 @@ public final class OpenOpts {
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openRead(AbstractRecognizer know, String adr)
-            throws LicenseError, IOException {
+            throws LicenseError, IOException, ScannerError {
         if ((getFlags() & MASK_OPEN_RPOS) != 0) {
             String spec = ForeignUri.sysUriSpec(adr);
             String scheme = ForeignUri.sysSpecScheme(spec);

@@ -92,7 +92,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
         int len = getTextLen();
         for (int i = 0; i < len; i++) {
             if (buf[i] <= ' ') {
-                /* do nothing */
+                // do nothing
             } else {
                 throw new ScannerError(DOM_NONE_WHITESPACE);
             }
@@ -109,7 +109,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
         if (n != 0 &&
                 "".equals(getValueAt(n - 1)) &&
                 getAttr(n - 1).equals("--")) {
-            /* do nothing */
+            // do nothing
         } else {
             throw new ScannerError(DOM_UNBALANCED_COMMENT);
         }

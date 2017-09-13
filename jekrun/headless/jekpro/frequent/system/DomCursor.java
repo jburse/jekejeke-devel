@@ -29,9 +29,14 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DomCursor<T> implements Enumeration<T> {
-    T[] data;
-    int pos;
+    private T[] data;
+    private int pos;
 
+    /**
+     * <p>Create a new dom cursor.</p>
+     *
+     * @param d The elements.
+     */
     DomCursor(T[] d) {
         data=d;
     }

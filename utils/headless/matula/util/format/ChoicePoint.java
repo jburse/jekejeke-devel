@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 /**
  * <p>This class provides an choice point.</p>
  * </p>
@@ -123,8 +125,9 @@ public final class ChoicePoint {
      *
      * @param e The dom element.
      * @return The dom element, or null.
+     * @throws ScannerError Shit happens
      */
-    DomElement findFirst(DomElement e) {
+    DomElement findFirst(DomElement e) throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 DomNode[] nodes = e.snapshotChildren();
@@ -156,16 +159,17 @@ public final class ChoicePoint {
      * <p>Advance the cursor.</p>
      *
      * @return The dom element, or null.
+     * @throws ScannerError Shit happens
      */
-    DomElement findNext() {
+    DomElement findNext() throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 DomNode[] nodes = children;
                 for (int i = pos + 1; i < nodes.length; i++) {
-                    DomNode noee = nodes[i];
-                    if (!(noee instanceof DomElement))
+                    DomNode node = nodes[i];
+                    if (!(node instanceof DomElement))
                         continue;
-                    DomElement e = (DomElement) noee;
+                    DomElement e = (DomElement) node;
                     if (!expr.checkElement(e))
                         continue;
                     pos = i;

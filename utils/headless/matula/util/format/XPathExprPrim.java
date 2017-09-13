@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 /**
  * <p>This predicate implements an xpath primitive expression.</p>
  * </p>
@@ -27,6 +29,8 @@ package matula.util.format;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XPathExprPrim extends XPathExpr {
+    public static final String ERROR_UNKNOWN_ATTRIBUTE = "unknown attribute";
+
     public static final int PRIMITIVE_NAME = 0;
     public static final int PRIMITIVE_ATTR = 1;
 
@@ -88,14 +92,17 @@ public final class XPathExprPrim extends XPathExpr {
      * @param e The dom element.
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
-    boolean checkElement(DomElement e) {
+    boolean checkElement(DomElement e) throws ScannerError {
         switch (primitive) {
             case PRIMITIVE_NAME:
                 if (!e.isName(keyorname))
                     return false;
                 return true;
             case PRIMITIVE_ATTR:
-                if (!value.equals(e.getAttr(keyorname)))
+                String val = e.getAttr(keyorname);
+                if (val == null)
+                    throw new ScannerError(ERROR_UNKNOWN_ATTRIBUTE);
+                if (!value.equals(val))
                     return false;
                 return true;
             default:

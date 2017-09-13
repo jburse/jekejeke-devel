@@ -96,7 +96,7 @@ public final class ScannerError extends Exception {
      * @param s The scanner error as a string.
      */
     public void parse(String s) {
-        int k1 = s.indexOf('@');
+        int k1 = s.lastIndexOf('@');
         if (k1 != -1) {
             id = s.substring(0, k1);
             pos = Integer.parseInt(s.substring(k1 + 1));

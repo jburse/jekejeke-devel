@@ -7,6 +7,7 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
+import matula.util.regex.ScannerError;
 import matula.util.system.*;
 
 import java.io.*;
@@ -111,6 +112,9 @@ public final class ForeignStream {
                             ForeignStream.OP_TRUE)));
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
+                    x.getError()));
+        } catch (ScannerError x) {
+            throw new InterpreterMessage(InterpreterMessage.syntaxError(
                     x.getError()));
         }
     }

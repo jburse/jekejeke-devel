@@ -68,7 +68,7 @@ public final class DomText extends DomNode {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    void load(DomReader dr) throws IOException, ScannerError {
+    void loadNode(DomReader dr) throws IOException, ScannerError {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
                 data = ForeignXml.sysTextUnescape(dr.getText());
@@ -89,7 +89,7 @@ public final class DomText extends DomNode {
      * @param dw The dom writer.
      * @throws IOException Shit happens.
      */
-    void store(DomWriter dw) throws IOException {
+    void storeNode(DomWriter dw) throws IOException {
         dw.writer.write(ForeignXml.sysTextEscape(data));
     }
 

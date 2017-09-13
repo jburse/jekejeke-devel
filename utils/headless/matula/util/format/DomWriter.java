@@ -32,24 +32,33 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DomWriter {
-    private static final int OFFSET_INCREMENT = 4;
+    private static final int INDENT_INCREMENT = 4;
 
     Writer writer;
     int ret;
-    int offset;
+    int indent;
 
     /**
      * <p>Increment the indent.</p>
      */
     void incIndent() {
-        offset += OFFSET_INCREMENT;
+        indent += INDENT_INCREMENT;
     }
 
     /**
      * <p>Decrement the indent.</p>
      */
     void decIndent() {
-        offset -= OFFSET_INCREMENT;
+        indent -= INDENT_INCREMENT;
+    }
+
+    /**
+     * <p>Retrieve the indent.</p>
+     *
+     * @return The indent.
+     */
+    int getIndent() {
+        return indent;
     }
 
     /**
@@ -58,7 +67,7 @@ final class DomWriter {
      * @throws IOException Shit happens.
      */
     void writeIndent() throws IOException {
-        for (int i = 0; i < offset; i++)
+        for (int i = 0; i < indent; i++)
             writer.write(" ");
     }
 

@@ -1,6 +1,7 @@
 package matula.util.format;
 
 import matula.util.data.ListArray;
+import matula.util.regex.ScannerError;
 
 /**
  * <p>This class provides an xpath.</p>
@@ -124,8 +125,10 @@ public final class XPath {
      * @param pos The child number.
      * @param e   The child dom element.
      * @return The found dom element, or null.
+     * @throws ScannerError Shit happens
      */
-    public DomElement findFirst(int pos, DomElement e) {
+    public DomElement findFirst(int pos, DomElement e)
+            throws ScannerError {
         if (pos == cps.size())
             return e;
         ChoicePoint hit = cps.get(pos);
@@ -143,8 +146,9 @@ public final class XPath {
      * <p>Find a next dom element.</p>
      *
      * @return The found dom element, or null.
+     * @throws ScannerError Shit happens
      */
-    public DomElement findNext() {
+    public DomElement findNext() throws ScannerError {
         for (int pos = cps.size() - 1; pos >= 0; pos--) {
             ChoicePoint hit = cps.get(pos);
             DomElement e = hit.findNext();

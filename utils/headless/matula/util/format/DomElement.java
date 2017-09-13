@@ -33,6 +33,8 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomElement extends DomNode {
+    private static final int LINE_WIDTH = 80;
+
     private String name = XmlMachine.VALUE_EMPTY;
     private ListArray<String> attr = new ListArray<String>();
     private ListArray<String> value = new ListArray<String>();
@@ -76,7 +78,7 @@ public final class DomElement extends DomNode {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    void load(DomReader dr) throws IOException, ScannerError {
+    void loadNode(DomReader dr) throws IOException, ScannerError {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DomReader.DOM_START_MISSING);
@@ -173,23 +175,52 @@ public final class DomElement extends DomNode {
      * @param dw The dom writer.
      * @throws IOException Shit happens.
      */
-    void store(DomWriter dw) throws IOException {
+    void storeNode(DomWriter dw) throws IOException {
         dw.writer.write("<");
         dw.writer.write(name);
 
         String[] names = snapshotAttrs();
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
-            String val = getAttr(name);
-            if (val == null)
-                continue;
-            dw.writer.write(" ");
-            dw.writer.write(name);
-            if (!"".equals(val)) {
-                dw.writer.write("=\"");
-                dw.writer.write(ForeignXml.sysTextEscape(val));
-                dw.writer.write("\"");
+        if ((dw.ret & MASK_TEXT) != 0) {
+            for (int i = 0; i < names.length; i++) {
+                String name = names[i];
+                String val = getAttr(name);
+                if (val == null)
+                    continue;
+                dw.writer.write(" ");
+                dw.writer.write(name);
+                if (!"".equals(val)) {
+                    dw.writer.write("=\"");
+                    dw.writer.write(ForeignXml.sysTextEscape(val));
+                    dw.writer.write("\"");
+                }
             }
+        } else {
+            int off = dw.getIndent() + 1 + name.length();
+            dw.incIndent();
+            for (int i = 0; i < names.length; i++) {
+                String name = names[i];
+                String val = getAttr(name);
+                if (val == null)
+                    continue;
+                int off2 = off + 1 + name.length();
+                val = ForeignXml.sysTextEscape(val);
+                off2 += 3 + val.length();
+                if (off2 >= LINE_WIDTH) {
+                    dw.writer.write("\n");
+                    dw.writeIndent();
+                    off = dw.getIndent();
+                } else {
+                    dw.writer.write(" ");
+                    off++;
+                }
+                dw.writer.write(name);
+                off += name.length();
+                dw.writer.write("=\"");
+                dw.writer.write(val);
+                dw.writer.write("\"");
+                off += 3 + val.length();
+            }
+            dw.decIndent();
         }
 
         if (sizeChildren() == 0) {
@@ -252,14 +283,14 @@ public final class DomElement extends DomNode {
             switch (dr.getRes()) {
                 case XmlMachine.RES_TEXT:
                     DomText dt = new DomText();
-                    dt.load(dr);
+                    dt.loadNode(dr);
                     res.add(dt);
                     break;
                 case XmlMachine.RES_TAG:
                     if (dr.getType().startsWith(DomReader.STRING_SLASH))
                         return res;
                     DomElement dh = new DomElement();
-                    dh.load(dr);
+                    dh.loadNode(dr);
                     res.add(dh);
                     break;
                 case XmlMachine.RES_EOF:
@@ -294,10 +325,10 @@ public final class DomElement extends DomNode {
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
             if ((dw.ret & MASK_TEXT) != 0) {
-                node.store(dw);
+                node.storeNode(dw);
             } else {
                 dw.writeIndent();
-                node.store(dw);
+                node.storeNode(dw);
                 dw.writer.write("\n");
             }
         }

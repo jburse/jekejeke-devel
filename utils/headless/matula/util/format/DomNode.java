@@ -93,7 +93,7 @@ public abstract class DomNode {
         if ((ret & MASK_LIST) != 0) {
             ((DomElement) this).loadChildren(dr);
         } else {
-            load(dr);
+            loadNode(dr);
         }
         dr.checkEof();
     }
@@ -116,7 +116,7 @@ public abstract class DomNode {
         if ((ret & MASK_LIST) != 0) {
             ((DomElement) this).storeChildren(dw);
         } else {
-            store(dw);
+            storeNode(dw);
         }
         writer.flush();
     }
@@ -129,7 +129,7 @@ public abstract class DomNode {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    abstract void load(DomReader dr)
+    abstract void loadNode(DomReader dr)
             throws IOException, ScannerError;
 
     /**
@@ -139,7 +139,7 @@ public abstract class DomNode {
      * @param dw The dom writer.
      * @throws IOException Shit happens.
      */
-    abstract void store(DomWriter dw)
+    abstract void storeNode(DomWriter dw)
             throws IOException;
 
 }

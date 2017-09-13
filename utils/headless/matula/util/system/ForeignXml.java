@@ -35,7 +35,6 @@ public final class ForeignXml {
     /*******************************************************************/
     /* Text Escaping/Unescaping                                        */
     /*******************************************************************/
-
     /**
      * <p>Text escape a string.</p>
      *
@@ -43,36 +42,47 @@ public final class ForeignXml {
      * @return The text escaped string.
      */
     public static String sysTextEscape(String s) {
+        return sysTextEscape(s, 0, s.length());
+    }
+
+    /**
+     * <p>Text escape a string.</p>
+     *
+     * @param s     The string.
+     * @param begin the beginning index.
+     * @param end   the ending index.
+     * @return The text escaped string.
+     */
+    public static String sysTextEscape(String s, int begin, int end) {
         /* we keep buf = null as long as no character was escaped */
+        int back = begin;
         StringBuilder buf = null;
-        int n = s.length();
-        int pos = 0;
-        while (pos < n) {
-            int ch = s.codePointAt(pos);
+        while (begin < end) {
+            int ch = s.codePointAt(begin);
             switch (ch) {
                 case CodeType.LINE_DOUBLE:
                     if (buf == null)
-                        buf = new StringBuilder(s.substring(0, pos));
+                        buf = new StringBuilder(s.substring(back, begin));
                     buf.append("&quot;");
                     break;
                 case '<':
                     if (buf == null)
-                        buf = new StringBuilder(s.substring(0, pos));
+                        buf = new StringBuilder(s.substring(back, begin));
                     buf.append("&lt;");
                     break;
                 case '>':
                     if (buf == null)
-                        buf = new StringBuilder(s.substring(0, pos));
+                        buf = new StringBuilder(s.substring(back, begin));
                     buf.append("&gt;");
                     break;
                 case '&':
                     if (buf == null)
-                        buf = new StringBuilder(s.substring(0, pos));
+                        buf = new StringBuilder(s.substring(back, begin));
                     buf.append("&amp;");
                     break;
                 case 0xA0:
                     if (buf == null)
-                        buf = new StringBuilder(s.substring(0, pos));
+                        buf = new StringBuilder(s.substring(back, begin));
                     buf.append("&nbsp;");
                     break;
                 default:
@@ -80,12 +90,11 @@ public final class ForeignXml {
                         buf.appendCodePoint(ch);
                     break;
             }
-            pos += Character.charCount(ch);
+            begin += Character.charCount(ch);
         }
         if (buf == null)
-            return s;
+            return s.substring(back, end);
         return buf.toString();
-
     }
 
     /**

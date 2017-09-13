@@ -278,13 +278,13 @@ public final class ForeignLocale {
         StringTokenizer st = new StringTokenizer(patstr);
         while (st.hasMoreTokens()) {
             String argtype = st.nextToken();
-            if (argtype.equalsIgnoreCase(ForeignLocale.ARGTYPE_PARASQ)) {
+            if (argtype.equals(ForeignLocale.ARGTYPE_PARASQ)) {
                 pat.add(ForeignLocale.ARGTYPE_PARASQ);
-            } else if (argtype.equalsIgnoreCase(ForeignLocale.ARGTYPE_PARAQ)) {
+            } else if (argtype.equals(ForeignLocale.ARGTYPE_PARAQ)) {
                 pat.add(ForeignLocale.ARGTYPE_PARAQ);
-            } else if (argtype.equalsIgnoreCase(ForeignLocale.ARGTYPE_PARA)) {
+            } else if (argtype.equals(ForeignLocale.ARGTYPE_PARA)) {
                 pat.add(ForeignLocale.ARGTYPE_PARA);
-            } else if (argtype.equalsIgnoreCase(ForeignLocale.ARGTYPE_ID)) {
+            } else if (argtype.equals(ForeignLocale.ARGTYPE_ID)) {
                 pat.add(ForeignLocale.ARGTYPE_ID);
             } else {
                 throw new IllegalArgumentException("illegal argument type");

@@ -1,10 +1,11 @@
 package matula.util.system;
 
+import matula.util.data.ListArray;
+import matula.util.regex.ScannerError;
+
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.util.ArrayList;
 
 /**
  * <p>The class supports mime headers.</p>
@@ -33,20 +34,27 @@ import java.util.ArrayList;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class MimeHeader {
+    private static final String ERROR_NAME_MISSING = "name missing";
+    private static final String ERROR_SLASH_MISSING = "/ missing";
+    private static final String ERROR_EQUAL_MISSING = "= missing";
+    private static final String ERROR_VALUE_MISSING = "value missing";
+    private static final String ERROR_SUPERFLOUS_TOKEN = "superflous token";
+
     public static final String MIME_CHARSET = "charset";
 
     private String type = "";
     private String subtype = "";
-    private ArrayList<String> attr = new ArrayList<String>();
-    private ArrayList<String> val = new ArrayList<String>();
+    private ListArray<String> attr = new ListArray<String>();
+    private ListArray<String> val = new ListArray<String>();
 
     /**
      * <p>Create a mime header from a string.</p>
      *
      * @param s The string.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
+     * @throws ScannerError Shit happens.
      */
-    public MimeHeader(String s) throws IOException {
+    public MimeHeader(String s) throws IOException, ScannerError {
         parse(s);
     }
 
@@ -104,9 +112,10 @@ public final class MimeHeader {
      * <p>Quante translation is automatically done by the stream tokenizer.</p>
      *
      * @param s The mime header.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
+     * @throws ScannerError Shit happens.
      */
-    private void parse(String s) throws IOException {
+    private void parse(String s) throws IOException, ScannerError {
         StreamTokenizer st = new StreamTokenizer(new StringReader(s));
         st.resetSyntax();
         st.wordChars('a', 'z');
@@ -120,37 +129,27 @@ public final class MimeHeader {
         st.whitespaceChars(0, ' ');
         st.quoteChar('"');
         st.nextToken();
-        if (st.ttype == StreamTokenizer.TT_WORD) {
-            type = st.sval;
-            st.nextToken();
-        } else {
-            throw new StreamCorruptedException("type missing");
-        }
-        if (st.ttype == '/') {
-            st.nextToken();
-        } else {
-            throw new StreamCorruptedException("/ missing");
-        }
-        if (st.ttype == StreamTokenizer.TT_WORD) {
-            subtype = st.sval;
-            st.nextToken();
-        } else {
-            throw new StreamCorruptedException("subtype missing");
-        }
+        if (st.ttype != StreamTokenizer.TT_WORD)
+            throw new ScannerError(ERROR_NAME_MISSING);
+        type = st.sval;
+        st.nextToken();
+        if (st.ttype != '/')
+            throw new ScannerError(ERROR_SLASH_MISSING);
+        st.nextToken();
+        if (st.ttype != StreamTokenizer.TT_WORD)
+            throw new ScannerError(ERROR_NAME_MISSING);
+        subtype = st.sval;
+        st.nextToken();
         while (st.ttype == ';') {
             st.nextToken();
             String a;
-            if (st.ttype == StreamTokenizer.TT_WORD) {
-                a = st.sval;
-                st.nextToken();
-            } else {
-                throw new StreamCorruptedException("attr missing");
-            }
-            if (st.ttype == '=') {
-                st.nextToken();
-            } else {
-                throw new StreamCorruptedException("= missing");
-            }
+            if (st.ttype != StreamTokenizer.TT_WORD)
+                throw new ScannerError(ERROR_NAME_MISSING);
+            a = st.sval;
+            st.nextToken();
+            if (st.ttype != '=')
+                throw new ScannerError(ERROR_EQUAL_MISSING);
+            st.nextToken();
             String v;
             if (st.ttype == StreamTokenizer.TT_WORD) {
                 v = st.sval;
@@ -159,13 +158,13 @@ public final class MimeHeader {
                 v = st.sval;
                 st.nextToken();
             } else {
-                throw new StreamCorruptedException("val missing");
+                throw new ScannerError(ERROR_VALUE_MISSING);
             }
             attr.add(a);
             val.add(v);
         }
         if (st.ttype != StreamTokenizer.TT_EOF)
-            throw new StreamCorruptedException("superflous token");
+            throw new ScannerError(ERROR_SUPERFLOUS_TOKEN);
     }
 
     /**

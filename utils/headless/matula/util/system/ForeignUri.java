@@ -6,8 +6,11 @@ import java.net.MalformedURLException;
 import java.nio.charset.CharacterCodingException;
 
 /**
- * The foreign predicates for the module system/uri.
- * <p/>
+ * <p>The foreign predicates for the module system/uri. We also encode
+ * *\" in URIs to avoid this error by Tomcat: Invalid character found
+ * in the request target. The valid characters are defined in RFC
+ * 7230 and RFC 3986
+ * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -32,9 +35,9 @@ import java.nio.charset.CharacterCodingException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignUri {
-    public final static String NEEDS_COMP = "#%=&";
-    public final static String NEEDS_SPEC = "?#%";
-    public final static String NEEDS_HASH = "%";
+    public final static String NEEDS_COMP = "#%=&\\";
+    public final static String NEEDS_SPEC = "?#%\\";
+    public final static String NEEDS_HASH = "%\\";
 
     public final static String SCHEME_FILE = "file";
     public final static String SCHEME_HTTP = "http";

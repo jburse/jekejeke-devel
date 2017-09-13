@@ -130,7 +130,7 @@ public final class XAction {
                 case XActionFuncAggr.ACTION_INSERT_INDEX:
                     e2 = new DomElement();
                     act.updateElement(e2);
-                    e.getParent().addChild(act.getPos(), e2);
+                    e.addChild(act.getPos(), e2);
                     e = e2;
                     break;
                 default:

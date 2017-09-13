@@ -139,14 +139,16 @@ public final class SpecialSort extends Special {
             case SPECIAL_LOCALE_SORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                SpecialSort.sort(new EngineLexical(temp[0], ref, en), temp[1], ref, en);
+                Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);
             case SPECIAL_LOCALE_KEYSORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                SpecialSort.keySort(new EngineLexical(temp[0], ref, en), temp[1], ref, en);
+                cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);
@@ -162,7 +164,7 @@ public final class SpecialSort extends Special {
     /**
      * <p>Sort a list.</p>
      *
-     * @param c The comparator.
+     * @param c  The comparator.
      * @param m  The skeleton.
      * @param d  The display.
      * @param en The engine.
@@ -261,7 +263,7 @@ public final class SpecialSort extends Special {
      * <p>Key sort a pair list.</p>
      * <p>The result is returned in skel and display of the engine.</p>
      *
-     * @param c The comparator.
+     * @param c  The comparator.
      * @param m  The skeletion.
      * @param d  The display.
      * @param en The engine.
