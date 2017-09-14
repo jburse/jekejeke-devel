@@ -244,22 +244,18 @@ public final class ForeignFile {
      * @throws CharacterCodingException File canonization problem.
      */
     public static String sysCanonicalPath(String path)
-            throws CharacterCodingException {
-        try {
-            if (File.separatorChar != CHAR_SLASH)
-                path = path.replace(CHAR_SLASH, File.separatorChar);
-            File file = new File(path).getCanonicalFile();
-            path = file.toString();
-            if (File.separatorChar != CHAR_SLASH)
-                path = path.replace(File.separatorChar, CHAR_SLASH);
-            if (!path.startsWith("/"))
-                path = "/" + path;
-            if (!path.endsWith("/") && file.isDirectory())
-                path = path + "/";
-            return path;
-        } catch (IOException x) {
-            throw new CharacterCodingException();
-        }
+            throws IOException {
+        if (File.separatorChar != CHAR_SLASH)
+            path = path.replace(CHAR_SLASH, File.separatorChar);
+        File file = new File(path).getCanonicalFile();
+        path = file.toString();
+        if (File.separatorChar != CHAR_SLASH)
+            path = path.replace(File.separatorChar, CHAR_SLASH);
+        if (!path.startsWith("/"))
+            path = "/" + path;
+        if (!path.endsWith("/") && file.isDirectory())
+            path = path + "/";
+        return path;
     }
 
 }

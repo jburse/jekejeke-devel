@@ -1,10 +1,10 @@
 package matula.util.system;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.IDN;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 /**
  * <p>The foreign predicates for the module system/domain.
@@ -91,46 +91,6 @@ public final class ForeignDomain {
     }
 
     /************************************************************/
-    /* Canonical Domain                                         */
-    /************************************************************/
-
-    /**
-     * <p>Determine a canonical domain.</p>
-     *
-     * @param dom The domain.
-     * @return The canonical domain.
-     * @throws MalformedURLException Domain assembling problem.
-     */
-    public static String sysCanonicalDomain(String dom)
-            throws IOException {
-        String user = sysDomainUser(dom);
-        String host = sysDomainHost(dom);
-        String spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_HTTP, host, "/robots.txt");
-        String adr = ForeignUri.sysUriMake(spec, "", "");
-
-        for (;;) {
-            String res;
-            try {
-                res = ForeignCache.DEFAULT_HEAD.getRedirect(adr);
-            } catch (IOException x) {
-                if (x instanceof InterruptedIOException &&
-                        !(x instanceof SocketTimeoutException)) {
-                    throw x;
-                } else {
-                    res = null;
-                }
-            }
-            if (res==null)
-                break;
-            adr=res;
-        }
-
-        spec = ForeignUri.sysUriSpec(adr);
-        host = ForeignUri.sysSpecAuthority(spec);
-        return sysDomainMake(user, host);
-    }
-
-    /************************************************************/
     /* Domain Encoding/Decoding                                 */
     /************************************************************/
 
@@ -170,6 +130,69 @@ public final class ForeignDomain {
         return sysDomainMake(user, host);
     }
 
+    /************************************************************/
+    /* Internet Addresses                                       */
+    /************************************************************/
+
+    /**
+     * <p>Determine a forward lookup.</p>
+     *
+     * @param host The host.
+     * @return The forward host, or null.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    public static String sysForwardLookup(String host)
+            throws MalformedURLException {
+        InetAddress ia;
+        try {
+            ia = InetAddress.getByName(host);
+        } catch (UnknownHostException x) {
+            ia = null;
+        }
+        if (ia == null)
+            return null;
+        return ia.getHostAddress();
+    }
+
+    /**
+     * <p>Determine a reverse lookup.</p>
+     *
+     * @param host The host.
+     * @return The reverse host, or null.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    public static String sysReverseLookup(String host)
+            throws MalformedURLException {
+        InetAddress ia;
+        try {
+            ia = InetAddress.getByName(host);
+        } catch (UnknownHostException x) {
+            ia = null;
+        }
+        if (ia == null)
+            return null;
+        return ia.getCanonicalHostName();
+    }
+
+    /**
+     * <p>Ping a host.</p>
+     *
+     * @param host The host.
+     * @return True if host is reachable, otherwise false.
+     */
+    public static boolean sysPingHost(String host)
+            throws IOException {
+        InetAddress ia;
+        try {
+            ia = InetAddress.getByName(host);
+        } catch (UnknownHostException x) {
+            ia = null;
+        }
+        if (ia == null)
+            return false;
+        return ia.isReachable(1000);
+    }
+
     /**
      * <p>Some test.</p>
      *
@@ -187,17 +210,10 @@ public final class ForeignDomain {
 
         System.out.println();
 
-        dom = "swi-prolog.org";
+        dom = "92.42.190.4";
         System.out.println("dom=" + dom);
-        dom = sysCanonicalDomain(dom);
-        System.out.println("canonical(dom)=" + dom);
-
-        System.out.println();
-
-        dom = "64.71.35.59";
-        System.out.println("dom=" + dom);
-        dom = sysCanonicalDomain(dom);
-        System.out.println("canonical(dom)=" + dom);
+        dom = sysReverseLookup(dom);
+        System.out.println("reverse(dom)=" + dom);
     }
 
 }

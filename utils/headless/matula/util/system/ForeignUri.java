@@ -2,8 +2,10 @@ package matula.util.system;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.CharacterCodingException;
 
 /**
@@ -422,7 +424,6 @@ public final class ForeignUri {
      *
      * @param a The uri.
      * @return True if it is relative.
-     * @throws MalformedURLException Domain assembling problem.
      */
     public static boolean sysUriIsRelative(String a) {
         String spec = ForeignUri.sysUriSpec(a);
@@ -534,11 +535,39 @@ public final class ForeignUri {
             spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
         } else if ("".equals(scheme) &&
                 !"".equals(authority)) {
-            authority = ForeignDomain.sysCanonicalDomain(authority);
             spec = ForeignUri.sysSpecMake(SCHEME_HTTP, authority, path);
+            return derefSpec(spec);
         } else {
-            authority = ForeignDomain.sysCanonicalDomain(authority);
             spec = ForeignUri.sysSpecMake(scheme, authority, path);
+            return derefSpec(spec);
+        }
+        return spec;
+    }
+
+    /**
+     * <p>Deref a spec.</p>
+     *
+     * @param spec The spec.
+     * @return The derefed spec.
+     * @throws CharacterCodingException Spec deref problem.
+     */
+    private static String derefSpec(String spec)
+            throws IOException {
+        for (; ; ) {
+            String res;
+            try {
+                res = ForeignCache.DEFAULT_CHECK.checkRedirect(spec);
+            } catch (IOException x) {
+                if (x instanceof InterruptedIOException &&
+                        !(x instanceof SocketTimeoutException)) {
+                    throw x;
+                } else {
+                    res = null;
+                }
+            }
+            if (res == null)
+                break;
+            spec = res;
         }
         return spec;
     }
@@ -670,8 +699,7 @@ public final class ForeignUri {
      * @param adr The uri.
      * @return The decoded uri.
      */
-    public static String sysUriDecode(String adr)
-            throws MalformedURLException {
+    public static String sysUriDecode(String adr) {
         try {
             String spec = ForeignUri.sysUriSpec(adr);
             String query = ForeignUri.sysUriQuery(adr);
@@ -689,7 +717,7 @@ public final class ForeignUri {
      * <p>Decode and minimal encode the query.</p>
      * <p>The minimal encoding will be percent encoding.</p>
      *
-     * @param s    The query.
+     * @param s The query.
      * @return The decoded query.
      * @throws UnsupportedEncodingException Encoding problem.
      */
@@ -714,7 +742,7 @@ public final class ForeignUri {
      * <p>Decode and minimal encode a pair.</p>
      * <p>The minimal encoding will be percent encoding.</p>
      *
-     * @param s    The pair.
+     * @param s The pair.
      * @return The decoded pair.
      * @throws UnsupportedEncodingException Encoding problem.
      */

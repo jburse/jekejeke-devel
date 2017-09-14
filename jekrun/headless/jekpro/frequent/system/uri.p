@@ -13,8 +13,8 @@
  *
  * The predicates make_query/4, make_spec/4 and make_uri/4 do a minimal
  * encoding. For the parameter name and the parameter value the characters
- * '#%=&' will be encoded. For the hash the characters '%' will be
- * encoded. For the spec the characters '?#%' will be encoded. If used
+ * '#%=&\' will be encoded. For the hash the characters '%\' will be
+ * encoded. For the spec the characters '?#%\' will be encoded. If used
  * in the other direction the predicates will perform decoding of the
  * corresponding components.
  *
@@ -30,13 +30,13 @@
  * ?- follow_uri('file:/foo/bar/baz?jack#jill', X, 'file:/foo/tip/tap?fix#fox').
  * X = '../tip/tap?fix#fox'
  *
- * The predicate canonical_uri/2 can be used to canonize URIs. In this
- * predicate the path component is handled by the corresponding routine
- * from system/file. The predicate uri_encode/2 can be used to encode
- * and decode URIs. The predicate uri_encode/2 will encode characters
- * above 0x7F. As a result the URI will only contain ASCII. If used
- * in the other direction the predicate will first decode and then
- * minimal encode again.
+ * The predicates canonical_spec/2 and canonical_uri/2 can be used to
+ * canonize specs and URIs. In this predicate the path component is
+ * handled by the corresponding routine from system/file. The predicate
+ * uri_encode/2 can be used to encode and decode URIs. The predicate
+ * uri_encode/2 will percent encode characters above 0x7F. As a result
+ * the URI will only contain ASCII. If used in the other direction
+ * the predicate will first decode and then minimal encode again.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -211,6 +211,19 @@ follow_uri(B, R, A) :-
 :- foreign(sys_uri_relative/3, 'ForeignUri',
       sysUriRelative('String','String')).
 
+/************************************************************/
+/* Canonical Spec & Uri                                     */
+/************************************************************/
+
+/**
+ * canonical_spec(S, C):
+ * The predicate succeeds when C unifies with canonical spec of S.
+ */
+% canonical_spec(+Atom, -Atom)
+:- public canonical_spec/2.
+:- foreign(canonical_spec/2, 'ForeignUri',
+      sysCanonicalSpec('String')).
+
 /**
  * canonical_uri(U, C):
  * The predicate succeeds when C unifies with canonical URI of U.
@@ -221,8 +234,30 @@ follow_uri(B, R, A) :-
       sysCanonicalUri('String')).
 
 /************************************************************/
-/* Uri Encoding                                             */
+/* Spec & Uri Encoding                                      */
 /************************************************************/
+
+/**
+ * spec_encode(T, E):
+ * If T is a variable then the predicate succeeds when T unifies with
+ * the spec decode of E. Otherwise the predicate succeeds when E unifies
+ * with the spec encode of T.
+ */
+% spec_encode(+-Atom, -+Atom)
+:- public spec_encode/2.
+spec_encode(X, Y) :-
+   var(X), !,
+   sys_spec_decode(Y, X).
+spec_encode(X, Y) :-
+   sys_spec_encode(X, Y).
+
+:- private sys_spec_encode/2.
+:- foreign(sys_spec_encode/2, 'ForeignUri',
+      sysSpecEncode('String')).
+
+:- private sys_spec_decode/2.
+:- foreign(sys_spec_decode/2, 'ForeignUri',
+      sysSpecDecode('String')).
 
 /**
  * uri_encode(T, E):

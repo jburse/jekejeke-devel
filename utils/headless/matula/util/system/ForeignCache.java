@@ -40,7 +40,7 @@ public final class ForeignCache {
     private static final String STATE_LOADED = "loaded";
     private static final String STATE_FAILED = "failed";
 
-    public static final OpenOpts DEFAULT_HEAD = new OpenOpts();
+    public static final OpenCheck DEFAULT_CHECK = new OpenCheck();
 
     /************************************************************/
     /* Properties Caching                                       */
@@ -118,7 +118,6 @@ public final class ForeignCache {
         return prop;
     }
 
-
     /**
      * <p>Find the best sub locale.</p>
      *
@@ -132,7 +131,7 @@ public final class ForeignCache {
             String key = adr.substring(0, k) + locstr + adr.substring(k);
             boolean ok;
             try {
-                ok = DEFAULT_HEAD.getHead(key);
+                ok = DEFAULT_CHECK.checkHead(key);
             } catch (IOException x) {
                 if (x instanceof InterruptedIOException &&
                         !(x instanceof SocketTimeoutException)) {
