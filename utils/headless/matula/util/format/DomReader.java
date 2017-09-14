@@ -109,7 +109,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
         if (n != 0 &&
                 "".equals(getValueAt(n - 1)) &&
                 getAttr(n - 1).equals("--")) {
-            // do nothing
+            /* do nothing */
         } else {
             throw new ScannerError(DOM_UNBALANCED_COMMENT);
         }

@@ -31,6 +31,7 @@ import java.nio.charset.CharacterCodingException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignFile {
+    static final char CHAR_SLASH = '/';
 
     /************************************************************/
     /* Name Assembly                                            */
@@ -87,7 +88,7 @@ public final class ForeignFile {
      * @return The directory.
      */
     public static String sysPathDirectory(String p) {
-        int k = p.lastIndexOf('/');
+        int k = p.lastIndexOf(CHAR_SLASH);
         if (k == -1)
             return "";
         if (k == 0)
@@ -102,7 +103,7 @@ public final class ForeignFile {
      * @return The name.
      */
     public static String sysPathName(String p) {
-        int k = p.lastIndexOf('/');
+        int k = p.lastIndexOf(CHAR_SLASH);
         if (k == -1)
             return p;
         return p.substring(k + 1);
@@ -160,10 +161,10 @@ public final class ForeignFile {
             return a;
         if (!ForeignFile.sysPathIsRelative(b))
             return b;
-        int k = a.lastIndexOf('/');
+        int k = a.lastIndexOf(CHAR_SLASH);
         int j = 0;
         while (b.startsWith("../", j)) {
-            k = a.lastIndexOf('/', k - 1);
+            k = a.lastIndexOf(CHAR_SLASH, k - 1);
             j += 3;
         }
         return a.substring(0, k) + "/" + b.substring(j);
@@ -195,16 +196,16 @@ public final class ForeignFile {
      */
     private static int commonPrefix(String a, String b) {
         int j = 0;
-        int k1 = a.indexOf('/', j);
-        int k2 = b.indexOf('/', j);
+        int k1 = a.indexOf(CHAR_SLASH, j);
+        int k2 = b.indexOf(CHAR_SLASH, j);
         while (k1 != -1 && k2 != -1) {
             if (k1 != k2)
                 return j;
             if (!a.substring(j, k1).equals(b.substring(j, k2)))
                 return j;
             j = k1 + 1;
-            k1 = a.indexOf('/', j);
-            k2 = b.indexOf('/', j);
+            k1 = a.indexOf(CHAR_SLASH, j);
+            k2 = b.indexOf(CHAR_SLASH, j);
         }
         return j;
     }
@@ -218,13 +219,13 @@ public final class ForeignFile {
     private static String backNavigation(String a) {
         StringBuilder buf = null;
         int j = 0;
-        int k = a.indexOf('/', j);
+        int k = a.indexOf(CHAR_SLASH, j);
         while (k != -1) {
             if (buf == null)
                 buf = new StringBuilder();
             buf.append("../");
             j = k + 1;
-            k = a.indexOf('/', j);
+            k = a.indexOf(CHAR_SLASH, j);
         }
         if (buf == null)
             return "";
@@ -245,12 +246,12 @@ public final class ForeignFile {
     public static String sysCanonicalPath(String path)
             throws CharacterCodingException {
         try {
-            if (File.separatorChar != '/')
-                path = path.replace('/', File.separatorChar);
+            if (File.separatorChar != CHAR_SLASH)
+                path = path.replace(CHAR_SLASH, File.separatorChar);
             File file = new File(path).getCanonicalFile();
             path = file.toString();
-            if (File.separatorChar != '/')
-                path = path.replace(File.separatorChar, '/');
+            if (File.separatorChar != CHAR_SLASH)
+                path = path.replace(File.separatorChar, CHAR_SLASH);
             if (!path.startsWith("/"))
                 path = "/" + path;
             if (!path.endsWith("/") && file.isDirectory())

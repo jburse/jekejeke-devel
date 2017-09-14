@@ -175,7 +175,7 @@ public final class OpenOpts {
      * @param adr  The uri.
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
-     * @throws LicenseError              Decryption error.
+     * @throws LicenseError             Decryption error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openRead(AbstractRecognizer know, String adr)
@@ -658,7 +658,7 @@ public final class OpenOpts {
     public static String getETag(URLConnection con)
             throws IOException {
         String res = con.getHeaderField("ETag");
-        return (res!=null?res:"");
+        return (res != null ? res : "");
     }
 
     /*************************************************************/
@@ -732,34 +732,34 @@ public final class OpenOpts {
     /**
      * <p>Check a read stream.</p>
      *
-     * @param adr  The uri.
+     * @param adr The uri.
      * @return True if a reader could be optained, otherwise false.
-     * @throws IOException              IO error.
+     * @throws IOException IO error.
      */
     public boolean getHead(String adr)
             throws IOException {
-        String spec = ForeignUri.sysUriSpec(adr);
-        String scheme = ForeignUri.sysSpecScheme(spec);
-        if (ForeignUri.SCHEME_FILE.equals(scheme)) {
-            String path = ForeignUri.sysSpecPath(spec);
-            File file = new File(path.replace('/', File.separatorChar));
+        try {
+            String spec = ForeignUri.sysUriSpec(adr);
+            String scheme = ForeignUri.sysSpecScheme(spec);
+            if (ForeignUri.SCHEME_FILE.equals(scheme)) {
+                String path = ForeignUri.sysSpecPath(spec);
+                File file = new File(path.replace('/', File.separatorChar));
 
-            /* spare an IOException */
-            if (!file.exists() || !file.isFile())
-                return false;
-
-            /* client change check */
-            long ims = getIfModifiedSince();
-            if (ims != 0) {
-                long modified = file.lastModified();
-                if (modified != 0 && ims >= modified)
+                /* spare an IOException */
+                if (!file.exists() || !file.isFile())
                     return false;
-            }
 
-            return true;
-        } else {
-            URL url = new URL(adr);
-            try {
+                /* client change check */
+                long ims = getIfModifiedSince();
+                if (ims != 0) {
+                    long modified = file.lastModified();
+                    if (modified != 0 && ims >= modified)
+                        return false;
+                }
+
+                return true;
+            } else {
+                URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
 
@@ -800,13 +800,99 @@ public final class OpenOpts {
                 InputStream in = con.getInputStream();
                 in.close();
                 return true;
-            } catch (FileNotFoundException x) {
-                return false;
-            } catch (UnknownHostException x) {
-                return false;
-            } catch (SocketException x) {
-                return false;
             }
+        } catch (FileNotFoundException x) {
+            return false;
+        } catch (UnknownHostException x) {
+            return false;
+        } catch (SocketException x) {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check a read stream.</p>
+     *
+     * @param adr The uri.
+     * @return The new uri or null..
+     * @throws IOException IO error.
+     */
+    public String getRedirect(String adr)
+            throws IOException {
+        try {
+            String spec = ForeignUri.sysUriSpec(adr);
+            String scheme = ForeignUri.sysSpecScheme(spec);
+            if (ForeignUri.SCHEME_FILE.equals(scheme)) {
+                String path = ForeignUri.sysSpecPath(spec);
+                File file = new File(path.replace('/', File.separatorChar));
+
+                /* spare an IOException */
+                if (!file.exists() || !file.isFile())
+                    return null;
+
+                /* client change check */
+                long ims = getIfModifiedSince();
+                if (ims != 0) {
+                    long modified = file.lastModified();
+                    if (modified != 0 && ims >= modified)
+                        return null;
+                }
+
+                path = file.toString().replace(File.separatorChar, '/');
+                return ForeignUri.sysSpecMake(ForeignUri.SCHEME_FILE, "", path);
+            } else {
+                URL url = new URL(adr);
+                URLConnection con = url.openConnection();
+                con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
+
+                /* server change check */
+                long ims = getIfModifiedSince();
+                con.setIfModifiedSince(ims);
+                String inm = getIfNoneMatch();
+                if (!"".equals(inm))
+                    con.setRequestProperty("If-None-Match", inm);
+                if (con instanceof HttpURLConnection) {
+                    ((HttpURLConnection) con).setInstanceFollowRedirects(false);
+                    /* Workaround for https://code.google.com/p/android/issues/detail?id=61013 */
+                    con.addRequestProperty("Accept-Encoding", "identity");
+                    ((HttpURLConnection) con).setRequestMethod("HEAD");
+                    int res = ((HttpURLConnection) con).getResponseCode();
+                    if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
+                        return null;
+                    if (res == HttpURLConnection.HTTP_UNAVAILABLE)
+                        return null;
+                    if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
+                        return null;
+                    /* spare an IOException */
+                    if (res != HttpURLConnection.HTTP_SEE_OTHER
+                            && res != HttpURLConnection.HTTP_MOVED_PERM
+                            && res != HttpURLConnection.HTTP_MOVED_TEMP)
+                        return null;
+                }
+
+                /* client change check */
+                if (ims != 0) {
+                    long modified = OpenOpts.getLastModified(con);
+                    if (modified != 0 && ims >= modified)
+                        return null;
+                }
+                if (!"".equals(inm)) {
+                    String etag = OpenOpts.getETag(con);
+                    if (!"".equals(etag) && inm.equals(etag))
+                        return null;
+                }
+
+                String loc = con.getHeaderField("Location");
+                if (loc == null)
+                    return null;
+                return new URL(url, loc).toString();
+            }
+        } catch (FileNotFoundException x) {
+            return null;
+        } catch (UnknownHostException x) {
+            return null;
+        } catch (SocketException x) {
+            return null;
         }
     }
 

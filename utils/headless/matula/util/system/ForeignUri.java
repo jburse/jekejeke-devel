@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.nio.charset.CharacterCodingException;
@@ -35,6 +36,11 @@ import java.nio.charset.CharacterCodingException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignUri {
+    private static final char CHAR_HASH = '#';
+    private static final char CHAR_ASK = '?';
+    private static final char CHAR_AMP = '&';
+    private static final char CHAR_EQ = '=';
+
     public final static String NEEDS_COMP = "#%=&\\";
     public final static String NEEDS_SPEC = "?#%\\";
     public final static String NEEDS_HASH = "%\\";
@@ -64,14 +70,14 @@ public final class ForeignUri {
         try {
             if ("".equals(query))
                 return null;
-            int k = query.indexOf('&');
+            int k = query.indexOf(CHAR_AMP);
             String pair;
             if (k != -1) {
                 pair = query.substring(0, k);
             } else {
                 pair = query;
             }
-            k = pair.indexOf('=');
+            k = pair.indexOf(CHAR_EQ);
             if (k != -1)
                 pair = pair.substring(0, k);
             return decode(pair, ENCODING_UTF8);
@@ -91,14 +97,14 @@ public final class ForeignUri {
         try {
             if ("".equals(query))
                 return null;
-            int k = query.indexOf('&');
+            int k = query.indexOf(CHAR_AMP);
             String pair;
             if (k != -1) {
                 pair = query.substring(0, k);
             } else {
                 pair = query;
             }
-            k = pair.indexOf('=');
+            k = pair.indexOf(CHAR_EQ);
             String value;
             if (k != -1) {
                 value = pair.substring(k + 1);
@@ -120,7 +126,7 @@ public final class ForeignUri {
     public static String sysQueryRest(String query) {
         if ("".equals(query))
             return null;
-        int k = query.indexOf('&');
+        int k = query.indexOf(CHAR_AMP);
         if (k != -1) {
             query = query.substring(k + 1);
         } else {
@@ -185,8 +191,8 @@ public final class ForeignUri {
             return "";
         int j = spec.indexOf("/", k + 2);
         if (j == -1)
-            return spec.substring(k + 2);
-        return spec.substring(k + 2, j);
+            return ForeignDomain.sysDomainEncode(spec.substring(k + 2));
+        return ForeignDomain.sysDomainEncode(spec.substring(k + 2, j));
     }
 
     /**
@@ -294,7 +300,7 @@ public final class ForeignUri {
      * @return True if the authority is well formed, otherwise false.
      */
     private static boolean isAuthority(String authority) {
-        return (authority.indexOf("/") == -1);
+        return (authority.indexOf(ForeignFile.CHAR_SLASH) == -1);
     }
 
     /**
@@ -330,7 +336,7 @@ public final class ForeignUri {
      */
     public static String sysUriHash(String adr) {
         try {
-            int k = adr.indexOf('#');
+            int k = adr.indexOf(CHAR_HASH);
             String hash;
             if (k != -1) {
                 hash = adr.substring(k + 1);
@@ -350,10 +356,10 @@ public final class ForeignUri {
      * @return The query.
      */
     public static String sysUriQuery(String adr) {
-        int k = adr.indexOf('#');
+        int k = adr.indexOf(CHAR_HASH);
         if (k != -1)
             adr = adr.substring(0, k);
-        k = adr.indexOf('?');
+        k = adr.indexOf(CHAR_ASK);
         String query;
         if (k != -1) {
             query = adr.substring(k + 1);
@@ -372,10 +378,10 @@ public final class ForeignUri {
      */
     public static String sysUriSpec(String adr) {
         try {
-            int k = adr.indexOf('#');
+            int k = adr.indexOf(CHAR_HASH);
             if (k != -1)
                 adr = adr.substring(0, k);
-            k = adr.indexOf('?');
+            k = adr.indexOf(CHAR_ASK);
             if (k != -1)
                 adr = adr.substring(0, k);
             return decode(adr, ENCODING_UTF8);
@@ -416,6 +422,7 @@ public final class ForeignUri {
      *
      * @param a The uri.
      * @return True if it is relative.
+     * @throws MalformedURLException Domain assembling problem.
      */
     public static boolean sysUriIsRelative(String a) {
         String spec = ForeignUri.sysUriSpec(a);
@@ -492,6 +499,51 @@ public final class ForeignUri {
     }
 
     /************************************************************/
+    /* Canonical Spec                                           */
+    /************************************************************/
+
+    /**
+     * <p>Determine a canonical spec and schemefy.</p>
+     *
+     * @param spec The spec.
+     * @return The canonical and schemefied spec.
+     * @throws MalformedURLException    Spec assembling problem.
+     * @throws CharacterCodingException File canonization problem.
+     */
+    public static String sysCanonicalSpec(String spec)
+            throws IOException {
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        String authority = ForeignUri.sysSpecAuthority(spec);
+        String path = ForeignUri.sysSpecPath(spec);
+        if (SCHEME_JAR.equals(scheme)) {
+            int k = path.lastIndexOf("!/");
+            if (k != -1) {
+                spec = sysSpecMake("", authority, path.substring(0, k));
+                spec = ForeignUri.sysCanonicalSpec(spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
+            } else {
+                spec = sysSpecMake("", authority, path);
+                spec = ForeignUri.sysCanonicalSpec(spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
+            }
+        } else if (SCHEME_FILE.equals(scheme)) {
+            spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
+        } else if ("".equals(scheme) &&
+                "".equals(authority) &&
+                !ForeignFile.sysPathIsRelative(path)) {
+            spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
+        } else if ("".equals(scheme) &&
+                !"".equals(authority)) {
+            authority = ForeignDomain.sysCanonicalDomain(authority);
+            spec = ForeignUri.sysSpecMake(SCHEME_HTTP, authority, path);
+        } else {
+            authority = ForeignDomain.sysCanonicalDomain(authority);
+            spec = ForeignUri.sysSpecMake(scheme, authority, path);
+        }
+        return spec;
+    }
+
+    /************************************************************/
     /* Canonical URI                                            */
     /************************************************************/
 
@@ -500,50 +552,21 @@ public final class ForeignUri {
      *
      * @param adr The uri.
      * @return The canonical and schemefied URI.
-     * @throws MalformedURLException    URL assembling problem.
+     * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
     public static String sysCanonicalUri(String adr)
-            throws CharacterCodingException, MalformedURLException {
+            throws IOException {
         try {
             String spec = ForeignUri.sysUriSpec(adr);
+            spec = ForeignUri.sysCanonicalSpec(spec);
             String scheme = ForeignUri.sysSpecScheme(spec);
-            String authority = ForeignUri.sysSpecAuthority(spec);
-            String path = ForeignUri.sysSpecPath(spec);
-            if (SCHEME_JAR.equals(scheme)) {
-                int k = path.lastIndexOf("!/");
-                if (k != -1) {
-                    spec = sysSpecMake("", authority, path.substring(0, k));
-                    spec = ForeignUri.sysCanonicalUri(sysUriMake(spec, "", ""));
-                    spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", ForeignUri.sysUriSpec(spec) + path.substring(k));
-                } else {
-                    spec = sysSpecMake("", authority, path);
-                    spec = ForeignUri.sysCanonicalUri(sysUriMake(spec, "", ""));
-                    spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", ForeignUri.sysUriSpec(spec));
-                }
-                String hash = ForeignUri.sysUriHash(adr);
-                return sysUriMake(spec, "", hash);
-            } else if (SCHEME_FILE.equals(scheme)) {
-                spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
+            if (SCHEME_FILE.equals(scheme)) {
                 String hash = ForeignUri.sysUriHash(adr);
                 return ForeignUri.sysUriMake(spec, "", hash);
-            } else if ("".equals(scheme) &&
-                    "".equals(authority) &&
-                    !ForeignFile.sysPathIsRelative(path)) {
-                spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
-                String hash = ForeignUri.sysUriHash(adr);
-                return ForeignUri.sysUriMake(spec, "", hash);
-            } else if ("".equals(scheme) &&
-                    !"".equals(authority)) {
-                spec = ForeignUri.sysSpecMake(SCHEME_HTTP, authority, path);
-                String query = ForeignUri.sysUriQuery(adr);
-                query = ForeignUri.decodeEncodeQuery(query, ENCODING_UTF8);
-                String hash = ForeignUri.sysUriHash(adr);
-                return ForeignUri.sysUriMake(spec, query, hash);
             } else {
-                spec = ForeignUri.sysSpecMake(scheme, authority, path);
                 String query = ForeignUri.sysUriQuery(adr);
-                query = ForeignUri.decodeEncodeQuery(query, ENCODING_UTF8);
+                query = ForeignUri.decodeQuery(query);
                 String hash = ForeignUri.sysUriHash(adr);
                 return ForeignUri.sysUriMake(spec, query, hash);
             }
@@ -553,81 +576,151 @@ public final class ForeignUri {
     }
 
     /*******************************************************************/
+    /* Spec Encoding/Decoding                                          */
+    /*******************************************************************/
+
+    /**
+     * <p>Encode a spec.</p>
+     * <p>The authority will be ASCII encoded.</p>
+     * <p>The encoding will be puny encoding.</p>
+     *
+     * @param spec The spec.
+     * @return The encoded spec.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    public static String sysSpecEncode(String spec)
+            throws MalformedURLException {
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        String authority = ForeignUri.sysSpecAuthority(spec);
+        String path = ForeignUri.sysSpecPath(spec);
+        if (SCHEME_JAR.equals(scheme)) {
+            int k = path.lastIndexOf("!/");
+            if (k != -1) {
+                spec = sysSpecMake("", authority, path.substring(0, k));
+                spec = ForeignUri.sysSpecEncode(spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
+            } else {
+                spec = sysSpecMake("", authority, path);
+                spec = ForeignUri.sysSpecEncode(spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
+            }
+        } else {
+            spec = sysSpecMake(scheme, ForeignDomain.sysDomainEncode(authority), path);
+        }
+        return spec;
+    }
+
+    /**
+     * <p>Decode a spec.</p>
+     * <p>The authority will be decoded and minimal encoded.</p>
+     * <p>The minimal encoding will be puny encoding.</p>
+     *
+     * @param spec The spec.
+     * @return The decoded spec.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    public static String sysSpecDecode(String spec)
+            throws MalformedURLException {
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        String authority = ForeignUri.sysSpecAuthority(spec);
+        String path = ForeignUri.sysSpecPath(spec);
+        if (SCHEME_JAR.equals(scheme)) {
+            int k = path.lastIndexOf("!/");
+            if (k != -1) {
+                spec = sysSpecMake("", authority, path.substring(0, k));
+                spec = ForeignUri.sysSpecDecode(spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
+            } else {
+                spec = sysSpecMake("", authority, path);
+                spec = ForeignUri.sysSpecDecode(spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
+            }
+        } else {
+            spec = sysSpecMake(scheme, authority, path);
+        }
+        return spec;
+    }
+
+    /*******************************************************************/
     /* URI Encoding/Decoding                                           */
     /*******************************************************************/
 
     /**
      * <p>Encode an uri.</p>
-     * <p>The path and the hash will be ASCII encoded.</p>
+     * <p>The spec, the query and the hash will be ASCII encoded.</p>
+     * <p>The encoding will be percent encoding.</p>
      *
      * @param adr The uri.
      * @return The encoded uri.
      */
     public static String sysUriEncode(String adr) {
         try {
-            return encode(adr, true, null, ENCODING_UTF8);
+            adr = encode(adr, true, null, ENCODING_UTF8);
         } catch (UnsupportedEncodingException x) {
             throw new RuntimeException(SHOULDNT_HAPPEN, x);
         }
+        return adr;
     }
 
     /**
      * <p>Decode an url.</p>
-     * <p>The path and hash will be decoded and minimal encoded.</p>
+     * <p>The spec, the query and the hash will be decoded and minimal encoded.</p>
+     * <p>The minimal encoding will be percent encoding.</p>
      *
      * @param adr The uri.
      * @return The decoded uri.
      */
-    public static String sysUriDecode(String adr) {
+    public static String sysUriDecode(String adr)
+            throws MalformedURLException {
         try {
-            String spec = sysUriSpec(adr);
-            String query = sysUriQuery(adr);
-            String hash = sysUriHash(adr);
+            String spec = ForeignUri.sysUriSpec(adr);
+            String query = ForeignUri.sysUriQuery(adr);
+            String hash = ForeignUri.sysUriHash(adr);
 
-            query = decodeEncodeQuery(query, ENCODING_UTF8);
-
-            return sysUriMake(spec, query, hash);
+            query = ForeignUri.decodeQuery(query);
+            adr = sysUriMake(spec, query, hash);
         } catch (UnsupportedEncodingException x) {
             throw new RuntimeException(SHOULDNT_HAPPEN, x);
         }
+        return adr;
     }
 
     /**
-     * <p>Decode the query.</p>
+     * <p>Decode and minimal encode the query.</p>
+     * <p>The minimal encoding will be percent encoding.</p>
      *
      * @param s    The query.
-     * @param cset The character set.
      * @return The decoded query.
      * @throws UnsupportedEncodingException Encoding problem.
      */
-    private static String decodeEncodeQuery(String s, String cset)
+    private static String decodeQuery(String s)
             throws UnsupportedEncodingException {
         if ("".equals(s))
             return "";
         StringBuilder buf = new StringBuilder();
         int k1 = 0;
-        int k = s.indexOf('&', k1);
+        int k = s.indexOf(CHAR_AMP, k1);
         while (k != -1) {
-            buf.append(decodeEncodePair(s.substring(k1, k), cset));
-            buf.appendCodePoint('&');
+            buf.append(decodePair(s.substring(k1, k)));
+            buf.appendCodePoint(CHAR_AMP);
             k1 = k + 1;
-            k = s.indexOf('&', k1);
+            k = s.indexOf(CHAR_AMP, k1);
         }
-        buf.append(decodeEncodePair(s.substring(k1), cset));
+        buf.append(decodePair(s.substring(k1)));
         return buf.toString();
     }
 
     /**
-     * <p>Decode a pair.</p>
+     * <p>Decode and minimal encode a pair.</p>
+     * <p>The minimal encoding will be percent encoding.</p>
      *
      * @param s    The pair.
-     * @param cset The character set.
      * @return The decoded pair.
      * @throws UnsupportedEncodingException Encoding problem.
      */
-    private static String decodeEncodePair(String s, String cset)
+    private static String decodePair(String s)
             throws UnsupportedEncodingException {
-        int k = s.indexOf('=');
+        int k = s.indexOf(CHAR_EQ);
         String value;
         if (k != -1) {
             value = s.substring(k + 1);
@@ -635,9 +728,9 @@ public final class ForeignUri {
         } else {
             value = "";
         }
-        s = encode(decode(s, cset), false, NEEDS_COMP, cset);
+        s = encode(decode(s, ENCODING_UTF8), false, NEEDS_COMP, ENCODING_UTF8);
         if (!"".equals(value))
-            s += "=" + encode(decode(value, cset), false, NEEDS_COMP, cset);
+            s += "=" + encode(decode(value, ENCODING_UTF8), false, NEEDS_COMP, ENCODING_UTF8);
         return s;
     }
 
@@ -794,6 +887,111 @@ public final class ForeignUri {
         } else {
             return -1;
         }
+    }
+
+    /**
+     * <p>Some test.</p>
+     *
+     * @param args The arguments, unused.
+     * @throws MalformedURLException    Spec assembling problem.
+     * @throws CharacterCodingException File canonization problem.
+     */
+    public static void main(String[] args)
+            throws IOException {
+        String spec = "jar://abc!/foo";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        System.out.println("canonical(spec)=" + spec);
+
+        System.out.println();
+
+        spec = "file://abc/def/ghi";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        System.out.println("canonical(spec)=" + spec);
+
+        System.out.println();
+
+        spec = "/def/ghi";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        System.out.println("canonical(spec)=" + spec);
+
+        System.out.println();
+
+        spec = "//abc/def/ghi";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        System.out.println("canonical(spec)=" + spec);
+
+        System.out.println();
+
+        spec = "mailto:foo@bar.com";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        System.out.println("canonical(spec)=" + spec);
+
+        System.out.println();
+
+        String uri = "jar://abc!/foo#hash";
+        System.out.println("uri=" + uri);
+        uri = ForeignUri.sysCanonicalUri(uri);
+        System.out.println("canonical(uri)=" + uri);
+
+        System.out.println();
+
+        uri = "file://abc/def/ghi?query";
+        System.out.println("uri=" + uri);
+        uri = ForeignUri.sysCanonicalUri(uri);
+        System.out.println("canonical(uri)=" + uri);
+
+        System.out.println();
+
+        uri = "/def/ghi?query#hash";
+        System.out.println("uri=" + uri);
+        uri = ForeignUri.sysCanonicalUri(uri);
+        System.out.println("canonical(uri)=" + uri);
+
+        System.out.println();
+
+        uri = "//abc/def/ghi?query#hash";
+        System.out.println("uri=" + uri);
+        uri = ForeignUri.sysCanonicalUri(uri);
+        System.out.println("canonical(uri)=" + uri);
+
+        System.out.println();
+
+        uri = "mailto:foo@bar.com?query#hash";
+        System.out.println("uri=" + uri);
+        uri = ForeignUri.sysCanonicalUri(uri);
+        System.out.println("canonical(uri)=" + uri);
+
+        System.out.println();
+
+        spec = "//foo@λ.com";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysSpecEncode(spec);
+        System.out.println("encode(spec)=" + spec);
+        spec = ForeignUri.sysSpecDecode(spec);
+        System.out.println("decode(encode(spec))=" + spec);
+
+        System.out.println();
+
+        spec = "jar://foo@λ.com/abc!/def";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysSpecEncode(spec);
+        System.out.println("encode(spec)=" + spec);
+        spec = ForeignUri.sysSpecDecode(spec);
+        System.out.println("decode(encode(spec))=" + spec);
+
+        System.out.println();
+
+        spec = "mailto:foo@λ.com";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysSpecEncode(spec);
+        System.out.println("encode(spec)=" + spec);
+        spec = ForeignUri.sysSpecDecode(spec);
+        System.out.println("decode(encode(spec))=" + spec);
     }
 
 }
