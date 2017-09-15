@@ -86,13 +86,13 @@ public final class CodeType {
         ISO_CODETYPE.setHints("\u200C\u200D");
         ISO_CODETYPE.setDelemiters(",;!|%");
         ISO_CODETYPE.setQuotes("\'\"`");
-        ISO_CODETYPE.setInvalids("\uFFFD");
+        ISO_CODETYPE.setInvalids("\uFFFD\b\f\r");
         ISO_CODETYPE.setJoiners("");
 
         ISO_PAT_CODETYPE.setHints("\u200C\u200D");
         ISO_PAT_CODETYPE.setDelemiters(",;!|%");
         ISO_PAT_CODETYPE.setQuotes("\'\"`");
-        ISO_PAT_CODETYPE.setInvalids("\uFFFD");
+        ISO_PAT_CODETYPE.setInvalids("\uFFFD\b\f\r");
         ISO_PAT_CODETYPE.setJoiners("");
         patternDelemiter(ISO_PAT_CODETYPE);
     }
@@ -252,6 +252,8 @@ public final class CodeType {
             case Character.FORMAT:
                 if (hints.indexOf(cp) != -1) {
                     return CodeType.SUB_CLASS_OTHER;
+                } else if (invalids.indexOf(cp) != -1) {
+                    return CodeType.SUB_CLASS_INVALID;
                 } else {
                     return CodeType.SUB_CLASS_CONTROL;
                 }

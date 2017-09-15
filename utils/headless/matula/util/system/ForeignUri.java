@@ -193,8 +193,8 @@ public final class ForeignUri {
             return "";
         int j = spec.indexOf("/", k + 2);
         if (j == -1)
-            return ForeignDomain.sysDomainEncode(spec.substring(k + 2));
-        return ForeignDomain.sysDomainEncode(spec.substring(k + 2, j));
+            return spec.substring(k + 2);
+        return spec.substring(k + 2, j);
     }
 
     /**
@@ -500,7 +500,7 @@ public final class ForeignUri {
     }
 
     /************************************************************/
-    /* Canonical Spec                                           */
+    /* Canonical Spec & URI                                     */
     /************************************************************/
 
     /**
@@ -572,10 +572,6 @@ public final class ForeignUri {
         return spec;
     }
 
-    /************************************************************/
-    /* Canonical URI                                            */
-    /************************************************************/
-
     /**
      * <p>Determine a canonical URI and schemefy.</p>
      *
@@ -602,72 +598,6 @@ public final class ForeignUri {
         } catch (UnsupportedEncodingException x) {
             throw new RuntimeException(SHOULDNT_HAPPEN, x);
         }
-    }
-
-    /*******************************************************************/
-    /* Spec Encoding/Decoding                                          */
-    /*******************************************************************/
-
-    /**
-     * <p>Encode a spec.</p>
-     * <p>The authority will be ASCII encoded.</p>
-     * <p>The encoding will be puny encoding.</p>
-     *
-     * @param spec The spec.
-     * @return The encoded spec.
-     * @throws MalformedURLException Domain assembling problem.
-     */
-    public static String sysSpecEncode(String spec)
-            throws MalformedURLException {
-        String scheme = ForeignUri.sysSpecScheme(spec);
-        String authority = ForeignUri.sysSpecAuthority(spec);
-        String path = ForeignUri.sysSpecPath(spec);
-        if (SCHEME_JAR.equals(scheme)) {
-            int k = path.lastIndexOf("!/");
-            if (k != -1) {
-                spec = sysSpecMake("", authority, path.substring(0, k));
-                spec = ForeignUri.sysSpecEncode(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
-            } else {
-                spec = sysSpecMake("", authority, path);
-                spec = ForeignUri.sysSpecEncode(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
-            }
-        } else {
-            spec = sysSpecMake(scheme, ForeignDomain.sysDomainEncode(authority), path);
-        }
-        return spec;
-    }
-
-    /**
-     * <p>Decode a spec.</p>
-     * <p>The authority will be decoded and minimal encoded.</p>
-     * <p>The minimal encoding will be puny encoding.</p>
-     *
-     * @param spec The spec.
-     * @return The decoded spec.
-     * @throws MalformedURLException Domain assembling problem.
-     */
-    public static String sysSpecDecode(String spec)
-            throws MalformedURLException {
-        String scheme = ForeignUri.sysSpecScheme(spec);
-        String authority = ForeignUri.sysSpecAuthority(spec);
-        String path = ForeignUri.sysSpecPath(spec);
-        if (SCHEME_JAR.equals(scheme)) {
-            int k = path.lastIndexOf("!/");
-            if (k != -1) {
-                spec = sysSpecMake("", authority, path.substring(0, k));
-                spec = ForeignUri.sysSpecDecode(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
-            } else {
-                spec = sysSpecMake("", authority, path);
-                spec = ForeignUri.sysSpecDecode(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
-            }
-        } else {
-            spec = sysSpecMake(scheme, authority, path);
-        }
-        return spec;
     }
 
     /*******************************************************************/
@@ -993,33 +923,6 @@ public final class ForeignUri {
         System.out.println("uri=" + uri);
         uri = ForeignUri.sysCanonicalUri(uri);
         System.out.println("canonical(uri)=" + uri);
-
-        System.out.println();
-
-        spec = "//foo@λ.com";
-        System.out.println("spec=" + spec);
-        spec = ForeignUri.sysSpecEncode(spec);
-        System.out.println("encode(spec)=" + spec);
-        spec = ForeignUri.sysSpecDecode(spec);
-        System.out.println("decode(encode(spec))=" + spec);
-
-        System.out.println();
-
-        spec = "jar://foo@λ.com/abc!/def";
-        System.out.println("spec=" + spec);
-        spec = ForeignUri.sysSpecEncode(spec);
-        System.out.println("encode(spec)=" + spec);
-        spec = ForeignUri.sysSpecDecode(spec);
-        System.out.println("decode(encode(spec))=" + spec);
-
-        System.out.println();
-
-        spec = "mailto:foo@λ.com";
-        System.out.println("spec=" + spec);
-        spec = ForeignUri.sysSpecEncode(spec);
-        System.out.println("encode(spec)=" + spec);
-        spec = ForeignUri.sysSpecDecode(spec);
-        System.out.println("decode(encode(spec))=" + spec);
     }
 
 }

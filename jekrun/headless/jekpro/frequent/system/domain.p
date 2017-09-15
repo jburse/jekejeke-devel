@@ -2,17 +2,17 @@
  * This module provides a couple of simple utilities to deal
  * with the generation and parsing of internationalized domain
  * names (IDNs). The predicate make_domain/3 allows constructing
- * and deconstructing local parts and domain names. The
- * predicate works bidirectional without loss of data.
+ * and deconstructing local parts and domain names. The predicate
+ * works bidirectional without loss of data.
  *
  * Example:
- * ?- domain_encode('foo@λ.com', X).
- * X = 'foo@xn--wxa.com'
+ * ?- make_domain('foo','λ.com',X).
+ * X = 'foo@λ.com'
  *
- * The predicate domain_encode/2 can be used to encode and
- * decode domain names. The predicate domain_encode/2 will
- * puny encode characters above 0x7F. As a result the domain
- * name will only contain ASCII.
+ * The predicate host_lookup/2 can be used to perform a forward or
+ * reverse lookup of a host name. The predicate will fail if the
+ * host name is not known. The predicate ping_host/1 can be used
+ * to check the reachability of a host name.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -73,47 +73,21 @@ make_domain(U, H, D) :-
       sysDomainMake('String','String')).
 
 /************************************************************/
-/* Domain Encoding                                          */
-/************************************************************/
-
-/**
- * domain_encode(T, E):
- * If T is a variable then the predicate succeeds when T unifies with
- * the domain decode of E. Otherwise the predicate succeeds when E unifies
- * with the domain encode of T.
- */
-% domain_encode(+-Atom, -+Atom)
-:- public domain_encode/2.
-domain_encode(X, Y) :-
-   var(X), !,
-   sys_domain_decode(Y, X).
-domain_encode(X, Y) :-
-   sys_domain_encode(X, Y).
-
-:- private sys_domain_encode/2.
-:- foreign(sys_domain_encode/2, 'ForeignDomain',
-      sysDomainEncode('String')).
-
-:- private sys_domain_decode/2.
-:- foreign(sys_domain_decode/2, 'ForeignDomain',
-      sysDomainDecode('String')).
-
-/************************************************************/
 /* Domain Lookup                                            */
 /************************************************************/
 
 /**
- * domain_lookup(U, C):
+ * host_lookup(U, C):
  * If U is a variable then the predicate succeeds when U unifies with
  * reverse lookup of C. Otherwise the predicate succeeds when C unifies
  * with the forward lookup of U.
  */
-% domain_lookup(+-Atom, -+Atom)
-:- public domain_lookup/2.
-domain_lookup(X, Y) :-
+% host_lookup(+-Atom, -+Atom)
+:- public host_lookup/2.
+host_lookup(X, Y) :-
    var(X), !,
    sys_domain_reverse(Y, X).
-domain_lookup(X, Y) :-
+host_lookup(X, Y) :-
    sys_domain_forward(X, Y).
 
 :- private sys_domain_forward/2.

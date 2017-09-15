@@ -91,46 +91,6 @@ public final class ForeignDomain {
     }
 
     /************************************************************/
-    /* Domain Encoding/Decoding                                 */
-    /************************************************************/
-
-    /**
-     * <p>Encode an domain.</p>
-     * <p>The host will be ASCII encoded.</p>
-     * <p>The encoding will be punny code.</p>
-     *
-     * @param dom The domain.
-     * @return The encoded domain.
-     */
-    public static String sysDomainEncode(String dom) {
-        try {
-            String user = sysDomainUser(dom);
-            String host = sysDomainHost(dom);
-            host = IDN.toASCII(host);
-            return sysDomainMake(user, host);
-        } catch (MalformedURLException x) {
-            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
-        }
-    }
-
-    /**
-     * <p>Decode a domain.</p>
-     * <p>The host will be decoded.</p>
-     * <p>The decodiong will be punny code.</p>
-     *
-     * @param dom The domain.
-     * @return The decoded domain.
-     * @throws MalformedURLException Domain assembling problem.
-     */
-    public static String sysDomainDecode(String dom)
-            throws MalformedURLException {
-        String user = sysDomainUser(dom);
-        String host = sysDomainHost(dom);
-        host = IDN.toUnicode(host);
-        return sysDomainMake(user, host);
-    }
-
-    /************************************************************/
     /* Internet Addresses                                       */
     /************************************************************/
 
@@ -201,16 +161,14 @@ public final class ForeignDomain {
      */
     public static void main(String[] args)
             throws IOException {
-        String dom = "foo@λ.com";
+        String dom = "www.jekejeke.ch";
         System.out.println("dom=" + dom);
-        dom = sysDomainEncode(dom);
-        System.out.println("encode(dom)=" + dom);
-        dom = sysDomainDecode(dom);
-        System.out.println("decode(encode(dom))=" + dom);
+        dom = sysForwardLookup(dom);
+        System.out.println("forward(dom)=" + dom);
 
         System.out.println();
 
-        dom = "92.42.190.4";
+         dom = "92.42.190.4";
         System.out.println("dom=" + dom);
         dom = sysReverseLookup(dom);
         System.out.println("reverse(dom)=" + dom);

@@ -234,30 +234,8 @@ follow_uri(B, R, A) :-
       sysCanonicalUri('String')).
 
 /************************************************************/
-/* Spec & Uri Encoding                                      */
+/* Uri Encoding                                             */
 /************************************************************/
-
-/**
- * spec_encode(T, E):
- * If T is a variable then the predicate succeeds when T unifies with
- * the spec decode of E. Otherwise the predicate succeeds when E unifies
- * with the spec encode of T.
- */
-% spec_encode(+-Atom, -+Atom)
-:- public spec_encode/2.
-spec_encode(X, Y) :-
-   var(X), !,
-   sys_spec_decode(Y, X).
-spec_encode(X, Y) :-
-   sys_spec_encode(X, Y).
-
-:- private sys_spec_encode/2.
-:- foreign(sys_spec_encode/2, 'ForeignUri',
-      sysSpecEncode('String')).
-
-:- private sys_spec_decode/2.
-:- foreign(sys_spec_decode/2, 'ForeignUri',
-      sysSpecDecode('String')).
 
 /**
  * uri_encode(T, E):
