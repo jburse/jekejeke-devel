@@ -64,8 +64,8 @@
 
 /**
  * sys_melt_var(R, T):
- * The predicate succeeds when T unifies with what the variable captured
- * by the reference object R is currently instantiated.
+ * The predicate succeeds when T unifies with the variable captured
+ * by the reference object R.
  */
 % sys_melt_var(+Ref, -Var)
 :- public sys_melt_var/2.

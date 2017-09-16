@@ -176,6 +176,7 @@ neq(_, _).
 :- private sys_assume_hooks/2.
 sys_assume_hooks([V|L], H) :-
    sys_compile_hook(V, H, K),
+   set_ref_property(K, sys_verify(call)),
    sys_assume_ref(K),
    sys_assume_hooks(L, H).
 sys_assume_hooks([], _).

@@ -126,6 +126,7 @@ freeze(V, G) :-
    sys_freeze_var(W, R),
    W = sys_data_freeze(G),
    sys_compile_hook(V, sys_hook_freeze(R), K),
+   set_ref_property(K, sys_verify(call)),
    sys_assume_ref(K).
 freeze(_, G) :-
    call(G).
@@ -152,6 +153,7 @@ when(_, G) :- G.
 :- private sys_compile_hooks/3.
 sys_compile_hooks([V|M], R, [K|W]) :-
    sys_compile_hook(V, sys_hook_when(R), K),
+   set_ref_property(K, sys_verify(call)),
    sys_compile_hooks(M, R, W).
 sys_compile_hooks([], _, []).
 

@@ -74,7 +74,7 @@ public final class SupplementBits extends Special {
                 Display ref = en.display;
                 en.computeExpr(temp[0], ref, r, u);
                 Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = bitCount(alfa);
+                en.skel = Integer.valueOf(bitCount(alfa));
                 en.display = Display.DISPLAY_CONST;
                 return;
             case EVALUABLE_BITLENGTH:
@@ -82,7 +82,7 @@ public final class SupplementBits extends Special {
                 ref = en.display;
                 en.computeExpr(temp[0], ref, r, u);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = bitLength(alfa);
+                en.skel = Integer.valueOf(bitLength(alfa));
                 en.display = Display.DISPLAY_CONST;
                 return;
             case EVALUABLE_LOWESTSETBIT:
@@ -90,7 +90,7 @@ public final class SupplementBits extends Special {
                 ref = en.display;
                 en.computeExpr(temp[0], ref, r, u);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = lowestSetBit(alfa);
+                en.skel = Integer.valueOf(lowestSetBit(alfa));
                 en.display = Display.DISPLAY_CONST;
                 return;
             case EVALUABLE_SETBIT:
@@ -131,11 +131,11 @@ public final class SupplementBits extends Special {
      * @param m The operand.
      * @return The result.
      */
-    private static Number bitCount(Number m) {
+    private static int bitCount(Number m) {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
-                int k = Integer.valueOf(Integer.bitCount(Math.abs(x)));
+                int k = Integer.bitCount(Math.abs(x));
                 if (x < 0) {
                     return k + Integer.numberOfTrailingZeros(Math.abs(x)) - 1;
                 } else {
@@ -145,7 +145,7 @@ public final class SupplementBits extends Special {
                 return 31;
             }
         } else {
-            return Integer.valueOf(((BigInteger) m).bitCount());
+            return ((BigInteger) m).bitCount();
         }
     }
 
@@ -155,11 +155,11 @@ public final class SupplementBits extends Special {
      * @param m The operand.
      * @return The result.
      */
-    private static Number bitLength(Number m) {
+    private static int bitLength(Number m) {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
-                int k = Integer.valueOf(32 - Integer.numberOfLeadingZeros(Math.abs(x)));
+                int k = 32 - Integer.numberOfLeadingZeros(Math.abs(x));
                 if (x < 0 && Integer.bitCount(Math.abs(x)) == 1) {
                     return k - 1;
                 } else {
@@ -169,7 +169,7 @@ public final class SupplementBits extends Special {
                 return 31;
             }
         } else {
-            return Integer.valueOf(((BigInteger) m).bitLength());
+            return ((BigInteger) m).bitLength();
         }
     }
 
@@ -179,20 +179,20 @@ public final class SupplementBits extends Special {
      * @param m The operand.
      * @return The result.
      */
-    private static Number lowestSetBit(Number m) {
+    private static int lowestSetBit(Number m) {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
                 if (x == 0) {
-                    return Integer.valueOf(-1);
+                    return -1;
                 } else {
-                    return Integer.valueOf(Integer.numberOfTrailingZeros(x));
+                    return Integer.numberOfTrailingZeros(x);
                 }
             } else {
                 return 31;
             }
         } else {
-            return Integer.valueOf(((BigInteger) m).getLowestSetBit());
+            return ((BigInteger) m).getLowestSetBit();
         }
     }
 
