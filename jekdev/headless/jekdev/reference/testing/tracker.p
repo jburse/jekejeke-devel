@@ -125,12 +125,28 @@ sys_cover_body(_).
  */
 % tracker_batch
 :- public tracker_batch/0.
-tracker_batch :- reset_cover_hit,
+tracker_batch :- reset_texts, reset_cover_hit,
    visible([head,exit]), trace,
    rule_frame(case(_, _, _, _), Body, _),
    sys_cover_body(Body), fail.
 tracker_batch :- nodebug,
-   visible([call,exit,redo,fail]).
+   visible([call,exit,redo,fail]), set_texts.
+
+% reset_texts
+:- private reset_texts/0.
+reset_texts :-
+   text(X),
+   absolute_file_name(X, Y),
+   reset_source_property(Y, sys_notrace), fail.
+reset_texts.
+
+% set_texts
+:- private set_texts/0.
+set_texts :-
+   text(X),
+   absolute_file_name(X, Y),
+   set_source_property(Y, sys_notrace), fail.
+set_texts.
 
 /****************************************************************/
 /* Summary Update                                               */

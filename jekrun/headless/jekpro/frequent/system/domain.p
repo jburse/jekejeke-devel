@@ -1,9 +1,8 @@
 /**
- * This module provides a couple of simple utilities to deal
- * with the generation and parsing of internationalized domain
- * names (IDNs). The predicate make_domain/3 allows constructing
- * and deconstructing local parts and domain names. The predicate
- * works bidirectional without loss of data.
+ * This module provides a couple of simple utilities to deal with the
+ * access to internationalized domain names (IDNs). The predicate
+ * make_domain/3 allows constructing and deconstructing user and
+ * host. The predicate works bidirectional without loss of data.
  *
  * Example:
  * ?- make_domain('foo','λ.com',X).
@@ -100,7 +99,7 @@ host_lookup(X, Y) :-
 
 /**
  * ping_host(H):
- * The predicate succeeds when the host H is alive.
+ * The predicate succeeds when the host H is reachable.
  */
 % ping_host(+Atom)
 :- public ping_host/1.

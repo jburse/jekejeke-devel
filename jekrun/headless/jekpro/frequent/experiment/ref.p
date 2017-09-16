@@ -109,3 +109,40 @@
 :- meta_predicate clause_ref(-1,0,?).
 :- set_predicate_property(clause_ref/3, sys_noexpand).
 :- special(clause_ref/3, 'SpecialRef', 6).
+
+/**
+ * ref_property(R, P):
+ * The predicate succeeds for the properties P of the reference R.
+ */
+% ref_property(+Reference, -Property)
+:- public ref_property/2.
+ref_property(I, R) :-
+   var(R), !,
+   sys_ref_property(I, P),
+   sys_member(R, P).
+ref_property(I, R) :-
+   functor(R, F, A),
+   sys_ref_property_chk(I, F/A, P),
+   sys_member(R, P).
+
+:- private sys_ref_property/2.
+:- special(sys_ref_property/2, 'SpecialRef', 7).
+
+:- private sys_ref_property_chk/3.
+:- special(sys_ref_property_chk/3, 'SpecialRef', 8).
+
+/**
+ * set_ref_property(R, P):
+ * The predicate assigns the property P to the reference R.
+ */
+% set_ref_property(+Reference, +Property)
+:- public set_ref_property/2.
+:- special(set_ref_property/2, 'SpecialRef', 9).
+
+/**
+ * reset_ref_property(R, P):
+ * The predicate de-assigns the property P from the reference R.
+ */
+% reset_ref_property(+Reference, +Property)
+:- public reset_ref_property/2.
+:- special(reset_ref_property/2, 'SpecialRef', 10).

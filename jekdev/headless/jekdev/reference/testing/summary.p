@@ -1,5 +1,9 @@
 /**
- * This module allows the batch reporting a summary.
+ * This module allows the batch reporting of a summary. The report
+ * shows the suite summary of the test results and the package
+ * summary of the coverage analysis. Beforehand the module runner
+ * needs to be used to produce the test results and the module
+ * tracker needs to be used to produce the coverage analysis.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -63,7 +67,7 @@ html_page :-
    get_property(P, 'summary.summary.h1', V1),
    write('''>'),
    write_atom(escape(V1)),
-   write('</h1>'), nl, html_result_list, html_cover_list.
+   write('</h1>'), nl, html_cover_list, html_result_list.
 
 /*************************************************************/
 /* Result Summary                                            */
@@ -112,9 +116,11 @@ html_result_member :-
                  result_suite_view(D, N, W)), V),
    sys_sum_oknok(V, Z),
    html_zebra_row(I),
-   write('  <td>'),
+   write('  <td><a href="'),
+   write_atom(escape(encode(uri('09_results/package.html',D)))),
+   write('">'),
    write_atom(escape(D)),
-   write('</td>'), nl,
+   write('</a></td>'), nl,
    html_pairs_data(Z),
    write('  </tr>'), nl, fail.
 html_result_member.
@@ -166,9 +172,11 @@ html_cover_member :-
                  cover_source_view(D, N, W)), V),
    sys_sum_oknok(V, Z),
    html_zebra_row(I),
-   write('  <td>'),
+   write('  <td><a href="'),
+   write_atom(escape(encode(uri('07_coverage/package.html',D)))),
+   write('">'),
    write_atom(escape(D)),
-   write('</td>'), nl,
+   write('</a></td>'), nl,
    html_pairs_data(Z),
    write('  </tr>'), nl, fail.
 html_cover_member.

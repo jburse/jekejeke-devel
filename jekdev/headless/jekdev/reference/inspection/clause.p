@@ -70,34 +70,33 @@
  * The predicate succeeds for the properties P of the clause referenced by R.
  */
 % clause_property(+Reference, -Property)
-:- public clause_property/2.
-clause_property(I, R) :-
-   var(R), !,
-   sys_clause_property(I, P),
-   sys_member(R, P).
-clause_property(I, R) :-
-   functor(R, F, A),
-   sys_clause_property_chk(I, F/A, P),
-   sys_member(R, P).
-
-:- private sys_clause_property/2.
-:- special(sys_clause_property/2, 'SpecialClause', 2).
-
-:- private sys_clause_property_chk/3.
-:- special(sys_clause_property_chk/3, 'SpecialClause', 3).
+% :- public clause_property/2.
+% clause_property(I, R) :- var(R), !,
+%    sys_clause_property(I, P),
+%    sys_member(R, P).
+% clause_property(I, R) :-
+%    functor(R, F, A),
+%    sys_clause_property_chk(I, F/A, P),
+%    sys_member(R, P).
+%
+% :- private sys_clause_property/2.
+% :- special(sys_clause_property/2, 'SpecialClause', 2).
+%
+% :- private sys_clause_property_chk/3.
+% :- special(sys_clause_property_chk/3, 'SpecialClause', 3).
 
 /**
  * set_clause_property(R, P):
  * The predicate assigns the property P to the clause referenced by R.
  */
 % set_clause_property(+Reference, +Property)
-:- public set_clause_property/2.
-:- special(set_clause_property/2, 'SpecialClause', 4).
+% :- public set_clause_property/2.
+% :- special(set_clause_property/2, 'SpecialClause', 4).
 
 /**
  * reset_clause_property(R, P):
  * The predicate de-assigns the property P from the clause referenced by R.
  */
 % reset_clause_property(+Reference, +Property)
-:- public reset_clause_property/2.
-:- special(reset_clause_property/2, 'SpecialClause', 5).
+% :- public reset_clause_property/2.
+% :- special(reset_clause_property/2, 'SpecialClause', 5).

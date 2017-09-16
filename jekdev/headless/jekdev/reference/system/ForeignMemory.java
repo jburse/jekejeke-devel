@@ -47,7 +47,8 @@ public class ForeignMemory {
      */
     public static Object sysMemoryRead(Object data, Object opt)
             throws InterpreterMessage {
-        MemoryOpts options = decodeOpenOptions(opt);
+        MemoryOpts options = new MemoryOpts();
+        options.decodeOpenOptions(opt);
         if (data instanceof TermCompound &&
                 ((TermCompound) data).getArity() == 1 &&
                 ((TermCompound) data).getFunctor().equals(OP_ATOM)) {
@@ -75,7 +76,8 @@ public class ForeignMemory {
      */
     public static Object sysMemoryWrite(Object opt)
             throws InterpreterMessage {
-        MemoryOpts options = decodeOpenOptions(opt);
+        MemoryOpts options = new MemoryOpts();
+        options.decodeOpenOptions(opt);
         return options.openWrite();
     }
 
@@ -107,47 +109,6 @@ public class ForeignMemory {
     /****************************************************************/
     /* Open Options                                                 */
     /****************************************************************/
-
-    /**
-     * <p>Decode the memory options.</p>
-     *
-     * @param opt The memory options term.
-     * @return The memory options.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static MemoryOpts decodeOpenOptions(Object opt)
-            throws InterpreterMessage {
-        MemoryOpts res = new MemoryOpts();
-        while (opt instanceof TermCompound &&
-                ((TermCompound) opt).getArity() == 2 &&
-                ((TermCompound) opt).getFunctor().equals(
-                        Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) opt).getArg(0);
-            if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_TYPE)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                if (ForeignStream.atomToType(help)) {
-                    res.setFlags(res.getFlags() | MemoryOpts.MASK_OPEN_BINR);
-                } else {
-                    res.setFlags(res.getFlags() & ~MemoryOpts.MASK_OPEN_BINR);
-                }
-            } else {
-                InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(ForeignStream.OP_OPEN_OPTION, temp));
-            }
-            opt = ((TermCompound) opt).getArg(1);
-        }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    ForeignStream.OP_TYPE_LIST, opt));
-        }
-        return res;
-    }
 
     /**
      * <p>Cast a term to bytes.</p>
