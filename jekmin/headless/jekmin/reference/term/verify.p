@@ -1,5 +1,32 @@
 /**
- * Type 2 interface pre instantiation hook and XXX_atts naming.
+ * This module provides a type 2 interface to attributed
+ * variables. The trailed state of the at-tributed variable is
+ * modelled as key value pairs and can be accessed and modified
+ * by the predicates put_atts/3, get_atts/3 and del_atts/2. When
+ * an attributed variable with type 2 states gets instantiated
+ * the attributed variable verify hooks are called immediately.
+ *
+ * Examples:
+ * ?- [user].
+ * foo:verify_attributes(V, _, true) :-
+ *     get_atts(V, foo, L), write('L='), write(L), nl.
+ * ^D
+ * Yes
+ * ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), [X,Y]=[1,2].
+ * L=[_A,_B]
+ * L=[1,_B]
+ * X = 1,
+ * Y = 2
+ * ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), X=Y.
+ * L=[_A,_B]
+ * Y = X
+ *
+ * The verify hook verify_attributes/3 has to be declared inside
+ * the module of the key. The hook is called before the variable
+ * has been instantiated and it should return a goal which gets
+ * scheduled. The hook is allowed to fail or succeed, but it is
+ * called only once. If the hook fails the surrounding unification
+ * will also fail.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -33,6 +60,15 @@
 :- use_module(library(minimal/assume)).
 :- use_module(library(experiment/ref)).
 
+/**************************************************************/
+/* Trailed State                                              */
+/**************************************************************/
+
+/**
+ * put_atts(V, K, W):
+ * The predicate assigns the value W to the key K of the variable V.
+ * The assignment is automatically undone upon backtracking.
+ */
 % put_atts(+Var, +Key, +Value)
 :- public put_atts/3.
 put_atts(V, K, W) :-
@@ -40,36 +76,42 @@ put_atts(V, K, W) :-
    sys_freeze_var(H, F),
    H = wrap(W),
    sys_compile_hook(V, atts(K, F), R),
-   set_ref_property(R, sys_verify(sys_type2)),
    sys_assume_ref(R).
 
+/**
+ * get_atts(V, K, W):
+ * The predicate succeeds for the value W of the key K of the variable V.
+ */
 % get_atts(+Var, +Key, -Value)
 :- public get_atts/3.
 get_atts(V, K, W) :-
    sys_clause_hook(V, atts(K, F), _),
    sys_melt_var(F, wrap(W)).
 
+/**
+ * del_atts(V, K):
+ * The predicate de-assigns the key K from the variable V.
+ * The de-assignment is automatically undone upon backtracking.
+ */
 % del_atts(+Var, +Key)
 del_atts(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
    sys_retire_ref(R).
 del_atts(_, _).
 
-% sys_type2(+Slot, +Var, +Term)
-:- private sys_type2/3.
-sys_type2(atts(K,_), V, T) :-
+/**************************************************************/
+/* Attribute Hooks                                            */
+/**************************************************************/
+
+/**
+ * K:verify_attributes(V, T, G) (hook):
+ * This predicate has to be implemented as a hook for a key K.
+ * It will be called with the variable V and the term T before
+ * the unification. It should return a goal which will be called
+ * after the unification.
+ */
+% atts(+Key, +Ref, +Var, +Term)
+:- private atts/4.
+atts(K, _, V, T) :-
    K:verify_attributes(V, T, G),
    sys_assume_cont(G).
-
-% ?- [user].
-% foo:verify_attributes(V, _, true) :- get_atts(V, foo, L), write('L='), write(L), nl.
-
-% ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), [X,Y]=[1,2].
-% L=[_A,_B]
-% L=[1,_B]
-% X = 1,
-% Y = 2
-
-% ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), X=Y.
-% L=[_A,_B]
-% Y = X

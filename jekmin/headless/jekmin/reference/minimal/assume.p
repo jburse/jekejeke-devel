@@ -119,7 +119,6 @@ sys_ensure_hook(V, H, G) :-
    call(G).
 sys_ensure_hook(V, H, G) :-
    sys_compile_hook(V, H, K),
-   set_ref_property(K, sys_verify(call)),
    sys_assume_ref(K),
    call(G),
    sys_retire_ref(K).
@@ -137,7 +136,6 @@ sys_ensure_hook(V, H) :-
    sys_clause_hook(V, H, _), !.
 sys_ensure_hook(V, H) :-
    sys_compile_hook(V, H, K),
-   set_ref_property(K, sys_verify(call)),
    sys_assume_ref(K).
 
 /***************************************************************/
