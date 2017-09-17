@@ -288,6 +288,7 @@ public final class OpenOpts extends OpenCheck {
                     return crd;
                 }
             } else {
+                adr = ForeignDomain.sysUriPuny(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -383,6 +384,7 @@ public final class OpenOpts extends OpenCheck {
      * @param adr The uri.
      * @return The write stream.
      * @throws IOException IO error.
+     * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openWrite(String adr)
             throws IOException {
@@ -390,7 +392,7 @@ public final class OpenOpts extends OpenCheck {
             String spec = ForeignUri.sysUriSpec(adr);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("file needed");
             String path = ForeignUri.sysSpecPath(spec);
             File file = new File(path.replace('/', File.separatorChar));
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
@@ -441,6 +443,7 @@ public final class OpenOpts extends OpenCheck {
                 File file = new File(path.replace('/', File.separatorChar));
                 out = new FileOutputStream(file);
             } else {
+                adr = ForeignDomain.sysUriPuny(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setDoInput(false);
@@ -498,6 +501,7 @@ public final class OpenOpts extends OpenCheck {
      * @param adr The uri.
      * @return The read stream.
      * @throws IOException IO error.
+     * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openAppend(String adr)
             throws IOException {
@@ -505,7 +509,7 @@ public final class OpenOpts extends OpenCheck {
             String spec = ForeignUri.sysUriSpec(adr);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("file needed");
             String path = ForeignUri.sysSpecPath(spec);
             File file = new File(path.replace('/', File.separatorChar));
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
@@ -554,7 +558,7 @@ public final class OpenOpts extends OpenCheck {
             String spec = ForeignUri.sysUriSpec(adr);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("file needed");
             String path = ForeignUri.sysSpecPath(spec);
             File file = new File(path.replace('/', File.separatorChar));
             OutputStream out = new FileOutputStream(file, true);

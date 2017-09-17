@@ -10,8 +10,20 @@
  *
  * The predicate host_lookup/2 can be used to perform a forward or
  * reverse lookup of a host name. The predicate will fail if the
- * host name is not known. The predicate ping_host/1 can be used
- * to check the reachability of a host name.
+ * host name is not known. The predicate ping_host/1 can be used to
+ * check the reachability of a host name. The Java internet libraries
+ * do not automatically a name preparation. Neither do our Prolog
+ * predicates presented so far.
+ *
+ * Example:
+ * ?- uri_puny('http://zürich.ch/robots.txt', X).
+ * X = 'http://xn--zrich-kva.ch/robots.txt'
+ *
+ * Name preparation is for example required for host names. Domain name
+ * servers only work with ASCII represented host names and the
+ * recommended encoding of Unicode towards ASCII for host names is
+ * puny code. Such an encoding can be invoked by the predicate uri_puny/2
+ * provided in this module.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -115,23 +127,23 @@ host_lookup(X, Y) :-
 /************************************************************/
 
 /**
- * spec_puny(S, P):
+ * uri_puny(S, P):
  * If S is a variable then the predicate succeeds when S unifies with
  * the puny decode of P. Otherwise the predicate succeeds when P unifies
  * with the puny encode of S.
  */
-% spec_puny(+-Atom, -+Atom)
-:- public spec_puny/2.
-spec_puny(X, Y) :-
+% uri_puny(+-Atom, -+Atom)
+:- public uri_puny/2.
+uri_puny(X, Y) :-
    var(X), !,
-   sys_spec_unpuny(Y, X).
-spec_puny(X, Y) :-
-   sys_spec_puny(X, Y).
+   sys_uri_unpuny(Y, X).
+uri_puny(X, Y) :-
+   sys_uri_puny(X, Y).
 
-:- private sys_spec_puny/2.
-:- foreign(sys_spec_puny/2, 'ForeignDomain',
-      sysSpecPuny('String')).
+:- private sys_uri_puny/2.
+:- foreign(sys_uri_puny/2, 'ForeignDomain',
+      sysUriPuny('String')).
 
-:- private sys_spec_unpuny/2.
-:- foreign(sys_spec_unpuny/2, 'ForeignDomain',
-      sysSpecUnpuny('String')).
+:- private sys_uri_unpuny/2.
+:- foreign(sys_uri_unpuny/2, 'ForeignDomain',
+      sysUriUnpuny('String')).

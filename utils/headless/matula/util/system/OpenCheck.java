@@ -77,6 +77,7 @@ public class OpenCheck {
 
                 return true;
             } else {
+                adr = ForeignDomain.sysUriPuny(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -126,6 +127,7 @@ public class OpenCheck {
             if (ForeignUri.SCHEME_FILE.equals(scheme)) {
                 return adr;
             } else {
+                adr = ForeignDomain.sysUriPuny(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -153,6 +155,7 @@ public class OpenCheck {
                 if (loc == null)
                     return null;
                 adr = ForeignUri.sysUriAbsolute(adr, loc);
+                adr = ForeignDomain.sysUriUnpuny(adr);
                 return adr;
             }
         } catch (FileNotFoundException x) {

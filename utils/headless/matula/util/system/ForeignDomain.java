@@ -162,34 +162,75 @@ public final class ForeignDomain {
     /************************************************************/
 
     /**
+     * <p>Determine the punny encode of an uri.</p>
+     *
+     * @param adr The uri.
+     * @return The encoded uri.
+     */
+    public static String sysUriPuny(String adr) {
+        String spec = ForeignUri.sysUriSpec(adr);
+        String newspec = ForeignDomain.sysSpecPuny(spec);
+        if (!spec.equals(newspec)) {
+            String query = ForeignUri.sysUriQuery(adr);
+            String hash = ForeignUri.sysUriHash(adr);
+            adr = ForeignUri.sysUriMake(newspec, query, hash);
+        }
+        return adr;
+    }
+
+    /**
+     * <p>Determine the punny decode of an uri.</p>
+     *
+     * @param adr The uri.
+     * @return The decoded uri.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    public static String sysUriUnpuny(String adr)
+            throws MalformedURLException {
+        String spec = ForeignUri.sysUriSpec(adr);
+        String newspec = ForeignDomain.sysSpecUnpuny(spec);
+        if (!spec.equals(newspec)) {
+            String query = ForeignUri.sysUriQuery(adr);
+            String hash = ForeignUri.sysUriHash(adr);
+            adr = ForeignUri.sysUriMake(newspec, query, hash);
+        }
+        return adr;
+
+    }
+
+    /**
      * <p>Determine the punny encode of a spec.</p>
      *
      * @param spec The spec.
      * @return The encoded spec.
      */
-    public static String sysSpecPuny(String spec) {
+    private static String sysSpecPuny(String spec) {
         try {
             String scheme = ForeignUri.sysSpecScheme(spec);
             String authority = ForeignUri.sysSpecAuthority(spec);
-            String path = ForeignUri.sysSpecPath(spec);
             if (ForeignUri.SCHEME_JAR.equals(scheme)) {
+                String path = ForeignUri.sysSpecPath(spec);
                 int k = path.lastIndexOf("!/");
                 if (k != -1) {
                     spec = ForeignUri.sysSpecMake("", authority, path.substring(0, k));
-                    spec = ForeignDomain.sysSpecPuny(spec);
+                    spec = ForeignDomain.sysUriPuny(spec);
                     spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec + path.substring(k));
                 } else {
                     spec = ForeignUri.sysSpecMake("", authority, path);
-                    spec = ForeignDomain.sysSpecPuny(spec);
+                    spec = ForeignDomain.sysUriPuny(spec);
                     spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec);
                 }
             } else {
-                spec = ForeignUri.sysSpecMake(scheme, sysDomainPuny(authority), path);
+                String newauthority = sysDomainPuny(authority);
+                if (!authority.equals(newauthority)) {
+                    String path = ForeignUri.sysSpecPath(spec);
+                    spec = ForeignUri.sysSpecMake(scheme, newauthority, path);
+                }
             }
-            return spec;
         } catch (MalformedURLException x) {
             throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
+        return spec;
     }
 
     /**
@@ -199,24 +240,28 @@ public final class ForeignDomain {
      * @return The encoded spec.
      * @throws MalformedURLException Domain assembling problem.
      */
-    public static String sysSpecUnpuny(String spec)
+    private static String sysSpecUnpuny(String spec)
             throws MalformedURLException {
         String scheme = ForeignUri.sysSpecScheme(spec);
         String authority = ForeignUri.sysSpecAuthority(spec);
-        String path = ForeignUri.sysSpecPath(spec);
         if (ForeignUri.SCHEME_JAR.equals(scheme)) {
+            String path = ForeignUri.sysSpecPath(spec);
             int k = path.lastIndexOf("!/");
             if (k != -1) {
                 spec = ForeignUri.sysSpecMake("", authority, path.substring(0, k));
-                spec = ForeignDomain.sysSpecUnpuny(spec);
+                spec = ForeignDomain.sysUriUnpuny(spec);
                 spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec + path.substring(k));
             } else {
                 spec = ForeignUri.sysSpecMake("", authority, path);
-                spec = ForeignDomain.sysSpecUnpuny(spec);
+                spec = ForeignDomain.sysUriUnpuny(spec);
                 spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec);
             }
         } else {
-            spec = ForeignUri.sysSpecMake(scheme, sysDomainUnpuny(authority), path);
+            String newauthority = sysDomainUnpuny(authority);
+            if (!authority.equals(newauthority)) {
+                String path = ForeignUri.sysSpecPath(spec);
+                spec = ForeignUri.sysSpecMake(scheme, newauthority, path);
+            }
         }
         return spec;
     }
@@ -230,14 +275,15 @@ public final class ForeignDomain {
     private static String sysDomainPuny(String dom) {
         try {
             String host = sysDomainHost(dom);
-            if ("".equals(host))
-                return dom;
-            host = IDN.toASCII(host);
-            String user = sysDomainUser(dom);
-            return sysDomainMake(user, host);
+            String newhost = IDN.toASCII(host);
+            if (!host.equals(newhost)) {
+                String user = sysDomainUser(dom);
+                dom = sysDomainMake(user, newhost);
+            }
         } catch (MalformedURLException x) {
             throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
+        return dom;
     }
 
     /**
@@ -250,11 +296,12 @@ public final class ForeignDomain {
     private static String sysDomainUnpuny(String dom)
             throws MalformedURLException {
         String host = sysDomainHost(dom);
-        if ("".equals(host))
-            return dom;
-        host = IDN.toUnicode(host);
-        String user = sysDomainUser(dom);
-        return sysDomainMake(user, host);
+        String newhost = IDN.toUnicode(host);
+        if (!host.equals(newhost)) {
+            String user = sysDomainUser(dom);
+            dom = sysDomainMake(user, newhost);
+        }
+        return dom;
     }
 
     /**

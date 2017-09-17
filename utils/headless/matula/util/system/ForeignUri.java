@@ -516,14 +516,45 @@ public final class ForeignUri {
         spec = ForeignUri.sysCanonicalSpec(spec);
         String scheme = ForeignUri.sysSpecScheme(spec);
         if (SCHEME_FILE.equals(scheme)) {
+            /* remove the query for file */
             String hash = ForeignUri.sysUriHash(adr);
-            return ForeignUri.sysUriMake(spec, "", hash);
+            adr = ForeignUri.sysUriMake(spec, "", hash);
         } else {
             String query = ForeignUri.sysUriQuery(adr);
             query = ForeignUri.decodeQuery(query);
             String hash = ForeignUri.sysUriHash(adr);
-            return ForeignUri.sysUriMake(spec, query, hash);
+            adr = ForeignUri.sysUriMake(spec, query, hash);
+            adr = derefUri(adr);
         }
+        return adr;
+    }
+
+    /**
+     * <p>Deref an uri.</p>
+     *
+     * @param adr The uri.
+     * @return The derefed uri.
+     * @throws IOException Shit happen.
+     */
+    private static String derefUri(String adr)
+            throws IOException {
+        for (; ; ) {
+            String res;
+            try {
+                res = ForeignCache.DEFAULT_CHECK.checkRedirect(adr);
+            } catch (IOException x) {
+                if (x instanceof InterruptedIOException &&
+                        !(x instanceof SocketTimeoutException)) {
+                    throw x;
+                } else {
+                    res = null;
+                }
+            }
+            if (res == null)
+                break;
+            adr = res;
+        }
+        return adr;
     }
 
     /**
@@ -543,56 +574,26 @@ public final class ForeignUri {
             int k = path.lastIndexOf("!/");
             if (k != -1) {
                 spec = sysSpecMake("", authority, path.substring(0, k));
-                spec = ForeignUri.sysCanonicalSpec(spec);
+                spec = ForeignUri.sysCanonicalUri(spec);
                 spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
             } else {
                 spec = sysSpecMake("", authority, path);
-                spec = ForeignUri.sysCanonicalSpec(spec);
+                spec = ForeignUri.sysCanonicalUri(spec);
                 spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
             }
         } else if (SCHEME_FILE.equals(scheme)) {
+            /* remove the authority for file */
             spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
         } else if ("".equals(scheme) &&
                 "".equals(authority) &&
                 !ForeignFile.sysPathIsRelative(path)) {
+            /* remove the authority for file */
             spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
         } else if ("".equals(scheme) &&
                 !"".equals(authority)) {
             spec = ForeignUri.sysSpecMake(SCHEME_HTTP, authority, path);
-            return derefSpec(spec);
         } else {
-            spec = ForeignUri.sysSpecMake(scheme, authority, path);
-            return derefSpec(spec);
-        }
-        return spec;
-    }
-
-    /**
-     * <p>Deref a spec.</p>
-     *
-     * @param spec The spec.
-     * @return The derefed spec.
-     * @throws CharacterCodingException Spec deref problem.
-     */
-    private static String derefSpec(String spec)
-            throws IOException {
-        for (; ; ) {
-            String res;
-            try {
-                res = ForeignDomain.sysSpecPuny(spec);
-                res = ForeignCache.DEFAULT_CHECK.checkRedirect(res);
-                res = (res!=null?ForeignDomain.sysSpecUnpuny(res):null);
-            } catch (IOException x) {
-                if (x instanceof InterruptedIOException &&
-                        !(x instanceof SocketTimeoutException)) {
-                    throw x;
-                } else {
-                    res = null;
-                }
-            }
-            if (res == null)
-                break;
-            spec = res;
+            /* */
         }
         return spec;
     }
