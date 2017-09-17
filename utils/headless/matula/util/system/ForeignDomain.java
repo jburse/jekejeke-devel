@@ -91,7 +91,7 @@ public final class ForeignDomain {
     }
 
     /************************************************************/
-    /* Internet Addresses                                       */
+    /* Domain Lookup                                            */
     /************************************************************/
 
     /**
@@ -134,6 +134,10 @@ public final class ForeignDomain {
         return ia.getCanonicalHostName();
     }
 
+    /************************************************************/
+    /* Ping Host                                                */
+    /************************************************************/
+
     /**
      * <p>Ping a host.</p>
      *
@@ -153,12 +157,113 @@ public final class ForeignDomain {
         return ia.isReachable(1000);
     }
 
+    /************************************************************/
+    /* Puny Code                                                */
+    /************************************************************/
+
     /**
-     * <p>Some test.</p>
+     * <p>Determine the punny encode of a spec.</p>
+     *
+     * @param spec The spec.
+     * @return The encoded spec.
+     */
+    public static String sysSpecPuny(String spec) {
+        try {
+            String scheme = ForeignUri.sysSpecScheme(spec);
+            String authority = ForeignUri.sysSpecAuthority(spec);
+            String path = ForeignUri.sysSpecPath(spec);
+            if (ForeignUri.SCHEME_JAR.equals(scheme)) {
+                int k = path.lastIndexOf("!/");
+                if (k != -1) {
+                    spec = ForeignUri.sysSpecMake("", authority, path.substring(0, k));
+                    spec = ForeignDomain.sysSpecPuny(spec);
+                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec + path.substring(k));
+                } else {
+                    spec = ForeignUri.sysSpecMake("", authority, path);
+                    spec = ForeignDomain.sysSpecPuny(spec);
+                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec);
+                }
+            } else {
+                spec = ForeignUri.sysSpecMake(scheme, sysDomainPuny(authority), path);
+            }
+            return spec;
+        } catch (MalformedURLException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        }
+    }
+
+    /**
+     * <p>Determine the punny encode of a spec.</p>
+     *
+     * @param spec The spec.
+     * @return The encoded spec.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    public static String sysSpecUnpuny(String spec)
+            throws MalformedURLException {
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        String authority = ForeignUri.sysSpecAuthority(spec);
+        String path = ForeignUri.sysSpecPath(spec);
+        if (ForeignUri.SCHEME_JAR.equals(scheme)) {
+            int k = path.lastIndexOf("!/");
+            if (k != -1) {
+                spec = ForeignUri.sysSpecMake("", authority, path.substring(0, k));
+                spec = ForeignDomain.sysSpecUnpuny(spec);
+                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec + path.substring(k));
+            } else {
+                spec = ForeignUri.sysSpecMake("", authority, path);
+                spec = ForeignDomain.sysSpecUnpuny(spec);
+                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec);
+            }
+        } else {
+            spec = ForeignUri.sysSpecMake(scheme, sysDomainUnpuny(authority), path);
+        }
+        return spec;
+    }
+
+    /**
+     * <p>Determine the punny encode of a domain.</p>
+     *
+     * @param dom The domain.
+     * @return The encoded domain.
+     */
+    private static String sysDomainPuny(String dom) {
+        try {
+            String host = sysDomainHost(dom);
+            if ("".equals(host))
+                return dom;
+            host = IDN.toASCII(host);
+            String user = sysDomainUser(dom);
+            return sysDomainMake(user, host);
+        } catch (MalformedURLException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        }
+    }
+
+    /**
+     * <p>Determine the punny decode of a domain.</p>
+     *
+     * @param dom The domain.
+     * @return The decoded domain.
+     * @throws MalformedURLException Domain assembling problem.
+     */
+    private static String sysDomainUnpuny(String dom)
+            throws MalformedURLException {
+        String host = sysDomainHost(dom);
+        if ("".equals(host))
+            return dom;
+        host = IDN.toUnicode(host);
+        String user = sysDomainUser(dom);
+        return sysDomainMake(user, host);
+    }
+
+    /**
+     * <p>Some tests.</p>
      *
      * @param args The arguments, unused.
      * @throws IOException Domain assembling problem.
      */
+    /*
     public static void main(String[] args)
             throws IOException {
         String dom = "www.jekejeke.ch";
@@ -168,10 +273,25 @@ public final class ForeignDomain {
 
         System.out.println();
 
-         dom = "92.42.190.4";
+        dom = "92.42.190.4";
         System.out.println("dom=" + dom);
         dom = sysReverseLookup(dom);
         System.out.println("reverse(dom)=" + dom);
+
+        System.out.println();
+
+        String adr = "http://zürich.ch/robots.txt";
+        System.out.println("adr=" + adr);
+        adr = sysSpecPuny(adr);
+        System.out.println("puny(adr)=" + adr);
+
+        System.out.println();
+
+        adr = "http://xn--zrich-kva.ch/robots.txt";
+        System.out.println("adr=" + adr);
+        adr = sysSpecUnpuny(adr);
+        System.out.println("unpuny(adr)=" + adr);
     }
+    */
 
 }

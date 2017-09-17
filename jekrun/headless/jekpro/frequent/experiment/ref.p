@@ -13,6 +13,12 @@
  * predicate that is used in the search. The predicate additionally
  * returns clauses that can be used with the other predicates here.
  *
+ * The predicates ref_property/2, set_ref_property/2 and reset_re_property/2
+ * allow inspecting and modifying clause properties. Clause references
+ * might not only refer to clauses, they implement a more general
+ * base class. Clause references are for example used in the Jekejeke
+ * Minlog extension to refer to attributed variable slots.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties

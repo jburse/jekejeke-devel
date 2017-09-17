@@ -30,12 +30,14 @@
  * ?- follow_uri('file:/foo/bar/baz?jack#jill', X, 'file:/foo/tip/tap?fix#fox').
  * X = '../tip/tap?fix#fox'
  *
- * The predicates canonical_spec/2 and canonical_uri/2 can be used to
- * canonize specs and URIs. In this predicate the path component is
- * handled by the corresponding routine from system/file. The predicate
- * uri_encode/2 can be used to encode and decode URIs. The predicate
- * uri_encode/2 will percent encode characters above 0x7F. As a result
- * the URI will only contain ASCII. If used in the other direction
+ * The predicate canonical_uri/2 can be used to canonize URIs. For the
+ * file protocol the path component is handled by the corresponding routine
+ * from the module file. For other protocols the routine uses puny code
+ * from the module domain and accesses the server for redirects.
+ *
+ * The predicate uri_encode/2 can be used to encode and decode URIs. The
+ * predicate uri_encode/2 will percent encode characters above 0x7F. As a
+ * result the URI will only contain ASCII. If used in the other direction
  * the predicate will first decode and then minimal encode again.
  *
  * Warranty & Liability
@@ -212,17 +214,8 @@ follow_uri(B, R, A) :-
       sysUriRelative('String','String')).
 
 /************************************************************/
-/* Canonical Spec & Uri                                     */
+/* Canonical URI                                            */
 /************************************************************/
-
-/**
- * canonical_spec(S, C):
- * The predicate succeeds when C unifies with canonical spec of S.
- */
-% canonical_spec(+Atom, -Atom)
-:- public canonical_spec/2.
-:- foreign(canonical_spec/2, 'ForeignUri',
-      sysCanonicalSpec('String')).
 
 /**
  * canonical_uri(U, C):
@@ -234,7 +227,7 @@ follow_uri(B, R, A) :-
       sysCanonicalUri('String')).
 
 /************************************************************/
-/* Uri Encoding                                             */
+/* URI Encoding                                             */
 /************************************************************/
 
 /**

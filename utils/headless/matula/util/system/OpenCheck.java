@@ -144,7 +144,8 @@ public class OpenCheck {
                     if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
                         return null;
                     /* spare an IOException */
-                    if (res != HttpURLConnection.HTTP_MOVED_PERM)
+                    if (res != HttpURLConnection.HTTP_MOVED_PERM &&
+                            res != HttpURLConnection.HTTP_MOVED_TEMP)
                         return null;
                 }
 
@@ -162,5 +163,28 @@ public class OpenCheck {
             return null;
         }
     }
+
+    /**
+     * <p>Some tests.</p>
+     *
+     * @param args The arguments, unused.
+     * @throws IOException Domain assembling problem.
+     */
+    /*
+    public static void main(String[] args)
+            throws IOException {
+        String adr = "https://www.stadt-zuerich.ch/robots.txt";
+        System.out.println("adr=" + adr);
+        boolean flag = ForeignCache.DEFAULT_CHECK.checkHead(adr);
+        System.out.println("head(adr)=" + flag);
+
+        System.out.println();
+
+        adr = "http://xn--zrich-kva.ch/robots.txt";
+        System.out.println("adr=" + adr);
+        adr = ForeignCache.DEFAULT_CHECK.checkRedirect(adr);
+        System.out.println("redirect(adr)=" + adr);
+    }
+    */
 
 }

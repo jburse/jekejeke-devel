@@ -97,6 +97,10 @@ host_lookup(X, Y) :-
 :- foreign(sys_domain_reverse/2, 'ForeignDomain',
       sysReverseLookup('String')).
 
+/************************************************************/
+/* Ping Host                                                */
+/************************************************************/
+
 /**
  * ping_host(H):
  * The predicate succeeds when the host H is reachable.
@@ -105,3 +109,29 @@ host_lookup(X, Y) :-
 :- public ping_host/1.
 :- foreign(ping_host/1, 'ForeignDomain',
       sysPingHost('String')).
+
+/************************************************************/
+/* Puny Code                                                */
+/************************************************************/
+
+/**
+ * spec_puny(S, P):
+ * If S is a variable then the predicate succeeds when S unifies with
+ * the puny decode of P. Otherwise the predicate succeeds when P unifies
+ * with the puny encode of S.
+ */
+% spec_puny(+-Atom, -+Atom)
+:- public spec_puny/2.
+spec_puny(X, Y) :-
+   var(X), !,
+   sys_spec_unpuny(Y, X).
+spec_puny(X, Y) :-
+   sys_spec_puny(X, Y).
+
+:- private sys_spec_puny/2.
+:- foreign(sys_spec_puny/2, 'ForeignDomain',
+      sysSpecPuny('String')).
+
+:- private sys_spec_unpuny/2.
+:- foreign(sys_spec_unpuny/2, 'ForeignDomain',
+      sysSpecUnpuny('String')).

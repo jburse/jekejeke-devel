@@ -500,8 +500,31 @@ public final class ForeignUri {
     }
 
     /************************************************************/
-    /* Canonical Spec & URI                                     */
+    /* Canonical URI                                           */
     /************************************************************/
+    /**
+     * <p>Determine a canonical URI and schemefy.</p>
+     *
+     * @param adr The uri.
+     * @return The canonical and schemefied URI.
+     * @throws MalformedURLException    Spec assembling problem.
+     * @throws CharacterCodingException File canonization problem.
+     */
+    public static String sysCanonicalUri(String adr)
+            throws IOException {
+        String spec = ForeignUri.sysUriSpec(adr);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        if (SCHEME_FILE.equals(scheme)) {
+            String hash = ForeignUri.sysUriHash(adr);
+            return ForeignUri.sysUriMake(spec, "", hash);
+        } else {
+            String query = ForeignUri.sysUriQuery(adr);
+            query = ForeignUri.decodeQuery(query);
+            String hash = ForeignUri.sysUriHash(adr);
+            return ForeignUri.sysUriMake(spec, query, hash);
+        }
+    }
 
     /**
      * <p>Determine a canonical spec and schemefy.</p>
@@ -511,7 +534,7 @@ public final class ForeignUri {
      * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
-    public static String sysCanonicalSpec(String spec)
+    private static String sysCanonicalSpec(String spec)
             throws IOException {
         String scheme = ForeignUri.sysSpecScheme(spec);
         String authority = ForeignUri.sysSpecAuthority(spec);
@@ -556,7 +579,9 @@ public final class ForeignUri {
         for (; ; ) {
             String res;
             try {
-                res = ForeignCache.DEFAULT_CHECK.checkRedirect(spec);
+                res = ForeignDomain.sysSpecPuny(spec);
+                res = ForeignCache.DEFAULT_CHECK.checkRedirect(res);
+                res = (res!=null?ForeignDomain.sysSpecUnpuny(res):null);
             } catch (IOException x) {
                 if (x instanceof InterruptedIOException &&
                         !(x instanceof SocketTimeoutException)) {
@@ -570,34 +595,6 @@ public final class ForeignUri {
             spec = res;
         }
         return spec;
-    }
-
-    /**
-     * <p>Determine a canonical URI and schemefy.</p>
-     *
-     * @param adr The uri.
-     * @return The canonical and schemefied URI.
-     * @throws MalformedURLException    Spec assembling problem.
-     * @throws CharacterCodingException File canonization problem.
-     */
-    public static String sysCanonicalUri(String adr)
-            throws IOException {
-        try {
-            String spec = ForeignUri.sysUriSpec(adr);
-            spec = ForeignUri.sysCanonicalSpec(spec);
-            String scheme = ForeignUri.sysSpecScheme(spec);
-            if (SCHEME_FILE.equals(scheme)) {
-                String hash = ForeignUri.sysUriHash(adr);
-                return ForeignUri.sysUriMake(spec, "", hash);
-            } else {
-                String query = ForeignUri.sysUriQuery(adr);
-                query = ForeignUri.decodeQuery(query);
-                String hash = ForeignUri.sysUriHash(adr);
-                return ForeignUri.sysUriMake(spec, query, hash);
-            }
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
-        }
     }
 
     /*******************************************************************/
@@ -630,16 +627,12 @@ public final class ForeignUri {
      * @return The decoded uri.
      */
     public static String sysUriDecode(String adr) {
-        try {
-            String spec = ForeignUri.sysUriSpec(adr);
-            String query = ForeignUri.sysUriQuery(adr);
-            String hash = ForeignUri.sysUriHash(adr);
+        String spec = ForeignUri.sysUriSpec(adr);
+        String query = ForeignUri.sysUriQuery(adr);
+        String hash = ForeignUri.sysUriHash(adr);
 
-            query = ForeignUri.decodeQuery(query);
-            adr = sysUriMake(spec, query, hash);
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
-        }
+        query = ForeignUri.decodeQuery(query);
+        adr = sysUriMake(spec, query, hash);
         return adr;
     }
 
@@ -649,23 +642,25 @@ public final class ForeignUri {
      *
      * @param s The query.
      * @return The decoded query.
-     * @throws UnsupportedEncodingException Encoding problem.
      */
-    private static String decodeQuery(String s)
-            throws UnsupportedEncodingException {
-        if ("".equals(s))
-            return "";
-        StringBuilder buf = new StringBuilder();
-        int k1 = 0;
-        int k = s.indexOf(CHAR_AMP, k1);
-        while (k != -1) {
-            buf.append(decodePair(s.substring(k1, k)));
-            buf.appendCodePoint(CHAR_AMP);
-            k1 = k + 1;
-            k = s.indexOf(CHAR_AMP, k1);
+    private static String decodeQuery(String s) {
+        try {
+            if ("".equals(s))
+                return "";
+            StringBuilder buf = new StringBuilder();
+            int k1 = 0;
+            int k = s.indexOf(CHAR_AMP, k1);
+            while (k != -1) {
+                buf.append(decodePair(s.substring(k1, k)));
+                buf.appendCodePoint(CHAR_AMP);
+                k1 = k + 1;
+                k = s.indexOf(CHAR_AMP, k1);
+            }
+            buf.append(decodePair(s.substring(k1)));
+            return buf.toString();
+        } catch (UnsupportedEncodingException x) {
+            throw new RuntimeException(SHOULDNT_HAPPEN, x);
         }
-        buf.append(decodePair(s.substring(k1)));
-        return buf.toString();
     }
 
     /**
@@ -854,6 +849,7 @@ public final class ForeignUri {
      * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
+    /*
     public static void main(String[] args)
             throws IOException {
         String spec = "jar://abc!/foo";
@@ -923,7 +919,15 @@ public final class ForeignUri {
         System.out.println("uri=" + uri);
         uri = ForeignUri.sysCanonicalUri(uri);
         System.out.println("canonical(uri)=" + uri);
+
+        System.out.println();
+
+        String spec = "http://nürnberg.de/robots.txt";
+        System.out.println("spec=" + spec);
+        spec = ForeignUri.sysCanonicalSpec(spec);
+        System.out.println("canonical(spec)=" + spec);
     }
+    */
 
 }
 
