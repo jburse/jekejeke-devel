@@ -14,17 +14,21 @@
  * ?- put_attr(X, foo, [X,Y]), put_attr(Y, foo, [X,Y]), [X,Y]=[1,2].
  * L=[1,2]
  * L=[1,2]
- * X = 1,
- * Y = 2
  * ?- put_attr(X, foo, [X,Y]), put_attr(Y, foo, [X,Y]), X=Y.
  * L=[_A,_A]
- * Y = X
  *
  * The unify hook attr_unify_hook/2 has to be declared inside the
  * module of the key. The scheduled hook is called after the variable
  * has been instantiated and at the next calls port if the surrounding
  * unification was successful. The hook is allowed to fail
  * or to succeed non-deterministically.
+ *
+ * The goals hook attribute_goals/3 has to be optionally declared inside
+ * the module of the key. When needed the hook is called only once.
+ * If the hook is missing or if it fails a single goal for a put_attr/3
+ * call is generated. The goals are used in the top-level display of
+ * answers and they can be retrieved by the call_residue/2 predicate
+ * from the module residue.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -128,10 +132,11 @@ residue:sys_current_eq(V, attr(R,K,F)) :-
    sys_freeze_var(V, R).
 
 /**
- * sys_unwrap_eq(H, I, O):
- * The predicate converts equation H with variables wrapped into
- * equations I with variables unwrapped. The list used the end O.
- * Constraint solvers should extend this multi-file predicate.
+ * K:attribute_goals(V, I, O) (hook):
+ * This predicate has to be optionally implemented as a hook
+ * for a key K. It will be called when the goals by the variable
+ * V are needed. It should return a list of goals in I. The list
+ * uses the end O.
  */
 % sys_unwrap_eq(+Handle, -Goals, +Goals)
 :- public residue:sys_unwrap_eq/3.

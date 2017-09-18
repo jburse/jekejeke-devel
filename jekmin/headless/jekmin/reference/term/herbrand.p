@@ -112,7 +112,7 @@ residue:sys_current_eq(V, neq(S)) :-
 /**
  * sys_unwrap_eq(H, I, O):
  * The predicate converts equation H with variables wrapped into
- * equations I with variables unwrapped. The list used the end O.
+ * equations I with variables unwrapped. The list uses the end O.
  */
 % sys_unwrap_eq(+Handle, -Goals, +Goals)
 :- public residue:sys_unwrap_eq/3.
