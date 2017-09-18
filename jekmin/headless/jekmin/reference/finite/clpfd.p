@@ -384,47 +384,45 @@ sys_melt_hook(Y, sys_hook_mul) <=
  ;  L = [],
     S = ...}.
 
-% residue:sys_current_eq(+Var, -Goal)
+% residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-:- meta_predicate residue:sys_current_eq(?,0).
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, mulv(X, Y, Z)) :-
+residue:sys_current_eq(V, mulv(X,Y,Z)) :-
    sys_clause_hook(V, sys_hook_mul, _),
    sys_freeze_var(V, X),
    sys_mulv_ord(X, Y, Z).
-residue:sys_current_eq(V, mulv(X, Y, Z)) :-
+residue:sys_current_eq(V, mulv(X,Y,Z)) :-
    sys_clause_hook(V, sys_hook_mul, _),
    sys_freeze_var(V, Y),
    sys_mulv_ord(X, Y, Z).
-residue:sys_current_eq(V, mulv(X, Y, Z)) :-
+residue:sys_current_eq(V, mulv(X,Y,Z)) :-
    sys_clause_hook(V, sys_hook_mul, _),
    sys_freeze_var(V, Z),
    sys_mulv_ord(X, Y, Z).
-residue:sys_current_eq(V, mulc(X, Y, C)) :-
+residue:sys_current_eq(V, mulc(X,Y,C)) :-
    sys_clause_hook(V, sys_hook_mul, _),
    sys_freeze_var(V, X),
    sys_mulc_ord(X, Y, C).
-residue:sys_current_eq(V, mulc(X, Y, C)) :-
+residue:sys_current_eq(V, mulc(X,Y,C)) :-
    sys_clause_hook(V, sys_hook_mul, _),
    sys_freeze_var(V, Y),
    sys_mulc_ord(X, Y, C).
 
-% residue:sys_unwrap_eq(+Goal, -Goal)
-:- public residue:sys_unwrap_eq/2.
-:- multifile residue:sys_unwrap_eq/2.
-:- meta_predicate residue:sys_unwrap_eq(0,0).
-:- discontiguous residue:sys_unwrap_eq/2.
-residue:sys_unwrap_eq(mulv(X, Y, Z), C #= A*B) :-
+% residue:sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public residue:sys_unwrap_eq/3.
+:- multifile residue:sys_unwrap_eq/3.
+:- discontiguous residue:sys_unwrap_eq/3.
+residue:sys_unwrap_eq(mulv(X,Y,Z), [C#=A*B|L], L) :-
    Z @> Y, !,
    sys_melt_var(X, A),
    sys_melt_var(Y, B),
    sys_melt_var(Z, C).
-residue:sys_unwrap_eq(mulv(X, Y, Z), A*B #= C) :-
+residue:sys_unwrap_eq(mulv(X,Y,Z), [A*B#=C|L], L) :-
    sys_melt_var(X, A),
    sys_melt_var(Y, B),
    sys_melt_var(Z, C).
-residue:sys_unwrap_eq(mulc(X, Y, C), C #= A*B) :-
+residue:sys_unwrap_eq(mulc(X,Y,C), [C#=A*B|L], L) :-
    sys_melt_var(X, A),
    sys_melt_var(Y, B).
 
@@ -662,36 +660,36 @@ sys_melt_hook(Y, sys_hook_spez) <=
     S \== ...}.
 
 % residue:sys_current_eq(+Var, -Goal)
-residue:sys_current_eq(V, sqrv(X, Y)) :-
+residue:sys_current_eq(V, sqrv(X,Y)) :-
    sys_clause_hook(V, sys_hook_spez, _),
    sys_freeze_var(V, X),
    sys_sqrv(X, Y).
-residue:sys_current_eq(V, sqrv(X, Y)) :-
+residue:sys_current_eq(V, sqrv(X,Y)) :-
    sys_clause_hook(V, sys_hook_spez, _),
    sys_freeze_var(V, Y),
    sys_sqrv(X, Y).
-residue:sys_current_eq(V, impv(X, Y)) :-
+residue:sys_current_eq(V, impv(X,Y)) :-
    sys_clause_hook(V, sys_hook_spez, _),
    sys_freeze_var(V, X),
    sys_impv(X, Y).
-residue:sys_current_eq(V, impv(X, Y)) :-
+residue:sys_current_eq(V, impv(X,Y)) :-
    sys_clause_hook(V, sys_hook_spez, _),
    sys_freeze_var(V, Y),
    sys_impv(X, Y).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(sqrv(X, Y), A*A #= B) :-
+residue:sys_unwrap_eq(sqrv(X,Y), [A*A#=B|L], L) :-
    X @>= Y, !,
    sys_melt_var(X, A),
    sys_melt_var(Y, B).
-residue:sys_unwrap_eq(sqrv(X, Y), B #= A*A) :-
+residue:sys_unwrap_eq(sqrv(X,Y), [B#=A*A|L], L) :-
    sys_melt_var(X, A),
    sys_melt_var(Y, B).
-residue:sys_unwrap_eq(impv(X, Y), A #= B*A) :-
+residue:sys_unwrap_eq(impv(X,Y), [A#=B*A|L], L) :-
    X @>= Y, !,
    sys_melt_var(X, A),
    sys_melt_var(Y, B).
-residue:sys_unwrap_eq(impv(X, Y), A #= A*B) :-
+residue:sys_unwrap_eq(impv(X,Y), [A#=A*B|L], L) :-
    sys_melt_var(X, A),
    sys_melt_var(Y, B).
 
@@ -837,20 +835,20 @@ zero <=
    {H is -C}.
 
 % residue:sys_current_eq(+Var, -Goal)
-residue:sys_current_eq(V, absv(X, Y)) :-
+residue:sys_current_eq(V, absv(X,Y)) :-
    sys_clause_hook(V, sys_hook_abs, _),
    sys_freeze_var(V, X),
    sys_absv(X, Y).
-residue:sys_current_eq(V, absv(X, Y)) :-
+residue:sys_current_eq(V, absv(X,Y)) :-
    sys_clause_hook(V, sys_hook_abs, _),
    sys_freeze_var(V, Y),
    sys_absv(X, Y).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(absv(X, Y), abs(A) #= B) :-
+residue:sys_unwrap_eq(absv(X,Y), [abs(A)#=B|L], L) :-
    X @>= Y, !,
    sys_melt_var(X, A),
    sys_melt_var(Y, B).
-residue:sys_unwrap_eq(absv(X, Y), B #= abs(A)) :-
+residue:sys_unwrap_eq(absv(X,Y), [B#=abs(A)|L], L) :-
    sys_melt_var(X, A),
    sys_melt_var(Y, B).

@@ -103,7 +103,6 @@ sys_retire_hooks([], _).
 % sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-:- meta_predicate residue:sys_current_eq(?,0).
 residue:sys_current_eq(V, sto(K)) :-
    sys_clause_hook(V, sys_hook_sto, _),
    sys_freeze_var(V, K).
@@ -111,17 +110,16 @@ residue:sys_current_eq(V, neq(S)) :-
    sys_clause_hook(V, sys_hook_neq(S), _).
 
 /**
- * sys_unwrap_eq(G, F):
- * Convert equation G with variables wrapped into equation F
- * with variables unwrapped.
+ * sys_unwrap_eq(H, I, O):
+ * The predicate converts equation H with variables wrapped into
+ * equations I with variables unwrapped. The list used the end O.
  */
-% sys_unwrap_eq(+Handle, -Goal)
-:- public residue:sys_unwrap_eq/2.
-:- multifile residue:sys_unwrap_eq/2.
-:- meta_predicate residue:sys_unwrap_eq(0,0).
-residue:sys_unwrap_eq(sto(K), sto(V)) :-
+% sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public residue:sys_unwrap_eq/3.
+:- multifile residue:sys_unwrap_eq/3.
+residue:sys_unwrap_eq(sto(K), [sto(V)|L], L) :-
    sys_melt_var(K, V).
-residue:sys_unwrap_eq(neq(S), F) :-
+residue:sys_unwrap_eq(neq(S), [F|L], L) :-
    sys_melt_var(S, G),
    sys_make_and(G, F).
 

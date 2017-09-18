@@ -461,25 +461,20 @@ unit <=
    - sys_at(X, _, _, F, H),
    {F \== X}.
 
-% residue:sys_current_eq(+Var, -Goal)
+% residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-:- meta_predicate residue:sys_current_eq(?,0).
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, X in S #\/
-                          D #= E) :-
+residue:sys_current_eq(V, X in S#\/D#=E) :-
    sys_clause_hook(V, sys_hook_at, _),
    sys_freeze_var(V, X),
    sys_at(X, S, _, D, E).
 
-% residue:sys_unwrap_eq(+Goal, -Goal)
-:- public residue:sys_unwrap_eq/2.
-:- multifile residue:sys_unwrap_eq/2.
-:- meta_predicate residue:sys_unwrap_eq(0,0).
-:- discontiguous residue:sys_unwrap_eq/2.
-residue:sys_unwrap_eq(X in S #\/
-                      P #= Q, G #\/
-                              R #= Q) :- !,
+% residue:sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public residue:sys_unwrap_eq/3.
+:- multifile residue:sys_unwrap_eq/3.
+:- discontiguous residue:sys_unwrap_eq/3.
+residue:sys_unwrap_eq(X in S#\/P#=Q, [G#\/R#=Q|L], L) :- !,
    sys_pretty_in(S, [1*X], G),
    sys_melt_var(P, R).
 
@@ -717,17 +712,14 @@ sys_melt_hook(F, sys_hook_pit) <=
 % needs adaptation
 
 % residue:sys_current_eq(+Var, -Goal)
-residue:sys_current_eq(V, L #= C #\/
-                          D #= E) :-
+residue:sys_current_eq(V, L#=C#\/D#=E) :-
    sys_clause_hook(V, sys_hook_pit, _),
    sys_freeze_var(V, X),
    sys_pit_waits(X, K),
    sys_pit_agent(K, _, L, C, D, E).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq([A*X|B] #= K #\/
-                      P #= Q, E #= F #\/
-                              R #= Q) :- !,
+residue:sys_unwrap_eq([A*X|B]#=K#\/P#=Q, [E#=F#\/R#=Q|L], L) :- !,
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F),
@@ -997,17 +989,14 @@ sys_melt_hook(F, sys_hook_lot) <=
 % needs adaptation
 
 % residue:sys_current_eq(+Var, -Goal)
-residue:sys_current_eq(V, set(L, S) #\/
-                          D #= E) :-
+residue:sys_current_eq(V, set(L,S)#\/D#=E) :-
    sys_clause_hook(V, sys_hook_lot, _),
    sys_freeze_var(V, X),
    sys_lot_waits(X, K),
    sys_lot_agent(K, _, L, S, _, D, E).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(set(L, S) #\/
-                      P #= Q, G #\/
-                              R #= Q) :-
+residue:sys_unwrap_eq(set(L,S)#\/P#=Q, [G#\/R#=Q|L], L) :-
    sys_pretty_in(S, L, G),
    sys_melt_var(P, R).
 

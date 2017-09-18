@@ -242,22 +242,20 @@ unit <=
    - sys_in(X, T, _),
    {sys_elem_set(T, H)}.
 
-% residue:sys_current_eq(+Var, -Goal)
+% residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-:- meta_predicate residue:sys_current_eq(?,0).
 :- discontiguous residue:sys_current_eq/2.
 residue:sys_current_eq(V, X in S) :-
    sys_clause_hook(V, sys_hook_in, _),
    sys_freeze_var(V, X),
    sys_in(X, S, _).
 
-% residue:sys_unwrap_eq(+Goal, -Goal)
-:- public residue:sys_unwrap_eq/2.
-:- multifile residue:sys_unwrap_eq/2.
-:- meta_predicate residue:sys_unwrap_eq(0,0).
-:- discontiguous residue:sys_unwrap_eq/2.
-residue:sys_unwrap_eq(X in S, G) :-
+% residue:sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public residue:sys_unwrap_eq/3.
+:- multifile residue:sys_unwrap_eq/3.
+:- discontiguous residue:sys_unwrap_eq/3.
+residue:sys_unwrap_eq(X in S, [G|L], L) :-
    sys_pretty_in(S, [1*X], G).
 
 /**********************************************************/
@@ -483,14 +481,14 @@ sys_melt_hook(X, sys_hook_set) <=
        U = ...)}.
 
 % residue:sys_current_eq(+Var, -Goal)
-residue:sys_current_eq(V, set(L, S)) :-
+residue:sys_current_eq(V, set(L,S)) :-
    sys_clause_hook(V, sys_hook_set, _),
    sys_freeze_var(V, X),
    sys_set_waits(X, K),
    sys_set_agent(K, _, L, S, _).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(set(L, S), G) :-
+residue:sys_unwrap_eq(set(L,S), G) :-
    sys_pretty_in(S, L, G).
 
 /**********************************************************/

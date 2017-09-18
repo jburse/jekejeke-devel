@@ -434,23 +434,21 @@ sys_melt_hook(X, sys_hook_lin) <=
     ;  U = ...,
        L = [])}.
 
-% residue:sys_current_eq(+Var, -Goal)
+% residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-:- meta_predicate residue:sys_current_eq(?,0).
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, L #= C) :-
+residue:sys_current_eq(V, L#=C) :-
    sys_clause_hook(V, sys_hook_lin, _),
    sys_freeze_var(V, X),
    sys_lin_waits(X, K),
    sys_lin_agent(K, _, L, C).
 
-% residue:sys_unwrap_eq(+Goal, -Goal)
-:- public residue:sys_unwrap_eq/2.
-:- multifile residue:sys_unwrap_eq/2.
-:- meta_predicate residue:sys_unwrap_eq(0,0).
-:- discontiguous residue:sys_unwrap_eq/2.
-residue:sys_unwrap_eq([A*X|B] #= K, E #= F) :-
+% residue:sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public residue:sys_unwrap_eq/3.
+:- multifile residue:sys_unwrap_eq/3.
+:- discontiguous residue:sys_unwrap_eq/3.
+residue:sys_unwrap_eq([A*X|B]#=K, [E#=F|L], L) :-
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).

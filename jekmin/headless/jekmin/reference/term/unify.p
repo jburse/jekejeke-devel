@@ -51,6 +51,7 @@
  */
 
 :- package(library(jekmin/reference/term)).
+:- use_package(library(jekpro/frequent/misc)).
 
 :- module(unify, []).
 :- use_module(library(experiment/attr)).
@@ -112,3 +113,33 @@ del_attr(_, _).
 attr(K, F, _, T) :-
    sys_melt_var(F, wrap(W)),
    sys_assume_cont(K:attr_unify_hook(W,T)).
+
+/**
+ * sys_current_eq(V, H):
+ * The predicate succeeds for each equation H with variables
+ * wrapped that listens on the variable V. Constraint solvers
+ * should extend this multi-file predicate.
+ */
+% sys_current_eq(+Var, -Handle)
+:- public residue:sys_current_eq/2.
+:- multifile residue:sys_current_eq/2.
+residue:sys_current_eq(V, attr(R,K,F)) :-
+   sys_clause_hook(V, attr(K, F), _),
+   sys_freeze_var(V, R).
+
+/**
+ * sys_unwrap_eq(H, I, O):
+ * The predicate converts equation H with variables wrapped into
+ * equations I with variables unwrapped. The list used the end O.
+ * Constraint solvers should extend this multi-file predicate.
+ */
+% sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public residue:sys_unwrap_eq/3.
+:- multifile residue:sys_unwrap_eq/3.
+residue:sys_unwrap_eq(attr(R,K,_), I, O) :-
+   current_predicate(K:attribute_goals/3),
+   sys_melt_var(R, V),
+   K:attribute_goals(V, I, O), !.
+residue:sys_unwrap_eq(attr(R,K,F), [put_attr(V,K,W)|L], L) :-
+   sys_melt_var(R, V),
+   sys_melt_var(F, wrap(W)).
