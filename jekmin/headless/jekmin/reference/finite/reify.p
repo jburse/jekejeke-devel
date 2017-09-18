@@ -996,7 +996,7 @@ residue:sys_current_eq(V, set(L,S)#\/D#=E) :-
    sys_lot_agent(K, _, L, S, _, D, E).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(set(L,S)#\/P#=Q, [G#\/R#=Q|L], L) :-
+residue:sys_unwrap_eq(set(L,S)#\/P#=Q, [G#\/R#=Q|T], T) :-
    sys_pretty_in(S, L, G),
    sys_melt_var(P, R).
 

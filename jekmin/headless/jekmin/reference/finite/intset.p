@@ -488,7 +488,7 @@ residue:sys_current_eq(V, set(L,S)) :-
    sys_set_agent(K, _, L, S, _).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(set(L,S), G) :-
+residue:sys_unwrap_eq(set(L,S), [G|R], R) :-
    sys_pretty_in(S, L, G).
 
 /**********************************************************/
