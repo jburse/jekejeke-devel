@@ -244,7 +244,7 @@ public final class EvaluableElem extends Special {
             if (x != Integer.MIN_VALUE) {
                 return Integer.valueOf(Math.abs(x));
             } else {
-                return BigInteger.valueOf(Math.abs((long)x));
+                return BigInteger.valueOf(Math.abs((long) x));
             }
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigInteger(((BigInteger) m).abs());
@@ -275,8 +275,7 @@ public final class EvaluableElem extends Special {
      */
     public static Number sign(Number m) throws ArithmeticException {
         if (m instanceof Integer) {
-            int x = m.intValue();
-            return Integer.valueOf(Integer.signum(x));
+            return Integer.valueOf(Integer.signum(m.intValue()));
         } else if (m instanceof BigInteger) {
             return Integer.valueOf(((BigInteger) m).signum());
         } else if (m instanceof Float) {
@@ -436,9 +435,22 @@ public final class EvaluableElem extends Special {
     private static Number intPow(Number m, Number n) throws EngineMessage {
         EngineMessage.checkNotLessThanZero(n);
         int x = EngineMessage.castIntValue(n);
-        if (m instanceof Integer || m instanceof BigInteger) {
-            return TermAtomic.normBigInteger(
-                    TermAtomic.widenBigInteger(m).pow(x));
+        if (m instanceof Integer) {
+            int y = m.intValue();
+            if (y == 0) {
+                return Integer.valueOf(x == 0 ? 1 : 0);
+            } else {
+                int k = bitlength(y);
+                if (k == 0 || 62 / k >= x) {
+                    return TermAtomic.normBigInteger(
+                            pow((long) y, x));
+                } else {
+                    return TermAtomic.normBigInteger(
+                            BigInteger.valueOf(m.intValue()).pow(x));
+                }
+            }
+        } else if (m instanceof BigInteger) {
+            return TermAtomic.normBigInteger(((BigInteger) m).pow(x));
         } else if (m instanceof Float) {
             return TermAtomic.guardFloat(Float.valueOf(
                     (float) Math.pow(m.floatValue(), x)));
@@ -451,6 +463,39 @@ public final class EvaluableElem extends Special {
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
+    }
+
+    /**
+     * <p>Compute the bitlength.</p>
+     *
+     * @param m The base, positive or negative.
+     * @return The bitlength.
+     */
+    private static int bitlength(int m) {
+        if (m != Integer.MIN_VALUE) {
+            return 32 - Integer.numberOfLeadingZeros(Math.abs(m) - 1);
+        } else {
+            return 31;
+        }
+    }
+
+    /**
+     * <p>Compute the power.</p>
+     *
+     * @param m The base, positive or negative.
+     * @param n The exponent, positive.
+     * @return The exponentiation.
+     */
+    private static long pow(long m, int n) {
+        long r = 1;
+        while (n != 0) {
+            if ((n & 1) != 0)
+                r *= m;
+            n >>= 1;
+            if (n != 0)
+                m *= m;
+        }
+        return r;
     }
 
 }

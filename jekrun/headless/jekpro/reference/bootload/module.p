@@ -381,6 +381,52 @@ sys_declaration_indicator((override D), I) :-
    sys_declaration_indicator(D, I).
 
 /********************************************************/
+/* Locale Modules                                       */
+/********************************************************/
+
+/**
+ * begin_module(N):
+ * The predicate begins a new locale module N.
+ */
+% begin_module(+Atom)
+begin_module(N) :-
+   sys_get_context(N, C),
+   source_property(C, sys_source_name(M)), !,
+   sys_replace_site(L, N, M/N),
+   sys_auto_load(verbatim(L)),
+   absolute_file_name(verbatim(L), D),
+   sys_inherit_flags(C, D),
+   set_source_property(C, sys_typein_module(D)).
+begin_module(N) :-
+   sys_get_context(N, C),
+   sys_auto_load(verbatim(N)),
+   absolute_file_name(verbatim(N), D),
+   sys_inherit_flags(C, D),
+   set_source_property(C, sys_typein_module(D)).
+:- set_predicate_property(begin_module/1, visible(public)).
+
+% sys_inherit_flags(+Atom, +Atom)
+sys_inherit_flags(C, _) :-
+   source_property(C, sys_source_visible(public)), !.
+sys_inherit_flags(_, D) :-
+   reset_source_property(D, sys_source_visible(public)).
+:- set_predicate_property(sys_inherit_flags/2, visible(private)).
+
+/**
+ * end_module:
+ * The predicate ends the current locale module.
+ */
+% end_module
+:- static end_module/0.
+:- set_predicate_property(end_module/0, sys_nostack).
+end_module :-
+   sys_parent_goal(G),
+   sys_get_context(G, C),
+   source_property(C, sys_parent_module(D)),
+   reset_source_property(D, sys_typein_module(C)).
+:- set_predicate_property(end_module/0, visible(public)).
+
+/********************************************************/
 /* Load Rest                                            */
 /********************************************************/
 

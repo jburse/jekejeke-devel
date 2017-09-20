@@ -206,13 +206,16 @@ sys_absolute_file_name(foreign(Slash), Pin) :- !,
 sys_absolute_file_name(auto(Slash), Pin) :- !,
    sys_get_context(Slash, C),
    sys_path_norm(Slash, Path),
-   sys_find_prefix(Path, C, [package(auto),file_extension(file),failure(verbatim)], J),
+   sys_find_prefix(Path, C, [package(auto),file_extension(file)], J),
    sys_find_key(J, C, [package(auto),file_extension(file),failure(verbatim)], H),
    sys_replace_site(Pin, Slash, H).
 /* verbatim */
 sys_absolute_file_name(verbatim(Slash), Pin) :- !,
+   sys_get_context(Slash, C),
    sys_path_norm(Slash, Path),
-   sys_replace_site(Pin, Slash, Path).
+   sys_find_prefix(Path, C, [package(library),file_extension(file)], J),
+   sys_find_key(J, C, [failure(verbatim)], H),
+   sys_replace_site(Pin, Slash, H).
 /* relative */
 sys_absolute_file_name(Slash, Pin) :-
    sys_get_context(Slash, C),

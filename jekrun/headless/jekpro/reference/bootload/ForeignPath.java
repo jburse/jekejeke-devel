@@ -1,5 +1,6 @@
 package jekpro.reference.bootload;
 
+import jekpro.model.rope.LoadOpts;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
@@ -70,7 +71,7 @@ public final class ForeignPath {
      * @throws MalformedURLException    URL assembling problem.
      */
     public static String sysFindWrite(Interpreter inter, String adr)
-            throws CharacterCodingException, MalformedURLException, InterpreterMessage {
+            throws IOException, InterpreterMessage {
         /* make it absolute */
         if (ForeignUri.sysUriIsRelative(adr)) {
             String base = (String) inter.getProperty("base_url");
@@ -139,10 +140,10 @@ public final class ForeignPath {
                 if (fun.equals("none")) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask &= ~MASK_PRFX_FRGN;
-                } else if (fun.equals("library")) {
+                } else if (fun.equals(LoadOpts.OP_PREFIX_LIBRARY)) {
                     mask |= MASK_PRFX_LIBR;
                     mask &= ~MASK_PRFX_FRGN;
-                } else if (fun.equals("foreign")) {
+                } else if (fun.equals(LoadOpts.OP_PREFIX_FOREIGN)) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
                 } else if (fun.equals("auto")) {
@@ -186,7 +187,7 @@ public final class ForeignPath {
                 } else if (fun.equals("read")) {
                     mask |= MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_VRBT;
-                } else if (fun.equals("verbatim")) {
+                } else if (fun.equals(LoadOpts.OP_PREFIX_VERBATIM)) {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_VRBT;
                 } else {
@@ -223,7 +224,7 @@ public final class ForeignPath {
      * @throws MalformedURLException    URL assembling problem.
      */
     public static void sysAddPath(Interpreter inter, String path)
-            throws InterpreterMessage, CharacterCodingException, MalformedURLException {
+            throws InterpreterMessage, IOException {
         path = sysFindWrite(inter, path);
         inter.getKnowledgebase().addClassPath(path);
     }
