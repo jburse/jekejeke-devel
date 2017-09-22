@@ -122,9 +122,10 @@ sys_current_path(Path) :-
  * path option. For a list of options see the API documentation.
  */
 % absolute_file_name(+Slash, -Pin)
-absolute_file_name(Slash, _) :-
-   var(Slash),
-   throw(error(instantiation_error,_)).
+absolute_file_name(Slash, Pin) :-
+   var(Slash), !,
+   sys_get_context(Pin, C),
+   sys_key_spec(Pin, C, [], Slash).
 absolute_file_name(Module:Slash, Pin) :- !,
    sys_module_site(Module, Site),
    absolute_file_name(Slash, Help),
@@ -140,9 +141,10 @@ absolute_file_name(Slash, _) :-
 :- set_predicate_property(absolute_file_name/2, visible(public)).
 
 % absolute_file_name(+Slash, -Pin, +Opt)
-absolute_file_name(Slash, _, _) :-
-   var(Slash),
-   throw(error(instantiation_error,_)).
+absolute_file_name(Slash, Pin, Opt) :-
+   var(Slash), !,
+   sys_get_context(Pin, C),
+   sys_key_spec(Pin, C, Opt, Slash).
 absolute_file_name(Module:Slash, Pin, Opt) :- !,
    sys_module_site(Module, Site),
    absolute_file_name(Slash, Help, Opt),
@@ -164,6 +166,10 @@ sys_module_site(N, J) :-
    absolute_file_name(auto(N), S),
    set_atom_property(H, sys_context(S), J).
 :- set_predicate_property(sys_module_site/2, visible(public)).
+
+:- foreign(sys_key_spec/4, 'ForeignPath',
+      sysKeySpec('Interpreter','String','String','Object')).
+:- set_predicate_property(sys_key_spec/4, visible(private)).
 
 /********************************************************/
 /* Resource Resolution                                  */
@@ -213,7 +219,7 @@ sys_absolute_file_name(auto(Slash), Pin) :- !,
 sys_absolute_file_name(verbatim(Slash), Pin) :- !,
    sys_get_context(Slash, C),
    sys_path_norm(Slash, Path),
-   sys_find_prefix(Path, C, [package(library),file_extension(file)], J),
+   sys_find_prefix(Path, C, [file_extension(file)], J),
    sys_find_key(J, C, [failure(verbatim)], H),
    sys_replace_site(Pin, Slash, H).
 /* relative */
@@ -292,6 +298,9 @@ sys_path_norm(Dir/Name, Path) :- !,
    sys_path_norm(Dir, Y),
    sys_atom_concat(Y, /, H),
    sys_atom_concat(H, Name, Path).
+sys_path_norm({Dir}, Path) :- !,
+   sys_path_norm(Dir, Y),
+   sys_atom_concat(Y, [], Path).
 sys_path_norm(X, _) :-
    throw(error(type_error(path,X),_)).
 :- set_predicate_property(sys_path_norm/2, visible(private)).

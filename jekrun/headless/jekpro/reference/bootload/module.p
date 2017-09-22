@@ -177,13 +177,13 @@ module(N, L) :-
 :- set_predicate_property(module/2, visible(public)).
 
 /*************************************************************/
-/* Import Properties                                         */
+/* Loading Modules                                           */
 /*************************************************************/
 
 /**
  * use_module(R):
- * The predicate imports the read path R with making its predicates,
- * evaluable functions and syntax operators visible and without exporting them.
+ * The predicate imports the read path R with making its predicates
+ * and syntax operators visible.
  */
 % use_module(+Atom)
 use_module(Path) :-
@@ -193,8 +193,9 @@ use_module(Path) :-
 
 /**
  * reexport(R):
- * The predicate imports the read path R with making its predicates,
- * evaluable functions and syntax operators visible and with exporting them.
+ * The predicate imports the read path R with making its predicates
+ * and syntax operators visible. The predicates and syntax operators
+ * along the reexport chain become also visible.
  */
 % reexport(+Atom)
 reexport(Path) :-
@@ -204,8 +205,8 @@ reexport(Path) :-
 
 /**
  * sys_auto_load(R):
- * The predicate imports the read path R with neither making its predicates,
- * evaluable functions and syntax operators visible and nor exporting them.
+ * The predicate imports the read path R without making its predicates
+ * and syntax operators visible.
  */
 % sys_auto_load(+Atom)
 sys_auto_load(Path) :-
@@ -223,6 +224,17 @@ sys_load_resource(Path) :-
    absolute_resource_name(Path, Pin),
    sys_load_file(Pin, [condition(on),verbose(summary),sys_link(sys_load_resource)]).
 :- set_predicate_property(sys_load_resource/1, visible(public)).
+
+/**
+ * sys_parent_module(R):
+ * The predicate imports the read path R with making its predicates
+ * and syntax operators visible. The predicates and syntax operators
+ * along the parent chain become also visible.
+ */
+sys_parent_module(Path) :-
+   absolute_file_name(Path, Pin),
+   sys_load_file(Pin, [condition(on),verbose(off),sys_link(sys_parent_module)]).
+:- set_predicate_property(sys_parent_module/1, visible(public)).
 
 /**
  * sys_add_resource(R):
@@ -391,18 +403,11 @@ sys_declaration_indicator((override D), I) :-
 % begin_module(+Atom)
 begin_module(N) :-
    sys_get_context(N, C),
-   source_property(C, sys_source_name(M)), !,
-   sys_replace_site(L, N, M/N),
-   sys_auto_load(verbatim(L)),
-   absolute_file_name(verbatim(L), D),
+   sys_auto_load(auto(N)),
+   absolute_file_name(auto(N), D),
    sys_inherit_flags(C, D),
-   set_source_property(C, sys_typein_module(D)).
-begin_module(N) :-
-   sys_get_context(N, C),
-   sys_auto_load(verbatim(N)),
-   absolute_file_name(verbatim(N), D),
-   sys_inherit_flags(C, D),
-   set_source_property(C, sys_typein_module(D)).
+   set_source_property(C, sys_typein_module(D)),
+   set_prolog_flag(sys_last_pred, null).
 :- set_predicate_property(begin_module/1, visible(public)).
 
 % sys_inherit_flags(+Atom, +Atom)
@@ -422,7 +427,7 @@ sys_inherit_flags(_, D) :-
 end_module :-
    sys_parent_goal(G),
    sys_get_context(G, C),
-   source_property(C, sys_parent_module(D)),
+   source_property(C, sys_link(D,sys_parent_module)), !,
    reset_source_property(D, sys_typein_module(C)).
 :- set_predicate_property(end_module/0, visible(public)).
 

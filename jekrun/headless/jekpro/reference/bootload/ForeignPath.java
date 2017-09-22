@@ -90,6 +90,7 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @param path  The path.
      * @param key   The call-site.
+     * @param opt   The options list.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
      */
@@ -104,8 +105,10 @@ public final class ForeignPath {
     /**
      * <p>Find a key according to the auto loader.</p>
      *
-     * @param path The prefixed path.
-     * @param key  The call-site.
+     * @param inter The interpreter.
+     * @param path  The prefixed path.
+     * @param key   The call-site.
+     * @param opt   The options list.
      * @return The source key.
      * @throws InterpreterMessage Shit happens.
      */
@@ -115,6 +118,23 @@ public final class ForeignPath {
             throws InterpreterMessage {
         int mask = decodeFindOptions(opt);
         return inter.findKey(path, key, mask);
+    }
+
+    /**
+     * <p>Revert a path back to a spec.</p>
+     *
+     * @param inter The interpreter.
+     * @param path  The path.
+     * @param key   The call-site.
+     * @param opt   The options list.
+     * @return The spec.
+     */
+    public static Object sysKeySpec(Interpreter inter,
+                                    String path, String key,
+                                    Object opt)
+            throws InterpreterMessage {
+        int mask = decodeFindOptions(opt);
+        return inter.keyToSpec(path, key, mask);
     }
 
     /**
