@@ -163,11 +163,15 @@ public final class ForeignFile {
             return b;
         int k = a.lastIndexOf(CHAR_SLASH);
         int j = 0;
-        while (b.startsWith("../", j)) {
+        while (k != -1 && b.startsWith("../", j)) {
             k = a.lastIndexOf(CHAR_SLASH, k - 1);
             j += 3;
         }
-        return a.substring(0, k) + "/" + b.substring(j);
+        if (k != -1) {
+            return a.substring(0, k) + "/" + b.substring(j);
+        } else {
+            return b.substring(j);
+        }
     }
 
     /**

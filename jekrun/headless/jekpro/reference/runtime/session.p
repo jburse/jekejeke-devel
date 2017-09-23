@@ -198,3 +198,34 @@ sys_show_name_or_eq(T) :-
 % sys_write_var(+Atom)
 :- private sys_write_var/1.
 :- special(sys_write_var/1, 'SpecialSession', 4).
+
+/********************************************************/
+/* Locale Modules                                       */
+/********************************************************/
+
+/**
+ * begin_module(N):
+ * The predicate begins a new typein module N.
+ */
+% begin_module(+Atom)
+:- public begin_module/1.
+begin_module(N) :-
+   sys_auto_load(verbatim(N)),
+   absolute_file_name(verbatim(N), D),
+   sys_push_source(D),
+   set_prolog_flag(sys_last_pred, null).
+
+/**
+ * end_module:
+ * The predicate ends the current typein module.
+ */
+% end_module
+:- public end_module/0.
+end_module :- sys_pop_source,
+   set_prolog_flag(sys_last_pred, null).
+
+:- private sys_push_source/1.
+:- special(sys_push_source/1, 'SpecialSession', 5).
+
+:- public sys_pop_source/0.
+:- special(sys_pop_source/0, 'SpecialSession', 6).

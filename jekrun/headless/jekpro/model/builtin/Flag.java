@@ -156,7 +156,11 @@ public final class Flag extends AbstractFlag {
                 return Integer.valueOf(en.visor.breaklevel);
             case FLAG_SYS_LAST_PRED:
                 StoreKey sk = en.visor.lastsk;
-                return StoreKey.storeKeyToIndicatorSkel(sk.getFun(), sk.getArity());
+                if (sk == null) {
+                    return new SkelAtom(Store.OP_NULL);
+                } else {
+                    return StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity());
+                }
             case FLAG_SYS_ACT_STATUS:
                 return new SkelAtom(en.store.getError());
             case FLAG_SINGLE_QUOTES:
@@ -209,123 +213,131 @@ public final class Flag extends AbstractFlag {
      */
     public boolean setFlag(Object m, Display d, Engine en) throws EngineMessage {
         switch (id) {
-        case FLAG_SYS_CHOICE_POINT:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags &= ~Store.MASK_STORE_NCHC;
-            } else {
-                en.store.flags |= Store.MASK_STORE_NCHC;
-            }
-            return true;
-        case FLAG_SYS_BODY_VARIABLE:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags &= ~Store.MASK_STORE_NBDY;
-            } else {
-                en.store.flags |= Store.MASK_STORE_NBDY;
-            }
-            return true;
-        case FLAG_SYS_STACK_FRAME:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags &= ~Store.MASK_STORE_NLST;
-            } else {
-                en.store.flags |= Store.MASK_STORE_NLST;
-            }
-            return true;
-        case FLAG_SYS_HEAD_VARIABLE:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags &= ~Store.MASK_STORE_NHED;
-            } else {
-                en.store.flags |= Store.MASK_STORE_NHED;
-            }
-            return true;
-        case FLAG_SYS_BODY_CONVERT:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags &= ~Store.MASK_STORE_NBCV;
-            } else {
-                en.store.flags |= Store.MASK_STORE_NBCV;
-            }
-            return true;
-        case FLAG_SYS_CLAUSE_EXPAND:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags |= Store.MASK_STORE_CEXP;
-            } else {
-                en.store.flags &= ~Store.MASK_STORE_CEXP;
-            }
-            return true;
-        case FLAG_SYS_CLAUSE_INDEX:
-            if (Store.atomToSwitch(m, d)) {
-                en.store.flags &= ~Store.MASK_STORE_NIDX;
-            } else {
-                en.store.flags |= Store.MASK_STORE_NIDX;
-            }
-            return true;
-        case FLAG_BOUNDED:
-            /* can't modify */
-            return false;
-        case FLAG_INTEGER_ROUNDING_FUNCTION:
-            /* can't modify */
-            return false;
-        case FLAG_CHAR_CONVERSION:
-            /* can't modify */
-            return false;
-        case FLAG_MAX_ARITY:
-            /* can't modify */
-            return false;
-        case FLAG_DOUBLE_QUOTES:
-            en.store.setUtilDouble(ReadOpts.atomToUtil(m, d, en));
-            return true;
-        case FLAG_BACK_QUOTES:
-            en.store.setUtilBack(ReadOpts.atomToUtil(m, d, en));
-            return true;
-        case FLAG_MAX_CODE:
-            /* can't modify */
-            return false;
-        case FLAG_SYS_BREAK_LEVEL:
-            /* can't modify */
-            return false;
-        case FLAG_SYS_LAST_PRED:
-            en.visor.lastsk = StoreKey.indicatorToStoreKey(m, d, en);
-            return true;
-        case FLAG_SYS_ACT_STATUS:
-            /* can't modify */
-            return false;
-        case FLAG_SINGLE_QUOTES:
-            en.store.setUtilSingle(ReadOpts.atomToUtil(m, d, en));
-            return true;
-        case FLAG_SYS_VARIABLES:
-            /* can't modify */
-            return false;
-        case FLAG_SYS_CHOICES:
-            /* can't modify */
-            return false;
-        case FLAG_DIALECT:
-            /* can't modify */
-            return false;
-        case FLAG_VERSION_DATA:
-            /* can't modify */
-            return false;
-        case FLAG_SYS_RANDOM:
-            en.skel = m;
-            en.display = d;
-            en.deref();
-            if (en.skel instanceof Random) {
-                en.store.random = (Random) en.skel;
-            } else {
+            case FLAG_SYS_CHOICE_POINT:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags &= ~Store.MASK_STORE_NCHC;
+                } else {
+                    en.store.flags |= Store.MASK_STORE_NCHC;
+                }
+                return true;
+            case FLAG_SYS_BODY_VARIABLE:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags &= ~Store.MASK_STORE_NBDY;
+                } else {
+                    en.store.flags |= Store.MASK_STORE_NBDY;
+                }
+                return true;
+            case FLAG_SYS_STACK_FRAME:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags &= ~Store.MASK_STORE_NLST;
+                } else {
+                    en.store.flags |= Store.MASK_STORE_NLST;
+                }
+                return true;
+            case FLAG_SYS_HEAD_VARIABLE:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags &= ~Store.MASK_STORE_NHED;
+                } else {
+                    en.store.flags |= Store.MASK_STORE_NHED;
+                }
+                return true;
+            case FLAG_SYS_BODY_CONVERT:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags &= ~Store.MASK_STORE_NBCV;
+                } else {
+                    en.store.flags |= Store.MASK_STORE_NBCV;
+                }
+                return true;
+            case FLAG_SYS_CLAUSE_EXPAND:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags |= Store.MASK_STORE_CEXP;
+                } else {
+                    en.store.flags &= ~Store.MASK_STORE_CEXP;
+                }
+                return true;
+            case FLAG_SYS_CLAUSE_INDEX:
+                if (Store.atomToSwitch(m, d)) {
+                    en.store.flags &= ~Store.MASK_STORE_NIDX;
+                } else {
+                    en.store.flags |= Store.MASK_STORE_NIDX;
+                }
+                return true;
+            case FLAG_BOUNDED:
+                /* can't modify */
+                return false;
+            case FLAG_INTEGER_ROUNDING_FUNCTION:
+                /* can't modify */
+                return false;
+            case FLAG_CHAR_CONVERSION:
+                /* can't modify */
+                return false;
+            case FLAG_MAX_ARITY:
+                /* can't modify */
+                return false;
+            case FLAG_DOUBLE_QUOTES:
+                en.store.setUtilDouble(ReadOpts.atomToUtil(m, d, en));
+                return true;
+            case FLAG_BACK_QUOTES:
+                en.store.setUtilBack(ReadOpts.atomToUtil(m, d, en));
+                return true;
+            case FLAG_MAX_CODE:
+                /* can't modify */
+                return false;
+            case FLAG_SYS_BREAK_LEVEL:
+                /* can't modify */
+                return false;
+            case FLAG_SYS_LAST_PRED:
+                en.skel = m;
+                en.display = d;
+                en.deref();
+                if (en.skel instanceof SkelAtom &&
+                        (Store.OP_NULL.equals(((SkelAtom) en.skel).fun))) {
+                    en.visor.lastsk = null;
+                } else {
+                    en.visor.lastsk = StoreKey.propToStoreKey(m, d, en);
+                }
+                return true;
+            case FLAG_SYS_ACT_STATUS:
+                /* can't modify */
+                return false;
+            case FLAG_SINGLE_QUOTES:
+                en.store.setUtilSingle(ReadOpts.atomToUtil(m, d, en));
+                return true;
+            case FLAG_SYS_VARIABLES:
+                /* can't modify */
+                return false;
+            case FLAG_SYS_CHOICES:
+                /* can't modify */
+                return false;
+            case FLAG_DIALECT:
+                /* can't modify */
+                return false;
+            case FLAG_VERSION_DATA:
+                /* can't modify */
+                return false;
+            case FLAG_SYS_RANDOM:
+                en.skel = m;
+                en.display = d;
+                en.deref();
+                if (en.skel instanceof Random) {
+                    en.store.random = (Random) en.skel;
+                } else {
+                    EngineMessage.checkInstantiated(en.skel);
+                    EngineMessage.checkRef(en.skel, en.display);
+                    throw new EngineMessage(EngineMessage.domainError(
+                            EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                }
+                return true;
+            case FLAG_SYS_TIMEOUT:
+                en.skel = m;
+                en.display = d;
+                en.deref();
                 EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
-            }
-            return true;
-        case FLAG_SYS_TIMEOUT:
-            en.skel = m;
-            en.display = d;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            Number num = EngineMessage.castInteger(en.skel, en.display);
-            en.store.timeout = EngineMessage.castLongValue(num);
-            return true;
-        default:
-            throw new IllegalArgumentException("illegal flag");
+                Number num = EngineMessage.castInteger(en.skel, en.display);
+                en.store.timeout = EngineMessage.castLongValue(num);
+                return true;
+            default:
+                throw new IllegalArgumentException("illegal flag");
         }
     }
 

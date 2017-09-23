@@ -50,13 +50,14 @@ public final class ForeignPath {
 
     /* failure relationship flags */
     public static final int MASK_FAIL_READ = 0x00000100;
-    public static final int MASK_FAIL_VRBT = 0x00000200;
+    public static final int MASK_FAIL_RETR = 0x00000200;
 
     /* combined prefix, suffix and failure flags */
     public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR | MASK_SUFX_TEXT;
     public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN | MASK_SUFX_BNRY;
-    public static final int MASK_MODL_AUTO = MASK_MODL_FRGN | MASK_MODL_LIBR | MASK_FAIL_VRBT;
+    public static final int MASK_MODL_BOTH = MASK_MODL_LIBR | MASK_MODL_FRGN;
     public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR | MASK_SUFX_RSCS;
+    public static final int MASK_MODL_AUTO = MASK_MODL_BOTH | MASK_FAIL_RETR;
 
     /**
      * <p>Find a write adr.</p>
@@ -120,6 +121,7 @@ public final class ForeignPath {
         return inter.findKey(path, key, mask);
     }
 
+
     /**
      * <p>Revert a path back to a spec.</p>
      *
@@ -166,7 +168,7 @@ public final class ForeignPath {
                 } else if (fun.equals(LoadOpts.OP_PREFIX_FOREIGN)) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
-                } else if (fun.equals("auto")) {
+                } else if (fun.equals("both")) {
                     mask |= MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
                 } else {
@@ -203,13 +205,13 @@ public final class ForeignPath {
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_FAIL_READ;
-                    mask &= ~MASK_FAIL_VRBT;
+                    mask &= ~MASK_FAIL_RETR;
                 } else if (fun.equals("read")) {
                     mask |= MASK_FAIL_READ;
-                    mask &= ~MASK_FAIL_VRBT;
-                } else if (fun.equals(LoadOpts.OP_PREFIX_VERBATIM)) {
+                    mask &= ~MASK_FAIL_RETR;
+                } else if (fun.equals("return")) {
                     mask &= ~MASK_FAIL_READ;
-                    mask |= MASK_FAIL_VRBT;
+                    mask |= MASK_FAIL_RETR;
                 } else {
                     throw new InterpreterMessage(
                             InterpreterMessage.domainError("fix_option", help));

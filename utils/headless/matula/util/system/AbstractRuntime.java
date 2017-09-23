@@ -77,18 +77,37 @@ public abstract class AbstractRuntime {
      */
     public static Class stringToClass(String name, ClassLoader cl) {
         if (name.endsWith(JAVA_ARRAY)) {
-            Class clazz = stringToClass(name.substring(0,
-                    name.length() - JAVA_ARRAY.length()), cl);
-            if (clazz == null)
-                return null;
-            Object o;
-            try {
-                o = Array.newInstance(clazz, 0);
-            } catch (IllegalArgumentException x) {
-                return null;
+            name = name.substring(0, name.length() - JAVA_ARRAY.length());
+            int count = 1;
+            while (name.endsWith(JAVA_ARRAY)) {
+                name = name.substring(0, name.length() - JAVA_ARRAY.length());
+                count++;
             }
-            return o.getClass();
+            Class clazz = stringToClassNonArray(name, cl);
+            while (count > 0 && clazz != null) {
+                Object o;
+                try {
+                    o = Array.newInstance(clazz, 0);
+                } catch (IllegalArgumentException x) {
+                    return null;
+                }
+                clazz = o.getClass();
+                count--;
+            }
+            return clazz;
+        } else {
+            return stringToClassNonArray(name, cl);
         }
+    }
+
+    /**
+     * <p>Convert a non-array string to a class.</p>
+     *
+     * @param name The class name.
+     * @param cl   The class loader.
+     * @return The class, or null.
+     */
+    private static Class stringToClassNonArray(String name, ClassLoader cl) {
         Class clazz = primitive.get(name);
         if (clazz != null)
             return clazz;
@@ -107,9 +126,17 @@ public abstract class AbstractRuntime {
      * @return The string.
      */
     public static String classToString(Class clazz) {
-        if (clazz.isArray())
-            return classToString(clazz.getComponentType()) + JAVA_ARRAY;
-        return clazz.getName();
+        if (clazz.isArray()) {
+            String res = JAVA_ARRAY;
+            clazz = clazz.getComponentType();
+            while (clazz.isArray()) {
+                res = JAVA_ARRAY + res;
+                clazz = clazz.getComponentType();
+            }
+            return clazz.getName() + res;
+        } else {
+            return clazz.getName();
+        }
     }
 
 }
