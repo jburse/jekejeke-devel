@@ -134,6 +134,8 @@ absolute_file_name(Slash, Pin) :-
    sys_absolute_file_name(Slash, Pin), !.
 absolute_file_name(library(Slash), _) :-
    throw(error(existence_error(library,Slash),_)).
+absolute_file_name(verbatim(Slash), _) :-
+   throw(error(existence_error(library,Slash),_)).
 absolute_file_name(foreign(Slash), _) :-
    throw(error(existence_error(class,Slash),_)).
 absolute_file_name(Slash, _) :-
@@ -152,6 +154,8 @@ absolute_file_name(Module:Slash, Pin, Opt) :- !,
 absolute_file_name(Slash, Pin, Opt) :-
    sys_absolute_file_name(Slash, Pin, Opt), !.
 absolute_file_name(library(Slash), _, _) :-
+   throw(error(existence_error(library,Slash),_)).
+absolute_file_name(verbatim(Slash), _, _) :-
    throw(error(existence_error(library,Slash),_)).
 absolute_file_name(foreign(Slash), _, _) :-
    throw(error(existence_error(class,Slash),_)).
@@ -201,6 +205,13 @@ sys_absolute_file_name(library(Slash), Pin) :- !,
    sys_find_prefix(Path, C, [package(library),file_extension(file)], J),
    sys_find_key(J, C, [package(library),file_extension(file)], H),
    sys_replace_site(Pin, Slash, H).
+/* verbatim */
+sys_absolute_file_name(verbatim(Slash), Pin) :- !,
+   sys_get_context(Slash, C),
+   sys_path_norm(Slash, Path),
+   sys_find_prefix(Path, C, [package(library),file_extension(file),failure(child)], J),
+   sys_find_key(J, C, [package(library),file_extension(file)], H),
+   sys_replace_site(Pin, Slash, H).
 /* foreign */
 sys_absolute_file_name(foreign(Slash), Pin) :- !,
    sys_get_context(Slash, C),
@@ -212,15 +223,8 @@ sys_absolute_file_name(foreign(Slash), Pin) :- !,
 sys_absolute_file_name(auto(Slash), Pin) :- !,
    sys_get_context(Slash, C),
    sys_path_norm(Slash, Path),
-   sys_find_prefix(Path, C, [package(both),file_extension(file)], J),
-   sys_find_key(J, C, [package(both),file_extension(file),failure(return)], H),
-   sys_replace_site(Pin, Slash, H).
-/* verbatim */
-sys_absolute_file_name(verbatim(Slash), Pin) :- !,
-   sys_get_context(Slash, C),
-   sys_path_norm(Slash, Path),
-   sys_find_prefix(Path, C, [package(library),file_extension(file)], J),
-   sys_find_key(J, C, [package(library),file_extension(file),failure(return)], H),
+   sys_find_prefix(Path, C, [package(both),file_extension(file),failure(child)], J),
+   sys_find_key(J, C, [package(both),file_extension(file)], H),
    sys_replace_site(Pin, Slash, H).
 /* relative */
 sys_absolute_file_name(Slash, Pin) :-

@@ -108,7 +108,7 @@ consult(Path) :-
 % unload_file(Path)
 unload_file(Path) :-
    absolute_file_name(Path, Pin),
-   sys_detach_file(Pin, [verbose(summary)]).
+   sys_detach_file(Pin, [verbose(summary),sys_link(reexport)]).
 :- set_predicate_property(unload_file/1, visible(public)).
 
 /**

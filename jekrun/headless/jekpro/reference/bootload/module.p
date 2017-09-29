@@ -186,8 +186,8 @@ module(N, L) :-
  * and syntax operators visible.
  */
 % use_module(+Atom)
-use_module(Path) :-
-   absolute_file_name(Path, Pin),
+use_module(Slash) :-
+   absolute_file_name(Slash, Pin),
    sys_load_file(Pin, [condition(on),verbose(summary),sys_link(use_module)]).
 :- set_predicate_property(use_module/1, visible(public)).
 

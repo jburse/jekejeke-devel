@@ -197,7 +197,7 @@ sys_show_name_or_eq(T) :-
  */
 % sys_write_var(+Atom)
 :- private sys_write_var/1.
-:- special(sys_write_var/1, 'SpecialSession', 4).
+:- special(sys_write_var/1, 'SpecialSession', 2).
 
 /********************************************************/
 /* Locale Modules                                       */
@@ -210,9 +210,8 @@ sys_show_name_or_eq(T) :-
 % begin_module(+Atom)
 :- public begin_module/1.
 begin_module(N) :-
-   sys_auto_load(verbatim(N)),
    absolute_file_name(verbatim(N), D),
-   sys_push_source(D),
+   sys_module_action(D, [action(begin_module),sys_link(sys_auto_load)]),
    set_prolog_flag(sys_last_pred, null).
 
 /**
@@ -221,11 +220,32 @@ begin_module(N) :-
  */
 % end_module
 :- public end_module/0.
-end_module :- sys_pop_source,
+end_module :-
+   sys_peek_stack(D),
+   sys_module_action(D, [action(end_module),sys_link(sys_auto_load)]),
    set_prolog_flag(sys_last_pred, null).
 
-:- private sys_push_source/1.
-:- special(sys_push_source/1, 'SpecialSession', 5).
+/**
+ * session_module:
+ * The predicate creates a session typein module.
+ */
+/*
+:- public session_module/1.
+session_module(N) :-
+   sys_pop_stack,
+   sys_push_stack(N).
+*/
 
-:- public sys_pop_source/0.
-:- special(sys_pop_source/0, 'SpecialSession', 6).
+:- private sys_module_action/2.
+:- special(sys_module_action/2, 'SpecialSession', 3).
+
+:- private sys_peek_stack/1.
+:- special(sys_peek_stack/1, 'SpecialSession', 4).
+
+/*
+:- private sys_pop_stack/0.
+:- special(sys_pop_stack/0, 'SpecialSession', 5).
+
+:- private sys_push_stack/1.
+:- special(sys_push_stack/1, 'SpecialSession', 6).
+*/
