@@ -19,6 +19,13 @@
  * operator is displayed. For printable and equation hooks see the
  * module residue.
  *
+ * The predicates begin_module/1 and end_module/0 can be used from
+ * the interpreter top-level loop or inside a consulted file. In both
+ * cases the predicates will open respectively close a local module.
+ * For a consulted file the predicate begin_module/1 will also do first
+ * a clear of the local module, and the predicate end_module/0 will do
+ * a style check of the local module.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -126,7 +133,7 @@ prolog :- break.
 % sys_show_vars
 :- public sys_show_vars/0.
 sys_show_vars :-
-   sys_get_variable_names(N),
+   sys_get_raw_variables(N),
    sys_term_eq_list(N, L),
    sys_filter_variable_names(N, L, R),
    sys_show_name_or_eq_list(R).
@@ -142,8 +149,7 @@ sys_show_vars :-
 sys_filter_variable_names([X=Y|L], R, S) :-
    var(Y),
    sys_get_variable_names(N),
-   once((  sys_member(Z=T, N),
-           T == Y)),
+   sys_once((sys_member(Z=T,N),T==Y)),
    Z == X, !,
    sys_filter_variable_names(L, R, S).
 sys_filter_variable_names([X=Y|L], R, [X is Z|S]) :-

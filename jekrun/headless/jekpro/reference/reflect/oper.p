@@ -210,3 +210,21 @@ oper_property(I, R) :-
 % reset_oper_property(+Indicator, +Property)
 :- special(reset_oper_property/2, 'SpecialOper', 7).
 :- set_predicate_property(reset_oper_property/2, visible(public)).
+
+% first defined in special.p
+% sys_declaration_indicator(+Declaration, -Indicator).
+:- sys_neutral_predicate(sys_declaration_indicator/2).
+:- set_predicate_property(sys_declaration_indicator/2, visible(public)).
+:- sys_get_context(here, C),
+   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+:- set_predicate_property(sys_declaration_indicator/2, multifile).
+:- sys_get_context(here, C),
+   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+sys_declaration_indicator(op(_,M,_), _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+sys_declaration_indicator(op(_,_,Z), _) :-
+   var(Z),
+   throw(error(instantiation_error,_)).
+sys_declaration_indicator(op(_,M,Z), I) :-
+   sys_make_oper(M, Z, I).

@@ -3,6 +3,7 @@ package jekpro.reference.structure;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.PrologReader;
+import jekpro.model.rope.NamedDistance;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
@@ -388,8 +389,8 @@ public final class EngineVars {
      */
     public static void numberVariables(SetHashLink<TermVar> mvs3,
                                        SetHashLink<TermVar> mvs,
-                                       MapHashLink<TermVar, String> vars,
-                                       MapHashLink<TermVar, String> print) {
+                                       MapHashLink<TermVar, NamedDistance> vars,
+                                       MapHashLink<TermVar, NamedDistance> print) {
         SetHash<String> range = namedToCopy(mvs3, mvs, vars, print);
         restToCopy(mvs3, mvs, range, print);
     }
@@ -405,24 +406,24 @@ public final class EngineVars {
      */
     private static SetHash<String> namedToCopy(SetHashLink<TermVar> mvs3,
                                                SetHashLink<TermVar> mvs,
-                                               MapHashLink<TermVar, String> vars,
-                                               MapHashLink<TermVar, String> copy) {
+                                               MapHashLink<TermVar, NamedDistance> vars,
+                                               MapHashLink<TermVar, NamedDistance> copy) {
         if (vars == null)
             return null;
         SetHash<String> range = null;
-        for (MapEntry<TermVar, String> entry = vars.getFirstEntry();
+        for (MapEntry<TermVar, NamedDistance> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
             TermVar key = entry.key;
-            String fun = entry.value;
+            NamedDistance nd = entry.value;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.put(key, PrologReader.OP_ANON);
+                copy.put(key, new NamedDistance(0, PrologReader.OP_ANON));
             } else {
-                copy.put(key, fun);
+                copy.put(key, nd);
             }
             mvs3.remove(key);
             if (range == null)
                 range = new SetHash<String>();
-            range.putKey(fun);
+            range.putKey(nd.getName());
         }
         return range;
     }
@@ -438,13 +439,13 @@ public final class EngineVars {
     private static void restToCopy(SetHashLink<TermVar> mvs3,
                                    SetHashLink<TermVar> mvs,
                                    SetHash<String> range,
-                                   MapHashLink<TermVar, String> copy) {
+                                   MapHashLink<TermVar, NamedDistance> copy) {
         int k = 0;
         for (SetEntry<TermVar> entry = mvs3.getFirstEntry();
              entry != null; entry = mvs3.successor(entry)) {
             TermVar key = entry.key;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.put(key, PrologReader.OP_ANON);
+                copy.put(key, new NamedDistance(0, PrologReader.OP_ANON));
             } else {
                 for (; ; ) {
                     StringBuilder buf = new StringBuilder();
@@ -454,7 +455,7 @@ public final class EngineVars {
                     k++;
                     String name = buf.toString();
                     if (range == null || range.getKey(name) == null) {
-                        copy.put(key, name);
+                        copy.put(key, new NamedDistance(0, name));
                         break;
                     }
                 }

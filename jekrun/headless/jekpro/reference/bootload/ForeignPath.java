@@ -57,6 +57,7 @@ public final class ForeignPath {
     public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN | MASK_SUFX_BNRY;
     public static final int MASK_MODL_AUTO = MASK_MODL_LIBR | MASK_MODL_FRGN | MASK_FAIL_CHLD;
     public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR | MASK_SUFX_RSCS;
+    public static final int MASK_MODL_VERB = MASK_MODL_LIBR | MASK_FAIL_CHLD;
 
     /**
      * <p>Find a write adr.</p>

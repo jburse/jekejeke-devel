@@ -5,8 +5,8 @@
  * only be seen from within the same Prolog text. Package local
  * members will be seen from Prolog texts that share the same
  * package name. And public members are visible everywhere. The
- * default visibility for a member is package local inside
- * modules and public inside Prolog texts.
+ * default visibility for a member is package local inside Prolog
+ * texts elevated to modules and public for ordinary Prolog texts.
  *
  * Example:
  * ?- member(X,[1,2,3]).
@@ -173,8 +173,16 @@ module(N, L) :-
    sys_get_context(N, C),
    reset_source_property(C, sys_source_visible(public)),
    set_source_property(C, sys_source_name(N)),
-   (public L).
+   (public L),
+   sys_check_key(N).
 :- set_predicate_property(module/2, visible(public)).
+
+sys_check_key(N) :-
+   absolute_file_name(library(N), C),
+   sys_get_context(N, C), !.
+sys_check_key(N) :-
+   throw(error(syntax_error(key_mismatch,N),_)).
+:- set_predicate_property(sys_check_key/1, visible(private)).
 
 /*************************************************************/
 /* Loading Modules                                           */
@@ -224,17 +232,6 @@ sys_load_resource(Path) :-
    absolute_resource_name(Path, Pin),
    sys_load_file(Pin, [condition(on),verbose(summary),sys_link(sys_load_resource)]).
 :- set_predicate_property(sys_load_resource/1, visible(public)).
-
-/**
- * sys_parent_module(R):
- * The predicate imports the read path R with making its predicates
- * and syntax operators visible. The predicates and syntax operators
- * along the parent chain become also visible.
- */
-sys_parent_module(Path) :-
-   absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),verbose(off),sys_link(sys_parent_module)]).
-:- set_predicate_property(sys_parent_module/1, visible(public)).
 
 /**
  * sys_add_resource(R):

@@ -7,10 +7,7 @@ import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.pretty.Store;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.Named;
+import jekpro.model.rope.*;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -52,6 +49,7 @@ public final class SpecialVars extends Special {
     private final static int SPECIAL_SYS_NUMBER_VARIABLES = 6;
     private final static int SPECIAL_SYS_GET_VARIABLE_NAMES = 7;
     private final static int SPECIAL_ACYCLIC_TERM = 8;
+    private final static int SPECIAL_SYS_GET_RAW_VARIABLES = 9;
 
     /**
      * <p>Create a vars special.</p>
@@ -159,8 +157,10 @@ public final class SpecialVars extends Special {
                 Frame frame = en.visor.ref;
                 Display ref = (frame != null ? frame.getDisplay() : null);
                 Clause def = (frame != null ? frame.getClause() : null);
-                Object res = Named.namedToAssoc((def != null ? def.vars : null), ref, en.store);
-                if (!en.unifyTerm(t[0], d, res, ref, r, u))
+                MapHashLink<TermVar, NamedDistance> print =
+                        Named.namedToMap((def != null ? def.vars : null), ref, en);
+                mapToAssoc(print, en);
+                if (!en.unifyTerm(t[0], d, en.skel, en.display, r, u))
                     return false;
                 return r.getNext(u, en);
             case SPECIAL_ACYCLIC_TERM:
@@ -170,6 +170,16 @@ public final class SpecialVars extends Special {
                 if (!ev.isAcyclic(t[0], d))
                     return false;
                 return r.getNextRaw(u, en);
+            case SPECIAL_SYS_GET_RAW_VARIABLES:
+                t = ((SkelCompound) en.skel).args;
+                d = en.display;
+                frame = en.visor.ref;
+                ref = (frame != null ? frame.getDisplay() : null);
+                def = (frame != null ? frame.getClause() : null);
+                en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref, en.store);
+                if (!en.unifyTerm(t[0], d, en.skel, ref, r, u))
+                    return false;
+                return r.getNext(u, en);
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -318,13 +328,15 @@ public final class SpecialVars extends Special {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void numberVariables(Object[] temp, Display ref, Engine en) throws EngineMessage {
+    private static void numberVariables(Object[] temp, Display ref,
+                                        Engine en)
+            throws EngineMessage {
         SetHashLink<TermVar> mvs2 = new SetHashLink<TermVar>();
         arrayToSet(temp[0], ref, mvs2, en);
-        MapHashLink<TermVar, String> print = assocToMap(temp[1], ref, en);
+        MapHashLink<TermVar, NamedDistance> print = assocToMap(temp[1], ref, en);
         SetHashLink<TermVar> mvs = new SetHashLink<TermVar>();
         arrayToSet(temp[2], ref, mvs, en);
-        MapHashLink<TermVar, String> print2 = new MapHashLink<TermVar, String>();
+        MapHashLink<TermVar, NamedDistance> print2 = new MapHashLink<TermVar, NamedDistance>();
         EngineVars.numberVariables(mvs2, mvs, print, print2);
         mapToAssoc(print2, en);
     }
@@ -382,10 +394,10 @@ public final class SpecialVars extends Special {
      * @return The print map.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<TermVar, String> assocToMap(Object t, Display d,
-                                                          Engine en)
+    public static MapHashLink<TermVar, NamedDistance> assocToMap(Object t, Display d,
+                                                                 Engine en)
             throws EngineMessage {
-        MapHashLink<TermVar, String> print = null;
+        MapHashLink<TermVar, NamedDistance> print = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -408,8 +420,15 @@ public final class SpecialVars extends Special {
             }
             Object[] mc2 = ((SkelCompound) en.skel).args;
             Display d2 = en.display;
+            int distance = 0;
             en.skel = mc2[1];
-            en.deref();
+            BindVar b;
+            while (en.skel instanceof SkelVar &&
+                    (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
+                distance++;
+                en.skel = b.skel;
+                en.display = b.display;
+            }
             if (en.skel instanceof SkelVar) {
                 TermVar pair = new TermVar((SkelVar) en.skel, en.display);
                 en.skel = mc2[0];
@@ -417,10 +436,16 @@ public final class SpecialVars extends Special {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String name = EngineMessage.castString(en.skel, en.display);
+                NamedDistance nd = new NamedDistance(distance, name);
                 if (print == null)
-                    print = new MapHashLink<TermVar, String>();
-                if (print.get(pair) == null)
-                    print.put(pair, name);
+                    print = new MapHashLink<TermVar, NamedDistance>();
+                NamedDistance nd2 = print.get(pair);
+                if (nd2 == null) {
+                    print.put(pair, nd);
+                } else if (nd.getDistance() < nd2.getDistance()) {
+                    print.remove(pair);
+                    print.put(pair, nd);
+                }
             }
             en.skel = mc[1];
             en.display = d;
@@ -445,11 +470,11 @@ public final class SpecialVars extends Special {
      * @param mvs The variable map.
      * @param en  The engine.
      */
-    public static void mapToAssoc(MapHashLink<TermVar, String> mvs, Engine en) {
+    public static void mapToAssoc(MapHashLink<TermVar, NamedDistance> mvs, Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        for (MapEntry<TermVar, String> entry = mvs.getFirstEntry();
+        for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             TermVar key = entry.key;
             countvar++;
@@ -464,7 +489,7 @@ public final class SpecialVars extends Special {
             countvar = 0;
         }
         Object m = en.store.ATOM_NIL;
-        for (MapEntry<TermVar, String> entry = mvs.getFirstEntry();
+        for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             TermVar key = entry.key;
             Object val;
@@ -477,7 +502,7 @@ public final class SpecialVars extends Special {
                 val = AbstractTerm.getSkel(key);
             }
             val = new SkelCompound(en.store.ATOM_EQUAL,
-                    new SkelAtom(entry.value), val);
+                    new SkelAtom(entry.value.getName()), val);
             m = new SkelCompound(en.store.ATOM_CONS, val, m);
         }
         en.skel = m;
