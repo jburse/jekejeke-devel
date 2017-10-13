@@ -97,6 +97,7 @@ get_attr(V, K, W) :-
  * The de-assignment is automatically undone upon backtracking.
  */
 % del_attr(+Var, +Key)
+:- public del_attr/2.
 del_attr(V, K) :-
    sys_clause_hook(V, attr(K, _), R), !,
    sys_retire_ref(R).

@@ -99,6 +99,7 @@ get_atts(V, K, W) :-
  * The de-assignment is automatically undone upon backtracking.
  */
 % del_atts(+Var, +Key)
+:- public del_atts/2.
 del_atts(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
    sys_retire_ref(R).
