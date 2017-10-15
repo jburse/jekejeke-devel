@@ -1,5 +1,5 @@
 /**
- * This module provides thread local state for constraint solvers.
+ * This module provides trailed named values.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
