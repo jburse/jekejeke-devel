@@ -1,4 +1,33 @@
 /**
+ * The SAT solver allows denoting Boolean value expressions. These
+ * expressions can contain native Prolog variables. Boolean expressions
+ * are posted to the SAT solver via the predicate sat/1. Internally
+ * the SAT constraint is normalized into a BDD tree. The resulting
+ * BDD tree is automatically shown by the top-level:
+ *
+ * Example:
+ * ?- sat(X#Y).
+ * sat((X->(Y->0;1);Y->1;0))
+ *
+ * BDD tree reductions and attribute variable hooks guard the interaction
+ * between SAT con-straints. Currently the following inference rule sets
+ * have been implemented for Boolean value expressions:
+ *
+ * * Forward Checking
+ *
+ * The forward checking consists of the two inference rules constant
+ * elimination and constant back propagation. Where permitted SAT
+ * constraints are replaced by native Prolog unification. It is also
+ * allowed mixing native Prolog unification =/2 with SAT constraints:
+ *
+ * Examples:
+ * ?- X=Y, sat(X+Y).
+ * X = 1,
+ * Y = 1
+ * ?- sat(X+Y), X=Y.
+ * X = 1,
+ * Y = 1
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -45,58 +74,112 @@
  * The predicate succeeds in T with the tree of the expression E.
  */
 % expr_eval(+Expr, -Tree)
+
+/**
+ * V (SAT):
+ * A native Prolog variable V represents a Boolean variable.
+ */
 expr_eval(X, R) :-
    var(X), !,
    map_new(X, Y),
    R = node(Y,leaf(1),leaf(0)).
+/**
+ * 0 (SAT):
+ * 1 (SAT):
+ * The constant 0 or 1 represents a Boolean constant.
+ */
 expr_eval(0, R) :- !,
    R = leaf(0).
 expr_eval(1, R) :- !,
    R = leaf(1).
+/**
+ * ~ A (SAT):
+ * If A is an expression then the negation ~A is also an expression.
+ */
 expr_eval(~A, R) :- !,
    expr_eval(A, P),
    tree_not(P, R).
-expr_eval(A*B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
-   tree_and(P, Q, R).
+/**
+ * A + B (SAT):
+ * If A and B are expressions then the disjunction A+B is also an expression.
+ */
 expr_eval(A+B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_or(P, Q, R).
-expr_eval(X^A, R) :- !,
-   map_new(X, Y),
+/**
+ * A * B (SAT):
+ * If A and B are expressions then the conjunction A*B is also an expression.
+ */
+expr_eval(A*B, R) :- !,
    expr_eval(A, P),
-   tree_exists(Y, P, R).
+   expr_eval(B, Q),
+   tree_and(P, Q, R).
+/**
+ * A =< B (SAT):
+ * If A and B are expressions then the implication A=<B is also an expression.
+  */
 expr_eval(A=<B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_imply(P, Q, R).
+/**
+ * A >= B (SAT):
+ * If A and B are expressions then the implication B=<A is also an expression.
+ */
 expr_eval(A>=B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_imply(Q, P, R).
+/**
+ * A > B (SAT):
+ * If A and B are expressions then the difference A>B is also an expression.
+ */
 expr_eval(A>B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_diff(P, Q, R).
+/**
+ * A < B (SAT):
+ * If A and B are expressions then the difference B>A is also an expression.
+ */
 expr_eval(A<B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_diff(Q, P, R).
+/**
+ * A =:= B (SAT):
+ * If A and B are expressions then the equality A=:=B is also an expression.
+ */
 expr_eval(A=:=B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_equiv(P, Q, R).
+/**
+ * A # B (SAT):
+ * If A and B are expressions then the xor A#B is also an expression.
+ */
 expr_eval(A#B, R) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    tree_xor(P, Q, R).
+/**
+ * A -> B; C (SAT):
+ * If A, B and C are expressions then the if-then-else A->B;C is also an expression.
+ */
 expr_eval((A->B;C), S) :- !,
    expr_eval(A, P),
    expr_eval(B, Q),
    expr_eval(C, R),
    tree_ite(P, Q, R, S).
+/**
+ * V^A (SAT):
+ * If V is a native Prolog variable and A is an expression then the Boolean existential quantification V^A is also an expression.
+ */
+expr_eval(X^A, R) :- !,
+   map_new(X, Y),
+   expr_eval(A, P),
+   tree_exists(Y, P, R).
 expr_eval(E, _) :-
    throw(error(type_error(boolean_expr,E),_)).
 

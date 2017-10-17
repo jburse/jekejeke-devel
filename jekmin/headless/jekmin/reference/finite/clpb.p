@@ -30,13 +30,13 @@
 :- use_module(library(term/unify)).
 
 /**
- * sat(E):
- * Posit a binary decision diagram E constraint.
+ * sat(A):
+ * If A is an expression then its satisfiability is posted.
  */
 % sat(+Expr)
 :- public sat/1.
-sat(E) :-
-   expr_eval(E, T),
+sat(A) :-
+   expr_eval(A, T),
    expr_vars(T, L),
    sat_add_vars(L, H),
    sat_trivial(T, H),
