@@ -1,4 +1,32 @@
 /**
+ * As a convenience the SAT solver provides a single solving
+ * technique in two incarnations. We provide the following
+ * solving technique when there is an attempt to label multiple
+ * variables at once or to count the number of solutions.
+ *
+ * * Brute Finite Search
+ *
+ * Although variable rankings are found in the literature, we
+ * didn’t implement some special search strategy, since we did
+ * not yet find a solution to overcome the ranking overhead. The
+ * given variables are tried in the given input order. Counting
+ * further depends on labelling, since it is no yet able to use
+ * counts derived from a single BDD tree.
+ *
+ * Examples:
+ * ?- sat(X=<Y), sat(Y=<Z), sat(Z=<X), labeling([X,Y,Z]).
+ * X = 0,
+ * Y = 0,
+ * Z = 0 ;
+ * X = 1,
+ * Y = 1,
+ * Z = 1
+ * ?- sat(X=<Y), sat(Y=<Z), sat(Z=<X), sat_count([X,Y,Z], N).
+ * N = 2,
+ * sat((X->1;Z->0;1)),
+ * sat((X->(Y->1;0);1)),
+ * sat((Y->(Z->1;0);1))
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -213,7 +241,7 @@ sat_goals([], _, R, R).
 
 /**
  * labeling(L):
- * The predicate Labels the variables in L.
+ * The predicate labels the variables in L.
  */
 % labeling(+List)
 :- public labeling/1.
@@ -234,7 +262,7 @@ sat_value(1).
 /**
  * sat_count(L, N):
  * The predicate silently labels the variables in L and
- * succceeds in N with the count of the solutions.
+ * succeeds in N with the count of the solutions.
  */
 % sat_count(+List, -Integer)
 :- public sat_count/2.

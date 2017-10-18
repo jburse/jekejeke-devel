@@ -1,48 +1,44 @@
 /**
- * As a convenience the finite domain solver provides a couple of
- * solving techniques. We provide the following solving techniques
- * along domain ranges:
- *
- * * Heuristic Search
- *
  * The constant values in the domain of a variable can be enumerated
- * via the predicate indomain/1. This predicate is capable of enumerating
- * finite and infinite domains. For infinite domains it is also possible
- * to enumerate domains that are open ended on both sides, resulting in
- * an alternating enumeration towards inf and sup.
+ * via the predicate indo-main/1. This predicate is capable of
+ * enumerating finite and infinite domains. For infinite domains it
+ * is also possible to enumerate domains that are open ended on both
+ * sides, resulting in an alternating enumeration towards inf and sup:
  *
  * Examples:
  * ?- X in 10..15, indomain(X).
  * X = 10 ;
- * X = 11 ;
  * ...
  * X = 15
- *
  * ?- indomain(X).
  * X = 0 ;
  * X = -1 ;
- * X = 1 ;
  * ...
  *
- * The only heuristic we have implemented so far is the fail-first search
- * strategy. In certain cases this can reduce the search space. It can
- * be invoked by the predicate label/1. Infinite domains are filtered
- * out and cantor paired. Then smaller domains are enumerated first.
- * Further notions of consistency and search are discussed in [2].
+ * As a convenience the finite domain solver provides a couple
+ * of solving techniques. We provide the following solving techniques
+ * along domain ranges when there is an attempt to label multiple
+ * variables at once. The predicate for this search is label/1:
+ *
+ * * Brute Infinite Search
+ * * Heuristic Finite Search
+ *
+ * Infinite domains are filtered out first and then cantor paired. For
+ * finite domains we have im-plemented a search strategy, which
+ * prefers those variables with a smaller cardinality of the domain
+ * first. In certain cases this can reduce the search space. Further
+ * notions of consistency and search are discussed in [2].
  *
  * Examples:
  * ?- [X,Y] ins 0..9, 3*X+5*Y #= 11, label([X,Y]).
  * X = 2,
  * Y = 1 ;
  * No
- *
  * ?- 3*X+5*Y #= 11, label([X,Y]).
  * X = 2,
  * Y = 1 ;
  * X = -3,
  * Y = 4 ;
- * X = 7,
- * Y = -2 ;
  * ...
  *
  * Warranty & Liability
