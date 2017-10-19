@@ -245,10 +245,15 @@ sat_goals([], _, R, R).
  */
 % labeling(+List)
 :- public labeling/1.
-labeling([B|L]) :-
+labeling(L) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+labeling([B|L]) :- !,
    sat_value(B),
    labeling(L).
-labeling([]).
+labeling([]) :- !.
+labeling(L) :-
+   throw(error(type_error(list,L),_)).
 
 /**
  * sat_value(B):
@@ -266,11 +271,17 @@ sat_value(1).
  */
 % sat_count(+List, -Integer)
 :- public sat_count/2.
-sat_count([], 1).
-sat_count([B|L], N) :-
+sat_count(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sat_count([], N) :- !,
+   N = 1.
+sat_count([B|L], N) :- !,
    findall(M, (  sat_value(B),
                  sat_count(L, M)), R),
    sat_sum(R, N).
+sat_count(L, _) :-
+   throw(error(type_error(list,L),_)).
 
 /**
  * sat_sum(L, N):
