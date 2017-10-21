@@ -82,16 +82,16 @@
 expr_eval(X, R) :-
    var(X), !,
    map_new(X, Y),
-   R = node(Y,leaf(1),leaf(0)).
+   R = node(Y,one,zero).
 /**
  * 0 (SAT):
  * 1 (SAT):
  * The constant 0 or 1 represents a Boolean constant.
  */
 expr_eval(0, R) :- !,
-   R = leaf(0).
+   R = zero.
 expr_eval(1, R) :- !,
-   R = leaf(1).
+   R = one.
 /**
  * ~ A (SAT):
  * If A is an expression then the negation ~A is also an expression.
@@ -181,15 +181,17 @@ expr_eval(X^A, R) :- !,
    expr_eval(A, P),
    tree_exists(Y, P, R).
 expr_eval(E, _) :-
-   throw(error(type_error(boolean_expr,E),_)).
+   throw(error(type_error(sat_expr,E),_)).
 
 /**
  * expr_pretty(T, E):
  * The predicate succeeds in E with the expression of the tree T.
  */
 % expr_pretty(+Tree, -Expr)
-expr_pretty(leaf(L), R) :- !,
-   R = L.
+expr_pretty(zero, R) :- !,
+   R = 0.
+expr_pretty(one, R) :- !,
+   R = 1.
 expr_pretty(node(X,A,B), R) :-
    map_back(X, Y),
    expr_pretty(A, C),
@@ -201,7 +203,9 @@ expr_pretty(node(X,A,B), R) :-
  * The predicae succeeds in L with the indexes in the tree T.
  */
 % expr_vars(+Tree, -List)
-expr_vars(leaf(_), R) :- !,
+expr_vars(zero, R) :- !,
+   R = [].
+expr_vars(one, R) :- !,
    R = [].
 expr_vars(node(X,A,B), [X|S]) :-
    expr_vars(A, L),
@@ -234,10 +238,10 @@ vars_union(L, [Y|M], [Y|S]) :-
  */
 % tree_not(+Tree, -Tree)
 :- private tree_not/2.
-tree_not(leaf(0), R) :- !,
-   R = leaf(1).
-tree_not(leaf(1), R) :- !,
-   R = leaf(0).
+tree_not(zero, R) :- !,
+   R = one.
+tree_not(one, R) :- !,
+   R = zero.
 tree_not(node(X,A,B), R) :- !,
    tree_not(A, C),
    tree_not(B, D),
@@ -248,22 +252,14 @@ tree_not(node(X,A,B), R) :- !,
  * The predicate succeeds in R with the boolean and of P and Q.
  */
 % tree_and(+Tree, +Tree, -Tree)
-tree_and(leaf(0), _, R) :- !,
-   R = leaf(0).
-tree_and(_, leaf(0), R) :- !,
-   R = leaf(0).
-tree_and(leaf(1), A, R) :- !,
+tree_and(zero, _, R) :- !,
+   R = zero.
+tree_and(_, zero, R) :- !,
+   R = zero.
+tree_and(one, A, R) :- !,
    R = A.
-tree_and(A, leaf(1), R) :- !,
+tree_and(A, one, R) :- !,
    R = A.
-tree_and(leaf(L), node(X,A,B), R) :- !,
-   tree_and(leaf(L), A, C),
-   tree_and(leaf(L), B, D),
-   tree_make(C, D, X, R).
-tree_and(node(X,A,B), leaf(L), R) :- !,
-   tree_and(A, leaf(L), C),
-   tree_and(B, leaf(L), D),
-   tree_make(C, D, X, R).
 tree_and(node(X,A,B), node(Y,C,D), R) :-
    X < Y, !,
    tree_and(A, node(Y,C,D), E),
@@ -284,22 +280,14 @@ tree_and(N, node(Y,C,D), R) :-
  */
 % tree_or(+Tree, +Tree, -Tree)
 :- private tree_or/3.
-tree_or(leaf(1), _, R) :- !,
-   R = leaf(1).
-tree_or(_, leaf(1), R) :- !,
-   R = leaf(1).
-tree_or(leaf(0), A, R) :- !,
+tree_or(one, _, R) :- !,
+   R = one.
+tree_or(_, one, R) :- !,
+   R = one.
+tree_or(zero, A, R) :- !,
    R = A.
-tree_or(A, leaf(0), R) :- !,
+tree_or(A, zero, R) :- !,
    R = A.
-tree_or(leaf(L), node(X,A,B), R) :- !,
-   tree_or(leaf(L), A, C),
-   tree_or(leaf(L), B, D),
-   tree_make(C, D, X, R).
-tree_or(node(X,A,B), leaf(L), R) :- !,
-   tree_or(A, leaf(L), C),
-   tree_or(B, leaf(L), D),
-   tree_make(C, D, X, R).
 tree_or(node(X,A,B), node(Y,C,D), R) :-
    X < Y, !,
    tree_or(A, node(Y,C,D), E),
@@ -320,22 +308,14 @@ tree_or(N, node(Y,C,D), R) :-
  */
 % tree_imply(+Tree, +Tree, -Tree)
 :- private tree_imply/3.
-tree_imply(leaf(0), _, R) :- !,
-   R = leaf(1).
-tree_imply(A, leaf(0), R) :- !,
+tree_imply(zero, _, R) :- !,
+   R = one.
+tree_imply(A, zero, R) :- !,
    tree_not(A, R).
-tree_imply(leaf(1), A, R) :- !,
+tree_imply(one, A, R) :- !,
    R = A.
-tree_imply(_, leaf(1), R) :- !,
-   R = leaf(1).
-tree_imply(leaf(L), node(X,A,B), R) :- !,
-   tree_imply(leaf(L), A, C),
-   tree_imply(leaf(L), B, D),
-   tree_make(C, D, X, R).
-tree_imply(node(X,A,B), leaf(L), R) :- !,
-   tree_imply(A, leaf(L), C),
-   tree_imply(B, leaf(L), D),
-   tree_make(C, D, X, R).
+tree_imply(_, one, R) :- !,
+   R = one.
 tree_imply(node(X,A,B), node(Y,C,D), R) :-
    X < Y, !,
    tree_imply(A, node(Y,C,D), E),
@@ -355,22 +335,14 @@ tree_imply(N, node(Y,C,D), R) :-
  * The predicate succeeds in R with the boolean bi-conditional of P and Q.
  */
 % tree_equiv(+Tree, +Tree, -Tree)
-tree_equiv(leaf(1), A, R) :- !,
+tree_equiv(one, A, R) :- !,
    R = A.
-tree_equiv(A, leaf(1), R) :- !,
+tree_equiv(A, one, R) :- !,
    R = A.
-tree_equiv(leaf(0), A, R) :- !,
+tree_equiv(zero, A, R) :- !,
    tree_not(A, R).
-tree_equiv(A, leaf(0), R) :- !,
+tree_equiv(A, zero, R) :- !,
    tree_not(A, R).
-tree_equiv(leaf(L), node(X,A,B), R) :- !,
-   tree_equiv(leaf(L), A, C),
-   tree_equiv(leaf(L), B, D),
-   tree_make(C, D, X, R).
-tree_equiv(node(X,A,B), leaf(L), R) :- !,
-   tree_equiv(A, leaf(L), C),
-   tree_equiv(B, leaf(L), D),
-   tree_make(C, D, X, R).
 tree_equiv(node(X,A,B), node(Y,C,D), R) :-
    X < Y, !,
    tree_equiv(A, node(Y,C,D), E),
@@ -433,8 +405,10 @@ tree_make(A, B, X, node(X,A,B)).
  * The predicate succeeds in R with existential removing the variable P from Q.
  */
 % tree_exists(+Index, +Tree, -Tree)
-tree_exists(_, leaf(L), R) :- !,
-   R = leaf(L).
+tree_exists(_, zero, R) :- !,
+   R = zero.
+tree_exists(_, one, R) :- !,
+   R = one.
 tree_exists(X, node(Y,A,B), R) :-
    Y < X, !,
    tree_exists(X, A, C),
@@ -449,8 +423,10 @@ tree_exists(_, N, N).
  * The predicate succeeds in R with substituting 1 for the variable P in Q.
  */
 % tree_one(+Index, +Tree, -Tree)
-tree_one(_, leaf(L), R) :- !,
-   R = leaf(L).
+tree_one(_, zero, R) :- !,
+   R = zero.
+tree_one(_, one, R) :- !,
+   R = one.
 tree_one(X, node(Y,A,B), R) :-
    Y < X, !,
    tree_one(X, A, C),
@@ -465,8 +441,10 @@ tree_one(_, N, N).
  * The predicate succeeds in R with substituting 0 for the variable P in Q.
  */
 % tree_zero(+Index, +Tree, -Tree)
-tree_zero(_, leaf(L), R) :- !,
-   R = leaf(L).
+tree_zero(_, zero, R) :- !,
+   R = zero.
+tree_zero(_, one, R) :- !,
+   R = one.
 tree_zero(X, node(Y,A,B), R) :-
    Y < X, !,
    tree_zero(X, A, C),

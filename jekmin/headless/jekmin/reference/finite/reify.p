@@ -219,7 +219,7 @@ sys_reify_expr(X#=<Y, B) :- !,
 sys_reify_expr(X#>=Y, B) :- !,
    sys_reify_set(Y, X, [..0], B).
 sys_reify_expr(A, _) :-
-   throw(error(domain_error(sys_bool_expression,A),_)).
+   throw(error(type_error(fd_bool,A),_)).
 
 /**
  * sys_reify_in(E, U, B):
@@ -244,7 +244,7 @@ sys_reify_in(X, U, 1) :- !,
 sys_reify_in(X, U, 0) :- !,
    X in \U.
 sys_reify_in(_, _, B) :-
-   throw(error(domain_error(sys_bool_expression,B),_)).
+   throw(error(type_error(fd_bool,B),_)).
 
 /**
  * sys_reify_lin(E, F, B):
@@ -271,7 +271,7 @@ sys_reify_lin(X, Y, 1) :- !,
 sys_reify_lin(X, Y, 0) :- !,
    X #\= Y.
 sys_reify_lin(_, _, B) :-
-   throw(error(domain_error(sys_bool_expression,B),_)).
+   throw(error(type_error(fd_bool,B),_)).
 
 /**
  * sys_reify_set(E, F, S, B):
@@ -299,7 +299,7 @@ sys_reify_set(Y, X, S, 0) :- !,
    sys_comp_set(S, T),
    sys_compare_expr(Y, X, T).
 sys_reify_set(_, _, _, B) :-
-   throw(error(domain_error(sys_bool_expression,B),_)).
+   throw(error(type_error(fd_bool,B),_)).
 
 /*******************************************************************/
 /* Guarded Domain Constraints                                      */

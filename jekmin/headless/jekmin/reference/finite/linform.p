@@ -590,7 +590,7 @@ sys_value_expr(C, L, A) :-
    sys_value_expr(X, L, A).
 
 sys_value_expr(A, _, _) :-
-   throw(error(domain_error(sys_value_expression,A),_)).
+   throw(error(type_error(fd_value,A),_)).
 
 /**
  * sys_value_expr_inv(E, P, K):
@@ -685,7 +685,7 @@ sys_value_expr_inv(C, L, A) :-
    X is C,
    sys_value_expr(X, L, A).
 sys_value_expr_inv(A, _, _) :-
-   throw(error(domain_error(sys_value_expression,A),_)).
+   throw(error(type_error(fd_value,A),_)).
 
 /**********************************************************/
 /* Scalar Product Unparsing                               */

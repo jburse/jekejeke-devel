@@ -544,7 +544,7 @@ sys_expr_set(\X, E) :- !,
    sys_comp_set(A, E).
 
 sys_expr_set(A, _) :-
-   throw(error(domain_error(sys_set_expression,A),_)).
+   throw(error(type_error(fd_set,A),_)).
 
 % sys_expr_range(+Integer, +Integer, -Set)
 :- private sys_expr_range/3.
@@ -566,7 +566,7 @@ sys_expr_range(A, sup, [A...]) :-
    integer(A), !.
 sys_expr_range(inf, sup, [...]) :- !.
 sys_expr_range(A, B, _) :-
-   throw(error(domain_error(sys_set_expression,A..B),_)).
+   throw(error(type_error(fd_set,A..B),_)).
 
 /************************************************/
 /* Set Unparsing                                */

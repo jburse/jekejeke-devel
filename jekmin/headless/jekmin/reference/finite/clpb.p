@@ -96,9 +96,9 @@ sat_add_var(A, K, H) :-
  */
 % sat_trivial(+Tree, +Fresh)
 :- private sat_trivial/2.
-sat_trivial(leaf(1), H) :- !,
+sat_trivial(one, H) :- !,
    del_attr(H, clpb).
-sat_trivial(leaf(0), _) :- !, fail.
+sat_trivial(zero, _) :- !, fail.
 sat_trivial(S, H) :-
    put_attr(H, clpb, sat_root(S)).
 
@@ -108,13 +108,13 @@ sat_trivial(S, H) :-
  */
 % sat_propagate(+Tree)
 :- private sat_propagate/1.
-sat_propagate(node(X,_,leaf(0))) :- !,
+sat_propagate(node(X,_,zero)) :- !,
    map_back(X, Y),
    Y = 1.
-sat_propagate(node(X,leaf(0),_)) :- !,
+sat_propagate(node(X,zero,_)) :- !,
    map_back(X, Y),
    Y = 0.
-sat_propagate(node(X,node(Y,A,leaf(0)),node(Y,leaf(0),A))) :- !,
+sat_propagate(node(X,node(Y,A,zero),node(Y,zero,A))) :- !,
    map_back(X, Z),
    map_back(Y, T),
    Z = T.
@@ -137,18 +137,18 @@ attr_unify_hook(sat_ref(K,F), W) :-
    get_attr(W, clpb, sat_ref(I,G)), !,
    sat_union(F, G, E),
    put_attr(W, clpb, sat_ref(I,E)),
-   sat_unify(G, K, node(I,leaf(1),leaf(0))).
+   sat_unify(G, K, node(I,one,zero)).
 attr_unify_hook(sat_ref(K,F), W) :-
    var(W), !,
    map_new(W, I),
    put_attr(W, clpb, sat_ref(I,F)),
-   sat_unify(F, K, node(I,leaf(1),leaf(0))).
+   sat_unify(F, K, node(I,one,zero)).
 attr_unify_hook(sat_ref(K,F), 0) :- !,
-   sat_unify(F, K, leaf(0)).
+   sat_unify(F, K, zero).
 attr_unify_hook(sat_ref(K,F), 1) :- !,
-   sat_unify(F, K, leaf(1)).
+   sat_unify(F, K, one).
 attr_unify_hook(sat_ref(_,_), W) :-
-   throw(error(type_error(boolean_value,W),_)).
+   throw(error(type_error(sat_value,W),_)).
 
 /**
  * sat_union(F, G, R):
@@ -195,12 +195,12 @@ sat_unify([], _, _).
  */
 % sat_assign(+Tree, +Index, +Tree, -Tree)
 :- private sat_assign/4.
-sat_assign(T, U, leaf(1), S) :- !,
+sat_assign(T, U, one, S) :- !,
    tree_one(U, T, S).
-sat_assign(T, U, leaf(0), S) :- !,
+sat_assign(T, U, zero, S) :- !,
    tree_zero(U, T, S).
 sat_assign(T, U, W, S) :-
-   tree_equiv(node(U,leaf(1),leaf(0)), W, P),
+   tree_equiv(node(U,one,zero), W, P),
    tree_and(T, P, Q),
    tree_exists(U, Q, S).
 
