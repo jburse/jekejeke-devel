@@ -70,16 +70,15 @@
 /********************************************************/
 
 /**
- * expr_eval(E, T):
+ * expr_tree(E, T):
  * The predicate succeeds in T with the tree of the expression E.
  */
-% expr_eval(+Expr, -Tree)
-
+% expr_tree(+Expr, -Tree)
 /**
  * V (SAT):
  * A native Prolog variable V represents a Boolean variable.
  */
-expr_eval(X, R) :-
+expr_tree(X, R) :-
    var(X), !,
    map_new(X, Y),
    R = node(Y,one,zero).
@@ -88,99 +87,99 @@ expr_eval(X, R) :-
  * 1 (SAT):
  * The constant 0 or 1 represents a Boolean constant.
  */
-expr_eval(0, R) :- !,
+expr_tree(0, R) :- !,
    R = zero.
-expr_eval(1, R) :- !,
+expr_tree(1, R) :- !,
    R = one.
 /**
  * ~ A (SAT):
  * If A is an expression then the negation ~A is also an expression.
  */
-expr_eval(~A, R) :- !,
-   expr_eval(A, P),
+expr_tree(~A, R) :- !,
+   expr_tree(A, P),
    tree_not(P, R).
 /**
  * A + B (SAT):
  * If A and B are expressions then the disjunction A+B is also an expression.
  */
-expr_eval(A+B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A+B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_or(P, Q, R).
 /**
  * A * B (SAT):
  * If A and B are expressions then the conjunction A*B is also an expression.
  */
-expr_eval(A*B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A*B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_and(P, Q, R).
 /**
  * A =< B (SAT):
  * If A and B are expressions then the implication A=<B is also an expression.
   */
-expr_eval(A=<B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A=<B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_imply(P, Q, R).
 /**
  * A >= B (SAT):
  * If A and B are expressions then the implication B=<A is also an expression.
  */
-expr_eval(A>=B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A>=B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_imply(Q, P, R).
 /**
  * A > B (SAT):
  * If A and B are expressions then the difference A>B is also an expression.
  */
-expr_eval(A>B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A>B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_diff(P, Q, R).
 /**
  * A < B (SAT):
  * If A and B are expressions then the difference B>A is also an expression.
  */
-expr_eval(A<B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A<B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_diff(Q, P, R).
 /**
  * A =:= B (SAT):
  * If A and B are expressions then the equality A=:=B is also an expression.
  */
-expr_eval(A=:=B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A=:=B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_equiv(P, Q, R).
 /**
  * A # B (SAT):
  * If A and B are expressions then the xor A#B is also an expression.
  */
-expr_eval(A#B, R) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
+expr_tree(A#B, R) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
    tree_xor(P, Q, R).
 /**
  * A -> B; C (SAT):
  * If A, B and C are expressions then the if-then-else A->B;C is also an expression.
  */
-expr_eval((A->B;C), S) :- !,
-   expr_eval(A, P),
-   expr_eval(B, Q),
-   expr_eval(C, R),
+expr_tree((A->B;C), S) :- !,
+   expr_tree(A, P),
+   expr_tree(B, Q),
+   expr_tree(C, R),
    tree_ite(P, Q, R, S).
 /**
  * V^A (SAT):
  * If V is a native Prolog variable and A is an expression then the Boolean existential quantification V^A is also an expression.
  */
-expr_eval(X^A, R) :- !,
+expr_tree(X^A, R) :- !,
    map_new(X, Y),
-   expr_eval(A, P),
+   expr_tree(A, P),
    tree_exists(Y, P, R).
-expr_eval(E, _) :-
+expr_tree(E, _) :-
    throw(error(type_error(sat_expr,E),_)).
 
 /**
@@ -517,4 +516,3 @@ attr_unify_hook(_, _).
 % attribute_goals(+Variable, -List, +List)
 :- public attribute_goals/3.
 attribute_goals(_, R, R).
-

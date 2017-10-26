@@ -56,6 +56,7 @@
 
 :- reexport(tree).
 :- use_module(library(term/unify)).
+:- use_module(library(basic/lists)).
 
 /**
  * sat(A):
@@ -64,8 +65,17 @@
 % sat(+Expr)
 :- public sat/1.
 sat(A) :-
-   expr_eval(A, T),
+   expr_tree(A, T),
    expr_vars(T, L),
+   sat_post(T, L).
+
+/**
+ * sat_post(T, L):
+ * If T is a tree and L are its variables then its satisfiability is posted.
+ */
+% sat_post(+Tree, +List)
+:- private sat_post/2.
+sat_post(T, L) :-
    sat_add_vars(L, H),
    sat_trivial(T, H),
    sat_propagate(T).
@@ -274,12 +284,12 @@ sat_value(1).
 sat_count(L, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-sat_count([], N) :- !,
-   N = 1.
 sat_count([B|L], N) :- !,
    findall(M, (  sat_value(B),
                  sat_count(L, M)), R),
    sat_sum(R, N).
+sat_count([], N) :- !,
+   N = 1.
 sat_count(L, _) :-
    throw(error(type_error(list,L),_)).
 
@@ -293,3 +303,82 @@ sat_sum([M,O], N) :- !,
    N is M+O.
 sat_sum([N], N).
 sat_sum([], 0).
+
+/*****************************************************************/
+/* Cardinality Constraint                                        */
+/*****************************************************************/
+
+/**
+ * card(N, L):
+ * If N is an integer and L is a variable list then he constraint
+ * that the number of true variables amounts exactly to N is posted.
+ */
+% card(+Integer, +List)
+:- public card/2.
+card(N, _) :-
+   var(N),
+   throw(error(instantiation_error,_)).
+card(N, _) :-
+   \+ integer(N),
+   throw(error(type_error(integer,N),_)).
+card(N, _) :-
+   N < 0, !, fail.
+card(N, L) :-
+   length(L, M),
+   M < N, !, fail.
+card(N, L) :-
+   map_new_list(L, H),
+   sort(H, R),
+   exactly(R, N, N, [S]),
+   sat_post(S, R).
+
+% map_new_list(+List, -List)
+:- private map_new_list/2.
+map_new_list(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+map_new_list([X|L], [S|R]) :-
+   var(X), !,
+   map_new(X, S),
+   map_new_list(L, R).
+map_new_list([X|_], _) :-
+   throw(error(type_error(var,X),_)).
+map_new_list([], []) :- !.
+map_new_list(L, _) :-
+   throw(error(type_error(list,L),_)).
+
+% exactly(+List, +Integer, +Integer, -List)
+:- private exactly/4.
+exactly([X|L], N, 0, R) :- !,
+   exactly(L, N, 0, S),
+   exactly_same(S, X, R).
+exactly([X|L], N, M, R) :-
+   H is M-1,
+   exactly(L, N, H, S),
+   exactly_less(S, X, R).
+exactly([], N, M, L) :-
+   exactly_base(N, M, L).
+
+% exactly_same(+List, +Term, -List)
+:- private exactly_same/3.
+exactly_same([A,B|L], Z, [C|R]) :- !,
+   C = node(Z,B,A),
+   exactly_same([B|L], Z, R).
+exactly_same([A], Z, [B]) :-
+   B = node(Z,zero,A).
+
+% exactly_less(+List, +Term, -List)
+:- private exactly_less/3.
+exactly_less([A,B|L], Z, [C|R]) :- !,
+   C = node(Z,B,A),
+   exactly_less([B|L], Z, R).
+exactly_less([_], _, []).
+
+% exactly_base(+Integer, +Integer, -List)
+:- private exactly_base/3.
+exactly_base(0, _, [X]) :- !,
+   X = one.
+exactly_base(N, M, [X|L]) :-
+   H is N-1,
+   X = zero,
+   exactly_base(H, M, L).
