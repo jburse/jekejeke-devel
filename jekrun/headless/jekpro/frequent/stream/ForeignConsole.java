@@ -208,9 +208,14 @@ public final class ForeignConsole {
         }
     }
 
+    /**
+     * <p>Some test cases.</p>
+     */
+    /*
     public static void main(String[] args) {
         Date date = new Date();
         System.out.format("date=%1$tF %1$tT", date);
     }
+    */
 
 }

@@ -72,12 +72,12 @@ remove(X, [Y|Z], [Y|T]) :-
  */
 % difference(+Set, +Set, -Set)
 :- public difference/3.
-difference([], _, []).
 difference([X|Y], Z, T) :-
    contains(X, Z), !,
    difference(Y, Z, T).
 difference([X|Y], Z, [X|T]) :-
    difference(Y, Z, T).
+difference([], _, []).
 
 /**
  * intersection(S1, S2, S3):
@@ -85,12 +85,12 @@ difference([X|Y], Z, [X|T]) :-
  */
 % intersection(+Set, +Set, -Set)
 :- public intersection/3.
-intersection([], _, []).
 intersection([X|Y], Z, [X|T]) :-
    contains(X, Z), !,
    intersection(Y, Z, T).
 intersection([_|X], Y, Z) :-
    intersection(X, Y, Z).
+intersection([], _, []).
 
 /**
  * union(S1, S2, S3):
@@ -98,12 +98,12 @@ intersection([_|X], Y, Z) :-
  */
 % union(+Set, +Set, -Set)
 :- public union/3.
-union([], X, X).
 union([X|Y], Z, T) :-
    contains(X, Z), !,
    union(Y, Z, T).
 union([X|Y], Z, [X|T]) :-
    union(Y, Z, T).
+union([], X, X).
 
 /**
  * subset(S1, S2):
@@ -111,10 +111,10 @@ union([X|Y], Z, [X|T]) :-
  */
 % subset(+Set, +Set)
 :- public subset/2.
-subset([], _).
 subset([X|Y], Z) :-
    contains(X, Z),
    subset(Y, Z).
+subset([], _).
 
 /**
  * permutation(S1, S2):
@@ -122,7 +122,7 @@ subset([X|Y], Z) :-
  */
 % permutation(+Set, +Set)
 :- public permutation/2.
-permutation([], []).
 permutation([X|Y], L) :-
    remove(X, L, R),
    permutation(Y, R).
+permutation([], []).

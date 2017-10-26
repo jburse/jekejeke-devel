@@ -510,8 +510,10 @@ public final class ForeignLocale {
      * @return The short name.
      */
     public static String shortName(String path) {
-        int k = path.lastIndexOf('/') + 1;
-        return path.substring(k);
+        int k = path.lastIndexOf('/');
+        path = path.substring(k + 1);
+        k = path.lastIndexOf('$');
+        return path.substring(k + 1);
     }
 
 }

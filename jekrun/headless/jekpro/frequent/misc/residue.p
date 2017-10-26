@@ -2,7 +2,7 @@
  * By default the top-level shows the current unification equations.
  * An extension can show arbitrary constraints. It can do so by
  * defining further clauses for the multi-file predicates
- * sys_current_eq/1 and sys_unwrap_eq/2.
+ * sys_current_eq/2 and sys_unwrap_eq/3.
  *
  * The constraints that are related directly or indirectly to a term
  * can be retrieved by the predicate sys_term_eq_list/2. As a further
@@ -44,28 +44,26 @@
 /***********************************************************/
 
 /**
- * sys_current_eq(V, G):
- * The predicate succeeds for each equation G with variables
+ * sys_current_eq(V, H):
+ * The predicate succeeds for each equation H with variables
  * wrapped that listens on the variable V. Constraint solvers
  * should extend this multi-file predicate.
  */
-% sys_current_eq(+Var, -Goal)
+% sys_current_eq(+Var, -Handle)
 :- public sys_current_eq/2.
 :- multifile sys_current_eq/2.
-:- meta_predicate sys_current_eq(?,0).
 :- static sys_current_eq/2.
 
 /**
- * sys_unwrap_eq(G, F):
- * The predicate converts equation G with variables wrapped into
- * equation F with variables unwrapped. Constraint solvers
- * should extend this multi-file predicate.
+ * sys_unwrap_eq(H, I, O):
+ * The predicate converts equation H with variables wrapped into
+ * equations I with variables unwrapped. The list uses the end O.
+ * Constraint solvers should extend this multi-file predicate.
  */
-% sys_unwrap_eq(+Goal, -Handle)
-:- public sys_unwrap_eq/2.
-:- multifile sys_unwrap_eq/2.
-:- meta_predicate sys_unwrap_eq(0,0).
-:- static sys_unwrap_eq/2.
+% sys_unwrap_eq(+Handle, -Goals, +Goals)
+:- public sys_unwrap_eq/3.
+:- multifile sys_unwrap_eq/3.
+:- static sys_unwrap_eq/3.
 
 /***********************************************************/
 /* Constraint Selection Algorithm                          */
@@ -80,13 +78,25 @@
 % sys_follow_vars(+Vars, +Vars, -Vars, +Goals, -Goals)
 :- private sys_follow_vars/5.
 sys_follow_vars([U|H], V, W, L, R) :-
-   contains(U, V), !,
-   sys_follow_vars(H, V, W, L, R).
-sys_follow_vars([U|H], V, W, L, R) :-
-   findall(K, sys_current_eq(U, K), J),
-   sys_follow_eqs(J, [U|V], Z, L, M),
-   sys_follow_vars(H, Z, W, M, R).
+   sys_follow_vars(H, V, Z, L, M),
+   sys_follow_vars2(U, Z, W, M, R).
 sys_follow_vars([], V, V, L, L).
+
+% sys_follow_vars2(+Var, +Vars, -Vars, +Goals, -Goals)
+:- private sys_follow_vars2/5.
+sys_follow_vars2(U, V, V, L, L) :-
+   contains(U, V), !.
+sys_follow_vars2(U, V, W, L, R) :-
+   findall(K, sys_current_eq(U, K), J),
+   sys_unwrap_eqs(J, K, []),
+   sys_follow_eqs(K, [U|V], W, L, R).
+
+% sys_unwrap_eqs(+Goals, -Goals, +Goals)
+:- private sys_unwrap_eqs/3.
+sys_unwrap_eqs([G|L], I, O) :-
+   sys_unwrap_eq(G, I, H),
+   sys_unwrap_eqs(L, H, O).
+sys_unwrap_eqs([], L, L).
 
 /**
  * sys_follow_eqs(H, V, W, L, R):
@@ -97,26 +107,17 @@ sys_follow_vars([], V, V, L, L).
 % sys_follow_eqs(+Goals, +Vars, -Vars, +Goals, -Goals)
 :- private sys_follow_eqs/5.
 sys_follow_eqs([G|H], V, W, L, R) :-
-   contains(G, L), !,
-   sys_follow_eqs(H, V, W, L, R).
-sys_follow_eqs([G|H], V, W, L, R) :-
-   sys_unwrap_eq(G, F),
-   term_variables(F, U),
-   sys_follow_vars(U, V, Z, [G|L], M),
-   sys_follow_eqs(H, Z, W, M, R).
+   sys_follow_eqs(H, V, Z, L, M),
+   sys_follow_eqs2(G, Z, W, M, R).
 sys_follow_eqs([], V, V, L, L).
 
-/**
- * sys_unwrap_eqs(G, F):
- * The predicate converts equations G with variables wrapped into
- * equationss F with variables unwrapped.
- */
-% sys_unwrap_eqs(+Handle, -Goals)
-:- private sys_unwrap_eqs/2.
-sys_unwrap_eqs([G|L], [F|R]) :-
-   sys_unwrap_eq(G, F),
-   sys_unwrap_eqs(L, R).
-sys_unwrap_eqs([], []).
+% sys_follow_eqs2(Goal, +Vars, -Vars, +Goals, -Goals)
+:- private sys_follow_eqs2/5.
+sys_follow_eqs2(G, V, V, L, L) :-
+   contains(G, L), !.
+sys_follow_eqs2(G, V, W, L, R) :-
+   term_variables(G, U),
+   sys_follow_vars(U, V, W, [G|L], R).
 
 /***********************************************************/
 /* Consraint Selection API                                 */
@@ -131,8 +132,7 @@ sys_unwrap_eqs([], []).
 :- public sys_term_eq_list/2.
 sys_term_eq_list(T, L) :-
    term_variables(T, H),
-   sys_follow_vars(H, [], _, [], M),
-   sys_unwrap_eqs(M, L).
+   sys_follow_vars(H, [], _, [], L).
 
 /**
  * call_residue(G, L):

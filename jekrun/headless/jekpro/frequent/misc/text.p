@@ -20,9 +20,9 @@
  * can be used for case conversion of atoms.
  *
  * Examples:
- * ?- match('foobarfoo','bar').
+ * ?- pattern_match('foobarfoo','bar').
  * No
- * ?- match('foobarfoo','*bar*').
+ * ?- pattern_match('foobarfoo','*bar*').
  * Yes
  *
  * We also provide predicates for pattern matching. The predicate

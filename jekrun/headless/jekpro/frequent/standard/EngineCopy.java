@@ -181,8 +181,8 @@ public class EngineCopy {
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                Predicate pick = CachePredicate.getPredicate(sc.sym, sc.args.length, r, u, en);
-                Object[] decl = EngineCopy.metaPredicateBody(pick);
+                CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, r, u, en);
+                Object[] decl = EngineCopy.metaPredicateBody(cp);
                 if (decl != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++) {
@@ -278,8 +278,8 @@ public class EngineCopy {
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                Predicate pick = CachePredicate.getPredicate(sc.sym, sc.args.length, r, u, en);
-                Object[] decl = EngineCopy.metaPredicateRule(pick);
+                CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, r, u, en);
+                Object[] decl = EngineCopy.metaPredicateRule(cp);
                 if (decl != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++) {
@@ -339,11 +339,14 @@ public class EngineCopy {
     /**
      * <p>Retrieve the meta specifiers of a body predicate.</p>
      *
-     * @param pick The predicate.
+     * @param cp The cache predicate.
      * @return The meta spezifiers, or null.
      */
-    public static Object[] metaPredicateBody(Predicate pick) {
-        if (pick == null || (pick.getBits() & Predicate.MASK_PRED_BODY) == 0)
+    public static Object[] metaPredicateBody(CachePredicate cp) {
+        if (cp == null || !cp.visible)
+            return null;
+        Predicate pick = cp.pick;
+        if ((pick.getBits() & Predicate.MASK_PRED_BODY) == 0)
             return null;
         Object t = pick.meta_predicate;
         return (t != null ? ((SkelCompound) t).args : null);
@@ -352,11 +355,14 @@ public class EngineCopy {
     /**
      * <p>Retrieve the meta specifiers of a rule predicate.</p>
      *
-     * @param pick The predicate.
+     * @param cp The cache predicate.
      * @return The meta spezifiers, or null.
      */
-    public static Object[] metaPredicateRule(Predicate pick) {
-        if (pick == null || (pick.getBits() & Predicate.MASK_PRED_RULE) == 0)
+    public static Object[] metaPredicateRule(CachePredicate cp) {
+        if (cp == null || !cp.visible)
+            return null;
+        Predicate pick = cp.pick;
+        if ((pick.getBits() & Predicate.MASK_PRED_RULE) == 0)
             return null;
         Object t = pick.meta_predicate;
         return (t != null ? ((SkelCompound) t).args : null);
