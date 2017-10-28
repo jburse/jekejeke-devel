@@ -44,20 +44,52 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ListArray<E> implements Cloneable {
+public class ListArray<E> extends AbstractList<E> implements Cloneable {
     public static final int MIN_SIZE = 2;
 
     public Object[] table = new Object[MIN_SIZE];
-    public int size;
+
+    /***************************************************************/
+    /* List API                                                    */
+    /***************************************************************/
 
     /**
-     * <p>Retrieve size.</p>
+     * <p>Retrieve the stored key.</p>
      *
-     * @return The size.
+     * @param key The search key, can be null.
+     * @return The stored key or null.
      */
-    public int size() {
-        return size;
+    public E getKey(E key) {
+        int i = indexOf(key);
+        return (i != -1 ? get(i) : null);
     }
+
+    /**
+     * <p>Add key to the set.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key, can be null.
+     */
+     public void add(E key) {
+         if (size >= table.length)
+             resize(table.length * 2);
+         table[size++] = key;
+    }
+
+    /**
+     * <p>Remove the key from the set.</p>
+     *
+     * @param key The key, can be null.
+     */
+    public void remove(E key) {
+        int k = indexOf(key);
+        if (k >= 0)
+            remove(k);
+    }
+
+    /***************************************************************/
+    /* Getter/Setter                                               */
+    /***************************************************************/
 
     /**
      * <p>Retrieve an element.</p>
@@ -80,19 +112,8 @@ public class ListArray<E> implements Cloneable {
     }
 
     /***************************************************************/
-    /* Add Family                                                  */
+    /* More Routines                                               */
     /***************************************************************/
-
-    /**
-     * <p>Add an element at the end.</p>
-     *
-     * @param e The element.
-     */
-    public void add(E e) {
-        if (size >= table.length)
-            resize(table.length * 2);
-        table[size++] = e;
-    }
 
     /**
      * <p>Add an element at a position.</p>
@@ -109,9 +130,6 @@ public class ListArray<E> implements Cloneable {
         size++;
     }
 
-    /***************************************************************/
-    /* Contains Family                                             */
-    /***************************************************************/
 
     /**
      * <p>Returns the index of the first occurence.</p>
@@ -152,17 +170,6 @@ public class ListArray<E> implements Cloneable {
         table[--size] = null;
         if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
             resize(table.length / 2);
-    }
-
-    /**
-     * <p>Remove an element.</p>
-     *
-     * @param o The element.
-     */
-    public void remove(Object o) {
-        int k = indexOf(o);
-        if (k >= 0)
-            remove(k);
     }
 
     /**

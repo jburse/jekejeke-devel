@@ -26,25 +26,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractSet<E> implements Cloneable {
-    public int size;
-
-    /**
-     * <p>Retrieve size.</p>
-     *
-     * @return The size.
-     */
-    public int size() {
-        return size;
-    }
-
-    /**
-     * <p>Retrieve the stored key.</p>
-     *
-     * @param key The search key, can be null.
-     * @return The stored key or null.
-     */
-    public abstract E getKey(E key);
+public abstract class AbstractSet<E> extends AbstractList<E> implements Cloneable {
 
     /**
      * <p>Find the entry in the set.</p>
@@ -53,21 +35,6 @@ public abstract class AbstractSet<E> implements Cloneable {
      * @return The entry, or null.
      */
     public abstract SetEntry<E> getEntry(E key);
-
-    /**
-     * <p>Add key to the set.</p>
-     * <p>Assumption is that key is not yet present.</p>
-     *
-     * @param key The key, can be null.
-     */
-    public abstract void putKey(E key);
-
-    /**
-     * <p>Remove the key from the set.</p>
-     *
-     * @param key The key, can be null.
-     */
-    public abstract void remove(E key);
 
     /**
      * <p>Retrieve the last entry.</p>
@@ -98,11 +65,6 @@ public abstract class AbstractSet<E> implements Cloneable {
      * @return The successor, can be null.
      */
     public abstract SetEntry<E> successor(SetEntry<E> s);
-
-    /**
-     * <p>Clear the set.</p>
-     */
-    public abstract void clear();
 
     /***********************************************************/
     /* Bootstraped Methods                                     */
@@ -172,7 +134,7 @@ public abstract class AbstractSet<E> implements Cloneable {
         res.reinitialize();
         for (SetEntry<E> entry = getFirstEntry();
              entry != null; entry = successor(entry))
-            res.putKey(entry.key);
+            res.add(entry.key);
         return res;
     }
 

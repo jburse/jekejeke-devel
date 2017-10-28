@@ -80,7 +80,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      *
      * @param key The key, can be null.
      */
-    public void putKey(E key) {
+    public void add(E key) {
         int i = index(key);
 
         SetHashEntry<E> e = new SetHashEntry<E>(key);

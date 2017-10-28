@@ -90,7 +90,7 @@ public final class SetTree<E> extends AbstractSet<E> {
      *
      * @param key The key, can be null.
      */
-    public void putKey(E key) {
+    public void add(E key) {
         SetTreeEntry<E> p = root;
         SetTreeEntry<E> b = null;
         int k = 0;

@@ -54,7 +54,7 @@ final class LockRead extends AbstractLock {
                 throw new IllegalStateException("alread_locked");
             while (parent.write.otherWriter(thread))
                 parent.wait();
-            set.putKey(thread);
+            set.add(thread);
         }
     }
 
@@ -70,7 +70,7 @@ final class LockRead extends AbstractLock {
             if (set.getKey(thread) != null)
                 throw new IllegalStateException("alread_locked");
             if (!parent.write.otherWriter(thread)) {
-                set.putKey(thread);
+                set.add(thread);
                 return true;
             } else {
                 return false;
@@ -96,7 +96,7 @@ final class LockRead extends AbstractLock {
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                set.putKey(thread);
+                set.add(thread);
                 return true;
             } else {
                 return false;
