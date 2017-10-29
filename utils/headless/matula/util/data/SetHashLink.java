@@ -78,9 +78,8 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set.</p>
+     * <p>Add key to the set at end.</p>
      * <p>Assumption is that key is not yet present.</p>
-     * <p>Entry is created at the bottom.</p>
      *
      * @param key The key, can be null.
      */
@@ -105,13 +104,12 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set.</p>
+     * <p>Add key to the set at beginning.</p>
      * <p>Assumption is that key is not yet present.</p>
-     * <p>Entry is created at the top.</p>
      *
      * @param key The key.
      */
-    public void putKeyFirst(E key) {
+    public void addFirst(E key) {
         int i = index(key);
 
         SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);

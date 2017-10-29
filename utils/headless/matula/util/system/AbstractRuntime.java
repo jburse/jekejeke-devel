@@ -37,15 +37,15 @@ public abstract class AbstractRuntime {
 
     /* initialize the primitives */
     static {
-        primitive.put(Character.TYPE.getName(), Character.TYPE);
-        primitive.put(Byte.TYPE.getName(), Byte.TYPE);
-        primitive.put(Short.TYPE.getName(), Short.TYPE);
-        primitive.put(Integer.TYPE.getName(), Integer.TYPE);
-        primitive.put(Long.TYPE.getName(), Long.TYPE);
-        primitive.put(Float.TYPE.getName(), Float.TYPE);
-        primitive.put(Double.TYPE.getName(), Double.TYPE);
-        primitive.put(Boolean.TYPE.getName(), Boolean.TYPE);
-        primitive.put(Void.TYPE.getName(), Void.TYPE);
+        primitive.add(Character.TYPE.getName(), Character.TYPE);
+        primitive.add(Byte.TYPE.getName(), Byte.TYPE);
+        primitive.add(Short.TYPE.getName(), Short.TYPE);
+        primitive.add(Integer.TYPE.getName(), Integer.TYPE);
+        primitive.add(Long.TYPE.getName(), Long.TYPE);
+        primitive.add(Float.TYPE.getName(), Float.TYPE);
+        primitive.add(Double.TYPE.getName(), Double.TYPE);
+        primitive.add(Boolean.TYPE.getName(), Boolean.TYPE);
+        primitive.add(Void.TYPE.getName(), Void.TYPE);
     }
 
     /**

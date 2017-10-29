@@ -120,6 +120,16 @@ public final class SetTree<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Add key to the set at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key, can be null.
+     */
+    public void addFirst(E key) {
+        throw new IllegalArgumentException("not supported");
+    }
+
+    /**
      * <p>Remove the key from the set.</p>
      *
      * @param key The key.

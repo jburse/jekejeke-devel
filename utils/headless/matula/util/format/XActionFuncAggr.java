@@ -108,7 +108,7 @@ public final class XActionFuncAggr extends XActionFunc {
         if (entry != null) {
             entry.value = f;
         } else {
-            funcs.put(s, f);
+            funcs.add(s, f);
         }
     }
 

@@ -26,7 +26,9 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractSet<E> extends AbstractList<E> implements Cloneable {
+public abstract class AbstractSet<E>
+        extends AbstractList<E>
+        implements Cloneable {
 
     /**
      * <p>Find the entry in the set.</p>
@@ -65,19 +67,6 @@ public abstract class AbstractSet<E> extends AbstractList<E> implements Cloneabl
      * @return The successor, can be null.
      */
     public abstract SetEntry<E> successor(SetEntry<E> s);
-
-    /***********************************************************/
-    /* Bootstraped Methods                                     */
-    /***********************************************************/
-
-    /**
-     * <p>Copy the set entries to an array.</p>
-     *
-     * @param target The array.
-     */
-    public void toArray(E[] target) {
-        toArray(target, 0);
-    }
 
     /**
      * <p>Copy the hash map entries to an array.</p>

@@ -86,19 +86,19 @@ public final class FlagAPI extends AbstractFlag {
      */
     static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.put(OP_FLAG_SYS_MASK, new FlagAPI(FLAG_SYS_MASK));
-        prologflags.put(OP_FLAG_SYS_DISP_INPUT, new FlagAPI(FLAG_SYS_DISP_INPUT));
-        prologflags.put(OP_FLAG_SYS_DISP_OUTPUT, new FlagAPI(FLAG_SYS_DISP_OUTPUT));
-        prologflags.put(OP_FLAG_SYS_DISP_ERROR, new FlagAPI(FLAG_SYS_DISP_ERROR));
-        prologflags.put(OP_FLAG_SYS_CUR_INPUT, new FlagAPI(FLAG_SYS_CUR_INPUT));
-        prologflags.put(OP_FLAG_SYS_CUR_OUTPUT, new FlagAPI(FLAG_SYS_CUR_OUTPUT));
-        prologflags.put(OP_FLAG_SYS_CUR_ERROR, new FlagAPI(FLAG_SYS_CUR_ERROR));
-        prologflags.put(OP_FLAG_SYS_ATTACHED_TO, new FlagAPI(FLAG_SYS_ATTACHED_TO));
-        prologflags.put(OP_FLAG_BASE_URL, new FlagAPI(FLAG_BASE_URL));
-        prologflags.put(OP_FLAG_SYS_LOCALE, new FlagAPI(FLAG_SYS_LOCALE));
-        prologflags.put(OP_FLAG_SYS_BELONGS_TO, new FlagAPI(FLAG_SYS_BELONGS_TO));
-        prologflags.put(OP_FLAG_SYS_CPU_COUNT, new FlagAPI(FLAG_SYS_CPU_COUNT));
-        prologflags.put(OP_FLAG_SYS_RUNTIME_VERSION, new FlagAPI(FLAG_SYS_RUNTIME_VERSION));
+        prologflags.add(OP_FLAG_SYS_MASK, new FlagAPI(FLAG_SYS_MASK));
+        prologflags.add(OP_FLAG_SYS_DISP_INPUT, new FlagAPI(FLAG_SYS_DISP_INPUT));
+        prologflags.add(OP_FLAG_SYS_DISP_OUTPUT, new FlagAPI(FLAG_SYS_DISP_OUTPUT));
+        prologflags.add(OP_FLAG_SYS_DISP_ERROR, new FlagAPI(FLAG_SYS_DISP_ERROR));
+        prologflags.add(OP_FLAG_SYS_CUR_INPUT, new FlagAPI(FLAG_SYS_CUR_INPUT));
+        prologflags.add(OP_FLAG_SYS_CUR_OUTPUT, new FlagAPI(FLAG_SYS_CUR_OUTPUT));
+        prologflags.add(OP_FLAG_SYS_CUR_ERROR, new FlagAPI(FLAG_SYS_CUR_ERROR));
+        prologflags.add(OP_FLAG_SYS_ATTACHED_TO, new FlagAPI(FLAG_SYS_ATTACHED_TO));
+        prologflags.add(OP_FLAG_BASE_URL, new FlagAPI(FLAG_BASE_URL));
+        prologflags.add(OP_FLAG_SYS_LOCALE, new FlagAPI(FLAG_SYS_LOCALE));
+        prologflags.add(OP_FLAG_SYS_BELONGS_TO, new FlagAPI(FLAG_SYS_BELONGS_TO));
+        prologflags.add(OP_FLAG_SYS_CPU_COUNT, new FlagAPI(FLAG_SYS_CPU_COUNT));
+        prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagAPI(FLAG_SYS_RUNTIME_VERSION));
         return prologflags;
     }
 

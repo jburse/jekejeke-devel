@@ -98,7 +98,7 @@ public final class XPathExprComb extends XPathExpr {
         if (entry != null) {
             entry.value = e;
         } else {
-            exprs.put(s, e);
+            exprs.add(s, e);
         }
     }
 

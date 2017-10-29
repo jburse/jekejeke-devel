@@ -65,15 +65,23 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
     }
 
     /**
-     * <p>Add key to the set.</p>
+     * <p>Add key to the set at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
      * @param key The key, can be null.
      */
      public void add(E key) {
-         if (size >= table.length)
-             resize(table.length * 2);
-         table[size++] = key;
+         add(size, key);
+    }
+
+    /**
+     * <p>Add key to the set at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key, can be null.
+     */
+    public void addFirst(E key) {
+        add(0, key);
     }
 
     /**
@@ -112,7 +120,7 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
     }
 
     /***************************************************************/
-    /* More Routines                                               */
+    /* Modify Family                                               */
     /***************************************************************/
 
     /**
@@ -124,39 +132,12 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
     public void add(int i, E e) {
         if (size >= table.length)
             resize(table.length * 2);
-        if (i != size)
-            System.arraycopy(table, i, table, i + 1, size - i);
+        int k=size-i;
+        if (k != 0)
+            System.arraycopy(table, i, table, i + 1, k);
         table[i] = e;
         size++;
     }
-
-
-    /**
-     * <p>Returns the index of the first occurence.</p>
-     *
-     * @param o The object.
-     * @return The index, or -1.
-     */
-    public int indexOf(Object o) {
-        for (int i = 0; i < size; i++)
-            if (o != null ? o.equals(table[i]) : null == table[i])
-                return i;
-        return -1;
-    }
-
-    /**
-     * <p>Checks whether the object is contained in the list.</p>
-     *
-     * @param o The object.
-     * @return True if the object is contained in the list, otherwise false.
-     */
-    public boolean contains(Object o) {
-        return indexOf(o) >= 0;
-    }
-
-    /***************************************************************/
-    /* Remove Family                                               */
-    /***************************************************************/
 
     /**
      * <p>Remove an element at a position.</p>
@@ -189,16 +170,30 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
     }
 
     /***************************************************************/
-    /* Copy Family                                                 */
+    /* Find Family                                                 */
     /***************************************************************/
 
     /**
-     * <p>Copy elements to an array.</p>
+     * <p>Returns the index of the first element occurence.</p>
      *
-     * @param target The array.
+     * @param o The element.
+     * @return The index, or -1.
      */
-    public void toArray(E[] target) {
-        toArray(target, 0);
+    public int indexOf(Object o) {
+        for (int i = 0; i < size; i++)
+            if (o != null ? o.equals(table[i]) : null == table[i])
+                return i;
+        return -1;
+    }
+
+    /**
+     * <p>Checks whether the object is contained in the element list.</p>
+     *
+     * @param o The element.
+     * @return True if the element is contained in the list, otherwise false.
+     */
+    public boolean contains(Object o) {
+        return indexOf(o) >= 0;
     }
 
     /**
@@ -268,9 +263,9 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
      * @return The shallow copy.
      */
     public Object clone() {
-        ListArray<?> res;
+        ListArray<E> res;
         try {
-            res = (ListArray<?>) super.clone();
+            res = (ListArray<E>) super.clone();
         } catch (CloneNotSupportedException x) {
             throw new RuntimeException("internal error", x);
         }

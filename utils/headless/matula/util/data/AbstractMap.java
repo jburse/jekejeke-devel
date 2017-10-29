@@ -26,36 +26,13 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractMap<K, V> implements Cloneable {
-    public int size;
-
-    /**
-     * <p>Retrieve size.</p>
-     *
-     * @return The size.
-     */
-    public int size() {
-        return size;
-    }
-
-    /**
-     * <p>Find the key in the map.</p>
-     *
-     * @param key The key.
-     * @return The value, or null.
-     */
-    public abstract V get(K key);
-
-    /**
-     * <p>Find the key in the map.</p>
-     *
-     * @param key The key.
-     * @return The entry, or null.
-     */
-    public abstract MapEntry<K, V> getEntry(K key);
+public abstract class AbstractMap<K, V>
+        extends AbstractAssoc<K, V>
+        implements Cloneable {
 
     /**
      * <p>Add the key to the map.</p>
+     * <p>Assumption is that key is not yet present.</p>
      *
      * @param key   The key.
      * @param value The value.
@@ -64,11 +41,23 @@ public abstract class AbstractMap<K, V> implements Cloneable {
     public abstract MapEntry<K, V> put(K key, V value);
 
     /**
-     * <p>Remove the key from the map.</p>
+     * <p>Add the key to the map.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key   The key.
+     * @param value The value.
+     */
+    public void add(K key, V value) {
+        put(key,value);
+    }
+
+    /**
+     * <p>Find the key in the map.</p>
      *
      * @param key The key.
+     * @return The entry, or null.
      */
-    public abstract void remove(K key);
+    public abstract MapEntry<K, V> getEntry(K key);
 
     /**
      * <p>Retrieve the last entry.</p>
@@ -99,15 +88,6 @@ public abstract class AbstractMap<K, V> implements Cloneable {
      * @return The successor, can be null.
      */
     public abstract MapEntry<K, V> successor(MapEntry<K, V> s);
-
-    /**
-     * <p>Clear the map.</p>
-     */
-    public abstract void clear();
-
-    /***********************************************************/
-    /* Bootstraped Methods                                     */
-    /***********************************************************/
 
     /**
      * <p>Copy the hash map entries to an array.</p>
@@ -162,7 +142,6 @@ public abstract class AbstractMap<K, V> implements Cloneable {
         return buf.toString();
     }
 
-
     /**
      * <p>Create a shallow copy.</p>
      *
@@ -178,7 +157,7 @@ public abstract class AbstractMap<K, V> implements Cloneable {
         res.reinitialize();
         for (MapEntry<K, V> entry = getFirstEntry();
              entry != null; entry = successor(entry))
-            res.put(entry.key, entry.value);
+            res.add(entry.key, entry.value);
         return res;
     }
 

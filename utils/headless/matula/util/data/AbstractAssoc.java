@@ -24,7 +24,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractList<E> {
+public abstract class AbstractAssoc<K,V> {
     public int size;
 
     /**
@@ -37,56 +37,32 @@ public abstract class AbstractList<E> {
     }
 
     /**
-     * <p>Retrieve the stored key.</p>
+     * <p>Find the key in the map.</p>
      *
-     * @param key The search key, can be null.
-     * @return The stored key or null.
+     * @param key The key.
+     * @return The value, or null.
      */
-    public abstract E getKey(E key);
+    public abstract V get(K key);
 
     /**
-     * <p>Add key to the set at end.</p>
+     * <p>Add the key to the map.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key The key, can be null.
+     * @param key   The key.
+     * @param value The value.
      */
-    public abstract void add(E key);
+    public abstract void add(K key, V value);
 
     /**
-     * <p>Add key to the set at beginning.</p>
-     * <p>Assumption is that key is not yet present.</p>
+     * <p>Remove the key from the map.</p>
      *
-     * @param key The key, can be null.
+     * @param key The key.
      */
-    public abstract void addFirst(E key);
+    public abstract void remove(K key);
 
     /**
-     * <p>Remove the key from the set.</p>
-     *
-     * @param key The key, can be null.
-     */
-    public abstract void remove(E key);
-
-    /**
-     * <p>Clear the set.</p>
+     * <p>Clear the map.</p>
      */
     public abstract void clear();
-
-    /**
-     * <p>Copy elements to an array.</p>
-     *
-     * @param target The array.
-     */
-    public void toArray(E[] target) {
-        toArray(target, 0);
-    }
-
-    /**
-     * <p>Copy the hash map entries to an array.</p>
-     *
-     * @param target The array.
-     * @param pos    The start index.
-     */
-    public abstract void toArray(E[] target, int pos);
 
 }

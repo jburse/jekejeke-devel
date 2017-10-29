@@ -86,30 +86,30 @@ public final class Flag extends AbstractFlag {
      */
     static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.put("sys_choice_point", new Flag(FLAG_SYS_CHOICE_POINT));
-        prologflags.put("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
-        prologflags.put("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
-        prologflags.put("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
-        prologflags.put("sys_body_convert", new Flag(FLAG_SYS_BODY_CONVERT));
-        prologflags.put("sys_clause_expand", new Flag(FLAG_SYS_CLAUSE_EXPAND));
-        prologflags.put("sys_clause_index", new Flag(FLAG_SYS_CLAUSE_INDEX));
-        prologflags.put("bounded", new Flag(FLAG_BOUNDED));
-        prologflags.put("integer_rounding_function", new Flag(FLAG_INTEGER_ROUNDING_FUNCTION));
-        prologflags.put("char_conversion", new Flag(FLAG_CHAR_CONVERSION));
-        prologflags.put("max_arity", new Flag(FLAG_MAX_ARITY));
-        prologflags.put(OP_FLAG_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
-        prologflags.put(OP_FLAG_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
-        prologflags.put("max_code", new Flag(FLAG_MAX_CODE));
-        prologflags.put("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
-        prologflags.put("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
-        prologflags.put(OP_FLAG_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
-        prologflags.put(OP_FLAG_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
-        prologflags.put("sys_variables", new Flag(FLAG_SYS_VARIABLES));
-        prologflags.put("sys_choices", new Flag(FLAG_SYS_CHOICES));
-        prologflags.put("dialect", new Flag(FLAG_DIALECT));
-        prologflags.put("version_data", new Flag(FLAG_VERSION_DATA));
-        prologflags.put("sys_random", new Flag(FLAG_SYS_RANDOM));
-        prologflags.put("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
+        prologflags.add("sys_choice_point", new Flag(FLAG_SYS_CHOICE_POINT));
+        prologflags.add("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
+        prologflags.add("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
+        prologflags.add("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
+        prologflags.add("sys_body_convert", new Flag(FLAG_SYS_BODY_CONVERT));
+        prologflags.add("sys_clause_expand", new Flag(FLAG_SYS_CLAUSE_EXPAND));
+        prologflags.add("sys_clause_index", new Flag(FLAG_SYS_CLAUSE_INDEX));
+        prologflags.add("bounded", new Flag(FLAG_BOUNDED));
+        prologflags.add("integer_rounding_function", new Flag(FLAG_INTEGER_ROUNDING_FUNCTION));
+        prologflags.add("char_conversion", new Flag(FLAG_CHAR_CONVERSION));
+        prologflags.add("max_arity", new Flag(FLAG_MAX_ARITY));
+        prologflags.add(OP_FLAG_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
+        prologflags.add(OP_FLAG_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
+        prologflags.add("max_code", new Flag(FLAG_MAX_CODE));
+        prologflags.add("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
+        prologflags.add("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
+        prologflags.add(OP_FLAG_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
+        prologflags.add(OP_FLAG_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
+        prologflags.add("sys_variables", new Flag(FLAG_SYS_VARIABLES));
+        prologflags.add("sys_choices", new Flag(FLAG_SYS_CHOICES));
+        prologflags.add("dialect", new Flag(FLAG_DIALECT));
+        prologflags.add("version_data", new Flag(FLAG_VERSION_DATA));
+        prologflags.add("sys_random", new Flag(FLAG_SYS_RANDOM));
+        prologflags.add("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
         return prologflags;
     }
 

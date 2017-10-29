@@ -75,7 +75,7 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set.</p>
+     * <p>Add key to the set at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
      * @param key The key, can be null.
@@ -93,6 +93,16 @@ public final class SetHash<E> extends AbstractSet<E> {
 
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
+    }
+
+    /**
+     * <p>Add key to the set at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key, can be null.
+     */
+    public void addFirst(E key) {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**
