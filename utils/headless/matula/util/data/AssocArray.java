@@ -24,13 +24,12 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class AssocArray<K,V>
-        extends AbstractAssoc<K,V>
+public class AssocArray<K, V>
+        extends AbstractAssoc<K, V>
         implements Cloneable {
     public static final int MIN_SIZE = 2;
 
-    public Object[] keys = new Object[MIN_SIZE];
-    public Object[] values = new Object[MIN_SIZE];
+    public Object[] kvs = new Object[2 * MIN_SIZE];
 
     /**
      * <p>Find the key in the map.</p>
@@ -40,7 +39,7 @@ public class AssocArray<K,V>
      */
     public V get(K key) {
         int i = indexOf(key);
-        return (i != -1 ? getValue(i) : null);
+        return (i >= 0 ? getValue(i) : null);
     }
 
     /**
@@ -51,10 +50,11 @@ public class AssocArray<K,V>
      * @param value The value.
      */
     public void add(K key, V value) {
-        if (size >= keys.length)
-            resize(keys.length * 2);
-        keys[size] = key;
-        values[size++]=value;
+        if (size >= kvs.length / 2)
+            resize(kvs.length);
+        kvs[2 * size] = key;
+        kvs[2 * size + 1] = value;
+        size++;
     }
 
     /**
@@ -63,9 +63,32 @@ public class AssocArray<K,V>
      * @param key The key.
      */
     public void remove(K key) {
-        int k = indexOf(key);
-        if (k >= 0)
-            remove(k);
+        int i = indexOf(key);
+        if (i < 0)
+            return;
+
+        int k = size - i - 1;
+        if (k > 0)
+            System.arraycopy(kvs, 2 * i + 2, kvs, 2 * i, 2 * k);
+        --size;
+        kvs[2 * size] = null;
+        kvs[2 * size + 1] = null;
+        if (size < kvs.length / 8 && kvs.length / 4 > MIN_SIZE)
+            resize(kvs.length / 4);
+    }
+
+    /**
+     * <p>Remove an element at a position.</p>
+     *
+     * @param i The index.
+     */
+    public void removeEntry(int i) {
+        int k = size - i - 1;
+        if (k > 0)
+            System.arraycopy(kvs, 2 * i + 2, kvs, 2 * i, 2 * k);
+        --size;
+        kvs[2 * size] = null;
+        kvs[2 * size + 1] = null;
     }
 
     /***************************************************************/
@@ -75,38 +98,19 @@ public class AssocArray<K,V>
     /**
      * <p>Add an element at a position.</p>
      *
-     * @param i The index.
+     * @param i     The index.
      * @param key   The key.
      * @param value The value.
      */
     public void add(int i, K key, V value) {
-        if (size >= keys.length)
-            resize(keys.length * 2);
-        int k=size-i;
-        if (k != 0) {
-            System.arraycopy(keys, i, keys, i + 1, k);
-            System.arraycopy(values, i, values, i + 1, k);
-        }
-        keys[i] = key;
-        values[i]=value;
+        if (size >= kvs.length / 2)
+            resize(kvs.length);
+        int k = size - i;
+        if (k != 0)
+            System.arraycopy(kvs, 2 * i, kvs, 2 * i + 2, 2 * k);
+        kvs[2 * i] = key;
+        kvs[2 * i + 1] = value;
         size++;
-    }
-
-    /**
-     * <p>Remove an element at a position.</p>
-     *
-     * @param i The index.
-     */
-    public void remove(int i) {
-        int k = size - i - 1;
-        if (k > 0) {
-            System.arraycopy(keys, i + 1, keys, i, k);
-            System.arraycopy(values, i + 1, values, i, k);
-        }
-        keys[--size] = null;
-        values[size] = null;
-        if (size < keys.length / 4 && keys.length / 2 > MIN_SIZE)
-            resize(keys.length / 2);
     }
 
     /**
@@ -115,14 +119,13 @@ public class AssocArray<K,V>
     public void clear() {
         if (size == 0)
             return;
-        if (keys.length != MIN_SIZE) {
-            keys = new Object[MIN_SIZE];
-            values = new Object[MIN_SIZE];
+        if (kvs.length != 2 * MIN_SIZE) {
+            kvs = new Object[2 * MIN_SIZE];
         } else {
             int n = Math.min(size, MIN_SIZE);
             for (int i = 0; i < n; i++) {
-                keys[i] = null;
-                values[i] = null;
+                kvs[2 * i] = null;
+                kvs[2 * i + 1] = null;
             }
         }
         size = 0;
@@ -139,7 +142,7 @@ public class AssocArray<K,V>
      * @return The key.
      */
     public K getKey(int i) {
-        return (K) keys[i];
+        return (K) kvs[2 * i];
     }
 
     /**
@@ -149,7 +152,7 @@ public class AssocArray<K,V>
      * @return The value.
      */
     public V getValue(int i) {
-        return (V) values[i];
+        return (V) kvs[2 * i + 1];
     }
 
     /**
@@ -159,7 +162,7 @@ public class AssocArray<K,V>
      * @param e The key.
      */
     public void setKey(int i, K e) {
-        keys[i] = e;
+        kvs[2 * i] = e;
     }
 
     /**
@@ -169,7 +172,7 @@ public class AssocArray<K,V>
      * @param e The value.
      */
     public void setValue(int i, V e) {
-        values[i] = e;
+        kvs[2 * i + 1] = e;
     }
 
     /***************************************************************/
@@ -184,7 +187,7 @@ public class AssocArray<K,V>
      */
     public int indexOf(Object o) {
         for (int i = 0; i < size; i++)
-            if (o != null ? o.equals(keys[i]) : null == keys[i])
+            if (o != null ? o.equals(kvs[2 * i]) : null == kvs[2 * i])
                 return i;
         return -1;
     }
@@ -207,10 +210,10 @@ public class AssocArray<K,V>
      * <p>Resize the list array.</p>
      */
     public void resize() {
-        int len = keys.length;
+        int len = kvs.length / 2;
         while (size < len / 4 && len / 2 > MIN_SIZE)
             len = len / 2;
-        if (len != keys.length)
+        if (len != kvs.length / 2)
             resize(len);
     }
 
@@ -220,14 +223,10 @@ public class AssocArray<K,V>
      * @param s The new size.
      */
     private void resize(int s) {
-        Object[] newobs = new Object[s];
-        int k = Math.min(s, keys.length);
-        System.arraycopy(keys, 0, newobs, 0, k);
-        keys = newobs;
-
-        newobs = new Object[s];
-        System.arraycopy(values, 0, newobs, 0, k);
-        values = newobs;
+        Object[] newobs = new Object[2 * s];
+        int k = Math.min(s, kvs.length / 2);
+        System.arraycopy(kvs, 0, newobs, 0, 2 * k);
+        kvs = newobs;
     }
 
     /***************************************************************/
@@ -269,10 +268,8 @@ public class AssocArray<K,V>
         } catch (CloneNotSupportedException x) {
             throw new RuntimeException("internal error", x);
         }
-        res.keys = new Object[keys.length];
-        System.arraycopy(keys, 0, res.keys, 0, keys.length);
-        res.values = new Object[values.length];
-        System.arraycopy(values, 0, res.values, 0, values.length);
+        res.kvs = new Object[kvs.length];
+        System.arraycopy(kvs, 0, res.kvs, 0, kvs.length);
         return res;
     }
 

@@ -37,7 +37,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      * <p>Create a set hash.</p>
      */
     public SetHash() {
-        reinitialize();
+        reinitialize(null);
     }
 
     /**
@@ -281,11 +281,16 @@ public final class SetHash<E> extends AbstractSet<E> {
     /***************************************************************/
 
     /**
-     * Reset to initial default state.  Called by clone and readObject.
+     * Reset to initial default state.
+     *
+     * @param other The other abstract set, or null.
      */
-    void reinitialize() {
-        super.reinitialize();
-        table = new SetHashEntry[MIN_SIZE];
+    void reinitialize(AbstractSet other) {
+        super.reinitialize(other);
+        int len = MIN_SIZE;
+        while (other != null && other.size() > len * 3 / 4)
+            len = len * 2;
+        table = new SetHashEntry[len];
     }
 
 }

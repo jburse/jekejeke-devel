@@ -39,7 +39,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
      */
     public MapTree(Comparator<K> c) {
         comparator = c;
-        reinitialize();
+        reinitialize(null);
     }
 
     /**
@@ -437,9 +437,11 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
 
     /**
      * Reset to initial default state.
+     *
+     * @param other The other abstract map, or null.
      */
-    void reinitialize() {
-        super.reinitialize();
+    void reinitialize(AbstractMap other) {
+        super.reinitialize(other);
         root = null;
     }
 

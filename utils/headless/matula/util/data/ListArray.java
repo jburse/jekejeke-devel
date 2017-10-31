@@ -61,7 +61,7 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
      */
     public E getKey(E key) {
         int i = indexOf(key);
-        return (i != -1 ? get(i) : null);
+        return (i >= 0 ? get(i) : null);
     }
 
     /**

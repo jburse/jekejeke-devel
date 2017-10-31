@@ -28,7 +28,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class MapHash<K, V> extends AbstractMap<K, V> {
+public class MapHash<K, V> extends AbstractMap<K, V> {
     private static final int MIN_SIZE = 2;
 
     MapHashEntry<K, V>[] table;
@@ -37,7 +37,7 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
      * <p>Create a map hash.</p>
      */
     public MapHash() {
-        reinitialize();
+        reinitialize(null);
     }
 
     /**
@@ -307,10 +307,15 @@ public final class MapHash<K, V> extends AbstractMap<K, V> {
 
     /**
      * Reset to initial default state.
+     *
+     * @param other The other abstract map, or null.
      */
-    void reinitialize() {
-        super.reinitialize();
-        table = new MapHashEntry[MIN_SIZE];
+    void reinitialize(AbstractMap other) {
+        super.reinitialize(other);
+        int len = MIN_SIZE;
+        while (other != null && other.size() > len * 3 / 4)
+            len = len * 2;
+        table = new MapHashEntry[len];
     }
 
 }

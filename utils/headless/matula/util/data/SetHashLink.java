@@ -40,7 +40,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * <p>Create a set hash link.</p>
      */
     public SetHashLink() {
-        reinitialize();
+        reinitialize(null);
     }
 
     /**
@@ -259,10 +259,15 @@ public class SetHashLink<E> extends AbstractSet<E> {
 
     /**
      * Reset to initial default state.  Called by clone and readObject.
+     *
+     * @param other The other abstract set, or null.
      */
-    void reinitialize() {
-        super.reinitialize();
-        table = new SetHashLinkEntry[MIN_SIZE];
+    void reinitialize(AbstractSet other) {
+        super.reinitialize(other);
+        int len = MIN_SIZE;
+        while (other != null && other.size() > len * 3 / 4)
+            len = len * 2;
+        table = new SetHashLinkEntry[len];
     }
 
 }
