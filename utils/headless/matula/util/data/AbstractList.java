@@ -89,4 +89,13 @@ public abstract class AbstractList<E> {
      */
     public abstract void toArray(E[] target, int pos);
 
+    /**
+     * Reset to initial default state.
+     *
+     * @param capa The ahead capacity.
+     */
+    void reinitialize(int capa) {
+        size = 0;
+    }
+
 }

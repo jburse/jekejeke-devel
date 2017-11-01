@@ -47,11 +47,23 @@ package matula.util.data;
 public class ListArray<E> extends AbstractList<E> implements Cloneable {
     public static final int MIN_SIZE = 2;
 
-    public Object[] table = new Object[MIN_SIZE];
+    public Object[] table;
 
-    /***************************************************************/
-    /* List API                                                    */
-    /***************************************************************/
+    /**
+     * <p>Create a list array.</p>
+     */
+    public ListArray() {
+        reinitialize(0);
+    }
+
+    /**
+     * <p>Create a list array.</p>
+     *
+     * @param capa The ahead capacity.
+     */
+    public ListArray(int capa) {
+        reinitialize(capa);
+    }
 
     /**
      * <p>Retrieve the stored key.</p>
@@ -70,8 +82,8 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
      *
      * @param key The key, can be null.
      */
-     public void add(E key) {
-         add(size, key);
+    public void add(E key) {
+        add(size, key);
     }
 
     /**
@@ -132,7 +144,7 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
     public void add(int i, E e) {
         if (size >= table.length)
             resize(table.length * 2);
-        int k=size-i;
+        int k = size - i;
         if (k != 0)
             System.arraycopy(table, i, table, i + 1, k);
         table[i] = e;
@@ -269,9 +281,25 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
         } catch (CloneNotSupportedException x) {
             throw new RuntimeException("internal error", x);
         }
-        res.table = new Object[table.length];
-        System.arraycopy(table, 0, res.table, 0, table.length);
+        res.reinitialize(size());
+        if (size() > 0) {
+            System.arraycopy(table, 0, res.table, 0, size());
+            res.size = size();
+        }
         return res;
+    }
+
+    /**
+     * Reset to initial default state.
+     *
+     * @param capa The ahead capacity.
+     */
+    void reinitialize(int capa) {
+        super.reinitialize(capa);
+        int len = MIN_SIZE;
+        while (capa > len)
+            len = len * 2;
+        table = new Object[len];
     }
 
 }

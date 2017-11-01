@@ -39,7 +39,7 @@ public final class SetTree<E> extends AbstractSet<E> {
      */
     public SetTree(Comparator<E> c) {
         comparator = c;
-        reinitialize(null);
+        reinitialize(0);
     }
 
     /**
@@ -441,12 +441,12 @@ public final class SetTree<E> extends AbstractSet<E> {
     /***************************************************************/
 
     /**
-     * Reset to initial default state.  Called by clone and readObject.
+     * Reset to initial default state.
      *
-     * @param other The other abstract set, or null.
+     * @param capa The ahead capacity.
      */
-    void reinitialize(AbstractSet other) {
-        super.reinitialize(other);
+    void reinitialize(int capa) {
+        super.reinitialize(capa);
         root = null;
     }
 

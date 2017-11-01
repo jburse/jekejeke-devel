@@ -40,7 +40,16 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * <p>Create a set hash link.</p>
      */
     public SetHashLink() {
-        reinitialize(null);
+        reinitialize(0);
+    }
+
+    /**
+     * <p>Create a set hash link.</p>
+     *
+     * @param capa The ahead capacity.
+     */
+    public SetHashLink(int capa) {
+        reinitialize(capa);
     }
 
     /**
@@ -258,14 +267,14 @@ public class SetHashLink<E> extends AbstractSet<E> {
     /***************************************************************/
 
     /**
-     * Reset to initial default state.  Called by clone and readObject.
+     * Reset to initial default state.
      *
-     * @param other The other abstract set, or null.
+     * @param capa The ahead capacity.
      */
-    void reinitialize(AbstractSet other) {
-        super.reinitialize(other);
+    void reinitialize(int capa) {
+        super.reinitialize(capa);
         int len = MIN_SIZE;
-        while (other != null && other.size() > len * 3 / 4)
+        while (capa > len * 3 / 4)
             len = len * 2;
         table = new SetHashLinkEntry[len];
     }

@@ -120,20 +120,11 @@ public abstract class AbstractSet<E>
         } catch (CloneNotSupportedException x) {
             throw new RuntimeException("internal error", x);
         }
-        res.reinitialize(this);
+        res.reinitialize(size());
         for (SetEntry<E> entry = getFirstEntry();
              entry != null; entry = successor(entry))
             res.add(entry.key);
         return res;
-    }
-
-    /**
-     * Reset to initial default state.
-     *
-     * @param other The other abstract set, or null.
-     */
-    void reinitialize(AbstractSet other) {
-        size = 0;
     }
 
 }

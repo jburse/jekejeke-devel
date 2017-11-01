@@ -65,4 +65,13 @@ public abstract class AbstractAssoc<K,V> {
      */
     public abstract void clear();
 
+    /**
+     * Reset to initial default state.
+     *
+     * @param capa The ahead capacity.
+     */
+    void reinitialize(int capa) {
+        size = 0;
+    }
+
 }

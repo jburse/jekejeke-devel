@@ -29,7 +29,23 @@ public class AssocArray<K, V>
         implements Cloneable {
     public static final int MIN_SIZE = 2;
 
-    public Object[] kvs = new Object[2 * MIN_SIZE];
+    public Object[] kvs;
+
+    /**
+     * <p>Create an assoc array.</p>
+     */
+    public AssocArray() {
+        reinitialize(0);
+    }
+
+    /**
+     * <p>Create an assoc array.</p>
+     *
+     * @param capa The ahead capacity.
+     */
+    public AssocArray(int capa) {
+        reinitialize(capa);
+    }
 
     /**
      * <p>Find the key in the map.</p>
@@ -268,9 +284,25 @@ public class AssocArray<K, V>
         } catch (CloneNotSupportedException x) {
             throw new RuntimeException("internal error", x);
         }
-        res.kvs = new Object[kvs.length];
-        System.arraycopy(kvs, 0, res.kvs, 0, kvs.length);
+        res.reinitialize(size());
+        if (size() > 0) {
+            System.arraycopy(kvs, 0, res.kvs, 0, 2*size());
+            res.size=size();
+        }
         return res;
+    }
+
+    /**
+     * Reset to initial default state.
+     *
+     * @param capa The ahead capacity.
+     */
+    void reinitialize(int capa) {
+        super.reinitialize(capa);
+        int len = MIN_SIZE;
+        while (capa > len)
+            len = len * 2;
+        kvs = new Object[2*len];
     }
 
 }

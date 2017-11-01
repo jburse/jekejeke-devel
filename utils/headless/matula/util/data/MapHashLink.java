@@ -37,7 +37,16 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * <p>Create a map hash link.</p>
      */
     public MapHashLink() {
-        reinitialize(null);
+        reinitialize(0);
+    }
+
+    /**
+     * <p>Create a map hash link.</p>
+     *
+     * @param capa The ahead capacity.
+     */
+    public MapHashLink(int capa) {
+        reinitialize(capa);
     }
 
     /**
@@ -263,12 +272,12 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
     /**
      * Reset to initial default state.
      *
-     * @param other The other abstract map, or null.
+     * @param capa The ahead capacity.
      */
-    void reinitialize(AbstractMap other) {
-        super.reinitialize(other);
+    void reinitialize(int capa) {
+        super.reinitialize(capa);
         int len = MIN_SIZE;
-        while (other != null && other.size() > len * 3 / 4)
+        while (capa > len * 3 / 4)
             len = len * 2;
         table = new MapHashLinkEntry[len];
     }

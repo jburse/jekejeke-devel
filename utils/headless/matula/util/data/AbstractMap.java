@@ -154,20 +154,11 @@ public abstract class AbstractMap<K, V>
         } catch (CloneNotSupportedException x) {
             throw new RuntimeException("internal error", x);
         }
-        res.reinitialize(this);
+        res.reinitialize(size());
         for (MapEntry<K, V> entry = getFirstEntry();
              entry != null; entry = successor(entry))
             res.add(entry.key, entry.value);
         return res;
-    }
-
-    /**
-     * Reset to initial default state.
-     *
-     * @param other The other abstract map, or null.
-     */
-    void reinitialize(AbstractMap other) {
-        size = 0;
     }
 
 }
