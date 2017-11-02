@@ -10,9 +10,7 @@
  * predicate is desired one has to explicitly call dynamic/1 or
  * thread_local/1 before asserting.
  *
- * The predicates clause_property/2, set_clause_property/2 and
- * reset_clause_property/2 allow inspecting and modifying clause
- * properties. A reference to a clause can be retrieved from a
+ * A reference to a clause can be retrieved from a
  * frame reference via the predicate frame_property/2.
  *
  * Warranty & Liability
@@ -64,39 +62,3 @@
 :- public assertz_opt/2.
 :- meta_predicate assertz_opt(-1,?).
 :- special(assertz_opt/2, 'SpecialClause', 1).
-
-/**
- * clause_property(R, P):
- * The predicate succeeds for the properties P of the clause referenced by R.
- */
-% clause_property(+Reference, -Property)
-% :- public clause_property/2.
-% clause_property(I, R) :- var(R), !,
-%    sys_clause_property(I, P),
-%    sys_member(R, P).
-% clause_property(I, R) :-
-%    functor(R, F, A),
-%    sys_clause_property_chk(I, F/A, P),
-%    sys_member(R, P).
-%
-% :- private sys_clause_property/2.
-% :- special(sys_clause_property/2, 'SpecialClause', 2).
-%
-% :- private sys_clause_property_chk/3.
-% :- special(sys_clause_property_chk/3, 'SpecialClause', 3).
-
-/**
- * set_clause_property(R, P):
- * The predicate assigns the property P to the clause referenced by R.
- */
-% set_clause_property(+Reference, +Property)
-% :- public set_clause_property/2.
-% :- special(set_clause_property/2, 'SpecialClause', 4).
-
-/**
- * reset_clause_property(R, P):
- * The predicate de-assigns the property P from the clause referenced by R.
- */
-% reset_clause_property(+Reference, +Property)
-% :- public reset_clause_property/2.
-% :- special(reset_clause_property/2, 'SpecialClause', 5).

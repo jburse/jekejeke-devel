@@ -2,18 +2,7 @@
  * The shape of the clause index depends on the call pattern history
  * of the predicate. We do not provide a programming interface to
  * selectively inspect the clause index. Instead the end-user can
- * dump the clause index for predicates in one go. Locking is used
- * so that no other thread can query or updated a shared predicate
- * during the dump. The following syntax is used to dump the
- * clause index:
- *
- * length=<len>: Gives the size of indexed clause set.
- * arg=<pos>: Gives the argument position that is indexed.
- * map=<size>: Gives the hash table size of the argument position.
- * <key>=: Gives the key and corresponding sub index.
- * hash=<index>: Gives the hash code module hash table size of the key.
- * nonguard: Gives the nonguard hash table miss fallback index.
- * guard: Gives the guard hash table miss fallback index.
+ * dump the clause index for predicates in one go.
  *
  * The detected call patterns can be read off from the detected argument
  * positions. The clause index need not follow a simple collection of
@@ -38,13 +27,27 @@
  * ?- dump(p/2).
  * -------- p/2 ---------
  * length=3
- * arg=0, map=4
- *   key=9, hash=1, length=1
- *   key=7, hash=3, length=2
- *     arg=1, map=4
- *       key=a, hash=1, length=1
- *       key=b, hash=2, length=1
- * Yes
+ * at=0
+ *   key=7, length=2
+ *     at=1
+ *       key=a, length=1
+ *       key=b, length=1
+ *   key=9, length=1
+ *
+ * Since release 1.2.5 of the Prolog runtime different data structures
+ * are used depending on a low and a high water mark. For small indexes
+ * a simple key-value pair list is used and no hash is computed. For
+ * large indexes a hash table is used.
+ *
+ * The following index attributes are shown during a clause index dump:
+ *
+ * length=<len>: Gives the size of indexed clause set.
+ * arg=<pos>: Gives the argument position that is indexed.
+ * map=<size>: Gives the hash table size of the argument position.
+ * <key>=: Gives the key and corresponding sub index.
+ * hash=<index>: Gives the hash code module hash table size of the key.
+ * nonguard: Gives the nonguard hash table miss fallback index.
+ * guard: Gives the guard hash table miss fallback index.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
