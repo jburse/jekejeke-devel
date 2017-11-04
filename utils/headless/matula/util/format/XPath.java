@@ -59,7 +59,7 @@ public final class XPath {
      */
     public void whereChild() {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILDREN);
-        cp.setExpr(new XPathExprComb(XPathExprComb.CONBINATION_AND));
+        cp.setExpr(new XPathExprComb(XPathExprComb.CONBINATION_PRED));
         cps.add(cp);
     }
 

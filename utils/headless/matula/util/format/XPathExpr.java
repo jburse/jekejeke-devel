@@ -47,4 +47,19 @@ public abstract class XPathExpr {
      */
     public abstract String toString();
 
+    /**
+     * <p>Lift this expression to a combination type.</p>
+     *
+     * @param c   The combination type.
+     * @return The lifted expression.
+     */
+    public XPathExprComb lift(int c) {
+        if (this instanceof XPathExprComb &&
+                ((XPathExprComb) this).getCombination() == c)
+            return (XPathExprComb) this;
+        XPathExprComb temp = new XPathExprComb(c);
+        temp.whereExpr(Integer.toString(0), this);
+        return temp;
+    }
+
 }

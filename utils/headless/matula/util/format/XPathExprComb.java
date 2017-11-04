@@ -31,8 +31,9 @@ import matula.util.regex.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XPathExprComb extends XPathExpr {
-    public static final int CONBINATION_AND = 0;
+    public static final int CONBINATION_PRED = 0;
     public static final int COMBINATION_OR = 1;
+    public static final int COMBINATION_AND = 2;
 
     private MapHashLink<String, XPathExpr> exprs = new MapHashLink<String, XPathExpr>();
     private int combination;
@@ -112,7 +113,7 @@ public final class XPathExprComb extends XPathExpr {
     boolean checkElement(DomElement e)
             throws ScannerError {
         switch (combination) {
-            case CONBINATION_AND:
+            case CONBINATION_PRED:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (!entry.value.checkElement(e))
@@ -126,6 +127,13 @@ public final class XPathExprComb extends XPathExpr {
                         return true;
                 }
                 return false;
+            case COMBINATION_AND:
+                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                     entry != null; entry = exprs.successor(entry)) {
+                    if (!entry.value.checkElement(e))
+                        return false;
+                }
+                return true;
             default:
                 throw new IllegalArgumentException("illegal combination");
         }
@@ -138,7 +146,7 @@ public final class XPathExprComb extends XPathExpr {
      */
     public String toString() {
         switch (combination) {
-            case CONBINATION_AND:
+            case CONBINATION_PRED:
                 StringBuilder buf = new StringBuilder();
                 boolean first = true;
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
@@ -154,29 +162,99 @@ public final class XPathExprComb extends XPathExpr {
                 }
                 return buf.toString();
             case COMBINATION_OR:
+                if (exprs.size() == 0)
+                    return "false";
                 buf = new StringBuilder();
                 first = true;
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (first) {
-                        if (!(entry.value instanceof XPathExprPrim))
+                        if (!isTerm(entry.value))
                             buf.append("(");
                         buf.append(entry.value.toString());
-                        if (!(entry.value instanceof XPathExprPrim))
+                        if (!isTerm(entry.value))
                             buf.append(")");
                         first = false;
                     } else {
                         buf.append(" or ");
-                        if (!(entry.value instanceof XPathExprPrim))
+                        if (!isTerm(entry.value))
                             buf.append("(");
                         buf.append(entry.value.toString());
-                        if (!(entry.value instanceof XPathExprPrim))
+                        if (!isTerm(entry.value))
+                            buf.append(")");
+                    }
+                }
+                return buf.toString();
+            case COMBINATION_AND:
+                if (exprs.size() == 0)
+                    return "true";
+                buf = new StringBuilder();
+                first = true;
+                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                     entry != null; entry = exprs.successor(entry)) {
+                    if (first) {
+                        if (!isSimple(entry.value))
+                            buf.append("(");
+                        buf.append(entry.value.toString());
+                        if (!isSimple(entry.value))
+                            buf.append(")");
+                        first = false;
+                    } else {
+                        buf.append(" and ");
+                        if (!isSimple(entry.value))
+                            buf.append("(");
+                        buf.append(entry.value.toString());
+                        if (!isSimple(entry.value))
                             buf.append(")");
                     }
                 }
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal combination");
+        }
+    }
+
+    /**
+     * <p>Check whether the given expression is a term.</p>
+     *
+     * @param expr The expression.
+     * @return True if the expression is term, otherwise false.
+     */
+    private static boolean isTerm(XPathExpr expr) {
+        if (isSimple(expr))
+            return true;
+        if (expr instanceof XPathExprComb)
+            return ((XPathExprComb) expr).getCombination() == COMBINATION_AND;
+        return false;
+    }
+
+    /**
+     * <p>Check whether the given expression is simple.</p>
+     *
+     * @param expr The expression.
+     * @return True if the expression is simple, otherwise false.
+     */
+    private static boolean isSimple(XPathExpr expr) {
+        if (expr instanceof XPathExprPrim)
+            return true;
+        if (expr instanceof XPathExprComb)
+            return ((XPathExprComb) expr).getExprs().size() == 0;
+        return false;
+    }
+
+    /**
+     * <p>Join with another combined expression.</p>
+     * <p>The other expressions is assumed of same combination type.</p>
+     *
+     * @param beta The second combined expression.
+     */
+    public void join(XPathExprComb beta) {
+        int n = getExprs().size();
+        MapHashLink<String, XPathExpr> exprs = beta.getExprs();
+        for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+             entry != null; entry = exprs.successor(entry)) {
+            whereExpr(Integer.toString(n), entry.value);
+            n++;
         }
     }
 
