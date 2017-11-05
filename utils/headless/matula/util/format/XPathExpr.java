@@ -37,7 +37,7 @@ public abstract class XPathExpr {
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      * @throws ScannerError Shit happens
      */
-    abstract boolean checkElement(DomElement e)
+    public abstract boolean checkElement(DomElement e)
             throws ScannerError;
 
     /**

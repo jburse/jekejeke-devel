@@ -125,7 +125,7 @@ public final class XPathExprPrim extends XPathExpr {
      * @param e The dom element.
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
-    boolean checkElement(DomElement e) throws ScannerError {
+    public boolean checkElement(DomElement e) throws ScannerError {
         switch (primitive) {
             case PRIMITIVE_NAME:
                 String val = first.getAttrOrCnst();

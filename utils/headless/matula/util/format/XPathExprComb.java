@@ -110,7 +110,7 @@ public final class XPathExprComb extends XPathExpr {
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      * @throws ScannerError Shit happens
      */
-    boolean checkElement(DomElement e)
+    public boolean checkElement(DomElement e)
             throws ScannerError {
         switch (combination) {
             case CONBINATION_PRED:
