@@ -34,37 +34,61 @@ public final class XPathExprPrim extends XPathExpr {
     public static final int PRIMITIVE_NAME = 0;
     public static final int PRIMITIVE_ATTR = 1;
 
-    private String keyorname;
-    private String value;
+    private XSelect first;
+    private XSelect second;
     private int primitive;
 
     /**
      * <p>>Create a new xpath primitive expression.</p>
      *
-     * @param n The name.
+     * @param f The first argument.
      * @param p The type of primitive.
      */
-    public XPathExprPrim(String n, int p) {
-        if (n == null)
-            throw new NullPointerException("name missing");
-        keyorname = n;
+    public XPathExprPrim(String f, int p) {
+        this(new XSelect(f, XSelect.SELECT_CONST), p);
+    }
+
+    /**
+     * <p>>Create a new xpath primitive expression.</p>
+     *
+     * @param f The first argument.
+     * @param s The second argument.
+     * @param p The type of primitive.
+     */
+    public XPathExprPrim(String f, String s, int p) {
+        this(new XSelect(f, XSelect.SELECT_ATTR),
+                new XSelect(s, XSelect.SELECT_CONST), p);
+    }
+
+    /**
+     * <p>>Create a new xpath primitive expression.</p>
+     *
+     * @param f The first argument.
+     * @param p The type of primitive.
+     */
+    public XPathExprPrim(XSelect f, int p) {
+        if (f == null)
+            throw new NullPointerException("first missing");
+        if (f.getSelect() != XSelect.SELECT_CONST)
+            throw new IllegalArgumentException("not const");
+        first = f;
         primitive = p;
     }
 
     /**
      * <p>>Create a new xpath primitive expression.</p>
      *
-     * @param k The key.
-     * @param v The value.
+     * @param f The first argument.
+     * @param s The second argument.
      * @param p The type of primitive.
      */
-    public XPathExprPrim(String k, String v, int p) {
-        if (k == null)
-            throw new NullPointerException("key missing");
-        if (v == null)
-            throw new NullPointerException("value missing");
-        keyorname = k;
-        value = v;
+    public XPathExprPrim(XSelect f, XSelect s, int p) {
+        if (f == null)
+            throw new NullPointerException("first missing");
+        if (s == null)
+            throw new NullPointerException("second missing");
+        first = f;
+        second = s;
         primitive = p;
     }
 
@@ -78,12 +102,21 @@ public final class XPathExprPrim extends XPathExpr {
     }
 
     /**
-     * <p>Retrieve the key or name.</p>
+     * <p>Retrieve the first argument.</p>
      *
-     * @return The key or name.
+     * @return The first argument.
      */
-    public String getKeyOrName() {
-        return keyorname;
+    public XSelect getFirst() {
+        return first;
+    }
+
+    /**
+     * <p>Retrieve the second argument.</p>
+     *
+     * @return The second argument.
+     */
+    public XSelect getSecond() {
+        return second;
     }
 
     /**
@@ -95,14 +128,14 @@ public final class XPathExprPrim extends XPathExpr {
     boolean checkElement(DomElement e) throws ScannerError {
         switch (primitive) {
             case PRIMITIVE_NAME:
-                if (!e.isName(keyorname))
+                String val = first.getAttrOrCnst();
+                if (!e.isName(val))
                     return false;
                 return true;
             case PRIMITIVE_ATTR:
-                String val = e.getAttr(keyorname);
-                if (val == null)
-                    throw new ScannerError(ERROR_UNKNOWN_ATTRIBUTE);
-                if (!value.equals(val))
+                val = first.eval(e);
+                String val2 = second.eval(e);
+                if (!val.equals(val2))
                     return false;
                 return true;
             default:
@@ -118,14 +151,12 @@ public final class XPathExprPrim extends XPathExpr {
     public String toString() {
         switch (primitive) {
             case PRIMITIVE_NAME:
-                return keyorname;
+                return first.getAttrOrCnst();
             case PRIMITIVE_ATTR:
                 StringBuilder buf = new StringBuilder();
-                buf.append("@");
-                buf.append(keyorname);
-                buf.append("=\'");
-                buf.append(value);
-                buf.append("\'");
+                buf.append(first.toString());
+                buf.append("=");
+                buf.append(second.toString());
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal primitive");

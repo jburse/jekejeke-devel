@@ -3,7 +3,7 @@ package matula.util.format;
 import matula.util.regex.ScannerError;
 
 /**
- * <p>The class represent an xpath select.</p>
+ * <p>The class represent an xselect.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,7 +36,7 @@ public final class XSelect {
     private int select;
 
     /**
-     * <p>>Create a new xpath select.</p>
+     * <p>>Create a new xselect.</p>
      *
      * @param a The attribute or variable.
      * @param s The type of select.
