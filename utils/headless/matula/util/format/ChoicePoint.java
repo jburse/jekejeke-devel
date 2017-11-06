@@ -102,8 +102,8 @@ public final class ChoicePoint {
      * @param k The key.
      * @param v The value.
      */
-    void whereAttr(String k, String v) {
-        expr.whereAttr(k, v);
+    void whereAttrObj(String k, Object v) {
+        expr.whereAttrObj(k, v);
     }
 
     /**

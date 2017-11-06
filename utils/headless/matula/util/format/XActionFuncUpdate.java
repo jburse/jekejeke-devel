@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 /**
  * <p>This class represents an xquery update function.</p>
  * </p>
@@ -31,7 +33,7 @@ public final class XActionFuncUpdate extends XActionFunc {
     public static final int UPDATE_ATTR = 1;
 
     private String keyorname;
-    private String value;
+    private XSelect value;
     private int update;
 
     /**
@@ -54,7 +56,18 @@ public final class XActionFuncUpdate extends XActionFunc {
      * @param v The value.
      * @param u The type of update.
      */
-    public XActionFuncUpdate(String k, String v, int u) {
+    public XActionFuncUpdate(String k, Object v, int u) {
+        this(k, new XSelect(v, XSelect.SELECT_CONST), u);
+    }
+
+    /**
+     * <p>>Create a new xquery update.</p>
+     *
+     * @param k The key.
+     * @param v The value.
+     * @param u The type of update.
+     */
+    public XActionFuncUpdate(String k, XSelect v, int u) {
         if (k == null)
             throw new NullPointerException("key missing");
         if (v == null)
@@ -68,14 +81,15 @@ public final class XActionFuncUpdate extends XActionFunc {
      * <p>Perform this xquery function on a dom element.</p>
      *
      * @param e The dom element.
+     * @throws ScannerError Shit happens.
      */
-    void updateElement(DomElement e) {
+    void updateElement(DomElement e) throws ScannerError {
         switch (update) {
             case UPDATE_NAME:
                 e.setName(keyorname);
                 break;
             case UPDATE_ATTR:
-                e.setAttr(keyorname, value);
+                e.setAttrObj(keyorname, value.evalElement(e));
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");
@@ -95,9 +109,8 @@ public final class XActionFuncUpdate extends XActionFunc {
                 StringBuilder buf = new StringBuilder();
                 buf.append("@");
                 buf.append(keyorname);
-                buf.append("=\"");
-                buf.append(value);
-                buf.append("\"");
+                buf.append("=");
+                buf.append(value.toString());
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");

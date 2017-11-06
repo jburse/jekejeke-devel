@@ -1,6 +1,7 @@
 package matula.util.format;
 
 import matula.util.data.ListArray;
+import matula.util.regex.ScannerError;
 
 /**
  * <p>This class provides an xaction.</p>
@@ -88,10 +89,30 @@ public final class XAction {
      * <p>Add an element attribute action.</p>
      *
      * @param k The key.
-     * @param v The value.
+     * @param v The String value.
      */
     public void calcAttr(String v, String k) {
-        acts.get(acts.size() - 1).calcAttr(v, k);
+        calcAttrObj(v, k);
+    }
+
+    /**
+     * <p>Add an element attribute action.</p>
+     *
+     * @param k The key.
+     * @param v The long value.
+     */
+    public void calcAttrLong(String v, long k) {
+        calcAttrObj(v, Long.toString(k));
+    }
+
+    /**
+     * <p>Add an element attribute action.</p>
+     *
+     * @param k The key.
+     * @param v The value.
+     */
+    public void calcAttrObj(String v, Object k) {
+        acts.get(acts.size() - 1).calcAttrObj(v, k);
     }
 
     /**
@@ -113,9 +134,10 @@ public final class XAction {
      *
      * @param e The dom element.
      * @throws InterruptedException Transaction was interrupted.
+     * @throws ScannerError Shit happens.
      */
     public void performActions(DomElement e)
-            throws InterruptedException {
+            throws InterruptedException, ScannerError {
         for (int i = 0; i < acts.size(); i++) {
             XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {

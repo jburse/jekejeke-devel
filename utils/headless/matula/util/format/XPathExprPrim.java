@@ -45,7 +45,7 @@ public final class XPathExprPrim extends XPathExpr {
      * @param p The type of primitive.
      */
     public XPathExprPrim(String f, int p) {
-        this(new XSelect(f, XSelect.SELECT_CONST), p);
+        this(new XSelect(f, XSelect.SELECT_ATTR), p);
     }
 
     /**
@@ -55,7 +55,7 @@ public final class XPathExprPrim extends XPathExpr {
      * @param s The second argument.
      * @param p The type of primitive.
      */
-    public XPathExprPrim(String f, String s, int p) {
+    public XPathExprPrim(String f, Object s, int p) {
         this(new XSelect(f, XSelect.SELECT_ATTR),
                 new XSelect(s, XSelect.SELECT_CONST), p);
     }
@@ -69,7 +69,7 @@ public final class XPathExprPrim extends XPathExpr {
     public XPathExprPrim(XSelect f, int p) {
         if (f == null)
             throw new NullPointerException("first missing");
-        if (f.getSelect() != XSelect.SELECT_CONST)
+        if (f.getSelect() != XSelect.SELECT_ATTR)
             throw new IllegalArgumentException("not const");
         first = f;
         primitive = p;
@@ -128,13 +128,13 @@ public final class XPathExprPrim extends XPathExpr {
     public boolean checkElement(DomElement e) throws ScannerError {
         switch (primitive) {
             case PRIMITIVE_NAME:
-                String val = first.getAttrOrCnst();
-                if (!e.isName(val))
+                String name = first.getAttr();
+                if (!e.isName(name))
                     return false;
                 return true;
             case PRIMITIVE_ATTR:
-                val = first.evalElement(e);
-                String val2 = second.evalElement(e);
+                Object val = first.evalElement(e);
+                Object val2 = second.evalElement(e);
                 if (!val.equals(val2))
                     return false;
                 return true;
@@ -151,7 +151,7 @@ public final class XPathExprPrim extends XPathExpr {
     public String toString() {
         switch (primitive) {
             case PRIMITIVE_NAME:
-                return first.getAttrOrCnst();
+                return first.getAttr();
             case PRIMITIVE_ATTR:
                 StringBuilder buf = new StringBuilder();
                 buf.append(first.toString());

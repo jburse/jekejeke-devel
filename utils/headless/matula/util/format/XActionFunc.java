@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 /**
  * <p>This class is the base class of xquery functions.</p>
  * </p>
@@ -33,7 +35,7 @@ public abstract class XActionFunc {
      *
      * @param e The dom element.
      */
-    abstract void updateElement(DomElement e);
+    abstract void updateElement(DomElement e) throws ScannerError;
 
     /**
      * <p>Convert this xquery function to a string.</p>

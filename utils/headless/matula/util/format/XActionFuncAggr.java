@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
 
 /**
  * <p>This class represents an xquery aggregate function.</p>
@@ -93,7 +94,7 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param k The key.
      * @param v The value.
      */
-    void calcAttr(String k, String v) {
+    void calcAttrObj(String k, Object v) {
         calcFunc(k, new XActionFuncUpdate(k, v, XActionFuncUpdate.UPDATE_ATTR));
     }
 
@@ -116,8 +117,9 @@ public final class XActionFuncAggr extends XActionFunc {
      * <p>Perform this xquery function on a dom element.</p>
      *
      * @param e The dom element.
+     * @throws ScannerError Shit happens.
      */
-    void updateElement(DomElement e) {
+    void updateElement(DomElement e) throws ScannerError {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             entry.value.updateElement(e);

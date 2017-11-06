@@ -84,7 +84,7 @@ public final class XPathExprComb extends XPathExpr {
      * @param k The key.
      * @param v The value.
      */
-    public void whereAttr(String k, String v) {
+    public void whereAttrObj(String k, Object v) {
         whereExpr(k, new XPathExprPrim(k, v, XPathExprPrim.PRIMITIVE_ATTR));
     }
 

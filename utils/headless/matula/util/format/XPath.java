@@ -99,10 +99,30 @@ public final class XPath {
      * <p>Add an element attribute predicate.</p>
      *
      * @param k The key.
-     * @param v The value.
+     * @param v The String value.
      */
     public void whereAttr(String k, String v) {
-        cps.get(cps.size() - 1).whereAttr(k, v);
+        whereAttrObj(k, v);
+    }
+
+    /**
+     * <p>Add an element attribute predicate.</p>
+     *
+     * @param k The key.
+     * @param v The long value.
+     */
+    public void whereAttrLong(String k, long v) {
+        whereAttrObj(k, Long.toString(v));
+    }
+
+    /**
+     * <p>Add an element attribute predicate.</p>
+     *
+     * @param k The key.
+     * @param v The value.
+     */
+    public void whereAttrObj(String k, Object v) {
+        cps.get(cps.size() - 1).whereAttrObj(k, v);
     }
 
     /**
