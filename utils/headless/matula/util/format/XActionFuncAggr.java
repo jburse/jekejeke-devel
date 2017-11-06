@@ -95,7 +95,8 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param v The value.
      */
     void calcAttrObj(String k, Object v) {
-        calcFunc(k, new XActionFuncUpdate(k, v, XActionFuncUpdate.UPDATE_ATTR));
+        XSelect xs = new XSelect(v, XSelect.SELECT_CONST);
+        calcFunc(k, new XActionFuncUpdate(k, xs, XActionFuncUpdate.UPDATE_ATTR));
     }
 
     /**

@@ -75,7 +75,8 @@ public final class XPathExprComb extends XPathExpr {
      * @param n The name.
      */
     public void whereName(String n) {
-        whereExpr(n, new XPathExprPrim(n, XPathExprPrim.PRIMITIVE_NAME));
+        XSelect first = new XSelect(n, XSelect.SELECT_ATTR);
+        whereExpr(n, new XPathExprPrim(first, XPathExprPrim.PRIMITIVE_NAME));
     }
 
     /**
@@ -85,7 +86,9 @@ public final class XPathExprComb extends XPathExpr {
      * @param v The value.
      */
     public void whereAttrObj(String k, Object v) {
-        whereExpr(k, new XPathExprPrim(k, v, XPathExprPrim.PRIMITIVE_ATTR));
+        XSelect first = new XSelect(k, XSelect.SELECT_ATTR);
+        XSelect second = new XSelect(v, XSelect.SELECT_CONST);
+        whereExpr(k, new XPathExprPrim(first, second, XPathExprPrim.PRIMITIVE_ATTR));
     }
 
     /**

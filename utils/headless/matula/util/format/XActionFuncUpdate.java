@@ -56,17 +56,6 @@ public final class XActionFuncUpdate extends XActionFunc {
      * @param v The value.
      * @param u The type of update.
      */
-    public XActionFuncUpdate(String k, Object v, int u) {
-        this(k, new XSelect(v, XSelect.SELECT_CONST), u);
-    }
-
-    /**
-     * <p>>Create a new xquery update.</p>
-     *
-     * @param k The key.
-     * @param v The value.
-     * @param u The type of update.
-     */
     public XActionFuncUpdate(String k, XSelect v, int u) {
         if (k == null)
             throw new NullPointerException("key missing");

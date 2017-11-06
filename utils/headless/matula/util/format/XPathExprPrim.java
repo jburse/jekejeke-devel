@@ -44,28 +44,6 @@ public final class XPathExprPrim extends XPathExpr {
      * @param f The first argument.
      * @param p The type of primitive.
      */
-    public XPathExprPrim(String f, int p) {
-        this(new XSelect(f, XSelect.SELECT_ATTR), p);
-    }
-
-    /**
-     * <p>>Create a new xpath primitive expression.</p>
-     *
-     * @param f The first argument.
-     * @param s The second argument.
-     * @param p The type of primitive.
-     */
-    public XPathExprPrim(String f, Object s, int p) {
-        this(new XSelect(f, XSelect.SELECT_ATTR),
-                new XSelect(s, XSelect.SELECT_CONST), p);
-    }
-
-    /**
-     * <p>>Create a new xpath primitive expression.</p>
-     *
-     * @param f The first argument.
-     * @param p The type of primitive.
-     */
     public XPathExprPrim(XSelect f, int p) {
         if (f == null)
             throw new NullPointerException("first missing");
