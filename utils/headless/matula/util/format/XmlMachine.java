@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
@@ -61,8 +62,8 @@ public class XmlMachine {
     private int top;
     private String type = VALUE_EMPTY;
     private int off;
-    private ListArray<String> attr = new ListArray<String>();
-    private ListArray<String> value = new ListArray<String>();
+    private AssocArray<String, String> kvs = new AssocArray<String, String>();
+    private String key;
     private int res = XmlMachine.RES_NONE;
     private int state = XmlMachine.STATE_NONE;
 
@@ -102,8 +103,7 @@ public class XmlMachine {
                 if (ch == '<') {
                     state = XmlMachine.STATE_TYPE;
                     off = top + 1;
-                    attr.clear();
-                    value.clear();
+                    kvs.clear();
                 } else if (ch == -1) {
                     res = XmlMachine.RES_EOF;
                     return false;
@@ -233,25 +233,22 @@ public class XmlMachine {
                 if (ch == -1) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= ' ') {
-                    String temp = new String(text, off, top - off);
-                    attr.add(temp);
+                    key = new String(text, off, top - off);
                     state = XmlMachine.STATE_BEFORE;
                 } else if (ch == '/') {
                     if (top == off) {
                         /* */
                     } else {
-                        String temp = new String(text, off, top - off);
-                        attr.add(temp);
+                        key = new String(text, off, top - off);
                         state = XmlMachine.STATE_BEFORE;
                     }
                 } else if (ch == '=') {
-                    String temp = new String(text, off, top - off);
-                    attr.add(temp);
+                    key = new String(text, off, top - off);
                     state = XmlMachine.STATE_AFTER;
                 } else if (ch == '>') {
-                    String temp = new String(text, off, top - off);
-                    attr.add(temp);
-                    value.add(VALUE_EMPTY);
+                    key = new String(text, off, top - off);
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
@@ -265,14 +262,16 @@ public class XmlMachine {
                 } else if (ch <= ' ') {
                     /* */
                 } else if (ch == '>') {
-                    value.add(VALUE_EMPTY);
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
                 } else if (ch == '=') {
                     state = XmlMachine.STATE_AFTER;
                 } else {
-                    value.add(VALUE_EMPTY);
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
                 }
@@ -283,7 +282,8 @@ public class XmlMachine {
                 } else if (ch <= ' ') {
                     /* */
                 } else if (ch == '>') {
-                    value.add(VALUE_EMPTY);
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
@@ -303,11 +303,13 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= ' ') {
                     String temp = new String(text, off, top - off);
-                    value.add(temp);
+                    kvs.add(key, temp);
+                    key = null;
                     state = XmlMachine.STATE_BLANK;
                 } else if (ch == '>') {
                     String temp = new String(text, off, top - off);
-                    value.add(temp);
+                    kvs.add(key, temp);
+                    key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
@@ -321,7 +323,8 @@ public class XmlMachine {
                 } else if (ch == '"') {
                     fill(ch);
                     String temp = new String(text, off, top - off);
-                    value.add(temp);
+                    kvs.add(key, temp);
+                    key = null;
                     state = XmlMachine.STATE_BLANK;
                     return true;
                 } else {
@@ -334,7 +337,8 @@ public class XmlMachine {
                 } else if (ch == '\'') {
                     fill(ch);
                     String temp = new String(text, off, top - off);
-                    value.add(temp);
+                    kvs.add(key, temp);
+                    key = null;
                     state = XmlMachine.STATE_BLANK;
                     return true;
                 } else {
@@ -424,7 +428,7 @@ public class XmlMachine {
      * @return The number of attributes.
      */
     public int getAttrCount() {
-        return attr.size();
+        return kvs.size();
     }
 
     /**
@@ -435,7 +439,7 @@ public class XmlMachine {
      * @return The attribute name.
      */
     public String getAttr(int i) {
-        return attr.get(i);
+        return kvs.getKey(i);
     }
 
     /**
@@ -446,7 +450,7 @@ public class XmlMachine {
      * @return The attribute value.
      */
     public String getValueAt(int i) {
-        return value.get(i);
+        return kvs.getValue(i);
     }
 
     /**
@@ -457,7 +461,7 @@ public class XmlMachine {
      * @return The index, or -1.
      */
     public int indexAttr(String a) {
-        return indexAttr(attr, a);
+        return indexAttr(kvs, a);
     }
 
     /**
@@ -466,8 +470,8 @@ public class XmlMachine {
      * @param i The index.
      */
     public void removeAttrValue(int i) {
-        attr.remove(i);
-        value.remove(i);
+        kvs.removeEntry(i);
+        kvs.resize();
     }
 
     /**
@@ -479,7 +483,7 @@ public class XmlMachine {
      * @return The value or null if attribute is not present.
      */
     public String getValue(String a) {
-        int k = indexAttr(attr, a);
+        int k = indexAttr(kvs, a);
         if (k == -1) return null;
         return ForeignXml.sysTextUnescape(stripValue(getValueAt(k)));
     }
@@ -508,10 +512,10 @@ public class XmlMachine {
      * @param a The attribute.
      * @return The index, or -1.
      */
-    public static int indexAttr(ListArray<String> l, String a) {
+    public static <V> int indexAttr(AssocArray<String, V> l, String a) {
         int m = l.size();
         for (int i = 0; i < m; i++) {
-            String n = l.get(i);
+            String n = l.getKey(i);
             if (n.equalsIgnoreCase(a))
                 return i;
         }

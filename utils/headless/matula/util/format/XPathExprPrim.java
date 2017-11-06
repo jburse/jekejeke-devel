@@ -133,8 +133,8 @@ public final class XPathExprPrim extends XPathExpr {
                     return false;
                 return true;
             case PRIMITIVE_ATTR:
-                val = first.eval(e);
-                String val2 = second.eval(e);
+                val = first.evalElement(e);
+                String val2 = second.evalElement(e);
                 if (!val.equals(val2))
                     return false;
                 return true;

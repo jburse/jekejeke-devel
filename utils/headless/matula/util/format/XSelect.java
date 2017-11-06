@@ -73,7 +73,7 @@ public final class XSelect {
      * @return The value.
      * @throws ScannerError Shit happens.
      */
-    public String eval(DomElement d) throws ScannerError {
+    public String evalElement(DomElement d) throws ScannerError {
         String res;
         switch (getSelect()) {
             case XSelect.SELECT_ATTR:

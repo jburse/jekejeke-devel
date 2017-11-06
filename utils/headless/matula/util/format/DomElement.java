@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
@@ -36,8 +37,7 @@ public final class DomElement extends DomNode {
     private static final int LINE_WIDTH = 80;
 
     private String name = XmlMachine.VALUE_EMPTY;
-    private ListArray<String> attr = new ListArray<String>();
-    private ListArray<String> value = new ListArray<String>();
+    private AssocArray<String, Object> kvs = new AssocArray<String, Object>();
     private ListArray<DomNode> children = new ListArray<DomNode>();
 
     /**
@@ -87,20 +87,22 @@ public final class DomElement extends DomNode {
                     throw new ScannerError(DomReader.DOM_START_MISSING);
                 boolean closed = checkClosed(dr);
                 String type = dr.getType();
-                ListArray<String> as = new ListArray<String>();
-                ListArray<String> vs = new ListArray<String>();
+                AssocArray<String, Object> newkvs = new AssocArray<String, Object>();
                 for (int i = 0; i < dr.getAttrCount(); i++) {
-                    if (XmlMachine.indexAttr(as, dr.getAttr(i)) != -1)
+                    if (XmlMachine.indexAttr(newkvs, dr.getAttr(i)) != -1)
                         throw new ScannerError(DomReader.DOM_DUPLICATE_ATTRIBUTE);
-                    String val = dr.getValueAt(i);
-                    val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(val));
-                    as.add(dr.getAttr(i));
-                    vs.add(val);
+                    String valstr = dr.getValueAt(i);
+                    Object val;
+                    if (valstr.length() > 0 && Character.isDigit(valstr.codePointAt(0))) {
+                        val = Long.parseLong(valstr);
+                    } else {
+                        val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
+                    }
+                    newkvs.add(dr.getAttr(i), val);
                 }
                 name = type;
                 synchronized (this) {
-                    attr = as;
-                    value = vs;
+                    kvs = newkvs;
                 }
                 dr.nextTagOrText();
                 if (!closed) {
@@ -183,15 +185,20 @@ public final class DomElement extends DomNode {
         if ((dw.ret & MASK_TEXT) != 0) {
             for (int i = 0; i < names.length; i++) {
                 String name = names[i];
-                String val = getAttr(name);
+                Object val = getAttrObj(name);
                 if (val == null)
                     continue;
                 dw.writer.write(" ");
                 dw.writer.write(name);
                 if (!"".equals(val)) {
-                    dw.writer.write("=\"");
-                    dw.writer.write(ForeignXml.sysTextEscape(val));
-                    dw.writer.write("\"");
+                    dw.writer.write("=");
+                    if (val instanceof String) {
+                        dw.writer.write("\"");
+                        dw.writer.write(ForeignXml.sysTextEscape((String) val));
+                        dw.writer.write("\"");
+                    } else {
+                        dw.writer.write(Long.toString(((Long) val).longValue()));
+                    }
                 }
             }
         } else {
@@ -199,12 +206,22 @@ public final class DomElement extends DomNode {
             dw.incIndent();
             for (int i = 0; i < names.length; i++) {
                 String name = names[i];
-                String val = getAttr(name);
+                Object val = getAttrObj(name);
                 if (val == null)
                     continue;
                 int off2 = off + 1 + name.length();
-                val = ForeignXml.sysTextEscape(val);
-                off2 += 3 + val.length();
+                StringBuilder buf = new StringBuilder();
+                if (!"".equals(val)) {
+                    buf.append("=");
+                    if (val instanceof String) {
+                        buf.append("\"");
+                        buf.append(ForeignXml.sysTextEscape((String) val));
+                        buf.append("\"");
+                    } else {
+                        buf.append(Long.toString(((Long) val).longValue()));
+                    }
+                }
+                off2 += 3 + buf.length();
                 if (off2 >= LINE_WIDTH) {
                     dw.writer.write("\n");
                     dw.writeIndent();
@@ -215,10 +232,8 @@ public final class DomElement extends DomNode {
                 }
                 dw.writer.write(name);
                 off += name.length();
-                dw.writer.write("=\"");
-                dw.writer.write(val);
-                dw.writer.write("\"");
-                off += 3 + val.length();
+                dw.writer.write(buf.toString());
+                off += 3 + buf.length();
             }
             dw.decIndent();
         }
@@ -258,13 +273,13 @@ public final class DomElement extends DomNode {
      * @throws ScannerError Shit happens.
      */
     void loadChildren(DomReader dr) throws IOException, ScannerError {
-        ListArray<DomNode> cs = loadChildren2(dr);
-        for (int i = 0; i < cs.size(); i++) {
-            DomNode node = cs.get(i);
+        ListArray<DomNode> newchildren = loadChildren2(dr);
+        for (int i = 0; i < newchildren.size(); i++) {
+            DomNode node = newchildren.get(i);
             node.parent = this;
         }
         synchronized (this) {
-            children = cs;
+            children = newchildren;
         }
     }
 
@@ -351,15 +366,35 @@ public final class DomElement extends DomNode {
      * <p>Retrieve a value for a key.</p>
      *
      * @param key The key.
-     * @return The value.
+     * @return The String value.
      */
     public String getAttr(String key) {
+        return (String) getAttrObj(key);
+    }
+
+    /**
+     * <p>Retrieve a value for a key.</p>
+     *
+     * @param key The key.
+     * @return The long value.
+     */
+    public long getAttrLong(String key) {
+        return ((Long) getAttrObj(key)).longValue();
+    }
+
+    /**
+     * <p>Retrieve a value for a key.</p>
+     *
+     * @param key The key.
+     * @return The value.
+     */
+    public Object getAttrObj(String key) {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            int k = XmlMachine.indexAttr(attr, key);
+            int k = XmlMachine.indexAttr(kvs, key);
             if (k != -1) {
-                return value.get(k);
+                return kvs.getValue(k);
             } else {
                 return null;
             }
@@ -371,20 +406,41 @@ public final class DomElement extends DomNode {
      * <p>Entry is create at the bottom.</p>
      *
      * @param key The key.
-     * @param val The value.
+     * @param val The String value.
      */
     public void setAttr(String key, String val) {
+        setAttrObj(key, val);
+    }
+
+    /**
+     * <p>Add the key to the map.</p>
+     * <p>Entry is create at the bottom.</p>
+     *
+     * @param key The key.
+     * @param val The long value.
+     */
+    public void setAttrLong(String key, long val) {
+        setAttrObj(key, Long.valueOf(val));
+    }
+
+    /**
+     * <p>Add the key to the map.</p>
+     * <p>Entry is create at the bottom.</p>
+     *
+     * @param key The key.
+     * @param val The value.
+     */
+    public void setAttrObj(String key, Object val) {
         if (key == null)
             throw new NullPointerException("key missing");
         if (val == null)
             throw new NullPointerException("value missing");
         synchronized (this) {
-            int k = XmlMachine.indexAttr(attr, key);
+            int k = XmlMachine.indexAttr(kvs, key);
             if (k != -1) {
-                value.set(k, val);
+                kvs.setValue(k, val);
             } else {
-                attr.add(key);
-                value.add(val);
+                kvs.add(key, val);
             }
         }
     }
@@ -398,10 +454,10 @@ public final class DomElement extends DomNode {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            int k = XmlMachine.indexAttr(attr, key);
+            int k = XmlMachine.indexAttr(kvs, key);
             if (k != -1) {
-                attr.remove(k);
-                value.remove(k);
+                kvs.removeEntry(k);
+                kvs.resize();
             }
         }
     }
@@ -414,8 +470,9 @@ public final class DomElement extends DomNode {
     public String[] snapshotAttrs() {
         String[] names;
         synchronized (this) {
-            names = new String[attr.size()];
-            attr.toArray(names);
+            names = new String[kvs.size()];
+            for (int i = 0; i < kvs.size(); i++)
+                names[i] = kvs.getKey(i);
         }
         return names;
     }
