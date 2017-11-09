@@ -31,20 +31,20 @@ import matula.util.regex.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XPathExprComb extends XPathExpr {
-    public static final int CONBINATION_PRED = 0;
-    public static final int COMBINATION_OR = 1;
-    public static final int COMBINATION_AND = 2;
+    public static final int EXPR_COMB_PRED = 0;
+    public static final int EXPR_COMB_OR = 1;
+    public static final int EXPR_COMB_AND = 2;
 
     private MapHashLink<String, XPathExpr> exprs = new MapHashLink<String, XPathExpr>();
     private int combination;
 
     /**
-     * <p>Create a new xpath combination expression.</p>
+     * <p>Retrieve the expressions.</p>
      *
-     * @param c The type of combination.
+     * @return The expressions.
      */
-    public XPathExprComb(int c) {
-        combination = c;
+    public MapHashLink<String, XPathExpr> getExprs() {
+        return exprs;
     }
 
     /**
@@ -57,12 +57,12 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Retrieve the expressions.</p>
+     * <p>Create a new xpath combination expression.</p>
      *
-     * @return The expressions.
+     * @param c The type of combination.
      */
-    public MapHashLink<String, XPathExpr> getExprs() {
-        return exprs;
+    public XPathExprComb(int c) {
+        combination = c;
     }
 
     /*****************************************************/
@@ -75,8 +75,8 @@ public final class XPathExprComb extends XPathExpr {
      * @param n The name.
      */
     public void whereName(String n) {
-        XSelect first = new XSelect(n, XSelect.SELECT_ATTR);
-        whereExpr(n, new XPathExprPrim(first, XPathExprPrim.PRIMITIVE_NAME));
+        XSelect first = new XSelectPrim(n, XSelectPrim.SELE_PRIM_ATTR);
+        whereExpr(n, new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_NAME));
     }
 
     /**
@@ -86,9 +86,9 @@ public final class XPathExprComb extends XPathExpr {
      * @param v The value.
      */
     public void whereAttrObj(String k, Object v) {
-        XSelect first = new XSelect(k, XSelect.SELECT_ATTR);
-        XSelect second = new XSelect(v, XSelect.SELECT_CONST);
-        whereExpr(k, new XPathExprPrim(first, second, XPathExprPrim.PRIMITIVE_ATTR));
+        XSelect first = new XSelectPrim(k, XSelectPrim.SELE_PRIM_ATTR);
+        XSelect second = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        whereExpr(k, new XPathExprPrim(first, second, XPathExprPrim.EXPR_PRIM_ATTR));
     }
 
     /**
@@ -116,21 +116,21 @@ public final class XPathExprComb extends XPathExpr {
     public boolean checkElement(DomElement e)
             throws ScannerError {
         switch (combination) {
-            case CONBINATION_PRED:
+            case EXPR_COMB_PRED:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (!entry.value.checkElement(e))
                         return false;
                 }
                 return true;
-            case COMBINATION_OR:
+            case EXPR_COMB_OR:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (entry.value.checkElement(e))
                         return true;
                 }
                 return false;
-            case COMBINATION_AND:
+            case EXPR_COMB_AND:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (!entry.value.checkElement(e))
@@ -149,7 +149,7 @@ public final class XPathExprComb extends XPathExpr {
      */
     public String toString() {
         switch (combination) {
-            case CONBINATION_PRED:
+            case EXPR_COMB_PRED:
                 StringBuilder buf = new StringBuilder();
                 boolean first = true;
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
@@ -164,7 +164,7 @@ public final class XPathExprComb extends XPathExpr {
                     }
                 }
                 return buf.toString();
-            case COMBINATION_OR:
+            case EXPR_COMB_OR:
                 if (exprs.size() == 0)
                     return "false";
                 buf = new StringBuilder();
@@ -188,7 +188,7 @@ public final class XPathExprComb extends XPathExpr {
                     }
                 }
                 return buf.toString();
-            case COMBINATION_AND:
+            case EXPR_COMB_AND:
                 if (exprs.size() == 0)
                     return "true";
                 buf = new StringBuilder();
@@ -227,7 +227,7 @@ public final class XPathExprComb extends XPathExpr {
         if (isSimple(expr))
             return true;
         if (expr instanceof XPathExprComb)
-            return ((XPathExprComb) expr).getCombination() == COMBINATION_AND;
+            return ((XPathExprComb) expr).getCombination() == EXPR_COMB_AND;
         return false;
     }
 

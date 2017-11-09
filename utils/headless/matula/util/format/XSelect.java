@@ -3,7 +3,7 @@ package matula.util.format;
 import matula.util.regex.ScannerError;
 
 /**
- * <p>The class represent an xselect.</p>
+ * <p>The class represent an abstract xselect.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -28,52 +28,7 @@ import matula.util.regex.ScannerError;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XSelect {
-    public static final int SELECT_ATTR = 0;
-    public static final int SELECT_CONST = 1;
-
-    private Object attrorcnst;
-    private int select;
-
-    /**
-     * <p>>Create a new xselect.</p>
-     *
-     * @param a The attribute or variable.
-     * @param s The type of select.
-     */
-    public XSelect(Object a, int s) {
-        if (a == null)
-            throw new NullPointerException("attribute or const missing");
-        attrorcnst = a;
-        select = s;
-    }
-
-    /**
-     * <p>Retrieve the type of select.</p>
-     *
-     * @return The type of select.
-     */
-    public int getSelect() {
-        return select;
-    }
-
-    /**
-     * <p>Retrieve the attibute name.</p>
-     *
-     * @return The attribute name.
-     */
-    public String getAttr() {
-        return (String) attrorcnst;
-    }
-
-    /**
-     * <p>Retrieve the constant value.</p>
-     *
-     * @return The constant value.
-     */
-    public Object getCnst() {
-        return attrorcnst;
-    }
+public abstract class XSelect {
 
     /**
      * <p>Eval an xpath select.</p>
@@ -82,50 +37,13 @@ public final class XSelect {
      * @return The value.
      * @throws ScannerError Shit happens.
      */
-    public Object evalElement(DomElement d) throws ScannerError {
-        Object res;
-        switch (getSelect()) {
-            case XSelect.SELECT_ATTR:
-                res = d.getAttrObj(getAttr());
-                if (res == null)
-                    throw new ScannerError(XPathExprPrim.ERROR_UNKNOWN_ATTRIBUTE);
-                break;
-            case XSelect.SELECT_CONST:
-                res = getCnst();
-                break;
-            default:
-                throw new IllegalArgumentException("illegal select");
-        }
-        return res;
-    }
+    public abstract Object evalElement(DomElement d) throws ScannerError;
 
     /**
      * <p>Convert this xpath select to a string.</p>
      *
      * @return The string.
      */
-    public String toString() {
-        switch (select) {
-            case SELECT_ATTR:
-                String name = getAttr();
-                StringBuilder buf = new StringBuilder();
-                buf.append("@");
-                buf.append(name);
-                return buf.toString();
-            case SELECT_CONST:
-                Object val = getCnst();
-                buf = new StringBuilder();
-                if (val instanceof String) {
-                    buf.append("\'");
-                    buf.append((String) val);
-                    buf.append("\'");
-                } else {
-                    buf.append(Long.toString(((Long) val).longValue()));
-                }
-                return buf.toString();
-            default:
-                throw new IllegalArgumentException("illegal select");
-        }
-    }
+    public abstract String toString();
 
 }

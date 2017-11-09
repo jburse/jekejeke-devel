@@ -31,12 +31,39 @@ import matula.util.regex.ScannerError;
 public final class XPathExprPrim extends XPathExpr {
     public static final String ERROR_UNKNOWN_ATTRIBUTE = "unknown attribute";
 
-    public static final int PRIMITIVE_NAME = 0;
-    public static final int PRIMITIVE_ATTR = 1;
+    public static final int EXPR_PRIM_NAME = 0;
+    public static final int EXPR_PRIM_ATTR = 1;
 
     private XSelect first;
     private XSelect second;
     private int primitive;
+
+    /**
+     * <p>Retrieve the first argument.</p>
+     *
+     * @return The first argument.
+     */
+    public XSelect getFirst() {
+        return first;
+    }
+
+    /**
+     * <p>Retrieve the second argument.</p>
+     *
+     * @return The second argument.
+     */
+    public XSelect getSecond() {
+        return second;
+    }
+
+    /**
+     * <p>Retrieve the type of primitive.</p>
+     *
+     * @return The type of primitive.
+     */
+    public int getPrimitive() {
+        return primitive;
+    }
 
     /**
      * <p>>Create a new xpath primitive expression.</p>
@@ -47,8 +74,10 @@ public final class XPathExprPrim extends XPathExpr {
     public XPathExprPrim(XSelect f, int p) {
         if (f == null)
             throw new NullPointerException("first missing");
-        if (f.getSelect() != XSelect.SELECT_ATTR)
-            throw new IllegalArgumentException("not const");
+        if (!(f instanceof XSelectPrim))
+            throw new IllegalArgumentException("not prim");
+        if (((XSelectPrim)f).getPrimitive() != XSelectPrim.SELE_PRIM_ATTR)
+            throw new IllegalArgumentException("not attr");
         first = f;
         primitive = p;
     }
@@ -71,33 +100,6 @@ public final class XPathExprPrim extends XPathExpr {
     }
 
     /**
-     * <p>Retrieve the type of primitive.</p>
-     *
-     * @return The type of primitive.
-     */
-    public int getPrimitive() {
-        return primitive;
-    }
-
-    /**
-     * <p>Retrieve the first argument.</p>
-     *
-     * @return The first argument.
-     */
-    public XSelect getFirst() {
-        return first;
-    }
-
-    /**
-     * <p>Retrieve the second argument.</p>
-     *
-     * @return The second argument.
-     */
-    public XSelect getSecond() {
-        return second;
-    }
-
-    /**
      * <p>Check whether a dom element satisfies this xpath expression.</p>
      *
      * @param e The dom element.
@@ -105,12 +107,12 @@ public final class XPathExprPrim extends XPathExpr {
      */
     public boolean checkElement(DomElement e) throws ScannerError {
         switch (primitive) {
-            case PRIMITIVE_NAME:
-                String name = first.getAttr();
+            case EXPR_PRIM_NAME:
+                String name = ((XSelectPrim)first).getAttr();
                 if (!e.isName(name))
                     return false;
                 return true;
-            case PRIMITIVE_ATTR:
+            case EXPR_PRIM_ATTR:
                 Object val = first.evalElement(e);
                 Object val2 = second.evalElement(e);
                 if (!val.equals(val2))
@@ -128,9 +130,9 @@ public final class XPathExprPrim extends XPathExpr {
      */
     public String toString() {
         switch (primitive) {
-            case PRIMITIVE_NAME:
-                return first.getAttr();
-            case PRIMITIVE_ATTR:
+            case EXPR_PRIM_NAME:
+                return ((XSelectPrim)first).getAttr();
+            case EXPR_PRIM_ATTR:
                 StringBuilder buf = new StringBuilder();
                 buf.append(first.toString());
                 buf.append("=");
