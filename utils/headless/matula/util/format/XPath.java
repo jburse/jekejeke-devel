@@ -112,7 +112,7 @@ public final class XPath {
      * @param v The long value.
      */
     public void whereAttrLong(String k, long v) {
-        whereAttrObj(k, Long.toString(v));
+        whereAttrObj(k, Long.valueOf(v));
     }
 
     /**

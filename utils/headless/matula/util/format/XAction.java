@@ -102,7 +102,7 @@ public final class XAction {
      * @param v The long value.
      */
     public void calcAttrLong(String v, long k) {
-        calcAttrObj(v, Long.toString(k));
+        calcAttrObj(v, Long.valueOf(k));
     }
 
     /**
