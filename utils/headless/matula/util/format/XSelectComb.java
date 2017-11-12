@@ -29,7 +29,11 @@ import matula.util.regex.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class XSelectComb extends XSelect {
-    public static final int SELE_COMB_ADD = 0;
+    public static final int SELE_COMB_NEG = 0;
+    public static final int SELE_COMB_ADD = 1;
+    public static final int SELE_COMB_SUB = 2;
+    public static final int SELE_COMB_MUL = 3;
+    public static final int SELE_COMB_DIV = 4;
 
     private XSelect first;
     private XSelect second;
@@ -66,11 +70,28 @@ public class XSelectComb extends XSelect {
      * <p>>Create a new xselect comb.</p>
      *
      * @param f The first xselect.
+     * @param c The type of combination.
+     */
+    public XSelectComb(XSelect f, int c) {
+        if (f == null)
+            throw new NullPointerException("first missing");
+        first = f;
+        combination = c;
+    }
+
+    /**
+     * <p>>Create a new xselect comb.</p>
+     *
+     * @param f The first xselect.
      * @param s The second xselect.
      * @param c The type of combination.
      */
     public XSelectComb(XSelect f, XSelect s, int c) {
+        if (f == null)
+            throw new NullPointerException("first missing");
         first = f;
+        if (s == null)
+            throw new NullPointerException("second missing");
         second = s;
         combination = c;
     }
@@ -83,17 +104,33 @@ public class XSelectComb extends XSelect {
      * @throws ScannerError Shit happens.
      */
     public Object evalElement(DomElement d) throws ScannerError {
-        switch (combination) {
-            case SELE_COMB_ADD:
-                Object val = first.evalElement(d);
-                if (!(val instanceof Long))
-                    throw new IllegalArgumentException("long expected");
-                Object val2 = second.evalElement(d);
-                if (!(val2 instanceof Long))
-                    throw new IllegalArgumentException("long expected");
-                return Long.valueOf(((Long) val).longValue() + ((Long) val2).longValue());
-            default:
-                throw new IllegalArgumentException("illegal combiination");
+        if (combination <= SELE_COMB_NEG) {
+            Long val = (Long) first.evalElement(d);
+            switch (combination) {
+                case SELE_COMB_NEG:
+                    return Long.valueOf(-val.longValue());
+                default:
+                    throw new IllegalArgumentException("illegal combiination");
+            }
+        } else {
+            Long val = (Long) first.evalElement(d);
+            if (!(val instanceof Long))
+                throw new IllegalArgumentException("long expected");
+            Long val2 = (Long) second.evalElement(d);
+            if (!(val2 instanceof Long))
+                throw new IllegalArgumentException("long expected");
+            switch (combination) {
+                case SELE_COMB_ADD:
+                    return Long.valueOf(val.longValue() + val2.longValue());
+                case SELE_COMB_SUB:
+                    return Long.valueOf(val.longValue() - val2.longValue());
+                case SELE_COMB_MUL:
+                    return Long.valueOf(val.longValue() * val2.longValue());
+                case SELE_COMB_DIV:
+                    return Long.valueOf(val.longValue() / val2.longValue());
+                default:
+                    throw new IllegalArgumentException("illegal combiination");
+            }
         }
     }
 
@@ -103,16 +140,101 @@ public class XSelectComb extends XSelect {
      * @return The string.
      */
     public String toString() {
-        switch (combination) {
-            case SELE_COMB_ADD:
-                StringBuilder buf = new StringBuilder();
-                buf.append(first.toString());
-                buf.append(" + ");
-                buf.append(second.toString());
-                return buf.toString();
-            default:
-                throw new IllegalArgumentException("illegal combiination");
+        if (combination <= SELE_COMB_NEG) {
+            switch (combination) {
+                case SELE_COMB_NEG:
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("-");
+                    if (!isTerm(first))
+                        buf.append("(");
+                    buf.append(first.toString());
+                    if (!isTerm(first))
+                        buf.append(")");
+                    return buf.toString();
+                default:
+                    throw new IllegalArgumentException("illegal combiination");
+            }
+        } else {
+            switch (combination) {
+                case SELE_COMB_ADD:
+                    StringBuilder buf = new StringBuilder();
+                    buf.append(first.toString());
+                    buf.append("+");
+                    if (!isTerm(second))
+                        buf.append("(");
+                    buf.append(second.toString());
+                    if (!isTerm(second))
+                        buf.append(")");
+                    return buf.toString();
+                case SELE_COMB_SUB:
+                    buf = new StringBuilder();
+                    buf.append(first.toString());
+                    buf.append("-");
+                    if (!isTerm(second))
+                        buf.append("(");
+                    buf.append(second.toString());
+                    if (!isTerm(second))
+                        buf.append(")");
+                    return buf.toString();
+                case SELE_COMB_MUL:
+                    buf = new StringBuilder();
+                    if (!isTerm(first))
+                        buf.append("(");
+                    buf.append(first.toString());
+                    if (!isTerm(first))
+                        buf.append(")");
+                    buf.append("*");
+                    if (!isSimple(second))
+                        buf.append("(");
+                    buf.append(second.toString());
+                    if (!isSimple(second))
+                        buf.append(")");
+                    return buf.toString();
+                case SELE_COMB_DIV:
+                    buf = new StringBuilder();
+                    if (!isTerm(first))
+                        buf.append("(");
+                    buf.append(first.toString());
+                    if (!isTerm(first))
+                        buf.append(")");
+                    buf.append("/");
+                    if (!isSimple(second))
+                        buf.append("(");
+                    buf.append(second.toString());
+                    if (!isSimple(second))
+                        buf.append(")");
+                    return buf.toString();
+                default:
+                    throw new IllegalArgumentException("illegal combiination");
+            }
         }
+    }
+
+    /**
+     * <p>Check whether the given select is a term.</p>
+     *
+     * @param select The select.
+     * @return True if the select is a term, otherwise false.
+     */
+    private static boolean isTerm(XSelect select) {
+        if (isSimple(select))
+            return true;
+        if (select instanceof XSelectComb)
+            return ((XSelectComb) select).getCombination() == XSelectComb.SELE_COMB_MUL ||
+                    ((XSelectComb) select).getCombination() == XSelectComb.SELE_COMB_DIV;
+        return false;
+    }
+
+    /**
+     * <p>Check whether the given select is simple.</p>
+     *
+     * @param select The select.
+     * @return True if the select is simple, otherwise false.
+     */
+    private static boolean isSimple(XSelect select) {
+        if (select instanceof XSelectPrim)
+            return true;
+        return false;
     }
 
 }

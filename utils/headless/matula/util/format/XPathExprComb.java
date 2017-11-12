@@ -88,7 +88,7 @@ public final class XPathExprComb extends XPathExpr {
     public void whereAttrObj(String k, Object v) {
         XSelect first = new XSelectPrim(k, XSelectPrim.SELE_PRIM_ATTR);
         XSelect second = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
-        whereExpr(k, new XPathExprPrim(first, second, XPathExprPrim.EXPR_PRIM_ATTR));
+        whereExpr(k, new XPathExprPrim(first, second, XPathExprPrim.EXPR_PRIM_EQ));
     }
 
     /**
@@ -221,7 +221,7 @@ public final class XPathExprComb extends XPathExpr {
      * <p>Check whether the given expression is a term.</p>
      *
      * @param expr The expression.
-     * @return True if the expression is term, otherwise false.
+     * @return True if the expression is a term, otherwise false.
      */
     private static boolean isTerm(XPathExpr expr) {
         if (isSimple(expr))

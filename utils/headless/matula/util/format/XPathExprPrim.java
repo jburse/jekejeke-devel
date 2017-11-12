@@ -32,7 +32,12 @@ public final class XPathExprPrim extends XPathExpr {
     public static final String ERROR_UNKNOWN_ATTRIBUTE = "unknown attribute";
 
     public static final int EXPR_PRIM_NAME = 0;
-    public static final int EXPR_PRIM_ATTR = 1;
+    public static final int EXPR_PRIM_EQ = 1;
+    public static final int EXPR_PRIM_NQ = 2;
+    public static final int EXPR_PRIM_LS = 3;
+    public static final int EXPR_PRIM_GR = 4;
+    public static final int EXPR_PRIM_LQ = 5;
+    public static final int EXPR_PRIM_GQ = 6;
 
     private XSelect first;
     private XSelect second;
@@ -76,7 +81,7 @@ public final class XPathExprPrim extends XPathExpr {
             throw new NullPointerException("first missing");
         if (!(f instanceof XSelectPrim))
             throw new IllegalArgumentException("not prim");
-        if (((XSelectPrim)f).getPrimitive() != XSelectPrim.SELE_PRIM_ATTR)
+        if (((XSelectPrim) f).getPrimitive() != XSelectPrim.SELE_PRIM_ATTR)
             throw new IllegalArgumentException("not attr");
         first = f;
         primitive = p;
@@ -106,20 +111,33 @@ public final class XPathExprPrim extends XPathExpr {
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
     public boolean checkElement(DomElement e) throws ScannerError {
-        switch (primitive) {
-            case EXPR_PRIM_NAME:
-                String name = ((XSelectPrim)first).getAttr();
-                if (!e.isName(name))
-                    return false;
-                return true;
-            case EXPR_PRIM_ATTR:
-                Object val = first.evalElement(e);
-                Object val2 = second.evalElement(e);
-                if (!val.equals(val2))
-                    return false;
-                return true;
-            default:
-                throw new IllegalArgumentException("illegal primitive");
+        if (primitive <= EXPR_PRIM_NAME) {
+            String name = ((XSelectPrim) first).getAttr();
+            switch (primitive) {
+                case EXPR_PRIM_NAME:
+                    return e.isName(name);
+                default:
+                    throw new IllegalArgumentException("illegal primitive");
+            }
+        } else {
+            Object val = first.evalElement(e);
+            Object val2 = second.evalElement(e);
+            switch (primitive) {
+                case EXPR_PRIM_EQ:
+                    return val.equals(val2);
+                case EXPR_PRIM_NQ:
+                    return !val.equals(val2);
+                case EXPR_PRIM_LS:
+                    return ((Long)val).longValue()<((Long)val2).longValue();
+                case EXPR_PRIM_GR:
+                    return ((Long)val).longValue()>((Long)val2).longValue();
+                case EXPR_PRIM_LQ:
+                    return ((Long)val).longValue()<=((Long)val2).longValue();
+                case EXPR_PRIM_GQ:
+                    return ((Long)val).longValue()>=((Long)val2).longValue();
+                default:
+                    throw new IllegalArgumentException("illegal primitive");
+            }
         }
     }
 
@@ -129,17 +147,40 @@ public final class XPathExprPrim extends XPathExpr {
      * @return The string.
      */
     public String toString() {
-        switch (primitive) {
-            case EXPR_PRIM_NAME:
-                return ((XSelectPrim)first).getAttr();
-            case EXPR_PRIM_ATTR:
-                StringBuilder buf = new StringBuilder();
-                buf.append(first.toString());
-                buf.append("=");
-                buf.append(second.toString());
-                return buf.toString();
-            default:
-                throw new IllegalArgumentException("illegal primitive");
+        if (primitive <= EXPR_PRIM_NAME) {
+            switch (primitive) {
+                case EXPR_PRIM_NAME:
+                    return ((XSelectPrim) first).getAttr();
+                default:
+                    throw new IllegalArgumentException("illegal primitive");
+            }
+        } else {
+            StringBuilder buf = new StringBuilder();
+            buf.append(first.toString());
+            switch (primitive) {
+                case EXPR_PRIM_EQ:
+                    buf.append("=");
+                    break;
+                case EXPR_PRIM_NQ:
+                    buf.append("<>");
+                    break;
+                case EXPR_PRIM_LS:
+                    buf.append("<");
+                    break;
+                case EXPR_PRIM_GR:
+                    buf.append(">");
+                    break;
+                case EXPR_PRIM_LQ:
+                    buf.append("=<");
+                    break;
+                case EXPR_PRIM_GQ:
+                    buf.append(">=");
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal primitive");
+            }
+            buf.append(second.toString());
+            return buf.toString();
         }
     }
 
