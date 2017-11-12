@@ -1,7 +1,6 @@
 package matula.util.format;
 
 import matula.util.data.AssocArray;
-import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
@@ -65,6 +64,10 @@ public class XmlMachine {
     private static final char CHAR_SINGLE = '\'';
     private static final char CHAR_SLASH = '/';
     private static final char CHAR_CLOSE = '>';
+    private static final int CHAR_EOF = -1;
+    private static final char CHAR_PERCENT = '%';
+    private static final char CHAR_EQ = '=';
+    private static final char CHAR_SEMI = ';';
 
     private char[] text = new char[MAX_JUNK];
     private int top;
@@ -112,7 +115,7 @@ public class XmlMachine {
                     state = XmlMachine.STATE_TYPE;
                     off = top + 1;
                     kvs.clear();
-                } else if (ch == -1) {
+                } else if (ch == CHAR_EOF) {
                     res = XmlMachine.RES_EOF;
                     return false;
                 } else if (ch == CHAR_AMPER) {
@@ -125,7 +128,7 @@ public class XmlMachine {
                 if (ch == CHAR_OPEN) {
                     res = XmlMachine.RES_TEXT;
                     return false;
-                } else if (ch == -1) {
+                } else if (ch == CHAR_EOF) {
                     res = XmlMachine.RES_TEXT;
                     return false;
                 } else if (ch == CHAR_AMPER) {
@@ -147,7 +150,7 @@ public class XmlMachine {
                 if (ch == CHAR_OPEN) {
                     res = XmlMachine.RES_TEXT;
                     return false;
-                } else if (ch == -1) {
+                } else if (ch == CHAR_EOF) {
                     res = XmlMachine.RES_TEXT;
                     return false;
                 } else if (ch == CHAR_AMPER) {
@@ -158,12 +161,12 @@ public class XmlMachine {
                         off = top;
                     }
                 } else if (top - off >= ForeignXml.MAX_ENTITY ||
-                        ch == ';' || ch <= CHAR_SPACE) {
+                        ch == CHAR_SEMI || ch <= CHAR_SPACE) {
                     state = XmlMachine.STATE_TEXT;
                 }
                 break;
             case XmlMachine.STATE_TYPE:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     if (top == off) {
                         res = XmlMachine.RES_TEXT;
                         return false;
@@ -194,37 +197,37 @@ public class XmlMachine {
                         res = XmlMachine.RES_TAG;
                         return true;
                     }
-                } else if (off == top && ch == '%') {
+                } else if (off == top && ch == CHAR_PERCENT) {
                     state = XmlMachine.STATE_SNIPPET;
                 } else {
                     /* */
                 }
                 break;
             case XmlMachine.STATE_SNIPPET:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
-                } else if (ch == '%') {
+                } else if (ch == CHAR_PERCENT) {
                     state = XmlMachine.STATE_PRE;
                 } else {
                     /* */
                 }
                 break;
             case XmlMachine.STATE_PRE:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch == CHAR_CLOSE) {
                     type = new String(text, off, top - off);
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
-                } else if (ch == '%') {
+                } else if (ch == CHAR_PERCENT) {
                     /* */
                 } else {
                     state = XmlMachine.STATE_SNIPPET;
                 }
                 break;
             case XmlMachine.STATE_BLANK:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= CHAR_SPACE) {
                     /* */
@@ -238,7 +241,7 @@ public class XmlMachine {
                 }
                 break;
             case XmlMachine.STATE_ATTR:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= CHAR_SPACE) {
                     key = new String(text, off, top - off);
@@ -250,7 +253,7 @@ public class XmlMachine {
                         key = new String(text, off, top - off);
                         state = XmlMachine.STATE_BEFORE;
                     }
-                } else if (ch == '=') {
+                } else if (ch == CHAR_EQ) {
                     key = new String(text, off, top - off);
                     state = XmlMachine.STATE_AFTER;
                 } else if (ch == CHAR_CLOSE) {
@@ -265,7 +268,7 @@ public class XmlMachine {
                 }
                 break;
             case XmlMachine.STATE_BEFORE:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= CHAR_SPACE) {
                     /* */
@@ -275,7 +278,7 @@ public class XmlMachine {
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
-                } else if (ch == '=') {
+                } else if (ch == CHAR_EQ) {
                     state = XmlMachine.STATE_AFTER;
                 } else {
                     kvs.add(key, VALUE_EMPTY);
@@ -285,7 +288,7 @@ public class XmlMachine {
                 }
                 break;
             case XmlMachine.STATE_AFTER:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= CHAR_SPACE) {
                     /* */
@@ -312,7 +315,7 @@ public class XmlMachine {
                 }
                 break;
             case XmlMachine.STATE_VALUE:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch <= CHAR_SPACE) {
                     String temp = new String(text, off, top - off);
@@ -337,7 +340,7 @@ public class XmlMachine {
                 }
                 break;
             case XmlMachine.STATE_DOUBLE:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch == CHAR_DOUBLE) {
                     fill(ch);
@@ -351,7 +354,7 @@ public class XmlMachine {
                 }
                 break;
             case XmlMachine.STATE_SINGLE:
-                if (ch == -1) {
+                if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END);
                 } else if (ch == CHAR_SINGLE) {
                     fill(ch);

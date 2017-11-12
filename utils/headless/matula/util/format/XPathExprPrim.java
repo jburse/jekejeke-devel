@@ -128,13 +128,13 @@ public final class XPathExprPrim extends XPathExpr {
                 case EXPR_PRIM_NQ:
                     return !val.equals(val2);
                 case EXPR_PRIM_LS:
-                    return ((Long)val).longValue()<((Long)val2).longValue();
+                    return ((Long) val).longValue() < ((Long) val2).longValue();
                 case EXPR_PRIM_GR:
-                    return ((Long)val).longValue()>((Long)val2).longValue();
+                    return ((Long) val).longValue() > ((Long) val2).longValue();
                 case EXPR_PRIM_LQ:
-                    return ((Long)val).longValue()<=((Long)val2).longValue();
+                    return ((Long) val).longValue() <= ((Long) val2).longValue();
                 case EXPR_PRIM_GQ:
-                    return ((Long)val).longValue()>=((Long)val2).longValue();
+                    return ((Long) val).longValue() >= ((Long) val2).longValue();
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
@@ -181,6 +181,34 @@ public final class XPathExprPrim extends XPathExpr {
             }
             buf.append(second.toString());
             return buf.toString();
+        }
+    }
+
+    /**
+     * <p>Completent this expression.</p>
+     */
+    public void complement() {
+        switch (primitive) {
+            case EXPR_PRIM_EQ:
+                primitive = EXPR_PRIM_NQ;
+                break;
+            case EXPR_PRIM_NQ:
+                primitive = EXPR_PRIM_EQ;
+                break;
+            case EXPR_PRIM_LS:
+                primitive = EXPR_PRIM_GQ;
+                break;
+            case EXPR_PRIM_GR:
+                primitive = EXPR_PRIM_LQ;
+                break;
+            case EXPR_PRIM_LQ:
+                primitive = EXPR_PRIM_GR;
+                break;
+            case EXPR_PRIM_GQ:
+                primitive = EXPR_PRIM_LS;
+                break;
+            default:
+                throw new IllegalArgumentException("not complementable");
         }
     }
 

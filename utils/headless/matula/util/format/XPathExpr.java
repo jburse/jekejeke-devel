@@ -50,7 +50,7 @@ public abstract class XPathExpr {
     /**
      * <p>Lift this expression to a combination type.</p>
      *
-     * @param c   The combination type.
+     * @param c The combination type.
      * @return The lifted expression.
      */
     public XPathExprComb lift(int c) {
@@ -61,5 +61,10 @@ public abstract class XPathExpr {
         temp.whereExpr(Integer.toString(0), this);
         return temp;
     }
+
+    /**
+     * <p>Completent this expression.</p>
+     */
+    public abstract void complement();
 
 }

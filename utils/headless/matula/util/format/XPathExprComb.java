@@ -35,6 +35,11 @@ public final class XPathExprComb extends XPathExpr {
     public static final int EXPR_COMB_OR = 1;
     public static final int EXPR_COMB_AND = 2;
 
+    public static final String OP_TRUE = "true";
+    public static final String OP_FALSE = "false";
+    public static final String OP_OR = "or";
+    public static final String OP_AND = "and";
+
     private MapHashLink<String, XPathExpr> exprs = new MapHashLink<String, XPathExpr>();
     private int combination;
 
@@ -166,7 +171,7 @@ public final class XPathExprComb extends XPathExpr {
                 return buf.toString();
             case EXPR_COMB_OR:
                 if (exprs.size() == 0)
-                    return "false";
+                    return OP_FALSE;
                 buf = new StringBuilder();
                 first = true;
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
@@ -179,7 +184,9 @@ public final class XPathExprComb extends XPathExpr {
                             buf.append(")");
                         first = false;
                     } else {
-                        buf.append(" or ");
+                        buf.append(" ");
+                        buf.append(OP_OR);
+                        buf.append(" ");
                         if (!isTerm(entry.value))
                             buf.append("(");
                         buf.append(entry.value.toString());
@@ -190,7 +197,7 @@ public final class XPathExprComb extends XPathExpr {
                 return buf.toString();
             case EXPR_COMB_AND:
                 if (exprs.size() == 0)
-                    return "true";
+                    return OP_TRUE;
                 buf = new StringBuilder();
                 first = true;
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
@@ -203,7 +210,9 @@ public final class XPathExprComb extends XPathExpr {
                             buf.append(")");
                         first = false;
                     } else {
-                        buf.append(" and ");
+                        buf.append(" ");
+                        buf.append(OP_AND);
+                        buf.append(" ");
                         if (!isSimple(entry.value))
                             buf.append("(");
                         buf.append(entry.value.toString());
@@ -252,12 +261,32 @@ public final class XPathExprComb extends XPathExpr {
      * @param beta The second combined expression.
      */
     public void join(XPathExprComb beta) {
-        int n = getExprs().size();
-        MapHashLink<String, XPathExpr> exprs = beta.getExprs();
-        for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
-             entry != null; entry = exprs.successor(entry)) {
+        int n = exprs.size();
+        MapHashLink<String, XPathExpr> ex = beta.getExprs();
+        for (MapEntry<String, XPathExpr> entry = ex.getFirstEntry();
+             entry != null; entry = ex.successor(entry)) {
             whereExpr(Integer.toString(n), entry.value);
             n++;
+        }
+    }
+
+    /**
+     * <p>Completent this expression.</p>
+     */
+    public void complement() {
+        switch (combination) {
+            case EXPR_COMB_OR:
+                combination = EXPR_COMB_AND;
+                break;
+            case EXPR_COMB_AND:
+                combination = EXPR_COMB_OR;
+                break;
+            default:
+                throw new IllegalArgumentException("not complementable");
+        }
+        for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+             entry != null; entry = exprs.successor(entry)) {
+            entry.value.complement();
         }
     }
 

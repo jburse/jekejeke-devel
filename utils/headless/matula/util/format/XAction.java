@@ -134,7 +134,7 @@ public final class XAction {
      *
      * @param e The dom element.
      * @throws InterruptedException Transaction was interrupted.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError         Shit happens.
      */
     public void performActions(DomElement e)
             throws InterruptedException, ScannerError {
