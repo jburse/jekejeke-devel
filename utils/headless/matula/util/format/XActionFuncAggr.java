@@ -44,7 +44,7 @@ public final class XActionFuncAggr extends XActionFunc {
      *
      * @param a The type of aggegate.
      */
-    XActionFuncAggr(int a) {
+    public XActionFuncAggr(int a) {
         action = a;
     }
 
@@ -84,8 +84,28 @@ public final class XActionFuncAggr extends XActionFunc {
      *
      * @param n The name.
      */
-    void calcName(String n) {
+    public void calcName(String n) {
         calcFunc(n, new XActionFuncUpdate(n, XActionFuncUpdate.UPDATE_NAME));
+    }
+
+    /**
+     * <p>Add an element attribute action.</p>
+     *
+     * @param k The key.
+     * @param v The String value.
+     */
+    public void calcAttr(String k, String v) {
+        calcAttrObj(k, v);
+    }
+
+    /**
+     * <p>Add an element attribute action.</p>
+     *
+     * @param k The key.
+     * @param v The long value.
+     */
+    public void calcAttrLong(String k, long v) {
+        calcAttrObj(k, Long.valueOf(v));
     }
 
     /**
@@ -94,7 +114,7 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param k The key.
      * @param v The value.
      */
-    void calcAttrObj(String k, Object v) {
+    public void calcAttrObj(String k, Object v) {
         XSelect xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
         calcFunc(k, new XActionFuncUpdate(k, xs, XActionFuncUpdate.UPDATE_ATTR));
     }
@@ -105,7 +125,7 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param s The slot name.
      * @param f The xquery update.
      */
-    void calcFunc(String s, XActionFunc f) {
+    public void calcFunc(String s, XActionFunc f) {
         MapEntry<String, XActionFunc> entry = funcs.getEntry(s);
         if (entry != null) {
             entry.value = f;
@@ -117,13 +137,14 @@ public final class XActionFuncAggr extends XActionFunc {
     /**
      * <p>Perform this xquery function on a dom element.</p>
      *
-     * @param e The dom element.
+     * @param r The target dom element.
+     * @param e The source dom element.
      * @throws ScannerError Shit happens.
      */
-    void updateElement(DomElement e) throws ScannerError {
+    public void updateElement(DomElement r, DomElement e) throws ScannerError {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
-            entry.value.updateElement(e);
+            entry.value.updateElement(r, e);
         }
     }
 

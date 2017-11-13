@@ -92,7 +92,7 @@ public final class XAction {
      * @param v The String value.
      */
     public void calcAttr(String v, String k) {
-        calcAttrObj(v, k);
+        acts.get(acts.size() - 1).calcAttr(v, k);
     }
 
     /**
@@ -102,7 +102,7 @@ public final class XAction {
      * @param v The long value.
      */
     public void calcAttrLong(String v, long k) {
-        calcAttrObj(v, Long.valueOf(k));
+        acts.get(acts.size() - 1).calcAttrLong(v, k);
     }
 
     /**
@@ -132,11 +132,11 @@ public final class XAction {
     /**
      * <p>Perform the actions.</p>
      *
-     * @param e The dom element.
+     * @param e The current dom element.
      * @throws InterruptedException Transaction was interrupted.
      * @throws ScannerError         Shit happens.
      */
-    public void performActions(DomElement e)
+    public DomElement performActions(DomElement e)
             throws InterruptedException, ScannerError {
         for (int i = 0; i < acts.size(); i++) {
             XActionFuncAggr act = acts.get(i);
@@ -147,11 +147,11 @@ public final class XAction {
                     e = e2;
                     break;
                 case XActionFuncAggr.ACTION_UPDATE:
-                    act.updateElement(e);
+                    act.updateElement(e, e);
                     break;
                 case XActionFuncAggr.ACTION_INSERT_INDEX:
                     e2 = new DomElement();
-                    act.updateElement(e2);
+                    act.updateElement(e2, e);
                     e.addChild(act.getPos(), e2);
                     e = e2;
                     break;
@@ -159,6 +159,7 @@ public final class XAction {
                     throw new IllegalArgumentException("illegal action");
             }
         }
+        return e;
     }
 
     /*****************************************************/

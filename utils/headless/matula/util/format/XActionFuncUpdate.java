@@ -69,16 +69,17 @@ public final class XActionFuncUpdate extends XActionFunc {
     /**
      * <p>Perform this xquery function on a dom element.</p>
      *
-     * @param e The dom element.
+     * @param r The target dom element.
+     * @param e The source dom element.
      * @throws ScannerError Shit happens.
      */
-    void updateElement(DomElement e) throws ScannerError {
+    public void updateElement(DomElement r, DomElement e) throws ScannerError {
         switch (update) {
             case UPDATE_NAME:
-                e.setName(keyorname);
+                r.setName(keyorname);
                 break;
             case UPDATE_ATTR:
-                e.setAttrObj(keyorname, value.evalElement(e));
+                r.setAttrObj(keyorname, value.evalElement(e));
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");

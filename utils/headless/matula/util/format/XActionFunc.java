@@ -33,9 +33,12 @@ public abstract class XActionFunc {
     /**
      * <p>Perform this xquery function on a dom element.</p>
      *
-     * @param e The dom element.
+     * @param r The target dom element.
+     * @param e The source dom element.
+     * @throws ScannerError Shit happens.
      */
-    abstract void updateElement(DomElement e) throws ScannerError;
+    public abstract void updateElement(DomElement r, DomElement e)
+            throws ScannerError;
 
     /**
      * <p>Convert this xquery function to a string.</p>
