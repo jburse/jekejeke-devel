@@ -91,7 +91,8 @@ final class DomReader extends XmlScanner<XmlMachine> {
         char[] buf = getTextBuf();
         int len = getTextLen();
         for (int i = 0; i < len; i++) {
-            if (buf[i] <= ' ') {
+            char ch = buf[i];
+            if (ch <= XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM) {
                 // do nothing
             } else {
                 throw new ScannerError(DOM_NONE_WHITESPACE);
