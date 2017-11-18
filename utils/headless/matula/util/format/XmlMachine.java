@@ -253,7 +253,9 @@ public class XmlMachine {
                         /* */
                     } else {
                         key = new String(text, off, top - off);
-                        state = XmlMachine.STATE_BEFORE;
+                        kvs.add(key, VALUE_EMPTY);
+                        key = null;
+                        off = top;
                     }
                 } else if (ch == CHAR_EQ) {
                     key = new String(text, off, top - off);
