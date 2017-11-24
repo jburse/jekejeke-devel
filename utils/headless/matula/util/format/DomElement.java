@@ -178,26 +178,26 @@ public final class DomElement extends DomNode {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        dw.writer.write("<");
-        dw.writer.write(name);
+        dw.write("<");
+        dw.write(name);
 
         String[] names = snapshotAttrs();
-        if ((dw.ret & MASK_TEXT) != 0) {
+        if ((dw.getMask() & MASK_TEXT) != 0) {
             for (int i = 0; i < names.length; i++) {
                 String name = names[i];
                 Object val = getAttrObj(name);
                 if (val == null)
                     continue;
-                dw.writer.write(" ");
-                dw.writer.write(name);
+                dw.write(" ");
+                dw.write(name);
                 if (!"".equals(val)) {
-                    dw.writer.write("=");
+                    dw.write("=");
                     if (val instanceof String) {
-                        dw.writer.write("\"");
-                        dw.writer.write(ForeignXml.sysTextEscape((String) val));
-                        dw.writer.write("\"");
+                        dw.write("\"");
+                        dw.write(ForeignXml.sysTextEscape((String) val));
+                        dw.write("\"");
                     } else {
-                        dw.writer.write(Long.toString(((Long) val).longValue()));
+                        dw.write(Long.toString(((Long) val).longValue()));
                     }
                 }
             }
@@ -223,39 +223,39 @@ public final class DomElement extends DomNode {
                 }
                 off2 += 3 + buf.length();
                 if (off2 >= LINE_WIDTH) {
-                    dw.writer.write("\n");
+                    dw.write("\n");
                     dw.writeIndent();
                     off = dw.getIndent();
                 } else {
-                    dw.writer.write(" ");
+                    dw.write(" ");
                     off++;
                 }
-                dw.writer.write(name);
+                dw.write(name);
                 off += name.length();
-                dw.writer.write(buf.toString());
+                dw.write(buf.toString());
                 off += 3 + buf.length();
             }
             dw.decIndent();
         }
 
         if (sizeChildren() == 0) {
-            dw.writer.write("/>");
+            dw.write("/>");
         } else {
-            if ((dw.ret & MASK_TEXT) != 0) {
-                dw.writer.write(">");
+            if ((dw.getMask() & MASK_TEXT) != 0) {
+                dw.write(">");
                 storeChildren(dw);
-                dw.writer.write("</");
-                dw.writer.write(name);
-                dw.writer.write(">");
+                dw.write("</");
+                dw.write(name);
+                dw.write(">");
             } else {
-                dw.writer.write(">\n");
+                dw.write(">\n");
                 dw.incIndent();
                 storeChildren(dw);
                 dw.decIndent();
                 dw.writeIndent();
-                dw.writer.write("</");
-                dw.writer.write(name);
-                dw.writer.write(">");
+                dw.write("</");
+                dw.write(name);
+                dw.write(">");
             }
         }
     }
@@ -339,12 +339,12 @@ public final class DomElement extends DomNode {
         DomNode[] nodes = snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
-            if ((dw.ret & MASK_TEXT) != 0) {
+            if ((dw.getMask() & MASK_TEXT) != 0) {
                 node.storeNode(dw);
             } else {
                 dw.writeIndent();
                 node.storeNode(dw);
-                dw.writer.write("\n");
+                dw.write("\n");
             }
         }
     }

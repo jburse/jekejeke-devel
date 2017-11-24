@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.data.MapHash;
 import matula.util.system.ForeignXml;
 
 import java.io.IOException;
@@ -34,9 +35,55 @@ import java.io.Writer;
 final class DomWriter {
     private static final int INDENT_INCREMENT = 4;
 
-    Writer writer;
-    int ret;
-    int indent;
+    private Writer writer;
+    private int mask;
+    private MapHash<String, Integer> control;
+    private int indent;
+
+    /**
+     * <p>Set the writer.</p>
+     *
+     * @param w The writer.
+     */
+    void setWriter(Writer w) {
+        writer = w;
+    }
+
+    /**
+     * <p>Set the return mask.</p>
+     *
+     * @param r The return mask.
+     */
+    void setMask(int r) {
+        mask = r;
+    }
+
+    /**
+     * <p>Retrieve the return mask.</p>
+     *
+     * @return The return mask.
+     */
+    int getMask() {
+        return mask;
+    }
+
+    /**
+     * <p>Set the tag control.</p>
+     *
+     * @param c The tag control.
+     */
+    void setControl(MapHash<String, Integer> c) {
+        control = c;
+    }
+
+    /**
+     * <p>Retrieve the tag control.</p>
+     *
+     * @return The tag control.
+     */
+    MapHash<String, Integer> getControl() {
+        return control;
+    }
 
     /**
      * <p>Increment the indent.</p>
@@ -77,9 +124,18 @@ final class DomWriter {
      * @throws IOException Shit happens.
      */
     void writeComment(String comment) throws IOException {
-        writer.write("<!-- ");
-        writer.write(ForeignXml.sysTextEscape(comment));
-        writer.write(" -->\n");
+        write("<!-- ");
+        write(ForeignXml.sysTextEscape(comment));
+        write(" -->\n");
+    }
+
+    /**
+     * <p>Write a string.</p>
+     * @param str The string.
+     * @throws IOException Shit happens.
+     */
+    void write(String str) throws IOException {
+        writer.write(str);
     }
 
 }

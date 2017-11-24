@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
@@ -42,7 +43,44 @@ final class DomReader extends XmlScanner<XmlMachine> {
     static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
 
-    int ret;
+    private int mask;
+    private MapHash<String, Integer> control;
+
+    /**
+     * <p>Set the return mask.</p>
+     *
+     * @param m The return mask.
+     */
+    void setMask(int m) {
+        mask = m;
+    }
+
+    /**
+     * <p>Set the tag control.</p>
+     *
+     * @param c The tag control.
+     */
+    void setControl(MapHash<String, Integer> c) {
+        control = c;
+    }
+
+    /**
+     * <p>Retrieve the return mask.</p>
+     *
+     * @return The return mask.
+     */
+    int getMask() {
+        return mask;
+    }
+
+    /**
+     * <p>Retrieve the tag control.</p>
+     *
+     * @return The tag control.
+     */
+    MapHash<String, Integer> getControl() {
+        return control;
+    }
 
     /**
      * <p>Creates a new dom reader.</p>
@@ -62,7 +100,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
         for (; ; ) {
             switch (getRes()) {
                 case XmlMachine.RES_TEXT:
-                    if ((ret & DomNode.MASK_TEXT) != 0)
+                    if ((mask & DomNode.MASK_TEXT) != 0)
                         return;
                     checkWhitespace();
                     super.nextTagOrText();

@@ -90,7 +90,7 @@ public final class DomText extends DomNode {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        dw.writer.write(ForeignXml.sysTextEscape(data));
+        dw.write(ForeignXml.sysTextEscape(data));
     }
 
 }

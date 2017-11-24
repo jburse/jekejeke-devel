@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
@@ -80,17 +81,17 @@ public abstract class DomNode {
      * <p>Not synchronized, uses cut-over.</p>
      *
      * @param reader The input stream.
-     * @param ret    The return flags.
+     * @param mask    The return mask.
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    public void load(Reader reader, int ret)
+    public void load(Reader reader, int mask)
             throws IOException, ScannerError {
         DomReader dr = new DomReader();
         dr.setReader(reader);
-        dr.ret = ret;
+        dr.setMask(mask);
         dr.nextTagOrText();
-        if ((ret & MASK_LIST) != 0) {
+        if ((mask & MASK_LIST) != 0) {
             ((DomElement) this).loadChildren(dr);
         } else {
             loadNode(dr);
@@ -99,21 +100,75 @@ public abstract class DomNode {
     }
 
     /**
+     * <p>Load this dom node.</p>
+     * <p>Not synchronized, uses cut-over.</p>
+     *
+     * @param reader The input stream.
+     * @param mask    The return mask.
+     * @param control    The tag control.
+     * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
+     */
+    public void load(Reader reader, int mask,
+                     MapHash<String, Integer> control)
+            throws IOException, ScannerError {
+        DomReader dr = new DomReader();
+        dr.setReader(reader);
+        dr.setMask(mask);
+        dr.setControl(control);
+        dr.nextTagOrText();
+        if ((mask & MASK_LIST) != 0) {
+            ((DomElement) this).loadChildren(dr);
+        } else {
+            loadNode(dr);
+        }
+        dr.checkEof();
+    }
+
+
+    /**
      * <p>Store this dom node.</p>
      * <p>Not synchronized, uses cursors.</p>
      *
      * @param writer  The writer.
      * @param comment The comment
-     * @param ret     The return flags.
+     * @param mask     The return mask.
+     * @throws IOException  Shit happens.
      */
-    public void store(Writer writer, String comment, int ret)
+    public void store(Writer writer, String comment, int mask)
             throws IOException {
         DomWriter dw = new DomWriter();
-        dw.writer = writer;
-        dw.ret = ret;
+        dw.setWriter(writer);
+        dw.setMask(mask);
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
-        if ((ret & MASK_LIST) != 0) {
+        if ((mask & MASK_LIST) != 0) {
+            ((DomElement) this).storeChildren(dw);
+        } else {
+            storeNode(dw);
+        }
+        writer.flush();
+    }
+
+    /**
+     * <p>Store this dom node.</p>
+     * <p>Not synchronized, uses cursors.</p>
+     *
+     * @param writer  The writer.
+     * @param comment The comment
+     * @param mask     The return mask.
+     * @throws IOException  Shit happens.
+     */
+    public void store(Writer writer, String comment, int mask,
+                      MapHash<String, Integer> control)
+            throws IOException {
+        DomWriter dw = new DomWriter();
+        dw.setWriter(writer);
+        dw.setMask(mask);
+        dw.setControl(control);
+        if (comment != null && !"".equals(comment))
+            dw.writeComment(comment);
+        if ((mask & MASK_LIST) != 0) {
             ((DomElement) this).storeChildren(dw);
         } else {
             storeNode(dw);
