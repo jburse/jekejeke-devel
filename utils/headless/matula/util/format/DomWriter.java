@@ -1,9 +1,12 @@
 package matula.util.format;
 
 import matula.util.data.MapHash;
+import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.Writer;
 
 /**
@@ -136,6 +139,32 @@ final class DomWriter {
      */
     void write(String str) throws IOException {
         writer.write(str);
+    }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args The arguments.
+     * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
+     */
+    public static void main(String[] args) throws IOException, ScannerError {
+        String text = "<foo bar='123'/>  <foo bar='456'/>";
+        StringReader sr = new StringReader(text);
+        DomElement de = new DomElement();
+        de.load(sr, DomNode.MASK_LIST);
+        PrintWriter pw = new PrintWriter(System.out);
+        de.store(pw, null, DomNode.MASK_LIST);
+        pw.println();
+
+        text = "<foo>123</foo>  <foo>456</foo>";
+        MapHash<String, Integer> control = new MapHash<String, Integer>();
+        control.add("foo", Integer.valueOf(DomNode.CONTROL_ANY));
+        sr = new StringReader(text);
+        de = new DomElement();
+        de.load(sr, DomNode.MASK_LIST, control);
+        de.store(pw, null, DomNode.MASK_LIST, control);
+        pw.println();
     }
 
 }

@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 
@@ -36,6 +37,9 @@ import java.io.Writer;
 public abstract class DomNode {
     public static final int MASK_TEXT = 0x00000001;
     public static final int MASK_LIST = 0x00000002;
+
+    public static final int CONTROL_EMPTY = 1; /* disable text and list */
+    public static final int CONTROL_ANY = 2; /* enable text and list */
 
     DomElement parent;
     private boolean lock;
@@ -92,7 +96,8 @@ public abstract class DomNode {
         dr.setMask(mask);
         dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
-            ((DomElement) this).loadChildren(dr);
+            ListArray<DomNode> cs = DomElement.loadChildren(dr);
+            ((DomElement) this).setChildren(cs);
         } else {
             loadNode(dr);
         }
@@ -118,7 +123,8 @@ public abstract class DomNode {
         dr.setControl(control);
         dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
-            ((DomElement) this).loadChildren(dr);
+            ListArray<DomNode> cs = DomElement.loadChildren(dr);
+            ((DomElement) this).setChildren(cs);
         } else {
             loadNode(dr);
         }

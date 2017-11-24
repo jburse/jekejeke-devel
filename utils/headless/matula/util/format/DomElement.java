@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
+import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
@@ -104,13 +105,24 @@ public final class DomElement extends DomNode {
                 synchronized (this) {
                     kvs = newkvs;
                 }
-                dr.nextTagOrText();
-                if (!closed) {
-                    loadChildren(dr);
+                ListArray<DomNode> cs;
+                if (!closed && !checkEmpty(dr.getControl(), type)) {
+                    if ((dr.getMask() & DomNode.MASK_TEXT) == 0 && checkAny(dr.getControl(), type)) {
+                        int mask = dr.getMask();
+                        dr.setMask(dr.getMask() | DomNode.MASK_TEXT);
+                        dr.nextTagOrText();
+                        cs = loadChildren(dr);
+                        dr.setMask(mask);
+                    } else {
+                        dr.nextTagOrText();
+                        cs = loadChildren(dr);
+                    }
                     checkEnd(type, dr);
                 } else {
-                    clearChildren();
+                    cs = new ListArray<DomNode>();
+                    dr.nextTagOrText();
                 }
+                setChildren(cs);
                 break;
             case XmlMachine.RES_EOF:
                 throw new ScannerError(DomReader.DOM_START_MISSING);
@@ -178,8 +190,9 @@ public final class DomElement extends DomNode {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
+        String type = name;
         dw.write("<");
-        dw.write(name);
+        dw.write(type);
 
         String[] names = snapshotAttrs();
         if ((dw.getMask() & MASK_TEXT) != 0) {
@@ -238,50 +251,49 @@ public final class DomElement extends DomNode {
             dw.decIndent();
         }
 
-        if (sizeChildren() == 0) {
-            dw.write("/>");
-        } else {
-            if ((dw.getMask() & MASK_TEXT) != 0) {
-                dw.write(">");
-                storeChildren(dw);
-                dw.write("</");
-                dw.write(name);
-                dw.write(">");
+        if (sizeChildren() != 0) {
+            dw.write(">");
+            if ((dw.getMask() & DomNode.MASK_TEXT) == 0 && checkAny(dw.getControl(), type)) {
+                int mask = dw.getMask();
+                dw.setMask(dw.getMask() | DomNode.MASK_TEXT);
+                storeChildren2(dw);
+                dw.setMask(mask);
             } else {
-                dw.write(">\n");
-                dw.incIndent();
-                storeChildren(dw);
-                dw.decIndent();
-                dw.writeIndent();
-                dw.write("</");
-                dw.write(name);
+                storeChildren2(dw);
+            }
+            dw.write("</");
+            dw.write(type);
+            dw.write(">");
+        } else {
+            if (!checkEmpty(dw.getControl(), type)) {
+                dw.write("/>");
+            } else {
                 dw.write(">");
             }
+        }
+    }
+
+    /**
+     * <p>Store the childeren.</p>
+     *
+     * @param dw The dom writer.
+     * @throws IOException Shit happens.
+     */
+    private void storeChildren2(DomWriter dw) throws IOException {
+        if ((dw.getMask() & MASK_TEXT) != 0) {
+            storeChildren(dw);
+        } else {
+            dw.write("\n");
+            dw.incIndent();
+            storeChildren(dw);
+            dw.decIndent();
+            dw.writeIndent();
         }
     }
 
     /*****************************************************/
     /* Children Store/Load                               */
     /*****************************************************/
-
-    /**
-     * <p>Load a dom element.</p>
-     * <p>Not synchronized, uses cut-over.</p>
-     *
-     * @param dr The dom reader.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
-     */
-    void loadChildren(DomReader dr) throws IOException, ScannerError {
-        ListArray<DomNode> newchildren = loadChildren2(dr);
-        for (int i = 0; i < newchildren.size(); i++) {
-            DomNode node = newchildren.get(i);
-            node.parent = this;
-        }
-        synchronized (this) {
-            children = newchildren;
-        }
-    }
 
     /**
      * <p>Load the children.</p>
@@ -291,7 +303,7 @@ public final class DomElement extends DomNode {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    private static ListArray<DomNode> loadChildren2(DomReader dr)
+    static ListArray<DomNode> loadChildren(DomReader dr)
             throws IOException, ScannerError {
         ListArray<DomNode> res = new ListArray<DomNode>();
         for (; ; ) {
@@ -317,12 +329,15 @@ public final class DomElement extends DomNode {
     }
 
     /**
-     * <p>Clear the elements.</p>
+     * <p>Set the elements.</p>
      * <p>
      * <p>Not synchronized, uses cut-over.</p>
      */
-    void clearChildren() {
-        ListArray<DomNode> cs = new ListArray<DomNode>();
+    void setChildren(ListArray<DomNode> cs) {
+        for (int i = 0; i < cs.size(); i++) {
+            DomNode node = cs.get(i);
+            node.parent = this;
+        }
         synchronized (this) {
             children = cs;
         }
@@ -349,13 +364,50 @@ public final class DomElement extends DomNode {
         }
     }
 
+    /*****************************************************/
+    /* Tag Control                                       */
+    /*****************************************************/
+
     /**
-     * <p>Retrieve the number of elements.</p>
+     * <p>Check whether the tag type is empty.</p>
      *
-     * @return The number of elements.
+     * @param control The tag control.
+     * @param type    The tag type.
+     * @return True if the tag type is empty, otherwise false.
      */
-    public int sizeChildren() {
-        return children.size();
+    private static boolean checkEmpty(MapHash<String, Integer> control,
+                                      String type) {
+        if (control == null)
+            return false;
+        Integer val = control.get(type);
+        if (val == null) {
+            return false;
+        } else if (val.intValue() == DomNode.CONTROL_EMPTY) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the tag type is any.</p>
+     *
+     * @param control The tag control.
+     * @param type    The tag type.
+     * @return True if the tag type is any, otherwise false.
+     */
+    private static boolean checkAny(MapHash<String, Integer> control,
+                                    String type) {
+        if (control == null)
+            return false;
+        Integer val = control.get(type);
+        if (val == null) {
+            return false;
+        } else if (val.intValue() == DomNode.CONTROL_ANY) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /*****************************************************/
@@ -480,6 +532,15 @@ public final class DomElement extends DomNode {
     /*****************************************************/
     /* Synchronized API Children                         */
     /*****************************************************/
+
+    /**
+     * <p>Retrieve the number of elements.</p>
+     *
+     * @return The number of elements.
+     */
+    public int sizeChildren() {
+        return children.size();
+    }
 
     /**
      * <p>Add a child.</p>

@@ -4,6 +4,8 @@ import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
 
 /**
  * <p>This class provides a dom reader.</p>
@@ -174,6 +176,32 @@ final class DomReader extends XmlScanner<XmlMachine> {
                     throw new IllegalArgumentException("illegal res");
             }
         }
+    }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args The arguments.
+     * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
+     */
+    public static void main(String[] args) throws IOException, ScannerError {
+        String text = "<p>The quick brown fox <img/> jumps over the lazy dog.</p>";
+        StringReader sr = new StringReader(text);
+        DomElement de = new DomElement();
+        de.load(sr, DomNode.MASK_TEXT);
+        PrintWriter pw = new PrintWriter(System.out);
+        de.store(pw, null, DomNode.MASK_TEXT);
+        pw.println();
+
+        text = "<p>The quick brown fox <img> jumps over the lazy dog.</p>";
+        MapHash<String, Integer> control = new MapHash<String, Integer>();
+        control.add("img", Integer.valueOf(DomNode.CONTROL_EMPTY));
+        sr = new StringReader(text);
+        de = new DomElement();
+        de.load(sr, DomNode.MASK_TEXT, control);
+        de.store(pw, null, DomNode.MASK_TEXT, control);
+        pw.println();
     }
 
 }
