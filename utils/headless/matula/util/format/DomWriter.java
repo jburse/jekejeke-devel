@@ -35,8 +35,9 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DomWriter {
+public class DomWriter {
     private static final int INDENT_INCREMENT = 4;
+    private static final int LINE_WIDTH = 80;
 
     private Writer writer;
     private int mask;
@@ -48,7 +49,7 @@ final class DomWriter {
      *
      * @param w The writer.
      */
-    void setWriter(Writer w) {
+    public void setWriter(Writer w) {
         writer = w;
     }
 
@@ -57,7 +58,7 @@ final class DomWriter {
      *
      * @param r The return mask.
      */
-    void setMask(int r) {
+    public void setMask(int r) {
         mask = r;
     }
 
@@ -66,7 +67,7 @@ final class DomWriter {
      *
      * @return The return mask.
      */
-    int getMask() {
+    public int getMask() {
         return mask;
     }
 
@@ -75,7 +76,7 @@ final class DomWriter {
      *
      * @param c The tag control.
      */
-    void setControl(MapHash<String, Integer> c) {
+    public void setControl(MapHash<String, Integer> c) {
         control = c;
     }
 
@@ -84,21 +85,21 @@ final class DomWriter {
      *
      * @return The tag control.
      */
-    MapHash<String, Integer> getControl() {
+    public MapHash<String, Integer> getControl() {
         return control;
     }
 
     /**
      * <p>Increment the indent.</p>
      */
-    void incIndent() {
+    public void incIndent() {
         indent += INDENT_INCREMENT;
     }
 
     /**
      * <p>Decrement the indent.</p>
      */
-    void decIndent() {
+    public void decIndent() {
         indent -= INDENT_INCREMENT;
     }
 
@@ -116,7 +117,7 @@ final class DomWriter {
      *
      * @throws IOException Shit happens.
      */
-    void writeIndent() throws IOException {
+    public void writeIndent() throws IOException {
         for (int i = 0; i < indent; i++)
             writer.write(" ");
     }
@@ -126,7 +127,7 @@ final class DomWriter {
      *
      * @throws IOException Shit happens.
      */
-    void writeComment(String comment) throws IOException {
+    public void writeComment(String comment) throws IOException {
         write("<!-- ");
         write(ForeignXml.sysTextEscape(comment));
         write(" -->\n");
@@ -137,8 +138,116 @@ final class DomWriter {
      * @param str The string.
      * @throws IOException Shit happens.
      */
-    void write(String str) throws IOException {
+    public void write(String str) throws IOException {
         writer.write(str);
+    }
+
+    /****************************************************************/
+    /* Tag Writing                                                  */
+    /****************************************************************/
+
+    /**
+     * <p>Copy an empty dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException Shit happens.
+     */
+    public void copyEmpty(DomElement de) throws IOException {
+        write("<");
+        write(de.getName());
+        copyAttributes(de);
+        write("/>");
+    }
+
+    /**
+     * <p>Copy a start dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException Shit happens.
+     */
+    public void copyStart(DomElement de) throws IOException {
+        write("<");
+        write(de.getName());
+        copyAttributes(de);
+        write(">");
+    }
+
+    /**
+     * <p>Copy the attributes of a dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException Shit happens.
+     */
+    private void copyAttributes(DomElement de) throws IOException {
+        String[] names = de.snapshotAttrs();
+        if ((getMask() & DomNode.MASK_TEXT) != 0) {
+            for (int i = 0; i < names.length; i++) {
+                String name = names[i];
+                Object val = de.getAttrObj(name);
+                if (val == null)
+                    continue;
+                write(" ");
+                write(name);
+                if (!"".equals(val)) {
+                    write("=");
+                    if (val instanceof String) {
+                        write("\"");
+                        write(ForeignXml.sysTextEscape((String) val));
+                        write("\"");
+                    } else {
+                        write(Long.toString(((Long) val).longValue()));
+                    }
+                }
+            }
+        } else {
+            String name=de.getName();
+            int off = getIndent() + 1 + name.length();
+            incIndent();
+            for (int i = 0; i < names.length; i++) {
+                name = names[i];
+                Object val = de.getAttrObj(name);
+                if (val == null)
+                    continue;
+                int off2 = off + 1 + name.length();
+                StringBuilder buf = new StringBuilder();
+                if (!"".equals(val)) {
+                    buf.append("=");
+                    if (val instanceof String) {
+                        buf.append("\"");
+                        buf.append(ForeignXml.sysTextEscape((String) val));
+                        buf.append("\"");
+                    } else {
+                        buf.append(Long.toString(((Long) val).longValue()));
+                    }
+                }
+                off2 += 3 + buf.length();
+                if (off2 >= LINE_WIDTH) {
+                    write("\n");
+                    writeIndent();
+                    off = getIndent();
+                } else {
+                    write(" ");
+                    off++;
+                }
+                write(name);
+                off += name.length();
+                write(buf.toString());
+                off += 3 + buf.length();
+            }
+            decIndent();
+        }
+    }
+
+    /**
+     * <p>Copy an end dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException Shit happens.
+     */
+    public void copyEnd(DomElement de) throws IOException {
+        write("</");
+        write(de.getName());
+        write(">");
     }
 
     /**

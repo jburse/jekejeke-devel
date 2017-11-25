@@ -37,10 +37,6 @@ final class DomReader extends XmlScanner<XmlMachine> {
     static final String STRING_SLASH = "/";
 
     static final String DOM_START_MISSING = "dom_start_missing";
-    static final String DOM_ATTRIBUTES_UNEXPECTED = "dom_attributes_unexpected";
-    static final String DOM_END_MISSING = "dom_end_missing";
-    static final String DOM_TYPE_MISMATCH = "dom_type_mismatch";
-    static final String DOM_DUPLICATE_ATTRIBUTE = "dom_duplicate_attribute";
     static final String DOM_SUPERFLOUS_TAG = "dom_superflous_tag";
     static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";

@@ -35,7 +35,11 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomElement extends DomNode {
-    private static final int LINE_WIDTH = 80;
+    static final String DOM_TYPE_MISMATCH = "dom_type_mismatch";
+    static final String DOM_DUPLICATE_ATTRIBUTE = "dom_duplicate_attribute";
+    static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
+    static final String DOM_END_MISSING = "dom_end_missing";
+    static final String DOM_ATTR_UNEXPECTED = "dom_attr_unexpected";
 
     private String name = XmlMachine.VALUE_EMPTY;
     private AssocArray<String, Object> kvs = new AssocArray<String, Object>();
@@ -91,7 +95,7 @@ public final class DomElement extends DomNode {
                 AssocArray<String, Object> newkvs = new AssocArray<String, Object>();
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     if (XmlMachine.indexAttr(newkvs, dr.getAttr(i)) != -1)
-                        throw new ScannerError(DomReader.DOM_DUPLICATE_ATTRIBUTE);
+                        throw new ScannerError(DOM_DUPLICATE_ATTRIBUTE);
                     String valstr = dr.getValueAt(i);
                     Object val;
                     if (valstr.length() > 0 && Character.isDigit(valstr.codePointAt(0))) {
@@ -105,8 +109,9 @@ public final class DomElement extends DomNode {
                 synchronized (this) {
                     kvs = newkvs;
                 }
+                boolean empty = checkEmpty(dr.getControl(), type);
                 ListArray<DomNode> cs;
-                if (!closed && !checkEmpty(dr.getControl(), type)) {
+                if (!closed && !empty) {
                     if ((dr.getMask() & DomNode.MASK_TEXT) == 0 && checkAny(dr.getControl(), type)) {
                         int mask = dr.getMask();
                         dr.setMask(dr.getMask() | DomNode.MASK_TEXT);
@@ -119,6 +124,8 @@ public final class DomElement extends DomNode {
                     }
                     checkEnd(type, dr);
                 } else {
+                    if (closed && empty)
+                        throw new ScannerError(DOM_CLOSED_EMPTY);
                     cs = new ListArray<DomNode>();
                     dr.nextTagOrText();
                 }
@@ -163,20 +170,20 @@ public final class DomElement extends DomNode {
             throws ScannerError, IOException {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
-                throw new ScannerError(DomReader.DOM_END_MISSING);
+                throw new ScannerError(DOM_END_MISSING);
             case XmlMachine.RES_TAG:
                 if (!dr.getType().startsWith(DomReader.STRING_SLASH))
-                    throw new ScannerError(DomReader.DOM_END_MISSING);
+                    throw new ScannerError(DOM_END_MISSING);
                 if (dr.getAttrCount() != 0)
-                    throw new ScannerError(DomReader.DOM_ATTRIBUTES_UNEXPECTED);
+                    throw new ScannerError(DOM_ATTR_UNEXPECTED);
                 String temp = dr.getType();
                 temp = temp.substring(1);
                 if (!type.equals(temp))
-                    throw new ScannerError(DomReader.DOM_TYPE_MISMATCH);
+                    throw new ScannerError(DOM_TYPE_MISMATCH);
                 dr.nextTagOrText();
                 break;
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DomReader.DOM_END_MISSING);
+                throw new ScannerError(DOM_END_MISSING);
             default:
                 throw new IllegalArgumentException("illegal res");
         }
@@ -190,70 +197,10 @@ public final class DomElement extends DomNode {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        String type = name;
-        dw.write("<");
-        dw.write(type);
-
-        String[] names = snapshotAttrs();
-        if ((dw.getMask() & MASK_TEXT) != 0) {
-            for (int i = 0; i < names.length; i++) {
-                String name = names[i];
-                Object val = getAttrObj(name);
-                if (val == null)
-                    continue;
-                dw.write(" ");
-                dw.write(name);
-                if (!"".equals(val)) {
-                    dw.write("=");
-                    if (val instanceof String) {
-                        dw.write("\"");
-                        dw.write(ForeignXml.sysTextEscape((String) val));
-                        dw.write("\"");
-                    } else {
-                        dw.write(Long.toString(((Long) val).longValue()));
-                    }
-                }
-            }
-        } else {
-            int off = dw.getIndent() + 1 + name.length();
-            dw.incIndent();
-            for (int i = 0; i < names.length; i++) {
-                String name = names[i];
-                Object val = getAttrObj(name);
-                if (val == null)
-                    continue;
-                int off2 = off + 1 + name.length();
-                StringBuilder buf = new StringBuilder();
-                if (!"".equals(val)) {
-                    buf.append("=");
-                    if (val instanceof String) {
-                        buf.append("\"");
-                        buf.append(ForeignXml.sysTextEscape((String) val));
-                        buf.append("\"");
-                    } else {
-                        buf.append(Long.toString(((Long) val).longValue()));
-                    }
-                }
-                off2 += 3 + buf.length();
-                if (off2 >= LINE_WIDTH) {
-                    dw.write("\n");
-                    dw.writeIndent();
-                    off = dw.getIndent();
-                } else {
-                    dw.write(" ");
-                    off++;
-                }
-                dw.write(name);
-                off += name.length();
-                dw.write(buf.toString());
-                off += 3 + buf.length();
-            }
-            dw.decIndent();
-        }
-
         if (sizeChildren() != 0) {
-            dw.write(">");
-            if ((dw.getMask() & DomNode.MASK_TEXT) == 0 && checkAny(dw.getControl(), type)) {
+            dw.copyStart(this);
+            if ((dw.getMask() & DomNode.MASK_TEXT) == 0 &&
+                    checkAny(dw.getControl(), name)) {
                 int mask = dw.getMask();
                 dw.setMask(dw.getMask() | DomNode.MASK_TEXT);
                 storeChildren2(dw);
@@ -261,14 +208,12 @@ public final class DomElement extends DomNode {
             } else {
                 storeChildren2(dw);
             }
-            dw.write("</");
-            dw.write(type);
-            dw.write(">");
+            dw.copyEnd(this);
         } else {
-            if (!checkEmpty(dw.getControl(), type)) {
-                dw.write("/>");
+            if (!checkEmpty(dw.getControl(), name)) {
+                dw.copyEmpty(this);
             } else {
-                dw.write(">");
+                dw.copyStart(this);
             }
         }
     }
@@ -375,7 +320,7 @@ public final class DomElement extends DomNode {
      * @param type    The tag type.
      * @return True if the tag type is empty, otherwise false.
      */
-    private static boolean checkEmpty(MapHash<String, Integer> control,
+    public static boolean checkEmpty(MapHash<String, Integer> control,
                                       String type) {
         if (control == null)
             return false;
@@ -396,7 +341,7 @@ public final class DomElement extends DomNode {
      * @param type    The tag type.
      * @return True if the tag type is any, otherwise false.
      */
-    private static boolean checkAny(MapHash<String, Integer> control,
+    public static boolean checkAny(MapHash<String, Integer> control,
                                     String type) {
         if (control == null)
             return false;
