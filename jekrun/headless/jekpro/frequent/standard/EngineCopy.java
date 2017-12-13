@@ -78,7 +78,7 @@ public class EngineCopy {
         }
         if (v == null) {
             v = new SkelVar(vars.size);
-            vars.put(key, v);
+            vars.add(key, v);
         }
         return v;
     }

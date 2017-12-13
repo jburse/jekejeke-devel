@@ -217,7 +217,7 @@ public final class SpecialSort extends Special {
             Object elem = AbstractTerm.createMolec(en.skel, en.display);
             try {
                 if (set.getKey(elem) == null)
-                    set.putKey(elem);
+                    set.add(elem);
             } catch (ArithmeticException x) {
                 throw new EngineMessage(EngineMessage.evaluationError(
                         x.getMessage()));
@@ -336,7 +336,7 @@ public final class SpecialSort extends Special {
                 found = map.get(elem);
                 if (found == null) {
                     found = new ListArray<Object>();
-                    map.put(elem, found);
+                    map.add(elem, found);
                 }
             } catch (ArithmeticException x) {
                 throw new EngineMessage(EngineMessage.evaluationError(

@@ -268,7 +268,7 @@ public class DomWriter {
 
         text = "<foo>123</foo>  <foo>456</foo>";
         MapHash<String, Integer> control = new MapHash<String, Integer>();
-        control.add("foo", Integer.valueOf(DomNode.CONTROL_ANY));
+        control.add("foo", Integer.valueOf(DomNode.TYPE_ANY));
         sr = new StringReader(text);
         de = new DomElement();
         de.load(sr, DomNode.MASK_LIST, control);

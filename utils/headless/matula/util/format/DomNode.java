@@ -38,8 +38,9 @@ public abstract class DomNode {
     public static final int MASK_TEXT = 0x00000001;
     public static final int MASK_LIST = 0x00000002;
 
-    public static final int CONTROL_EMPTY = 1; /* disable text and list */
-    public static final int CONTROL_ANY = 2; /* enable text and list */
+    public static final int TYPE_NONE = 0;
+    public static final int TYPE_EMPTY = 1; /* disable text and list */
+    public static final int TYPE_ANY = 2; /* enable text and list */
 
     DomElement parent;
     private boolean lock;

@@ -142,7 +142,8 @@ public final class ForeignLocale {
             /* do nothing */
         } else {
             InterpreterMessage.checkInstantiated(term);
-            throw new InterpreterMessage(InterpreterMessage.typeError("list", term));
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, term));
         }
         Object[] args = new Object[vec.size()];
         vec.toArray(args);

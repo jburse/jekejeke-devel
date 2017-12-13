@@ -192,7 +192,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
 
         text = "<p>The quick brown fox <img> jumps over the lazy dog.</p>";
         MapHash<String, Integer> control = new MapHash<String, Integer>();
-        control.add("img", Integer.valueOf(DomNode.CONTROL_EMPTY));
+        control.add("img", Integer.valueOf(DomNode.TYPE_EMPTY));
         sr = new StringReader(text);
         de = new DomElement();
         de.load(sr, DomNode.MASK_TEXT, control);

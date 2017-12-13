@@ -68,11 +68,8 @@ public final class ForeignStream {
     public final static String OP_NEWLINE = "newline";
 
     /* error terms */
-    private final static String OP_FLAG_VALUE = "flag_value";
     public final static String OP_PERMISSION_OPEN = "open";
-    public final static String OP_TYPE_LIST = "list";
     public final static String OP_OPEN_OPTION = "open_option";
-    public final static String OP_PERMISSION_ACCESS = "access";
 
     /****************************************************************/
     /* Stream Control                                               */
@@ -94,7 +91,7 @@ public final class ForeignStream {
             throws InterpreterMessage, IOException {
         try {
             int modecode = atomToMode(mode);
-            OpenOpts options = decodeOpenOptions(modecode, opt);
+            OpenOpts options = decodeOpenOpts(modecode, opt);
             switch (modecode) {
                 case MODE_READ:
                     return options.openRead(inter.getKnowledgebase(), adr);
@@ -134,8 +131,8 @@ public final class ForeignStream {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(
-                    InterpreterMessage.typeError("list", opt));
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, opt));
         }
         if (str instanceof Reader) {
             ((Reader) str).close();
@@ -441,7 +438,7 @@ public final class ForeignStream {
             return false;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
-                    OP_FLAG_VALUE, t));
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
         }
     }
 
@@ -462,7 +459,7 @@ public final class ForeignStream {
             return false;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
-                    OP_FLAG_VALUE, t));
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
         }
     }
 
@@ -474,13 +471,12 @@ public final class ForeignStream {
      * @return The open options.
      * @throws InterpreterMessage Validation error.
      */
-    public static OpenOpts decodeOpenOptions(int mode, Object opt)
+    public static OpenOpts decodeOpenOpts(int mode, Object opt)
             throws InterpreterMessage {
         OpenOpts res = new OpenOpts();
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
-                ((TermCompound) opt).getFunctor().equals(
-                        Knowledgebase.OP_CONS)) {
+                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
             Object temp = ((TermCompound) opt).getArg(0);
             if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
@@ -626,7 +622,7 @@ public final class ForeignStream {
         } else {
             InterpreterMessage.checkInstantiated(opt);
             throw new InterpreterMessage(InterpreterMessage.typeError(
-                    OP_TYPE_LIST, opt));
+                    InterpreterMessage.OP_TYPE_LIST, opt));
         }
         return res;
     }

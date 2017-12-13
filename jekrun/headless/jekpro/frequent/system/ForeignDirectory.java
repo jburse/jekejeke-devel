@@ -1,6 +1,5 @@
 package jekpro.frequent.system;
 
-import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
@@ -168,7 +167,8 @@ public final class ForeignDirectory {
         String scheme = ForeignUri.sysSpecScheme(spec);
         if (!ForeignUri.SCHEME_FILE.equals(scheme))
             throw new InterpreterMessage(InterpreterMessage.permissionError(
-                    ForeignStream.OP_PERMISSION_ACCESS, EngineMessage.OP_PERMISSION_SOURCE_SINK, adr));
+                    InterpreterMessage.OP_PERMISSION_ACCESS,
+                    EngineMessage.OP_PERMISSION_SOURCE_SINK, adr));
         String path = ForeignUri.sysSpecPath(spec);
         return path.replace('/', File.separatorChar);
     }

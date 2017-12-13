@@ -18,15 +18,16 @@
  * Prolog reference data type and automatically reclaimed by the Java GC.
  *
  * Examples:
- * ?- open('data.xml', read, S), elem_new(D),
- *    node_load(D, S, 0), close(S), assertz(my_data(D)).
+ * ?- open('data.html', read, S), elem_new(D),
+ *    node_load(D, S, []), close(S), assertz(my_data(D)).
  * S = 0r22126bf,
  * D = 0r682136cf
- * ?- my_data(D), current_output(S), node_store(D, S, '', 0), nl.
- * &lt;root&gt;
- *     &lt;node attr="value1"/&gt;
- *     &lt;node attr="value2"/&gt;
- * &lt;/root&gt;
+ * ?- my_data(D), current_output(S), node_store(D, S, '', []).
+ * &lt;parent foo=123&gt;
+ *     &lt;child bar="alfa"/&gt;
+ *     &lt;child bar="beta"/&gt;
+ * &lt;/parent&gt;
+ * &lt;parent foo=456/&gt;
  * D = 0r682136cf,
  * S = 0r3fc82f6e
  *
@@ -100,24 +101,24 @@ text_escape(X, Y) :-
 /*******************************************************************/
 
 /**
- * node_load(D, S, R):
+ * node_load(D, S, O):
  * The predicate succeeds in loading the stream S into the DOM
- * node D with retain flags R.
+ * node D with the dom options O. For a list of options see
+ * the API documentation.
  */
-% node_load(+DomNode, +Stream, +Integer)
+% node_load(+DomNode, +Stream, +List)
 :- public node_load/3.
-:- virtual node_load/3.
-:- foreign(node_load/3, 'DomNode', load('Reader',int)).
+:- foreign(node_load/3, 'ForeignDom', sysNodeLoad('DomNode','Reader','Object')).
 
 /**
- * node_store(D, S, C, R):
+ * node_store(D, S, C, O):
  * The predicate succeeds in storing the DOM node D into the
- * stream S with comment C and retain flags R.
+ * stream S with comment C and the dom options O. For a list of
+ * options see the API documentation.
  */
-% node_store(+DomNode, +Stream, +Atom, +Integer)
+% node_store(+DomNode, +Stream, +Atom, +List)
 :- public node_store/4.
-:- virtual node_store/4.
-:- foreign(node_store/4, 'DomNode', store('Writer','String',int)).
+:- foreign(node_store/4, 'ForeignDom', sysNodeStore('DomNode','Writer','String','Object')).
 
 /**
  * node_get_parent(D, C):
@@ -180,8 +181,7 @@ text_escape(X, Y) :-
  */
 % elem_get_attr(+DomElement, +Atom, -Atom)
 :- public elem_get_attr/3.
-:- virtual elem_get_attr/3.
-:- foreign(elem_get_attr/3, 'DomElement', getAttr('String')).
+:- foreign(elem_get_attr/3, 'ForeignDom', sysGetElemAttr('DomElement','String')).
 
 /**
  * elem_set_attr(D, A, V):
@@ -189,8 +189,7 @@ text_escape(X, Y) :-
  */
 % elem_set_attr(+DomElement, +Atom, +Atom)
 :- public elem_set_attr/3.
-:- virtual elem_set_attr/3.
-:- foreign(elem_set_attr/3, 'DomElement', setAttr('String','String')).
+:- foreign(elem_set_attr/3, 'ForeignDom', sysSetElemAttr('DomElement','String','Object')).
 
 /**
  * elem_remove_attr(D, A):

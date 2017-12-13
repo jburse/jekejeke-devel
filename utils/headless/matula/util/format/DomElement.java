@@ -327,7 +327,7 @@ public final class DomElement extends DomNode {
         Integer val = control.get(type);
         if (val == null) {
             return false;
-        } else if (val.intValue() == DomNode.CONTROL_EMPTY) {
+        } else if (val.intValue() == DomNode.TYPE_EMPTY) {
             return true;
         } else {
             return false;
@@ -348,7 +348,7 @@ public final class DomElement extends DomNode {
         Integer val = control.get(type);
         if (val == null) {
             return false;
-        } else if (val.intValue() == DomNode.CONTROL_ANY) {
+        } else if (val.intValue() == DomNode.TYPE_ANY) {
             return true;
         } else {
             return false;
