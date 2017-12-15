@@ -93,19 +93,19 @@ public final class XSLTransform extends DomWriter {
     /**
      * <p>Transform a template to a result.</p>
      *
-     * @param de      The template.
+     * @param dn      The template.
      * @param comment The comment.
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    public void xslt(DomElement de, String comment)
+    public void xslt(DomNode dn, String comment)
             throws IOException, ScannerError {
         if (comment != null && !"".equals(comment))
             writeComment(comment);
         if ((getMask() & DomNode.MASK_LIST) != 0) {
-            xsltChildren(de);
+            xsltChildren((DomElement) dn);
         } else {
-            xsltNode(de);
+            xsltNode(dn);
         }
     }
 
@@ -434,6 +434,7 @@ public final class XSLTransform extends DomWriter {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
+    /*
     public static void main(String[] args)
             throws IOException, ScannerError {
         PrintWriter pw = new PrintWriter(System.out);
@@ -486,5 +487,6 @@ public final class XSLTransform extends DomWriter {
         pw.flush();
         System.out.println();
     }
+    */
 
 }
