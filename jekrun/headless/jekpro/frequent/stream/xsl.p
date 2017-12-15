@@ -22,3 +22,62 @@
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
+
+:- package(library(jekpro/frequent/stream)).
+:- use_package(foreign(matula/util/format)).
+:- use_package(foreign(matula/util/transform)).
+:- use_package(foreign(java/io)).
+:- use_package(foreign(jekpro/frequent/stream)).
+
+:- module(xsl, []).
+
+/*******************************************************************/
+/* XML Check                                                       */
+/*******************************************************************/
+
+/**
+ * schema_new(S):
+ * The predicate succeeds in S with a new XSD schema.
+ */
+% schema_new(-XSDSchema)
+:- public schema_new/1.
+:- foreign_constructor(schema_new/1, 'XSDSchema', new).
+
+/**
+ * schema_digest(S, D):
+ * The predicate succeeds in digesting the DOM element D
+ * into the XSD schema S.
+ */
+% schema_digest(+XSDSchema, +DomElement)
+:- public schema_digest/2.
+:- virtual schema_digest/2.
+:- foreign(schema_digest/2, 'XSDSchema', digestElements('DomElement')).
+
+/**
+ * data_check(D, S, O):
+ * The predicate succeeds in checking the DOM node D versus
+ * the XSD schema S with the DOM options O.
+ */
+% data_check(+DomNode, +XSDSchema, +List)
+:- public data_check/3.
+:- foreign(data_check/3, 'ForeignSheet',
+      sysXmlCheck('DomNode','XSDSchema','Object')).
+
+/**
+ * sheet_check(T, O):
+ * The predicate succeeds in checking the DOM node T with
+ * the XSL options O.
+ */
+% sheet_check(+DomNode, +List)
+:- public sheet_check/2.
+:- foreign(sheet_check/2, 'ForeignSheet', sysXslCheck('DomNode','Object')).
+
+/**
+ * sheet_transform(T, S, C, O):
+ * The predicate succeeds in transforming the DOM node T into
+ * the stream S with comment C and the XSL options O.
+ */
+% sheet_check(+DomNode, +Stream, +Atom, +List)
+:- public sheet_transform/4.
+:- foreign(sheet_transform/4, 'ForeignSheet',
+      sysXslTransform('DomNode','Writer','String','Object')).

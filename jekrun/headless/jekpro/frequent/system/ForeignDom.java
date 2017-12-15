@@ -2,11 +2,7 @@ package jekpro.frequent.system;
 
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
-import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.format.DomElement;
 import matula.util.format.DomNode;
 import matula.util.format.DomText;
@@ -43,21 +39,6 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignDom {
-    /* mask values */
-    private final static String OP_LIST = "list";
-    private final static String OP_TEXT = "text";
-
-    /* control values */
-    private final static String OP_NONE = "none";
-    private final static String OP_EMPTY = "empty";
-    private final static String OP_ANY = "any";
-
-    /* dom options */
-    private final static String OP_ROOT = "root";
-    private final static String OP_TYPE = "type";
-
-    /* error terms */
-    private final static String OP_DOM_OPTION = "dom_option";
 
     /**
      * <p>Check whether the dom node is a dom element.</p>
@@ -163,14 +144,14 @@ public final class ForeignDom {
      *
      * @param dn     The dom node.
      * @param reader The reader.
-     * @param opts   The options.
+     * @param opts   The DOM options.
      * @throws InterpreterMessage Validation error.
      * @throws ScannerError       Syntax error.
      * @throws IOException        IO error.
      */
     public static void sysNodeLoad(DomNode dn, Reader reader, Object opts)
             throws InterpreterMessage, IOException, ScannerError {
-        DomOpts res = decodeDomOpts(opts);
+        DomOpts res = DomOpts.decodeDomOpts(opts);
         dn.load(reader, res.getMask(), res.getControl());
     }
 
@@ -180,115 +161,15 @@ public final class ForeignDom {
      * @param dn      The dom node.
      * @param writer  The writer.
      * @param comment The comment.
-     * @param opts    The options.
+     * @param opts    The DOM options.
      * @throws InterpreterMessage Validation error.
      * @throws IOException        IO error.
      */
     public static void sysNodeStore(DomNode dn, Writer writer,
                                     String comment, Object opts)
             throws InterpreterMessage, IOException {
-        DomOpts res = decodeDomOpts(opts);
+        DomOpts res = DomOpts.decodeDomOpts(opts);
         dn.store(writer, comment, res.getMask(), res.getControl());
-    }
-
-    /**
-     * <p>Convert an atom to a mask. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param t The mask term.
-     * @return The mask value.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static int atomToMask(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
-        String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_LIST)) {
-            return DomNode.MASK_LIST;
-        } else if (val.equals(OP_TEXT)) {
-            return DomNode.MASK_TEXT;
-        } else {
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
-        }
-    }
-
-    /**
-     * <p>Convert an atom to a type. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param t The type term.
-     * @return The type value.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static int atomToType(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
-        String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_NONE)) {
-            return DomNode.TYPE_NONE;
-        } else if (val.equals(OP_EMPTY)) {
-            return DomNode.TYPE_EMPTY;
-        } else if (val.equals(OP_ANY)) {
-            return DomNode.TYPE_ANY;
-        } else {
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
-        }
-    }
-
-    /**
-     * <p>Decode the dom options.</p>
-     *
-     * @param opt The dom options term.
-     * @return The dom options.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static DomOpts decodeDomOpts(Object opt)
-            throws InterpreterMessage {
-        DomOpts res = new DomOpts();
-        while (opt instanceof TermCompound &&
-                ((TermCompound) opt).getArity() == 2 &&
-                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) opt).getArg(0);
-            if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_ROOT)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                int mask = atomToMask(help);
-                res.setMask(mask);
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 2 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
-                String key = InterpreterMessage.castString(help);
-                help = ((TermCompound) temp).getArg(1);
-                Integer type = Integer.valueOf(atomToType(help));
-                MapHash<String, Integer> control = res.getControl();
-                if (control == null) {
-                    control = new MapHash<String, Integer>();
-                    res.setControl(control);
-                }
-                MapEntry<String, Integer> entry = control.getEntry(key);
-                if (entry != null) {
-                    entry.value = type;
-                } else {
-                    control.add(key, type);
-                }
-            } else {
-                InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(OP_DOM_OPTION, temp));
-            }
-            opt = ((TermCompound) opt).getArg(1);
-        }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, opt));
-        }
-        return res;
     }
 
 }

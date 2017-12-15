@@ -1,5 +1,17 @@
 package jekpro.frequent.stream;
 
+import jekpro.frequent.system.DomOpts;
+import jekpro.tools.call.InterpreterMessage;
+import matula.util.format.DomNode;
+import matula.util.regex.ScannerError;
+import matula.util.transform.XMLCheck;
+import matula.util.transform.XSDSchema;
+import matula.util.transform.XSLCheck;
+import matula.util.transform.XSLTransform;
+
+import java.io.IOException;
+import java.io.Writer;
+
 /**
  * <p>The foreign predicates for the module stream/xsl.</p>
  * <p/>
@@ -26,5 +38,60 @@ package jekpro.frequent.stream;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ForeignSheet {
+public final class ForeignSheet {
+
+    /**
+     * <p>Check a XML node.</p>
+     *
+     * @param dn   The XML node.
+     * @param xs   The XSD schema.
+     * @param opts The DOM options.
+     * @throws ScannerError Validation error.
+     */
+    public static void sysXmlCheck(DomNode dn, XSDSchema xs, Object opts)
+            throws ScannerError, InterpreterMessage {
+        DomOpts res = DomOpts.decodeDomOpts(opts);
+        XMLCheck xc = new XMLCheck();
+        xc.setSchema(xs);
+        xc.setMask(res.getMask());
+        xc.check(dn);
+    }
+
+    /**
+     * <p>Check an XSL node.</p>
+     *
+     * @param dn   The XSL node.
+     * @param opts The sheet options.
+     * @throws ScannerError Validation error.
+     * @throws IOException IO error.
+     */
+    public static void sysXslCheck(DomNode dn, Object opts)
+            throws IOException, ScannerError, InterpreterMessage {
+        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+        XSLCheck xc = new XSLCheck();
+        xc.setMask(res.getMask());
+        xc.check(dn);
+    }
+
+    /**
+     * <p>Transform an XSL node.</p>
+     *
+     * @param dn      The XSL node.
+     * @param writer  The writer.
+     * @param comment The comment.
+     * @param opts    The sheet options.
+     * @throws ScannerError Validation error.
+     * @throws IOException IO error.
+     */
+    public static void sysXslTransform(DomNode dn, Writer writer,
+                                       String comment, Object opts)
+            throws InterpreterMessage, IOException, ScannerError {
+        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+        XSLTransform xt = new XSLTransform();
+        xt.setWriter(writer);
+        xt.setVariables(res.getVariables());
+        xt.setMask(res.getMask());
+        xt.xslt(dn, comment);
+    }
+
 }
