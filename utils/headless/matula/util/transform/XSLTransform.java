@@ -424,6 +424,8 @@ public final class XSLTransform extends DomWriter {
             case TYPE_TEXT_HTML:
                 write(ForeignXml.sysTextEscape(data));
                 break;
+            default:
+                throw new IllegalArgumentException("type missing");
         }
     }
 

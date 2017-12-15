@@ -58,22 +58,6 @@ public final class ForeignSheet {
     }
 
     /**
-     * <p>Check an XSL node.</p>
-     *
-     * @param dn   The XSL node.
-     * @param opts The sheet options.
-     * @throws ScannerError Validation error.
-     * @throws IOException IO error.
-     */
-    public static void sysXslCheck(DomNode dn, Object opts)
-            throws IOException, ScannerError, InterpreterMessage {
-        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-        XSLCheck xc = new XSLCheck();
-        xc.setMask(res.getMask());
-        xc.check(dn);
-    }
-
-    /**
      * <p>Transform an XSL node.</p>
      *
      * @param dn      The XSL node.
@@ -91,7 +75,24 @@ public final class ForeignSheet {
         xt.setWriter(writer);
         xt.setVariables(res.getVariables());
         xt.setMask(res.getMask());
+        xt.setControl(res.getControl());
         xt.xslt(dn, comment);
+    }
+
+    /**
+     * <p>Check an XSL node.</p>
+     *
+     * @param dn   The XSL node.
+     * @param opts The sheet options.
+     * @throws ScannerError Validation error.
+     * @throws IOException IO error.
+     */
+    public static void sysXslCheck(DomNode dn, Object opts)
+            throws IOException, ScannerError, InterpreterMessage {
+        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+        XSLCheck xc = new XSLCheck();
+        xc.setMask(res.getMask());
+        xc.check(dn);
     }
 
 }

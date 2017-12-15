@@ -1,4 +1,33 @@
 /**
+ * This module provides a couple of simple utilities to deal with the
+ * validation and application of XSL models. When a XSL model is
+ * validated, the referenced XML data is validated via its associated
+ * XSD schema. The predicates schema_new/1 and schema_digest/2 allow
+ * creating an XSD schema. An XML model is validated by the
+ * predicate data_check/3.
+ *
+ * Example:
+ * ?-
+ *
+ * The XSL model loads referenced data or schema via reflection. The
+ * result should be an in-stance that implements the Java interface
+ * InterfacePath. We currently use the standard Java class loader to
+ * create the instance. Using the class loader from the Prolog knowledge
+ * base is planned for future releases of this module.
+ *
+ * Example:
+ * ?- open('hello_english.xsd', read, S), elem_new(D),
+ *    node_load(D, S, [root(text)]), close(S), assertz(my_data(D)).
+ * ?- my_data(D), current_output(S),
+ *    sheet_transform(D, S, '', [variable(name,'John')]).
+ * Welcome John!
+ *
+ * XSL model select data fragments by XPath expressions. These
+ * expressions are parsed on the fly. During validation they advanced
+ * the current schema, whereas during application they advanced the
+ * current data. XSL models can be validated by the predicate
+ * sheet_check/2 and applied by the predicate sheet_transform/4.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -64,15 +93,6 @@
       sysXmlCheck('DomNode','XSDSchema','Object')).
 
 /**
- * sheet_check(T, O):
- * The predicate succeeds in checking the DOM node T with
- * the XSL options O.
- */
-% sheet_check(+DomNode, +List)
-:- public sheet_check/2.
-:- foreign(sheet_check/2, 'ForeignSheet', sysXslCheck('DomNode','Object')).
-
-/**
  * sheet_transform(T, S, C, O):
  * The predicate succeeds in transforming the DOM node T into
  * the stream S with comment C and the XSL options O.
@@ -81,3 +101,12 @@
 :- public sheet_transform/4.
 :- foreign(sheet_transform/4, 'ForeignSheet',
       sysXslTransform('DomNode','Writer','String','Object')).
+
+/**
+ * sheet_check(T, O):
+ * The predicate succeeds in checking the DOM node T with
+ * the XSL options O.
+ */
+% sheet_check(+DomNode, +List)
+:- public sheet_check/2.
+:- foreign(sheet_check/2, 'ForeignSheet', sysXslCheck('DomNode','Object')).

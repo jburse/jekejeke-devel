@@ -33,7 +33,7 @@ import matula.util.format.DomNode;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DomOpts {
+public class DomOpts {
     /* mask values */
     private final static String OP_LIST = "list";
     private final static String OP_TEXT = "text";
@@ -45,12 +45,12 @@ public final class DomOpts {
 
     /* dom options */
     public final static String OP_ROOT = "root";
-    private final static String OP_TYPE = "type";
+    public final static String OP_TYPE = "type";
 
     /* error terms */
     private final static String OP_DOM_OPTION = "dom_option";
 
-    private int mask = DomNode.MASK_LIST;
+    private int mask;
     private MapHash<String, Integer> control;
 
     /**
@@ -67,7 +67,7 @@ public final class DomOpts {
      *
      * @param m The mask.
      */
-    void setMask(int m) {
+    public void setMask(int m) {
         mask = m;
     }
 
@@ -76,7 +76,7 @@ public final class DomOpts {
      *
      * @return The control.
      */
-    MapHash<String, Integer> getControl() {
+    public MapHash<String, Integer> getControl() {
         return control;
     }
 
@@ -85,7 +85,7 @@ public final class DomOpts {
      *
      * @param c The control.
      */
-    void setControl(MapHash<String, Integer> c) {
+    public void setControl(MapHash<String, Integer> c) {
         control = c;
     }
 
@@ -99,6 +99,7 @@ public final class DomOpts {
     public static DomOpts decodeDomOpts(Object opt)
             throws InterpreterMessage {
         DomOpts res = new DomOpts();
+        res.setMask(DomNode.MASK_LIST);
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {

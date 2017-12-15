@@ -34,33 +34,14 @@ import matula.util.format.DomNode;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-class SheetOpts {
+class SheetOpts extends DomOpts {
     /* sheet options */
     public final static String OP_VARIABLE = "variable";
 
     /* error terms */
     private final static String OP_SHEET_OPTION = "sheet_option";
 
-    private int mask = DomNode.MASK_TEXT;
     MapHash<String, Object> variables;
-
-    /**
-     * <p>Retrieve the mask.</p>
-     *
-     * @return The mask.
-     */
-    int getMask() {
-        return mask;
-    }
-
-    /**
-     * <p>Set the mask.</p>
-     *
-     * @param m The mask.
-     */
-    void setMask(int m) {
-        mask = m;
-    }
 
     /**
      * <p>Retrieve the variables.</p>
@@ -90,6 +71,7 @@ class SheetOpts {
     public static SheetOpts decodeSheetOpts(Object opt)
             throws InterpreterMessage {
         SheetOpts res = new SheetOpts();
+        res.setMask(DomNode.MASK_TEXT);
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
@@ -100,6 +82,25 @@ class SheetOpts {
                 Object help = ((TermCompound) temp).getArg(0);
                 int mask = DomOpts.atomToMask(help);
                 res.setMask(mask);
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 2 &&
+                    ((TermCompound) temp).getFunctor().equals(DomOpts.OP_TYPE)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                InterpreterMessage.checkInstantiated(help);
+                String key = InterpreterMessage.castString(help);
+                help = ((TermCompound) temp).getArg(1);
+                Integer type = Integer.valueOf(atomToType(help));
+                MapHash<String, Integer> control = res.getControl();
+                if (control == null) {
+                    control = new MapHash<String, Integer>();
+                    res.setControl(control);
+                }
+                MapEntry<String, Integer> entry = control.getEntry(key);
+                if (entry != null) {
+                    entry.value = type;
+                } else {
+                    control.add(key, type);
+                }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 2 &&
                     ((TermCompound) temp).getFunctor().equals(OP_VARIABLE)) {
