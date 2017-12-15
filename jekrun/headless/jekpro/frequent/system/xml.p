@@ -103,7 +103,7 @@ text_escape(X, Y) :-
 /**
  * node_load(D, S, O):
  * The predicate succeeds in loading the stream S into the DOM
- * node D with the dom options O. For a list of options see
+ * node D with the DOM options O. For a list of options see
  * the API documentation.
  */
 % node_load(+DomNode, +Stream, +List)
@@ -113,7 +113,7 @@ text_escape(X, Y) :-
 /**
  * node_store(D, S, C, O):
  * The predicate succeeds in storing the DOM node D into the
- * stream S with comment C and the dom options O. For a list of
+ * stream S with comment C and the DOM options O. For a list of
  * options see the API documentation.
  */
 % node_store(+DomNode, +Stream, +Atom, +List)
