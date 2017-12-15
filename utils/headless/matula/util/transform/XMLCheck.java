@@ -122,7 +122,7 @@ public final class XMLCheck {
      * @param de data dom element.
      * @throws ScannerError Shit happen.
      */
-    public void checkElement(DomElement de) throws ScannerError {
+    private void checkElement(DomElement de) throws ScannerError {
         String name = de.getName();
         XSDDecl decl = schema.getDecl(name);
         if (decl == null || !(decl instanceof XSDDeclElem))
