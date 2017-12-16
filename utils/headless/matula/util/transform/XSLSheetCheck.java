@@ -41,13 +41,9 @@ import java.io.InputStreamReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSLSheetCheck extends XSLSheet {
-    static final String ERROR_ILLEGAL_ACCESS = "illegal access";
-    static final String ERROR_INSTANTIATION_EXCEPTION = "instantiation exception";
     public static XSDSchema meta = new XSDSchema();
 
     private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
-    public static final String SHEET_MISSING_CLASS = "sheet_missing_class";
-    private static final String SHEET_MISMATCHED_BEAN = "sheet_mismatched_bean";
     private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
     private static final String SHEET_REQUIRED_SELECT = "sheet_required_select";
     private static final String SHEET_FORBIDDEN_SELECT = "sheet_forbidden_select";
@@ -215,16 +211,8 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError {
-        try {
             String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
-            ClassLoader loader = getClass().getClassLoader();
-            Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
-            if (_class == null)
-                throw new ScannerError(SHEET_MISSING_CLASS);
-            Object obj = _class.newInstance();
-            if (!(obj instanceof InterfacePath))
-                throw new ScannerError(SHEET_MISMATCHED_BEAN);
-            InterfacePath pu = (InterfacePath) obj;
+            InterfacePath pu = resolveBean(bean);
             if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
                 throw new ScannerError(SHEET_MISMATCHED_PATH);
             if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
@@ -254,11 +242,7 @@ public final class XSLSheetCheck extends XSLSheet {
             xsltChildren(de);
             schema = back2;
             simulation = back;
-        } catch (IllegalAccessException x) {
-            throw new ScannerError(ERROR_ILLEGAL_ACCESS);
-        } catch (InstantiationException x) {
-            throw new ScannerError(ERROR_INSTANTIATION_EXCEPTION);
-        }
+
     }
 
     /**

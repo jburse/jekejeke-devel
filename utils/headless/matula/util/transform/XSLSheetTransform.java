@@ -3,7 +3,6 @@ package matula.util.transform;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
-import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignXml;
 import matula.util.system.MimeHeader;
 
@@ -258,35 +257,24 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError {
-        try {
-            String bean = de.getAttr(ATTR_WITHDATA_BEAN);
-            ClassLoader loader=getClass().getClassLoader();
-            Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
-            if (_class==null)
-                throw new ScannerError(XSLSheetCheck.SHEET_MISSING_CLASS);
-            Object obj = _class.newInstance();
-            InterfacePath pu = (InterfacePath) obj;
-            if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
-                String select = de.getAttr(ATTR_WITHDATA_SELECT);
-                String doc = attrSelect(select);
-                pu.setDocument(doc);
-            }
-            pu.setFlags(pu.getFlags() & ~InterfacePath.FLAG_SCHM);
-            pu.list();
-            boolean f = pu.next();
-            pu.close();
-            if (!f)
-                throw new IllegalArgumentException("data missing");
-
-            DomElement back = data;
-            data = pu.getFound();
-            xsltChildren(de);
-            data = back;
-        } catch (IllegalAccessException e) {
-            throw new ScannerError(XSLSheetCheck.ERROR_ILLEGAL_ACCESS);
-        } catch (InstantiationException e) {
-            throw new ScannerError(XSLSheetCheck.ERROR_INSTANTIATION_EXCEPTION);
+        String bean = de.getAttr(ATTR_WITHDATA_BEAN);
+        InterfacePath pu = resolveBean(bean);
+        if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
+            String select = de.getAttr(ATTR_WITHDATA_SELECT);
+            String doc = attrSelect(select);
+            pu.setDocument(doc);
         }
+        pu.setFlags(pu.getFlags() & ~InterfacePath.FLAG_SCHM);
+        pu.list();
+        boolean f = pu.next();
+        pu.close();
+        if (!f)
+            throw new IllegalArgumentException("data missing");
+
+        DomElement back = data;
+        data = pu.getFound();
+        xsltChildren(de);
+        data = back;
     }
 
     /**

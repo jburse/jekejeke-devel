@@ -1,5 +1,8 @@
 package matula.util.transform;
 
+import matula.util.regex.ScannerError;
+import matula.util.system.AbstractRuntime;
+
 /**
  * <p>This class provides an XSL style sheet base.</p>
  * </p>
@@ -27,4 +30,33 @@ package matula.util.transform;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 class XSLSheet {
+    private static final String SHEET_MISSING_CLASS = "sheet_missing_class";
+    private static final String SHEET_MISMATCHED_BEAN = "sheet_mismatched_bean";
+    private static final String SHEET_ILLEGAL_ACCESS = "sheet_illegal_access";
+    private static final String SHEET_INST_EXCEPTION = "sheet_inst_exception";
+
+    /**
+     * <p>Resolve the bean.</p>
+     *
+     * @param bean The bean.
+     * @return The interface path.
+     * @throws ScannerError Validation error.
+     */
+    public InterfacePath resolveBean(String bean) throws ScannerError {
+        try {
+            ClassLoader loader = getClass().getClassLoader();
+            Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
+            if (_class == null)
+                throw new ScannerError(SHEET_MISSING_CLASS);
+            Object obj = _class.newInstance();
+            if (!(obj instanceof InterfacePath))
+                throw new ScannerError(SHEET_MISMATCHED_BEAN);
+            return (InterfacePath) obj;
+        } catch (IllegalAccessException x) {
+            throw new ScannerError(SHEET_ILLEGAL_ACCESS);
+        } catch (InstantiationException x) {
+            throw new ScannerError(SHEET_INST_EXCEPTION);
+        }
+    }
+
 }

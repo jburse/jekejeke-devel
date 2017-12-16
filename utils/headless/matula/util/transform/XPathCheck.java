@@ -35,9 +35,11 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class XPathCheck {
-    private static final String SHEET_CANT_CHECK = "sheet_cant_check";
-    private static final String SHEET_OVERRUN_PARENT = "sheet_overrun_parent";
-    private static final String SHEET_MISSING_FOREACH = "sheet_missing_foreach";
+    private static final String PATH_CANT_CHCPNT = "path_cant_chcpnt";
+    private static final String PATH_CANT_PRED = "path_cant_pred";
+    private static final String PATH_CANT_SELE = "path_cant_sele";
+    private static final String PATH_OVERRUN_PARENT = "path_overrun_parent";
+    private static final String PATH_MISSING_FOREACH = "path_missing_foreach";
 
     private XSDSchema schema;
     private ListArray<String> simulation;
@@ -92,16 +94,16 @@ final class XPathCheck {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 XPathExprComb ex = cp.getExpr();
                 if (ex.getCombination() != XPathExprComb.EXPR_COMB_PRED)
-                    throw new ScannerError(SHEET_CANT_CHECK);
+                    throw new ScannerError(PATH_CANT_CHCPNT);
                 MapHashLink<String, XPathExpr> exs = ex.getExprs();
                 MapEntry<String, XPathExpr> entry = exs.getFirstEntry();
                 if (entry == null)
-                    throw new ScannerError(SHEET_CANT_CHECK);
+                    throw new ScannerError(PATH_CANT_CHCPNT);
                 if (!(entry.value instanceof XPathExprPrim))
-                    throw new ScannerError(SHEET_CANT_CHECK);
+                    throw new ScannerError(PATH_CANT_CHCPNT);
                 XPathExprPrim prim = (XPathExprPrim) entry.value;
                 if (prim.getPrimitive() != XPathExprPrim.EXPR_PRIM_NAME)
-                    throw new ScannerError(SHEET_CANT_CHECK);
+                    throw new ScannerError(PATH_CANT_CHCPNT);
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
                 XSDDecl decl = schema.getDecl(name);
                 if (decl == null || !(decl instanceof XSDDeclElem))
@@ -117,11 +119,11 @@ final class XPathCheck {
                 break;
             case ChoicePoint.CHOICEPOINT_PARENT:
                 if (!(simulation.size() > 0))
-                    throw new ScannerError(SHEET_OVERRUN_PARENT);
+                    throw new ScannerError(PATH_OVERRUN_PARENT);
                 simulation.remove(simulation.size() - 1);
                 break;
             case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
-                throw new ScannerError(SHEET_CANT_CHECK);
+                throw new ScannerError(PATH_CANT_CHCPNT);
             default:
                 throw new IllegalArgumentException("illegal choice");
         }
@@ -173,7 +175,7 @@ final class XPathCheck {
                         throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     break;
                 default:
-                    throw new ScannerError(SHEET_CANT_CHECK);
+                    throw new ScannerError(PATH_CANT_PRED);
             }
         } else if (ex instanceof XPathExprComb) {
             XPathExprComb comb = (XPathExprComb) ex;
@@ -187,10 +189,10 @@ final class XPathCheck {
                     }
                     break;
                 default:
-                    throw new ScannerError(SHEET_CANT_CHECK);
+                    throw new ScannerError(PATH_CANT_PRED);
             }
         } else {
-            throw new ScannerError(SHEET_CANT_CHECK);
+            throw new ScannerError(PATH_CANT_PRED);
         }
     }
 
@@ -206,7 +208,7 @@ final class XPathCheck {
             switch (xp.getPrimitive()) {
                 case XSelectPrim.SELE_PRIM_ATTR:
                     if (!(simulation.size() > 0))
-                        throw new ScannerError(SHEET_MISSING_FOREACH);
+                        throw new ScannerError(PATH_MISSING_FOREACH);
                     String name = simulation.get(simulation.size() - 1);
                     String attr = xp.getAttr();
                     XSDDecl decl = schema.getDecl(name + "." + attr);
@@ -224,7 +226,7 @@ final class XPathCheck {
                         return XSDDeclAttr.TYPE_OBJECT;
                     }
                 default:
-                    throw new IllegalArgumentException("illegal primitive");
+                    throw new ScannerError(PATH_CANT_SELE);
             }
         } else if (xs instanceof XSelectComb) {
             XSelectComb xc = (XSelectComb) xs;
@@ -246,11 +248,11 @@ final class XPathCheck {
                         throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     break;
                 default:
-                    throw new IllegalArgumentException("illegal combination");
+                    throw new ScannerError(PATH_CANT_SELE);
             }
             return XSDDeclAttr.TYPE_INTEGER;
         } else {
-            throw new ScannerError(SHEET_CANT_CHECK);
+            throw new ScannerError(PATH_CANT_SELE);
         }
     }
 

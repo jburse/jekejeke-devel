@@ -4,11 +4,12 @@ import jekpro.frequent.system.DomOpts;
 import jekpro.tools.call.InterpreterMessage;
 import matula.util.format.DomElement;
 import matula.util.format.DomNode;
+import matula.util.format.DomWriter;
 import matula.util.regex.ScannerError;
 import matula.util.transform.XMLCheck;
 import matula.util.transform.XSDSchema;
-import matula.util.transform.XSLCheck;
-import matula.util.transform.XSLTransform;
+import matula.util.transform.XSLSheetCheck;
+import matula.util.transform.XSLSheetTransform;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -88,17 +89,20 @@ public final class ForeignSheet {
      * @param comment The comment.
      * @param opts    The sheet options.
      * @throws ScannerError Validation error.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     public static void sysXslTransform(DomNode dn, Writer writer,
                                        String comment, Object opts)
             throws InterpreterMessage, IOException, ScannerError {
         SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-        XSLTransform xt = new XSLTransform();
-        xt.setWriter(writer);
+        DomWriter dw = new DomWriter();
+        dw.setWriter(writer);
+        dw.setMask(res.getMask());
+        dw.setControl(res.getControl());
+
+        XSLSheetTransform xt = new XSLSheetTransform();
+        xt.setWriter(dw);
         xt.setVariables(res.getVariables());
-        xt.setMask(res.getMask());
-        xt.setControl(res.getControl());
         xt.xslt(dn, comment);
     }
 
@@ -108,12 +112,12 @@ public final class ForeignSheet {
      * @param dn   The XSL node.
      * @param opts The sheet options.
      * @throws ScannerError Validation error.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     public static void sysXslCheck(DomNode dn, Object opts)
             throws IOException, ScannerError, InterpreterMessage {
         SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-        XSLCheck xc = new XSLCheck();
+        XSLSheetCheck xc = new XSLSheetCheck();
         xc.setMask(res.getMask());
         xc.check(dn);
     }
