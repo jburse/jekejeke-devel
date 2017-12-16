@@ -32,6 +32,8 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomText extends DomNode {
+    static final String DOM_MISSING_TEXT = "dom_missing_text";
+
     private String data = "";
 
     /**
@@ -75,9 +77,9 @@ public final class DomText extends DomNode {
                 dr.nextTagOrText();
                 break;
             case XmlMachine.RES_TAG:
-                throw new ScannerError(DomReader.DOM_START_MISSING);
+                throw new ScannerError(DOM_MISSING_TEXT);
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DomReader.DOM_START_MISSING);
+                throw new ScannerError(DOM_MISSING_TEXT);
             default:
                 throw new IllegalArgumentException("illegal res");
         }

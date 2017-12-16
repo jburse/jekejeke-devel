@@ -35,9 +35,9 @@ public abstract class XSelect {
      *
      * @param d The dom element.
      * @return The value.
-     * @throws ScannerError Shit happens.
+     * @throws IllegalArgumentException Shit happens.
      */
-    public abstract Object evalElement(DomElement d) throws ScannerError;
+    public abstract Object evalElement(DomElement d) throws IllegalArgumentException;
 
     /**
      * <p>Convert this xpath select to a string.</p>

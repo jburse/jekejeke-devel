@@ -101,9 +101,9 @@ public class XSelectComb extends XSelect {
      *
      * @param d The dom element.
      * @return The value.
-     * @throws ScannerError Shit happens.
+     * @throws IllegalArgumentException Shit happens.
      */
-    public Object evalElement(DomElement d) throws ScannerError {
+    public Object evalElement(DomElement d) throws IllegalArgumentException {
         if (combination <= SELE_COMB_NEG) {
             Long val = (Long) first.evalElement(d);
             switch (combination) {

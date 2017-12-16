@@ -146,13 +146,17 @@ public final class ForeignDom {
      * @param reader The reader.
      * @param opts   The DOM options.
      * @throws InterpreterMessage Validation error.
-     * @throws ScannerError       Syntax error.
      * @throws IOException        IO error.
      */
     public static void sysNodeLoad(DomNode dn, Reader reader, Object opts)
-            throws InterpreterMessage, IOException, ScannerError {
-        DomOpts res = DomOpts.decodeDomOpts(opts);
-        dn.load(reader, res.getMask(), res.getControl());
+            throws InterpreterMessage, IOException, InterpreterMessage {
+        try {
+            DomOpts res = DomOpts.decodeDomOpts(opts);
+            dn.load(reader, res.getMask(), res.getControl());
+        } catch (ScannerError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+        }
     }
 
     /**

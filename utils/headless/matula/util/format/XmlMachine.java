@@ -94,11 +94,11 @@ public class XmlMachine {
      * @param ch The character.
      * @throws RuntimeException When the buffer is overrun.
      */
-    private void fill(int ch) {
+    private void fill(int ch) throws ScannerError {
         if (top < MAX_JUNK) {
             text[top++] = (char) ch;
         } else {
-            throw new RuntimeException(XML_BUFFER_OVERFLOW);
+            throw new ScannerError(XML_BUFFER_OVERFLOW);
         }
     }
 

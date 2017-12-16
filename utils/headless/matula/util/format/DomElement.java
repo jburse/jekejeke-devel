@@ -35,11 +35,12 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomElement extends DomNode {
-    static final String DOM_TYPE_MISMATCH = "dom_type_mismatch";
-    static final String DOM_DUPLICATE_ATTRIBUTE = "dom_duplicate_attribute";
+    static final String DOM_MISSING_ELEM = "dom_missing_elem";
+    static final String DOM_DUPLICATE_ATTR = "dom_duplicate_attr";
     static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
-    static final String DOM_END_MISSING = "dom_end_missing";
-    static final String DOM_ATTR_UNEXPECTED = "dom_attr_unexpected";
+    static final String DOM_MISSING_END = "dom_missing_end";
+    static final String DOM_UNEXPECTED_ATTR = "dom_unexpected_attr";
+    static final String DOM_MISMATCHED_END = "dom_mismatched_end";
 
     private String name = XmlMachine.VALUE_EMPTY;
     private AssocArray<String, Object> kvs = new AssocArray<String, Object>();
@@ -86,16 +87,16 @@ public final class DomElement extends DomNode {
     void loadNode(DomReader dr) throws IOException, ScannerError {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
-                throw new ScannerError(DomReader.DOM_START_MISSING);
+                throw new ScannerError(DOM_MISSING_ELEM);
             case XmlMachine.RES_TAG:
                 if (dr.getType().startsWith(DomReader.STRING_SLASH))
-                    throw new ScannerError(DomReader.DOM_START_MISSING);
+                    throw new ScannerError(DOM_MISSING_ELEM);
                 boolean closed = checkClosed(dr);
                 String type = dr.getType();
                 AssocArray<String, Object> newkvs = new AssocArray<String, Object>();
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     if (XmlMachine.indexAttr(newkvs, dr.getAttr(i)) != -1)
-                        throw new ScannerError(DOM_DUPLICATE_ATTRIBUTE);
+                        throw new ScannerError(DOM_DUPLICATE_ATTR);
                     String valstr = dr.getValueAt(i);
                     Object val;
                     if (valstr.length() > 0 && Character.isDigit(valstr.codePointAt(0))) {
@@ -132,7 +133,7 @@ public final class DomElement extends DomNode {
                 setChildren(cs);
                 break;
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DomReader.DOM_START_MISSING);
+                throw new ScannerError(DOM_MISSING_ELEM);
             default:
                 throw new IllegalArgumentException("illegal res");
         }
@@ -170,20 +171,20 @@ public final class DomElement extends DomNode {
             throws ScannerError, IOException {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
-                throw new ScannerError(DOM_END_MISSING);
+                throw new ScannerError(DOM_MISSING_END);
             case XmlMachine.RES_TAG:
                 if (!dr.getType().startsWith(DomReader.STRING_SLASH))
-                    throw new ScannerError(DOM_END_MISSING);
+                    throw new ScannerError(DOM_MISSING_END);
                 if (dr.getAttrCount() != 0)
-                    throw new ScannerError(DOM_ATTR_UNEXPECTED);
+                    throw new ScannerError(DOM_UNEXPECTED_ATTR);
                 String temp = dr.getType();
                 temp = temp.substring(1);
                 if (!type.equals(temp))
-                    throw new ScannerError(DOM_TYPE_MISMATCH);
+                    throw new ScannerError(DOM_MISMATCHED_END);
                 dr.nextTagOrText();
                 break;
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DOM_END_MISSING);
+                throw new ScannerError(DOM_MISSING_END);
             default:
                 throw new IllegalArgumentException("illegal res");
         }

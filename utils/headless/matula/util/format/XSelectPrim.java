@@ -1,7 +1,5 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
-
 /**
  * <p>The class represent an xselect prim.</p>
  * <p/>
@@ -80,15 +78,15 @@ public final class XSelectPrim extends XSelect {
      *
      * @param d The dom element.
      * @return The value.
-     * @throws ScannerError Shit happens.
+     * @throws IllegalArgumentException Shit happens.
      */
-    public Object evalElement(DomElement d) throws ScannerError {
+    public Object evalElement(DomElement d) throws IllegalArgumentException {
         Object res;
         switch (getPrimitive()) {
             case SELE_PRIM_ATTR:
                 res = d.getAttrObj(getAttr());
                 if (res == null)
-                    throw new ScannerError(XPathExprPrim.ERROR_UNKNOWN_ATTRIBUTE);
+                    throw new IllegalArgumentException(XPathExprPrim.UNKNOWN_ATTRIBUTE);
                 break;
             case SELE_PRIM_CONST:
                 res = getCnst();
