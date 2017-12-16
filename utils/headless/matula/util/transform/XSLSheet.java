@@ -1,10 +1,7 @@
 package matula.util.transform;
 
-import matula.util.data.MapHash;
-import matula.util.regex.ScannerError;
-
 /**
- * <p>This class provides an xpath reader during transform.</p>
+ * <p>This class provides an XSL style sheet base.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -29,36 +26,5 @@ import matula.util.regex.ScannerError;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class XPathReadTransform extends XPathRead {
-    /* illegal argument errors */
-    public static final String PATH_UNKNOWN_VARIABLE = "path_unknown_variable";
-
-    private MapHash<String, Object> variables;
-
-    /**
-     * <p>Set the variables.</p>
-     *
-     * @param v The variables.
-     */
-    void setVariables(MapHash<String, Object> v) {
-        variables = v;
-    }
-
-    /**************************************************************/
-    /* Variation Points                                           */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve a variable value.</p>
-     *
-     * @param n The variable name.
-     * @return The variable value.
-     */
-    Object getVariable(String n) {
-        Object cnst = variables.get(n);
-        if (cnst == null)
-            throw new IllegalArgumentException(PATH_UNKNOWN_VARIABLE);
-        return cnst;
-    }
-
+class XSLSheet {
 }

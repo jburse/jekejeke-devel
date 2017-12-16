@@ -3,6 +3,7 @@ package matula.util.transform;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
+import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignXml;
 import matula.util.system.MimeHeader;
 
@@ -34,12 +35,7 @@ import java.io.IOException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XSLTransform extends DomWriter {
-    static final String ERROR_CLASS_MISSING = "class missing";
-    static final String ERROR_INSTANTIATION_EXCEPTION = "instantiation exception";
-    static final String ERROR_ILLEGAL_ACCESS = "illegal access";
-    private static final String ERROR_PARA_MISSING = "parameter missing";
-
+public final class XSLSheetTransform extends XSLSheet {
     public static final String NAME_STYLESHEET = "stylesheet";
     public static final String NAME_OUTPUT = "output";
     public static final String ATTR_OUTPUT_MIME = "mime";
@@ -67,6 +63,7 @@ public final class XSLTransform extends DomWriter {
     private int type = -1;
     private MapHash<String, Object> variables;
     private DomElement data;
+    private DomWriter writer = new DomWriter();
 
     /**
      * <p>Set the variables.</p>§
@@ -87,6 +84,24 @@ public final class XSLTransform extends DomWriter {
     }
 
     /**
+     * <p>Retrieve the dom writer.</p>
+     *
+     * @return The dom writer.
+     */
+    public DomWriter getWriter() {
+        return writer;
+    }
+
+    /**
+     * <p>Set the dom writer.</p>
+     *
+     * @param w The dom writer.
+     */
+    public void setWriter(DomWriter w) {
+        writer = w;
+    }
+
+    /**
      * <p>Transform a template to a result.</p>
      *
      * @param dn      The template.
@@ -97,8 +112,8 @@ public final class XSLTransform extends DomWriter {
     public void xslt(DomNode dn, String comment)
             throws IOException, ScannerError {
         if (comment != null && !"".equals(comment))
-            writeComment(comment);
-        if ((getMask() & DomNode.MASK_LIST) != 0) {
+            writer.writeComment(comment);
+        if ((writer.getMask() & DomNode.MASK_LIST) != 0) {
             xsltChildren((DomElement) dn);
         } else {
             xsltNode(dn);
@@ -136,22 +151,22 @@ public final class XSLTransform extends DomWriter {
             } else if (de.isName(NAME_CHOOSE)) {
                 xsltChoose(de);
             } else if (de.sizeChildren() != 0) {
-                copyStart(de);
-                if ((getMask() & DomNode.MASK_TEXT) == 0 &&
-                        DomElement.checkAny(getControl(), de.getName())) {
-                    int mask = getMask();
-                    setMask(getMask() | DomNode.MASK_TEXT);
+                writer.copyStart(de);
+                if ((writer.getMask() & DomNode.MASK_TEXT) == 0 &&
+                        DomElement.checkAny(writer.getControl(), de.getName())) {
+                    int mask = writer.getMask();
+                    writer.setMask(writer.getMask() | DomNode.MASK_TEXT);
                     xsltChildren2(de);
-                    setMask(mask);
+                    writer.setMask(mask);
                 } else {
                     xsltChildren2(de);
                 }
-                copyEnd(de);
+                writer.copyEnd(de);
             } else {
-                if (!DomElement.checkEmpty(getControl(), de.getName())) {
-                    copyEmpty(de);
+                if (!DomElement.checkEmpty(writer.getControl(), de.getName())) {
+                    writer.copyEmpty(de);
                 } else {
-                    copyStart(de);
+                    writer.copyStart(de);
                 }
             }
         }
@@ -166,14 +181,14 @@ public final class XSLTransform extends DomWriter {
      */
     private void xsltChildren2(DomElement de)
             throws IOException, ScannerError {
-        if ((getMask() & DomNode.MASK_TEXT) != 0) {
+        if ((writer.getMask() & DomNode.MASK_TEXT) != 0) {
             xsltChildren(de);
         } else {
-            write("\n");
-            incIndent();
+            writer.write("\n");
+            writer.incIndent();
             xsltChildren(de);
-            decIndent();
-            writeIndent();
+            writer.decIndent();
+            writer.writeIndent();
         }
     }
 
@@ -189,12 +204,12 @@ public final class XSLTransform extends DomWriter {
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
-            if ((getMask() & DomNode.MASK_TEXT) != 0) {
+            if ((writer.getMask() & DomNode.MASK_TEXT) != 0) {
                 xsltNode(node);
             } else {
-                writeIndent();
+                writer.writeIndent();
                 xsltNode(node);
-                write("\n");
+                writer.write("\n");
             }
         }
     }
@@ -245,7 +260,10 @@ public final class XSLTransform extends DomWriter {
             throws IOException, ScannerError {
         try {
             String bean = de.getAttr(ATTR_WITHDATA_BEAN);
-            Class<?> _class = Class.forName(bean);
+            ClassLoader loader=getClass().getClassLoader();
+            Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
+            if (_class==null)
+                throw new ScannerError(XSLSheetCheck.SHEET_MISSING_CLASS);
             Object obj = _class.newInstance();
             InterfacePath pu = (InterfacePath) obj;
             if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
@@ -265,11 +283,9 @@ public final class XSLTransform extends DomWriter {
             xsltChildren(de);
             data = back;
         } catch (IllegalAccessException e) {
-            throw new ScannerError(ERROR_ILLEGAL_ACCESS);
+            throw new ScannerError(XSLSheetCheck.ERROR_ILLEGAL_ACCESS);
         } catch (InstantiationException e) {
-            throw new ScannerError(ERROR_INSTANTIATION_EXCEPTION);
-        } catch (ClassNotFoundException e) {
-            throw new ScannerError(ERROR_CLASS_MISSING);
+            throw new ScannerError(XSLSheetCheck.ERROR_INSTANTIATION_EXCEPTION);
         }
     }
 
@@ -282,7 +298,7 @@ public final class XSLTransform extends DomWriter {
      */
     private void xsltOutput(DomElement de)
             throws IOException, ScannerError {
-        String mime = de.getAttr(XSLTransform.ATTR_OUTPUT_MIME);
+        String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
         if ("text/plain".equals(typesubtype)) {
@@ -306,7 +322,7 @@ public final class XSLTransform extends DomWriter {
             String use = de.getAttr(ATTR_PARAM_USE);
             boolean opflag = XSDDeclAttr.checkUse(use);
             if (!opflag)
-                throw new ScannerError(ERROR_PARA_MISSING);
+                throw new IllegalArgumentException(XPathReadTransform.PATH_UNKNOWN_VARIABLE);
             return;
         }
         String type = de.getAttr(ATTR_PARAM_TYPE);
@@ -415,10 +431,10 @@ public final class XSLTransform extends DomWriter {
     private void copyText(String data) throws IOException {
         switch (type) {
             case TYPE_TEXT_PLAIN:
-                write(data);
+                writer.write(data);
                 break;
             case TYPE_TEXT_HTML:
-                write(ForeignXml.sysTextEscape(data));
+                writer.write(ForeignXml.sysTextEscape(data));
                 break;
             default:
                 throw new IllegalArgumentException("type missing");
@@ -456,7 +472,7 @@ public final class XSLTransform extends DomWriter {
             throw new IllegalArgumentException("template missing");
         DomElement template = tp.getFound();
 
-        XSLTransform transform = new XSLTransform();
+        XSLSheetTransform transform = new XSLSheetTransform();
         transform.setVariables(variables);
         transform.setWriter(pw);
         transform.setMask(DomNode.MASK_TEXT);
@@ -477,7 +493,7 @@ public final class XSLTransform extends DomWriter {
             throw new IllegalArgumentException("template missing");
         template = tp.getFound();
 
-        transform = new XSLTransform();
+        transform = new XSLSheetTransform();
         transform.setVariables(variables);
         transform.setWriter(pw);
         transform.setMask(DomNode.MASK_TEXT);

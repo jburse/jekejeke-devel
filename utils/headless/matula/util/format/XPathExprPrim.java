@@ -29,8 +29,6 @@ import matula.util.regex.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XPathExprPrim extends XPathExpr {
-    public static final String UNKNOWN_ATTRIBUTE = "unknown_attribute";
-
     public static final int EXPR_PRIM_NAME = 0;
     public static final int EXPR_PRIM_EQ = 1;
     public static final int EXPR_PRIM_NQ = 2;

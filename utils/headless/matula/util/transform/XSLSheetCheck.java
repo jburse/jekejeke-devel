@@ -5,6 +5,7 @@ import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
+import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignUri;
 import matula.util.system.MimeHeader;
 
@@ -39,19 +40,21 @@ import java.io.InputStreamReader;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XSLCheck {
+public final class XSLSheetCheck extends XSLSheet {
+    static final String ERROR_ILLEGAL_ACCESS = "illegal access";
+    static final String ERROR_INSTANTIATION_EXCEPTION = "instantiation exception";
     public static XSDSchema meta = new XSDSchema();
 
-    private static final String ERROR_SELECT_MISSING = "select missing";
-    private static final String ERROR_BEAN_MISSING = "bean missing";
-    private static final String ERROR_PATH_EXPECTED = "path expected";
-    private static final String ERROR_DATA_EXPECTED = "data expected";
-    private static final String ERROR_DUPLICATE_PARA = "duplicate parameter";
-    private static final String ERROR_UNSUPPORTED_MIME = "unsupported mime";
-    private static final String ERROR_MIME_MISSING = "mime missing";
-    private static final String ERROR_SELECT_FORBIDDEN = "select forbidden";
-    private static final String ERROR_ILLEGAL_ELEMENT = "illegal element";
-    private static final String ERROR_ILLEGAL_TEXT = "illegal text";
+    private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
+    public static final String SHEET_MISSING_CLASS = "sheet_missing_class";
+    private static final String SHEET_MISMATCHED_BEAN = "sheet_mismatched_bean";
+    private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
+    private static final String SHEET_REQUIRED_SELECT = "sheet_required_select";
+    private static final String SHEET_FORBIDDEN_SELECT = "sheet_forbidden_select";
+    private static final String SHEET_DUPLICATE_VAR = "sheet_duplicate_var";
+    private static final String SHEET_ILLEGAL_MIME = "sheet_illegal_mime";
+    private static final String SHEET_FORBIDDEN_TEXT = "sheet_forbidden_text";
+    private static final String SHEET_FORBIDDEN_ELEM = "sheet_forbidden_elem";
 
     private boolean type;
     private MapHash<String, Integer> parameters = new MapHash<String, Integer>();
@@ -125,24 +128,24 @@ public final class XSLCheck {
             throws ScannerError, IOException {
         if (dn instanceof DomText) {
             if (!type)
-                throw new ScannerError(ERROR_MIME_MISSING);
+                throw new ScannerError(SHEET_MISSING_OUTPUT);
         } else {
             DomElement de = (DomElement) dn;
-            if (de.isName(XSLTransform.NAME_FOREACH)) {
+            if (de.isName(XSLSheetTransform.NAME_FOREACH)) {
                 xsltForEach(de);
-            } else if (de.isName(XSLTransform.NAME_VALUEOF)) {
+            } else if (de.isName(XSLSheetTransform.NAME_VALUEOF)) {
                 xsltValueOf(de);
-            } else if (de.isName(XSLTransform.NAME_WITHDATA)) {
+            } else if (de.isName(XSLSheetTransform.NAME_WITHDATA)) {
                 xsltWithData(de);
-            } else if (de.isName(XSLTransform.NAME_OUTPUT)) {
+            } else if (de.isName(XSLSheetTransform.NAME_OUTPUT)) {
                 xsltOutput(de);
-            } else if (de.isName(XSLTransform.NAME_PARAM)) {
+            } else if (de.isName(XSLSheetTransform.NAME_PARAM)) {
                 xsltParam(de);
-            } else if (de.isName(XSLTransform.NAME_STYLESHEET)) {
+            } else if (de.isName(XSLSheetTransform.NAME_STYLESHEET)) {
                 xsltChildren(de);
-            } else if (de.isName(XSLTransform.NAME_IF)) {
+            } else if (de.isName(XSLSheetTransform.NAME_IF)) {
                 xsltIf(de);
-            } else if (de.isName(XSLTransform.NAME_CHOOSE)) {
+            } else if (de.isName(XSLSheetTransform.NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
                 xsltChildren(de);
@@ -175,7 +178,7 @@ public final class XSLCheck {
      */
     private void xsltForEach(DomElement de)
             throws ScannerError, IOException {
-        String select = de.getAttr(XSLTransform.ATTR_FOREACH_SELECT);
+        String select = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
         XPath xpath = xr.createXPath(select);
@@ -197,10 +200,10 @@ public final class XSLCheck {
      */
     private void xsltValueOf(DomElement de)
             throws ScannerError, IOException {
-        String select = de.getAttr(XSLTransform.ATTR_VALUEOF_SELECT);
+        String select = de.getAttr(XSLSheetTransform.ATTR_VALUEOF_SELECT);
         attrSelect(select);
         if (!type)
-            throw new ScannerError(ERROR_MIME_MISSING);
+            throw new ScannerError(SHEET_MISSING_OUTPUT);
     }
 
     /**
@@ -213,25 +216,26 @@ public final class XSLCheck {
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError {
         try {
-            String bean = de.getAttr(XSLTransform.ATTR_WITHDATA_BEAN);
-            if (bean == null)
-                throw new ScannerError(ERROR_BEAN_MISSING);
-            Class<?> _class = Class.forName(bean);
+            String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
+            ClassLoader loader = getClass().getClassLoader();
+            Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
+            if (_class == null)
+                throw new ScannerError(SHEET_MISSING_CLASS);
             Object obj = _class.newInstance();
             if (!(obj instanceof InterfacePath))
-                throw new ScannerError(ERROR_PATH_EXPECTED);
+                throw new ScannerError(SHEET_MISMATCHED_BEAN);
             InterfacePath pu = (InterfacePath) obj;
             if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
-                throw new ScannerError(ERROR_DATA_EXPECTED);
+                throw new ScannerError(SHEET_MISMATCHED_PATH);
             if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
-                String select = de.getAttr(XSLTransform.ATTR_WITHDATA_SELECT);
+                String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
                 if (select == null)
-                    throw new ScannerError(ERROR_SELECT_MISSING);
+                    throw new ScannerError(SHEET_REQUIRED_SELECT);
                 attrSelect(select);
             } else {
-                String select = de.getAttr(XSLTransform.ATTR_WITHDATA_SELECT);
+                String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
                 if (select != null)
-                    throw new ScannerError(ERROR_SELECT_FORBIDDEN);
+                    throw new ScannerError(SHEET_FORBIDDEN_SELECT);
             }
             pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
             pu.list();
@@ -251,11 +255,9 @@ public final class XSLCheck {
             schema = back2;
             simulation = back;
         } catch (IllegalAccessException x) {
-            throw new ScannerError(XSLTransform.ERROR_ILLEGAL_ACCESS);
+            throw new ScannerError(ERROR_ILLEGAL_ACCESS);
         } catch (InstantiationException x) {
-            throw new ScannerError(XSLTransform.ERROR_INSTANTIATION_EXCEPTION);
-        } catch (ClassNotFoundException x) {
-            throw new ScannerError(XSLTransform.ERROR_CLASS_MISSING);
+            throw new ScannerError(ERROR_INSTANTIATION_EXCEPTION);
         }
     }
 
@@ -268,7 +270,7 @@ public final class XSLCheck {
      */
     private void xsltOutput(DomElement de)
             throws IOException, ScannerError {
-        String mime = de.getAttr(XSLTransform.ATTR_OUTPUT_MIME);
+        String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
         if ("text/plain".equals(typesubtype)) {
@@ -276,7 +278,7 @@ public final class XSLCheck {
         } else if ("text/html".equals(typesubtype)) {
             type = true;
         } else {
-            throw new ScannerError(ERROR_UNSUPPORTED_MIME);
+            throw new ScannerError(SHEET_ILLEGAL_MIME);
         }
     }
 
@@ -287,10 +289,10 @@ public final class XSLCheck {
      * @throws ScannerError Shit happens.
      */
     private void xsltParam(DomElement de) throws ScannerError {
-        String name = de.getAttr(XSLTransform.ATTR_PARAM_NAME);
+        String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
-            throw new ScannerError(ERROR_DUPLICATE_PARA);
-        String type = de.getAttr(XSLTransform.ATTR_PARAM_TYPE);
+            throw new ScannerError(SHEET_DUPLICATE_VAR);
+        String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
         int typeid = XSDDeclAttr.checkType(type);
         parameters.add(name, Integer.valueOf(typeid));
     }
@@ -304,7 +306,7 @@ public final class XSLCheck {
      */
     private void xsltIf(DomElement de)
             throws ScannerError, IOException {
-        String test = de.getAttr(XSLTransform.ATTR_IF_TEST);
+        String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
         attrTest(test);
         xsltChildren(de);
     }
@@ -322,16 +324,16 @@ public final class XSLCheck {
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
             if (node instanceof DomText)
-                throw new ScannerError(ERROR_ILLEGAL_TEXT);
+                throw new ScannerError(SHEET_FORBIDDEN_TEXT);
             DomElement de2 = (DomElement) node;
-            if (de2.isName(XSLTransform.NAME_WHEN)) {
-                String test = de2.getAttr(XSLTransform.ATTR_WHEN_TEST);
+            if (de2.isName(XSLSheetTransform.NAME_WHEN)) {
+                String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
                 attrTest(test);
                 xsltChildren(de2);
-            } else if (de2.isName(XSLTransform.NAME_OTHERWISE)) {
+            } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
                 xsltChildren(de2);
             } else {
-                throw new ScannerError(ERROR_ILLEGAL_ELEMENT);
+                throw new ScannerError(SHEET_FORBIDDEN_ELEM);
             }
         }
     }
@@ -393,7 +395,7 @@ public final class XSLCheck {
             throw new IllegalArgumentException("template missing");
         DomElement template = tp.getFound();
 
-        XSLCheck xc = new XSLCheck();
+        XSLSheetCheck xc = new XSLSheetCheck();
         xc.setMask(DomNode.MASK_TEXT);
         xc.check(template);
         System.out.println("XSL template GERMAN ok");
@@ -407,7 +409,7 @@ public final class XSLCheck {
             throw new IllegalArgumentException("template missing");
         template = tp.getFound();
 
-        xc = new XSLCheck();
+        xc = new XSLSheetCheck();
         xc.setMask(DomNode.MASK_TEXT);
         xc.check(template);
         System.out.println("XSL template ENGLISH ok");

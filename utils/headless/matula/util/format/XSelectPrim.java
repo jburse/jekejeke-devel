@@ -30,6 +30,9 @@ public final class XSelectPrim extends XSelect {
     public static final int SELE_PRIM_ATTR = 0;
     public static final int SELE_PRIM_CONST = 1;
 
+    /* illegal argument errors */
+    public static final String PATH_UNKNOWN_ATTRIBUTE = "path_unknown_attribute";
+
     private Object attrorcnst;
     private int primitive;
 
@@ -86,7 +89,7 @@ public final class XSelectPrim extends XSelect {
             case SELE_PRIM_ATTR:
                 res = d.getAttrObj(getAttr());
                 if (res == null)
-                    throw new IllegalArgumentException(XPathExprPrim.UNKNOWN_ATTRIBUTE);
+                    throw new IllegalArgumentException(PATH_UNKNOWN_ATTRIBUTE);
                 break;
             case SELE_PRIM_CONST:
                 res = getCnst();

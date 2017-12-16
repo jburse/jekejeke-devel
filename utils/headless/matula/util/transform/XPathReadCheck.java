@@ -2,8 +2,6 @@ package matula.util.transform;
 
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
-import matula.util.transform.XPathRead;
-import matula.util.transform.XSDDeclAttr;
 
 /**
  * <p>This class provides an xpath reader during check.</p>
@@ -32,7 +30,7 @@ import matula.util.transform.XSDDeclAttr;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class XPathReadCheck extends XPathRead {
-    private static final String ERROR_UNDECLARED_VARIABLE = "undeclared variable";
+    private static final String PATH_UNDECLARED_VAR = "path_undeclared_var";
 
     private static Object VOID_OBJECT = new Object();
 
@@ -61,7 +59,7 @@ final class XPathReadCheck extends XPathRead {
     Object getVariable(String n) throws ScannerError {
         Integer type = parameters.get(n);
         if (type == null)
-            throw new ScannerError(ERROR_UNDECLARED_VARIABLE);
+            throw new ScannerError(PATH_UNDECLARED_VAR);
         switch (type.intValue()) {
             case XSDDeclAttr.TYPE_OBJECT:
                 return VOID_OBJECT;

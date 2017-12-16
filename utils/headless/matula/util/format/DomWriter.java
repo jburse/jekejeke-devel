@@ -35,7 +35,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class DomWriter {
+public final class DomWriter {
     private static final int INDENT_INCREMENT = 4;
     private static final int LINE_WIDTH = 80;
 

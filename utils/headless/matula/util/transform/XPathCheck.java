@@ -35,9 +35,9 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class XPathCheck {
-    private static final String ERROR_FOREACH_MISSING = "for-each missing";
-    public static final String ERROR_CANT_CHECK = "cant check";
-    public static final String ERROR_PARENT_OVERRUN = "parent overrun";
+    private static final String SHEET_CANT_CHECK = "sheet_cant_check";
+    private static final String SHEET_OVERRUN_PARENT = "sheet_overrun_parent";
+    private static final String SHEET_MISSING_FOREACH = "sheet_missing_foreach";
 
     private XSDSchema schema;
     private ListArray<String> simulation;
@@ -92,16 +92,16 @@ final class XPathCheck {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 XPathExprComb ex = cp.getExpr();
                 if (ex.getCombination() != XPathExprComb.EXPR_COMB_PRED)
-                    throw new ScannerError(ERROR_CANT_CHECK);
+                    throw new ScannerError(SHEET_CANT_CHECK);
                 MapHashLink<String, XPathExpr> exs = ex.getExprs();
                 MapEntry<String, XPathExpr> entry = exs.getFirstEntry();
                 if (entry == null)
-                    throw new ScannerError(ERROR_CANT_CHECK);
+                    throw new ScannerError(SHEET_CANT_CHECK);
                 if (!(entry.value instanceof XPathExprPrim))
-                    throw new ScannerError(ERROR_CANT_CHECK);
+                    throw new ScannerError(SHEET_CANT_CHECK);
                 XPathExprPrim prim = (XPathExprPrim) entry.value;
                 if (prim.getPrimitive() != XPathExprPrim.EXPR_PRIM_NAME)
-                    throw new ScannerError(ERROR_CANT_CHECK);
+                    throw new ScannerError(SHEET_CANT_CHECK);
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
                 XSDDecl decl = schema.getDecl(name);
                 if (decl == null || !(decl instanceof XSDDeclElem))
@@ -117,11 +117,11 @@ final class XPathCheck {
                 break;
             case ChoicePoint.CHOICEPOINT_PARENT:
                 if (!(simulation.size() > 0))
-                    throw new ScannerError(ERROR_PARENT_OVERRUN);
+                    throw new ScannerError(SHEET_OVERRUN_PARENT);
                 simulation.remove(simulation.size() - 1);
                 break;
             case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
-                throw new ScannerError(ERROR_CANT_CHECK);
+                throw new ScannerError(SHEET_CANT_CHECK);
             default:
                 throw new IllegalArgumentException("illegal choice");
         }
@@ -173,7 +173,7 @@ final class XPathCheck {
                         throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     break;
                 default:
-                    throw new ScannerError(ERROR_CANT_CHECK);
+                    throw new ScannerError(SHEET_CANT_CHECK);
             }
         } else if (ex instanceof XPathExprComb) {
             XPathExprComb comb = (XPathExprComb) ex;
@@ -187,10 +187,10 @@ final class XPathCheck {
                     }
                     break;
                 default:
-                    throw new ScannerError(ERROR_CANT_CHECK);
+                    throw new ScannerError(SHEET_CANT_CHECK);
             }
         } else {
-            throw new ScannerError(ERROR_CANT_CHECK);
+            throw new ScannerError(SHEET_CANT_CHECK);
         }
     }
 
@@ -206,7 +206,7 @@ final class XPathCheck {
             switch (xp.getPrimitive()) {
                 case XSelectPrim.SELE_PRIM_ATTR:
                     if (!(simulation.size() > 0))
-                        throw new ScannerError(ERROR_FOREACH_MISSING);
+                        throw new ScannerError(SHEET_MISSING_FOREACH);
                     String name = simulation.get(simulation.size() - 1);
                     String attr = xp.getAttr();
                     XSDDecl decl = schema.getDecl(name + "." + attr);
@@ -250,7 +250,7 @@ final class XPathCheck {
             }
             return XSDDeclAttr.TYPE_INTEGER;
         } else {
-            throw new ScannerError(ERROR_CANT_CHECK);
+            throw new ScannerError(SHEET_CANT_CHECK);
         }
     }
 
