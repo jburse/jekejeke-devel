@@ -1,0 +1,10 @@
+<element name="element" parent="">
+    <attribute name="name" type="string"/>
+    <attribute name="parent" use="optional" type="string"/>
+    <attribute name="complex" use="optional" type="string"/>
+</element>
+<element name="attribute" parent="element">
+    <attribute name="name" type="string"/>
+    <attribute name="use" use="optional" type="string"/>
+    <attribute name="type" use="optional" type="string"/>
+</element>

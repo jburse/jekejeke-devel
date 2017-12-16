@@ -1,0 +1,29 @@
+<element name="stylesheet" parent="">
+   <attribute name="last-modified" use="optional" type="integer"/>
+</element>
+<element name="output" parent="stylesheet">
+   <attribute name="mime" type="string"/>
+</element>
+<element name="param" parent="stylesheet">
+   <attribute name="name" type="string"/>
+   <attribute name="use" use="optional" type="string"/>
+   <attribute name="type" use="optional" type="string"/>
+</element>
+<element name="with-data">
+   <attribute name="bean" type="string"/>
+   <attribute name="select" use="optional" type="string"/>
+</element>
+<element name="for-each">
+   <attribute name="select" type="string"/>
+</element>
+<element name="value-of">
+   <attribute name="select" type="string"/>
+</element>
+<element name="if">
+   <attribute name="test" type="string"/>
+</element>
+<element name="choose"/>
+<element name="when" parent="choose">
+   <attribute name="test" type="string"/>
+</element>
+<element name="otherwise" parent="choose"/>
