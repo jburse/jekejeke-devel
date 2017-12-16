@@ -2,7 +2,6 @@ package matula.util.transform;
 
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -106,7 +105,7 @@ final class XPathCheck {
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
                 XSDDecl decl = schema.getDecl(name);
                 if (decl == null || !(decl instanceof XSDDeclElem))
-                    throw new ScannerError(XMLCheck.ERROR_UNDECLARED_NAME);
+                    throw new ScannerError(XMLCheck.DATA_UNDECLARED_NAME);
                 XSDDeclElem xe = (XSDDeclElem) decl;
                 checkParent(xe);
                 simulation.add(name);
@@ -140,10 +139,10 @@ final class XPathCheck {
             return;
         if (!"".equals(parent)) {
             if (!(simulation.size() > 0) || !simulation.get(simulation.size() - 1).equalsIgnoreCase(parent))
-                throw new ScannerError(XMLCheck.ERROR_PARENT_MISMATCH);
+                throw new ScannerError(XMLCheck.DATA_MISMATCHED_PARENT);
         } else {
             if (simulation.size() > 0)
-                throw new ScannerError(XMLCheck.ERROR_PARENT_MISMATCH);
+                throw new ScannerError(XMLCheck.DATA_MISMATCHED_PARENT);
         }
     }
 
@@ -168,10 +167,10 @@ final class XPathCheck {
                 case XPathExprPrim.EXPR_PRIM_GQ:
                     int typeid = select(prim.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     typeid = select(prim.getSecond());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     break;
                 default:
                     throw new ScannerError(ERROR_CANT_CHECK);
@@ -212,7 +211,7 @@ final class XPathCheck {
                     String attr = xp.getAttr();
                     XSDDecl decl = schema.getDecl(name + "." + attr);
                     if (decl == null || !(decl instanceof XSDDeclAttr))
-                        throw new ScannerError(XMLCheck.ERROR_UNDECLARED_ATTRIBUTE);
+                        throw new ScannerError(XMLCheck.DATA_UNDECLARED_ATTR);
                     XSDDeclAttr declattr = (XSDDeclAttr) decl;
                     return declattr.getType();
                 case XSelectPrim.SELE_PRIM_CONST:
@@ -233,7 +232,7 @@ final class XPathCheck {
                 case XSelectComb.SELE_COMB_NEG:
                     int typeid = select(xc.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     break;
                 case XSelectComb.SELE_COMB_ADD:
                 case XSelectComb.SELE_COMB_SUB:
@@ -241,10 +240,10 @@ final class XPathCheck {
                 case XSelectComb.SELE_COMB_DIV:
                     typeid = select(xc.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     typeid = select(xc.getSecond());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal combination");

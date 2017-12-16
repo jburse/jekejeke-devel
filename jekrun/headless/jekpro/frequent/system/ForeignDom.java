@@ -149,7 +149,7 @@ public final class ForeignDom {
      * @throws IOException        IO error.
      */
     public static void sysNodeLoad(DomNode dn, Reader reader, Object opts)
-            throws InterpreterMessage, IOException, InterpreterMessage {
+            throws IOException, InterpreterMessage {
         try {
             DomOpts res = DomOpts.decodeDomOpts(opts);
             dn.load(reader, res.getMask(), res.getControl());

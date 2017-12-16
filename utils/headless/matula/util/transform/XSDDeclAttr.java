@@ -35,8 +35,8 @@ public final class XSDDeclAttr extends XSDDecl {
     static final String ATTR_ATTRIBUTE_USE = "use";
     static final String ATTR_ATTRIBUTE_TYPE = "type";
 
-    static final String ERROR_ILLEGAL_USE = "illegal use";
-    static final String ERROR_ILLEGAL_TYPE = "illegal type";
+    static final String SCHEMA_ILLEGAL_USE = "schema_illegal_use";
+    static final String SCHEMA_ILLEGAL_TYPE = "schema_illegal_type";
 
     static final String OP_OPTIONAL = "optional";
     static final String OP_STRING = "string";
@@ -114,7 +114,7 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_OPTIONAL.equalsIgnoreCase(use)) {
             opflag = true;
         } else {
-            throw new ScannerError(ERROR_ILLEGAL_USE);
+            throw new ScannerError(SCHEMA_ILLEGAL_USE);
         }
         return opflag;
     }
@@ -135,7 +135,7 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_INTEGER.equalsIgnoreCase(type)) {
             typeid = TYPE_INTEGER;
         } else {
-            throw new ScannerError(ERROR_ILLEGAL_TYPE);
+            throw new ScannerError(SCHEMA_ILLEGAL_TYPE);
         }
         return typeid;
     }

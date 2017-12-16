@@ -42,10 +42,10 @@ import java.io.InputStreamReader;
 public final class XSDSchema {
     public static XSDSchema meta = new XSDSchema();
 
-    public static final String ERROR_ELEMENT_EXPECTED = "element expected";
-    public static final String ERROR_ATTRIBUTE_EXPECTED = "attribute expected";
-    public static final String ERROR_NAME_MISSING = "name missing";
-    public static final String ERROR_DUPLICATE_DECL = "duplicate declaration";
+    public static final String SCHEMA_MISSING_ELEM = "schema_missing_elem";
+    public static final String SCHEMA_MISSING_NAME = "schema_missing_name";
+    public static final String SCHEMA_MISSING_ATTR = "schema_missing_attr";
+    public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
 
     private final MapHashLink<String, XSDDecl> decls = new MapHashLink<String, XSDDecl>();
 
@@ -92,10 +92,10 @@ public final class XSDSchema {
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             if (!e.isName(XSDDeclElem.NAME_ELEMENT))
-                throw new ScannerError(ERROR_ELEMENT_EXPECTED);
+                throw new ScannerError(SCHEMA_MISSING_ELEM);
             String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
             if (name == null)
-                throw new ScannerError(ERROR_NAME_MISSING);
+                throw new ScannerError(SCHEMA_MISSING_NAME);
             XSDDeclElem xe = XSDDeclElem.traverseElement(e);
             putDecl(name, xe);
             ListArray<String> mandatory = traverseAttributes(e, name);
@@ -118,10 +118,10 @@ public final class XSDSchema {
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             if (!e.isName(XSDDeclAttr.NAME_ATTRIBUTE))
-                throw new ScannerError(ERROR_ATTRIBUTE_EXPECTED);
+                throw new ScannerError(SCHEMA_MISSING_ATTR);
             String name = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
             if (name == null)
-                throw new ScannerError(ERROR_NAME_MISSING);
+                throw new ScannerError(SCHEMA_MISSING_NAME);
             String fullname = element + "." + name;
             XSDDeclAttr xa = XSDDeclAttr.traverseAttribute(e);
             putDecl(fullname, xa);
@@ -140,7 +140,7 @@ public final class XSDSchema {
      */
     public void putDecl(String name, XSDDecl xd) throws ScannerError {
         if (decls.get(name) != null)
-            throw new ScannerError(ERROR_DUPLICATE_DECL);
+            throw new ScannerError(SCHEMA_DUPLICATE_DECL);
         decls.add(name, xd);
     }
 

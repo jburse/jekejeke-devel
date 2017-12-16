@@ -2,6 +2,7 @@ package jekpro.frequent.stream;
 
 import jekpro.frequent.system.DomOpts;
 import jekpro.tools.call.InterpreterMessage;
+import matula.util.format.DomElement;
 import matula.util.format.DomNode;
 import matula.util.regex.ScannerError;
 import matula.util.transform.XMLCheck;
@@ -41,6 +42,23 @@ import java.io.Writer;
 public final class ForeignSheet {
 
     /**
+     * <p>Digest an XSD schema.</p>
+     *
+     * @param xs The XSD schema.
+     * @param de The DOM element.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static void sysXsdDigest(XSDSchema xs, DomElement de)
+            throws InterpreterMessage {
+        try {
+            xs.digestElements(de);
+        } catch (ScannerError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+        }
+    }
+
+    /**
      * <p>Check a XML node.</p>
      *
      * @param dn   The XML node.
@@ -50,11 +68,16 @@ public final class ForeignSheet {
      */
     public static void sysXmlCheck(DomNode dn, XSDSchema xs, Object opts)
             throws ScannerError, InterpreterMessage {
-        DomOpts res = DomOpts.decodeDomOpts(opts);
-        XMLCheck xc = new XMLCheck();
-        xc.setSchema(xs);
-        xc.setMask(res.getMask());
-        xc.check(dn);
+        try {
+            DomOpts res = DomOpts.decodeDomOpts(opts);
+            XMLCheck xc = new XMLCheck();
+            xc.setSchema(xs);
+            xc.setMask(res.getMask());
+            xc.check(dn);
+        } catch (ScannerError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+        }
     }
 
     /**

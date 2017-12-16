@@ -57,8 +57,11 @@
 :- use_package(foreign(matula/util/transform)).
 :- use_package(foreign(java/io)).
 :- use_package(foreign(jekpro/frequent/stream)).
+:- use_package(library(matula/util/transform)).
 
 :- module(xsl, []).
+:- sys_load_resource(library(sheet)).
+:- sys_add_resource(library(sheet)).
 
 /*******************************************************************/
 /* XML Check                                                       */
@@ -79,8 +82,8 @@
  */
 % schema_digest(+XSDSchema, +DomElement)
 :- public schema_digest/2.
-:- virtual schema_digest/2.
-:- foreign(schema_digest/2, 'XSDSchema', digestElements('DomElement')).
+:- foreign(schema_digest/2, 'ForeignSheet',
+      sysXsdDigest('XSDSchema','DomElement')).
 
 /**
  * data_check(D, S, O):
@@ -109,4 +112,5 @@
  */
 % sheet_check(+DomNode, +List)
 :- public sheet_check/2.
-:- foreign(sheet_check/2, 'ForeignSheet', sysXslCheck('DomNode','Object')).
+:- foreign(sheet_check/2, 'ForeignSheet',
+      sysXslCheck('DomNode','Object')).

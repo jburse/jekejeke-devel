@@ -35,12 +35,12 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XMLCheck {
-    public static final String ERROR_UNDECLARED_NAME = "undeclared name";
-    public static final String ERROR_UNDECLARED_ATTRIBUTE = "undeclared attribute";
-    public static final String ERROR_TEXT_UNEXPECTED = "text unexpected";
-    public static final String ERROR_MISSING_ATTRIBUTE = "missing attribute";
-    public static final String ERROR_PARENT_MISMATCH = "parent mismatch";
-    public static final String ERROR_TYPE_MISMATCH = "type mismatch";
+    public static final String DATA_UNEXPECTED_TEXT = "data_unexpected_text";
+    public static final String DATA_UNDECLARED_NAME = "data_undeclared_name";
+    public static final String DATA_UNDECLARED_ATTR = "data_undeclared_attr";
+    public static final String DATA_MISSING_ATTR = "data_missing_attr";
+    public static final String DATA_MISMATCHED_PARENT = "data_mismatched_parent";
+    public static final String DATA_MISMATCHED_VALUE = "data_mismatched_value";
 
     private String context = "";
     private int mask;
@@ -106,7 +106,7 @@ public final class XMLCheck {
             throws ScannerError {
         if (node instanceof DomText) {
             if ((mask & DomNode.MASK_TEXT) == 0)
-                throw new ScannerError(ERROR_TEXT_UNEXPECTED);
+                throw new ScannerError(DATA_UNEXPECTED_TEXT);
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
             checkElement(de);
@@ -126,14 +126,14 @@ public final class XMLCheck {
         String name = de.getName();
         XSDDecl decl = schema.getDecl(name);
         if (decl == null || !(decl instanceof XSDDeclElem))
-            throw new ScannerError(ERROR_UNDECLARED_NAME);
+            throw new ScannerError(DATA_UNDECLARED_NAME);
         XSDDeclElem xe = (XSDDeclElem) decl;
         String[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
             String attr = attrs[i];
             decl = schema.getDecl(name + "." + attr);
             if (decl == null || !(decl instanceof XSDDeclAttr))
-                throw new ScannerError(ERROR_UNDECLARED_ATTRIBUTE);
+                throw new ScannerError(DATA_UNDECLARED_ATTR);
             XSDDeclAttr xa = (XSDDeclAttr) decl;
             checkType(de, attr, xa);
         }
@@ -154,7 +154,7 @@ public final class XMLCheck {
         for (int i = 0; i < mandatory.size(); i++) {
             String attr = mandatory.get(i);
             if (de.getAttrObj(attr) == null)
-                throw new ScannerError(ERROR_MISSING_ATTRIBUTE);
+                throw new ScannerError(DATA_MISSING_ATTR);
         }
     }
 
@@ -170,7 +170,7 @@ public final class XMLCheck {
         if (parent == null)
             return;
         if (!context.equalsIgnoreCase(parent))
-            throw new ScannerError(ERROR_PARENT_MISMATCH);
+            throw new ScannerError(DATA_MISMATCHED_PARENT);
     }
 
     /**
@@ -191,14 +191,14 @@ public final class XMLCheck {
                 if (val == null)
                     break;
                 if (!(val instanceof String))
-                    throw new ScannerError(ERROR_TYPE_MISMATCH);
+                    throw new ScannerError(DATA_MISMATCHED_VALUE);
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 val = de.getAttrObj(attr);
                 if (val == null)
                     break;
                 if (!(val instanceof Long))
-                    throw new ScannerError(ERROR_TYPE_MISMATCH);
+                    throw new ScannerError(DATA_MISMATCHED_VALUE);
                 break;
             default:
                 throw new IllegalArgumentException("illegal type");

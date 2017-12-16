@@ -36,7 +36,7 @@ public final class XSDDeclElem extends XSDDecl {
     static final String ATTR_ELEMENT_PARENT = "parent";
     static final String ATTR_ELEMENT_COMPLEX = "complex";
 
-    static final String ERROR_ILLEGAL_COMPLEX = "illegal complex";
+    static final String SCHEMA_ILLEGAL_COMPLEX = "schema_illegal_complex";
 
     static final String OP_ANY = "any";
     static final String OP_EMPTY = "empty";
@@ -134,7 +134,7 @@ public final class XSDDeclElem extends XSDDecl {
         } else if (OP_EMPTY.equalsIgnoreCase(complex)) {
             typeid = COMPLEX_EMPTY;
         } else {
-            throw new ScannerError(ERROR_ILLEGAL_COMPLEX);
+            throw new ScannerError(SCHEMA_ILLEGAL_COMPLEX);
         }
         return typeid;
     }

@@ -1,7 +1,5 @@
 package matula.util.transform;
 
-import audt.format.FormatterDateTime;
-import idxtab.Temprepo.TemprepoPath;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -9,8 +7,6 @@ import matula.util.system.ForeignXml;
 import matula.util.system.MimeHeader;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 
 /**
  * <p>This class provides an XSL style sheet transform.</p>
@@ -320,11 +316,11 @@ public final class XSLTransform extends DomWriter {
                 break;
             case XSDDeclAttr.TYPE_STRING:
                 if (!(val instanceof String))
-                    throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 if (!(val instanceof Long))
-                    throw new ScannerError(XMLCheck.ERROR_TYPE_MISMATCH);
+                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
                 break;
         }
     }

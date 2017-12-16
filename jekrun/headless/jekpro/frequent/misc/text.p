@@ -58,8 +58,11 @@
 :- use_package(foreign(jekpro/frequent/misc)).
 :- use_package(foreign(matula/util/regex)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(library(matula/util/regex)).
 
 :- module(text, []).
+:- sys_load_resource(library(scanner)).
+:- sys_add_resource(library(scanner)).
 
 /******************************************************************/
 /* Code Type Classification                                       */

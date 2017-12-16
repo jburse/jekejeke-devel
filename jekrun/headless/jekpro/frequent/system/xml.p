@@ -67,8 +67,11 @@
 :- use_package(foreign(java/io)).
 :- use_package(foreign(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(library(matula/util/format)).
 
 :- module(xml, []).
+:- sys_load_resource(library(dom)).
+:- sys_add_resource(library(dom)).
 
 /****************************************************************/
 /* Entity Conversion                                            */
