@@ -114,7 +114,7 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_OPTIONAL.equalsIgnoreCase(use)) {
             opflag = true;
         } else {
-            throw new ScannerError(SCHEMA_ILLEGAL_USE);
+            throw new ScannerError(SCHEMA_ILLEGAL_USE, -1);
         }
         return opflag;
     }
@@ -135,7 +135,7 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_INTEGER.equalsIgnoreCase(type)) {
             typeid = TYPE_INTEGER;
         } else {
-            throw new ScannerError(SCHEMA_ILLEGAL_TYPE);
+            throw new ScannerError(SCHEMA_ILLEGAL_TYPE, -1);
         }
         return typeid;
     }

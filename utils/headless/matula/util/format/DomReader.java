@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,6 +36,8 @@ import java.io.StringReader;
  */
 final class DomReader extends XmlScanner<XmlMachine> {
     static final String STRING_SLASH = "/";
+    static final String STRING_BANG_DASH_DASH = "!--";
+    static final String STRING_DASH_DASH = "--";
 
     static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
@@ -89,8 +92,8 @@ final class DomReader extends XmlScanner<XmlMachine> {
     /**
      * <p>Get the next tag.</p>
      *
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     public void nextTagOrText() throws IOException, ScannerError {
         super.nextTagOrText();
@@ -103,7 +106,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
                     super.nextTagOrText();
                     break;
                 case XmlMachine.RES_TAG:
-                    if (!getType().startsWith("!--"))
+                    if (!getType().startsWith(STRING_BANG_DASH_DASH))
                         return;
                     checkComment();
                     super.nextTagOrText();
@@ -117,10 +120,51 @@ final class DomReader extends XmlScanner<XmlMachine> {
         }
     }
 
+
+    /**
+     * <p>Check whether the tag is a comment tag.</p>
+     *
+     * @throws ScannerError Syntax error.
+     */
+    private void checkComment() throws ScannerError {
+        int n = getAttrCount();
+        if (n != 0 &&
+                "".equals(getValueAt(n - 1)) &&
+                getAttr(n - 1).equals(STRING_DASH_DASH)) {
+            /* do nothing */
+        } else {
+            throw new ScannerError(DOM_UNBALANCED_COMMENT, OpenOpts.getOffset(reader));
+        }
+    }
+
+    /**
+     * <p>Check whether the dom reader is at eof.</p>
+     *
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    void checkEof() throws IOException, ScannerError {
+        for (; ; ) {
+            switch (getRes()) {
+                case XmlMachine.RES_TEXT:
+                    checkWhitespace();
+                    super.nextTagOrText();
+                    break;
+                case XmlMachine.RES_TAG:
+                    throw new ScannerError(DOM_SUPERFLOUS_TAG, OpenOpts.getOffset(reader));
+                case XmlMachine.RES_EOF:
+                    return;
+                default:
+                    throw new IllegalArgumentException("illegal res");
+            }
+        }
+    }
+
+
     /**
      * <p>Check whether the text is a white space text.</p>
      *
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
     private void checkWhitespace() throws ScannerError {
         char[] buf = getTextBuf();
@@ -130,45 +174,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
             if (ch <= XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM) {
                 // do nothing
             } else {
-                throw new ScannerError(DOM_NONE_WHITESPACE);
-            }
-        }
-    }
-
-    /**
-     * <p>Check whether the tag is a comment tag.</p>
-     *
-     * @throws ScannerError Shit happens.
-     */
-    private void checkComment() throws ScannerError {
-        int n = getAttrCount();
-        if (n != 0 &&
-                "".equals(getValueAt(n - 1)) &&
-                getAttr(n - 1).equals("--")) {
-            /* do nothing */
-        } else {
-            throw new ScannerError(DOM_UNBALANCED_COMMENT);
-        }
-    }
-
-    /**
-     * <p>Check whether the dom reader is at eof.</p>
-     *
-     * @throws ScannerError Shit happens.
-     */
-    void checkEof() throws ScannerError, IOException {
-        for (; ; ) {
-            switch (getRes()) {
-                case XmlMachine.RES_TEXT:
-                    checkWhitespace();
-                    super.nextTagOrText();
-                    break;
-                case XmlMachine.RES_TAG:
-                    throw new ScannerError(DOM_SUPERFLOUS_TAG);
-                case XmlMachine.RES_EOF:
-                    return;
-                default:
-                    throw new IllegalArgumentException("illegal res");
+                throw new ScannerError(DOM_NONE_WHITESPACE, OpenOpts.getOffset(reader));
             }
         }
     }
@@ -180,6 +186,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
+    /*
     public static void main(String[] args) throws IOException, ScannerError {
         String text = "<p>The quick brown fox <img/> jumps over the lazy dog.</p>";
         StringReader sr = new StringReader(text);
@@ -198,5 +205,6 @@ final class DomReader extends XmlScanner<XmlMachine> {
         de.store(pw, null, DomNode.MASK_TEXT, control);
         pw.println();
     }
+    */
 
 }

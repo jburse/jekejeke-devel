@@ -320,11 +320,11 @@ public final class XSLSheetTransform extends XSLSheet {
                 break;
             case XSDDeclAttr.TYPE_STRING:
                 if (!(val instanceof String))
-                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
+                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 if (!(val instanceof Long))
-                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE);
+                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
                 break;
         }
     }

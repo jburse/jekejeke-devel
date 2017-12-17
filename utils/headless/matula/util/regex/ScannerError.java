@@ -27,7 +27,8 @@ package matula.util.regex;
  */
 public final class ScannerError extends Exception {
     private String id;
-    private int pos;
+    private int pos = -1;
+    private String culprit;
 
     /**
      * <p>No stack filling.</p>
@@ -48,6 +49,19 @@ public final class ScannerError extends Exception {
     public ScannerError(String i, int p) {
         id = i;
         pos = p;
+    }
+
+    /**
+     * <p>Create a scanner error.</p>
+     *
+     * @param i The error id.
+     * @param p The error position.
+     * @param c The culprit.
+     */
+    public ScannerError(String i, int p, String c) {
+        id = i;
+        pos = p;
+        culprit = c;
     }
 
     /**
@@ -77,6 +91,24 @@ public final class ScannerError extends Exception {
         return pos;
     }
 
+    /**
+     * <p>Set the culprit.</p>
+     *
+     * @param c The culprit.
+     */
+    public void setCulprit(String c) {
+        culprit = c;
+    }
+
+    /**
+     * <p>Retrieve the culprit.</p>
+     *
+     * @return The culprit.
+     */
+    public String getCulprit() {
+        return culprit;
+    }
+
     /*************************************************************/
     /* Error Parsing                                             */
     /*************************************************************/
@@ -96,14 +128,17 @@ public final class ScannerError extends Exception {
      * @param s The scanner error as a string.
      */
     public void parse(String s) {
-        int k1 = s.lastIndexOf('@');
+        int k1 = s.indexOf('#');
         if (k1 != -1) {
-            id = s.substring(0, k1);
-            pos = Integer.parseInt(s.substring(k1 + 1));
-        } else {
-            id = s;
-            pos = -1;
+            culprit = s.substring(k1 + 1);
+            s = s.substring(0, k1);
         }
+        k1 = s.indexOf('@');
+        if (k1 != -1) {
+            pos = Integer.parseInt(s.substring(k1 + 1));
+            s = s.substring(0, k1);
+        }
+        id = s;
     }
 
     /**
@@ -121,10 +156,16 @@ public final class ScannerError extends Exception {
      * @return The scanner error as a string.
      */
     public String toString() {
+        String res;
         if (pos != -1) {
-            return id + "@" + pos;
+            res = id + "@" + pos;
         } else {
-            return id;
+            res = id;
+        }
+        if (culprit != null) {
+            return res + "#" + culprit;
+        } else {
+            return res;
         }
     }
 

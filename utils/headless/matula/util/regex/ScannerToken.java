@@ -88,7 +88,6 @@ public final class ScannerToken {
     private CodeType delemiter;
     private CompLang remark;
     private int flags = MASK_RTRN_LINE | MASK_RTRN_BLCK;
-    private String origin;
 
     /**
      * <p>Set the delemiter.</p>
@@ -124,42 +123,6 @@ public final class ScannerToken {
      */
     public CompLang getRemark() {
         return remark;
-    }
-
-    /**
-     * <p>Set the line counter.</p>
-     *
-     * @param l The line counter.
-     */
-    public void setLineNo(int l) {
-        OpenOpts.setLineNumber(reader, l);
-    }
-
-    /**
-     * <p>Retrieve the line counter.</p>
-     *
-     * @return The line counter.
-     */
-    public int getLineNo() {
-        return OpenOpts.getLineNumber(reader);
-    }
-
-    /**
-     * <p>Set the origin.</p>
-     *
-     * @param o The origin.
-     */
-    public void setOrigin(String o) {
-        origin = o;
-    }
-
-    /**
-     * <p>Retrieve the origin.</p>
-     *
-     * @return The origin.
-     */
-    public String getOrigin() {
-        return origin;
     }
 
     /**

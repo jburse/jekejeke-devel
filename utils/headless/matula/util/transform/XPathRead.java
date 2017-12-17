@@ -139,12 +139,12 @@ abstract class XPathRead {
                 st.nextToken();
                 Object res2 = predicate();
                 if (!(res2 instanceof XPathExpr))
-                    throw new ScannerError(PATH_MISSING_PRED);
+                    throw new ScannerError(PATH_MISSING_PRED, -1);
                 res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_PRED);
                 XPathExprComb res = xp.getChoicePoints().get(xp.size() - 1).getExpr();
                 res.join((XPathExprComb) res2);
                 if (st.ttype != ']')
-                    throw new ScannerError(PATH_MISSING_SQRBKT);
+                    throw new ScannerError(PATH_MISSING_SQRBKT, -1);
                 st.nextToken();
             }
         } else if (st.ttype == '.') {
@@ -153,7 +153,7 @@ abstract class XPathRead {
                 st.nextToken();
                 xp.whereParent();
             } else {
-                throw new ScannerError(PATH_MISSING_PERIOD);
+                throw new ScannerError(PATH_MISSING_PERIOD, -1);
             }
         } else if (st.ttype == '[') {
             st.nextToken();
@@ -163,10 +163,10 @@ abstract class XPathRead {
                 xp.whereChildIndex(index);
             }
             if (st.ttype != ']')
-                throw new ScannerError(PATH_MISSING_SQRBKT);
+                throw new ScannerError(PATH_MISSING_SQRBKT, -1);
             st.nextToken();
         } else {
-            throw new ScannerError(PATH_MISSING_CHCPNT);
+            throw new ScannerError(PATH_MISSING_CHCPNT, -1);
         }
     }
 
@@ -207,11 +207,11 @@ abstract class XPathRead {
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_OR)) {
             st.nextToken();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED);
+                throw new ScannerError(PATH_MISSING_PRED, -1);
             res = ((XPathExpr) res).lift(XPathExprComb.EXPR_COMB_OR);
             Object res2 = predicateTerm();
             if (!(res2 instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED);
+                throw new ScannerError(PATH_MISSING_PRED, -1);
             res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_OR);
             ((XPathExprComb) res).join((XPathExprComb) res2);
         }
@@ -233,11 +233,11 @@ abstract class XPathRead {
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_AND)) {
             st.nextToken();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED);
+                throw new ScannerError(PATH_MISSING_PRED, -1);
             res = ((XPathExpr) res).lift(XPathExprComb.EXPR_COMB_AND);
             Object res2 = predicatesSimple();
             if (!(res2 instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED);
+                throw new ScannerError(PATH_MISSING_PRED, -1);
             res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_AND);
             ((XPathExprComb) res).join((XPathExprComb) res2);
         }
@@ -268,7 +268,7 @@ abstract class XPathRead {
             st.nextToken();
             res = select();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED);
+                throw new ScannerError(PATH_MISSING_PRED, -1);
             ((XPathExpr) res).complement();
         } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_FALSE)) {
             st.nextToken();
@@ -308,10 +308,10 @@ abstract class XPathRead {
             }
             if (compid != -1) {
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 Object res2 = select();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 res = new XPathExprPrim((XSelect) res, (XSelect) res2, compid);
             }
         }
@@ -331,7 +331,7 @@ abstract class XPathRead {
         setReader(sr);
         Object res = predicate();
         if (!(res instanceof XPathExpr))
-            throw new ScannerError(PATH_MISSING_SELE);
+            throw new ScannerError(PATH_MISSING_SELE, -1);
         checkEof();
         return (XPathExpr) res;
     }
@@ -361,7 +361,7 @@ abstract class XPathRead {
             st.nextToken();
             res = selectTerm();
             if (!(res instanceof XSelect))
-                throw new ScannerError(PATH_MISSING_SELE);
+                throw new ScannerError(PATH_MISSING_SELE, -1);
             res = new XSelectComb((XSelect) res, XSelectComb.SELE_COMB_NEG);
         } else {
             res = selectTerm();
@@ -370,18 +370,18 @@ abstract class XPathRead {
             if (st.ttype == '+') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 Object res2 = selectTerm();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_ADD);
             } else if (st.ttype == '-') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 Object res2 = selectTerm();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_SUB);
             } else {
                 break;
@@ -410,18 +410,18 @@ abstract class XPathRead {
             if (st.ttype == '*') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 Object res2 = selectSimple();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_MUL);
             } else if (st.ttype == '/') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 Object res2 = selectSimple();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE);
+                    throw new ScannerError(PATH_MISSING_SELE, -1);
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_DIV);
             } else {
                 break;
@@ -453,12 +453,12 @@ abstract class XPathRead {
             st.nextToken();
             res = predicate();
             if (st.ttype != ')')
-                throw new ScannerError(PATH_MISSING_PRNTHS);
+                throw new ScannerError(PATH_MISSING_PRNTHS, -1);
             st.nextToken();
         } else if (st.ttype == '@') {
             st.nextToken();
             if (!isName())
-                throw new ScannerError(PATH_MISSING_ATTR);
+                throw new ScannerError(PATH_MISSING_ATTR, -1);
             String name = st.sval;
             st.nextToken();
             res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_ATTR);
@@ -473,13 +473,13 @@ abstract class XPathRead {
         } else if (st.ttype == '$') {
             st.nextToken();
             if (!isName())
-                throw new ScannerError(PATH_MISSING_VAR);
+                throw new ScannerError(PATH_MISSING_VAR, -1);
             String var = st.sval;
             st.nextToken();
             Object cnst = getVariable(var);
             res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
         } else {
-            throw new ScannerError(PATH_MISSING_SELE);
+            throw new ScannerError(PATH_MISSING_SELE, -1);
         }
         return res;
     }
@@ -498,7 +498,7 @@ abstract class XPathRead {
         setReader(sr);
         Object res = select();
         if (!(res instanceof XSelect))
-            throw new ScannerError(PATH_MISSING_SELE);
+            throw new ScannerError(PATH_MISSING_SELE, -1);
         checkEof();
         return (XSelect) res;
     }
@@ -528,7 +528,7 @@ abstract class XPathRead {
      */
     void checkEof() throws ScannerError {
         if (st.ttype != StreamTokenizer.TT_EOF)
-            throw new ScannerError(PATH_SUPERFLOUS_TOKEN);
+            throw new ScannerError(PATH_SUPERFLOUS_TOKEN, -1);
     }
 
     /**************************************************************/

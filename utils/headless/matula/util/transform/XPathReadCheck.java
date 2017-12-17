@@ -59,7 +59,7 @@ final class XPathReadCheck extends XPathRead {
     Object getVariable(String n) throws ScannerError {
         Integer type = parameters.get(n);
         if (type == null)
-            throw new ScannerError(PATH_UNDECLARED_VAR);
+            throw new ScannerError(PATH_UNDECLARED_VAR, -1);
         switch (type.intValue()) {
             case XSDDeclAttr.TYPE_OBJECT:
                 return VOID_OBJECT;

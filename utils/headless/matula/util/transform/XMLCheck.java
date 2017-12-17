@@ -106,7 +106,7 @@ public final class XMLCheck {
             throws ScannerError {
         if (node instanceof DomText) {
             if ((mask & DomNode.MASK_TEXT) == 0)
-                throw new ScannerError(DATA_UNEXPECTED_TEXT);
+                throw new ScannerError(DATA_UNEXPECTED_TEXT, -1);
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
             checkElement(de);
@@ -126,14 +126,14 @@ public final class XMLCheck {
         String name = de.getName();
         XSDDecl decl = schema.getDecl(name);
         if (decl == null || !(decl instanceof XSDDeclElem))
-            throw new ScannerError(DATA_UNDECLARED_NAME);
+            throw new ScannerError(DATA_UNDECLARED_NAME, -1);
         XSDDeclElem xe = (XSDDeclElem) decl;
         String[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
             String attr = attrs[i];
             decl = schema.getDecl(name + "." + attr);
             if (decl == null || !(decl instanceof XSDDeclAttr))
-                throw new ScannerError(DATA_UNDECLARED_ATTR);
+                throw new ScannerError(DATA_UNDECLARED_ATTR, -1);
             XSDDeclAttr xa = (XSDDeclAttr) decl;
             checkType(de, attr, xa);
         }
@@ -154,7 +154,7 @@ public final class XMLCheck {
         for (int i = 0; i < mandatory.size(); i++) {
             String attr = mandatory.get(i);
             if (de.getAttrObj(attr) == null)
-                throw new ScannerError(DATA_MISSING_ATTR);
+                throw new ScannerError(DATA_MISSING_ATTR, -1);
         }
     }
 
@@ -170,7 +170,7 @@ public final class XMLCheck {
         if (parent == null)
             return;
         if (!context.equalsIgnoreCase(parent))
-            throw new ScannerError(DATA_MISMATCHED_PARENT);
+            throw new ScannerError(DATA_MISMATCHED_PARENT, -1);
     }
 
     /**
@@ -191,14 +191,14 @@ public final class XMLCheck {
                 if (val == null)
                     break;
                 if (!(val instanceof String))
-                    throw new ScannerError(DATA_MISMATCHED_VALUE);
+                    throw new ScannerError(DATA_MISMATCHED_VALUE, -1);
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 val = de.getAttrObj(attr);
                 if (val == null)
                     break;
                 if (!(val instanceof Long))
-                    throw new ScannerError(DATA_MISMATCHED_VALUE);
+                    throw new ScannerError(DATA_MISMATCHED_VALUE, -1);
                 break;
             default:
                 throw new IllegalArgumentException("illegal type");

@@ -124,7 +124,7 @@ public final class XSLSheetCheck extends XSLSheet {
             throws ScannerError, IOException {
         if (dn instanceof DomText) {
             if (!type)
-                throw new ScannerError(SHEET_MISSING_OUTPUT);
+                throw new ScannerError(SHEET_MISSING_OUTPUT, -1);
         } else {
             DomElement de = (DomElement) dn;
             if (de.isName(XSLSheetTransform.NAME_FOREACH)) {
@@ -199,7 +199,7 @@ public final class XSLSheetCheck extends XSLSheet {
         String select = de.getAttr(XSLSheetTransform.ATTR_VALUEOF_SELECT);
         attrSelect(select);
         if (!type)
-            throw new ScannerError(SHEET_MISSING_OUTPUT);
+            throw new ScannerError(SHEET_MISSING_OUTPUT, -1);
     }
 
     /**
@@ -214,16 +214,16 @@ public final class XSLSheetCheck extends XSLSheet {
             String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
             InterfacePath pu = resolveBean(bean);
             if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
-                throw new ScannerError(SHEET_MISMATCHED_PATH);
+                throw new ScannerError(SHEET_MISMATCHED_PATH, -1);
             if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
                 String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
                 if (select == null)
-                    throw new ScannerError(SHEET_REQUIRED_SELECT);
+                    throw new ScannerError(SHEET_REQUIRED_SELECT, -1);
                 attrSelect(select);
             } else {
                 String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
                 if (select != null)
-                    throw new ScannerError(SHEET_FORBIDDEN_SELECT);
+                    throw new ScannerError(SHEET_FORBIDDEN_SELECT, -1);
             }
             pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
             pu.list();
@@ -262,7 +262,7 @@ public final class XSLSheetCheck extends XSLSheet {
         } else if ("text/html".equals(typesubtype)) {
             type = true;
         } else {
-            throw new ScannerError(SHEET_ILLEGAL_MIME);
+            throw new ScannerError(SHEET_ILLEGAL_MIME, -1);
         }
     }
 
@@ -275,7 +275,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private void xsltParam(DomElement de) throws ScannerError {
         String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
-            throw new ScannerError(SHEET_DUPLICATE_VAR);
+            throw new ScannerError(SHEET_DUPLICATE_VAR, -1);
         String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
         int typeid = XSDDeclAttr.checkType(type);
         parameters.add(name, Integer.valueOf(typeid));
@@ -308,7 +308,7 @@ public final class XSLSheetCheck extends XSLSheet {
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
             if (node instanceof DomText)
-                throw new ScannerError(SHEET_FORBIDDEN_TEXT);
+                throw new ScannerError(SHEET_FORBIDDEN_TEXT, -1);
             DomElement de2 = (DomElement) node;
             if (de2.isName(XSLSheetTransform.NAME_WHEN)) {
                 String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
@@ -317,7 +317,7 @@ public final class XSLSheetCheck extends XSLSheet {
             } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
                 xsltChildren(de2);
             } else {
-                throw new ScannerError(SHEET_FORBIDDEN_ELEM);
+                throw new ScannerError(SHEET_FORBIDDEN_ELEM, -1);
             }
         }
     }

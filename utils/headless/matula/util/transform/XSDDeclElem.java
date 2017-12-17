@@ -134,7 +134,7 @@ public final class XSDDeclElem extends XSDDecl {
         } else if (OP_EMPTY.equalsIgnoreCase(complex)) {
             typeid = COMPLEX_EMPTY;
         } else {
-            throw new ScannerError(SCHEMA_ILLEGAL_COMPLEX);
+            throw new ScannerError(SCHEMA_ILLEGAL_COMPLEX, -1);
         }
         return typeid;
     }

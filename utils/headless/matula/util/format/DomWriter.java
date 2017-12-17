@@ -257,6 +257,7 @@ public final class DomWriter {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
+    /*
     public static void main(String[] args) throws IOException, ScannerError {
         String text = "<foo bar='123'/>  <foo bar='456'/>";
         StringReader sr = new StringReader(text);
@@ -275,5 +276,6 @@ public final class DomWriter {
         de.store(pw, null, DomNode.MASK_LIST, control);
         pw.println();
     }
+    */
 
 }

@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 
@@ -57,18 +58,11 @@ public final class DomText extends DomNode {
     }
 
     /**
-     * <p>Reintialize this dom text.</p>
-     */
-    void reinitialize() {
-        data = "";
-    }
-
-    /**
      * <p>Load a dom text.</p>
      *
      * @param dr The dom reader.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     void loadNode(DomReader dr) throws IOException, ScannerError {
         switch (dr.getRes()) {
@@ -77,9 +71,9 @@ public final class DomText extends DomNode {
                 dr.nextTagOrText();
                 break;
             case XmlMachine.RES_TAG:
-                throw new ScannerError(DOM_MISSING_TEXT);
+                throw new ScannerError(DOM_MISSING_TEXT, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DOM_MISSING_TEXT);
+                throw new ScannerError(DOM_MISSING_TEXT, OpenOpts.getOffset(dr.getReader()));
             default:
                 throw new IllegalArgumentException("illegal res");
         }

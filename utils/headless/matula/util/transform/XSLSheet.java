@@ -47,15 +47,15 @@ class XSLSheet {
             ClassLoader loader = getClass().getClassLoader();
             Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
             if (_class == null)
-                throw new ScannerError(SHEET_MISSING_CLASS);
+                throw new ScannerError(SHEET_MISSING_CLASS, -1);
             Object obj = _class.newInstance();
             if (!(obj instanceof InterfacePath))
-                throw new ScannerError(SHEET_MISMATCHED_BEAN);
+                throw new ScannerError(SHEET_MISMATCHED_BEAN, -1);
             return (InterfacePath) obj;
         } catch (IllegalAccessException x) {
-            throw new ScannerError(SHEET_ILLEGAL_ACCESS);
+            throw new ScannerError(SHEET_ILLEGAL_ACCESS, -1);
         } catch (InstantiationException x) {
-            throw new ScannerError(SHEET_INST_EXCEPTION);
+            throw new ScannerError(SHEET_INST_EXCEPTION, -1);
         }
     }
 

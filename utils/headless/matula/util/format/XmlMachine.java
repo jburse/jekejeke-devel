@@ -98,7 +98,7 @@ public class XmlMachine {
         if (top < MAX_JUNK) {
             text[top++] = (char) ch;
         } else {
-            throw new ScannerError(XML_BUFFER_OVERFLOW);
+            throw new ScannerError(XML_BUFFER_OVERFLOW, -1);
         }
     }
 
@@ -173,7 +173,7 @@ public class XmlMachine {
                         res = XmlMachine.RES_TEXT;
                         return false;
                     } else {
-                        throw new ScannerError(XML_PREMATURE_END);
+                        throw new ScannerError(XML_PREMATURE_END, -1);
                     }
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     if (top == off) {
@@ -207,7 +207,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_SNIPPET:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_PERCENT) {
                     state = XmlMachine.STATE_PRE;
                 } else {
@@ -216,7 +216,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_PRE:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_CLOSE) {
                     type = new String(text, off, top - off);
                     fill(ch);
@@ -230,7 +230,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_BLANK:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
                 } else if (ch == CHAR_CLOSE) {
@@ -244,7 +244,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_ATTR:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     key = new String(text, off, top - off);
                     state = XmlMachine.STATE_BEFORE;
@@ -273,7 +273,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_BEFORE:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
                 } else if (ch == CHAR_CLOSE) {
@@ -293,7 +293,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_AFTER:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
                 } else if (ch == CHAR_SLASH) {
@@ -320,7 +320,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_VALUE:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     String temp = new String(text, off, top - off);
                     kvs.add(key, temp);
@@ -345,7 +345,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_DOUBLE:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_DOUBLE) {
                     fill(ch);
                     String temp = new String(text, off, top - off);
@@ -359,7 +359,7 @@ public class XmlMachine {
                 break;
             case XmlMachine.STATE_SINGLE:
                 if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END);
+                    throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_SINGLE) {
                     fill(ch);
                     String temp = new String(text, off, top - off);

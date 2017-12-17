@@ -94,16 +94,21 @@ public final class ForeignSheet {
     public static void sysXslTransform(DomNode dn, Writer writer,
                                        String comment, Object opts)
             throws InterpreterMessage, IOException, ScannerError {
-        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-        DomWriter dw = new DomWriter();
-        dw.setWriter(writer);
-        dw.setMask(res.getMask());
-        dw.setControl(res.getControl());
+        try {
+            SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+            DomWriter dw = new DomWriter();
+            dw.setWriter(writer);
+            dw.setMask(res.getMask());
+            dw.setControl(res.getControl());
 
-        XSLSheetTransform xt = new XSLSheetTransform();
-        xt.setWriter(dw);
-        xt.setVariables(res.getVariables());
-        xt.xslt(dn, comment);
+            XSLSheetTransform xt = new XSLSheetTransform();
+            xt.setWriter(dw);
+            xt.setVariables(res.getVariables());
+            xt.xslt(dn, comment);
+        } catch (ScannerError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+        }
     }
 
     /**
@@ -116,10 +121,15 @@ public final class ForeignSheet {
      */
     public static void sysXslCheck(DomNode dn, Object opts)
             throws IOException, ScannerError, InterpreterMessage {
-        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-        XSLSheetCheck xc = new XSLSheetCheck();
-        xc.setMask(res.getMask());
-        xc.check(dn);
+        try {
+            SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+            XSLSheetCheck xc = new XSLSheetCheck();
+            xc.setMask(res.getMask());
+            xc.check(dn);
+        } catch (ScannerError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+        }
     }
 
 }

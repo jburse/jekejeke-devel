@@ -92,10 +92,10 @@ public final class XSDSchema {
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             if (!e.isName(XSDDeclElem.NAME_ELEMENT))
-                throw new ScannerError(SCHEMA_MISSING_ELEM);
+                throw new ScannerError(SCHEMA_MISSING_ELEM, -1);
             String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
             if (name == null)
-                throw new ScannerError(SCHEMA_MISSING_NAME);
+                throw new ScannerError(SCHEMA_MISSING_NAME, -1);
             XSDDeclElem xe = XSDDeclElem.traverseElement(e);
             putDecl(name, xe);
             ListArray<String> mandatory = traverseAttributes(e, name);
@@ -118,10 +118,10 @@ public final class XSDSchema {
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             if (!e.isName(XSDDeclAttr.NAME_ATTRIBUTE))
-                throw new ScannerError(SCHEMA_MISSING_ATTR);
+                throw new ScannerError(SCHEMA_MISSING_ATTR, -1);
             String name = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
             if (name == null)
-                throw new ScannerError(SCHEMA_MISSING_NAME);
+                throw new ScannerError(SCHEMA_MISSING_NAME, -1);
             String fullname = element + "." + name;
             XSDDeclAttr xa = XSDDeclAttr.traverseAttribute(e);
             putDecl(fullname, xa);
@@ -140,7 +140,7 @@ public final class XSDSchema {
      */
     public void putDecl(String name, XSDDecl xd) throws ScannerError {
         if (decls.get(name) != null)
-            throw new ScannerError(SCHEMA_DUPLICATE_DECL);
+            throw new ScannerError(SCHEMA_DUPLICATE_DECL, -1);
         decls.add(name, xd);
     }
 

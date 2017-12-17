@@ -1,6 +1,7 @@
 package matula.util.format;
 
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -72,12 +73,17 @@ public class XmlScanner<T extends XmlMachine> {
      * @throws ScannerError Rewriting problem.
      */
     public void nextTagOrText() throws IOException, ScannerError {
-        mach.startTagOrText();
-        for (; ; ) {
-            if (mach.consume(ch))
-                ch = reader.read();
-            if (mach.getRes() != XmlMachine.RES_NONE)
-                return;
+        try {
+            mach.startTagOrText();
+            for (; ; ) {
+                if (mach.consume(ch))
+                    ch = reader.read();
+                if (mach.getRes() != XmlMachine.RES_NONE)
+                    return;
+            }
+        } catch (ScannerError sc) {
+            sc.setPos(OpenOpts.getOffset(reader));
+            throw sc;
         }
     }
 

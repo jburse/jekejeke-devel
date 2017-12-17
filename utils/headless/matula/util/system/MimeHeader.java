@@ -130,25 +130,25 @@ public final class MimeHeader {
         st.quoteChar('"');
         st.nextToken();
         if (st.ttype != StreamTokenizer.TT_WORD)
-            throw new ScannerError(ERROR_NAME_MISSING);
+            throw new ScannerError(ERROR_NAME_MISSING, -1);
         type = st.sval;
         st.nextToken();
         if (st.ttype != '/')
-            throw new ScannerError(ERROR_SLASH_MISSING);
+            throw new ScannerError(ERROR_SLASH_MISSING, -1);
         st.nextToken();
         if (st.ttype != StreamTokenizer.TT_WORD)
-            throw new ScannerError(ERROR_NAME_MISSING);
+            throw new ScannerError(ERROR_NAME_MISSING, -1);
         subtype = st.sval;
         st.nextToken();
         while (st.ttype == ';') {
             st.nextToken();
             String a;
             if (st.ttype != StreamTokenizer.TT_WORD)
-                throw new ScannerError(ERROR_NAME_MISSING);
+                throw new ScannerError(ERROR_NAME_MISSING, -1);
             a = st.sval;
             st.nextToken();
             if (st.ttype != '=')
-                throw new ScannerError(ERROR_EQUAL_MISSING);
+                throw new ScannerError(ERROR_EQUAL_MISSING, -1);
             st.nextToken();
             String v;
             if (st.ttype == StreamTokenizer.TT_WORD) {
@@ -158,13 +158,13 @@ public final class MimeHeader {
                 v = st.sval;
                 st.nextToken();
             } else {
-                throw new ScannerError(ERROR_VALUE_MISSING);
+                throw new ScannerError(ERROR_VALUE_MISSING, -1);
             }
             attr.add(a);
             val.add(v);
         }
         if (st.ttype != StreamTokenizer.TT_EOF)
-            throw new ScannerError(ERROR_SUPERFLOUS_TOKEN);
+            throw new ScannerError(ERROR_SUPERFLOUS_TOKEN, -1);
     }
 
     /**
@@ -177,7 +177,8 @@ public final class MimeHeader {
         int n = s.length();
         for (int i = 0; i < n; i++) {
             char ch = s.charAt(i);
-            if (ch == '\\' || ch == '"' || ch == '/' || ch == '=' || ch == ';')
+            if (ch == '\\' || ch == '"' ||
+                    ch == '/' || ch == '=' || ch == ';')
                 return true;
         }
         return false;

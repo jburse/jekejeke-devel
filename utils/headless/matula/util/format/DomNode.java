@@ -87,8 +87,8 @@ public abstract class DomNode {
      *
      * @param reader The input stream.
      * @param mask    The return mask.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     public void load(Reader reader, int mask)
             throws IOException, ScannerError {
@@ -112,8 +112,8 @@ public abstract class DomNode {
      * @param reader The input stream.
      * @param mask    The return mask.
      * @param control    The tag control.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     public void load(Reader reader, int mask,
                      MapHash<String, Integer> control)
@@ -188,8 +188,8 @@ public abstract class DomNode {
      * <p>Not synchronized, uses cut-over.</p>
      *
      * @param dr The dom reader.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     abstract void loadNode(DomReader dr)
             throws IOException, ScannerError;

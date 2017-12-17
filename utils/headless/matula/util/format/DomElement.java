@@ -5,6 +5,7 @@ import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 
@@ -81,22 +82,22 @@ public final class DomElement extends DomNode {
      * <p>Not synchronized, uses cut-over.</p>
      *
      * @param dr The dom reader.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error..
+     * @throws ScannerError Syntax error.
      */
     void loadNode(DomReader dr) throws IOException, ScannerError {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
-                throw new ScannerError(DOM_MISSING_ELEM);
+                throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
                 if (dr.getType().startsWith(DomReader.STRING_SLASH))
-                    throw new ScannerError(DOM_MISSING_ELEM);
+                    throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
                 boolean closed = checkClosed(dr);
                 String type = dr.getType();
                 AssocArray<String, Object> newkvs = new AssocArray<String, Object>();
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     if (XmlMachine.indexAttr(newkvs, dr.getAttr(i)) != -1)
-                        throw new ScannerError(DOM_DUPLICATE_ATTR);
+                        throw new ScannerError(DOM_DUPLICATE_ATTR, OpenOpts.getOffset(dr.getReader()));
                     String valstr = dr.getValueAt(i);
                     Object val;
                     if (valstr.length() > 0 && Character.isDigit(valstr.codePointAt(0))) {
@@ -126,14 +127,14 @@ public final class DomElement extends DomNode {
                     checkEnd(type, dr);
                 } else {
                     if (closed && empty)
-                        throw new ScannerError(DOM_CLOSED_EMPTY);
+                        throw new ScannerError(DOM_CLOSED_EMPTY, -1);
                     cs = new ListArray<DomNode>();
                     dr.nextTagOrText();
                 }
                 setChildren(cs);
                 break;
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DOM_MISSING_ELEM);
+                throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
             default:
                 throw new IllegalArgumentException("illegal res");
         }
@@ -164,27 +165,27 @@ public final class DomElement extends DomNode {
      * <p>As a side effect a correct tag is consumed.</p>
      *
      * @param type The type.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private static void checkEnd(String type, DomReader dr)
             throws ScannerError, IOException {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
-                throw new ScannerError(DOM_MISSING_END);
+                throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
                 if (!dr.getType().startsWith(DomReader.STRING_SLASH))
-                    throw new ScannerError(DOM_MISSING_END);
+                    throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
                 if (dr.getAttrCount() != 0)
-                    throw new ScannerError(DOM_UNEXPECTED_ATTR);
+                    throw new ScannerError(DOM_UNEXPECTED_ATTR, OpenOpts.getOffset(dr.getReader()));
                 String temp = dr.getType();
                 temp = temp.substring(1);
                 if (!type.equals(temp))
-                    throw new ScannerError(DOM_MISMATCHED_END);
+                    throw new ScannerError(DOM_MISMATCHED_END, OpenOpts.getOffset(dr.getReader()));
                 dr.nextTagOrText();
                 break;
             case XmlMachine.RES_EOF:
-                throw new ScannerError(DOM_MISSING_END);
+                throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
             default:
                 throw new IllegalArgumentException("illegal res");
         }
@@ -246,8 +247,8 @@ public final class DomElement extends DomNode {
      *
      * @param dr The dom reader.
      * @return The children.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     static ListArray<DomNode> loadChildren(DomReader dr)
             throws IOException, ScannerError {
