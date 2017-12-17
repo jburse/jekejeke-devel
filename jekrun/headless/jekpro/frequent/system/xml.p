@@ -111,7 +111,8 @@ text_escape(X, Y) :-
  */
 % node_load(+DomNode, +Stream, +List)
 :- public node_load/3.
-:- foreign(node_load/3, 'ForeignDom', sysNodeLoad('DomNode','Reader','Object')).
+:- foreign(node_load/3, 'ForeignDom',
+      sysNodeLoad('Interpreter','CallOut','DomNode','Reader','Object')).
 
 /**
  * node_store(D, S, C, O):
@@ -121,7 +122,8 @@ text_escape(X, Y) :-
  */
 % node_store(+DomNode, +Stream, +Atom, +List)
 :- public node_store/4.
-:- foreign(node_store/4, 'ForeignDom', sysNodeStore('DomNode','Writer','String','Object')).
+:- foreign(node_store/4, 'ForeignDom',
+      sysNodeStore('DomNode','Writer','String','Object')).
 
 /**
  * node_get_parent(D, C):

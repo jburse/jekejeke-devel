@@ -1,12 +1,15 @@
 package jekpro.frequent.system;
 
 import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 import matula.util.format.DomElement;
 import matula.util.format.DomNode;
 import matula.util.format.DomText;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -142,20 +145,29 @@ public final class ForeignDom {
     /**
      * <p>Load a dom node.</p>
      *
+     * @param inter   The interpreter.
+     * @param callout Marker for frame.
      * @param dn     The dom node.
      * @param reader The reader.
      * @param opts   The DOM options.
-     * @throws InterpreterMessage Validation error.
-     * @throws IOException        IO error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws IOException          IO error.
+     * @throws InterpreterException Syntax error.
      */
-    public static void sysNodeLoad(DomNode dn, Reader reader, Object opts)
-            throws IOException, InterpreterMessage {
+    public static void sysNodeLoad(Interpreter inter, CallOut callout,
+                                   DomNode dn, Reader reader,
+                                   Object opts)
+            throws InterpreterMessage, IOException, InterpreterException {
         try {
             DomOpts res = DomOpts.decodeDomOpts(opts);
             dn.load(reader, res.getMask(), res.getControl());
         } catch (ScannerError y) {
-            throw new InterpreterMessage(
+            String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
+            InterpreterMessage x = new InterpreterMessage(
                     InterpreterMessage.syntaxError(y.getError()));
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchStack(inter), line, inter));
         }
     }
 

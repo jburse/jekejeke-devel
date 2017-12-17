@@ -45,7 +45,7 @@ public final class ForeignTerm {
     /**
      * <p>Write a term to a stream.</p>
      *
-     * @param inter   The call-in.
+     * @param inter   The interpreter.
      * @param callout Marker for frame.
      * @param para    The stream.
      * @param val     The term.
@@ -62,7 +62,7 @@ public final class ForeignTerm {
     /**
      * <p>Write a term quoted if necessary to a stream.</p>
      *
-     * @param inter   The call-in.
+     * @param inter   The interpreter.
      * @param callout Marker for frame.
      * @param para    The stream.
      * @param val     The term.
@@ -79,7 +79,7 @@ public final class ForeignTerm {
     /**
      * <p>Write a term canonical to a stream.</p>
      *
-     * @param inter   The call-in.
+     * @param inter   The interpreter.
      * @param callout Marker for frame.
      * @param para    The stream.
      * @param val     The term.
@@ -96,7 +96,7 @@ public final class ForeignTerm {
     /**
      * <p>Write a term respecting options to a stream.</p>
      *
-     * @param inter   The call-in.
+     * @param inter   The interpreter.
      * @param callout Marker for frame.
      * @param para    The stream.
      * @param val     The term.
@@ -114,7 +114,7 @@ public final class ForeignTerm {
     /**
      * <p>Read a term from a stream.</p>
      *
-     * @param inter   The call-in.
+     * @param inter   The interpreter.
      * @param callout Marker for frame.
      * @param para    The stream.
      * @return The read term.
@@ -131,7 +131,7 @@ public final class ForeignTerm {
     /**
      * <p>Read a term and options from a stream.</p>
      *
-     * @param inter   The call-in.
+     * @param inter   The interpreter.
      * @param callout Marker for frame.
      * @param para    The stream.
      * @param opt     The options.
@@ -141,7 +141,7 @@ public final class ForeignTerm {
      * @throws InterpreterException Validation problem or option problem.
      */
     public static AbstractTerm sysReadTerm(Interpreter inter, CallOut callout,
-                                   Reader para, Object opt)
+                                           Reader para, Object opt)
             throws IOException, InterpreterMessage, InterpreterException {
         return inter.parseTermWrapped(para, opt);
     }

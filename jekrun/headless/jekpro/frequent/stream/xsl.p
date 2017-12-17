@@ -7,7 +7,11 @@
  * predicate data_check/3.
  *
  * Example:
- * ?-
+ * ?- open('hello_buggy.xsl', read, S), elem_new(D),
+ *    node_load(D, S, [root(text)]), close(S), assertz(my_data(D)).
+ * ?- my_data(D), sheet_check(D,[]).
+ * Error: Undeclared XPath variable.
+ *  	sheet_check/2
  *
  * The XSL model loads referenced data or schema via reflection. The
  * result should be an in-stance that implements the Java interface
@@ -16,7 +20,7 @@
  * base is planned for future releases of this module.
  *
  * Example:
- * ?- open('hello_english.xsd', read, S), elem_new(D),
+ * ?- open('hello_english.xsl', read, S), elem_new(D),
  *    node_load(D, S, [root(text)]), close(S), assertz(my_data(D)).
  * ?- my_data(D), current_output(S),
  *    sheet_transform(D, S, '', [variable(name,'John')]).
