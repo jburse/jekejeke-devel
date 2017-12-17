@@ -41,14 +41,14 @@ import java.io.InputStreamReader;
 public final class XSLSheetCheck extends XSLSheet {
     public static XSDSchema meta = new XSDSchema();
 
-    private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
-    private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
-    private static final String SHEET_REQUIRED_SELECT = "sheet_required_select";
-    private static final String SHEET_FORBIDDEN_SELECT = "sheet_forbidden_select";
-    private static final String SHEET_DUPLICATE_VAR = "sheet_duplicate_var";
-    private static final String SHEET_ILLEGAL_MIME = "sheet_illegal_mime";
+    private static final String SHEET_ILLEGAL_VALUE = "sheet_illegal_value";
     private static final String SHEET_FORBIDDEN_TEXT = "sheet_forbidden_text";
     private static final String SHEET_FORBIDDEN_ELEM = "sheet_forbidden_elem";
+    private static final String SHEET_FORBIDDEN_ATTR = "sheet_forbidden_attr";
+    private static final String SHEET_MISSING_ATTR = "sheet_missing_attr";
+    private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
+    private static final String SHEET_DUPLICATE_VAR = "sheet_duplicate_var";
+    private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
 
     private boolean type;
     private MapHash<String, Integer> parameters = new MapHash<String, Integer>();
@@ -100,7 +100,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @param node The template.
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
-     * @throws ValidationError Domain error.
+     * @throws ValidationError Check error.
      */
     public void check(DomNode node)
             throws IOException, ScannerError, ValidationError {
@@ -119,14 +119,15 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a template.</p>
      *
      * @param dn The template.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltNode(DomNode dn)
             throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             if (!type)
-                throw new ScannerError(SHEET_MISSING_OUTPUT, -1);
+                throw new ValidationError(SHEET_MISSING_OUTPUT, "#text");
         } else {
             DomElement de = (DomElement) dn;
             if (de.isName(XSLSheetTransform.NAME_FOREACH)) {
@@ -155,8 +156,9 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check the children.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltChildren(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -171,8 +173,9 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a for each tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltForEach(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -194,38 +197,47 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a value of tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltValueOf(DomElement de)
-            throws ScannerError, IOException {
+            throws IOException, ScannerError, ValidationError {
         String select = de.getAttr(XSLSheetTransform.ATTR_VALUEOF_SELECT);
         attrSelect(select);
-        if (!type)
-            throw new ScannerError(SHEET_MISSING_OUTPUT, -1);
+        if (!type) {
+            String name = de.getName();
+            throw new ValidationError(SHEET_MISSING_OUTPUT, name);
+        }
     }
 
     /**
      * <p>Check a with data tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
-     * @throws IOException  Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError {
         String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
         InterfacePath pu = resolveBean(bean);
         if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
-            throw new ScannerError(SHEET_MISMATCHED_PATH, -1);
+            throw new ValidationError(SHEET_MISMATCHED_PATH, bean);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
             String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
-            if (select == null)
-                throw new ScannerError(SHEET_REQUIRED_SELECT, -1);
+            if (select == null) {
+                String name = de.getName();
+                throw new ValidationError(SHEET_MISSING_ATTR, name + ".select");
+            }
             attrSelect(select);
         } else {
             String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
-            if (select != null)
-                throw new ScannerError(SHEET_FORBIDDEN_SELECT, -1);
+            if (select != null) {
+                String name = de.getName();
+                throw new ValidationError(SHEET_FORBIDDEN_ATTR, name + ".select");
+            }
         }
         pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
         pu.list();
@@ -251,11 +263,12 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check an output tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltOutput(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
@@ -264,7 +277,8 @@ public final class XSLSheetCheck extends XSLSheet {
         } else if ("text/html".equals(typesubtype)) {
             type = true;
         } else {
-            throw new ScannerError(SHEET_ILLEGAL_MIME, -1);
+            String name = de.getName();
+            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".mime");
         }
     }
 
@@ -272,13 +286,14 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a param tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltParam(DomElement de)
             throws ScannerError, ValidationError {
         String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
-            throw new ScannerError(SHEET_DUPLICATE_VAR, -1);
+            throw new ValidationError(SHEET_DUPLICATE_VAR, name);
         String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
         int typeid = XSDDeclAttr.checkType(de, type);
         parameters.add(name, Integer.valueOf(typeid));
@@ -288,8 +303,9 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a if tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltIf(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -302,8 +318,9 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a choose tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltChoose(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -311,7 +328,7 @@ public final class XSLSheetCheck extends XSLSheet {
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
             if (node instanceof DomText)
-                throw new ScannerError(SHEET_FORBIDDEN_TEXT, -1);
+                throw new ValidationError(SHEET_FORBIDDEN_TEXT, "#text");
             DomElement de2 = (DomElement) node;
             if (de2.isName(XSLSheetTransform.NAME_WHEN)) {
                 String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
@@ -320,7 +337,8 @@ public final class XSLSheetCheck extends XSLSheet {
             } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
                 xsltChildren(de2);
             } else {
-                throw new ScannerError(SHEET_FORBIDDEN_ELEM, -1);
+                String name = de2.getName();
+                throw new ValidationError(SHEET_FORBIDDEN_ELEM, name);
             }
         }
     }
@@ -333,11 +351,12 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a xselect.</p>
      *
      * @param select The xselect.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void attrSelect(String select)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
         XSelect xs = xr.createXSelect(select);
@@ -351,11 +370,12 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a xpath expr.</p>
      *
      * @param test The xpath expr.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void attrTest(String test)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
         XPathExpr xe = xr.createXPathExpr(test);
@@ -371,7 +391,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @param args Not used.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
-     * @throws ValidationError Domain error.
+     * @throws ValidationError Check error.
      */
     /*
     public static void main(String[] args)

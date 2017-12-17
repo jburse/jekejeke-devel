@@ -4,7 +4,6 @@ import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.format.*;
-import matula.util.regex.ScannerError;
 
 import java.io.IOException;
 
@@ -40,6 +39,7 @@ final class XPathCheck {
     private static final String PATH_CANT_SELE = "path_cant_sele";
     private static final String PATH_OVERRUN_PARENT = "path_overrun_parent";
     private static final String PATH_MISSING_FOREACH = "path_missing_foreach";
+    private static final String PATH_INTEGER_SELE = "path_integer_sele";
 
     private XSDSchema schema;
     private ListArray<String> simulation;
@@ -75,8 +75,9 @@ final class XPathCheck {
      * <p>Check an xpath.</p>
      *
      * @param xp The xpath.
+     * @throws ValidationError Check error.
      */
-    void xpath(XPath xp) throws ScannerError {
+    void xpath(XPath xp) throws ValidationError {
         ListArray<ChoicePoint> cps = xp.getChoicePoints();
         for (int i = 0; i < cps.size(); i++) {
             ChoicePoint cp = cps.get(i);
@@ -88,28 +89,29 @@ final class XPathCheck {
      * <p>Check a choice point.</p>
      *
      * @param cp The choice point.
+     * @throws ValidationError Check error.
      */
-    private void choicepoint(ChoicePoint cp) throws ScannerError {
+    private void choicepoint(ChoicePoint cp) throws ValidationError {
         switch (cp.getChoice()) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 XPathExprComb ex = cp.getExpr();
                 if (ex.getCombination() != XPathExprComb.EXPR_COMB_PRED)
-                    throw new ScannerError(PATH_CANT_CHCPNT, -1);
+                    throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 MapHashLink<String, XPathExpr> exs = ex.getExprs();
                 MapEntry<String, XPathExpr> entry = exs.getFirstEntry();
                 if (entry == null)
-                    throw new ScannerError(PATH_CANT_CHCPNT, -1);
+                    throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 if (!(entry.value instanceof XPathExprPrim))
-                    throw new ScannerError(PATH_CANT_CHCPNT, -1);
+                    throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 XPathExprPrim prim = (XPathExprPrim) entry.value;
                 if (prim.getPrimitive() != XPathExprPrim.EXPR_PRIM_NAME)
-                    throw new ScannerError(PATH_CANT_CHCPNT, -1);
+                    throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
                 XSDDecl decl = schema.getDecl(name);
                 if (decl == null || !(decl instanceof XSDDeclElem))
-                    throw new ScannerError(XMLCheck.DATA_UNDECLARED_ELEM, -1);
+                    throw new ValidationError(XMLCheck.DATA_UNDECLARED_ELEM, name);
                 XSDDeclElem xe = (XSDDeclElem) decl;
-                checkParent(xe);
+                checkParent(name, xe);
                 simulation.add(name);
                 entry = exs.successor(entry);
                 while (entry != null) {
@@ -119,13 +121,13 @@ final class XPathCheck {
                 break;
             case ChoicePoint.CHOICEPOINT_PARENT:
                 if (!(simulation.size() > 0))
-                    throw new ScannerError(PATH_OVERRUN_PARENT, -1);
+                    throw new ValidationError(PATH_OVERRUN_PARENT, cp.toString());
                 simulation.remove(simulation.size() - 1);
                 break;
             case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
-                throw new ScannerError(PATH_CANT_CHCPNT, -1);
+                throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
             default:
-                throw new IllegalArgumentException("illegal choice");
+                throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
         }
     }
 
@@ -133,19 +135,19 @@ final class XPathCheck {
      * <p>Check parent element constraint.</p>
      *
      * @param xe The XSD schema element declaration.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    private void checkParent(XSDDeclElem xe) throws ScannerError {
+    private void checkParent(String name, XSDDeclElem xe) throws ValidationError {
         String parent = xe.getParent();
         if (parent == null)
             return;
         if (!"".equals(parent)) {
             if (!(simulation.size() > 0) ||
                     !simulation.get(simulation.size() - 1).equalsIgnoreCase(parent))
-                throw new ScannerError(XMLCheck.DATA_ILLEGAL_PARENT, -1);
+                throw new ValidationError(XMLCheck.DATA_ILLEGAL_PARENT, name);
         } else {
             if (simulation.size() > 0)
-                throw new ScannerError(XMLCheck.DATA_ILLEGAL_PARENT, -1);
+                throw new ValidationError(XMLCheck.DATA_ILLEGAL_PARENT, name);
         }
     }
 
@@ -153,9 +155,9 @@ final class XPathCheck {
      * <p>Check a predicate.</p>
      *
      * @param ex The predicate.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    void predicate(XPathExpr ex) throws ScannerError {
+    void predicate(XPathExpr ex) throws ValidationError {
         if (ex instanceof XPathExprPrim) {
             XPathExprPrim prim = (XPathExprPrim) ex;
             switch (prim.getPrimitive()) {
@@ -170,13 +172,13 @@ final class XPathCheck {
                 case XPathExprPrim.EXPR_PRIM_GQ:
                     int typeid = select(prim.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                        throw new ValidationError(PATH_INTEGER_SELE, prim.getFirst().toString());
                     typeid = select(prim.getSecond());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                        throw new ValidationError(PATH_INTEGER_SELE, prim.getSecond().toString());
                     break;
                 default:
-                    throw new ScannerError(PATH_CANT_PRED, -1);
+                    throw new ValidationError(PATH_CANT_PRED, ex.toString());
             }
         } else if (ex instanceof XPathExprComb) {
             XPathExprComb comb = (XPathExprComb) ex;
@@ -190,10 +192,10 @@ final class XPathCheck {
                     }
                     break;
                 default:
-                    throw new ScannerError(PATH_CANT_PRED, -1);
+                    throw new ValidationError(PATH_CANT_PRED, ex.toString());
             }
         } else {
-            throw new ScannerError(PATH_CANT_PRED, -1);
+            throw new ValidationError(PATH_CANT_PRED, ex.toString());
         }
     }
 
@@ -202,19 +204,20 @@ final class XPathCheck {
      *
      * @param xs The xselect.
      * @return The type id.
+     * @throws ValidationError Check error.
      */
-    int select(XSelect xs) throws ScannerError {
+    int select(XSelect xs) throws ValidationError {
         if (xs instanceof XSelectPrim) {
             XSelectPrim xp = (XSelectPrim) xs;
             switch (xp.getPrimitive()) {
                 case XSelectPrim.SELE_PRIM_ATTR:
                     if (!(simulation.size() > 0))
-                        throw new ScannerError(PATH_MISSING_FOREACH, -1);
+                        throw new ValidationError(PATH_MISSING_FOREACH, xs.toString());
                     String name = simulation.get(simulation.size() - 1);
                     String attr = xp.getAttr();
                     XSDDecl decl = schema.getDecl(name + "." + attr);
                     if (decl == null || !(decl instanceof XSDDeclAttr))
-                        throw new ScannerError(XMLCheck.DATA_UNDECLARED_ATTR, -1);
+                        throw new ValidationError(XMLCheck.DATA_UNDECLARED_ATTR, name + "." + attr);
                     XSDDeclAttr declattr = (XSDDeclAttr) decl;
                     return declattr.getType();
                 case XSelectPrim.SELE_PRIM_CONST:
@@ -227,7 +230,7 @@ final class XPathCheck {
                         return XSDDeclAttr.TYPE_OBJECT;
                     }
                 default:
-                    throw new ScannerError(PATH_CANT_SELE, -1);
+                    throw new ValidationError(PATH_CANT_SELE, xs.toString());
             }
         } else if (xs instanceof XSelectComb) {
             XSelectComb xc = (XSelectComb) xs;
@@ -235,7 +238,7 @@ final class XPathCheck {
                 case XSelectComb.SELE_COMB_NEG:
                     int typeid = select(xc.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                        throw new ValidationError(PATH_INTEGER_SELE, xc.getFirst().toString());
                     break;
                 case XSelectComb.SELE_COMB_ADD:
                 case XSelectComb.SELE_COMB_SUB:
@@ -243,17 +246,17 @@ final class XPathCheck {
                 case XSelectComb.SELE_COMB_DIV:
                     typeid = select(xc.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                        throw new ValidationError(PATH_INTEGER_SELE, xc.getFirst().toString());
                     typeid = select(xc.getSecond());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                        throw new ValidationError(PATH_INTEGER_SELE, xc.getSecond().toString());
                     break;
                 default:
-                    throw new ScannerError(PATH_CANT_SELE, -1);
+                    throw new ValidationError(PATH_CANT_SELE, xs.toString());
             }
             return XSDDeclAttr.TYPE_INTEGER;
         } else {
-            throw new ScannerError(PATH_CANT_SELE, -1);
+            throw new ValidationError(PATH_CANT_SELE, xs.toString());
         }
     }
 
@@ -262,11 +265,11 @@ final class XPathCheck {
      *
      * @param args Not used.
      * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
     /*
     public static void main(String[] args)
-            throws IOException, ScannerError {
+            throws IOException, ValidationError {
         XSDSchema schema = new XSDSchema();
         schema.putDecl("jack", new XSDDeclElem());
         XSDDeclAttr declattr = new XSDDeclAttr();
@@ -290,7 +293,7 @@ final class XPathCheck {
         try {
             xc.xpath(xpath);
             System.out.println("check(xpath)=passed");
-        } catch (ScannerError x) {
+        } catch (ValidationError x) {
             System.out.println("check(xpath)=failed");
         }
 
@@ -299,7 +302,7 @@ final class XPathCheck {
         try {
             xc.select(xs);
             System.out.println("check(xselect)=passed");
-        } catch (ScannerError x) {
+        } catch (ValidationError x) {
             System.out.println("check(xselect)=failed");
         }
 
@@ -308,7 +311,7 @@ final class XPathCheck {
         try {
             xc.predicate(xe);
             System.out.println("check(xpathexpr)=passed");
-        } catch (ScannerError x) {
+        } catch (ValidationError x) {
             System.out.println("check(xpathexpr)=failed");
         }
     }

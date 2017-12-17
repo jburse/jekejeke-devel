@@ -40,22 +40,23 @@ class XSLSheet {
      *
      * @param bean The bean.
      * @return The interface path.
-     * @throws ScannerError Validation error.
+     * @throws ValidationError Check error.
      */
-    public InterfacePath resolveBean(String bean) throws ScannerError {
+    public InterfacePath resolveBean(String bean)
+            throws ValidationError {
         try {
             ClassLoader loader = getClass().getClassLoader();
             Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
             if (_class == null)
-                throw new ScannerError(SHEET_MISSING_CLASS, -1);
+                throw new ValidationError(SHEET_MISSING_CLASS, bean);
             Object obj = _class.newInstance();
             if (!(obj instanceof InterfacePath))
-                throw new ScannerError(SHEET_MISMATCHED_BEAN, -1);
+                throw new ValidationError(SHEET_MISMATCHED_BEAN, bean);
             return (InterfacePath) obj;
         } catch (IllegalAccessException x) {
-            throw new ScannerError(SHEET_ILLEGAL_ACCESS, -1);
+            throw new ValidationError(SHEET_ILLEGAL_ACCESS, bean);
         } catch (InstantiationException x) {
-            throw new ScannerError(SHEET_INST_EXCEPTION, -1);
+            throw new ValidationError(SHEET_INST_EXCEPTION, bean);
         }
     }
 
