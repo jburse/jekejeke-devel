@@ -109,7 +109,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     public void xslt(DomNode dn, String comment)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         if (comment != null && !"".equals(comment))
             writer.writeComment(comment);
         if ((writer.getMask() & DomNode.MASK_LIST) != 0) {
@@ -127,7 +127,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltNode(DomNode dn)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             DomText dt = (DomText) dn;
             copyText(dt.getData());
@@ -179,7 +179,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltChildren2(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         if ((writer.getMask() & DomNode.MASK_TEXT) != 0) {
             xsltChildren(de);
         } else {
@@ -199,7 +199,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltChildren(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
@@ -221,7 +221,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltForEach(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         String select = de.getAttr(ATTR_FOREACH_SELECT);
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
@@ -256,7 +256,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltWithData(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         String bean = de.getAttr(ATTR_WITHDATA_BEAN);
         InterfacePath pu = resolveBean(bean);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
@@ -303,28 +303,28 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltParam(DomElement de)
-            throws ScannerError {
+            throws ScannerError, ValidationError {
         String name = de.getAttr(ATTR_PARAM_NAME);
         Object val = variables.get(name);
         if (val == null) {
             String use = de.getAttr(ATTR_PARAM_USE);
-            boolean opflag = XSDDeclAttr.checkUse(use);
+            boolean opflag = XSDDeclAttr.checkUse(de, use);
             if (!opflag)
                 throw new IllegalArgumentException(XPathReadTransform.PATH_UNKNOWN_VARIABLE);
             return;
         }
         String type = de.getAttr(ATTR_PARAM_TYPE);
-        int typeid = XSDDeclAttr.checkType(type);
+        int typeid = XSDDeclAttr.checkType(de, type);
         switch (typeid) {
             case XSDDeclAttr.TYPE_OBJECT:
                 break;
             case XSDDeclAttr.TYPE_STRING:
                 if (!(val instanceof String))
-                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                    throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 if (!(val instanceof Long))
-                    throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                    throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                 break;
         }
     }
@@ -337,7 +337,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  Shit happens.
      */
     private void xsltIf(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         String test = de.getAttr(ATTR_IF_TEST);
         boolean val = attrTest(test);
         if (val)
@@ -352,7 +352,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  Shit happens.
      */
     private void xsltChoose(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];

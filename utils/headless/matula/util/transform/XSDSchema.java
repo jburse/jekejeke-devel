@@ -42,9 +42,6 @@ import java.io.InputStreamReader;
 public final class XSDSchema {
     public static XSDSchema meta = new XSDSchema();
 
-    public static final String SCHEMA_MISSING_ELEM = "schema_missing_elem";
-    public static final String SCHEMA_MISSING_NAME = "schema_missing_name";
-    public static final String SCHEMA_MISSING_ATTR = "schema_missing_attr";
     public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
 
     private final MapHashLink<String, XSDDecl> decls = new MapHashLink<String, XSDDecl>();
@@ -62,6 +59,8 @@ public final class XSDSchema {
             meta.traverseElements(schema);
         } catch (ScannerError x) {
             throw new RuntimeException("meta failed", x);
+        } catch (ValidationError x) {
+            throw new RuntimeException("meta failed", x);
         } catch (IOException x) {
             throw new RuntimeException("meta failed", x);
         }
@@ -71,9 +70,9 @@ public final class XSDSchema {
      * <p>Check the schema and digest the elements of the XSD schema.</p>
      *
      * @param de The schema dom element.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check errror.
      */
-    public void digestElements(DomElement de) throws ScannerError {
+    public void digestElements(DomElement de) throws ValidationError {
         XMLCheck xc = new XMLCheck();
         xc.setMask(DomNode.MASK_LIST);
         xc.setSchema(meta);
@@ -85,20 +84,16 @@ public final class XSDSchema {
      * <p>Digest the elements of the XSD schema.</p>
      *
      * @param de The schema dom element.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    private void traverseElements(DomElement de) throws ScannerError {
+    private void traverseElements(DomElement de) throws ValidationError {
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
-            if (!e.isName(XSDDeclElem.NAME_ELEMENT))
-                throw new ScannerError(SCHEMA_MISSING_ELEM, -1);
             String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
-            if (name == null)
-                throw new ScannerError(SCHEMA_MISSING_NAME, -1);
             XSDDeclElem xe = XSDDeclElem.traverseElement(e);
             putDecl(name, xe);
-            ListArray<String> mandatory = traverseAttributes(e, name);
+            ListArray<String> mandatory = traverseAttributes(e);
             xe.setMandatory(mandatory);
         }
     }
@@ -107,26 +102,21 @@ public final class XSDSchema {
      * <p>Digest the attributes of the XSD schema.</p>
      *
      * @param de      The schema dom element.
-     * @param element The parent XSD element.
      * @return The mandatory attributes.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    private ListArray<String> traverseAttributes(DomElement de, String element)
-            throws ScannerError {
+    private ListArray<String> traverseAttributes(DomElement de)
+            throws ValidationError {
+        String name = de.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
         ListArray<String> mandatory = new ListArray<String>();
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
-            if (!e.isName(XSDDeclAttr.NAME_ATTRIBUTE))
-                throw new ScannerError(SCHEMA_MISSING_ATTR, -1);
-            String name = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
-            if (name == null)
-                throw new ScannerError(SCHEMA_MISSING_NAME, -1);
-            String fullname = element + "." + name;
+            String attr = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
             XSDDeclAttr xa = XSDDeclAttr.traverseAttribute(e);
-            putDecl(fullname, xa);
+            putDecl(name + "." + attr, xa);
             if (!xa.getOptional())
-                mandatory.add(name);
+                mandatory.add(attr);
         }
         return mandatory;
     }
@@ -136,11 +126,11 @@ public final class XSDSchema {
      *
      * @param name The name.
      * @param xd   The XSD schema decalaration.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    public void putDecl(String name, XSDDecl xd) throws ScannerError {
+    public void putDecl(String name, XSDDecl xd) throws ValidationError {
         if (decls.get(name) != null)
-            throw new ScannerError(SCHEMA_DUPLICATE_DECL, -1);
+            throw new ValidationError(SCHEMA_DUPLICATE_DECL, name);
         decls.add(name, xd);
     }
 

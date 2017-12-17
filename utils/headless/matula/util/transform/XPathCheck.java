@@ -107,7 +107,7 @@ final class XPathCheck {
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
                 XSDDecl decl = schema.getDecl(name);
                 if (decl == null || !(decl instanceof XSDDeclElem))
-                    throw new ScannerError(XMLCheck.DATA_UNDECLARED_NAME, -1);
+                    throw new ScannerError(XMLCheck.DATA_UNDECLARED_ELEM, -1);
                 XSDDeclElem xe = (XSDDeclElem) decl;
                 checkParent(xe);
                 simulation.add(name);
@@ -142,10 +142,10 @@ final class XPathCheck {
         if (!"".equals(parent)) {
             if (!(simulation.size() > 0) ||
                     !simulation.get(simulation.size() - 1).equalsIgnoreCase(parent))
-                throw new ScannerError(XMLCheck.DATA_MISMATCHED_PARENT, -1);
+                throw new ScannerError(XMLCheck.DATA_ILLEGAL_PARENT, -1);
         } else {
             if (simulation.size() > 0)
-                throw new ScannerError(XMLCheck.DATA_MISMATCHED_PARENT, -1);
+                throw new ScannerError(XMLCheck.DATA_ILLEGAL_PARENT, -1);
         }
     }
 
@@ -170,10 +170,10 @@ final class XPathCheck {
                 case XPathExprPrim.EXPR_PRIM_GQ:
                     int typeid = select(prim.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                     typeid = select(prim.getSecond());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                     break;
                 default:
                     throw new ScannerError(PATH_CANT_PRED, -1);
@@ -235,7 +235,7 @@ final class XPathCheck {
                 case XSelectComb.SELE_COMB_NEG:
                     int typeid = select(xc.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                     break;
                 case XSelectComb.SELE_COMB_ADD:
                 case XSelectComb.SELE_COMB_SUB:
@@ -243,10 +243,10 @@ final class XPathCheck {
                 case XSelectComb.SELE_COMB_DIV:
                     typeid = select(xc.getFirst());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                     typeid = select(xc.getSecond());
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
-                        throw new ScannerError(XMLCheck.DATA_MISMATCHED_VALUE, -1);
+                        throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
                     break;
                 default:
                     throw new ScannerError(PATH_CANT_SELE, -1);

@@ -2,7 +2,6 @@ package matula.util.transform;
 
 import matula.util.data.ListArray;
 import matula.util.format.DomElement;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>This class provides an xml schema element declaration.</p>
@@ -35,8 +34,6 @@ public final class XSDDeclElem extends XSDDecl {
     static final String ATTR_ELEMENT_NAME = "name";
     static final String ATTR_ELEMENT_PARENT = "parent";
     static final String ATTR_ELEMENT_COMPLEX = "complex";
-
-    static final String SCHEMA_ILLEGAL_COMPLEX = "schema_illegal_complex";
 
     static final String OP_ANY = "any";
     static final String OP_EMPTY = "empty";
@@ -108,24 +105,28 @@ public final class XSDDeclElem extends XSDDecl {
      *
      * @param de The schema dom element.
      * @return The digested element.
+     * @throws ValidationError Check error.
      */
-    static XSDDeclElem traverseElement(DomElement de) throws ScannerError {
+    static XSDDeclElem traverseElement(DomElement de)
+            throws ValidationError {
         XSDDeclElem xe = new XSDDeclElem();
         String val = de.getAttr(ATTR_ELEMENT_PARENT);
         xe.setParent(val);
         val = de.getAttr(ATTR_ELEMENT_COMPLEX);
-        xe.setComplex(checkComplex(val));
+        xe.setComplex(checkComplex(de,val));
         return xe;
     }
 
     /**
      * <p>Check a complex attribute value.</p>
      *
+     * @param de The dom element.
      * @param complex The complex value.
      * @return The complex id.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    static int checkComplex(String complex) throws ScannerError {
+    static int checkComplex(DomElement de, String complex)
+            throws ValidationError {
         int typeid = COMPLEX_NONE;
         if (complex == null) {
             /* */
@@ -134,7 +135,8 @@ public final class XSDDeclElem extends XSDDecl {
         } else if (OP_EMPTY.equalsIgnoreCase(complex)) {
             typeid = COMPLEX_EMPTY;
         } else {
-            throw new ScannerError(SCHEMA_ILLEGAL_COMPLEX, -1);
+            String name=de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".complex");
         }
         return typeid;
     }

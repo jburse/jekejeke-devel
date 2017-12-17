@@ -27,4 +27,5 @@ package matula.util.transform;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class XSDDecl {
+    static final String SCHEMA_ILLEGAL_VALUE = "schema_illegal_value";
 }

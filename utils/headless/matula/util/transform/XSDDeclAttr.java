@@ -1,7 +1,6 @@
 package matula.util.transform;
 
 import matula.util.format.DomElement;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>This class provides an xml schema attribute declaration.</p>
@@ -34,9 +33,6 @@ public final class XSDDeclAttr extends XSDDecl {
     static final String ATTR_ATTRIBUTE_NAME = "name";
     static final String ATTR_ATTRIBUTE_USE = "use";
     static final String ATTR_ATTRIBUTE_TYPE = "type";
-
-    static final String SCHEMA_ILLEGAL_USE = "schema_illegal_use";
-    static final String SCHEMA_ILLEGAL_TYPE = "schema_illegal_type";
 
     static final String OP_OPTIONAL = "optional";
     static final String OP_STRING = "string";
@@ -90,31 +86,36 @@ public final class XSDDeclAttr extends XSDDecl {
      *
      * @param de The schema dom element.
      * @return The digested attribute.
+     * @throws ValidationError Check error.
      */
-    static XSDDeclAttr traverseAttribute(DomElement de) throws ScannerError {
+    static XSDDeclAttr traverseAttribute(DomElement de) 
+            throws ValidationError {
         XSDDeclAttr xa = new XSDDeclAttr();
         String val = de.getAttr(ATTR_ATTRIBUTE_USE);
-        xa.setOptional(checkUse(val));
+        xa.setOptional(checkUse(de,val));
         val = de.getAttr(ATTR_ATTRIBUTE_TYPE);
-        xa.setType(checkType(val));
+        xa.setType(checkType(de,val));
         return xa;
     }
 
     /**
      * <p>Check a use attribute value.</p>
      *
+     * @param de The dom element.
      * @param use The attribute value.
      * @return The optional flag.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    public static boolean checkUse(String use) throws ScannerError {
+    public static boolean checkUse(DomElement de, String use)
+            throws ValidationError {
         boolean opflag = false;
         if (use == null) {
             /* */
         } else if (OP_OPTIONAL.equalsIgnoreCase(use)) {
             opflag = true;
         } else {
-            throw new ScannerError(SCHEMA_ILLEGAL_USE, -1);
+            String name=de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".use");
         }
         return opflag;
     }
@@ -122,11 +123,13 @@ public final class XSDDeclAttr extends XSDDecl {
     /**
      * <p>Check a type attribute value.</p>
      *
+     * @param de The dom element.
      * @param type The attribute value.
      * @return The type id.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Check error.
      */
-    public static int checkType(String type) throws ScannerError {
+    public static int checkType(DomElement de, String type) 
+            throws ValidationError {
         int typeid = TYPE_OBJECT;
         if (type == null) {
             /* */
@@ -135,7 +138,8 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_INTEGER.equalsIgnoreCase(type)) {
             typeid = TYPE_INTEGER;
         } else {
-            throw new ScannerError(SCHEMA_ILLEGAL_TYPE, -1);
+            String name=de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".type");
         }
         return typeid;
     }

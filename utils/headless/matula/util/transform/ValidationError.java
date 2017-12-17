@@ -1,7 +1,7 @@
-package matula.util.regex;
+package matula.util.transform;
 
 /**
- * <p>The class provides a syntax error type and an error position.</p>
+ * <p>The class provides a domain error type and an damain culprit.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -25,9 +25,9 @@ package matula.util.regex;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ScannerError extends Exception {
+public final class ValidationError extends Exception {
     private String id;
-    private int pos = -1;
+    private String culprit;
 
     /**
      * <p>No stack filling.</p>
@@ -40,14 +40,14 @@ public final class ScannerError extends Exception {
     }
 
     /**
-     * <p>Create a scanner error.</p>
+     * <p>Create a validation error.</p>
      *
      * @param i The error id.
-     * @param p The error position.
+     * @param c The culprit.
      */
-    public ScannerError(String i, int p) {
+    public ValidationError(String i, String c) {
         id = i;
-        pos = p;
+        culprit = c;
     }
 
     /**
@@ -59,22 +59,23 @@ public final class ScannerError extends Exception {
         return id;
     }
 
+
     /**
-     * <p>Set the error position.</p>
+     * <p>Set the culprit.</p>
      *
-     * @param p The position.
+     * @param c The culprit.
      */
-    public void setPos(int p) {
-        pos = p;
+    public void setCulprit(String c) {
+        culprit = c;
     }
 
     /**
-     * <p>Retrieve the error position.</p>
+     * <p>Retrieve the culprit.</p>
      *
-     * @return The error position.
+     * @return The culprit.
      */
-    public int getPos() {
-        return pos;
+    public String getCulprit() {
+        return culprit;
     }
 
     /*************************************************************/
@@ -86,7 +87,7 @@ public final class ScannerError extends Exception {
      *
      * @param s The scanner error as a string.
      */
-    public ScannerError(String s) {
+    public ValidationError(String s) {
         parse(s);
     }
 
@@ -96,9 +97,9 @@ public final class ScannerError extends Exception {
      * @param s The scanner error as a string.
      */
     public void parse(String s) {
-        int k1 = s.indexOf('@');
+        int k1 = s.indexOf('#');
         if (k1 != -1) {
-            pos = Integer.parseInt(s.substring(k1 + 1));
+            culprit = s.substring(k1 + 1);
             s = s.substring(0, k1);
         }
         id = s;
@@ -113,6 +114,7 @@ public final class ScannerError extends Exception {
         return toString();
     }
 
+
     /**
      * <p>Unparse the scanner error.</p>
      *
@@ -120,46 +122,9 @@ public final class ScannerError extends Exception {
      */
     public String toString() {
         String s=id;
-        if (pos != -1)
-            s += "@" + pos;
+        if (culprit != null)
+            s+= "#" + culprit;
         return s;
-    }
-
-    /*************************************************************/
-    /* Line Position                                             */
-    /*************************************************************/
-
-    /**
-     * <p>Generate a line position.</p>
-     * <p>We use two spaces for surrogate pairs which matches the font
-     * width of ideographic characters.</p>
-     *
-     * @param s The line.
-     * @param p The position.
-     * @return The line position.
-     */
-    public static String linePosition(String s, int p) {
-        StringBuilder buf = new StringBuilder();
-        int n;
-        if (s != null) {
-            buf.append(s);
-            if (s.length() != 0 &&
-                    s.charAt(s.length() - 1) == CodeType.LINE_EOL) {
-                n = s.length() - 1;
-            } else {
-                buf.append(CodeType.LINE_EOL);
-                n = s.length();
-            }
-        } else {
-            n = 0;
-        }
-        p = Math.min(p, n);
-        while (p > 0) {
-            buf.append(' ');
-            p--;
-        }
-        buf.append('^');
-        return buf.toString();
     }
 
 }

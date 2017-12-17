@@ -1,11 +1,9 @@
 package matula.util.transform;
 
-import idxtab.Temprepo.TemprepoPath;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
-import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignUri;
 import matula.util.system.MimeHeader;
 
@@ -71,6 +69,8 @@ public final class XSLSheetCheck extends XSLSheet {
             meta.digestElements(schema);
         } catch (ScannerError x) {
             throw new RuntimeException("meta failed", x);
+        } catch (ValidationError x) {
+            throw new RuntimeException("meta failed", x);
         } catch (IOException x) {
             throw new RuntimeException("meta failed", x);
         }
@@ -98,10 +98,12 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a template.</p>
      *
      * @param node The template.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Domain error.
      */
-    public void check(DomNode node) throws ScannerError, IOException {
+    public void check(DomNode node)
+            throws IOException, ScannerError, ValidationError {
         XMLCheck xc = new XMLCheck();
         xc.setMask(DomNode.MASK_TEXT);
         xc.setSchema(meta);
@@ -121,7 +123,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltNode(DomNode dn)
-            throws ScannerError, IOException {
+            throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             if (!type)
                 throw new ScannerError(SHEET_MISSING_OUTPUT, -1);
@@ -157,7 +159,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltChildren(DomElement de)
-            throws ScannerError, IOException {
+            throws IOException, ScannerError, ValidationError {
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
@@ -173,7 +175,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ScannerError Shit happens.
      */
     private void xsltForEach(DomElement de)
-            throws ScannerError, IOException {
+            throws IOException, ScannerError, ValidationError {
         String select = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
@@ -210,38 +212,38 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws IOException  Shit happens.
      */
     private void xsltWithData(DomElement de)
-            throws IOException, ScannerError {
-            String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
-            InterfacePath pu = resolveBean(bean);
-            if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
-                throw new ScannerError(SHEET_MISMATCHED_PATH, -1);
-            if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
-                String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
-                if (select == null)
-                    throw new ScannerError(SHEET_REQUIRED_SELECT, -1);
-                attrSelect(select);
-            } else {
-                String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
-                if (select != null)
-                    throw new ScannerError(SHEET_FORBIDDEN_SELECT, -1);
-            }
-            pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
-            pu.list();
-            boolean f = pu.next();
-            pu.close();
-            if (!f)
-                throw new IllegalArgumentException("schema missing");
+            throws IOException, ScannerError, ValidationError {
+        String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
+        InterfacePath pu = resolveBean(bean);
+        if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
+            throw new ScannerError(SHEET_MISMATCHED_PATH, -1);
+        if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
+            String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
+            if (select == null)
+                throw new ScannerError(SHEET_REQUIRED_SELECT, -1);
+            attrSelect(select);
+        } else {
+            String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
+            if (select != null)
+                throw new ScannerError(SHEET_FORBIDDEN_SELECT, -1);
+        }
+        pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
+        pu.list();
+        boolean f = pu.next();
+        pu.close();
+        if (!f)
+            throw new IllegalArgumentException("schema missing");
 
-            XSDSchema xdef = new XSDSchema();
-            xdef.digestElements(pu.getFound());
+        XSDSchema xdef = new XSDSchema();
+        xdef.digestElements(pu.getFound());
 
-            ListArray<String> back = simulation;
-            XSDSchema back2 = schema;
-            simulation = new ListArray<String>();
-            schema = xdef;
-            xsltChildren(de);
-            schema = back2;
-            simulation = back;
+        ListArray<String> back = simulation;
+        XSDSchema back2 = schema;
+        simulation = new ListArray<String>();
+        schema = xdef;
+        xsltChildren(de);
+        schema = back2;
+        simulation = back;
 
     }
 
@@ -272,12 +274,13 @@ public final class XSLSheetCheck extends XSLSheet {
      * @param de The template dom element.
      * @throws ScannerError Shit happens.
      */
-    private void xsltParam(DomElement de) throws ScannerError {
+    private void xsltParam(DomElement de)
+            throws ScannerError, ValidationError {
         String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
             throw new ScannerError(SHEET_DUPLICATE_VAR, -1);
         String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
-        int typeid = XSDDeclAttr.checkType(type);
+        int typeid = XSDDeclAttr.checkType(de, type);
         parameters.add(name, Integer.valueOf(typeid));
     }
 
@@ -285,11 +288,11 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a if tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
      * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
      */
     private void xsltIf(DomElement de)
-            throws ScannerError, IOException {
+            throws IOException, ScannerError, ValidationError {
         String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
         attrTest(test);
         xsltChildren(de);
@@ -299,11 +302,11 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a choose tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
      * @throws IOException  Shit happens.
+     * @throws ScannerError Shit happens.
      */
     private void xsltChoose(DomElement de)
-            throws ScannerError, IOException {
+            throws IOException, ScannerError, ValidationError {
         DomNode[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomNode node = nodes[i];
@@ -366,10 +369,13 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Some test cases.</p
      *
      * @param args Not used.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     * @throws ValidationError Domain error.
      */
-    public static void main(String[] args) throws IOException, ScannerError, ClassNotFoundException {
+    /*
+    public static void main(String[] args)
+            throws IOException, ScannerError, ValidationError {
         TemprepoPath tp = new TemprepoPath();
         tp.setDocument("0101register_GERMAN");
         tp.list();
@@ -398,5 +404,6 @@ public final class XSLSheetCheck extends XSLSheet {
         xc.check(template);
         System.out.println("XSL template ENGLISH ok");
     }
+    */
 
 }

@@ -4,7 +4,6 @@ import matula.util.data.ListArray;
 import matula.util.format.DomElement;
 import matula.util.format.DomNode;
 import matula.util.format.DomText;
-import matula.util.regex.ScannerError;
 
 import java.io.IOException;
 
@@ -36,11 +35,11 @@ import java.io.IOException;
  */
 public final class XMLCheck {
     public static final String DATA_UNEXPECTED_TEXT = "data_unexpected_text";
-    public static final String DATA_UNDECLARED_NAME = "data_undeclared_name";
+    public static final String DATA_UNDECLARED_ELEM = "data_undeclared_elem";
     public static final String DATA_UNDECLARED_ATTR = "data_undeclared_attr";
     public static final String DATA_MISSING_ATTR = "data_missing_attr";
-    public static final String DATA_MISMATCHED_PARENT = "data_mismatched_parent";
-    public static final String DATA_MISMATCHED_VALUE = "data_mismatched_value";
+    public static final String DATA_ILLEGAL_PARENT = "data_illegal_parent";
+    public static final String DATA_ILLEGAL_VALUE = "data_illegal_value";
 
     private String context = "";
     private int mask;
@@ -68,9 +67,9 @@ public final class XMLCheck {
      * <p>Check XML data.</p>
      *
      * @param node The data dom node.
-     * @throws ScannerError Shit happen.
+     * @throws ValidationError Check error..
      */
-    public void check(DomNode node) throws ScannerError {
+    public void check(DomNode node) throws ValidationError {
         if ((mask & DomNode.MASK_LIST) != 0) {
             checkChildren((DomElement) node);
         } else {
@@ -82,10 +81,10 @@ public final class XMLCheck {
      * <p>Check XML data.</p>
      *
      * @param de The data dom element.
-     * @throws ScannerError Shit happen.
+     * @throws ValidationError Check error..
      */
     private void checkChildren(DomElement de)
-            throws ScannerError {
+            throws ValidationError {
         String back = context;
         context = de.getName();
         DomNode[] nodes = de.snapshotChildren();
@@ -100,13 +99,13 @@ public final class XMLCheck {
      * <p>Check XML data.</p>
      *
      * @param node The data dom node.
-     * @throws ScannerError Shit happen.
+     * @throws ValidationError Check error..
      */
     private void checkNode(DomNode node)
-            throws ScannerError {
+            throws ValidationError {
         if (node instanceof DomText) {
             if ((mask & DomNode.MASK_TEXT) == 0)
-                throw new ScannerError(DATA_UNEXPECTED_TEXT, -1);
+                throw new ValidationError(DATA_UNEXPECTED_TEXT, "#text");
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
             checkElement(de);
@@ -120,25 +119,25 @@ public final class XMLCheck {
      * <p>Check XML data.</p>
      *
      * @param de data dom element.
-     * @throws ScannerError Shit happen.
+     * @throws ValidationError Check error..
      */
-    private void checkElement(DomElement de) throws ScannerError {
+    private void checkElement(DomElement de) throws ValidationError {
         String name = de.getName();
         XSDDecl decl = schema.getDecl(name);
         if (decl == null || !(decl instanceof XSDDeclElem))
-            throw new ScannerError(DATA_UNDECLARED_NAME, -1);
+            throw new ValidationError(DATA_UNDECLARED_ELEM, name);
         XSDDeclElem xe = (XSDDeclElem) decl;
         String[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
             String attr = attrs[i];
             decl = schema.getDecl(name + "." + attr);
             if (decl == null || !(decl instanceof XSDDeclAttr))
-                throw new ScannerError(DATA_UNDECLARED_ATTR, -1);
+                throw new ValidationError(DATA_UNDECLARED_ATTR, name + "." + attr);
             XSDDeclAttr xa = (XSDDeclAttr) decl;
             checkType(de, attr, xa);
         }
         checkMandatory(de, xe);
-        checkParent(xe);
+        checkParent(de, xe);
     }
 
     /**
@@ -146,31 +145,36 @@ public final class XMLCheck {
      *
      * @param de The data dom element.
      * @param xe The XSD schema element declaration.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Domain error.
      */
     private static void checkMandatory(DomElement de, XSDDeclElem xe)
-            throws ScannerError {
+            throws ValidationError {
         ListArray<String> mandatory = xe.getMandatory();
         for (int i = 0; i < mandatory.size(); i++) {
             String attr = mandatory.get(i);
-            if (de.getAttrObj(attr) == null)
-                throw new ScannerError(DATA_MISSING_ATTR, -1);
+            if (de.getAttrObj(attr) == null) {
+                String name = de.getName();
+                throw new ValidationError(DATA_MISSING_ATTR, name + "." + attr);
+            }
         }
     }
 
     /**
      * <p>Check parent element constraint.</p>
      *
+     * @param de The data dom element.
      * @param xe The XSD schema element declaration.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Domain error.
      */
-    private void checkParent(XSDDeclElem xe)
-            throws ScannerError {
+    private void checkParent(DomElement de, XSDDeclElem xe)
+            throws ValidationError {
         String parent = xe.getParent();
         if (parent == null)
             return;
-        if (!context.equalsIgnoreCase(parent))
-            throw new ScannerError(DATA_MISMATCHED_PARENT, -1);
+        if (!context.equalsIgnoreCase(parent)) {
+            String name = de.getName();
+            throw new ValidationError(DATA_ILLEGAL_PARENT, name);
+        }
     }
 
     /**
@@ -179,10 +183,10 @@ public final class XMLCheck {
      * @param de   The data dom element.
      * @param attr The attribute name.
      * @param xa   The XSD schema attribute declaration.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Domain error.
      */
     private static void checkType(DomElement de, String attr, XSDDeclAttr xa)
-            throws ScannerError {
+            throws ValidationError {
         switch (xa.getType()) {
             case XSDDeclAttr.TYPE_OBJECT:
                 break;
@@ -190,15 +194,19 @@ public final class XMLCheck {
                 Object val = de.getAttrObj(attr);
                 if (val == null)
                     break;
-                if (!(val instanceof String))
-                    throw new ScannerError(DATA_MISMATCHED_VALUE, -1);
+                if (!(val instanceof String)) {
+                    String name = de.getName();
+                    throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
+                }
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 val = de.getAttrObj(attr);
                 if (val == null)
                     break;
-                if (!(val instanceof Long))
-                    throw new ScannerError(DATA_MISMATCHED_VALUE, -1);
+                if (!(val instanceof Long)) {
+                    String name = de.getName();
+                    throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("illegal type");
@@ -210,10 +218,10 @@ public final class XMLCheck {
      *
      * @param args Not used.
      * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws ValidationError Domain error.
      */
     /*
-    public static void main(String[] args) throws IOException, ScannerError {
+    public static void main(String[] args) throws IOException, ValidationError {
         DomElement schema = new DomElement();
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream("D:\\Tablespace\\Config2\\htatab\\sheet\\cust\\package.xsd"),

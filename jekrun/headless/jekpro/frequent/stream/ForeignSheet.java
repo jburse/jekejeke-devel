@@ -6,10 +6,7 @@ import matula.util.format.DomElement;
 import matula.util.format.DomNode;
 import matula.util.format.DomWriter;
 import matula.util.regex.ScannerError;
-import matula.util.transform.XMLCheck;
-import matula.util.transform.XSDSchema;
-import matula.util.transform.XSLSheetCheck;
-import matula.util.transform.XSLSheetTransform;
+import matula.util.transform.*;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -53,9 +50,9 @@ public final class ForeignSheet {
             throws InterpreterMessage {
         try {
             xs.digestElements(de);
-        } catch (ScannerError y) {
+        } catch (ValidationError y) {
             throw new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.domainError(y.getError(), y.getCulprit()));
         }
     }
 
@@ -75,9 +72,9 @@ public final class ForeignSheet {
             xc.setSchema(xs);
             xc.setMask(res.getMask());
             xc.check(dn);
-        } catch (ScannerError y) {
+        } catch (ValidationError y) {
             throw new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.domainError(y.getError(), y.getCulprit()));
         }
     }
 
@@ -108,6 +105,9 @@ public final class ForeignSheet {
         } catch (ScannerError y) {
             throw new InterpreterMessage(
                     InterpreterMessage.syntaxError(y.getError()));
+        } catch (ValidationError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.domainError(y.getError(), y.getCulprit()));
         }
     }
 
@@ -129,6 +129,9 @@ public final class ForeignSheet {
         } catch (ScannerError y) {
             throw new InterpreterMessage(
                     InterpreterMessage.syntaxError(y.getError()));
+        } catch (ValidationError y) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.domainError(y.getError(), y.getCulprit()));
         }
     }
 
