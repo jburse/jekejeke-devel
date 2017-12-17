@@ -35,6 +35,8 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSLSheetTransform extends XSLSheet {
+    private static final String PATH_ILLEGAL_VALUE = "path_illegal_value";
+
     public static final String NAME_STYLESHEET = "stylesheet";
     public static final String NAME_OUTPUT = "output";
     public static final String ATTR_OUTPUT_MIME = "mime";
@@ -105,8 +107,8 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param dn      The template.
      * @param comment The comment.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     public void xslt(DomNode dn, String comment)
             throws IOException, ScannerError, ValidationError {
@@ -123,8 +125,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Transform a template to a result.</p>
      *
      * @param dn The template.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void xsltNode(DomNode dn)
             throws IOException, ScannerError, ValidationError {
@@ -175,8 +177,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Transform the children.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void xsltChildren2(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -195,8 +197,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Transform the children.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void xsltChildren(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -217,8 +219,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a for each tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void xsltForEach(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -239,10 +241,12 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a value of tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
+     * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltValueOf(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         String select = de.getAttr(ATTR_VALUEOF_SELECT);
         String val = attrSelect(select);
         copyText(val);
@@ -252,8 +256,9 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a with data tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -281,8 +286,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute an output tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void xsltOutput(DomElement de)
             throws IOException, ScannerError {
@@ -300,7 +305,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a param tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
     private void xsltParam(DomElement de)
             throws ScannerError, ValidationError {
@@ -320,11 +325,11 @@ public final class XSLSheetTransform extends XSLSheet {
                 break;
             case XSDDeclAttr.TYPE_STRING:
                 if (!(val instanceof String))
-                    throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
                 if (!(val instanceof Long))
-                    throw new ScannerError(XMLCheck.DATA_ILLEGAL_VALUE, -1);
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
                 break;
         }
     }
@@ -333,8 +338,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute an if tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
-     * @throws IOException  Shit happens.
+     * @throws ScannerError Syntax error.
+     * @throws IOException  IO error.
      */
     private void xsltIf(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -348,8 +353,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute an choose tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Shit happens.
-     * @throws IOException  Shit happens.
+     * @throws ScannerError Syntax error.
+     * @throws IOException  IO error.
      */
     private void xsltChoose(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -380,11 +385,12 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param select The xselect.
      * @return The evaluation.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private String attrSelect(String select)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XSelect xs = xr.createXSelect(select);
@@ -396,11 +402,12 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param test The xpath expr.
      * @return The evaluation.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private boolean attrTest(String test)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XPathExpr xe = xr.createXPathExpr(test);
@@ -433,8 +440,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Some test cases.</p
      *
      * @param args Not used.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     /*
     public static void main(String[] args)

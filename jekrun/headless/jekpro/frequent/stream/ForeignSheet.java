@@ -1,11 +1,15 @@
 package jekpro.frequent.stream;
 
 import jekpro.frequent.system.DomOpts;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import matula.util.format.DomElement;
 import matula.util.format.DomNode;
 import matula.util.format.DomWriter;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 import matula.util.transform.*;
 
 import java.io.IOException;
@@ -81,16 +85,20 @@ public final class ForeignSheet {
     /**
      * <p>Transform an XSL node.</p>
      *
+     * @param inter   The interpreter.
+     * @param callout Marker for frame.
      * @param dn      The XSL node.
      * @param writer  The writer.
      * @param comment The comment.
      * @param opts    The sheet options.
-     * @throws ScannerError Validation error.
-     * @throws IOException  IO error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws IOException          IO error.
+     * @throws InterpreterException Syntax error.
      */
-    public static void sysXslTransform(DomNode dn, Writer writer,
+    public static void sysXslTransform(Interpreter inter, CallOut callout,
+                                       DomNode dn, Writer writer,
                                        String comment, Object opts)
-            throws InterpreterMessage, IOException, ScannerError {
+            throws InterpreterMessage, IOException, InterpreterException {
         try {
             SheetOpts res = SheetOpts.decodeSheetOpts(opts);
             DomWriter dw = new DomWriter();
@@ -103,8 +111,12 @@ public final class ForeignSheet {
             xt.setVariables(res.getVariables());
             xt.xslt(dn, comment);
         } catch (ScannerError y) {
-            throw new InterpreterMessage(
+            String line = ScannerError.linePosition(y.getLine(), y.getPos());
+            InterpreterMessage x = new InterpreterMessage(
                     InterpreterMessage.syntaxError(y.getError()));
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchStack(inter), line, inter));
         } catch (ValidationError y) {
             throw new InterpreterMessage(
                     InterpreterMessage.domainError(y.getError(), y.getCulprit()));
@@ -116,19 +128,25 @@ public final class ForeignSheet {
      *
      * @param dn   The XSL node.
      * @param opts The sheet options.
-     * @throws ScannerError Validation error.
-     * @throws IOException  IO error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws IOException          IO error.
+     * @throws InterpreterException Syntax error.
      */
-    public static void sysXslCheck(DomNode dn, Object opts)
-            throws IOException, ScannerError, InterpreterMessage {
+    public static void sysXslCheck(Interpreter inter, CallOut callout,
+                                   DomNode dn, Object opts)
+            throws InterpreterMessage, IOException, InterpreterException {
         try {
             SheetOpts res = SheetOpts.decodeSheetOpts(opts);
             XSLSheetCheck xc = new XSLSheetCheck();
             xc.setMask(res.getMask());
             xc.check(dn);
         } catch (ScannerError y) {
-            throw new InterpreterMessage(
+            String line = ScannerError.linePosition(y.getLine(), y.getPos());
+            InterpreterMessage x = new InterpreterMessage(
                     InterpreterMessage.syntaxError(y.getError()));
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchStack(inter), line, inter));
         } catch (ValidationError y) {
             throw new InterpreterMessage(
                     InterpreterMessage.domainError(y.getError(), y.getCulprit()));

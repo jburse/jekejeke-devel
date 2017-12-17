@@ -4,6 +4,7 @@ import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.TermAtomic;
 import matula.util.format.DomElement;
 import matula.util.format.DomNode;
@@ -165,9 +166,13 @@ public final class ForeignDom {
             String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
             InterpreterMessage x = new InterpreterMessage(
                     InterpreterMessage.syntaxError(y.getError()));
+            PositionKey pos = (OpenOpts.getPath(reader) != null ?
+                    new PositionKey(OpenOpts.getPath(reader), OpenOpts.getLineNumber(reader)) : null);
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
-                            InterpreterException.fetchStack(inter), line, inter));
+                            InterpreterException.fetchLoc(
+                                    InterpreterException.fetchStack(inter),
+                                    pos, inter), line, inter));
         }
     }
 

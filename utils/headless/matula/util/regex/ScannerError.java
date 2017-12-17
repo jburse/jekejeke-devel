@@ -28,6 +28,7 @@ package matula.util.regex;
 public final class ScannerError extends Exception {
     private String id;
     private int pos = -1;
+    private String line;
 
     /**
      * <p>No stack filling.</p>
@@ -75,6 +76,24 @@ public final class ScannerError extends Exception {
      */
     public int getPos() {
         return pos;
+    }
+
+    /**
+     * <p>Retrieve the line.</p>
+     *
+     * @return The line.
+     */
+    public String getLine() {
+        return line;
+    }
+
+    /**
+     * <p>Set the line.</p>
+     *
+     * @param l The line.
+     */
+    public void setLine(String l) {
+        line = l;
     }
 
     /*************************************************************/

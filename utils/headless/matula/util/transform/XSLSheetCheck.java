@@ -39,7 +39,7 @@ import java.io.InputStreamReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSLSheetCheck extends XSLSheet {
-    public static XSDSchema meta = new XSDSchema();
+    private static final String PATH_DUPLICATE_VAR = "path_duplicate_var";
 
     private static final String SHEET_ILLEGAL_VALUE = "sheet_illegal_value";
     private static final String SHEET_FORBIDDEN_TEXT = "sheet_forbidden_text";
@@ -47,8 +47,9 @@ public final class XSLSheetCheck extends XSLSheet {
     private static final String SHEET_FORBIDDEN_ATTR = "sheet_forbidden_attr";
     private static final String SHEET_MISSING_ATTR = "sheet_missing_attr";
     private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
-    private static final String SHEET_DUPLICATE_VAR = "sheet_duplicate_var";
     private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
+
+    private static XSDSchema meta = new XSDSchema();
 
     private boolean type;
     private MapHash<String, Integer> parameters = new MapHash<String, Integer>();
@@ -293,7 +294,7 @@ public final class XSLSheetCheck extends XSLSheet {
             throws ScannerError, ValidationError {
         String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
-            throw new ValidationError(SHEET_DUPLICATE_VAR, name);
+            throw new ValidationError(PATH_DUPLICATE_VAR, name);
         String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
         int typeid = XSDDeclAttr.checkType(de, type);
         parameters.add(name, Integer.valueOf(typeid));

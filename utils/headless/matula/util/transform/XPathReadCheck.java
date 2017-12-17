@@ -2,6 +2,7 @@ package matula.util.transform;
 
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 
 /**
  * <p>This class provides an xpath reader during check.</p>
@@ -54,12 +55,12 @@ final class XPathReadCheck extends XPathRead {
      *
      * @param n The variable name.
      * @return The variable value.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
     Object getVariable(String n) throws ScannerError {
         Integer type = parameters.get(n);
         if (type == null)
-            throw new ScannerError(PATH_UNDECLARED_VAR, -1);
+            throw new ScannerError(PATH_UNDECLARED_VAR, OpenOpts.getOffset(reader));
         switch (type.intValue()) {
             case XSDDeclAttr.TYPE_OBJECT:
                 return VOID_OBJECT;

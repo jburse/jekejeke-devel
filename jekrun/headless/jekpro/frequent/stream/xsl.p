@@ -11,7 +11,9 @@
  *    node_load(D, S, [root(text)]), close(S), assertz(my_data(D)).
  * ?- my_data(D), sheet_check(D,[]).
  * Error: Undeclared XPath variable.
- *  	sheet_check/2
+ * $bar
+ *     ^
+ * 	    sheet_check/2
  *
  * The XSL model loads referenced data or schema via reflection. The
  * result should be an in-stance that implements the Java interface
@@ -62,6 +64,7 @@
 :- use_package(foreign(java/io)).
 :- use_package(foreign(jekpro/frequent/stream)).
 :- use_package(library(matula/util/transform)).
+:- use_package(foreign(jekpro/tools/call)).
 
 :- module(xsl, []).
 :- sys_load_resource(library(sheet)).
@@ -107,7 +110,8 @@
 % sheet_check(+DomNode, +Stream, +Atom, +List)
 :- public sheet_transform/4.
 :- foreign(sheet_transform/4, 'ForeignSheet',
-      sysXslTransform('DomNode','Writer','String','Object')).
+      sysXslTransform('Interpreter','CallOut',
+         'DomNode','Writer','String','Object')).
 
 /**
  * sheet_check(T, O):
@@ -117,4 +121,4 @@
 % sheet_check(+DomNode, +List)
 :- public sheet_check/2.
 :- foreign(sheet_check/2, 'ForeignSheet',
-      sysXslCheck('DomNode','Object')).
+      sysXslCheck('Interpreter','CallOut','DomNode','Object')).

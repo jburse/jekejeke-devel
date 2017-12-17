@@ -3,6 +3,8 @@ package matula.util.transform;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
+import matula.util.system.ConnectionReader;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -48,7 +50,8 @@ abstract class XPathRead {
 
     private static SetHash<String> reserved = new SetHash<String>();
 
-    StreamTokenizer st;
+    protected Reader reader;
+    protected StreamTokenizer st;
 
     static {
         reserved.add(XPathExprComb.OP_TRUE);
@@ -64,6 +67,7 @@ abstract class XPathRead {
      * @throws IOException Shit happens.
      */
     void setReader(Reader r) throws IOException {
+        reader = r;
         st = createTokenizer(r);
         st.nextToken();
     }
@@ -101,8 +105,8 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The xpath.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private XPath xpath()
             throws IOException, ScannerError {
@@ -125,8 +129,8 @@ abstract class XPathRead {
      * </pre>
      *
      * @param xp The xpath.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void choicepoint(XPath xp)
             throws IOException, ScannerError {
@@ -139,12 +143,12 @@ abstract class XPathRead {
                 st.nextToken();
                 Object res2 = predicate();
                 if (!(res2 instanceof XPathExpr))
-                    throw new ScannerError(PATH_MISSING_PRED, -1);
+                    throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
                 res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_PRED);
                 XPathExprComb res = xp.getChoicePoints().get(xp.size() - 1).getExpr();
                 res.join((XPathExprComb) res2);
                 if (st.ttype != ']')
-                    throw new ScannerError(PATH_MISSING_SQRBKT, -1);
+                    throw new ScannerError(PATH_MISSING_SQRBKT, OpenOpts.getOffset(reader));
                 st.nextToken();
             }
         } else if (st.ttype == '.') {
@@ -153,7 +157,7 @@ abstract class XPathRead {
                 st.nextToken();
                 xp.whereParent();
             } else {
-                throw new ScannerError(PATH_MISSING_PERIOD, -1);
+                throw new ScannerError(PATH_MISSING_PERIOD, OpenOpts.getOffset(reader));
             }
         } else if (st.ttype == '[') {
             st.nextToken();
@@ -163,10 +167,10 @@ abstract class XPathRead {
                 xp.whereChildIndex(index);
             }
             if (st.ttype != ']')
-                throw new ScannerError(PATH_MISSING_SQRBKT, -1);
+                throw new ScannerError(PATH_MISSING_SQRBKT, OpenOpts.getOffset(reader));
             st.nextToken();
         } else {
-            throw new ScannerError(PATH_MISSING_CHCPNT, -1);
+            throw new ScannerError(PATH_MISSING_CHCPNT, OpenOpts.getOffset(reader));
         }
     }
 
@@ -177,15 +181,21 @@ abstract class XPathRead {
      * @param s The string.
      * @return The xpath.
      * @throws IOException  IO error.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
     XPath createXPath(String s)
             throws IOException, ScannerError {
-        StringReader sr = new StringReader(s);
-        setReader(sr);
-        XPath c = xpath();
-        checkEof();
-        return c;
+        ConnectionReader cr = new ConnectionReader(new StringReader(s));
+        cr.setLineNumber(1);
+        try {
+            setReader(cr);
+            XPath c = xpath();
+            checkEof();
+            return c;
+        } catch (ScannerError sc) {
+            sc.setLine(OpenOpts.getLine(cr));
+            throw sc;
+        }
     }
 
     /**************************************************************/
@@ -200,18 +210,19 @@ abstract class XPathRead {
      *                      | term.
      * <pre>
      * @throws IOException Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
-    private Object predicate() throws IOException, ScannerError {
+    private Object predicate()
+            throws IOException, ScannerError {
         Object res = predicateTerm();
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_OR)) {
             st.nextToken();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED, -1);
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             res = ((XPathExpr) res).lift(XPathExprComb.EXPR_COMB_OR);
             Object res2 = predicateTerm();
             if (!(res2 instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED, -1);
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_OR);
             ((XPathExprComb) res).join((XPathExprComb) res2);
         }
@@ -226,18 +237,19 @@ abstract class XPathRead {
      *                 | simple.
      * <pre>
      * @throws IOException Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
-    private Object predicateTerm() throws IOException, ScannerError {
+    private Object predicateTerm()
+            throws IOException, ScannerError {
         Object res = predicatesSimple();
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_AND)) {
             st.nextToken();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED, -1);
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             res = ((XPathExpr) res).lift(XPathExprComb.EXPR_COMB_AND);
             Object res2 = predicatesSimple();
             if (!(res2 instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED, -1);
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_AND);
             ((XPathExprComb) res).join((XPathExprComb) res2);
         }
@@ -259,16 +271,17 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The simple predicate.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
-    private Object predicatesSimple() throws IOException, ScannerError {
+    private Object predicatesSimple()
+            throws IOException, ScannerError {
         Object res;
         if (st.ttype == '~') {
             st.nextToken();
             res = select();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED, -1);
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             ((XPathExpr) res).complement();
         } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_FALSE)) {
             st.nextToken();
@@ -308,10 +321,10 @@ abstract class XPathRead {
             }
             if (compid != -1) {
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 Object res2 = select();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 res = new XPathExprPrim((XSelect) res, (XSelect) res2, compid);
             }
         }
@@ -324,16 +337,23 @@ abstract class XPathRead {
      * @param s The string.
      * @return The xpath expr.
      * @throws IOException  IO error.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
-    XPathExpr createXPathExpr(String s) throws IOException, ScannerError {
-        StringReader sr = new StringReader(s);
-        setReader(sr);
-        Object res = predicate();
-        if (!(res instanceof XPathExpr))
-            throw new ScannerError(PATH_MISSING_SELE, -1);
-        checkEof();
-        return (XPathExpr) res;
+    XPathExpr createXPathExpr(String s)
+            throws IOException, ScannerError {
+        ConnectionReader cr = new ConnectionReader(new StringReader(s));
+        cr.setLineNumber(1);
+        try {
+            setReader(cr);
+            Object res = predicate();
+            if (!(res instanceof XPathExpr))
+                throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
+            checkEof();
+            return (XPathExpr) res;
+        } catch (ScannerError sc) {
+            sc.setLine(OpenOpts.getLine(cr));
+            throw sc;
+        }
     }
 
     /**************************************************************/
@@ -351,8 +371,8 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The xselect.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private Object select()
             throws IOException, ScannerError {
@@ -361,7 +381,7 @@ abstract class XPathRead {
             st.nextToken();
             res = selectTerm();
             if (!(res instanceof XSelect))
-                throw new ScannerError(PATH_MISSING_SELE, -1);
+                throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
             res = new XSelectComb((XSelect) res, XSelectComb.SELE_COMB_NEG);
         } else {
             res = selectTerm();
@@ -370,18 +390,18 @@ abstract class XPathRead {
             if (st.ttype == '+') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 Object res2 = selectTerm();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_ADD);
             } else if (st.ttype == '-') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 Object res2 = selectTerm();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_SUB);
             } else {
                 break;
@@ -400,8 +420,8 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The xselect.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private Object selectTerm()
             throws IOException, ScannerError {
@@ -410,18 +430,18 @@ abstract class XPathRead {
             if (st.ttype == '*') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 Object res2 = selectSimple();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_MUL);
             } else if (st.ttype == '/') {
                 st.nextToken();
                 if (!(res instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 Object res2 = selectSimple();
                 if (!(res2 instanceof XSelect))
-                    throw new ScannerError(PATH_MISSING_SELE, -1);
+                    throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
                 res = new XSelectComb((XSelect) res, (XSelect) res2, XSelectComb.SELE_COMB_DIV);
             } else {
                 break;
@@ -443,8 +463,8 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The xselect.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private Object selectSimple()
             throws IOException, ScannerError {
@@ -453,12 +473,12 @@ abstract class XPathRead {
             st.nextToken();
             res = predicate();
             if (st.ttype != ')')
-                throw new ScannerError(PATH_MISSING_PRNTHS, -1);
+                throw new ScannerError(PATH_MISSING_PRNTHS, OpenOpts.getOffset(reader));
             st.nextToken();
         } else if (st.ttype == '@') {
             st.nextToken();
             if (!isName())
-                throw new ScannerError(PATH_MISSING_ATTR, -1);
+                throw new ScannerError(PATH_MISSING_ATTR, OpenOpts.getOffset(reader));
             String name = st.sval;
             st.nextToken();
             res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_ATTR);
@@ -473,13 +493,13 @@ abstract class XPathRead {
         } else if (st.ttype == '$') {
             st.nextToken();
             if (!isName())
-                throw new ScannerError(PATH_MISSING_VAR, -1);
+                throw new ScannerError(PATH_MISSING_VAR, OpenOpts.getOffset(reader));
             String var = st.sval;
             st.nextToken();
             Object cnst = getVariable(var);
             res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
         } else {
-            throw new ScannerError(PATH_MISSING_SELE, -1);
+            throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
         }
         return res;
     }
@@ -490,17 +510,23 @@ abstract class XPathRead {
      * @param s The string.
      * @return The xselect.
      * @throws IOException  IO error.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
     XSelect createXSelect(String s)
             throws IOException, ScannerError {
-        StringReader sr = new StringReader(s);
-        setReader(sr);
-        Object res = select();
-        if (!(res instanceof XSelect))
-            throw new ScannerError(PATH_MISSING_SELE, -1);
-        checkEof();
-        return (XSelect) res;
+        ConnectionReader cr = new ConnectionReader(new StringReader(s));
+        cr.setLineNumber(1);
+        try {
+            setReader(cr);
+            Object res = select();
+            if (!(res instanceof XSelect))
+                throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
+            checkEof();
+            return (XSelect) res;
+        } catch (ScannerError sc) {
+            sc.setLine(OpenOpts.getLine(cr));
+            throw sc;
+        }
     }
 
     /**************************************************************/
@@ -528,7 +554,7 @@ abstract class XPathRead {
      */
     void checkEof() throws ScannerError {
         if (st.ttype != StreamTokenizer.TT_EOF)
-            throw new ScannerError(PATH_SUPERFLOUS_TOKEN, -1);
+            throw new ScannerError(PATH_SUPERFLOUS_TOKEN, OpenOpts.getOffset(reader));
     }
 
     /**************************************************************/
@@ -540,16 +566,17 @@ abstract class XPathRead {
      *
      * @param n The variable name.
      * @return The variable value.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Syntax error.
      */
-    abstract Object getVariable(String n) throws ScannerError;
+    abstract Object getVariable(String n)
+            throws ScannerError;
 
     /**
      * <p>Some test cases.</p
      *
      * @param args Not used.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     /*
     public static void main(String[] args)

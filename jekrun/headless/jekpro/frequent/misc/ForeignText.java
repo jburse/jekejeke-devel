@@ -99,6 +99,7 @@ public final class ForeignText {
                 return spec;
             case AbstractSpecimen.MATCH_PRSE:
                 ConnectionReader cr = new ConnectionReader(new StringReader(pat));
+                cr.setLineNumber(1);
                 try {
                     spec = comp.parseSpecimen(cr, flag);
                 } catch (ScannerError y) {
