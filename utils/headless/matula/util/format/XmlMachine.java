@@ -46,15 +46,15 @@ public class XmlMachine {
     public static final int STATE_PRE = 5; /* before Java snippet end */
     public static final int STATE_BLANK = 6; /* before attribute */
     public static final int STATE_ATTR = 7; /* inside attribute name */
-    public static final int STATE_VALUE = 8; /* inside name token */
-    public static final int STATE_DOUBLE = 9; /* inside double quote literal */
-    public static final int STATE_SINGLE = 10; /* inside single quote literal */
-    public static final int STATE_AFTER = 11; /* after equal sign */
-    public static final int STATE_BEFORE = 12; /* before equal sign */
+    public static final int STATE_ATTR_DOUBLE = 8; /* inside double quote attribute name */
+    public static final int STATE_ATTR_SINGLE = 9; /* inside single quote attribute name */
+    public static final int STATE_VALUE = 10; /* inside name token */
+    public static final int STATE_VALUE_DOUBLE = 11; /* inside double quote literal */
+    public static final int STATE_VALUE_SINGLE = 12; /* inside single quote literal */
+    public static final int STATE_BEFORE = 13; /* before equal sign */
+    public static final int STATE_AFTER = 14; /* after equal sign */
 
     public static final String XML_BUFFER_OVERFLOW = "xml_buffer_overflow";
-    public static final String XML_MISSING_ATTR = "xml_missing_attr";
-    public static final String XML_MISSING_EQ = "xml_missing_eq";
     public static final String XML_PREMATURE_END = "xml_premature_end";
 
     public static final String VALUE_EMPTY = "";
@@ -192,8 +192,14 @@ public class XmlMachine {
                         off = top;
                         state = XmlMachine.STATE_ATTR;
                     }
-                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
-                    throw new ScannerError(XML_MISSING_ATTR, -1);
+                } else if (ch == CHAR_DOUBLE) {
+                    type = new String(text, off, top - off);
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_DOUBLE;
+                } else if (ch == CHAR_SINGLE) {
+                    type = new String(text, off, top - off);
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
                     if (top == off) {
                         state = XmlMachine.STATE_TEXT;
@@ -237,8 +243,12 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
-                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
-                    throw new ScannerError(XML_MISSING_ATTR, -1);
+                } else if (ch == CHAR_DOUBLE) {
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_DOUBLE;
+                } else if (ch == CHAR_SINGLE) {
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
                     fill(ch);
                     res = XmlMachine.RES_TAG;
@@ -266,8 +276,18 @@ public class XmlMachine {
                 } else if (ch == CHAR_EQ) {
                     key = new String(text, off, top - off);
                     state = XmlMachine.STATE_AFTER;
-                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
-                    throw new ScannerError(XML_MISSING_EQ, -1);
+                } else if (ch == CHAR_DOUBLE) {
+                    key = new String(text, off, top - off);
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_DOUBLE;
+                } else if (ch == CHAR_SINGLE) {
+                    key = new String(text, off, top - off);
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
                     key = new String(text, off, top - off);
                     kvs.add(key, VALUE_EMPTY);
@@ -279,21 +299,118 @@ public class XmlMachine {
                     /* */
                 }
                 break;
+            case XmlMachine.STATE_ATTR_DOUBLE:
+                if (ch == CHAR_EOF) {
+                    throw new ScannerError(XML_PREMATURE_END, -1);
+                } else if (ch == CHAR_DOUBLE) {
+                    fill(ch);
+                    key = new String(text, off, top - off);
+                    state = XmlMachine.STATE_BEFORE;
+                    return true;
+                } else {
+                    /* */
+                }
+                break;
+            case XmlMachine.STATE_ATTR_SINGLE:
+                if (ch == CHAR_EOF) {
+                    throw new ScannerError(XML_PREMATURE_END, -1);
+                } else if (ch == CHAR_SINGLE) {
+                    fill(ch);
+                    key = new String(text, off, top - off);
+                    state = XmlMachine.STATE_BEFORE;
+                    return true;
+                } else {
+                    /* */
+                }
+                break;
+            case XmlMachine.STATE_VALUE:
+                if (ch == CHAR_EOF) {
+                    throw new ScannerError(XML_PREMATURE_END, -1);
+                } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    state = XmlMachine.STATE_BLANK;
+                } else if (ch == CHAR_SLASH) {
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR;
+                } else if (ch == CHAR_DOUBLE) {
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_DOUBLE;
+                } else if (ch == CHAR_SINGLE) {
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_SINGLE;
+                } else if (ch == CHAR_CLOSE) {
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    fill(ch);
+                    res = XmlMachine.RES_TAG;
+                    return true;
+                } else {
+                    /* */
+                }
+                break;
+            case XmlMachine.STATE_VALUE_DOUBLE:
+                if (ch == CHAR_EOF) {
+                    throw new ScannerError(XML_PREMATURE_END, -1);
+                } else if (ch == CHAR_DOUBLE) {
+                    fill(ch);
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    state = XmlMachine.STATE_BLANK;
+                    return true;
+                } else {
+                    /* */
+                }
+                break;
+            case XmlMachine.STATE_VALUE_SINGLE:
+                if (ch == CHAR_EOF) {
+                    throw new ScannerError(XML_PREMATURE_END, -1);
+                } else if (ch == CHAR_SINGLE) {
+                    fill(ch);
+                    String temp = new String(text, off, top - off);
+                    kvs.add(key, temp);
+                    key = null;
+                    state = XmlMachine.STATE_BLANK;
+                    return true;
+                } else {
+                    /* */
+                }
+                break;
             case XmlMachine.STATE_BEFORE:
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
-                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
-                    throw new ScannerError(XML_MISSING_EQ, -1);
+                } else if (ch == CHAR_EQ) {
+                    state = XmlMachine.STATE_AFTER;
+                } else if (ch == CHAR_DOUBLE) {
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_DOUBLE;
+                } else if (ch == CHAR_SINGLE) {
+                    kvs.add(key, VALUE_EMPTY);
+                    key = null;
+                    off = top;
+                    state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
                     kvs.add(key, VALUE_EMPTY);
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
-                } else if (ch == CHAR_EQ) {
-                    state = XmlMachine.STATE_AFTER;
                 } else {
                     kvs.add(key, VALUE_EMPTY);
                     key = null;
@@ -311,76 +428,21 @@ public class XmlMachine {
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
+                } else if (ch == CHAR_DOUBLE) {
+                    off = top;
+                    state = XmlMachine.STATE_VALUE_DOUBLE;
+                } else if (ch == CHAR_SINGLE) {
+                    off = top;
+                    state = XmlMachine.STATE_VALUE_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
                     kvs.add(key, VALUE_EMPTY);
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
-                } else if (ch == CHAR_DOUBLE) {
-                    off = top;
-                    state = XmlMachine.STATE_DOUBLE;
-                } else if (ch == CHAR_SINGLE) {
-                    off = top;
-                    state = XmlMachine.STATE_SINGLE;
                 } else {
                     off = top;
                     state = XmlMachine.STATE_VALUE;
-                }
-                break;
-            case XmlMachine.STATE_VALUE:
-                if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END, -1);
-                } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
-                    String temp = new String(text, off, top - off);
-                    kvs.add(key, temp);
-                    key = null;
-                    state = XmlMachine.STATE_BLANK;
-                } else if (ch == CHAR_SLASH) {
-                    String temp = new String(text, off, top - off);
-                    kvs.add(key, temp);
-                    key = null;
-                    off = top;
-                    state = XmlMachine.STATE_ATTR;
-                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
-                    throw new ScannerError(XML_MISSING_ATTR, -1);
-                } else if (ch == CHAR_CLOSE) {
-                    String temp = new String(text, off, top - off);
-                    kvs.add(key, temp);
-                    key = null;
-                    fill(ch);
-                    res = XmlMachine.RES_TAG;
-                    return true;
-                } else {
-                    /* */
-                }
-                break;
-            case XmlMachine.STATE_DOUBLE:
-                if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END, -1);
-                } else if (ch == CHAR_DOUBLE) {
-                    fill(ch);
-                    String temp = new String(text, off, top - off);
-                    kvs.add(key, temp);
-                    key = null;
-                    state = XmlMachine.STATE_BLANK;
-                    return true;
-                } else {
-                    /* */
-                }
-                break;
-            case XmlMachine.STATE_SINGLE:
-                if (ch == CHAR_EOF) {
-                    throw new ScannerError(XML_PREMATURE_END, -1);
-                } else if (ch == CHAR_SINGLE) {
-                    fill(ch);
-                    String temp = new String(text, off, top - off);
-                    kvs.add(key, temp);
-                    key = null;
-                    state = XmlMachine.STATE_BLANK;
-                    return true;
-                } else {
-                    /* */
                 }
                 break;
             default:
@@ -561,15 +623,25 @@ public class XmlMachine {
     }
 
     /**
+     * <p>Check whether a string is quoted.</p>
+     *
+     * @param v The string.
+     * @return True if its quoted, otherwise false.
+     */
+    public static boolean isQuoted(String v) {
+        return (v.length() > 1 &&
+                (v.charAt(0) == CHAR_DOUBLE || v.charAt(0) == CHAR_SINGLE) &&
+                v.charAt(v.length() - 1) == v.charAt(0));
+    }
+
+    /**
      * <p>Strip the value by single or double quotes.</P>
      *
      * @param v The value.
      * @return The stripped value.
      */
     public static String stripValue(String v) {
-        if (v.length() > 1 &&
-                (v.charAt(0) == CHAR_DOUBLE || v.charAt(0) == CHAR_SINGLE) &&
-                v.charAt(v.length() - 1) == v.charAt(0)) {
+        if (isQuoted(v)) {
             return v.substring(1, v.length() - 1);
         } else {
             return v;
