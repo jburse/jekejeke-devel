@@ -1,6 +1,7 @@
 package matula.util.system;
 
-import matula.util.regex.CodeType;
+import matula.util.data.MapHash;
+import matula.util.format.XmlMachine;
 
 /**
  * The foreign predicates for the module system/xml.
@@ -32,6 +33,30 @@ public final class ForeignXml {
     public static final int MAX_ENTITY = 8; /* including & and ; */
     public static final String PREFIX_HTTP = "http:";
 
+    private static final MapHash<String, Integer> entity = new MapHash<String, Integer>();
+    private static final String[] entityrev = new String[255];
+
+    static {
+        addEntity("quot", XmlMachine.CHAR_DOUBLE);
+//        addEntity("apos", XmlMachine.CHAR_SINGLE);
+        addEntity("lt", '<');
+        addEntity("gt", '>');
+        addEntity("amp", '&');
+        addEntity("nbsp", 0xA0);
+    }
+
+    /**
+     * <p>Add a small character name.</p>
+     *
+     * @param str The name.
+     * @param i   The character, less than or equal 255.
+     */
+    private static void addEntity(String str, int i) {
+        Integer ival = Integer.valueOf(i);
+        entity.add(str, ival);
+        entityrev[i] = str;
+    }
+
     /*******************************************************************/
     /* Text Escaping/Unescaping                                        */
     /*******************************************************************/
@@ -59,36 +84,16 @@ public final class ForeignXml {
         StringBuilder buf = null;
         while (begin < end) {
             int ch = s.codePointAt(begin);
-            switch (ch) {
-                case CodeType.LINE_DOUBLE:
-                    if (buf == null)
-                        buf = new StringBuilder(s.substring(back, begin));
-                    buf.append("&quot;");
-                    break;
-                case '<':
-                    if (buf == null)
-                        buf = new StringBuilder(s.substring(back, begin));
-                    buf.append("&lt;");
-                    break;
-                case '>':
-                    if (buf == null)
-                        buf = new StringBuilder(s.substring(back, begin));
-                    buf.append("&gt;");
-                    break;
-                case '&':
-                    if (buf == null)
-                        buf = new StringBuilder(s.substring(back, begin));
-                    buf.append("&amp;");
-                    break;
-                case 0xA0:
-                    if (buf == null)
-                        buf = new StringBuilder(s.substring(back, begin));
-                    buf.append("&nbsp;");
-                    break;
-                default:
-                    if (buf != null)
-                        buf.appendCodePoint(ch);
-                    break;
+            String help = (ch <= 255 ? entityrev[ch] : null);
+            if (help != null) {
+                if (buf == null)
+                    buf = new StringBuilder(s.substring(back, begin));
+                buf.appendCodePoint(XmlMachine.CHAR_AMPER);
+                buf.append(help);
+                buf.appendCodePoint(XmlMachine.CHAR_SEMI);
+            } else {
+                if (buf != null)
+                    buf.appendCodePoint(ch);
             }
             begin += Character.charCount(ch);
         }
@@ -112,51 +117,36 @@ public final class ForeignXml {
         int pos = 0;
         while (pos < n) {
             int ch = str.codePointAt(pos);
-            if (ch == '&') {
+            if (ch == XmlMachine.CHAR_AMPER) {
                 int k = pos;
                 pos += Character.charCount(ch);
                 if (temp == null)
                     temp = new StringBuilder();
                 while (pos < n && pos - k < MAX_ENTITY &&
-                        (ch = str.codePointAt(pos)) != ';' &&
-                        ch != '&' && ch > ' ') {
+                        (ch = str.codePointAt(pos)) != XmlMachine.CHAR_SEMI &&
+                        ch != XmlMachine.CHAR_AMPER && ch > ' ') {
                     temp.appendCodePoint(ch);
                     pos += Character.charCount(ch);
                 }
-                if (pos < n && pos - k < MAX_ENTITY && ch == ';') {
+                if (pos < n && pos - k < MAX_ENTITY && ch == XmlMachine.CHAR_SEMI) {
                     String help = temp.toString();
-                    if (help.equals("quot")) {
+                    Integer ival = entity.get(help);
+                    if (ival != null) {
                         if (buf == null)
                             buf = new StringBuilder(str.substring(0, k));
-                        buf.appendCodePoint('"');
-                    } else if (help.equals("lt")) {
-                        if (buf == null)
-                            buf = new StringBuilder(str.substring(0, k));
-                        buf.appendCodePoint('<');
-                    } else if (help.equals("gt")) {
-                        if (buf == null)
-                            buf = new StringBuilder(str.substring(0, k));
-                        buf.appendCodePoint('>');
-                    } else if (help.equals("amp")) {
-                        if (buf == null)
-                            buf = new StringBuilder(str.substring(0, k));
-                        buf.appendCodePoint('&');
-                    } else if (help.equals("nbsp")) {
-                        if (buf == null)
-                            buf = new StringBuilder(str.substring(0, k));
-                        buf.appendCodePoint(0xA0);
+                        buf.appendCodePoint(ival.intValue());
                     } else {
                         if (buf != null) {
-                            buf.appendCodePoint('&');
+                            buf.appendCodePoint(XmlMachine.CHAR_AMPER);
                             buf.append(help);
-                            buf.appendCodePoint(';');
+                            buf.appendCodePoint(XmlMachine.CHAR_SEMI);
                         }
                     }
                     pos += Character.charCount(ch);
                 } else {
                     if (buf != null) {
                         String help = temp.toString();
-                        buf.appendCodePoint('&');
+                        buf.appendCodePoint(XmlMachine.CHAR_AMPER);
                         buf.append(help);
                     }
                 }
@@ -185,27 +175,21 @@ public final class ForeignXml {
         int i = 0;
         for (; i < n && 0 < pos; i++) {
             char ch = str.charAt(i);
-            if (ch == '&') {
+            if (ch == XmlMachine.CHAR_AMPER) {
                 int k = i;
                 i++;
                 if (buf == null)
                     buf = new StringBuilder();
                 while (i < n && i - k < MAX_ENTITY &&
-                        (ch = str.charAt(i)) != ';' && ch != '&' && ch > ' ') {
+                        (ch = str.charAt(i)) != XmlMachine.CHAR_SEMI &&
+                        ch != XmlMachine.CHAR_AMPER && ch > ' ') {
                     buf.append(ch);
                     i++;
                 }
-                if (i < n && i - k < MAX_ENTITY && ch == ';') {
+                if (i < n && i - k < MAX_ENTITY && ch == XmlMachine.CHAR_SEMI) {
                     String help = buf.toString();
-                    if (help.equals("quot")) {
-                        pos--;
-                    } else if (help.equals("lt")) {
-                        pos--;
-                    } else if (help.equals("gt")) {
-                        pos--;
-                    } else if (help.equals("amp")) {
-                        pos--;
-                    } else if (help.equals("nbsp")) {
+                    Integer ival = entity.get(help);
+                    if (ival != null) {
                         pos--;
                     } else {
                         if (pos < buf.length() + 2)
@@ -266,5 +250,23 @@ public final class ForeignXml {
             return buf.toString();
         return str;
     }
+
+    /**
+     * <p>Some tests.</p>
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        String str="I don"+(char)39+"t get it";
+        System.out.println("str="+str);
+        System.out.println("sysTextEscape(str)="+sysTextEscape(str));
+
+        System.out.println();
+
+        str="I don&apos;t get it";
+        System.out.println("str="+str);
+        System.out.println("sysTextUnescape(str)="+sysTextUnescape(str));
+    }
+    */
 
 }

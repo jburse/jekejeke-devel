@@ -53,22 +53,24 @@ public class XmlMachine {
     public static final int STATE_BEFORE = 12; /* before equal sign */
 
     public static final String XML_BUFFER_OVERFLOW = "xml_buffer_overflow";
+    public static final String XML_MISSING_ATTR = "xml_missing_attr";
+    public static final String XML_MISSING_EQ = "xml_missing_eq";
     public static final String XML_PREMATURE_END = "xml_premature_end";
 
     public static final String VALUE_EMPTY = "";
 
-    private static final char CHAR_AMPER = '&';
+    public static final char CHAR_AMPER = '&';
     private static final char CHAR_OPEN = '<';
     public static final char CHAR_SPACE = ' ';
     public static final char CHAR_BOM = 0xFEFF;
-    private static final char CHAR_DOUBLE = '"';
-    private static final char CHAR_SINGLE = '\'';
+    public static final char CHAR_DOUBLE = '"';
+    public static final char CHAR_SINGLE = '\'';
     private static final char CHAR_SLASH = '/';
     private static final char CHAR_CLOSE = '>';
     private static final int CHAR_EOF = -1;
     private static final char CHAR_PERCENT = '%';
     private static final char CHAR_EQ = '=';
-    private static final char CHAR_SEMI = ';';
+    public static final char CHAR_SEMI = ';';
 
     private char[] text = new char[MAX_JUNK];
     private int top;
@@ -190,6 +192,8 @@ public class XmlMachine {
                         off = top;
                         state = XmlMachine.STATE_ATTR;
                     }
+                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
+                    throw new ScannerError(XML_MISSING_ATTR, -1);
                 } else if (ch == CHAR_CLOSE) {
                     if (top == off) {
                         state = XmlMachine.STATE_TEXT;
@@ -233,6 +237,8 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
+                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
+                    throw new ScannerError(XML_MISSING_ATTR, -1);
                 } else if (ch == CHAR_CLOSE) {
                     fill(ch);
                     res = XmlMachine.RES_TAG;
@@ -260,6 +266,8 @@ public class XmlMachine {
                 } else if (ch == CHAR_EQ) {
                     key = new String(text, off, top - off);
                     state = XmlMachine.STATE_AFTER;
+                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
+                    throw new ScannerError(XML_MISSING_EQ, -1);
                 } else if (ch == CHAR_CLOSE) {
                     key = new String(text, off, top - off);
                     kvs.add(key, VALUE_EMPTY);
@@ -276,6 +284,8 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
+                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
+                    throw new ScannerError(XML_MISSING_EQ, -1);
                 } else if (ch == CHAR_CLOSE) {
                     kvs.add(key, VALUE_EMPTY);
                     key = null;
@@ -332,6 +342,8 @@ public class XmlMachine {
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
+                } else if (ch == CHAR_DOUBLE || ch == CHAR_SINGLE) {
+                    throw new ScannerError(XML_MISSING_ATTR, -1);
                 } else if (ch == CHAR_CLOSE) {
                     String temp = new String(text, off, top - off);
                     kvs.add(key, temp);
@@ -555,11 +567,9 @@ public class XmlMachine {
      * @return The stripped value.
      */
     public static String stripValue(String v) {
-        if (v.length() > 1 && v.charAt(0) == CHAR_DOUBLE &&
-                v.charAt(v.length() - 1) == CHAR_DOUBLE) {
-            return v.substring(1, v.length() - 1);
-        } else if (v.length() > 1 && v.charAt(0) == CHAR_SINGLE &&
-                v.charAt(v.length() - 1) == CHAR_SINGLE) {
+        if (v.length() > 1 &&
+                (v.charAt(0) == CHAR_DOUBLE || v.charAt(0) == CHAR_SINGLE) &&
+                v.charAt(v.length() - 1) == v.charAt(0)) {
             return v.substring(1, v.length() - 1);
         } else {
             return v;

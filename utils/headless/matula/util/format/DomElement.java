@@ -38,6 +38,7 @@ import java.io.IOException;
 public final class DomElement extends DomNode {
     static final String DOM_MISSING_ELEM = "dom_missing_elem";
     static final String DOM_DUPLICATE_ATTR = "dom_duplicate_attr";
+    static final String DOM_ILLEGAL_TOKEN = "dom_illegal_token";
     static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
     static final String DOM_MISSING_END = "dom_missing_end";
     static final String DOM_UNEXPECTED_ATTR = "dom_unexpected_attr";
@@ -100,8 +101,14 @@ public final class DomElement extends DomNode {
                         throw new ScannerError(DOM_DUPLICATE_ATTR, OpenOpts.getOffset(dr.getReader()));
                     String valstr = dr.getValueAt(i);
                     Object val;
-                    if (valstr.length() > 0 && Character.isDigit(valstr.codePointAt(0))) {
-                        val = Long.parseLong(valstr);
+                    if (valstr.length() > 0 && (Character.isDigit(valstr.codePointAt(0)) ||
+                            (valstr.charAt(0)=='-' && valstr.length() > 1 &&
+                                    Character.isDigit(valstr.codePointAt(1))))) {
+                        try {
+                            val = Long.parseLong(valstr);
+                        } catch (NumberFormatException x) {
+                            throw new ScannerError(DOM_ILLEGAL_TOKEN, OpenOpts.getOffset(dr.getReader()));
+                        }
                     } else {
                         val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
                     }
@@ -323,7 +330,7 @@ public final class DomElement extends DomNode {
      * @return True if the tag type is empty, otherwise false.
      */
     public static boolean checkEmpty(MapHash<String, Integer> control,
-                                      String type) {
+                                     String type) {
         if (control == null)
             return false;
         Integer val = control.get(type);
@@ -344,7 +351,7 @@ public final class DomElement extends DomNode {
      * @return True if the tag type is any, otherwise false.
      */
     public static boolean checkAny(MapHash<String, Integer> control,
-                                    String type) {
+                                   String type) {
         if (control == null)
             return false;
         Integer val = control.get(type);

@@ -38,9 +38,11 @@ final class DomReader extends XmlScanner<XmlMachine> {
     static final String STRING_SLASH = "/";
     static final String STRING_BANG_DASH_DASH = "!--";
     static final String STRING_DASH_DASH = "--";
+    static final String STRING_QUESTION = "?";
 
     static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
+    static final String DOM_UNBALANCED_PROCINSTR = "dom_unbalanced_procinstr";
     static final String DOM_SUPERFLOUS_TAG = "dom_superflous_tag";
 
     private int mask;
@@ -106,11 +108,17 @@ final class DomReader extends XmlScanner<XmlMachine> {
                     super.nextTagOrText();
                     break;
                 case XmlMachine.RES_TAG:
-                    if (!getType().startsWith(STRING_BANG_DASH_DASH))
+                    if (getType().equals(STRING_BANG_DASH_DASH)) {
+                        checkComment();
+                        super.nextTagOrText();
+                        break;
+                    } else if (getType().startsWith(STRING_QUESTION)) {
+                        checkProcInstr();
+                        super.nextTagOrText();
+                        break;
+                    }else {
                         return;
-                    checkComment();
-                    super.nextTagOrText();
-                    break;
+                    }
                 case XmlMachine.RES_EOF:
                     return;
                 default:
@@ -137,6 +145,22 @@ final class DomReader extends XmlScanner<XmlMachine> {
         }
     }
 
+    /**
+     * <p>Check whether the tag is a processing instruction tag.</p>
+     *
+     * @throws ScannerError Syntax error.
+     */
+    private void checkProcInstr() throws ScannerError {
+        int n = getAttrCount();
+        if (n != 0 &&
+                "".equals(getValueAt(n - 1)) &&
+                getAttr(n - 1).equals(STRING_QUESTION)) {
+            /* do nothing */
+        } else {
+            throw new ScannerError(DOM_UNBALANCED_PROCINSTR, OpenOpts.getOffset(reader));
+        }
+
+    }
     /**
      * <p>Check whether the dom reader is at eof.</p>
      *
