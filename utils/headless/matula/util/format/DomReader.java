@@ -32,14 +32,14 @@ import java.io.IOException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DomReader extends XmlScanner<DomMachine> {
-    static final String STRING_SLASH = "/";
-    static final String STRING_DASH_DASH = "--";
+public final class DomReader extends XmlScanner<XmlMachine> {
+    private static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
+    private static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
+    private static final String DOM_UNBALANCED_PROCINSTR = "dom_unbalanced_procinstr";
+    private static final String DOM_SUPERFLOUS_TAG = "dom_superflous_tag";
 
-    static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
-    static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
-    static final String DOM_UNBALANCED_PROCINSTR = "dom_unbalanced_procinstr";
-    static final String DOM_SUPERFLOUS_TAG = "dom_superflous_tag";
+    private static final String STRING_BANG_DASH_DASH = "!--";
+    private static final String STRING_DASH_DASH = "--";
 
     private int mask;
     private MapHash<String, Integer> control;
@@ -84,7 +84,7 @@ public final class DomReader extends XmlScanner<DomMachine> {
      * <p>Creates a new dom reader.</p>
      */
     DomReader() {
-        super(new DomMachine());
+        super(new XmlMachine());
     }
 
     /**
@@ -104,15 +104,16 @@ public final class DomReader extends XmlScanner<DomMachine> {
                     super.nextTagOrText();
                     break;
                 case XmlMachine.RES_TAG:
-                    if (getType().startsWith(DomMachine.STRING_BANG_DASH_DASH)) {
+                    if (getType().equals(STRING_BANG_DASH_DASH)) {
                         checkComment();
                         super.nextTagOrText();
                         break;
-                    } else if (getType().startsWith(DomMachine.STRING_QUESTION)) {
+                    } else if (getType().length() > 0 &&
+                            getType().charAt(0) == XmlMachine.CHAR_QUESTION) {
                         checkProcInstr();
                         super.nextTagOrText();
                         break;
-                    }else {
+                    } else {
                         return;
                     }
                 case XmlMachine.RES_EOF:
@@ -150,13 +151,14 @@ public final class DomReader extends XmlScanner<DomMachine> {
         int n = getAttrCount();
         if (n != 0 &&
                 "".equals(getValueAt(n - 1)) &&
-                getAttr(n - 1).equals(DomMachine.STRING_QUESTION)) {
+                getAttr(n - 1).length() == 1 &&
+                getAttr(n - 1).charAt(0) == XmlMachine.CHAR_QUESTION) {
             /* do nothing */
         } else {
             throw new ScannerError(DOM_UNBALANCED_PROCINSTR, OpenOpts.getOffset(reader));
         }
-
     }
+
     /**
      * <p>Check whether the dom reader is at eof.</p>
      *

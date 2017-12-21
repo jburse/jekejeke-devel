@@ -54,8 +54,10 @@ public class XmlMachine {
     public static final int STATE_BEFORE = 13; /* before equal sign */
     public static final int STATE_AFTER = 14; /* after equal sign */
 
-    public static final String XML_BUFFER_OVERFLOW = "xml_buffer_overflow";
-    public static final String XML_PREMATURE_END = "xml_premature_end";
+    private static final String XML_ILLEGAL_ATTR = "xml_illegal_attr";
+    private static final String XML_DUPLICATE_ATTR = "xml_duplicate_attr";
+    private static final String XML_BUFFER_OVERFLOW = "xml_buffer_overflow";
+    private static final String XML_PREMATURE_END = "xml_premature_end";
 
     public static final String VALUE_EMPTY = "";
 
@@ -65,50 +67,61 @@ public class XmlMachine {
     public static final char CHAR_BOM = 0xFEFF;
     public static final char CHAR_DOUBLE = '"';
     public static final char CHAR_SINGLE = '\'';
-    private static final char CHAR_SLASH = '/';
+    public static final char CHAR_SLASH = '/';
     private static final char CHAR_CLOSE = '>';
     private static final int CHAR_EOF = -1;
     private static final char CHAR_PERCENT = '%';
     private static final char CHAR_EQ = '=';
     public static final char CHAR_SEMI = ';';
+    public static final char CHAR_BANG = '!';
+    public static final char CHAR_QUESTION = '?';
 
     private char[] text = new char[MAX_JUNK];
     private int top;
     private int off;
     private int res = XmlMachine.RES_NONE;
     private int state = XmlMachine.STATE_NONE;
+    private boolean ignore;
     private String type = VALUE_EMPTY;
     private String key;
-    protected AssocArray<String, String> kvs = new AssocArray<String, String>();
+    private AssocArray<String, String> kvs = new AssocArray<String, String>();
 
     /**
      * <p>Type call-back.</p>
-     * <p>Can be overridden by sub-classes.</p>
      *
      * @param t The type.
      */
-    protected void saxType(String t) {
+    private void saxType(String t) {
+        if (t.length() > 0 && t.charAt(0) == CHAR_BANG) {
+            ignore = true;
+        } else {
+            ignore = false;
+        }
         type = t;
     }
 
     /**
      * <p>Key call-back.</p>
-     * <p>Can be overridden by sub-classes.</p>
      *
      * @param k The key.
      * @throws ScannerError Syntax error,
      */
-    protected void saxKey(String k) throws ScannerError {
+    private void saxKey(String k) throws ScannerError {
+        if (!ignore) {
+            if (XmlMachine.isQuoted(k))
+                throw new ScannerError(XML_ILLEGAL_ATTR, -1);
+            if (XmlMachine.indexAttr(kvs, k) != -1)
+                throw new ScannerError(XML_DUPLICATE_ATTR, -1);
+        }
         key = k;
     }
 
     /**
      * <p>Value call-back.</p>
-     * <p>Can be overridden by sub-classes.</p>
      *
      * @param v The value.
      */
-    protected void saxValue(String v) throws ScannerError {
+    private void saxValue(String v) throws ScannerError {
         kvs.add(key, v);
     }
 
@@ -216,7 +229,7 @@ public class XmlMachine {
                         saxType(new String(text, off, top - off));
                         state = XmlMachine.STATE_BLANK;
                     }
-                } else if (ch == CHAR_SLASH) {
+                } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
                     if (top == off) {
                         /* */
                     } else {
@@ -296,7 +309,7 @@ public class XmlMachine {
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     saxKey(new String(text, off, top - off));
                     state = XmlMachine.STATE_BEFORE;
-                } else if (ch == CHAR_SLASH) {
+                } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
                     if (top == off) {
                         /* */
                     } else {
@@ -363,7 +376,7 @@ public class XmlMachine {
                     saxValue(temp);
                     key = null;
                     state = XmlMachine.STATE_BLANK;
-                } else if (ch == CHAR_SLASH) {
+                } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
                     String temp = new String(text, off, top - off);
                     saxValue(temp);
                     key = null;
@@ -455,7 +468,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
-                } else if (ch == CHAR_SLASH) {
+                } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
                     saxValue(VALUE_EMPTY);
                     key = null;
                     off = top;

@@ -36,11 +36,12 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomElement extends DomNode {
-    static final String DOM_MISSING_ELEM = "dom_missing_elem";
-    static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
-    static final String DOM_MISSING_END = "dom_missing_end";
-    static final String DOM_UNEXPECTED_ATTR = "dom_unexpected_attr";
-    static final String DOM_MISMATCHED_END = "dom_mismatched_end";
+    private static final String DOM_MISSING_ELEM = "dom_missing_elem";
+    private static final String DOM_ILLEGAL_VALUE = "dom_illegal_value";
+    private static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
+    private static final String DOM_MISSING_END = "dom_missing_end";
+    private static final String DOM_UNEXPECTED_ATTR = "dom_unexpected_attr";
+    private static final String DOM_MISMATCHED_END = "dom_mismatched_end";
 
     private String name = XmlMachine.VALUE_EMPTY;
     private AssocArray<String, Object> kvs = new AssocArray<String, Object>();
@@ -89,7 +90,8 @@ public final class DomElement extends DomNode {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
-                if (dr.getType().startsWith(DomReader.STRING_SLASH))
+                if (dr.getType().length() > 0 &&
+                        dr.getType().charAt(0) == XmlMachine.CHAR_SLASH)
                     throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
                 boolean closed = checkClosed(dr);
                 String type = dr.getType();
@@ -97,8 +99,12 @@ public final class DomElement extends DomNode {
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     String valstr = dr.getValueAt(i);
                     Object val;
-                    if (DomMachine.isNumber(valstr)) {
-                        val = Long.parseLong(valstr);
+                    if (isNumber(valstr)) {
+                        try {
+                            val = Long.parseLong(valstr);
+                        } catch (NumberFormatException x) {
+                            throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
+                        }
                     } else {
                         val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
                     }
@@ -138,6 +144,19 @@ public final class DomElement extends DomNode {
     }
 
     /**
+     * <p>Check whether the value starts as a number.</p>
+     *
+     * @param v The value.
+     * @return True if the value starts as a number, otherwise false.
+     */
+    private static boolean isNumber(String v) {
+        return (v.length() > 0 && (Character.isDigit(v.codePointAt(0)) ||
+                (v.charAt(0) == '-' && v.length() > 1 &&
+                        Character.isDigit(v.codePointAt(1)))));
+    }
+
+
+    /**
      * <p>Check whether the actual tag is closed.</p>
      * <p>As a side effect the tag is validated.</p>
      * <p>As a side effect the tag is made open.</p
@@ -149,7 +168,8 @@ public final class DomElement extends DomNode {
         int n = dr.getAttrCount();
         if (n != 0 &&
                 "".equals(dr.getValueAt(n - 1)) &&
-                dr.getAttr(n - 1).equals(DomReader.STRING_SLASH)) {
+                dr.getAttr(n - 1).length() == 1 &&
+                dr.getAttr(n - 1).charAt(0) == XmlMachine.CHAR_SLASH) {
             dr.removeAttrValue(n - 1);
             return true;
         } else {
@@ -171,7 +191,8 @@ public final class DomElement extends DomNode {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
-                if (!dr.getType().startsWith(DomReader.STRING_SLASH))
+                if (dr.getType().length() == 0 ||
+                        dr.getType().charAt(0) != XmlMachine.CHAR_SLASH)
                     throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
                 if (dr.getAttrCount() != 0)
                     throw new ScannerError(DOM_UNEXPECTED_ATTR, OpenOpts.getOffset(dr.getReader()));
@@ -258,7 +279,8 @@ public final class DomElement extends DomNode {
                     res.add(dt);
                     break;
                 case XmlMachine.RES_TAG:
-                    if (dr.getType().startsWith(DomReader.STRING_SLASH))
+                    if (dr.getType().length() > 0 &&
+                            dr.getType().charAt(0) == XmlMachine.CHAR_SLASH)
                         return res;
                     DomElement dh = new DomElement();
                     dh.loadNode(dr);
