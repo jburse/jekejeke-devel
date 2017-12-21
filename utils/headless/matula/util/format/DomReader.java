@@ -5,8 +5,6 @@ import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
 
 /**
  * <p>This class provides a dom reader.</p>
@@ -34,11 +32,9 @@ import java.io.StringReader;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DomReader extends XmlScanner<XmlMachine> {
+public final class DomReader extends XmlScanner<DomMachine> {
     static final String STRING_SLASH = "/";
-    static final String STRING_BANG_DASH_DASH = "!--";
     static final String STRING_DASH_DASH = "--";
-    static final String STRING_QUESTION = "?";
 
     static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
@@ -88,7 +84,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
      * <p>Creates a new dom reader.</p>
      */
     DomReader() {
-        super(new XmlMachine());
+        super(new DomMachine());
     }
 
     /**
@@ -108,11 +104,11 @@ final class DomReader extends XmlScanner<XmlMachine> {
                     super.nextTagOrText();
                     break;
                 case XmlMachine.RES_TAG:
-                    if (getType().equals(STRING_BANG_DASH_DASH)) {
+                    if (getType().startsWith(DomMachine.STRING_BANG_DASH_DASH)) {
                         checkComment();
                         super.nextTagOrText();
                         break;
-                    } else if (getType().startsWith(STRING_QUESTION)) {
+                    } else if (getType().startsWith(DomMachine.STRING_QUESTION)) {
                         checkProcInstr();
                         super.nextTagOrText();
                         break;
@@ -154,7 +150,7 @@ final class DomReader extends XmlScanner<XmlMachine> {
         int n = getAttrCount();
         if (n != 0 &&
                 "".equals(getValueAt(n - 1)) &&
-                getAttr(n - 1).equals(STRING_QUESTION)) {
+                getAttr(n - 1).equals(DomMachine.STRING_QUESTION)) {
             /* do nothing */
         } else {
             throw new ScannerError(DOM_UNBALANCED_PROCINSTR, OpenOpts.getOffset(reader));
