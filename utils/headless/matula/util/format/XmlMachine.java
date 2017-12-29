@@ -110,6 +110,8 @@ public class XmlMachine {
         if (!ignore) {
             if (XmlMachine.isQuoted(k))
                 throw new ScannerError(XML_ILLEGAL_ATTR, -1);
+            if (XmlMachine.isNumber(k))
+                throw new ScannerError(XML_ILLEGAL_ATTR, -1);
             if (XmlMachine.indexAttr(kvs, k) != -1)
                 throw new ScannerError(XML_DUPLICATE_ATTR, -1);
         }
@@ -691,6 +693,18 @@ public class XmlMachine {
         } else {
             return v;
         }
+    }
+
+    /**
+     * <p>Check whether the value starts as a number.</p>
+     *
+     * @param v The value.
+     * @return True if the value starts as a number, otherwise false.
+     */
+    public static boolean isNumber(String v) {
+        return (v.length() > 0 && (Character.isDigit(v.codePointAt(0)) ||
+                (v.charAt(0) == '-' && v.length() > 1 &&
+                        Character.isDigit(v.codePointAt(1)))));
     }
 
 }

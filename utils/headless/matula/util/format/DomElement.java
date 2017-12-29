@@ -99,14 +99,16 @@ public final class DomElement extends DomNode {
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     String valstr = dr.getValueAt(i);
                     Object val;
-                    if (isNumber(valstr)) {
+                    if (XmlMachine.isQuoted(valstr) || "".equals(valstr)) {
+                        val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
+                    } else if (XmlMachine.isNumber(valstr)) {
                         try {
                             val = Long.parseLong(valstr);
                         } catch (NumberFormatException x) {
                             throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
                         }
                     } else {
-                        val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
+                        throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
                     }
                     newkvs.add(dr.getAttr(i), val);
                 }
@@ -141,18 +143,6 @@ public final class DomElement extends DomNode {
             default:
                 throw new IllegalArgumentException("illegal res");
         }
-    }
-
-    /**
-     * <p>Check whether the value starts as a number.</p>
-     *
-     * @param v The value.
-     * @return True if the value starts as a number, otherwise false.
-     */
-    private static boolean isNumber(String v) {
-        return (v.length() > 0 && (Character.isDigit(v.codePointAt(0)) ||
-                (v.charAt(0) == '-' && v.length() > 1 &&
-                        Character.isDigit(v.codePointAt(1)))));
     }
 
 

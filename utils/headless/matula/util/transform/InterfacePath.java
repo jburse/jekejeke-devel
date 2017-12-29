@@ -7,6 +7,12 @@ import java.io.IOException;
 
 /**
  * <p>This class provides a path interface.</p>
+ * <p>The following flags are used to control a path:</p>
+ * <ul>
+ *     <li>FLAG_DIRE: Read-only, asks if setDocument() needed.</li>
+ *     <li>FLAG_STYL: Read-only, asks if sheet and not data.</li>
+ *     <li>FLAG_SCHM: Write-only, tells if schema is requested.</li>
+ * </ul>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
