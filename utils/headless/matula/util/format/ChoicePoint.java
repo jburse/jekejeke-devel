@@ -33,7 +33,7 @@ public final class ChoicePoint {
     public static final int CHOICEPOINT_PARENT = 1;
     public static final int CHOICEPOINT_CHILD_INDEX = 2;
 
-    private DomNode[] children;
+    private AbstractDom[] children;
     private int pos;
     private XPathExprComb expr;
     private int choice;
@@ -97,9 +97,9 @@ public final class ChoicePoint {
     DomElement findFirst(DomElement e) throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
-                DomNode[] nodes = e.snapshotChildren();
+                AbstractDom[] nodes = e.snapshotChildren();
                 for (int i = 0; i < nodes.length; i++) {
-                    DomNode node = nodes[i];
+                    AbstractDom node = nodes[i];
                     if (!(node instanceof DomElement))
                         continue;
                     e = (DomElement) node;
@@ -113,7 +113,7 @@ public final class ChoicePoint {
             case ChoicePoint.CHOICEPOINT_PARENT:
                 return e.getParent();
             case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
-                DomNode node = e.getChildAt(pos);
+                AbstractDom node = e.getChildAt(pos);
                 if (!(node instanceof DomElement))
                     return null;
                 return (DomElement) node;
@@ -131,9 +131,9 @@ public final class ChoicePoint {
     DomElement findNext() throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
-                DomNode[] nodes = children;
+                AbstractDom[] nodes = children;
                 for (int i = pos + 1; i < nodes.length; i++) {
-                    DomNode node = nodes[i];
+                    AbstractDom node = nodes[i];
                     if (!(node instanceof DomElement))
                         continue;
                     DomElement e = (DomElement) node;

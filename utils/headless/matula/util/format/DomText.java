@@ -32,7 +32,7 @@ import java.io.IOException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DomText extends DomNode {
+public final class DomText extends AbstractDom {
     static final String DOM_MISSING_TEXT = "dom_missing_text";
 
     private String data = "";

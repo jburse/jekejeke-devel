@@ -248,14 +248,10 @@ public class XmlMachine {
                     off = top;
                     state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    if (top == off) {
-                        state = XmlMachine.STATE_TEXT;
-                    } else {
-                        saxType(new String(text, off, top - off));
-                        fill(ch);
-                        res = XmlMachine.RES_TAG;
-                        return true;
-                    }
+                    saxType(new String(text, off, top - off));
+                    fill(ch);
+                    res = XmlMachine.RES_TAG;
+                    return true;
                 } else if (off == top && ch == CHAR_PERCENT) {
                     state = XmlMachine.STATE_SNIPPET;
                 } else {

@@ -1,8 +1,8 @@
 package matula.util.transform;
 
 import matula.util.data.ListArray;
+import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
-import matula.util.format.DomNode;
 import matula.util.format.DomText;
 
 import java.io.IOException;
@@ -69,8 +69,8 @@ public final class XMLCheck {
      * @param node The data dom node.
      * @throws ValidationError Check error..
      */
-    public void check(DomNode node) throws ValidationError {
-        if ((mask & DomNode.MASK_LIST) != 0) {
+    public void check(AbstractDom node) throws ValidationError {
+        if ((mask & AbstractDom.MASK_LIST) != 0) {
             checkChildren((DomElement) node);
         } else {
             checkNode(node);
@@ -88,9 +88,9 @@ public final class XMLCheck {
         String back = context;
         try {
             context = de.getName();
-            DomNode[] nodes = de.snapshotChildren();
+            AbstractDom[] nodes = de.snapshotChildren();
             for (int i = 0; i < nodes.length; i++) {
-                DomNode node = nodes[i];
+                AbstractDom node = nodes[i];
                 checkNode(node);
             }
             context = back;
@@ -106,10 +106,10 @@ public final class XMLCheck {
      * @param node The data dom node.
      * @throws ValidationError Check error..
      */
-    private void checkNode(DomNode node)
+    private void checkNode(AbstractDom node)
             throws ValidationError {
         if (node instanceof DomText) {
-            if ((mask & DomNode.MASK_TEXT) == 0)
+            if ((mask & AbstractDom.MASK_TEXT) == 0)
                 throw new ValidationError(DATA_UNEXPECTED_TEXT, "#text");
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
@@ -231,7 +231,7 @@ public final class XMLCheck {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream("D:\\Tablespace\\Config2\\htatab\\sheet\\cust\\package.xsd"),
                         ForeignUri.ENCODING_UTF8));
-        schema.load(reader, DomNode.MASK_LIST);
+        schema.load(reader, AbstractDom.MASK_LIST);
         reader.close();
 
         XSDSchema xdef = new XSDSchema();
@@ -247,7 +247,7 @@ public final class XMLCheck {
         DomElement data = cp.getFound();
 
         XMLCheck xc = new XMLCheck();
-        xc.setMask(DomNode.MASK_LIST);
+        xc.setMask(AbstractDom.MASK_LIST);
         xc.setSchema(xdef);
         xc.check(data);
         System.out.println("XML data ok");
@@ -262,7 +262,7 @@ public final class XMLCheck {
         data = cp.getFound();
 
         xc = new XMLCheck();
-        xc.setMask(DomNode.MASK_LIST);
+        xc.setMask(AbstractDom.MASK_LIST);
         xc.setSchema(xdef);
         xc.check(data);
         System.out.println("XML data ok");

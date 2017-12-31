@@ -3,8 +3,8 @@ package matula.util.transform;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
-import matula.util.format.DomNode;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
 
@@ -53,7 +53,7 @@ public final class XSDSchema {
             DomElement schema = new DomElement();
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(in, ForeignUri.ENCODING_UTF8));
-            schema.load(reader, DomNode.MASK_LIST);
+            schema.load(reader, AbstractDom.MASK_LIST);
             reader.close();
 
             meta.traverseElements(schema);
@@ -74,7 +74,7 @@ public final class XSDSchema {
      */
     public void digestElements(DomElement de) throws ValidationError {
         XMLCheck xc = new XMLCheck();
-        xc.setMask(DomNode.MASK_LIST);
+        xc.setMask(AbstractDom.MASK_LIST);
         xc.setSchema(meta);
         xc.check(de);
         traverseElements(de);
@@ -87,7 +87,7 @@ public final class XSDSchema {
      * @throws ValidationError Check error.
      */
     private void traverseElements(DomElement de) throws ValidationError {
-        DomNode[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
@@ -109,7 +109,7 @@ public final class XSDSchema {
             throws ValidationError {
         String name = de.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
         ListArray<String> mandatory = new ListArray<String>();
-        DomNode[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             String attr = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);

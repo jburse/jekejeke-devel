@@ -110,11 +110,11 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    public void xslt(DomNode dn, String comment)
+    public void xslt(AbstractDom dn, String comment)
             throws IOException, ScannerError, ValidationError {
         if (comment != null && !"".equals(comment))
             writer.writeComment(comment);
-        if ((writer.getMask() & DomNode.MASK_LIST) != 0) {
+        if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
             xsltChildren((DomElement) dn);
         } else {
             xsltNode(dn);
@@ -128,7 +128,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    private void xsltNode(DomNode dn)
+    private void xsltNode(AbstractDom dn)
             throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             DomText dt = (DomText) dn;
@@ -153,10 +153,10 @@ public final class XSLSheetTransform extends XSLSheet {
                 xsltChoose(de);
             } else if (de.sizeChildren() != 0) {
                 writer.copyStart(de);
-                if ((writer.getMask() & DomNode.MASK_TEXT) == 0 &&
+                if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
                         DomElement.checkAny(writer.getControl(), de.getName())) {
                     int mask = writer.getMask();
-                    writer.setMask(writer.getMask() | DomNode.MASK_TEXT);
+                    writer.setMask(writer.getMask() | AbstractDom.MASK_TEXT);
                     xsltChildren2(de);
                     writer.setMask(mask);
                 } else {
@@ -182,7 +182,7 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltChildren2(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        if ((writer.getMask() & DomNode.MASK_TEXT) != 0) {
+        if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
             xsltChildren(de);
         } else {
             writer.write("\n");
@@ -202,10 +202,10 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltChildren(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        DomNode[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
-            if ((writer.getMask() & DomNode.MASK_TEXT) != 0) {
+            AbstractDom node = nodes[i];
+            if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
                 xsltNode(node);
             } else {
                 writer.writeIndent();
@@ -358,9 +358,9 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltChoose(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        DomNode[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
+            AbstractDom node = nodes[i];
             DomElement de2 = (DomElement) node;
             if (de2.isName(NAME_WHEN)) {
                 String test = de2.getAttr(ATTR_WHEN_TEST);
@@ -470,7 +470,7 @@ public final class XSLSheetTransform extends XSLSheet {
         XSLSheetTransform transform = new XSLSheetTransform();
         transform.setVariables(variables);
         transform.setWriter(pw);
-        transform.setMask(DomNode.MASK_TEXT);
+        transform.setMask(AbstractDom.MASK_TEXT);
         transform.xslt(template, null);
         pw.flush();
 
@@ -491,7 +491,7 @@ public final class XSLSheetTransform extends XSLSheet {
         transform = new XSLSheetTransform();
         transform.setVariables(variables);
         transform.setWriter(pw);
-        transform.setMask(DomNode.MASK_TEXT);
+        transform.setMask(AbstractDom.MASK_TEXT);
         transform.xslt(template, null);
         pw.flush();
         System.out.println();

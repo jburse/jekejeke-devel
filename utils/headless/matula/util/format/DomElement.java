@@ -8,6 +8,8 @@ import matula.util.system.ForeignXml;
 import matula.util.system.OpenOpts;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
 
 /**
  * <p>This class provides a dom element.</p>
@@ -35,7 +37,7 @@ import java.io.IOException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DomElement extends DomNode {
+public final class DomElement extends AbstractDom {
     private static final String DOM_MISSING_ELEM = "dom_missing_elem";
     private static final String DOM_ILLEGAL_VALUE = "dom_illegal_value";
     private static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
@@ -45,7 +47,7 @@ public final class DomElement extends DomNode {
 
     private String name = XmlMachine.VALUE_EMPTY;
     private AssocArray<String, Object> kvs = new AssocArray<String, Object>();
-    private ListArray<DomNode> children = new ListArray<DomNode>();
+    private ListArray<AbstractDom> children = new ListArray<AbstractDom>();
 
     /**
      * <p>Retrieve the name.</p>
@@ -117,11 +119,11 @@ public final class DomElement extends DomNode {
                     kvs = newkvs;
                 }
                 boolean empty = checkEmpty(dr.getControl(), type);
-                ListArray<DomNode> cs;
+                ListArray<AbstractDom> cs;
                 if (!closed && !empty) {
-                    if ((dr.getMask() & DomNode.MASK_TEXT) == 0 && checkAny(dr.getControl(), type)) {
+                    if ((dr.getMask() & AbstractDom.MASK_TEXT) == 0 && checkAny(dr.getControl(), type)) {
                         int mask = dr.getMask();
-                        dr.setMask(dr.getMask() | DomNode.MASK_TEXT);
+                        dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
                         dr.nextTagOrText();
                         cs = loadChildren(dr);
                         dr.setMask(mask);
@@ -133,7 +135,7 @@ public final class DomElement extends DomNode {
                 } else {
                     if (closed && empty)
                         throw new ScannerError(DOM_CLOSED_EMPTY, -1);
-                    cs = new ListArray<DomNode>();
+                    cs = new ListArray<AbstractDom>();
                     dr.nextTagOrText();
                 }
                 setChildrenFast(cs);
@@ -209,10 +211,10 @@ public final class DomElement extends DomNode {
     void storeNode(DomWriter dw) throws IOException {
         if (sizeChildren() != 0) {
             dw.copyStart(this);
-            if ((dw.getMask() & DomNode.MASK_TEXT) == 0 &&
+            if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
                     checkAny(dw.getControl(), name)) {
                 int mask = dw.getMask();
-                dw.setMask(dw.getMask() | DomNode.MASK_TEXT);
+                dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
                 storeChildren2(dw);
                 dw.setMask(mask);
             } else {
@@ -258,9 +260,9 @@ public final class DomElement extends DomNode {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    static ListArray<DomNode> loadChildren(DomReader dr)
+    static ListArray<AbstractDom> loadChildren(DomReader dr)
             throws IOException, ScannerError {
-        ListArray<DomNode> res = new ListArray<DomNode>();
+        ListArray<AbstractDom> res = new ListArray<AbstractDom>();
         for (; ; ) {
             switch (dr.getRes()) {
                 case XmlMachine.RES_TEXT:
@@ -285,21 +287,6 @@ public final class DomElement extends DomNode {
     }
 
     /**
-     * <p>Set the children fast.</p>
-     *
-     * <p>Not synchronized, uses cut-over.</p>
-     */
-    void setChildrenFast(ListArray<DomNode> cs) {
-        for (int i = 0; i < cs.size(); i++) {
-            DomNode node = cs.get(i);
-            node.parent = this;
-        }
-        synchronized (this) {
-            children = cs;
-        }
-    }
-
-    /**
      * <p>Store the childeren.</p>
      *
      * @param dw The dom writer.
@@ -307,9 +294,9 @@ public final class DomElement extends DomNode {
      */
     void storeChildren(DomWriter dw)
             throws IOException {
-        DomNode[] nodes = snapshotChildren();
+        AbstractDom[] nodes = snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
+            AbstractDom node = nodes[i];
             if ((dw.getMask() & MASK_TEXT) != 0) {
                 node.storeNode(dw);
             } else {
@@ -338,7 +325,7 @@ public final class DomElement extends DomNode {
         Integer val = control.get(type);
         if (val == null) {
             return false;
-        } else if (val.intValue() == DomNode.TYPE_EMPTY) {
+        } else if (val.intValue() == AbstractDom.TYPE_EMPTY) {
             return true;
         } else {
             return false;
@@ -359,7 +346,7 @@ public final class DomElement extends DomNode {
         Integer val = control.get(type);
         if (val == null) {
             return false;
-        } else if (val.intValue() == DomNode.TYPE_ANY) {
+        } else if (val.intValue() == AbstractDom.TYPE_ANY) {
             return true;
         } else {
             return false;
@@ -505,7 +492,7 @@ public final class DomElement extends DomNode {
      * @return True if add succeeded, otherwise false.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean addChild(DomNode dh) throws InterruptedException {
+    public boolean addChild(AbstractDom dh) throws InterruptedException {
         if (dh == null)
             throw new NullPointerException("child missing");
         dh.beginReparent();
@@ -528,7 +515,7 @@ public final class DomElement extends DomNode {
      * @param dh The child.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean removeChild(DomNode dh)
+    public boolean removeChild(AbstractDom dh)
             throws InterruptedException {
         if (dh == null)
             throw new NullPointerException("child missing");
@@ -556,10 +543,10 @@ public final class DomElement extends DomNode {
      *
      * @return The children snapshot.
      */
-    public DomNode[] snapshotChildren() {
-        DomNode[] nodes;
+    public AbstractDom[] snapshotChildren() {
+        AbstractDom[] nodes;
         synchronized (this) {
-            nodes = new DomNode[children.size()];
+            nodes = new AbstractDom[children.size()];
             children.toArray(nodes);
         }
         return nodes;
@@ -571,8 +558,8 @@ public final class DomElement extends DomNode {
      * @param i The index, negative index counts from last.
      * @return The child, or null.
      */
-    public DomNode getChildAt(int i) {
-        DomNode node;
+    public AbstractDom getChildAt(int i) {
+        AbstractDom node;
         synchronized (this) {
             if (i < 0)
                 i += children.size();
@@ -591,7 +578,7 @@ public final class DomElement extends DomNode {
      * @param dh The child.
      * @return The index.
      */
-    public int getChildIndex(DomNode dh) {
+    public int getChildIndex(AbstractDom dh) {
         int res;
         synchronized (this) {
             res = children.indexOf(dh);
@@ -607,7 +594,7 @@ public final class DomElement extends DomNode {
      * @return True if add succeeded, otherwise false.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean addChild(int i, DomNode dh) throws InterruptedException {
+    public boolean addChild(int i, AbstractDom dh) throws InterruptedException {
         if (dh == null)
             throw new NullPointerException("child missing");
         dh.beginReparent();
@@ -631,35 +618,48 @@ public final class DomElement extends DomNode {
     }
 
     /***********************************************************/
-    /* Bulk Operations                                         */
+    /* Fast Operations                                         */
     /***********************************************************/
 
     /**
-     * <p>Clear the children.</p>
+     * <p>Set the children fast.</p>
+     * <p>Not synchronized, uses cut-over.</p>
      *
-     * @throws InterruptedException Transaction was interrupted.
+     * @param cs The children.
      */
-    public void clearChildren() throws InterruptedException {
-        DomNode[] nodes = snapshotChildren();
-        for (int i = nodes.length - 1; i >= 0; i--) {
-            DomNode node = nodes[i];
-            removeChild(node);
+    void setChildrenFast(ListArray<AbstractDom> cs) {
+        for (int i = 0; i < cs.size(); i++) {
+            AbstractDom node = cs.get(i);
+            node.parent = this;
+        }
+        synchronized (this) {
+            children = cs;
         }
     }
 
+
     /**
-     * <p>Add the children.</p>
+     * <p>Retrieve the children fast.</p>
      *
-     * @param de The list.
-     * @throws InterruptedException Transaction was interrupted.
+     * @return Thhe children.
      */
-    public void addChildren(DomElement de) throws InterruptedException {
-        DomNode[] nodes = de.snapshotChildren();
-        de.clearChildren();
-        for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
-            addChild(node);
-        }
+    ListArray<AbstractDom> getChildrenFast() {
+        return children;
+    }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args Not used.
+     */
+    public static void main(String[] args) throws IOException, ScannerError {
+        String str = "<>Some <b>text</b></>";
+        StringReader sr = new StringReader(str);
+        DomElement de = new DomElement();
+        de.load(sr, AbstractDom.MASK_TEXT);
+
+        PrintWriter pw = new PrintWriter(System.out);
+        de.store(pw, null, AbstractDom.MASK_TEXT);
     }
 
 }

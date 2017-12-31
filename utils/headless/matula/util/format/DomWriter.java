@@ -5,8 +5,6 @@ import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.Writer;
 
 /**
@@ -180,7 +178,7 @@ public final class DomWriter {
      */
     private void copyAttributes(DomElement de) throws IOException {
         String[] names = de.snapshotAttrs();
-        if ((getMask() & DomNode.MASK_TEXT) != 0) {
+        if ((getMask() & AbstractDom.MASK_TEXT) != 0) {
             for (int i = 0; i < names.length; i++) {
                 String name = names[i];
                 Object val = de.getAttrObj(name);
@@ -262,18 +260,18 @@ public final class DomWriter {
         String text = "<foo bar='123'/>  <foo bar='456'/>";
         StringReader sr = new StringReader(text);
         DomElement de = new DomElement();
-        de.load(sr, DomNode.MASK_LIST);
+        de.load(sr, AbstractDom.MASK_LIST);
         PrintWriter pw = new PrintWriter(System.out);
-        de.store(pw, null, DomNode.MASK_LIST);
+        de.store(pw, null, AbstractDom.MASK_LIST);
         pw.println();
 
         text = "<foo>123</foo>  <foo>456</foo>";
         MapHash<String, Integer> control = new MapHash<String, Integer>();
-        control.add("foo", Integer.valueOf(DomNode.TYPE_ANY));
+        control.add("foo", Integer.valueOf(AbstractDom.TYPE_ANY));
         sr = new StringReader(text);
         de = new DomElement();
-        de.load(sr, DomNode.MASK_LIST, control);
-        de.store(pw, null, DomNode.MASK_LIST, control);
+        de.load(sr, AbstractDom.MASK_LIST, control);
+        de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
     }
     */

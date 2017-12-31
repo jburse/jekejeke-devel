@@ -98,7 +98,7 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         for (; ; ) {
             switch (getRes()) {
                 case XmlMachine.RES_TEXT:
-                    if ((mask & DomNode.MASK_TEXT) != 0)
+                    if ((mask & AbstractDom.MASK_TEXT) != 0)
                         return;
                     checkWhitespace();
                     super.nextTagOrText();
@@ -213,18 +213,18 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         String text = "<p>The quick brown fox <img/> jumps over the lazy dog.</p>";
         StringReader sr = new StringReader(text);
         DomElement de = new DomElement();
-        de.load(sr, DomNode.MASK_TEXT);
+        de.load(sr, AbstractDom.MASK_TEXT);
         PrintWriter pw = new PrintWriter(System.out);
-        de.store(pw, null, DomNode.MASK_TEXT);
+        de.store(pw, null, AbstractDom.MASK_TEXT);
         pw.println();
 
         text = "<p>The quick brown fox <img> jumps over the lazy dog.</p>";
         MapHash<String, Integer> control = new MapHash<String, Integer>();
-        control.add("img", Integer.valueOf(DomNode.TYPE_EMPTY));
+        control.add("img", Integer.valueOf(AbstractDom.TYPE_EMPTY));
         sr = new StringReader(text);
         de = new DomElement();
-        de.load(sr, DomNode.MASK_TEXT, control);
-        de.store(pw, null, DomNode.MASK_TEXT, control);
+        de.load(sr, AbstractDom.MASK_TEXT, control);
+        de.store(pw, null, AbstractDom.MASK_TEXT, control);
         pw.println();
     }
     */

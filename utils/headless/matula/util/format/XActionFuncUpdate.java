@@ -102,8 +102,7 @@ public final class XActionFuncUpdate extends XActionFunc {
                 r.setAttrObj(keyorname, value.evalElement(e));
                 break;
             case UPDATE_CHILDREN:
-                r.clearChildren();
-                r.addChildren(list);
+                r.setChildrenFast(list.getChildrenFast());
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");
@@ -128,16 +127,16 @@ public final class XActionFuncUpdate extends XActionFunc {
                 return buf.toString();
             case UPDATE_CHILDREN:
                 StringWriter sr = new StringWriter();
-                int mask = DomNode.MASK_LIST + DomNode.MASK_TEXT;
+                int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
                 try {
                     list.store(sr, null, mask);
                 } catch (IOException x) {
                     throw new RuntimeException("internal error");
                 }
                 buf = new StringBuilder();
-                buf.append("<list>");
+                buf.append("<>");
                 buf.append(sr.toString());
-                buf.append("</list>");
+                buf.append("</>");
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");

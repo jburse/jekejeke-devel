@@ -64,7 +64,7 @@ public final class XSLSheetCheck extends XSLSheet {
             DomElement schema = new DomElement();
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(in, ForeignUri.ENCODING_UTF8));
-            schema.load(reader, DomNode.MASK_LIST);
+            schema.load(reader, AbstractDom.MASK_LIST);
             reader.close();
 
             meta.digestElements(schema);
@@ -103,13 +103,13 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    public void check(DomNode node)
+    public void check(AbstractDom node)
             throws IOException, ScannerError, ValidationError {
         XMLCheck xc = new XMLCheck();
-        xc.setMask(DomNode.MASK_TEXT);
+        xc.setMask(AbstractDom.MASK_TEXT);
         xc.setSchema(meta);
         xc.check(node);
-        if ((mask & DomNode.MASK_LIST) != 0) {
+        if ((mask & AbstractDom.MASK_LIST) != 0) {
             xsltChildren((DomElement) node);
         } else {
             xsltNode(node);
@@ -124,7 +124,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltNode(DomNode dn)
+    private void xsltNode(AbstractDom dn)
             throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             if (!type)
@@ -163,9 +163,9 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltChildren(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        DomNode[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
+            AbstractDom node = nodes[i];
             xsltNode(node);
         }
     }
@@ -325,9 +325,9 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltChoose(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        DomNode[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
+            AbstractDom node = nodes[i];
             if (node instanceof DomText)
                 throw new ValidationError(SHEET_FORBIDDEN_TEXT, "#text");
             DomElement de2 = (DomElement) node;
@@ -407,7 +407,7 @@ public final class XSLSheetCheck extends XSLSheet {
         DomElement template = tp.getFound();
 
         XSLSheetCheck xc = new XSLSheetCheck();
-        xc.setMask(DomNode.MASK_TEXT);
+        xc.setMask(AbstractDom.MASK_TEXT);
         xc.check(template);
         System.out.println("XSL template GERMAN ok");
 
@@ -421,7 +421,7 @@ public final class XSLSheetCheck extends XSLSheet {
         template = tp.getFound();
 
         xc = new XSLSheetCheck();
-        xc.setMask(DomNode.MASK_TEXT);
+        xc.setMask(AbstractDom.MASK_TEXT);
         xc.check(template);
         System.out.println("XSL template ENGLISH ok");
     }

@@ -99,7 +99,7 @@ abstract class XPathRead {
 
     /**
      * <p>Parse an xpath.</p>
-     * <>p>The following syntax is used:</p>
+     * <p>The following syntax is used:</p>
      * <pre>
      *     xpath --> choicepoint { "/" choicepoint }.
      * </pre>
@@ -362,7 +362,7 @@ abstract class XPathRead {
 
     /**
      * <p>Parse an xselect.</p>
-     * <>p>The following syntax is used:</p>
+     * <p>The following syntax is used:</p>
      * <pre>
      *     select      --> "-" term
      *                   | select "+" term
@@ -412,7 +412,7 @@ abstract class XPathRead {
 
     /**
      * <p>Parse an xselect term.</p>
-     * <>p>The following syntax is used:</p>
+     * <p>The following syntax is used:</p>
      * <pre>
      *     term      --> term "*" simple
      *                 | term "/" simple
@@ -452,7 +452,7 @@ abstract class XPathRead {
 
     /**
      * <p>Parse an xselect simple.</p>
-     * <>p>The following syntax is used:</p>
+     * <p>The following syntax is used:</p>
      * <pre>
      *     simple      --> "(" predicate ")"
      *                   | "@" name
