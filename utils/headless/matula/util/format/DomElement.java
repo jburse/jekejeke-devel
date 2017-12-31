@@ -636,6 +636,8 @@ public final class DomElement extends DomNode {
 
     /**
      * <p>Clear the children.</p>
+     *
+     * @throws InterruptedException Transaction was interrupted.
      */
     public void clearChildren() throws InterruptedException {
         DomNode[] nodes = snapshotChildren();
