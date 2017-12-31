@@ -34,11 +34,11 @@ import java.io.StringWriter;
 public final class XActionFuncUpdate extends XActionFunc {
     public static final int UPDATE_NAME = 0;
     public static final int UPDATE_ATTR = 1;
-    public static final int UPDATE_CHILDREN = 2;
+    public static final int UPDATE_CHILD = 2;
 
     private String keyorname;
     private XSelect value;
-    private DomElement list;
+    private DomElement elem;
     private int update;
 
     /**
@@ -74,13 +74,16 @@ public final class XActionFuncUpdate extends XActionFunc {
     /**
      * <p>Create a new xaction update</p>
      *
-     * @param l The list.
+     * @param l The elem.
      * @param u The type of update.
      */
-    public XActionFuncUpdate(DomElement l, int u) {
+    public XActionFuncUpdate(String k, DomElement l, int u) {
+        if (k == null)
+            throw new NullPointerException("key missing");
         if (l == null)
-            throw new NullPointerException("list missing");
-        list = l;
+            throw new NullPointerException("elem missing");
+        keyorname = k;
+        elem = l;
         update = u;
     }
 
@@ -101,8 +104,8 @@ public final class XActionFuncUpdate extends XActionFunc {
             case UPDATE_ATTR:
                 r.setAttrObj(keyorname, value.evalElement(e));
                 break;
-            case UPDATE_CHILDREN:
-                r.setChildrenFast(list.getChildrenFast());
+            case UPDATE_CHILD:
+                r.replaceChild(keyorname, elem);
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");
@@ -125,18 +128,17 @@ public final class XActionFuncUpdate extends XActionFunc {
                 buf.append("=");
                 buf.append(value.toString());
                 return buf.toString();
-            case UPDATE_CHILDREN:
+            case UPDATE_CHILD:
                 StringWriter sr = new StringWriter();
-                int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
                 try {
-                    list.store(sr, null, mask);
+                    elem.store(sr, null, AbstractDom.MASK_TEXT);
                 } catch (IOException x) {
                     throw new RuntimeException("internal error");
                 }
                 buf = new StringBuilder();
-                buf.append("<>");
+                buf.append(keyorname);
+                buf.append("=");
                 buf.append(sr.toString());
-                buf.append("</>");
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");

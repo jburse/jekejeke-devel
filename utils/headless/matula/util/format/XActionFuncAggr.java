@@ -122,10 +122,11 @@ public final class XActionFuncAggr extends XActionFunc {
     /**
      * <p>Add an element children action.</p>
      *
-     * @param v The list.
+     * @param n The child name.
+     * @param v The elem.
      */
-    public void calcChildren(DomElement v) {
-        calcFunc("_children", new XActionFuncUpdate(v, XActionFuncUpdate.UPDATE_CHILDREN));
+    public void calcChild(String n, DomElement v) {
+        calcFunc(n, new XActionFuncUpdate(n, v, XActionFuncUpdate.UPDATE_CHILD));
     }
 
     /**

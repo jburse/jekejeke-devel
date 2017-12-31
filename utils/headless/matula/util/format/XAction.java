@@ -118,10 +118,11 @@ public final class XAction {
     /**
      * <p>Add an element children action.</p>
      *
+     * @param n The child name.
      * @param v The list.
      */
-    public void calcChildren(DomElement v) {
-        acts.get(acts.size()-1).calcChildren(v);
+    public void calcChild(String n, DomElement v) {
+        acts.get(acts.size()-1).calcChild(n, v);
     }
 
     /**

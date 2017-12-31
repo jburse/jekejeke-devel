@@ -147,6 +147,21 @@ public final class DomElement extends AbstractDom {
         }
     }
 
+    /**
+     * <p>Set the children fast.</p>
+     * <p>Not synchronized, uses cut-over.</p>
+     *
+     * @param cs The children.
+     */
+    void setChildrenFast(ListArray<AbstractDom> cs) {
+        for (int i = 0; i < cs.size(); i++) {
+            AbstractDom node = cs.get(i);
+            node.parent = this;
+        }
+        synchronized (this) {
+            children = cs;
+        }
+    }
 
     /**
      * <p>Check whether the actual tag is closed.</p>
@@ -617,34 +632,64 @@ public final class DomElement extends AbstractDom {
         return true;
     }
 
-    /***********************************************************/
-    /* Fast Operations                                         */
-    /***********************************************************/
+    /*****************************************************/
+    /* Quick XPath & XAction                             */
+    /*****************************************************/
 
     /**
-     * <p>Set the children fast.</p>
-     * <p>Not synchronized, uses cut-over.</p>
+     * <p>Retrieve the child index.</p>
      *
-     * @param cs The children.
+     * @param name The child name.
+     * @return The index.
      */
-    void setChildrenFast(ListArray<AbstractDom> cs) {
-        for (int i = 0; i < cs.size(); i++) {
-            AbstractDom node = cs.get(i);
-            node.parent = this;
+    public int getChildIndex(String name) {
+        AbstractDom[] nodes = snapshotChildren();
+        for (int i = 0; i < nodes.length; i++) {
+            AbstractDom node = nodes[i];
+            if (!(node instanceof DomElement))
+                continue;
+            if (!((DomElement) node).isName(name))
+                continue;
+            return i;
         }
-        synchronized (this) {
-            children = cs;
+        return -1;
+    }
+
+    /**
+     * <p>Retrieve a child by name,</p>
+     *
+     * @param name The child name,
+     * @return The child, or null.
+     * @throws InterruptedException Transaction was interrupted.
+     */
+    public DomElement removeChild(String name)
+            throws InterruptedException {
+        int k = getChildIndex(name);
+        if (k >= 0) {
+            DomElement elem= (DomElement) getChildAt(k);
+            removeChild(elem);
+            return elem;
+        } else {
+            return null;
         }
     }
 
-
     /**
-     * <p>Retrieve the children fast.</p>
+     * <p>Set a child by name</p>
      *
-     * @return Thhe children.
+     * @param name The child name
+     * @param elem The new child, or null.
+     * @throws InterruptedException Transaction was interrupted.
      */
-    ListArray<AbstractDom> getChildrenFast() {
-        return children;
+    public void replaceChild(String name, DomElement elem)
+            throws InterruptedException {
+        int k = getChildIndex(name);
+        if (k >= 0) {
+            DomElement oldelem = (DomElement) getChildAt(k);
+            removeChild(oldelem);
+        }
+        if (elem != null)
+            addChild(k, elem);
     }
 
     /**
