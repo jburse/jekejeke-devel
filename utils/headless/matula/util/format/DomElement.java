@@ -136,7 +136,7 @@ public final class DomElement extends DomNode {
                     cs = new ListArray<DomNode>();
                     dr.nextTagOrText();
                 }
-                setChildren(cs);
+                setChildrenFast(cs);
                 break;
             case XmlMachine.RES_EOF:
                 throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
@@ -285,11 +285,11 @@ public final class DomElement extends DomNode {
     }
 
     /**
-     * <p>Set the elements.</p>
-     * <p>
+     * <p>Set the children fast.</p>
+     *
      * <p>Not synchronized, uses cut-over.</p>
      */
-    void setChildren(ListArray<DomNode> cs) {
+    void setChildrenFast(ListArray<DomNode> cs) {
         for (int i = 0; i < cs.size(); i++) {
             DomNode node = cs.get(i);
             node.parent = this;
@@ -528,7 +528,8 @@ public final class DomElement extends DomNode {
      * @param dh The child.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean removeChild(DomNode dh) throws InterruptedException {
+    public boolean removeChild(DomNode dh)
+            throws InterruptedException {
         if (dh == null)
             throw new NullPointerException("child missing");
         dh.beginReparent();
@@ -536,7 +537,12 @@ public final class DomElement extends DomNode {
             if (dh.parent != this)
                 return false;
             synchronized (this) {
-                children.remove(dh);
+                int k = children.lastIndexOf(dh);
+                if (k >= 0) {
+                    children.remove(k);
+                } else {
+                    throw new RuntimeException("internal error");
+                }
             }
             dh.parent = null;
         } finally {
@@ -622,6 +628,36 @@ public final class DomElement extends DomNode {
             dh.endReparent();
         }
         return true;
+    }
+
+    /***********************************************************/
+    /* Bulk Operations                                         */
+    /***********************************************************/
+
+    /**
+     * <p>Clear the children.</p>
+     */
+    public void clearChildren() throws InterruptedException {
+        DomNode[] nodes = snapshotChildren();
+        for (int i = nodes.length - 1; i >= 0; i--) {
+            DomNode node = nodes[i];
+            removeChild(node);
+        }
+    }
+
+    /**
+     * <p>Add the children.</p>
+     *
+     * @param de The list.
+     * @throws InterruptedException Transaction was interrupted.
+     */
+    public void addChildren(DomElement de) throws InterruptedException {
+        DomNode[] nodes = de.snapshotChildren();
+        de.clearChildren();
+        for (int i = 0; i < nodes.length; i++) {
+            DomNode node = nodes[i];
+            addChild(node);
+        }
     }
 
 }

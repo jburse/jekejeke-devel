@@ -88,41 +88,50 @@ public final class XAction {
     /**
      * <p>Add an element attribute action.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The String value.
      */
-    public void calcAttr(String v, String k) {
-        acts.get(acts.size() - 1).calcAttr(v, k);
+    public void calcAttr(String a, String v) {
+        acts.get(acts.size() - 1).calcAttr(a, v);
     }
 
     /**
      * <p>Add an element attribute action.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The long value.
      */
-    public void calcAttrLong(String v, long k) {
-        acts.get(acts.size() - 1).calcAttrLong(v, k);
+    public void calcAttrLong(String a, long v) {
+        acts.get(acts.size() - 1).calcAttrLong(a, v);
     }
 
     /**
      * <p>Add an element attribute action.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The value.
      */
-    public void calcAttrObj(String v, Object k) {
-        acts.get(acts.size() - 1).calcAttrObj(v, k);
+    public void calcAttrObj(String a, Object v) {
+        acts.get(acts.size() - 1).calcAttrObj(a, v);
     }
 
     /**
-     * <p>Add an xquery function.</p>
+     * <p>Add an element children action.</p>
      *
-     * @param s The slot name.
-     * @param f The xquery update.
+     * @param v The list.
      */
-    public void calcFunc(String s, XActionFunc f) {
-        acts.get(acts.size() - 1).calcFunc(s, f);
+    public void calcChildren(DomElement v) {
+        acts.get(acts.size()-1).calcChildren(v);
+    }
+
+    /**
+     * <p>Add an xaction function.</p>
+     *
+     * @param k The key.
+     * @param v The xaction function.
+     */
+    public void calcFunc(String k, XActionFunc v) {
+        acts.get(acts.size() - 1).calcFunc(k, v);
     }
 
     /*****************************************************/

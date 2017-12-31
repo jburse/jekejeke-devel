@@ -5,7 +5,7 @@ import matula.util.data.MapHashLink;
 import matula.util.regex.ScannerError;
 
 /**
- * <p>This class represents an xquery aggregate function.</p>
+ * <p>This class represents an xaction aggregate function.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,7 +40,7 @@ public final class XActionFuncAggr extends XActionFunc {
     private int pos;
 
     /**
-     * <p>Create a new xquery aggregate function.</p>
+     * <p>Create a new xaction aggregate function.</p>
      *
      * @param a The type of aggegate.
      */
@@ -85,63 +85,74 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param n The name.
      */
     public void calcName(String n) {
-        calcFunc(n, new XActionFuncUpdate(n, XActionFuncUpdate.UPDATE_NAME));
+        calcFunc("_name", new XActionFuncUpdate(n, XActionFuncUpdate.UPDATE_NAME));
     }
 
     /**
      * <p>Add an element attribute action.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The String value.
      */
-    public void calcAttr(String k, String v) {
-        calcAttrObj(k, v);
+    public void calcAttr(String a, String v) {
+        calcAttrObj(a, v);
     }
 
     /**
      * <p>Add an element attribute action.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The long value.
      */
-    public void calcAttrLong(String k, long v) {
-        calcAttrObj(k, Long.valueOf(v));
+    public void calcAttrLong(String a, long v) {
+        calcAttrObj(a, Long.valueOf(v));
     }
 
     /**
      * <p>Add an element attribute action.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The value.
      */
-    public void calcAttrObj(String k, Object v) {
+    public void calcAttrObj(String a, Object v) {
         XSelect xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
-        calcFunc(k, new XActionFuncUpdate(k, xs, XActionFuncUpdate.UPDATE_ATTR));
+        calcFunc(a, new XActionFuncUpdate(a, xs, XActionFuncUpdate.UPDATE_ATTR));
     }
 
     /**
-     * <p>Add an xquery function.</p>
+     * <p>Add an element children action.</p>
      *
-     * @param s The slot name.
-     * @param f The xquery update.
+     * @param v The list.
      */
-    public void calcFunc(String s, XActionFunc f) {
-        MapEntry<String, XActionFunc> entry = funcs.getEntry(s);
+    public void calcChildren(DomElement v) {
+        calcFunc("_children", new XActionFuncUpdate(v, XActionFuncUpdate.UPDATE_CHILDREN));
+    }
+
+    /**
+     * <p>Add an xaction function.</p>
+     *
+     * @param k The key.
+     * @param v The xaction function.
+     */
+    public void calcFunc(String k, XActionFunc v) {
+        MapEntry<String, XActionFunc> entry = funcs.getEntry(k);
         if (entry != null) {
-            entry.value = f;
+            entry.value = v;
         } else {
-            funcs.add(s, f);
+            funcs.add(k, v);
         }
     }
 
     /**
-     * <p>Perform this xquery function on a dom element.</p>
+     * <p>Perform this xaction function on a dom element.</p>
      *
      * @param r The target dom element.
      * @param e The source dom element.
      * @throws ScannerError Shit happens.
+     * @throws InterruptedException Shit happens.
      */
-    public void updateElement(DomElement r, DomElement e) throws ScannerError {
+    public void updateElement(DomElement r, DomElement e)
+            throws ScannerError, InterruptedException {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             entry.value.updateElement(r, e);
@@ -149,7 +160,7 @@ public final class XActionFuncAggr extends XActionFunc {
     }
 
     /**
-     * <p>Convert this xquery function to a string.</p>
+     * <p>Convert this xaction function to a string.</p>
      *
      * @return The string.
      */

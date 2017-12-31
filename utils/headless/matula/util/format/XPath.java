@@ -92,47 +92,47 @@ public final class XPath {
      * @param n The name.
      */
     public void whereName(String n) {
-        cps.get(cps.size() - 1).whereName(n);
+        cps.get(cps.size() - 1).getExpr().whereName(n);
     }
 
     /**
      * <p>Add an element attribute predicate.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The String value.
      */
-    public void whereAttr(String k, String v) {
-        whereAttrObj(k, v);
+    public void whereAttr(String a, String v) {
+        cps.get(cps.size() - 1).getExpr().whereAttr(a, v);
     }
 
     /**
      * <p>Add an element attribute predicate.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The long value.
      */
-    public void whereAttrLong(String k, long v) {
-        whereAttrObj(k, Long.valueOf(v));
+    public void whereAttrLong(String a, long v) {
+        cps.get(cps.size() - 1).getExpr().whereAttrLong(a, v);
     }
 
     /**
      * <p>Add an element attribute predicate.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
      * @param v The value.
      */
-    public void whereAttrObj(String k, Object v) {
-        cps.get(cps.size() - 1).whereAttrObj(k, v);
+    public void whereAttrObj(String a, Object v) {
+        cps.get(cps.size() - 1).getExpr().whereAttrObj(a, v);
     }
 
     /**
      * <p>Add an xpath expression.</p>
      *
-     * @param s The slot name.
-     * @param p The xath expression.
+     * @param k The key.
+     * @param v The xpath.
      */
-    public void whereExpr(String s, XPathExpr p) {
-        cps.get(cps.size() - 1).whereExpr(s, p);
+    public void whereExpr(String k, XPathExpr v) {
+        cps.get(cps.size() - 1).getExpr().whereExpr(k, v);
     }
 
     /*****************************************************/

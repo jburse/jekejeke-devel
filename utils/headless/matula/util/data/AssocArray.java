@@ -196,13 +196,26 @@ public class AssocArray<K, V>
     /***************************************************************/
 
     /**
-     * <p>Returns the index of the first key occurence.</p>
+     * <p>Returns the first index of the key occurence.</p>
      *
      * @param o The key.
      * @return The index, or -1.
      */
     public int indexOf(Object o) {
         for (int i = 0; i < size; i++)
+            if (o != null ? o.equals(kvs[2 * i]) : null == kvs[2 * i])
+                return i;
+        return -1;
+    }
+
+    /**
+     * <p>Returns the last index of the key occurence.</p>
+     *
+     * @param o The key.
+     * @return The index, or -1.
+     */
+    public int lastIndexOf(Object o) {
+        for (int i = size-1; i >= 0; i--)
             if (o != null ? o.equals(kvs[2 * i]) : null == kvs[2 * i])
                 return i;
         return -1;

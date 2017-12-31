@@ -79,35 +79,55 @@ public final class XPathExprComb extends XPathExpr {
      *
      * @param n The name.
      */
-    public void whereName(String n) {
+    void whereName(String n) {
         XSelect first = new XSelectPrim(n, XSelectPrim.SELE_PRIM_ATTR);
-        whereExpr(n, new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_NAME));
+        whereExpr("_name", new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_NAME));
     }
 
     /**
      * <p>Add an element attribute predicate.</p>
      *
-     * @param k The key.
+     * @param a The attribute name.
+     * @param v The String value.
+     */
+    void whereAttr(String a, String v) {
+        whereAttrObj(a,v);
+    }
+
+    /**
+     * <p>Add an element attribute predicate.</p>
+     *
+     * @param a The attribute name.
+     * @param v The long value.
+     */
+    void whereAttrLong(String a, long v) {
+        whereAttrObj(a,Long.valueOf(v));
+    }
+
+    /**
+     * <p>Add an element attribute predicate.</p>
+     *
+     * @param a The attribute name.
      * @param v The value.
      */
-    public void whereAttrObj(String k, Object v) {
-        XSelect first = new XSelectPrim(k, XSelectPrim.SELE_PRIM_ATTR);
+    void whereAttrObj(String a, Object v) {
+        XSelect first = new XSelectPrim(a, XSelectPrim.SELE_PRIM_ATTR);
         XSelect second = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
-        whereExpr(k, new XPathExprPrim(first, second, XPathExprPrim.EXPR_PRIM_EQ));
+        whereExpr(a, new XPathExprPrim(first, second, XPathExprPrim.EXPR_PRIM_EQ));
     }
 
     /**
      * <p>Add an xpath expression.</p>
      *
-     * @param s The slot name.
-     * @param e The xath expression.
+     * @param k The key.
+     * @param v The xpath expression.
      */
-    public void whereExpr(String s, XPathExpr e) {
-        MapEntry<String, XPathExpr> entry = exprs.getEntry(s);
+    public void whereExpr(String k, XPathExpr v) {
+        MapEntry<String, XPathExpr> entry = exprs.getEntry(k);
         if (entry != null) {
-            entry.value = e;
+            entry.value = v;
         } else {
-            exprs.add(s, e);
+            exprs.add(k, v);
         }
     }
 

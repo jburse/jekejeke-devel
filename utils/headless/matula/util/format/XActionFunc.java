@@ -3,7 +3,7 @@ package matula.util.format;
 import matula.util.regex.ScannerError;
 
 /**
- * <p>This class is the base class of xquery functions.</p>
+ * <p>This class is the base class of xaction functions.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,17 +31,18 @@ import matula.util.regex.ScannerError;
 public abstract class XActionFunc {
 
     /**
-     * <p>Perform this xquery function on a dom element.</p>
+     * <p>Perform this xaction function on a dom element.</p>
      *
      * @param r The target dom element.
      * @param e The source dom element.
      * @throws ScannerError Shit happens.
+     * @throws InterruptedException Transaction was interrupted.
      */
     public abstract void updateElement(DomElement r, DomElement e)
-            throws ScannerError;
+            throws ScannerError, InterruptedException;
 
     /**
-     * <p>Convert this xquery function to a string.</p>
+     * <p>Convert this xaction function to a string.</p>
      *
      * @return The string.
      */

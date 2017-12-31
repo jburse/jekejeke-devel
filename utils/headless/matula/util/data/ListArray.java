@@ -186,13 +186,26 @@ public class ListArray<E> extends AbstractList<E> implements Cloneable {
     /***************************************************************/
 
     /**
-     * <p>Returns the index of the first element occurence.</p>
+     * <p>Returns the first index of the element occurence.</p>
      *
      * @param o The element.
      * @return The index, or -1.
      */
     public int indexOf(Object o) {
         for (int i = 0; i < size; i++)
+            if (o != null ? o.equals(table[i]) : null == table[i])
+                return i;
+        return -1;
+    }
+
+    /**
+     * <p>Returns the last index of the element occurence.</p>
+     *
+     * @param o The element.
+     * @return The index, or -1.
+     */
+    public int lastIndexOf(Object o) {
+        for (int i = size - 1; i >= 0; i--)
             if (o != null ? o.equals(table[i]) : null == table[i])
                 return i;
         return -1;

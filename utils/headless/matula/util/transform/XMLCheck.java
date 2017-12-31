@@ -86,13 +86,18 @@ public final class XMLCheck {
     private void checkChildren(DomElement de)
             throws ValidationError {
         String back = context;
-        context = de.getName();
-        DomNode[] nodes = de.snapshotChildren();
-        for (int i = 0; i < nodes.length; i++) {
-            DomNode node = nodes[i];
-            checkNode(node);
+        try {
+            context = de.getName();
+            DomNode[] nodes = de.snapshotChildren();
+            for (int i = 0; i < nodes.length; i++) {
+                DomNode node = nodes[i];
+                checkNode(node);
+            }
+            context = back;
+        } catch (ValidationError x) {
+            context = back;
+            throw x;
         }
-        context = back;
     }
 
     /**

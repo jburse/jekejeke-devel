@@ -84,39 +84,6 @@ public final class ChoicePoint {
     }
 
     /*****************************************************/
-    /* XPath Expressions                                 */
-    /*****************************************************/
-
-    /**
-     * <p>Add an element name predicate.</p>
-     *
-     * @param n The name.
-     */
-    void whereName(String n) {
-        expr.whereName(n);
-    }
-
-    /**
-     * <p>Add an element attribute predicate.</p>
-     *
-     * @param k The key.
-     * @param v The value.
-     */
-    void whereAttrObj(String k, Object v) {
-        expr.whereAttrObj(k, v);
-    }
-
-    /**
-     * <p>Add an xpath expression.</p>
-     *
-     * @param s The slot name.
-     * @param e The xath expression.
-     */
-    void whereExpr(String s, XPathExpr e) {
-        expr.whereExpr(s, e);
-    }
-
-    /*****************************************************/
     /* Search Helper                                     */
     /*****************************************************/
 

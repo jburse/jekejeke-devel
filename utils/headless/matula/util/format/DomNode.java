@@ -38,6 +38,7 @@ public abstract class DomNode {
     public static final int MASK_TEXT = 0x00000001;
     public static final int MASK_LIST = 0x00000002;
 
+    public static final int TYPE_UNDEF = -1;
     public static final int TYPE_NONE = 0;
     public static final int TYPE_EMPTY = 1; /* disable text and list */
     public static final int TYPE_ANY = 2; /* enable text and list */
@@ -98,7 +99,7 @@ public abstract class DomNode {
         dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
             ListArray<DomNode> cs = DomElement.loadChildren(dr);
-            ((DomElement) this).setChildren(cs);
+            ((DomElement) this).setChildrenFast(cs);
         } else {
             loadNode(dr);
         }
@@ -125,7 +126,7 @@ public abstract class DomNode {
         dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
             ListArray<DomNode> cs = DomElement.loadChildren(dr);
-            ((DomElement) this).setChildren(cs);
+            ((DomElement) this).setChildrenFast(cs);
         } else {
             loadNode(dr);
         }
