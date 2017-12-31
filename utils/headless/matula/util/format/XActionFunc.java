@@ -35,7 +35,7 @@ public abstract class XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError         Shit happens.
      * @throws InterruptedException Transaction was interrupted.
      */
     public abstract void updateElement(DomElement r, DomElement e)

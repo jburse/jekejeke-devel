@@ -45,9 +45,12 @@ public final class DomElement extends AbstractDom {
     private static final String DOM_UNEXPECTED_ATTR = "dom_unexpected_attr";
     private static final String DOM_MISMATCHED_END = "dom_mismatched_end";
 
+    private static final String[] VOID_ATTRS = new String[0];
+    private static final AbstractDom[] VOID_CHILDREN = new AbstractDom[0];
+
     private String name = XmlMachine.VALUE_EMPTY;
-    private AssocArray<String, Object> kvs = new AssocArray<String, Object>();
-    private ListArray<AbstractDom> children = new ListArray<AbstractDom>();
+    private AssocArray<String, Object> kvs;
+    private ListArray<AbstractDom> children;
 
     /**
      * <p>Retrieve the name.</p>
@@ -97,7 +100,7 @@ public final class DomElement extends AbstractDom {
                     throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
                 boolean closed = checkClosed(dr);
                 String type = dr.getType();
-                AssocArray<String, Object> newkvs = new AssocArray<String, Object>();
+                AssocArray<String, Object> newkvs = null;
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     String valstr = dr.getValueAt(i);
                     Object val;
@@ -112,6 +115,8 @@ public final class DomElement extends AbstractDom {
                     } else {
                         throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
                     }
+                    if (newkvs == null)
+                        newkvs = new AssocArray<String, Object>();
                     newkvs.add(dr.getAttr(i), val);
                 }
                 name = type;
@@ -125,17 +130,17 @@ public final class DomElement extends AbstractDom {
                         int mask = dr.getMask();
                         dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
                         dr.nextTagOrText();
-                        cs = loadChildren(dr);
+                        cs = DomElement.loadChildren(dr);
                         dr.setMask(mask);
                     } else {
                         dr.nextTagOrText();
-                        cs = loadChildren(dr);
+                        cs = DomElement.loadChildren(dr);
                     }
                     checkEnd(type, dr);
                 } else {
                     if (closed && empty)
                         throw new ScannerError(DOM_CLOSED_EMPTY, -1);
-                    cs = new ListArray<AbstractDom>();
+                    cs = null;
                     dr.nextTagOrText();
                 }
                 setChildrenFast(cs);
@@ -151,12 +156,14 @@ public final class DomElement extends AbstractDom {
      * <p>Set the children fast.</p>
      * <p>Not synchronized, uses cut-over.</p>
      *
-     * @param cs The children.
+     * @param cs The children or null.
      */
     void setChildrenFast(ListArray<AbstractDom> cs) {
-        for (int i = 0; i < cs.size(); i++) {
-            AbstractDom node = cs.get(i);
-            node.parent = this;
+        if (cs != null) {
+            for (int i = 0; i < cs.size(); i++) {
+                AbstractDom node = cs.get(i);
+                node.parent = this;
+            }
         }
         synchronized (this) {
             children = cs;
@@ -224,16 +231,17 @@ public final class DomElement extends AbstractDom {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        if (sizeChildren() != 0) {
+        AbstractDom[] nodes=snapshotChildren();
+        if (nodes.length!=0) {
             dw.copyStart(this);
             if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
                     checkAny(dw.getControl(), name)) {
                 int mask = dw.getMask();
                 dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
-                storeChildren2(dw);
+                storeChildren2(dw, nodes);
                 dw.setMask(mask);
             } else {
-                storeChildren2(dw);
+                storeChildren2(dw, nodes);
             }
             dw.copyEnd(this);
         } else {
@@ -249,15 +257,17 @@ public final class DomElement extends AbstractDom {
      * <p>Store the childeren.</p>
      *
      * @param dw The dom writer.
+     * @param nodes The nodes.
      * @throws IOException Shit happens.
      */
-    private void storeChildren2(DomWriter dw) throws IOException {
+    private static void storeChildren2(DomWriter dw, AbstractDom[] nodes)
+            throws IOException {
         if ((dw.getMask() & MASK_TEXT) != 0) {
-            storeChildren(dw);
+            storeChildren(dw, nodes);
         } else {
             dw.write("\n");
             dw.incIndent();
-            storeChildren(dw);
+            storeChildren(dw, nodes);
             dw.decIndent();
             dw.writeIndent();
         }
@@ -277,12 +287,14 @@ public final class DomElement extends AbstractDom {
      */
     static ListArray<AbstractDom> loadChildren(DomReader dr)
             throws IOException, ScannerError {
-        ListArray<AbstractDom> res = new ListArray<AbstractDom>();
+        ListArray<AbstractDom> res = null;
         for (; ; ) {
             switch (dr.getRes()) {
                 case XmlMachine.RES_TEXT:
                     DomText dt = new DomText();
                     dt.loadNode(dr);
+                    if (res == null)
+                        res = new ListArray<AbstractDom>();
                     res.add(dt);
                     break;
                 case XmlMachine.RES_TAG:
@@ -291,6 +303,8 @@ public final class DomElement extends AbstractDom {
                         return res;
                     DomElement dh = new DomElement();
                     dh.loadNode(dr);
+                    if (res == null)
+                        res = new ListArray<AbstractDom>();
                     res.add(dh);
                     break;
                 case XmlMachine.RES_EOF:
@@ -304,12 +318,12 @@ public final class DomElement extends AbstractDom {
     /**
      * <p>Store the childeren.</p>
      *
-     * @param dw The dom writer.
+     * @param dw    The dom writer.
+     * @param nodes The nodes.
      * @throws IOException Shit happens.
      */
-    void storeChildren(DomWriter dw)
+    static void storeChildren(DomWriter dw, AbstractDom[] nodes)
             throws IOException {
-        AbstractDom[] nodes = snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if ((dw.getMask() & MASK_TEXT) != 0) {
@@ -402,7 +416,7 @@ public final class DomElement extends AbstractDom {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            int k = XmlMachine.indexAttr(kvs, key);
+            int k = (kvs != null ? XmlMachine.indexAttr(kvs, key) : -1);
             if (k != -1) {
                 return kvs.getValue(k);
             } else {
@@ -446,10 +460,12 @@ public final class DomElement extends AbstractDom {
         if (val == null)
             throw new NullPointerException("value missing");
         synchronized (this) {
-            int k = XmlMachine.indexAttr(kvs, key);
+            int k = (kvs != null ? XmlMachine.indexAttr(kvs, key) : -1);
             if (k != -1) {
                 kvs.setValue(k, val);
             } else {
+                if (kvs == null)
+                    kvs = new AssocArray<String, Object>();
                 kvs.add(key, val);
             }
         }
@@ -464,10 +480,14 @@ public final class DomElement extends AbstractDom {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            int k = XmlMachine.indexAttr(kvs, key);
+            int k = (kvs != null ? XmlMachine.indexAttr(kvs, key) : -1);
             if (k != -1) {
                 kvs.removeEntry(k);
-                kvs.resize();
+                if (kvs.size() == 0) {
+                    kvs = null;
+                } else {
+                    kvs.resize();
+                }
             }
         }
     }
@@ -480,9 +500,13 @@ public final class DomElement extends AbstractDom {
     public String[] snapshotAttrs() {
         String[] names;
         synchronized (this) {
-            names = new String[kvs.size()];
-            for (int i = 0; i < kvs.size(); i++)
-                names[i] = kvs.getKey(i);
+            if (kvs != null) {
+                names = new String[kvs.size()];
+                for (int i = 0; i < kvs.size(); i++)
+                    names[i] = kvs.getKey(i);
+            } else {
+                names = VOID_ATTRS;
+            }
         }
         return names;
     }
@@ -490,15 +514,6 @@ public final class DomElement extends AbstractDom {
     /*****************************************************/
     /* Synchronized API Children                         */
     /*****************************************************/
-
-    /**
-     * <p>Retrieve the number of elements.</p>
-     *
-     * @return The number of elements.
-     */
-    public int sizeChildren() {
-        return children.size();
-    }
 
     /**
      * <p>Add a child.</p>
@@ -515,6 +530,8 @@ public final class DomElement extends AbstractDom {
             if (dh.parent != null)
                 return false;
             synchronized (this) {
+                if (children == null)
+                    children = new ListArray<AbstractDom>();
                 children.add(dh);
             }
             dh.parent = this;
@@ -539,9 +556,11 @@ public final class DomElement extends AbstractDom {
             if (dh.parent != this)
                 return false;
             synchronized (this) {
-                int k = children.lastIndexOf(dh);
+                int k = (children != null ? children.lastIndexOf(dh) : -1);
                 if (k >= 0) {
                     children.remove(k);
+                    if (children.size() == 0)
+                        children = null;
                 } else {
                     throw new RuntimeException("internal error");
                 }
@@ -561,8 +580,12 @@ public final class DomElement extends AbstractDom {
     public AbstractDom[] snapshotChildren() {
         AbstractDom[] nodes;
         synchronized (this) {
-            nodes = new AbstractDom[children.size()];
-            children.toArray(nodes);
+            if (children != null) {
+                nodes = new AbstractDom[children.size()];
+                children.toArray(nodes);
+            } else {
+                nodes = VOID_CHILDREN;
+            }
         }
         return nodes;
     }
@@ -576,6 +599,8 @@ public final class DomElement extends AbstractDom {
     public AbstractDom getChildAt(int i) {
         AbstractDom node;
         synchronized (this) {
+            if (children == null)
+                return null;
             if (i < 0)
                 i += children.size();
             if (i < 0)
@@ -596,7 +621,7 @@ public final class DomElement extends AbstractDom {
     public int getChildIndex(AbstractDom dh) {
         int res;
         synchronized (this) {
-            res = children.indexOf(dh);
+            res = (children != null ? children.indexOf(dh) : -1);
         }
         return res;
     }
@@ -617,12 +642,14 @@ public final class DomElement extends AbstractDom {
             if (dh.parent != null)
                 return false;
             synchronized (this) {
+                if (children == null)
+                    children = new ListArray<AbstractDom>();
                 if (i < 0)
                     i += children.size() + 1;
                 if (i < 0)
-                    return false;
+                    i = 0;
                 if (i > children.size())
-                    return false;
+                    i = children.size();
                 children.add(i, dh);
             }
             dh.parent = this;
@@ -662,13 +689,11 @@ public final class DomElement extends AbstractDom {
      * @return The child, or null.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public DomElement removeChild(String name)
+    public DomElement getChild(String name)
             throws InterruptedException {
         int k = getChildIndex(name);
         if (k >= 0) {
-            DomElement elem= (DomElement) getChildAt(k);
-            removeChild(elem);
-            return elem;
+            return (DomElement) getChildAt(k);
         } else {
             return null;
         }
@@ -681,15 +706,56 @@ public final class DomElement extends AbstractDom {
      * @param elem The new child, or null.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public void replaceChild(String name, DomElement elem)
+    public void setChild(String name, DomElement elem)
             throws InterruptedException {
         int k = getChildIndex(name);
         if (k >= 0) {
             DomElement oldelem = (DomElement) getChildAt(k);
             removeChild(oldelem);
         }
-        if (elem != null)
+        if (elem != null) {
+            elem = (DomElement) elem.clone();
             addChild(k, elem);
+        }
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Create a deep copy.</p>
+     *
+     * @return The deep copy.
+     */
+    public Object clone() {
+        DomElement de = (DomElement) super.clone();
+        AssocArray<String, Object> newkvs;
+        synchronized (this) {
+            newkvs = (kvs != null ? (AssocArray<String, Object>) kvs.clone() : null);
+        }
+        ListArray<AbstractDom> res = null;
+        AbstractDom[] nodes = snapshotChildren();
+        for (int i = 0; i < nodes.length; i++) {
+            AbstractDom node = nodes[i];
+            if (res == null)
+                res = new ListArray<AbstractDom>();
+            node = (AbstractDom) node.clone();
+            node.parent = de;
+            res.add(node);
+        }
+        de.kvs = newkvs;
+        de.children = res;
+        return de;
+    }
+
+    /**
+     * Reset to initial default state.
+     */
+    void reinitialize() {
+        super.reinitialize();
+        kvs = null;
+        children = null;
     }
 
     /**
@@ -698,13 +764,21 @@ public final class DomElement extends AbstractDom {
      * @param args Not used.
      */
     public static void main(String[] args) throws IOException, ScannerError {
+        PrintWriter pw = new PrintWriter(System.out);
         String str = "<>Some <b>text</b></>";
+        pw.println("str=" + str);
+
         StringReader sr = new StringReader(str);
         DomElement de = new DomElement();
         de.load(sr, AbstractDom.MASK_TEXT);
-
-        PrintWriter pw = new PrintWriter(System.out);
+        pw.print("de=");
         de.store(pw, null, AbstractDom.MASK_TEXT);
+        pw.println();
+
+        DomElement de2 = (DomElement) de.clone();
+        pw.print("de2=");
+        de2.store(pw, null, AbstractDom.MASK_TEXT);
+        pw.println();
     }
 
 }

@@ -122,7 +122,7 @@ public final class XAction {
      * @param v The list.
      */
     public void calcChild(String n, DomElement v) {
-        acts.get(acts.size()-1).calcChild(n, v);
+        acts.get(acts.size() - 1).calcChild(n, v);
     }
 
     /**

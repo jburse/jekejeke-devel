@@ -115,7 +115,9 @@ public final class XSLSheetTransform extends XSLSheet {
         if (comment != null && !"".equals(comment))
             writer.writeComment(comment);
         if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
-            xsltChildren((DomElement) dn);
+            DomElement elem=(DomElement)dn;
+            AbstractDom[] nodes=elem.snapshotChildren();
+            xsltChildren(nodes);
         } else {
             xsltNode(dn);
         }
@@ -146,28 +148,32 @@ public final class XSLSheetTransform extends XSLSheet {
             } else if (de.isName(NAME_PARAM)) {
                 xsltParam(de);
             } else if (de.isName(NAME_STYLESHEET)) {
-                xsltChildren(de);
+                AbstractDom[] nodes=de.snapshotChildren();
+                xsltChildren(nodes);
             } else if (de.isName(NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(NAME_CHOOSE)) {
                 xsltChoose(de);
-            } else if (de.sizeChildren() != 0) {
-                writer.copyStart(de);
-                if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                        DomElement.checkAny(writer.getControl(), de.getName())) {
-                    int mask = writer.getMask();
-                    writer.setMask(writer.getMask() | AbstractDom.MASK_TEXT);
-                    xsltChildren2(de);
-                    writer.setMask(mask);
-                } else {
-                    xsltChildren2(de);
-                }
-                writer.copyEnd(de);
             } else {
-                if (!DomElement.checkEmpty(writer.getControl(), de.getName())) {
-                    writer.copyEmpty(de);
-                } else {
+                AbstractDom[] nodes=de.snapshotChildren();
+                if (nodes.length != 0) {
                     writer.copyStart(de);
+                    if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
+                            DomElement.checkAny(writer.getControl(), de.getName())) {
+                        int mask = writer.getMask();
+                        writer.setMask(writer.getMask() | AbstractDom.MASK_TEXT);
+                        xsltChildren2(nodes);
+                        writer.setMask(mask);
+                    } else {
+                        xsltChildren2(nodes);
+                    }
+                    writer.copyEnd(de);
+                } else {
+                    if (!DomElement.checkEmpty(writer.getControl(), de.getName())) {
+                        writer.copyEmpty(de);
+                    } else {
+                        writer.copyStart(de);
+                    }
                 }
             }
         }
@@ -176,18 +182,18 @@ public final class XSLSheetTransform extends XSLSheet {
     /**
      * <p>Transform the children.</p>
      *
-     * @param de The template dom element.
+     * @param nodes The template dom nodes.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    private void xsltChildren2(DomElement de)
+    private void xsltChildren2(AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
         if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
-            xsltChildren(de);
+            xsltChildren(nodes);
         } else {
             writer.write("\n");
             writer.incIndent();
-            xsltChildren(de);
+            xsltChildren(nodes);
             writer.decIndent();
             writer.writeIndent();
         }
@@ -196,13 +202,12 @@ public final class XSLSheetTransform extends XSLSheet {
     /**
      * <p>Transform the children.</p>
      *
-     * @param de The template dom element.
+     * @param nodes The template dom nodes.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    private void xsltChildren(DomElement de)
+    private void xsltChildren(AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
-        AbstractDom[] nodes = de.snapshotChildren();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
@@ -231,7 +236,8 @@ public final class XSLSheetTransform extends XSLSheet {
         DomElement back = data;
         data = xpath.findFirst(0, data);
         while (data != null) {
-            xsltChildren(de);
+            AbstractDom[] nodes=de.snapshotChildren();
+            xsltChildren(nodes);
             data = xpath.findNext();
         }
         data = back;
@@ -278,7 +284,8 @@ public final class XSLSheetTransform extends XSLSheet {
 
         DomElement back = data;
         data = pu.getFound();
-        xsltChildren(de);
+        AbstractDom[] nodes=de.snapshotChildren();
+        xsltChildren(nodes);
         data = back;
     }
 
@@ -345,8 +352,10 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         String test = de.getAttr(ATTR_IF_TEST);
         boolean val = attrTest(test);
-        if (val)
-            xsltChildren(de);
+        if (val) {
+            AbstractDom[] nodes=de.snapshotChildren();
+            xsltChildren(nodes);
+        }
     }
 
     /**
@@ -366,11 +375,13 @@ public final class XSLSheetTransform extends XSLSheet {
                 String test = de2.getAttr(ATTR_WHEN_TEST);
                 boolean val = attrTest(test);
                 if (val) {
-                    xsltChildren(de2);
+                    AbstractDom[] nodes2=de2.snapshotChildren();
+                    xsltChildren(nodes2);
                     break;
                 }
             } else {
-                xsltChildren(de2);
+                AbstractDom[] nodes2=de2.snapshotChildren();
+                xsltChildren(nodes2);
                 break;
             }
         }

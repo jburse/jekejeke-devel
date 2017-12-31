@@ -24,7 +24,8 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractAssoc<K,V> {
+public abstract class AbstractAssoc<K,V>
+        implements Cloneable {
     public int size;
 
     /**
@@ -64,6 +65,26 @@ public abstract class AbstractAssoc<K,V> {
      * <p>Clear the map.</p>
      */
     public abstract void clear();
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Create a shallow copy.</p>
+     *
+     * @return The shallow copy.
+     */
+    public Object clone() {
+        AbstractAssoc<K, V> res;
+        try {
+            res = (AbstractAssoc<K, V>) super.clone();
+        } catch (CloneNotSupportedException x) {
+            throw new RuntimeException("internal error", x);
+        }
+        res.reinitialize(size());
+        return res;
+    }
 
     /**
      * Reset to initial default state.

@@ -105,7 +105,7 @@ public final class XActionFuncUpdate extends XActionFunc {
                 r.setAttrObj(keyorname, value.evalElement(e));
                 break;
             case UPDATE_CHILD:
-                r.replaceChild(keyorname, elem);
+                r.setChild(keyorname, elem);
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");

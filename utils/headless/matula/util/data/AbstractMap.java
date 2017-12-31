@@ -27,8 +27,7 @@ package matula.util.data;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractMap<K, V>
-        extends AbstractAssoc<K, V>
-        implements Cloneable {
+        extends AbstractAssoc<K, V> {
 
     /**
      * <p>Add the key to the map.</p>
@@ -148,13 +147,7 @@ public abstract class AbstractMap<K, V>
      * @return The shallow copy.
      */
     public Object clone() {
-        AbstractMap<K, V> res;
-        try {
-            res = (AbstractMap<K, V>) super.clone();
-        } catch (CloneNotSupportedException x) {
-            throw new RuntimeException("internal error", x);
-        }
-        res.reinitialize(size());
+        AbstractMap<K, V> res = (AbstractMap<K, V>) super.clone();
         for (MapEntry<K, V> entry = getFirstEntry();
              entry != null; entry = successor(entry))
             res.add(entry.key, entry.value);

@@ -25,8 +25,7 @@ package matula.util.data;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class AssocArray<K, V>
-        extends AbstractAssoc<K, V>
-        implements Cloneable {
+        extends AbstractAssoc<K, V> {
     public static final int MIN_SIZE = 2;
 
     public Object[] kvs;
@@ -215,7 +214,7 @@ public class AssocArray<K, V>
      * @return The index, or -1.
      */
     public int lastIndexOf(Object o) {
-        for (int i = size-1; i >= 0; i--)
+        for (int i = size - 1; i >= 0; i--)
             if (o != null ? o.equals(kvs[2 * i]) : null == kvs[2 * i])
                 return i;
         return -1;
@@ -291,16 +290,10 @@ public class AssocArray<K, V>
      * @return The shallow copy.
      */
     public Object clone() {
-        AssocArray<K, V> res;
-        try {
-            res = (AssocArray<K, V>) super.clone();
-        } catch (CloneNotSupportedException x) {
-            throw new RuntimeException("internal error", x);
-        }
-        res.reinitialize(size());
+        AssocArray<K, V> res = (AssocArray<K, V>) super.clone();
         if (size() > 0) {
-            System.arraycopy(kvs, 0, res.kvs, 0, 2*size());
-            res.size=size();
+            System.arraycopy(kvs, 0, res.kvs, 0, 2 * size());
+            res.size = size();
         }
         return res;
     }
@@ -315,7 +308,7 @@ public class AssocArray<K, V>
         int len = MIN_SIZE;
         while (capa > len)
             len = len * 2;
-        kvs = new Object[2*len];
+        kvs = new Object[2 * len];
     }
 
 }

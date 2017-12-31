@@ -133,6 +133,7 @@ public final class DomWriter {
 
     /**
      * <p>Write a string.</p>
+     *
      * @param str The string.
      * @throws IOException Shit happens.
      */
@@ -177,15 +178,15 @@ public final class DomWriter {
      * @throws IOException Shit happens.
      */
     private void copyAttributes(DomElement de) throws IOException {
-        String[] names = de.snapshotAttrs();
+        String[] attrs = de.snapshotAttrs();
         if ((getMask() & AbstractDom.MASK_TEXT) != 0) {
-            for (int i = 0; i < names.length; i++) {
-                String name = names[i];
-                Object val = de.getAttrObj(name);
+            for (int i = 0; i < attrs.length; i++) {
+                String attr = attrs[i];
+                Object val = de.getAttrObj(attr);
                 if (val == null)
                     continue;
                 write(" ");
-                write(name);
+                write(attr);
                 if (!"".equals(val)) {
                     write("=");
                     if (val instanceof String) {
@@ -198,11 +199,11 @@ public final class DomWriter {
                 }
             }
         } else {
-            String name=de.getName();
+            String name = de.getName();
             int off = getIndent() + 1 + name.length();
             incIndent();
-            for (int i = 0; i < names.length; i++) {
-                name = names[i];
+            for (int i = 0; i < attrs.length; i++) {
+                name = attrs[i];
                 Object val = de.getAttrObj(name);
                 if (val == null)
                     continue;

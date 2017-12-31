@@ -34,7 +34,8 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractDom {
+public abstract class AbstractDom
+        implements Cloneable {
     public static final int MASK_TEXT = 0x00000001;
     public static final int MASK_LIST = 0x00000002;
 
@@ -87,7 +88,7 @@ public abstract class AbstractDom {
      * <p>Not synchronized, uses cut-over.</p>
      *
      * @param reader The input stream.
-     * @param mask    The return mask.
+     * @param mask   The return mask.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
@@ -98,8 +99,9 @@ public abstract class AbstractDom {
         dr.setMask(mask);
         dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
+            DomElement de = (DomElement) this;
             ListArray<AbstractDom> cs = DomElement.loadChildren(dr);
-            ((DomElement) this).setChildrenFast(cs);
+            de.setChildrenFast(cs);
         } else {
             loadNode(dr);
         }
@@ -110,9 +112,9 @@ public abstract class AbstractDom {
      * <p>Load this dom node.</p>
      * <p>Not synchronized, uses cut-over.</p>
      *
-     * @param reader The input stream.
+     * @param reader  The input stream.
      * @param mask    The return mask.
-     * @param control    The tag control.
+     * @param control The tag control.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
@@ -125,8 +127,9 @@ public abstract class AbstractDom {
         dr.setControl(control);
         dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
+            DomElement de = (DomElement) this;
             ListArray<AbstractDom> cs = DomElement.loadChildren(dr);
-            ((DomElement) this).setChildrenFast(cs);
+            de.setChildrenFast(cs);
         } else {
             loadNode(dr);
         }
@@ -140,8 +143,8 @@ public abstract class AbstractDom {
      *
      * @param writer  The writer.
      * @param comment The comment
-     * @param mask     The return mask.
-     * @throws IOException  Shit happens.
+     * @param mask    The return mask.
+     * @throws IOException Shit happens.
      */
     public void store(Writer writer, String comment, int mask)
             throws IOException {
@@ -151,7 +154,9 @@ public abstract class AbstractDom {
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
         if ((mask & MASK_LIST) != 0) {
-            ((DomElement) this).storeChildren(dw);
+            DomElement elem=(DomElement)this;
+            AbstractDom[] nodes=elem.snapshotChildren();
+            DomElement.storeChildren(dw, nodes);
         } else {
             storeNode(dw);
         }
@@ -164,8 +169,8 @@ public abstract class AbstractDom {
      *
      * @param writer  The writer.
      * @param comment The comment
-     * @param mask     The return mask.
-     * @throws IOException  Shit happens.
+     * @param mask    The return mask.
+     * @throws IOException Shit happens.
      */
     public void store(Writer writer, String comment, int mask,
                       MapHash<String, Integer> control)
@@ -177,7 +182,9 @@ public abstract class AbstractDom {
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
         if ((mask & MASK_LIST) != 0) {
-            ((DomElement) this).storeChildren(dw);
+            DomElement elem=(DomElement)this;
+            AbstractDom[] nodes=elem.snapshotChildren();
+            DomElement.storeChildren(dw, nodes);
         } else {
             storeNode(dw);
         }
@@ -204,5 +211,32 @@ public abstract class AbstractDom {
      */
     abstract void storeNode(DomWriter dw)
             throws IOException;
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Create a deep copy.</p>
+     *
+     * @return The deep copy.
+     */
+    public Object clone() {
+        AbstractDom res;
+        try {
+            res = (AbstractDom) super.clone();
+        } catch (CloneNotSupportedException x) {
+            throw new RuntimeException("internal error", x);
+        }
+        res.reinitialize();
+        return res;
+    }
+
+    /**
+     * Reset to initial default state.
+     */
+    void reinitialize() {
+        parent = null;
+    }
 
 }

@@ -91,7 +91,7 @@ public final class XPathExprComb extends XPathExpr {
      * @param v The String value.
      */
     void whereAttr(String a, String v) {
-        whereAttrObj(a,v);
+        whereAttrObj(a, v);
     }
 
     /**
@@ -101,7 +101,7 @@ public final class XPathExprComb extends XPathExpr {
      * @param v The long value.
      */
     void whereAttrLong(String a, long v) {
-        whereAttrObj(a,Long.valueOf(v));
+        whereAttrObj(a, Long.valueOf(v));
     }
 
     /**
