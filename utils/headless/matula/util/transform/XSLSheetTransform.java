@@ -115,9 +115,9 @@ public final class XSLSheetTransform extends XSLSheet {
         if (comment != null && !"".equals(comment))
             writer.writeComment(comment);
         if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
-            DomElement elem=(DomElement)dn;
-            AbstractDom[] nodes=elem.snapshotNodes();
-            xsltChildren(nodes);
+            DomElement elem = (DomElement) dn;
+            AbstractDom[] nodes = elem.snapshotNodes();
+            xsltNodes(nodes);
         } else {
             xsltNode(dn);
         }
@@ -148,32 +148,32 @@ public final class XSLSheetTransform extends XSLSheet {
             } else if (de.isName(NAME_PARAM)) {
                 xsltParam(de);
             } else if (de.isName(NAME_STYLESHEET)) {
-                AbstractDom[] nodes=de.snapshotNodes();
-                xsltChildren(nodes);
+                AbstractDom[] nodes = de.snapshotNodes();
+                xsltNodes(nodes);
             } else if (de.isName(NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
-                AbstractDom[] nodes=de.snapshotNodes();
-                if (nodes.length != 0) {
-                    writer.copyStart(de);
-                    if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                            DomElement.checkAny(writer.getControl(), de.getName())) {
-                        int mask = writer.getMask();
+                if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
+                        DomElement.checkAny(writer.getControl(), de.getName())) {
+                    int backmask = writer.getMask();
+                    try {
                         writer.setMask(writer.getMask() | AbstractDom.MASK_TEXT);
-                        xsltChildren2(nodes);
-                        writer.setMask(mask);
-                    } else {
-                        xsltChildren2(nodes);
+                        xsltNodes2(de);
+                        writer.setMask(backmask);
+                    } catch (IOException x) {
+                        writer.setMask(backmask);
+                        throw x;
+                    } catch (ScannerError x) {
+                        writer.setMask(backmask);
+                        throw x;
+                    } catch (ValidationError x) {
+                        writer.setMask(backmask);
+                        throw x;
                     }
-                    writer.copyEnd(de);
                 } else {
-                    if (!DomElement.checkEmpty(writer.getControl(), de.getName())) {
-                        writer.copyEmpty(de);
-                    } else {
-                        writer.copyStart(de);
-                    }
+                    xsltNodes2(de);
                 }
             }
         }
@@ -182,20 +182,31 @@ public final class XSLSheetTransform extends XSLSheet {
     /**
      * <p>Transform the children.</p>
      *
-     * @param nodes The template dom nodes.
+     * @param de The template DOM elememt.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    private void xsltChildren2(AbstractDom[] nodes)
+    private void xsltNodes2(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
-            xsltChildren(nodes);
+        AbstractDom[] nodes = de.snapshotNodes();
+        if (nodes.length == 0 &&
+                DomElement.checkEmpty(writer.getControl(), de.getName())) {
+            writer.copyStart(de);
+        } else if (nodes.length != 0 ||
+                (writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
+            writer.copyStart(de);
+            if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
+                xsltNodes(nodes);
+            } else {
+                writer.write("\n");
+                writer.incIndent();
+                xsltNodes(nodes);
+                writer.decIndent();
+                writer.writeIndent();
+            }
+            writer.copyEnd(de);
         } else {
-            writer.write("\n");
-            writer.incIndent();
-            xsltChildren(nodes);
-            writer.decIndent();
-            writer.writeIndent();
+            writer.copyEmpty(de);
         }
     }
 
@@ -206,7 +217,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    private void xsltChildren(AbstractDom[] nodes)
+    private void xsltNodes(AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
@@ -233,22 +244,33 @@ public final class XSLSheetTransform extends XSLSheet {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XPath xpath = xr.createXPath(select);
-        DomElement back = data;
-        data = xpath.findFirst(0, data);
-        while (data != null) {
-            AbstractDom[] nodes=de.snapshotNodes();
-            xsltChildren(nodes);
-            data = xpath.findNext();
+        DomElement backdata = data;
+        try {
+            data = xpath.findFirst(0, data);
+            while (data != null) {
+                AbstractDom[] nodes = de.snapshotNodes();
+                xsltNodes(nodes);
+                data = xpath.findNext();
+            }
+            data = backdata;
+        } catch (IOException x) {
+            data = backdata;
+            throw x;
+        } catch (ScannerError x) {
+            data = backdata;
+            throw x;
+        } catch (ValidationError x) {
+            data = backdata;
+            throw x;
         }
-        data = back;
     }
 
     /**
      * <p>Execute a value of tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void xsltValueOf(DomElement de)
@@ -262,8 +284,8 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a with data tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void xsltWithData(DomElement de)
@@ -282,11 +304,22 @@ public final class XSLSheetTransform extends XSLSheet {
         if (!f)
             throw new IllegalArgumentException("data missing");
 
-        DomElement back = data;
-        data = pu.getFound();
-        AbstractDom[] nodes=de.snapshotNodes();
-        xsltChildren(nodes);
-        data = back;
+        DomElement backdata = data;
+        try {
+            data = pu.getFound();
+            AbstractDom[] nodes = de.snapshotNodes();
+            xsltNodes(nodes);
+            data = backdata;
+        } catch (IOException x) {
+            data = backdata;
+            throw x;
+        } catch (ScannerError x) {
+            data = backdata;
+            throw x;
+        } catch (ValidationError x) {
+            data = backdata;
+            throw x;
+        }
     }
 
     /**
@@ -353,8 +386,8 @@ public final class XSLSheetTransform extends XSLSheet {
         String test = de.getAttr(ATTR_IF_TEST);
         boolean val = attrTest(test);
         if (val) {
-            AbstractDom[] nodes=de.snapshotNodes();
-            xsltChildren(nodes);
+            AbstractDom[] nodes = de.snapshotNodes();
+            xsltNodes(nodes);
         }
     }
 
@@ -375,13 +408,13 @@ public final class XSLSheetTransform extends XSLSheet {
                 String test = de2.getAttr(ATTR_WHEN_TEST);
                 boolean val = attrTest(test);
                 if (val) {
-                    AbstractDom[] nodes2=de2.snapshotNodes();
-                    xsltChildren(nodes2);
+                    AbstractDom[] nodes2 = de2.snapshotNodes();
+                    xsltNodes(nodes2);
                     break;
                 }
             } else {
-                AbstractDom[] nodes2=de2.snapshotNodes();
-                xsltChildren(nodes2);
+                AbstractDom[] nodes2 = de2.snapshotNodes();
+                xsltNodes(nodes2);
                 break;
             }
         }
@@ -396,8 +429,8 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param select The xselect.
      * @return The evaluation.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private String attrSelect(String select)
@@ -413,8 +446,8 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param test The xpath expr.
      * @return The evaluation.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private boolean attrTest(String test)

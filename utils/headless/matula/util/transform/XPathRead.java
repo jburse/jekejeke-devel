@@ -180,11 +180,10 @@ abstract class XPathRead {
      *
      * @param s The string.
      * @return The xpath.
-     * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
     XPath createXPath(String s)
-            throws IOException, ScannerError {
+            throws ScannerError {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         cr.setLineNumber(1);
         try {
@@ -192,6 +191,8 @@ abstract class XPathRead {
             XPath c = xpath();
             checkEof();
             return c;
+        } catch (IOException x) {
+            throw new RuntimeException("internal error", x);
         } catch (ScannerError sc) {
             sc.setLine(OpenOpts.getLine(cr));
             throw sc;
@@ -336,11 +337,10 @@ abstract class XPathRead {
      *
      * @param s The string.
      * @return The xpath expr.
-     * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
     XPathExpr createXPathExpr(String s)
-            throws IOException, ScannerError {
+            throws ScannerError {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         cr.setLineNumber(1);
         try {
@@ -350,6 +350,8 @@ abstract class XPathRead {
                 throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
             checkEof();
             return (XPathExpr) res;
+        } catch (IOException x) {
+            throw new RuntimeException("internal error", x);
         } catch (ScannerError sc) {
             sc.setLine(OpenOpts.getLine(cr));
             throw sc;
@@ -509,11 +511,10 @@ abstract class XPathRead {
      *
      * @param s The string.
      * @return The xselect.
-     * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
     XSelect createXSelect(String s)
-            throws IOException, ScannerError {
+            throws ScannerError {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         cr.setLineNumber(1);
         try {
@@ -523,6 +524,8 @@ abstract class XPathRead {
                 throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
             checkEof();
             return (XSelect) res;
+        } catch (IOException x) {
+            throw new RuntimeException("internal error", x);
         } catch (ScannerError sc) {
             sc.setLine(OpenOpts.getLine(cr));
             throw sc;

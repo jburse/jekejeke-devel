@@ -238,50 +238,49 @@ public final class DomElement extends AbstractDom {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        AbstractDom[] nodes = snapshotNodes();
-        if (nodes.length != 0) {
-            dw.copyStart(this);
-            if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                    checkAny(dw.getControl(), name)) {
-                int backmask = dw.getMask();
-                try {
-                    dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
-                    storeNodes2(dw, nodes);
-                    dw.setMask(backmask);
-                } catch (IOException x) {
-                    dw.setMask(backmask);
-                    throw x;
-                }
-            } else {
-                storeNodes2(dw, nodes);
+        if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
+                checkAny(dw.getControl(), name)) {
+            int backmask = dw.getMask();
+            try {
+                dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
+                storeNodes2(dw);
+                dw.setMask(backmask);
+            } catch (IOException x) {
+                dw.setMask(backmask);
+                throw x;
             }
-            dw.copyEnd(this);
         } else {
-            if (!checkEmpty(dw.getControl(), name)) {
-                dw.copyEmpty(this);
-            } else {
-                dw.copyStart(this);
-            }
+            storeNodes2(dw);
         }
     }
 
     /**
      * <p>Store the childeren.</p>
      *
-     * @param dw    The dom writer.
-     * @param nodes The nodes.
+     * @param dw The dom writer.
      * @throws IOException Shit happens.
      */
-    private static void storeNodes2(DomWriter dw, AbstractDom[] nodes)
+    private void storeNodes2(DomWriter dw)
             throws IOException {
-        if ((dw.getMask() & MASK_TEXT) != 0) {
-            storeNodes(dw, nodes);
+        AbstractDom[] nodes = snapshotNodes();
+        if (nodes.length == 0 &&
+                checkEmpty(dw.getControl(), name)) {
+            dw.copyStart(this);
+        } else if (nodes.length != 0 ||
+                (dw.getMask() & MASK_TEXT) != 0) {
+            dw.copyStart(this);
+            if ((dw.getMask() & MASK_TEXT) != 0) {
+                storeNodes(dw, nodes);
+            } else {
+                dw.write("\n");
+                dw.incIndent();
+                storeNodes(dw, nodes);
+                dw.decIndent();
+                dw.writeIndent();
+            }
+            dw.copyEnd(this);
         } else {
-            dw.write("\n");
-            dw.incIndent();
-            storeNodes(dw, nodes);
-            dw.decIndent();
-            dw.writeIndent();
+            dw.copyEmpty(this);
         }
     }
 
@@ -819,6 +818,18 @@ public final class DomElement extends AbstractDom {
         DomElement de2 = (DomElement) de.clone();
         pw.print("de2=");
         de2.store(pw, null, AbstractDom.MASK_TEXT);
+        pw.println();
+
+        pw.println();
+
+        str="<>Some <b></b> text</>";
+        pw.println("str=" + str);
+
+        sr = new StringReader(str);
+        de = new DomElement();
+        de.load(sr, AbstractDom.MASK_TEXT);
+        pw.print("de=");
+        de.store(pw, null, AbstractDom.MASK_TEXT);
         pw.println();
     }
 

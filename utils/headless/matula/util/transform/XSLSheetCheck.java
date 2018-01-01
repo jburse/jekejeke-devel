@@ -110,7 +110,7 @@ public final class XSLSheetCheck extends XSLSheet {
         xc.setSchema(meta);
         xc.check(node);
         if ((mask & AbstractDom.MASK_LIST) != 0) {
-            xsltChildren((DomElement) node);
+            xsltNodes((DomElement) node);
         } else {
             xsltNode(node);
         }
@@ -120,7 +120,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a template.</p>
      *
      * @param dn The template.
-     * @throws IOException     IO error.
+     * @throws IOException    IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -142,13 +142,13 @@ public final class XSLSheetCheck extends XSLSheet {
             } else if (de.isName(XSLSheetTransform.NAME_PARAM)) {
                 xsltParam(de);
             } else if (de.isName(XSLSheetTransform.NAME_STYLESHEET)) {
-                xsltChildren(de);
+                xsltNodes(de);
             } else if (de.isName(XSLSheetTransform.NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(XSLSheetTransform.NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
-                xsltChildren(de);
+                xsltNodes(de);
             }
         }
     }
@@ -157,11 +157,11 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check the children.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
+     * @throws IOException    IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltChildren(DomElement de)
+    private void xsltNodes(DomElement de)
             throws IOException, ScannerError, ValidationError {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
@@ -184,26 +184,36 @@ public final class XSLSheetCheck extends XSLSheet {
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
         XPath xpath = xr.createXPath(select);
-        ListArray<String> back = simulation;
         XPathCheck xc = new XPathCheck();
         xc.setSchema(schema);
         xc.setSimulation((ListArray<String>) simulation.clone());
         xc.xpath(xpath);
-        simulation = xc.getSimulation();
-        xsltChildren(de);
-        simulation = back;
+        ListArray<String> backsimulation = simulation;
+        try {
+            simulation = xc.getSimulation();
+            xsltNodes(de);
+            simulation = backsimulation;
+        } catch (IOException x) {
+            simulation = backsimulation;
+            throw x;
+        } catch (ScannerError x) {
+            simulation = backsimulation;
+            throw x;
+        } catch (ValidationError x) {
+            simulation = backsimulation;
+            throw x;
+        }
     }
 
     /**
      * <p>Check a value of tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void xsltValueOf(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError, ValidationError {
         String select = de.getAttr(XSLSheetTransform.ATTR_VALUEOF_SELECT);
         attrSelect(select);
         if (!type) {
@@ -216,7 +226,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a with data tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
+     * @throws IOException    IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -250,26 +260,38 @@ public final class XSLSheetCheck extends XSLSheet {
         XSDSchema xdef = new XSDSchema();
         xdef.digestElements(pu.getFound());
 
-        ListArray<String> back = simulation;
-        XSDSchema back2 = schema;
-        simulation = new ListArray<String>();
-        schema = xdef;
-        xsltChildren(de);
-        schema = back2;
-        simulation = back;
-
+        ListArray<String> backsimulation = simulation;
+        XSDSchema backschema = schema;
+        try {
+            simulation = new ListArray<String>();
+            schema = xdef;
+            xsltNodes(de);
+            schema = backschema;
+            simulation = backsimulation;
+        } catch (IOException x) {
+            schema = backschema;
+            simulation = backsimulation;
+            throw x;
+        } catch (ScannerError x) {
+            schema = backschema;
+            simulation = backsimulation;
+            throw x;
+        } catch (ValidationError x) {
+            schema = backschema;
+            simulation = backsimulation;
+            throw x;
+        }
     }
 
     /**
      * <p>Check an output tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void xsltOutput(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError, ValidationError {
         String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
@@ -304,7 +326,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a if tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
+     * @throws IOException    IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -312,14 +334,14 @@ public final class XSLSheetCheck extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
         attrTest(test);
-        xsltChildren(de);
+        xsltNodes(de);
     }
 
     /**
      * <p>Check a choose tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
+     * @throws IOException    IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -334,9 +356,9 @@ public final class XSLSheetCheck extends XSLSheet {
             if (de2.isName(XSLSheetTransform.NAME_WHEN)) {
                 String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
                 attrTest(test);
-                xsltChildren(de2);
+                xsltNodes(de2);
             } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
-                xsltChildren(de2);
+                xsltNodes(de2);
             } else {
                 String name = de2.getName();
                 throw new ValidationError(SHEET_FORBIDDEN_ELEM, name);
@@ -352,12 +374,11 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a xselect.</p>
      *
      * @param select The xselect.
-     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void attrSelect(String select)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
         XSelect xs = xr.createXSelect(select);
@@ -371,12 +392,11 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a xpath expr.</p>
      *
      * @param test The xpath expr.
-     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void attrTest(String test)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
         XPathExpr xe = xr.createXPathExpr(test);

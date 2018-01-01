@@ -51,11 +51,14 @@ public final class MimeHeader {
      * <p>Create a mime header from a string.</p>
      *
      * @param s The string.
-     * @throws IOException  IO error.
      * @throws ScannerError Shit happens.
      */
-    public MimeHeader(String s) throws IOException, ScannerError {
-        parse(s);
+    public MimeHeader(String s) throws ScannerError {
+        try {
+            parse(s);
+        } catch (IOException x) {
+            throw new RuntimeException("internal error", x);
+        }
     }
 
     /**
@@ -236,6 +239,19 @@ public final class MimeHeader {
             }
         }
         return buf.toString();
+    }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args Not used.
+     */
+    public static void main(String[] args) throws ScannerError {
+        String str="text/plain; charset=UTF-8";
+        System.out.println("str="+str);
+
+        MimeHeader mime=new MimeHeader(str);
+        System.out.println("mime(str)="+mime);
     }
 
 }
