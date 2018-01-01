@@ -48,12 +48,14 @@ public class DomOpts {
     /* dom options */
     public final static String OP_ROOT = "root";
     public final static String OP_TYPE = "type";
+    public final static String OP_CONTEXT = "context";
 
     /* error terms */
     private final static String OP_DOM_OPTION = "dom_option";
 
     private int mask;
     private MapHash<String, Integer> control;
+    private String context;
 
     /**
      * <p>Retrieve the mask.</p>
@@ -92,6 +94,24 @@ public class DomOpts {
     }
 
     /**
+     * <p>Retrieve the context.</p>
+     *
+     * @return The context.
+     */
+    public String getContext() {
+        return context;
+    }
+
+    /**
+     * <p>Set the context.</p>
+     *
+     * @param c The context.
+     */
+    public void setContext(String c) {
+        context = c;
+    }
+
+    /**
      * <p>Decode the dom options.</p>
      *
      * @param opt The dom options term.
@@ -102,6 +122,7 @@ public class DomOpts {
             throws InterpreterMessage {
         DomOpts res = new DomOpts();
         res.setMask(AbstractDom.MASK_LIST);
+        res.setContext("");
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
@@ -131,6 +152,13 @@ public class DomOpts {
                 } else {
                     control.add(key, type);
                 }
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_CONTEXT)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                InterpreterMessage.checkInstantiated(help);
+                String context = InterpreterMessage.castString(help);
+                res.setContext(context);
             } else {
                 InterpreterMessage.checkInstantiated(temp);
                 throw new InterpreterMessage(

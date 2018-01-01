@@ -66,15 +66,16 @@ public final class ForeignSheet {
      * @param dn   The XML node.
      * @param xs   The XSD schema.
      * @param opts The DOM options.
-     * @throws ScannerError Validation error.
+     * @throws InterpreterMessage Validation error.
      */
-    public static void sysXmlCheck(AbstractDom dn, XSDSchema xs, Object opts)
-            throws ScannerError, InterpreterMessage {
+    public static void sysXMLCheck(AbstractDom dn, XSDSchema xs, Object opts)
+            throws InterpreterMessage {
+        DomOpts res = DomOpts.decodeDomOpts(opts);
+        XMLCheck xc = new XMLCheck();
+        xc.setContext(res.getContext());
+        xc.setMask(res.getMask());
+        xc.setSchema(xs);
         try {
-            DomOpts res = DomOpts.decodeDomOpts(opts);
-            XMLCheck xc = new XMLCheck();
-            xc.setSchema(xs);
-            xc.setMask(res.getMask());
             xc.check(dn);
         } catch (ValidationError y) {
             throw new InterpreterMessage(
@@ -95,20 +96,20 @@ public final class ForeignSheet {
      * @throws IOException          IO error.
      * @throws InterpreterException Syntax error.
      */
-    public static void sysXslTransform(Interpreter inter, CallOut callout,
+    public static void sysXSLTransform(Interpreter inter, CallOut callout,
                                        AbstractDom dn, Writer writer,
                                        String comment, Object opts)
             throws InterpreterMessage, IOException, InterpreterException {
-        try {
-            SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-            DomWriter dw = new DomWriter();
-            dw.setWriter(writer);
-            dw.setMask(res.getMask());
-            dw.setControl(res.getControl());
+        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+        DomWriter dw = new DomWriter();
+        dw.setWriter(writer);
+        dw.setMask(res.getMask());
+        dw.setControl(res.getControl());
 
-            XSLSheetTransform xt = new XSLSheetTransform();
-            xt.setWriter(dw);
-            xt.setVariables(res.getVariables());
+        XSLSheetTransform xt = new XSLSheetTransform();
+        xt.setWriter(dw);
+        xt.setVariables(res.getVariables());
+        try {
             xt.xslt(dn, comment);
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(y.getLine(), y.getPos());
@@ -132,13 +133,13 @@ public final class ForeignSheet {
      * @throws IOException          IO error.
      * @throws InterpreterException Syntax error.
      */
-    public static void sysXslCheck(Interpreter inter, CallOut callout,
+    public static void sysXSLCheck(Interpreter inter, CallOut callout,
                                    AbstractDom dn, Object opts)
             throws InterpreterMessage, IOException, InterpreterException {
+        SheetOpts res = SheetOpts.decodeSheetOpts(opts);
+        XSLSheetCheck xc = new XSLSheetCheck();
+        xc.setMask(res.getMask());
         try {
-            SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-            XSLSheetCheck xc = new XSLSheetCheck();
-            xc.setMask(res.getMask());
             xc.check(dn);
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(y.getLine(), y.getPos());

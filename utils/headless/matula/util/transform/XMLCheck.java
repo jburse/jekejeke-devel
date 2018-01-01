@@ -49,6 +49,15 @@ public final class XMLCheck {
     private XSDSchema schema;
 
     /**
+     * <p>Set the context.</p>
+     *
+     * @param c The context.
+     */
+    public void setContext(String c) {
+        context = c;
+    }
+
+    /**
      * <p>Set the mask.</p>
      *
      * @param m The mask.

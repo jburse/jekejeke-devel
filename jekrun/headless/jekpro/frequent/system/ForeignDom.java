@@ -64,8 +64,8 @@ public final class ForeignDom {
                                    AbstractDom dn, Reader reader,
                                    Object opts)
             throws InterpreterMessage, IOException, InterpreterException {
+        DomOpts res = DomOpts.decodeDomOpts(opts);
         try {
-            DomOpts res = DomOpts.decodeDomOpts(opts);
             dn.load(reader, res.getMask(), res.getControl());
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
