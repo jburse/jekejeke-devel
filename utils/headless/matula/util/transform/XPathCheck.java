@@ -111,7 +111,8 @@ final class XPathCheck {
                 if (decl == null || !(decl instanceof XSDDeclElem))
                     throw new ValidationError(XMLCheck.DATA_UNDECLARED_ELEM, name);
                 XSDDeclElem xe = (XSDDeclElem) decl;
-                checkParent(name, xe);
+                String context = (simulation.size() > 0 ? simulation.get(simulation.size() - 1) : "");
+                XMLCheck.checkParent(context, name, xe);
                 simulation.add(name);
                 entry = exs.successor(entry);
                 while (entry != null) {
@@ -128,26 +129,6 @@ final class XPathCheck {
                 throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
             default:
                 throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
-        }
-    }
-
-    /**
-     * <p>Check parent element constraint.</p>
-     *
-     * @param xe The XSD schema element declaration.
-     * @throws ValidationError Check error.
-     */
-    private void checkParent(String name, XSDDeclElem xe) throws ValidationError {
-        String parent = xe.getParent();
-        if (parent == null)
-            return;
-        if (!"".equals(parent)) {
-            if (!(simulation.size() > 0) ||
-                    !simulation.get(simulation.size() - 1).equalsIgnoreCase(parent))
-                throw new ValidationError(XMLCheck.DATA_ILLEGAL_PARENT, name);
-        } else {
-            if (simulation.size() > 0)
-                throw new ValidationError(XMLCheck.DATA_ILLEGAL_PARENT, name);
         }
     }
 

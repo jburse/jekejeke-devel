@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -40,9 +41,14 @@ import java.io.InputStreamReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSDSchema {
+    private static final String NAME_PARENT = "parent";
+    private static final String ATTR_PARENT_NAME = "name";
+    private static final String ATTR_PARENT_OCCURS = "occurs";
+
     public static XSDSchema meta = new XSDSchema();
 
     public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
+    public static final String SCHEMA_UNDECLARED_ELEM = "schema_undeclared_elem";
 
     private final MapHashLink<String, XSDDecl> decls = new MapHashLink<String, XSDDecl>();
 
@@ -67,12 +73,21 @@ public final class XSDSchema {
     }
 
     /**
+     * <p>Create an XSDSchema.</p>
+     */
+    public XSDSchema() {
+        XSDDeclElem xe = new XSDDeclElem();
+        decls.add("", xe);
+    }
+
+    /**
      * <p>Check the schema and digest the elements of the XSD schema.</p>
      *
      * @param de The schema dom element.
      * @throws ValidationError Check errror.
      */
-    public void digestElements(DomElement de) throws ValidationError {
+    public void digestElements(DomElement de)
+            throws ValidationError {
         XMLCheck xc = new XMLCheck();
         xc.setMask(AbstractDom.MASK_LIST);
         xc.setSchema(meta);
@@ -86,39 +101,69 @@ public final class XSDSchema {
      * @param de The schema dom element.
      * @throws ValidationError Check error.
      */
-    private void traverseElements(DomElement de) throws ValidationError {
+    private void traverseElements(DomElement de)
+            throws ValidationError {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
-            String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
-            XSDDeclElem xe = XSDDeclElem.traverseElement(e);
-            putDecl(name, xe);
-            ListArray<String> mandatory = traverseAttributes(e);
-            xe.setMandatory(mandatory);
+            if (e.isName(XSDDeclElem.NAME_ELEMENT)) {
+                String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
+                XSDDeclElem xe = XSDDeclElem.traverseElement(e);
+                putDecl(name, xe);
+                traverseAttributes(e, xe);
+            } else {
+                throw new IllegalArgumentException("illegal node");
+            }
         }
     }
 
     /**
      * <p>Digest the attributes of the XSD schema.</p>
      *
-     * @param de      The schema dom element.
-     * @return The mandatory attributes.
+     * @param de The schema dom element.
+     * @param xe The element declaration.
      * @throws ValidationError Check error.
      */
-    private ListArray<String> traverseAttributes(DomElement de)
+    private void traverseAttributes(DomElement de, XSDDeclElem xe)
             throws ValidationError {
         String name = de.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
-        ListArray<String> mandatory = new ListArray<String>();
+        ListArray<String> mandatory = null;
+        ListArray<String> parent = null;
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
-            String attr = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
-            XSDDeclAttr xa = XSDDeclAttr.traverseAttribute(e);
-            putDecl(name + "." + attr, xa);
-            if (!xa.getOptional())
-                mandatory.add(attr);
+            if (e.isName(XSDDeclAttr.NAME_ATTRIBUTE)) {
+                String attr = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
+                XSDDeclAttr xa = XSDDeclAttr.traverseAttribute(e);
+                putDecl(name + "." + attr, xa);
+                if (!xa.getOptional()) {
+                    if (mandatory == null)
+                        mandatory = new ListArray<String>();
+                    mandatory.add(attr);
+                }
+            } else if (e.isName(NAME_PARENT)) {
+                String par = e.getAttr(ATTR_PARENT_NAME);
+                XSDDecl decl = getDecl(par);
+                if (decl == null || !(decl instanceof XSDDeclElem))
+                    throw new ValidationError(SCHEMA_UNDECLARED_ELEM, par);
+                int occurs = XSDDeclElem.checkOccurs(e, e.getAttr(ATTR_PARENT_OCCURS));
+                if (occurs != XSDDeclElem.OCCURS_NONDET) {
+                    AssocArray<String, Integer> constraint = ((XSDDeclElem) decl).getConstraint();
+                    if (constraint == null) {
+                        constraint = new AssocArray<String, Integer>();
+                        ((XSDDeclElem) decl).setConstraint(constraint);
+                    }
+                    constraint.add(name, Integer.valueOf(occurs));
+                }
+                if (parent == null)
+                    parent = new ListArray<String>();
+                parent.add(par);
+            } else {
+                throw new IllegalArgumentException("illegal node");
+            }
         }
-        return mandatory;
+        xe.setMandatory(mandatory);
+        xe.setParent(parent);
     }
 
     /**
@@ -128,7 +173,8 @@ public final class XSDSchema {
      * @param xd   The XSD schema decalaration.
      * @throws ValidationError Check error.
      */
-    public void putDecl(String name, XSDDecl xd) throws ValidationError {
+    public void putDecl(String name, XSDDecl xd)
+            throws ValidationError {
         if (decls.get(name) != null)
             throw new ValidationError(SCHEMA_DUPLICATE_DECL, name);
         decls.add(name, xd);
@@ -163,31 +209,40 @@ public final class XSDSchema {
      *
      * @param args Not used.
      */
-    /*
     public static void main(String[] args) {
         String[] decls = meta.snapshotDecls();
         for (int i = 0; i < decls.length; i++) {
-            String name = decls[i];
-            System.out.print(name);
-            XSDDecl decl = meta.getDecl(name);
+            String attr = decls[i];
+            if ("".equals(attr))
+                continue;
+            System.out.print(attr);
+            XSDDecl decl = meta.getDecl(attr);
             if (decl instanceof XSDDeclElem) {
-                String parent = ((XSDDeclElem) decl).getParent();
-                if (parent != null)
-                    System.out.print(" parent='" + parent + "'");
+                int complex = ((XSDDeclElem) decl).getComplex();
+                if (complex == XSDDeclElem.COMPLEX_EMPTY) {
+                    System.out.print(" complex=\"empty\"");
+                } else if (complex == XSDDeclElem.COMPLEX_ANY) {
+                    System.out.print(" complex=\"any\"");
+                }
+                ListArray<String> parent = ((XSDDeclElem) decl).getParent();
+                if (parent != null) {
+                    for (int j = 0; j < parent.size(); j++) {
+                        System.out.print(" parent=\"" + parent.get(j) + "\"");
+                    }
+                }
             } else {
                 boolean optional = ((XSDDeclAttr) decl).getOptional();
                 if (optional)
-                    System.out.print(" use='optional'");
+                    System.out.print(" use=\"optional\"");
                 int type = ((XSDDeclAttr) decl).getType();
                 if (type == XSDDeclAttr.TYPE_STRING) {
-                    System.out.print(" type='string'");
+                    System.out.print(" type=\"string\"");
                 } else if (type == XSDDeclAttr.TYPE_INTEGER) {
-                    System.out.print(" type='integer'");
+                    System.out.print(" type=\"integer\"");
                 }
             }
             System.out.println();
         }
     }
-    */
 
 }

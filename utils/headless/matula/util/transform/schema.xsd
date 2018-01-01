@@ -1,10 +1,16 @@
-<element name="element" parent="">
+<element name="element">
+    <parent name=""/>
     <attribute name="name" type="string"/>
-    <attribute name="parent" use="optional" type="string"/>
     <attribute name="complex" use="optional" type="string"/>
 </element>
-<element name="attribute" parent="element">
+<element name="attribute">
+    <parent name="element"/>
     <attribute name="name" type="string"/>
     <attribute name="use" use="optional" type="string"/>
     <attribute name="type" use="optional" type="string"/>
+</element>
+<element name="parent">
+    <parent name="element"/>
+    <attribute name="name" type="string"/>
+    <attribute name="occurs" use="optional" type="string"/>
 </element>

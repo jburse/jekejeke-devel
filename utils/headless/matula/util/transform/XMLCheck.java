@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
 import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
@@ -38,6 +39,8 @@ public final class XMLCheck {
     public static final String DATA_UNDECLARED_ELEM = "data_undeclared_elem";
     public static final String DATA_UNDECLARED_ATTR = "data_undeclared_attr";
     public static final String DATA_MISSING_ATTR = "data_missing_attr";
+    public static final String DATA_MISSING_ELEM = "data_missing_elem";
+    public static final String DATA_FORBIDDEN_ELEM = "data_forbidden_elem";
     public static final String DATA_ILLEGAL_PARENT = "data_illegal_parent";
     public static final String DATA_ILLEGAL_VALUE = "data_illegal_value";
 
@@ -67,11 +70,13 @@ public final class XMLCheck {
      * <p>Check XML data.</p>
      *
      * @param node The data dom node.
-     * @throws ValidationError Check error..
+     * @throws ValidationError Check error.
      */
     public void check(AbstractDom node) throws ValidationError {
         if ((mask & AbstractDom.MASK_LIST) != 0) {
-            checkChildren((DomElement) node);
+            DomElement de = (DomElement) node;
+            XSDDeclElem xe = getDeclElem(de);
+            checkNodes(de, xe);
         } else {
             checkNode(node);
         }
@@ -80,31 +85,8 @@ public final class XMLCheck {
     /**
      * <p>Check XML data.</p>
      *
-     * @param de The data dom element.
-     * @throws ValidationError Check error..
-     */
-    private void checkChildren(DomElement de)
-            throws ValidationError {
-        String back = context;
-        try {
-            context = de.getName();
-            AbstractDom[] nodes = de.snapshotNodes();
-            for (int i = 0; i < nodes.length; i++) {
-                AbstractDom node = nodes[i];
-                checkNode(node);
-            }
-            context = back;
-        } catch (ValidationError x) {
-            context = back;
-            throw x;
-        }
-    }
-
-    /**
-     * <p>Check XML data.</p>
-     *
      * @param node The data dom node.
-     * @throws ValidationError Check error..
+     * @throws ValidationError Check error.
      */
     private void checkNode(AbstractDom node)
             throws ValidationError {
@@ -113,82 +95,44 @@ public final class XMLCheck {
                 throw new ValidationError(DATA_UNEXPECTED_TEXT, "#text");
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
-            checkElement(de);
-            checkChildren(de);
+            XSDDeclElem xe = getDeclElem(de);
+            checkAttributes(de, xe);
+            checkNodes(de, xe);
         } else {
             throw new IllegalArgumentException("illegal node");
         }
     }
 
+
+    /**********************************************************/
+    /* Check Attributes                                       */
+    /**********************************************************/
+
     /**
      * <p>Check XML data.</p>
      *
      * @param de data dom element.
-     * @throws ValidationError Check error..
+     * @param xe The XSD schema element declaration.
+     * @throws ValidationError Check error.
      */
-    private void checkElement(DomElement de) throws ValidationError {
-        String name = de.getName();
-        XSDDecl decl = schema.getDecl(name);
-        if (decl == null || !(decl instanceof XSDDeclElem))
-            throw new ValidationError(DATA_UNDECLARED_ELEM, name);
-        XSDDeclElem xe = (XSDDeclElem) decl;
+    private void checkAttributes(DomElement de, XSDDeclElem xe)
+            throws ValidationError {
         String[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
             String attr = attrs[i];
-            decl = schema.getDecl(name + "." + attr);
-            if (decl == null || !(decl instanceof XSDDeclAttr))
-                throw new ValidationError(DATA_UNDECLARED_ATTR, name + "." + attr);
-            XSDDeclAttr xa = (XSDDeclAttr) decl;
+            XSDDeclAttr xa = getDeclAttr(de, attr);
             checkType(de, attr, xa);
         }
         checkMandatory(de, xe);
-        checkParent(de, xe);
     }
 
     /**
-     * <p>Check mandatory attributes constraint.</p>
-     *
-     * @param de The data dom element.
-     * @param xe The XSD schema element declaration.
-     * @throws ValidationError Domain error.
-     */
-    private static void checkMandatory(DomElement de, XSDDeclElem xe)
-            throws ValidationError {
-        ListArray<String> mandatory = xe.getMandatory();
-        for (int i = 0; i < mandatory.size(); i++) {
-            String attr = mandatory.get(i);
-            if (de.getAttrObj(attr) == null) {
-                String name = de.getName();
-                throw new ValidationError(DATA_MISSING_ATTR, name + "." + attr);
-            }
-        }
-    }
-
-    /**
-     * <p>Check parent element constraint.</p>
-     *
-     * @param de The data dom element.
-     * @param xe The XSD schema element declaration.
-     * @throws ValidationError Domain error.
-     */
-    private void checkParent(DomElement de, XSDDeclElem xe)
-            throws ValidationError {
-        String parent = xe.getParent();
-        if (parent == null)
-            return;
-        if (!context.equalsIgnoreCase(parent)) {
-            String name = de.getName();
-            throw new ValidationError(DATA_ILLEGAL_PARENT, name);
-        }
-    }
-
-    /**
-     * <p>Check attribute value type constraint.</p>
+     * <p>Check attribute value type.</p>
      *
      * @param de   The data dom element.
      * @param attr The attribute name.
      * @param xa   The XSD schema attribute declaration.
-     * @throws ValidationError Domain error.
+     * @throws ValidationError Check error.
      */
     private static void checkType(DomElement de, String attr, XSDDeclAttr xa)
             throws ValidationError {
@@ -219,11 +163,171 @@ public final class XMLCheck {
     }
 
     /**
+     * <p>Check mandatory attributes.</p>
+     *
+     * @param de The data dom element.
+     * @param xe The XSD schema element declaration.
+     * @throws ValidationError Check error.
+     */
+    private static void checkMandatory(DomElement de, XSDDeclElem xe)
+            throws ValidationError {
+        ListArray<String> mandatory = xe.getMandatory();
+        if (mandatory == null)
+            return;
+        for (int i = 0; i < mandatory.size(); i++) {
+            String attr = mandatory.get(i);
+            if (de.getAttrObj(attr) == null) {
+                String name = de.getName();
+                throw new ValidationError(DATA_MISSING_ATTR, name + "." + attr);
+            }
+        }
+    }
+
+    /**********************************************************/
+    /* Check Elements                                         */
+    /**********************************************************/
+
+    /**
+     * <p>Check XML data.</p>
+     *
+     * @param de The data dom element.
+     * @param xe The XSD schema element declaration.
+     * @throws ValidationError Check error.
+     */
+    private void checkNodes(DomElement de, XSDDeclElem xe)
+            throws ValidationError {
+        String name = de.getName();
+        checkParent(context, name, xe);
+        checkConstraint(de, xe);
+        String back = context;
+        try {
+            context = de.getName();
+            AbstractDom[] nodes = de.snapshotNodes();
+            for (int i = 0; i < nodes.length; i++) {
+                AbstractDom node = nodes[i];
+                checkNode(node);
+            }
+            context = back;
+        } catch (ValidationError x) {
+            context = back;
+            throw x;
+        }
+    }
+
+    /**
+     * <p>Check parent element.</p>
+     *
+     * @param context The context.
+     * @param name    The element name.
+     * @param xe      The XSD schema element declaration.
+     * @throws ValidationError Check error.
+     */
+    static void checkParent(String context, String name, XSDDeclElem xe)
+            throws ValidationError {
+        ListArray<String> parent = xe.getParent();
+        if (parent == null)
+            return;
+        for (int i = 0; i < parent.size(); i++) {
+            String par = parent.get(i);
+            if (context.equalsIgnoreCase(par))
+                return;
+        }
+        throw new ValidationError(DATA_ILLEGAL_PARENT, name);
+    }
+
+    /**
+     * <p>Check occurs constraint.</p>
+     *
+     * @param de The data dom element.
+     * @param xe The XSD schema element declaration.
+     * @throws ValidationError Check error.
+     */
+    private static void checkConstraint(DomElement de, XSDDeclElem xe)
+            throws ValidationError {
+        AssocArray<String, Integer> constraint = xe.getConstraint();
+        if (constraint == null)
+            return;
+        for (int i = 0; i < constraint.size(); i++) {
+            String child = constraint.getKey(i);
+            int occurs = constraint.getValue(i).intValue();
+            switch (occurs) {
+                case XSDDeclElem.OCCURS_MULTI:
+                    int k = de.getChildIndex(child, 0);
+                    if (k < 0) {
+                        throw new ValidationError(DATA_MISSING_ELEM, child);
+                    }
+                    break;
+                case XSDDeclElem.OCCURS_DET:
+                    k = de.getChildIndex(child, 0);
+                    if (k < 0) {
+                        throw new ValidationError(DATA_MISSING_ELEM, child);
+                    } else {
+                        k = de.getChildIndex(child, k + 1);
+                        if (k >= 0) {
+                            throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
+                        }
+                    }
+                    break;
+                case XSDDeclElem.OCCURS_SEMIDET:
+                    k = de.getChildIndex(child, 0);
+                    if (k < 0) {
+                        /* */
+                    } else {
+                        k = de.getChildIndex(child, k + 1);
+                        if (k >= 0) {
+                            throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
+                        }
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal occurs");
+            }
+        }
+    }
+
+    /**********************************************************/
+    /* Schema Access                                          */
+    /**********************************************************/
+
+    /**
+     * <p>Retrieve an element declaration.</p>
+     *
+     * @param de The DOM element.
+     * @return The element declaration.
+     * @throws ValidationError Check error.
+     */
+    private XSDDeclElem getDeclElem(DomElement de)
+            throws ValidationError {
+        String name = de.getName();
+        XSDDecl decl = schema.getDecl(name);
+        if (decl == null || !(decl instanceof XSDDeclElem))
+            throw new ValidationError(DATA_UNDECLARED_ELEM, name);
+        return (XSDDeclElem) decl;
+    }
+
+    /**
+     * <p>Retrieve an attribute declaration.</p>
+     *
+     * @param de   The DOM element.
+     * @param attr The attribute name.
+     * @return The element declaration.
+     * @throws ValidationError Check error.
+     */
+    private XSDDeclAttr getDeclAttr(DomElement de, String attr)
+            throws ValidationError {
+        String name = de.getName();
+        XSDDecl decl = schema.getDecl(name + "." + attr);
+        if (decl == null || !(decl instanceof XSDDeclAttr))
+            throw new ValidationError(DATA_UNDECLARED_ATTR, name + "." + attr);
+        return (XSDDeclAttr) decl;
+    }
+
+    /**
      * <p>Some test cases.</p
      *
      * @param args Not used.
      * @throws IOException  Shit happens.
-     * @throws ValidationError Domain error.
+     * @throws ValidationError Check error.
      */
     /*
     public static void main(String[] args) throws IOException, ValidationError {

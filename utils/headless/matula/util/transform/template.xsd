@@ -1,10 +1,13 @@
-<element name="stylesheet" parent="">
+<element name="stylesheet">
+   <parent name=""/>
    <attribute name="last-modified" use="optional" type="integer"/>
 </element>
-<element name="output" parent="stylesheet">
+<element name="output">
+   <parent name="stylesheet"/>
    <attribute name="mime" type="string"/>
 </element>
-<element name="param" parent="stylesheet">
+<element name="param">
+   <parent name="stylesheet"/>
    <attribute name="name" type="string"/>
    <attribute name="use" use="optional" type="string"/>
    <attribute name="type" use="optional" type="string"/>
@@ -23,7 +26,10 @@
    <attribute name="test" type="string"/>
 </element>
 <element name="choose"/>
-<element name="when" parent="choose">
+<element name="when">
+   <parent name="choose"/>
    <attribute name="test" type="string"/>
 </element>
-<element name="otherwise" parent="choose"/>
+<element name="otherwise">
+   <parent name="choose"/>
+</element>
