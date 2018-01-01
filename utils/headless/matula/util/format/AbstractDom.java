@@ -96,12 +96,12 @@ public abstract class AbstractDom
         DomReader dr = new DomReader();
         dr.setReader(reader);
         dr.setMask(mask);
-        dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
             DomElement de = (DomElement) this;
-            ListArray<AbstractDom> cs = DomElement.loadChildren(dr);
+            ListArray<AbstractDom> cs = DomElement.loadNodes(dr);
             de.setChildrenFast(cs);
         } else {
+            dr.nextTagOrText();
             loadNode(dr);
         }
         dr.checkEof();
@@ -124,12 +124,12 @@ public abstract class AbstractDom
         dr.setReader(reader);
         dr.setMask(mask);
         dr.setControl(control);
-        dr.nextTagOrText();
         if ((mask & MASK_LIST) != 0) {
             DomElement de = (DomElement) this;
-            ListArray<AbstractDom> cs = DomElement.loadChildren(dr);
+            ListArray<AbstractDom> cs = DomElement.loadNodes(dr);
             de.setChildrenFast(cs);
         } else {
+            dr.nextTagOrText();
             loadNode(dr);
         }
         dr.checkEof();
@@ -155,7 +155,7 @@ public abstract class AbstractDom
         if ((mask & MASK_LIST) != 0) {
             DomElement elem = (DomElement) this;
             AbstractDom[] nodes = elem.snapshotNodes();
-            DomElement.storeChildren(dw, nodes);
+            DomElement.storeNodes(dw, nodes);
         } else {
             storeNode(dw);
         }
@@ -183,7 +183,7 @@ public abstract class AbstractDom
         if ((mask & MASK_LIST) != 0) {
             DomElement elem = (DomElement) this;
             AbstractDom[] nodes = elem.snapshotNodes();
-            DomElement.storeChildren(dw, nodes);
+            DomElement.storeNodes(dw, nodes);
         } else {
             storeNode(dw);
         }

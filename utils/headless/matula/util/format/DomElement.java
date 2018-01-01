@@ -126,15 +126,22 @@ public final class DomElement extends AbstractDom {
                 boolean empty = checkEmpty(dr.getControl(), type);
                 ListArray<AbstractDom> cs;
                 if (!closed && !empty) {
-                    if ((dr.getMask() & AbstractDom.MASK_TEXT) == 0 && checkAny(dr.getControl(), type)) {
-                        int mask = dr.getMask();
-                        dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
-                        dr.nextTagOrText();
-                        cs = DomElement.loadChildren(dr);
-                        dr.setMask(mask);
+                    if ((dr.getMask() & AbstractDom.MASK_TEXT) == 0 &&
+                            checkAny(dr.getControl(), type)) {
+                        int backmask = dr.getMask();
+                        try {
+                            dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
+                            cs = DomElement.loadNodes(dr);
+                            dr.setMask(backmask);
+                        } catch (IOException x) {
+                            dr.setMask(backmask);
+                            throw x;
+                        } catch (ScannerError x) {
+                            dr.setMask(backmask);
+                            throw x;
+                        }
                     } else {
-                        dr.nextTagOrText();
-                        cs = DomElement.loadChildren(dr);
+                        cs = DomElement.loadNodes(dr);
                     }
                     checkEnd(type, dr);
                 } else {
@@ -236,12 +243,17 @@ public final class DomElement extends AbstractDom {
             dw.copyStart(this);
             if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
                     checkAny(dw.getControl(), name)) {
-                int mask = dw.getMask();
-                dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
-                storeChildren2(dw, nodes);
-                dw.setMask(mask);
+                int backmask = dw.getMask();
+                try {
+                    dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
+                    storeNodes2(dw, nodes);
+                    dw.setMask(backmask);
+                } catch (IOException x) {
+                    dw.setMask(backmask);
+                    throw x;
+                }
             } else {
-                storeChildren2(dw, nodes);
+                storeNodes2(dw, nodes);
             }
             dw.copyEnd(this);
         } else {
@@ -260,14 +272,14 @@ public final class DomElement extends AbstractDom {
      * @param nodes The nodes.
      * @throws IOException Shit happens.
      */
-    private static void storeChildren2(DomWriter dw, AbstractDom[] nodes)
+    private static void storeNodes2(DomWriter dw, AbstractDom[] nodes)
             throws IOException {
         if ((dw.getMask() & MASK_TEXT) != 0) {
-            storeChildren(dw, nodes);
+            storeNodes(dw, nodes);
         } else {
             dw.write("\n");
             dw.incIndent();
-            storeChildren(dw, nodes);
+            storeNodes(dw, nodes);
             dw.decIndent();
             dw.writeIndent();
         }
@@ -285,8 +297,9 @@ public final class DomElement extends AbstractDom {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    static ListArray<AbstractDom> loadChildren(DomReader dr)
+    static ListArray<AbstractDom> loadNodes(DomReader dr)
             throws IOException, ScannerError {
+        dr.nextTagOrText();
         ListArray<AbstractDom> res = null;
         for (; ; ) {
             switch (dr.getRes()) {
@@ -322,7 +335,7 @@ public final class DomElement extends AbstractDom {
      * @param nodes The nodes.
      * @throws IOException Shit happens.
      */
-    static void storeChildren(DomWriter dw, AbstractDom[] nodes)
+    static void storeNodes(DomWriter dw, AbstractDom[] nodes)
             throws IOException {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];

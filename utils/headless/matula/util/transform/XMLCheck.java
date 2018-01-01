@@ -97,7 +97,20 @@ public final class XMLCheck {
             DomElement de = (DomElement) node;
             XSDDeclElem xe = getDeclElem(de);
             checkAttributes(de, xe);
-            checkNodes(de, xe);
+            if ((mask & AbstractDom.MASK_TEXT) == 0 &&
+                    xe.getComplex() == XSDDeclElem.COMPLEX_ANY) {
+                int backmask = mask;
+                try {
+                    mask |= AbstractDom.MASK_TEXT;
+                    checkNodes(de, xe);
+                    mask = backmask;
+                } catch (ValidationError x) {
+                    mask = backmask;
+                    throw x;
+                }
+            } else {
+                checkNodes(de, xe);
+            }
         } else {
             throw new IllegalArgumentException("illegal node");
         }
@@ -199,17 +212,17 @@ public final class XMLCheck {
         String name = de.getName();
         checkParent(context, name, xe);
         checkConstraint(de, xe);
-        String back = context;
+        AbstractDom[] nodes = de.snapshotNodes();
+        String backcontext = context;
         try {
             context = de.getName();
-            AbstractDom[] nodes = de.snapshotNodes();
             for (int i = 0; i < nodes.length; i++) {
                 AbstractDom node = nodes[i];
                 checkNode(node);
             }
-            context = back;
+            context = backcontext;
         } catch (ValidationError x) {
-            context = back;
+            context = backcontext;
             throw x;
         }
     }
