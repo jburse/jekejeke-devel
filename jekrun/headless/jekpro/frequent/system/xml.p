@@ -109,10 +109,10 @@ text_escape(X, Y) :-
  * node D with the DOM options O. For a list of options see
  * the API documentation.
  */
-% node_load(+DomNode, +Stream, +List)
+% node_load(+AbstractDom, +Stream, +List)
 :- public node_load/3.
 :- foreign(node_load/3, 'ForeignDom',
-      sysNodeLoad('Interpreter','CallOut','DomNode','Reader','Object')).
+      sysNodeLoad('Interpreter','CallOut','AbstractDom','Reader','Object')).
 
 /**
  * node_store(D, S, C, O):
@@ -120,35 +120,42 @@ text_escape(X, Y) :-
  * stream S with comment C and the DOM options O. For a list of
  * options see the API documentation.
  */
-% node_store(+DomNode, +Stream, +Atom, +List)
+% node_store(+AbstractDom, +Stream, +Atom, +List)
 :- public node_store/4.
 :- foreign(node_store/4, 'ForeignDom',
-      sysNodeStore('DomNode','Writer','String','Object')).
+      sysNodeStore('AbstractDom','Writer','String','Object')).
 
 /**
  * node_get_parent(D, C):
  * The predicate succeeds in C with the parent of the DOM node D.
  */
-% node_get_parent(+DomNode, -DomElement)
+% node_get_parent(+AbstractDom, -DomElement)
 :- public node_get_parent/2.
 :- virtual node_get_parent/2.
-:- foreign(node_get_parent/2, 'DomNode', getParent).
+:- foreign(node_get_parent/2, 'AbstractDom', getParent).
 
 /**
  * node_is_elem(D):
  * The predicate succeeds if the DOM node D is a DOM element.
  */
-% node_is_elem(+DomNode)
+% node_is_elem(+AbstractDom)
 :- public node_is_elem/1.
-:- foreign(node_is_elem/1, 'ForeignDom', sysNodeIsElem('DomNode')).
+:- foreign(node_is_elem/1, 'ForeignDom', sysNodeIsElem('AbstractDom')).
 
 /**
  * node_is_text(D):
  * The predicate succeeds if the DOM node D is a DOM text.
  */
-% node_is_text(+DomNode)
+% node_is_text(+AbstractDom)
 :- public node_is_text/1.
-:- foreign(node_is_text/1, 'ForeignDom', sysNodeIsText('DomNode')).
+:- foreign(node_is_text/1, 'ForeignDom', sysNodeIsText('AbstractDom')).
+
+/**
+ * node_copy(D, C):
+ * The predicate succeeds in C with a copy of the DOM node D.
+ */
+:- public node_copy/2.
+:- foreign(node_copy/2, 'ForeignDom', sysNodeCopy('AbstractDom')).
 
 /*******************************************************************/
 /* Element Access & Modification                                   */
@@ -214,30 +221,57 @@ text_escape(X, Y) :-
 :- foreign(elem_attr/2, 'ForeignDom', sysElemAttr('CallOut','DomElement')).
 
 /**
- * elem_add_child(D, C):
- * The predicate succeeds in adding the child C to the DOM element D.
+ * elem_add_node(D, C):
+ * The predicate succeeds in adding the DOM node C to the DOM element D.
  */
-% elem_add_child(+DomElement, +DomNode)
-:- public elem_add_child/2.
-:- virtual elem_add_child/2.
-:- foreign(elem_add_child/2, 'DomElement', addChild('DomNode')).
+% elem_add_node(+DomElement, +AbstractDom)
+:- public elem_add_node/2.
+:- virtual elem_add_node/2.
+:- foreign(elem_add_node/2, 'DomElement', addNode('AbstractDom')).
 
 /**
- * elem_remove_child(D, C):
- * The predicate succeeds in removing the child C from the DOM element D.
+ * elem_remove_node(D, C):
+ * The predicate succeeds in removing the DOM node C from the DOM element D.
  */
-% elem_remove_child(+DomElement, +DomNode)
+% elem_remove_node(+DomElement, +AbstractDom)
+:- public elem_remove_node/2.
+:- virtual elem_remove_node/2.
+:- foreign(elem_remove_node/2, 'DomElement', removeNode('AbstractDom')).
+
+/**
+ * elem_node(D, C):
+ * The predicate succeeds in C for all the DOM nodes of the DOM element D.
+ */
+% elem_node(+DomElement, -AbstractDom)
+:- public elem_node/2.
+:- foreign(elem_node/2, 'ForeignDom', sysElemNode('CallOut','DomElement')).
+
+/**
+ * elem_get_child(D,N,C):
+ * The predicate succeeds in C with the child N of the DOM element D.
+ */
+% elem_get_child(+DomElement, +String, -DomElement)
+:- public elem_get_child/3.
+:- virtual elem_get_child/3.
+:- foreign(elem_get_child/3, 'DomElement', getChild('String')).
+
+/**
+ * elem_set_child(D,N,C):
+ * The predicate succeeds in replacing the child N of the DOM lement D by the DOM node C.
+ */
+% elem_set_child(+DomElement, +String, +AbstractDom)
+:- public elem_set_child/3.
+:- virtual elem_set_child/3.
+:- foreign(elem_set_child/3, 'DomElement', setChild('String','AbstractDom')).
+
+/**
+ * elem_remove_child(D, N):
+ * The predicate succeeds in removing the child N from the DOM element D.
+ */
+% elem_remove_child(+DomElement, +String)
 :- public elem_remove_child/2.
 :- virtual elem_remove_child/2.
-:- foreign(elem_remove_child/2, 'DomElement', removeChild('DomNode')).
-
-/**
- * elem_child(D, C):
- * The predicate succeeds in C for all the children of the DOM element D.
- */
-% elem_child(+DomElement, -DomNode)
-:- public elem_child/2.
-:- foreign(elem_child/2, 'ForeignDom', sysElemChild('CallOut','DomElement')).
+:- foreign(elem_remove_child/2, 'DomElement', removeChild('String')).
 
 /*******************************************************************/
 /* Text Access & Modification                                      */

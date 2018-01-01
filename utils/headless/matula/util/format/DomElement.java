@@ -231,8 +231,8 @@ public final class DomElement extends AbstractDom {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        AbstractDom[] nodes=snapshotChildren();
-        if (nodes.length!=0) {
+        AbstractDom[] nodes = snapshotNodes();
+        if (nodes.length != 0) {
             dw.copyStart(this);
             if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
                     checkAny(dw.getControl(), name)) {
@@ -256,7 +256,7 @@ public final class DomElement extends AbstractDom {
     /**
      * <p>Store the childeren.</p>
      *
-     * @param dw The dom writer.
+     * @param dw    The dom writer.
      * @param nodes The nodes.
      * @throws IOException Shit happens.
      */
@@ -512,51 +512,36 @@ public final class DomElement extends AbstractDom {
     }
 
     /*****************************************************/
-    /* Synchronized API Children                         */
+    /* Synchronized API Nodes                            */
     /*****************************************************/
 
     /**
      * <p>Add a child.</p>
      *
-     * @param dh The child.
+     * @param node The DOM node.
      * @return True if add succeeded, otherwise false.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean addChild(AbstractDom dh) throws InterruptedException {
-        if (dh == null)
-            throw new NullPointerException("child missing");
-        dh.beginReparent();
-        try {
-            if (dh.parent != null)
-                return false;
-            synchronized (this) {
-                if (children == null)
-                    children = new ListArray<AbstractDom>();
-                children.add(dh);
-            }
-            dh.parent = this;
-        } finally {
-            dh.endReparent();
-        }
-        return true;
+    public boolean addNode(AbstractDom node) throws InterruptedException {
+        return addNode(-1, node);
     }
 
     /**
-     * <p>Remoe a child.</p>
+     * <p>Remove a child.</p>
      *
-     * @param dh The child.
+     * @param node The DOM node.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean removeChild(AbstractDom dh)
+    public boolean removeNode(AbstractDom node)
             throws InterruptedException {
-        if (dh == null)
-            throw new NullPointerException("child missing");
-        dh.beginReparent();
+        if (node == null)
+            throw new NullPointerException("node missing");
+        node.beginReparent();
         try {
-            if (dh.parent != this)
+            if (node.parent != this)
                 return false;
             synchronized (this) {
-                int k = (children != null ? children.lastIndexOf(dh) : -1);
+                int k = (children!=null?children.indexOf(node):-1);
                 if (k >= 0) {
                     children.remove(k);
                     if (children.size() == 0)
@@ -565,9 +550,9 @@ public final class DomElement extends AbstractDom {
                     throw new RuntimeException("internal error");
                 }
             }
-            dh.parent = null;
+            node.parent = null;
         } finally {
-            dh.endReparent();
+            node.endReparent();
         }
         return true;
     }
@@ -577,7 +562,7 @@ public final class DomElement extends AbstractDom {
      *
      * @return The children snapshot.
      */
-    public AbstractDom[] snapshotChildren() {
+    public AbstractDom[] snapshotNodes() {
         AbstractDom[] nodes;
         synchronized (this) {
             if (children != null) {
@@ -591,12 +576,28 @@ public final class DomElement extends AbstractDom {
     }
 
     /**
+     * <p>Retrieve the child index.</p>
+     *
+     * @param node The DOM node.
+     * @return The index.
+     */
+    public int getNodeIndex(AbstractDom node) {
+        if (node == null)
+            throw new NullPointerException("node missing");
+        int k;
+        synchronized (this) {
+            k = (children!=null?children.indexOf(node):-1);
+        }
+        return k;
+    }
+
+    /**
      * <p>Retrieve the child at some index.</p>
      *
      * @param i The index, negative index counts from last.
      * @return The child, or null.
      */
-    public AbstractDom getChildAt(int i) {
+    public AbstractDom getNode(int i) {
         AbstractDom node;
         synchronized (this) {
             if (children == null)
@@ -613,33 +614,20 @@ public final class DomElement extends AbstractDom {
     }
 
     /**
-     * <p>Retrieve the child index.</p>
-     *
-     * @param dh The child.
-     * @return The index.
-     */
-    public int getChildIndex(AbstractDom dh) {
-        int res;
-        synchronized (this) {
-            res = (children != null ? children.indexOf(dh) : -1);
-        }
-        return res;
-    }
-
-    /**
      * <p>Add a child at some index.</p>
      *
-     * @param i  The index, negative index counts from last.
-     * @param dh The child.
+     * @param i    The index, negative index counts from last.
+     * @param node The DOM node.
      * @return True if add succeeded, otherwise false.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean addChild(int i, AbstractDom dh) throws InterruptedException {
-        if (dh == null)
-            throw new NullPointerException("child missing");
-        dh.beginReparent();
+    public boolean addNode(int i, AbstractDom node)
+            throws InterruptedException {
+        if (node == null)
+            throw new NullPointerException("node missing");
+        node.beginReparent();
         try {
-            if (dh.parent != null)
+            if (node.parent != null)
                 return false;
             synchronized (this) {
                 if (children == null)
@@ -650,34 +638,49 @@ public final class DomElement extends AbstractDom {
                     i = 0;
                 if (i > children.size())
                     i = children.size();
-                children.add(i, dh);
+                children.add(i, node);
             }
-            dh.parent = this;
+            node.parent = this;
         } finally {
-            dh.endReparent();
+            node.endReparent();
         }
         return true;
     }
 
     /*****************************************************/
-    /* Quick XPath & XAction                             */
+    /* Synchronized API Children                         */
     /*****************************************************/
 
     /**
      * <p>Retrieve the child index.</p>
      *
-     * @param name The child name.
+     * @param key The child name.
      * @return The index.
      */
-    public int getChildIndex(String name) {
-        AbstractDom[] nodes = snapshotChildren();
-        for (int i = 0; i < nodes.length; i++) {
-            AbstractDom node = nodes[i];
-            if (!(node instanceof DomElement))
-                continue;
-            if (!((DomElement) node).isName(name))
-                continue;
-            return i;
+    public int getChildIndex(String key) {
+        if (key == null)
+            throw new NullPointerException("key missing");
+        int k;
+        synchronized (this) {
+            k = indexOfChild(key);
+        }
+        return k;
+    }
+
+    /**
+     * <p>Returns the first index of the element occurence</p>
+     *
+     * @param name The child name.
+     * @return The index, or -1.
+     */
+    private int indexOfChild(String name) {
+        if (children != null) {
+            for (int i = 0; i < children.size(); i++) {
+                AbstractDom node = children.get(i);
+                if (node instanceof DomElement &&
+                        ((DomElement) node).isName(name))
+                    return i;
+            }
         }
         return -1;
     }
@@ -685,38 +688,61 @@ public final class DomElement extends AbstractDom {
     /**
      * <p>Retrieve a child by name,</p>
      *
-     * @param name The child name,
+     * @param key The child name,
      * @return The child, or null.
-     * @throws InterruptedException Transaction was interrupted.
      */
-    public DomElement getChild(String name)
-            throws InterruptedException {
-        int k = getChildIndex(name);
-        if (k >= 0) {
-            return (DomElement) getChildAt(k);
-        } else {
-            return null;
+    public DomElement getChild(String key) {
+        if (key == null)
+            throw new NullPointerException("key missing");
+        synchronized (this) {
+            int k = indexOfChild(key);
+            if (k >= 0) {
+                return (DomElement) children.get(k);
+            } else {
+                return null;
+            }
         }
     }
 
     /**
      * <p>Set a child by name</p>
      *
-     * @param name The child name
-     * @param elem The new child, or null.
+     * @param key  The child name
+     * @param node The DOM node.
      * @throws InterruptedException Transaction was interrupted.
      */
-    public void setChild(String name, DomElement elem)
+    public void setChild(String key, AbstractDom node)
             throws InterruptedException {
-        int k = getChildIndex(name);
-        if (k >= 0) {
-            DomElement oldelem = (DomElement) getChildAt(k);
-            removeChild(oldelem);
+        if (key == null)
+            throw new NullPointerException("key missing");
+        if (node == null)
+            throw new NullPointerException("node missing");
+        int k;
+        DomElement elem;
+        synchronized (this) {
+            k = indexOfChild(key);
+            if (k >= 0) {
+                elem = (DomElement) children.get(k);
+            } else {
+                elem = null;
+            }
         }
-        if (elem != null) {
-            elem = (DomElement) elem.clone();
-            addChild(k, elem);
-        }
+        if (elem != null)
+            removeNode(elem);
+        addNode(k, node);
+    }
+
+    /**
+     * <p>Remove a child by name.</p>
+     *
+     * @param key The name.
+     * @throws InterruptedException Transaction was interrupted.
+     */
+    public void removeChild(String key)
+            throws InterruptedException {
+        DomElement elem = getChild(key);
+        if (elem != null)
+            removeNode(elem);
     }
 
     /***************************************************************/
@@ -735,7 +761,7 @@ public final class DomElement extends AbstractDom {
             newkvs = (kvs != null ? (AssocArray<String, Object>) kvs.clone() : null);
         }
         ListArray<AbstractDom> res = null;
-        AbstractDom[] nodes = snapshotChildren();
+        AbstractDom[] nodes = snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if (res == null)

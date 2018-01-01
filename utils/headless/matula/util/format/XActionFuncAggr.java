@@ -126,7 +126,8 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param v The elem.
      */
     public void calcChild(String n, DomElement v) {
-        calcFunc(n, new XActionFuncUpdate(n, v, XActionFuncUpdate.UPDATE_CHILD));
+        XSelect xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_ELEM);
+        calcFunc(n, new XActionFuncUpdate(n, xs, XActionFuncUpdate.UPDATE_CHILD));
     }
 
     /**

@@ -163,7 +163,7 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltChildren(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        AbstractDom[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             xsltNode(node);
@@ -325,7 +325,7 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltChoose(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        AbstractDom[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if (node instanceof DomText)

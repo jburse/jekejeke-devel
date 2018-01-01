@@ -6,8 +6,8 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.TermAtomic;
+import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
-import matula.util.format.DomNode;
 import matula.util.format.DomText;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
@@ -44,13 +44,67 @@ import java.io.Writer;
  */
 public final class ForeignDom {
 
+    /*******************************************************************/
+    /* Node Access & Modification                                      */
+    /*******************************************************************/
+
+    /**
+     * <p>Load a dom node.</p>
+     *
+     * @param inter   The interpreter.
+     * @param callout Marker for frame.
+     * @param dn      The dom node.
+     * @param reader  The reader.
+     * @param opts    The DOM options.
+     * @throws InterpreterMessage   Validation error.
+     * @throws IOException          IO error.
+     * @throws InterpreterException Syntax error.
+     */
+    public static void sysNodeLoad(Interpreter inter, CallOut callout,
+                                   AbstractDom dn, Reader reader,
+                                   Object opts)
+            throws InterpreterMessage, IOException, InterpreterException {
+        try {
+            DomOpts res = DomOpts.decodeDomOpts(opts);
+            dn.load(reader, res.getMask(), res.getControl());
+        } catch (ScannerError y) {
+            String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
+            InterpreterMessage x = new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+            PositionKey pos = (OpenOpts.getPath(reader) != null ?
+                    new PositionKey(OpenOpts.getPath(reader), OpenOpts.getLineNumber(reader)) : null);
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchLoc(
+                                    InterpreterException.fetchStack(inter),
+                                    pos, inter), line, inter));
+        }
+    }
+
+    /**
+     * <p>Store a dom node.</p>
+     *
+     * @param dn      The dom node.
+     * @param writer  The writer.
+     * @param comment The comment.
+     * @param opts    The DOM options.
+     * @throws InterpreterMessage Validation error.
+     * @throws IOException        IO error.
+     */
+    public static void sysNodeStore(AbstractDom dn, Writer writer,
+                                    String comment, Object opts)
+            throws InterpreterMessage, IOException {
+        DomOpts res = DomOpts.decodeDomOpts(opts);
+        dn.store(writer, comment, res.getMask(), res.getControl());
+    }
+
     /**
      * <p>Check whether the dom node is a dom element.</p>
      *
      * @param dn The node.
      * @return True if the node is a dom element.
      */
-    public static boolean sysNodeIsElem(DomNode dn) {
+    public static boolean sysNodeIsElem(AbstractDom dn) {
         return (dn instanceof DomElement);
     }
 
@@ -60,9 +114,23 @@ public final class ForeignDom {
      * @param dn The node.
      * @return True if the node is a dom text.
      */
-    public static boolean sysNodeIsText(DomNode dn) {
+    public static boolean sysNodeIsText(AbstractDom dn) {
         return (dn instanceof DomText);
     }
+
+    /**
+     * <p>Copy a dom node.</p>
+     *
+     * @param dn The dom node.
+     * @return The copied dom node.
+     */
+    public static AbstractDom sysNodeCopy(AbstractDom dn) {
+        return (AbstractDom) dn.clone();
+    }
+
+    /*******************************************************************/
+    /* Element Access & Modification                                   */
+    /*******************************************************************/
 
     /**
      * <p>Non-determinstic predicate for the attribute names.</p>
@@ -78,28 +146,6 @@ public final class ForeignDom {
             co.setData(dc);
         } else {
             dc = (DomCursor<String>) co.getData();
-        }
-        if (dc.hasMoreElements()) {
-            co.setRetry(true);
-            return dc.nextElement();
-        }
-        return null;
-    }
-
-    /**
-     * <p>Non-determinstic predicate for the children.</p>
-     *
-     * @param co The call out.
-     * @param dh The dom hashtable.
-     * @return The attribute names.
-     */
-    public static DomNode sysElemChild(CallOut co, DomElement dh) {
-        DomCursor<DomNode> dc;
-        if (co.getFirst()) {
-            dc = new DomCursor<DomNode>(dh.snapshotChildren());
-            co.setData(dc);
-        } else {
-            dc = (DomCursor<DomNode>) co.getData();
         }
         if (dc.hasMoreElements()) {
             co.setRetry(true);
@@ -144,53 +190,25 @@ public final class ForeignDom {
     }
 
     /**
-     * <p>Load a dom node.</p>
+     * <p>Non-determinstic predicate for the children.</p>
      *
-     * @param inter   The interpreter.
-     * @param callout Marker for frame.
-     * @param dn     The dom node.
-     * @param reader The reader.
-     * @param opts   The DOM options.
-     * @throws InterpreterMessage   Validation error.
-     * @throws IOException          IO error.
-     * @throws InterpreterException Syntax error.
+     * @param co The call out.
+     * @param dh The dom hashtable.
+     * @return The attribute names.
      */
-    public static void sysNodeLoad(Interpreter inter, CallOut callout,
-                                   DomNode dn, Reader reader,
-                                   Object opts)
-            throws InterpreterMessage, IOException, InterpreterException {
-        try {
-            DomOpts res = DomOpts.decodeDomOpts(opts);
-            dn.load(reader, res.getMask(), res.getControl());
-        } catch (ScannerError y) {
-            String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
-            InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
-            PositionKey pos = (OpenOpts.getPath(reader) != null ?
-                    new PositionKey(OpenOpts.getPath(reader), OpenOpts.getLineNumber(reader)) : null);
-            throw new InterpreterException(x,
-                    InterpreterException.fetchPos(
-                            InterpreterException.fetchLoc(
-                                    InterpreterException.fetchStack(inter),
-                                    pos, inter), line, inter));
+    public static AbstractDom sysElemNode(CallOut co, DomElement dh) {
+        DomCursor<AbstractDom> dc;
+        if (co.getFirst()) {
+            dc = new DomCursor<AbstractDom>(dh.snapshotNodes());
+            co.setData(dc);
+        } else {
+            dc = (DomCursor<AbstractDom>) co.getData();
         }
-    }
-
-    /**
-     * <p>Store a dom node.</p>
-     *
-     * @param dn      The dom node.
-     * @param writer  The writer.
-     * @param comment The comment.
-     * @param opts    The DOM options.
-     * @throws InterpreterMessage Validation error.
-     * @throws IOException        IO error.
-     */
-    public static void sysNodeStore(DomNode dn, Writer writer,
-                                    String comment, Object opts)
-            throws InterpreterMessage, IOException {
-        DomOpts res = DomOpts.decodeDomOpts(opts);
-        dn.store(writer, comment, res.getMask(), res.getControl());
+        if (dc.hasMoreElements()) {
+            co.setRetry(true);
+            return dc.nextElement();
+        }
+        return null;
     }
 
 }

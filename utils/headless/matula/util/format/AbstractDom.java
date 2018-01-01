@@ -154,8 +154,8 @@ public abstract class AbstractDom
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
         if ((mask & MASK_LIST) != 0) {
-            DomElement elem=(DomElement)this;
-            AbstractDom[] nodes=elem.snapshotChildren();
+            DomElement elem = (DomElement) this;
+            AbstractDom[] nodes = elem.snapshotNodes();
             DomElement.storeChildren(dw, nodes);
         } else {
             storeNode(dw);
@@ -182,8 +182,8 @@ public abstract class AbstractDom
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
         if ((mask & MASK_LIST) != 0) {
-            DomElement elem=(DomElement)this;
-            AbstractDom[] nodes=elem.snapshotChildren();
+            DomElement elem = (DomElement) this;
+            AbstractDom[] nodes = elem.snapshotNodes();
             DomElement.storeChildren(dw, nodes);
         } else {
             storeNode(dw);

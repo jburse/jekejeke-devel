@@ -11,9 +11,6 @@
  *    node_load(D, S, [root(text)]), close(S), assertz(my_data(D)).
  * ?- my_data(D), sheet_check(D,[]).
  * Error: Undeclared XPath variable.
- * $bar
- *     ^
- * 	    sheet_check/2
  *
  * The XSL model loads referenced data or schema via reflection. The
  * result should be an in-stance that implements the Java interface
@@ -97,28 +94,28 @@
  * The predicate succeeds in checking the DOM node D versus
  * the XSD schema S with the DOM options O.
  */
-% data_check(+DomNode, +XSDSchema, +List)
+% data_check(+AbstractDom, +XSDSchema, +List)
 :- public data_check/3.
 :- foreign(data_check/3, 'ForeignSheet',
-      sysXmlCheck('DomNode','XSDSchema','Object')).
+      sysXmlCheck('AbstractDom','XSDSchema','Object')).
 
 /**
  * sheet_transform(T, S, C, O):
  * The predicate succeeds in transforming the DOM node T into
  * the stream S with comment C and the XSL options O.
  */
-% sheet_check(+DomNode, +Stream, +Atom, +List)
+% sheet_check(+AbstractDom, +Stream, +Atom, +List)
 :- public sheet_transform/4.
 :- foreign(sheet_transform/4, 'ForeignSheet',
       sysXslTransform('Interpreter','CallOut',
-         'DomNode','Writer','String','Object')).
+         'AbstractDom','Writer','String','Object')).
 
 /**
  * sheet_check(T, O):
  * The predicate succeeds in checking the DOM node T with
  * the XSL options O.
  */
-% sheet_check(+DomNode, +List)
+% sheet_check(+AbstractDom, +List)
 :- public sheet_check/2.
 :- foreign(sheet_check/2, 'ForeignSheet',
-      sysXslCheck('Interpreter','CallOut','DomNode','Object')).
+      sysXslCheck('Interpreter','CallOut','AbstractDom','Object')).

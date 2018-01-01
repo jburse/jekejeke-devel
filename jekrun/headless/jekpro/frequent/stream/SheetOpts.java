@@ -6,7 +6,7 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.format.DomNode;
+import matula.util.format.AbstractDom;
 
 /**
  * <p>Helper for sheet options.</p>
@@ -71,7 +71,7 @@ class SheetOpts extends DomOpts {
     public static SheetOpts decodeSheetOpts(Object opt)
             throws InterpreterMessage {
         SheetOpts res = new SheetOpts();
-        res.setMask(DomNode.MASK_TEXT);
+        res.setMask(AbstractDom.MASK_TEXT);
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {

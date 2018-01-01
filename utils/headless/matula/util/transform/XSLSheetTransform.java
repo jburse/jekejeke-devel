@@ -116,7 +116,7 @@ public final class XSLSheetTransform extends XSLSheet {
             writer.writeComment(comment);
         if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
             DomElement elem=(DomElement)dn;
-            AbstractDom[] nodes=elem.snapshotChildren();
+            AbstractDom[] nodes=elem.snapshotNodes();
             xsltChildren(nodes);
         } else {
             xsltNode(dn);
@@ -148,14 +148,14 @@ public final class XSLSheetTransform extends XSLSheet {
             } else if (de.isName(NAME_PARAM)) {
                 xsltParam(de);
             } else if (de.isName(NAME_STYLESHEET)) {
-                AbstractDom[] nodes=de.snapshotChildren();
+                AbstractDom[] nodes=de.snapshotNodes();
                 xsltChildren(nodes);
             } else if (de.isName(NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
-                AbstractDom[] nodes=de.snapshotChildren();
+                AbstractDom[] nodes=de.snapshotNodes();
                 if (nodes.length != 0) {
                     writer.copyStart(de);
                     if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
@@ -236,7 +236,7 @@ public final class XSLSheetTransform extends XSLSheet {
         DomElement back = data;
         data = xpath.findFirst(0, data);
         while (data != null) {
-            AbstractDom[] nodes=de.snapshotChildren();
+            AbstractDom[] nodes=de.snapshotNodes();
             xsltChildren(nodes);
             data = xpath.findNext();
         }
@@ -284,7 +284,7 @@ public final class XSLSheetTransform extends XSLSheet {
 
         DomElement back = data;
         data = pu.getFound();
-        AbstractDom[] nodes=de.snapshotChildren();
+        AbstractDom[] nodes=de.snapshotNodes();
         xsltChildren(nodes);
         data = back;
     }
@@ -353,7 +353,7 @@ public final class XSLSheetTransform extends XSLSheet {
         String test = de.getAttr(ATTR_IF_TEST);
         boolean val = attrTest(test);
         if (val) {
-            AbstractDom[] nodes=de.snapshotChildren();
+            AbstractDom[] nodes=de.snapshotNodes();
             xsltChildren(nodes);
         }
     }
@@ -367,7 +367,7 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltChoose(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        AbstractDom[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             DomElement de2 = (DomElement) node;
@@ -375,12 +375,12 @@ public final class XSLSheetTransform extends XSLSheet {
                 String test = de2.getAttr(ATTR_WHEN_TEST);
                 boolean val = attrTest(test);
                 if (val) {
-                    AbstractDom[] nodes2=de2.snapshotChildren();
+                    AbstractDom[] nodes2=de2.snapshotNodes();
                     xsltChildren(nodes2);
                     break;
                 }
             } else {
-                AbstractDom[] nodes2=de2.snapshotChildren();
+                AbstractDom[] nodes2=de2.snapshotNodes();
                 xsltChildren(nodes2);
                 break;
             }

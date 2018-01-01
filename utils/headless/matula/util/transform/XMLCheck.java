@@ -88,7 +88,7 @@ public final class XMLCheck {
         String back = context;
         try {
             context = de.getName();
-            AbstractDom[] nodes = de.snapshotChildren();
+            AbstractDom[] nodes = de.snapshotNodes();
             for (int i = 0; i < nodes.length; i++) {
                 AbstractDom node = nodes[i];
                 checkNode(node);

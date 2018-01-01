@@ -208,19 +208,6 @@ public class AssocArray<K, V>
     }
 
     /**
-     * <p>Returns the last index of the key occurence.</p>
-     *
-     * @param o The key.
-     * @return The index, or -1.
-     */
-    public int lastIndexOf(Object o) {
-        for (int i = size - 1; i >= 0; i--)
-            if (o != null ? o.equals(kvs[2 * i]) : null == kvs[2 * i])
-                return i;
-        return -1;
-    }
-
-    /**
      * <p>Checks whether the object is contained in the key list.</p>
      *
      * @param o The key.

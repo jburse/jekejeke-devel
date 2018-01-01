@@ -199,19 +199,6 @@ public class ListArray<E> extends AbstractList<E> {
     }
 
     /**
-     * <p>Returns the last index of the element occurence.</p>
-     *
-     * @param o The element.
-     * @return The index, or -1.
-     */
-    public int lastIndexOf(Object o) {
-        for (int i = size - 1; i >= 0; i--)
-            if (o != null ? o.equals(table[i]) : null == table[i])
-                return i;
-        return -1;
-    }
-
-    /**
      * <p>Checks whether the object is contained in the element list.</p>
      *
      * @param o The element.

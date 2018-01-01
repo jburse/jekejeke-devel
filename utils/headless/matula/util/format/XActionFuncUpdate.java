@@ -2,9 +2,6 @@ package matula.util.format;
 
 import matula.util.regex.ScannerError;
 
-import java.io.IOException;
-import java.io.StringWriter;
-
 /**
  * <p>This class represents an xaction update function.</p>
  * </p>
@@ -38,7 +35,6 @@ public final class XActionFuncUpdate extends XActionFunc {
 
     private String keyorname;
     private XSelect value;
-    private DomElement elem;
     private int update;
 
     /**
@@ -72,22 +68,6 @@ public final class XActionFuncUpdate extends XActionFunc {
     }
 
     /**
-     * <p>Create a new xaction update</p>
-     *
-     * @param l The elem.
-     * @param u The type of update.
-     */
-    public XActionFuncUpdate(String k, DomElement l, int u) {
-        if (k == null)
-            throw new NullPointerException("key missing");
-        if (l == null)
-            throw new NullPointerException("elem missing");
-        keyorname = k;
-        elem = l;
-        update = u;
-    }
-
-    /**
      * <p>Perform this xaction function on a dom element.</p>
      *
      * @param r The target dom element.
@@ -102,10 +82,13 @@ public final class XActionFuncUpdate extends XActionFunc {
                 r.setName(keyorname);
                 break;
             case UPDATE_ATTR:
-                r.setAttrObj(keyorname, value.evalElement(e));
+                Object val = value.evalElement(e);
+                r.setAttrObj(keyorname, val);
                 break;
             case UPDATE_CHILD:
-                r.setChild(keyorname, elem);
+                val = value.evalElement(e);
+                val = ((DomElement) val).clone();
+                r.setChild(keyorname, (DomElement) val);
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");
@@ -129,16 +112,10 @@ public final class XActionFuncUpdate extends XActionFunc {
                 buf.append(value.toString());
                 return buf.toString();
             case UPDATE_CHILD:
-                StringWriter sr = new StringWriter();
-                try {
-                    elem.store(sr, null, AbstractDom.MASK_TEXT);
-                } catch (IOException x) {
-                    throw new RuntimeException("internal error");
-                }
                 buf = new StringBuilder();
                 buf.append(keyorname);
                 buf.append("=");
-                buf.append(sr.toString());
+                buf.append(value.toString());
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");

@@ -153,7 +153,7 @@ public final class XAction {
             switch (act.getAction()) {
                 case XActionFuncAggr.ACTION_DELETE:
                     DomElement e2 = e.getParent();
-                    e2.removeChild(e);
+                    e2.removeNode(e);
                     e = e2;
                     break;
                 case XActionFuncAggr.ACTION_UPDATE:
@@ -162,7 +162,7 @@ public final class XAction {
                 case XActionFuncAggr.ACTION_INSERT_INDEX:
                     e2 = new DomElement();
                     act.updateElement(e2, e);
-                    e.addChild(act.getPos(), e2);
+                    e.addNode(act.getPos(), e2);
                     e = e2;
                     break;
                 default:

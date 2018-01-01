@@ -87,7 +87,7 @@ public final class XSDSchema {
      * @throws ValidationError Check error.
      */
     private void traverseElements(DomElement de) throws ValidationError {
-        AbstractDom[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
@@ -109,7 +109,7 @@ public final class XSDSchema {
             throws ValidationError {
         String name = de.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
         ListArray<String> mandatory = new ListArray<String>();
-        AbstractDom[] nodes = de.snapshotChildren();
+        AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
             String attr = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);

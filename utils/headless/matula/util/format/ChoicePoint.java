@@ -97,7 +97,7 @@ public final class ChoicePoint {
     DomElement findFirst(DomElement e) throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
-                AbstractDom[] nodes = e.snapshotChildren();
+                AbstractDom[] nodes = e.snapshotNodes();
                 for (int i = 0; i < nodes.length; i++) {
                     AbstractDom node = nodes[i];
                     if (!(node instanceof DomElement))
@@ -113,7 +113,7 @@ public final class ChoicePoint {
             case ChoicePoint.CHOICEPOINT_PARENT:
                 return e.getParent();
             case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
-                AbstractDom node = e.getChildAt(pos);
+                AbstractDom node = e.getNode(pos);
                 if (!(node instanceof DomElement))
                     return null;
                 return (DomElement) node;

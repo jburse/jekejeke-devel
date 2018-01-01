@@ -6,7 +6,7 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import matula.util.format.DomElement;
-import matula.util.format.DomNode;
+import matula.util.format.AbstractDom;
 import matula.util.format.DomWriter;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
@@ -68,7 +68,7 @@ public final class ForeignSheet {
      * @param opts The DOM options.
      * @throws ScannerError Validation error.
      */
-    public static void sysXmlCheck(DomNode dn, XSDSchema xs, Object opts)
+    public static void sysXmlCheck(AbstractDom dn, XSDSchema xs, Object opts)
             throws ScannerError, InterpreterMessage {
         try {
             DomOpts res = DomOpts.decodeDomOpts(opts);
@@ -96,7 +96,7 @@ public final class ForeignSheet {
      * @throws InterpreterException Syntax error.
      */
     public static void sysXslTransform(Interpreter inter, CallOut callout,
-                                       DomNode dn, Writer writer,
+                                       AbstractDom dn, Writer writer,
                                        String comment, Object opts)
             throws InterpreterMessage, IOException, InterpreterException {
         try {
@@ -133,7 +133,7 @@ public final class ForeignSheet {
      * @throws InterpreterException Syntax error.
      */
     public static void sysXslCheck(Interpreter inter, CallOut callout,
-                                   DomNode dn, Object opts)
+                                   AbstractDom dn, Object opts)
             throws InterpreterMessage, IOException, InterpreterException {
         try {
             SheetOpts res = SheetOpts.decodeSheetOpts(opts);

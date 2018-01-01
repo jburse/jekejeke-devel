@@ -5,7 +5,7 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.format.DomNode;
+import matula.util.format.AbstractDom;
 
 /**
  * <p>Helper for dom options.</p>
@@ -99,7 +99,7 @@ public class DomOpts {
     public static DomOpts decodeDomOpts(Object opt)
             throws InterpreterMessage {
         DomOpts res = new DomOpts();
-        res.setMask(DomNode.MASK_LIST);
+        res.setMask(AbstractDom.MASK_LIST);
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
@@ -158,9 +158,9 @@ public class DomOpts {
         InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_LIST)) {
-            return DomNode.MASK_LIST;
+            return AbstractDom.MASK_LIST;
         } else if (val.equals(OP_TEXT)) {
-            return DomNode.MASK_TEXT;
+            return AbstractDom.MASK_TEXT;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
@@ -179,11 +179,11 @@ public class DomOpts {
         InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_NONE)) {
-            return DomNode.TYPE_NONE;
+            return AbstractDom.TYPE_NONE;
         } else if (val.equals(OP_EMPTY)) {
-            return DomNode.TYPE_EMPTY;
+            return AbstractDom.TYPE_EMPTY;
         } else if (val.equals(OP_ANY)) {
-            return DomNode.TYPE_ANY;
+            return AbstractDom.TYPE_ANY;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));

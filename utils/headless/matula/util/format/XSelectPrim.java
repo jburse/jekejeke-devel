@@ -1,5 +1,8 @@
 package matula.util.format;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 /**
  * <p>The class represent an xselect prim.</p>
  * <p/>
@@ -29,9 +32,12 @@ package matula.util.format;
 public final class XSelectPrim extends XSelect {
     public static final int SELE_PRIM_ATTR = 0;
     public static final int SELE_PRIM_CONST = 1;
+    public static final int SELE_PRIM_CHILD = 2;
+    public static final int SELE_PRIM_ELEM = 3;
 
     /* illegal argument errors */
     public static final String PATH_UNKNOWN_ATTRIBUTE = "path_unknown_attribute";
+    public static final String PATH_UNKNOWN_CHILD = "path_unknown_child";
 
     private Object attrorcnst;
     private int primitive;
@@ -94,6 +100,14 @@ public final class XSelectPrim extends XSelect {
             case SELE_PRIM_CONST:
                 res = getCnst();
                 break;
+            case SELE_PRIM_CHILD:
+                res = d.getChild(getAttr());
+                if (res == null)
+                    throw new IllegalArgumentException(PATH_UNKNOWN_CHILD);
+                break;
+            case SELE_PRIM_ELEM:
+                res = getCnst();
+                break;
             default:
                 throw new IllegalArgumentException("illegal primitive");
         }
@@ -124,6 +138,18 @@ public final class XSelectPrim extends XSelect {
                     buf.append(Long.toString(((Long) val).longValue()));
                 }
                 return buf.toString();
+            case SELE_PRIM_CHILD:
+                name = getAttr();
+                return name;
+            case SELE_PRIM_ELEM:
+                val = getCnst();
+                StringWriter sr = new StringWriter();
+                try {
+                    ((DomElement)val).store(sr, null, AbstractDom.MASK_TEXT);
+                } catch (IOException x) {
+                    throw new RuntimeException("internal error");
+                }
+                return sr.toString();
             default:
                 throw new IllegalArgumentException("illegal primitive");
         }
