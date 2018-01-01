@@ -35,8 +35,10 @@ import matula.util.format.AbstractDom;
  */
 public class DomOpts {
     /* mask values */
-    private final static String OP_LIST = "list";
-    private final static String OP_TEXT = "text";
+    private final static String OP_TREE = "tree";
+    private final static String OP_TABLE = "table";
+    private final static String OP_DOCUMENT = "document";
+    private final static String OP_FRAGMENT = "fragment";
 
     /* control values */
     private final static String OP_NONE = "none";
@@ -157,10 +159,14 @@ public class DomOpts {
     public static int atomToMask(Object t) throws InterpreterMessage {
         InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_LIST)) {
+        if (val.equals(OP_TREE)) {
+            return 0;
+        } else if (val.equals(OP_TABLE)) {
             return AbstractDom.MASK_LIST;
-        } else if (val.equals(OP_TEXT)) {
+        } else if (val.equals(OP_DOCUMENT)) {
             return AbstractDom.MASK_TEXT;
+        } else if (val.equals(OP_FRAGMENT)) {
+            return AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));

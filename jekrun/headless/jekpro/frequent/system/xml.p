@@ -11,7 +11,7 @@
  * ?- text_escape(X, '&amp;lt;abc&amp;gt;').
  * X = '&lt;abc&gt;'
  *
- * The rest of the predicates deal with reading/writing a DOM models
+ * The rest of the predicates deal with reading/writing a DOM model
  * and accessing/modifying a DOM model. When reading/writing a DOM
  * model the retain flag indicates whether only tags (0) or tags and
  * text (1) should be read or written. A DOM model is referenced by a
@@ -247,7 +247,7 @@ text_escape(X, Y) :-
 :- foreign(elem_node/2, 'ForeignDom', sysElemNode('CallOut','DomElement')).
 
 /**
- * elem_get_child(D,N,C):
+ * elem_get_child(D, N, C):
  * The predicate succeeds in C with the child N of the DOM element D.
  */
 % elem_get_child(+DomElement, +String, -DomElement)
@@ -256,8 +256,8 @@ text_escape(X, Y) :-
 :- foreign(elem_get_child/3, 'DomElement', getChild('String')).
 
 /**
- * elem_set_child(D,N,C):
- * The predicate succeeds in replacing the child N of the DOM lement D by the DOM node C.
+ * elem_set_child(D, N, C):
+ * The predicate succeeds in replacing the child N of the DOM element D by the DOM node C.
  */
 % elem_set_child(+DomElement, +String, +AbstractDom)
 :- public elem_set_child/3.
