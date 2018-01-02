@@ -32,6 +32,10 @@ import java.nio.charset.CharacterCodingException;
  */
 public final class ForeignFile {
     static final char CHAR_SLASH = '/';
+    static final String STRING_SLASH = "/";
+    static final char CHAR_PERIOD = '.';
+    static final String STRING_PERIOD_PERIOD_SLASH = "../";
+    static final String STRING_EMPTY = "";
 
     /************************************************************/
     /* Name Assembly                                            */
@@ -44,7 +48,7 @@ public final class ForeignFile {
      * @return The base name.
      */
     public static String sysNameBase(String n) {
-        int k = n.lastIndexOf('.');
+        int k = n.lastIndexOf(CHAR_PERIOD);
         if (k == -1)
             return n;
         return n.substring(0, k);
@@ -57,9 +61,9 @@ public final class ForeignFile {
      * @return The extension.
      */
     public static String sysNameExt(String n) {
-        int k = n.lastIndexOf('.');
+        int k = n.lastIndexOf(CHAR_PERIOD);
         if (k == -1)
-            return "";
+            return STRING_EMPTY;
         return n.substring(k + 1);
     }
 
@@ -71,9 +75,9 @@ public final class ForeignFile {
      * @return The name.
      */
     public static String sysNameMake(String b, String e) {
-        if ("".equals(e))
+        if (STRING_EMPTY.equals(e))
             return b;
-        return b + "." + e;
+        return b + CHAR_PERIOD + e;
     }
 
     /************************************************************/
@@ -90,9 +94,9 @@ public final class ForeignFile {
     public static String sysPathDirectory(String p) {
         int k = p.lastIndexOf(CHAR_SLASH);
         if (k == -1)
-            return "";
+            return STRING_EMPTY;
         if (k == 0)
-            return "/";
+            return STRING_SLASH;
         return p.substring(0, k);
     }
 
@@ -118,11 +122,11 @@ public final class ForeignFile {
      * @return The path.
      */
     public static String sysPathMake(String d, String n) {
-        if ("".equals(d))
+        if (STRING_EMPTY.equals(d))
             return n;
-        if ("/".equals(d))
-            return "/" + n;
-        return d + "/" + n;
+        if (STRING_SLASH.equals(d))
+            return CHAR_SLASH + n;
+        return d + CHAR_SLASH + n;
     }
 
     /************************************************************/
@@ -139,11 +143,17 @@ public final class ForeignFile {
     public static boolean sysPathIsRelative(String path) {
         int k = ForeignUri.getSchemeLength(path);
         if (k == ForeignUri.SCHEME_DRIVE) {
-            if (path.startsWith("/", ForeignUri.SCHEME_DRIVE))
+            if (path.startsWith(STRING_SLASH, ForeignUri.SCHEME_DRIVE))
+                return false;
+            if (File.separatorChar != CHAR_SLASH &&
+                    path.startsWith(File.separator, ForeignUri.SCHEME_DRIVE))
                 return false;
             return true;
         }
-        if (path.startsWith("/"))
+        if (path.startsWith(STRING_SLASH))
+            return false;
+        if (File.separatorChar != CHAR_SLASH &&
+                path.startsWith(File.separator))
             return false;
         return true;
     }
@@ -157,18 +167,18 @@ public final class ForeignFile {
      * @return The absolute path.
      */
     public static String sysPathAbsolute(String a, String b) {
-        if ("".equals(b))
+        if (STRING_EMPTY.equals(b))
             return a;
         if (!ForeignFile.sysPathIsRelative(b))
             return b;
         int k = a.lastIndexOf(CHAR_SLASH);
         int j = 0;
-        while (k != -1 && b.startsWith("../", j)) {
+        while (k != -1 && b.startsWith(STRING_PERIOD_PERIOD_SLASH, j)) {
             k = a.lastIndexOf(CHAR_SLASH, k - 1);
             j += 3;
         }
         if (k != -1) {
-            return a.substring(0, k) + "/" + b.substring(j);
+            return a.substring(0, k) + CHAR_SLASH + b.substring(j);
         } else {
             return b.substring(j);
         }
@@ -184,7 +194,7 @@ public final class ForeignFile {
      */
     public static String sysPathRelative(String a, String b) {
         if (a.equals(b))
-            return "";
+            return STRING_EMPTY;
         int j = ForeignFile.commonPrefix(a, b);
         if (j == 0)
             return b;
@@ -227,12 +237,12 @@ public final class ForeignFile {
         while (k != -1) {
             if (buf == null)
                 buf = new StringBuilder();
-            buf.append("../");
+            buf.append(STRING_PERIOD_PERIOD_SLASH);
             j = k + 1;
             k = a.indexOf(CHAR_SLASH, j);
         }
         if (buf == null)
-            return "";
+            return STRING_EMPTY;
         return buf.toString();
     }
 
@@ -255,10 +265,10 @@ public final class ForeignFile {
         path = file.toString();
         if (File.separatorChar != CHAR_SLASH)
             path = path.replace(File.separatorChar, CHAR_SLASH);
-        if (!path.startsWith("/"))
-            path = "/" + path;
-        if (!path.endsWith("/") && file.isDirectory())
-            path = path + "/";
+        if (!path.startsWith(STRING_SLASH))
+            path = CHAR_SLASH + path;
+        if (!path.endsWith(STRING_SLASH) && file.isDirectory())
+            path = path + CHAR_SLASH;
         return path;
     }
 

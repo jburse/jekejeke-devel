@@ -38,7 +38,9 @@ final class DomCursor<T> implements Enumeration<T> {
      * @param d The elements.
      */
     DomCursor(T[] d) {
-        data=d;
+        if (d == null)
+            throw new NullPointerException("data missing");
+        data = d;
     }
 
     /**
@@ -47,7 +49,7 @@ final class DomCursor<T> implements Enumeration<T> {
      * @return True if there are more elements, otherwise false.
      */
     public boolean hasMoreElements() {
-        return pos<data.length;
+        return pos < data.length;
     }
 
     /**

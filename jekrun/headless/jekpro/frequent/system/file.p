@@ -46,10 +46,10 @@
 
 :- package(library(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/frequent/system)).
+:- use_package(foreign(jekpro/tools/call)).
 :- use_package(foreign(matula/util/system)).
 
 :- module(file, []).
-:- use_module(library(basic/lists)).
 
 /************************************************************/
 /* Name & Path Assembly                                     */
@@ -197,12 +197,11 @@ make_directory(Name) :-
 :- public directory_file/2.
 directory_file(Name, Elem) :-
    absolute_file_name(Name, Pin),
-   sys_directory_files(Pin, List),
-   member(Elem, List).
+   sys_directory_file(Pin, Elem).
 
-:- private sys_directory_files/2.
-:- foreign(sys_directory_files/2, 'ForeignDirectory',
-      sysDirectoryFiles('String')).
+:- private sys_directory_file/2.
+:- foreign(sys_directory_file/2, 'ForeignDirectory',
+      sysDirectoryFile('CallOut','String')).
 
 /************************************************************/
 /* Time Stamp                                               */

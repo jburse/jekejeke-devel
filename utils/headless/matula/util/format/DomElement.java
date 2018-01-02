@@ -685,7 +685,7 @@ public final class DomElement extends AbstractDom {
     /**
      * <p>Returns the first index of the element occurence</p>
      *
-     * @param key   The child name.
+     * @param key The child name.
      * @return The index, or -1.
      */
     private int indexOfChild(String key) {
@@ -739,6 +739,15 @@ public final class DomElement extends AbstractDom {
         DomElement elem = getChild(key);
         if (elem != null)
             removeNode(elem);
+    }
+
+    /**
+     * <p>Check whether the element is empty.</p>
+     *
+     * @return True if the element is empty, otherwise false.
+     */
+    public boolean isEmpty() {
+        return (children == null);
     }
 
     /***************************************************************/
@@ -804,7 +813,7 @@ public final class DomElement extends AbstractDom {
 
         pw.println();
 
-        str="<>Some <b></b> text</>";
+        str = "<>Some <b></b> text</>";
         pw.println("str=" + str);
 
         sr = new StringReader(str);

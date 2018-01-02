@@ -147,11 +147,11 @@ public final class ForeignDom {
         } else {
             dc = (DomCursor<String>) co.getData();
         }
-        if (dc.hasMoreElements()) {
-            co.setRetry(true);
-            return dc.nextElement();
-        }
-        return null;
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
     }
 
     /**
@@ -204,11 +204,11 @@ public final class ForeignDom {
         } else {
             dc = (DomCursor<AbstractDom>) co.getData();
         }
-        if (dc.hasMoreElements()) {
-            co.setRetry(true);
-            return dc.nextElement();
-        }
-        return null;
+        if (!dc.hasMoreElements())
+            return null;
+        AbstractDom res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
     }
 
 }

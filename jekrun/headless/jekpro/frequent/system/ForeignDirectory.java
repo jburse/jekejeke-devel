@@ -1,14 +1,12 @@
 package jekpro.frequent.system;
 
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermCompound;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 
 /**
  * <p>The foreign predicates for the module system/file.</p>
@@ -37,6 +35,7 @@ import java.net.MalformedURLException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignDirectory {
+    private static final String[] VOID_LIST = new String[0];
 
     /************************************************************/
     /* File Ops                                                 */
@@ -99,22 +98,25 @@ public final class ForeignDirectory {
     /**
      * <p>List the entries of a directory.</p>
      *
+     * @param co     The call out.
      * @param uristr The file name.
      * @return The relative entries.
      */
-    public static Object sysDirectoryFiles(String uristr)
-            throws MalformedURLException, UnsupportedEncodingException, InterpreterMessage {
-        File f = new File(uriToFilePath(uristr));
-        String[] list = f.list();
-        Object res = Knowledgebase.OP_NIL;
-        if (list == null)
-            return res;
-        for (int i = list.length - 1; i >= 0; i--) {
-            String spec = ForeignUri.sysSpecMake("", "", list[i]);
-            String adr = ForeignUri.sysUriMake(spec, "", "");
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    adr, res);
+    public static String sysDirectoryFile(CallOut co, String uristr)
+            throws UnsupportedEncodingException, InterpreterMessage {
+        DomCursor<String> dc;
+        if (co.getFirst()) {
+            File f = new File(uriToFilePath(uristr));
+            String[] list = f.list();
+            dc = new DomCursor<String>(list != null ? list : VOID_LIST);
+            co.setData(dc);
+        } else {
+            dc = (DomCursor<String>) co.getData();
         }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
         return res;
     }
 

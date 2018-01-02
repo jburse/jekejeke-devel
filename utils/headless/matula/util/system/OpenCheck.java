@@ -72,7 +72,7 @@ public class OpenCheck {
                 File file = new File(path.replace('/', File.separatorChar));
 
                 /* spare an IOException */
-                if (!file.exists() || !file.isFile())
+                if (!file.exists())
                     return false;
 
                 return true;
