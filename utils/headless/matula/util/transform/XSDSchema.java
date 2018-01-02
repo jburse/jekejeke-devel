@@ -1,7 +1,6 @@
 package matula.util.transform;
 
 import matula.util.data.AssocArray;
-import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.format.AbstractDom;
@@ -49,6 +48,7 @@ public final class XSDSchema {
 
     public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
     public static final String SCHEMA_UNDECLARED_ELEM = "schema_undeclared_elem";
+    public static final String SCHEMA_UNDECLARED_ATTR = "schema_undeclared_attr";
 
     private final MapHashLink<String, XSDDecl> decls = new MapHashLink<String, XSDDecl>();
 
@@ -93,7 +93,12 @@ public final class XSDSchema {
         xc.setSchema(meta);
         xc.check(de);
         traverseElements(de);
+        fixupConstraints();
     }
+
+    /**********************************************************/
+    /* First Pass                                             */
+    /**********************************************************/
 
     /**
      * <p>Digest the elements of the XSD schema.</p>
@@ -127,8 +132,6 @@ public final class XSDSchema {
     private void traverseAttributes(DomElement de, XSDDeclElem xe)
             throws ValidationError {
         String name = de.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
-        ListArray<String> mandatory = null;
-        ListArray<String> parent = null;
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
@@ -136,41 +139,59 @@ public final class XSDSchema {
                 String attr = e.getAttr(XSDDeclAttr.ATTR_ATTRIBUTE_NAME);
                 XSDDeclAttr xa = XSDDeclAttr.traverseAttribute(e);
                 putDecl(name + "." + attr, xa);
-                if (!xa.getOptional()) {
-                    if (mandatory == null)
-                        mandatory = new ListArray<String>();
-                    mandatory.add(attr);
-                }
+                if (!xa.getOptional())
+                    xe.addMandatory(attr);
             } else if (e.isName(NAME_PARENT)) {
                 String par = e.getAttr(ATTR_PARENT_NAME);
-                XSDDecl decl = getDecl(par);
-                if (decl == null || !(decl instanceof XSDDeclElem))
-                    throw new ValidationError(SCHEMA_UNDECLARED_ELEM, par);
                 int occurs = XSDDeclElem.checkOccurs(e, e.getAttr(ATTR_PARENT_OCCURS));
-                if (occurs != XSDDeclElem.OCCURS_NONDET) {
-                    AssocArray<String, Integer> constraint = ((XSDDeclElem) decl).getConstraint();
-                    if (constraint == null) {
-                        constraint = new AssocArray<String, Integer>();
-                        ((XSDDeclElem) decl).setConstraint(constraint);
-                    }
-                    constraint.add(name, Integer.valueOf(occurs));
-                }
-                if (parent == null)
-                    parent = new ListArray<String>();
-                parent.add(par);
+                xe.putParent(par, occurs);
             } else {
                 throw new IllegalArgumentException("illegal node");
             }
         }
-        xe.setMandatory(mandatory);
-        xe.setParent(parent);
     }
+
+    /*****************************************************/
+    /* Second Pass                                       */
+    /*****************************************************/
+
+    /**
+     * <p>Fixup the constraints.</p>
+     *
+     * @throws ValidationError Check error.
+     */
+    public void fixupConstraints()
+            throws ValidationError {
+        String[] decls = snapshotDecls();
+        for (int i = 0; i < decls.length; i++) {
+            String name = decls[i];
+            int k = name.indexOf('.');
+            if (k != -1)
+                continue;
+            XSDDeclElem decl = (XSDDeclElem) getDecl(name);
+            AssocArray<String, Integer> parent = decl.getParent();
+            if (parent == null)
+                continue;
+            for (int j = 0; j < parent.size(); j++) {
+                int occurs = parent.getValue(j).intValue();
+                if (occurs == XSDDeclElem.OCCURS_NONDET)
+                    continue;
+                String par = parent.getKey(j);
+                XSDDeclElem decl2 = getDeclElem(par);
+                decl2.addConstraint(name, occurs);
+            }
+        }
+    }
+
+    /*****************************************************/
+    /* Declaration Access/Modification                   */
+    /*****************************************************/
 
     /**
      * <p>Set a XSD schema declaration.</p>
      *
      * @param name The name.
-     * @param xd   The XSD schema decalaration.
+     * @param xd   The XSD schema declaration.
      * @throws ValidationError Check error.
      */
     public void putDecl(String name, XSDDecl xd)
@@ -193,7 +214,7 @@ public final class XSDSchema {
     /**
      * <p>Retrieve the XSD schema declarations.</p>
      *
-     * @return The XSD schema declarations.
+     * @return The XSD schema declaration.
      */
     public String[] snapshotDecls() {
         String[] res = new String[decls.size()];
@@ -202,6 +223,42 @@ public final class XSDSchema {
              entry != null; entry = decls.successor(entry))
             res[k++] = entry.key;
         return res;
+    }
+
+    /*****************************************************/
+    /* Checked Access/Modification                       */
+    /*****************************************************/
+
+    /**
+     * <p>Retrieve an element declaration.</p>
+     *
+     * @param name The element name.
+     * @return The element declaration.
+     * @throws ValidationError Check error.
+     */
+    XSDDeclElem getDeclElem(String name)
+            throws ValidationError {
+        XSDDecl decl = getDecl(name);
+        if (decl == null || !(decl instanceof XSDDeclElem))
+            throw new ValidationError(SCHEMA_UNDECLARED_ELEM, name);
+        return (XSDDeclElem) decl;
+    }
+
+    /**
+     * <p>Retrieve an attribute declaration.</p>
+     *
+     * @param name The element name.
+     * @param attr The attribute name.
+     * @return The element declaration.
+     * @throws ValidationError Check error.
+     */
+    XSDDeclAttr getDeclAttr(String name, String attr)
+            throws ValidationError {
+        String key = name + "." + attr;
+        XSDDecl decl = getDecl(name + "." + attr);
+        if (decl == null || !(decl instanceof XSDDeclAttr))
+            throw new ValidationError(SCHEMA_UNDECLARED_ATTR, key);
+        return (XSDDeclAttr) decl;
     }
 
     /**
@@ -224,10 +281,10 @@ public final class XSDSchema {
                 } else if (complex == XSDDeclElem.COMPLEX_ANY) {
                     System.out.print(" complex=\"any\"");
                 }
-                ListArray<String> parent = ((XSDDeclElem) decl).getParent();
+                AssocArray<String, Integer> parent = ((XSDDeclElem) decl).getParent();
                 if (parent != null) {
                     for (int j = 0; j < parent.size(); j++) {
-                        System.out.print(" parent=\"" + parent.get(j) + "\"");
+                        System.out.print(" parent=\"" + parent.getKey(j) + "\"");
                     }
                 }
             } else {

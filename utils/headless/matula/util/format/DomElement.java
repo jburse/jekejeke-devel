@@ -664,42 +664,6 @@ public final class DomElement extends AbstractDom {
     /*****************************************************/
 
     /**
-     * <p>Retrieve the child index.</p>
-     *
-     * @param key   The child name.
-     * @param start The start index.
-     * @return The index.
-     */
-    public int getChildIndex(String key, int start) {
-        if (key == null)
-            throw new NullPointerException("key missing");
-        int k;
-        synchronized (this) {
-            k = indexOfChild(key, start);
-        }
-        return k;
-    }
-
-    /**
-     * <p>Returns the first index of the element occurence</p>
-     *
-     * @param key   The child name.
-     * @param start The start index.
-     * @return The index, or -1.
-     */
-    private int indexOfChild(String key, int start) {
-        if (children != null) {
-            for (int i = start; i < children.size(); i++) {
-                AbstractDom node = children.get(i);
-                if (node instanceof DomElement &&
-                        ((DomElement) node).isName(key))
-                    return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
      * <p>Retrieve a child by name,</p>
      *
      * @param key The child name,
@@ -709,13 +673,31 @@ public final class DomElement extends AbstractDom {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
-            int k = indexOfChild(key, 0);
+            int k = indexOfChild(key);
             if (k >= 0) {
                 return (DomElement) children.get(k);
             } else {
                 return null;
             }
         }
+    }
+
+    /**
+     * <p>Returns the first index of the element occurence</p>
+     *
+     * @param key   The child name.
+     * @return The index, or -1.
+     */
+    private int indexOfChild(String key) {
+        if (children != null) {
+            for (int i = 0; i < children.size(); i++) {
+                AbstractDom node = children.get(i);
+                if (node instanceof DomElement &&
+                        ((DomElement) node).isName(key))
+                    return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -734,7 +716,7 @@ public final class DomElement extends AbstractDom {
         int k;
         DomElement elem;
         synchronized (this) {
-            k = indexOfChild(key, 0);
+            k = indexOfChild(key);
             if (k >= 0) {
                 elem = (DomElement) children.get(k);
             } else {

@@ -107,12 +107,9 @@ final class XPathCheck {
                 if (prim.getPrimitive() != XPathExprPrim.EXPR_PRIM_NAME)
                     throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
-                XSDDecl decl = schema.getDecl(name);
-                if (decl == null || !(decl instanceof XSDDeclElem))
-                    throw new ValidationError(XMLCheck.DATA_UNDECLARED_ELEM, name);
-                XSDDeclElem xe = (XSDDeclElem) decl;
+                XSDDeclElem decl = schema.getDeclElem(name);
                 String context = (simulation.size() > 0 ? simulation.get(simulation.size() - 1) : "");
-                XMLCheck.checkParent(context, name, xe);
+                XMLCheck.checkParent(context, name, decl);
                 simulation.add(name);
                 entry = exs.successor(entry);
                 while (entry != null) {
@@ -196,11 +193,8 @@ final class XPathCheck {
                         throw new ValidationError(PATH_MISSING_FOREACH, xs.toString());
                     String name = simulation.get(simulation.size() - 1);
                     String attr = xp.getAttr();
-                    XSDDecl decl = schema.getDecl(name + "." + attr);
-                    if (decl == null || !(decl instanceof XSDDeclAttr))
-                        throw new ValidationError(XMLCheck.DATA_UNDECLARED_ATTR, name + "." + attr);
-                    XSDDeclAttr declattr = (XSDDeclAttr) decl;
-                    return declattr.getType();
+                    XSDDeclAttr decl = schema.getDeclAttr(name, attr);
+                    return decl.getType();
                 case XSelectPrim.SELE_PRIM_CONST:
                     Object val = xp.getCnst();
                     if (val instanceof String) {

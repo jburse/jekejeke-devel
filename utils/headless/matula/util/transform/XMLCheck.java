@@ -36,8 +36,6 @@ import java.io.IOException;
  */
 public final class XMLCheck {
     public static final String DATA_UNEXPECTED_TEXT = "data_unexpected_text";
-    public static final String DATA_UNDECLARED_ELEM = "data_undeclared_elem";
-    public static final String DATA_UNDECLARED_ATTR = "data_undeclared_attr";
     public static final String DATA_MISSING_ATTR = "data_missing_attr";
     public static final String DATA_MISSING_ELEM = "data_missing_elem";
     public static final String DATA_FORBIDDEN_ELEM = "data_forbidden_elem";
@@ -84,7 +82,7 @@ public final class XMLCheck {
     public void check(AbstractDom node) throws ValidationError {
         if ((mask & AbstractDom.MASK_LIST) != 0) {
             DomElement de = (DomElement) node;
-            XSDDeclElem xe = getDeclElem(de);
+            XSDDeclElem xe = schema.getDeclElem(de.getName());
             checkNodes(de, xe);
         } else {
             checkNode(node);
@@ -104,7 +102,7 @@ public final class XMLCheck {
                 throw new ValidationError(DATA_UNEXPECTED_TEXT, "#text");
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
-            XSDDeclElem xe = getDeclElem(de);
+            XSDDeclElem xe = schema.getDeclElem(de.getName());
             checkAttributes(de, xe);
             if ((mask & AbstractDom.MASK_TEXT) == 0 &&
                     xe.getComplex() == XSDDeclElem.COMPLEX_ANY) {
@@ -133,7 +131,7 @@ public final class XMLCheck {
     /**
      * <p>Check XML data.</p>
      *
-     * @param de data dom element.
+     * @param de data DOM element.
      * @param xe The XSD schema element declaration.
      * @throws ValidationError Check error.
      */
@@ -142,7 +140,7 @@ public final class XMLCheck {
         String[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
             String attr = attrs[i];
-            XSDDeclAttr xa = getDeclAttr(de, attr);
+            XSDDeclAttr xa = schema.getDeclAttr(de.getName(), attr);
             checkType(de, attr, xa);
         }
         checkMandatory(de, xe);
@@ -151,7 +149,7 @@ public final class XMLCheck {
     /**
      * <p>Check attribute value type.</p>
      *
-     * @param de   The data dom element.
+     * @param de   The data DOM element.
      * @param attr The attribute name.
      * @param xa   The XSD schema attribute declaration.
      * @throws ValidationError Check error.
@@ -187,7 +185,7 @@ public final class XMLCheck {
     /**
      * <p>Check mandatory attributes.</p>
      *
-     * @param de The data dom element.
+     * @param de The data DOM element.
      * @param xe The XSD schema element declaration.
      * @throws ValidationError Check error.
      */
@@ -212,7 +210,7 @@ public final class XMLCheck {
     /**
      * <p>Check XML data.</p>
      *
-     * @param de The data dom element.
+     * @param de The data DOM element.
      * @param xe The XSD schema element declaration.
      * @throws ValidationError Check error.
      */
@@ -220,8 +218,8 @@ public final class XMLCheck {
             throws ValidationError {
         String name = de.getName();
         checkParent(context, name, xe);
-        checkConstraint(de, xe);
         AbstractDom[] nodes = de.snapshotNodes();
+        checkConstraint(nodes, xe);
         String backcontext = context;
         try {
             context = de.getName();
@@ -246,11 +244,11 @@ public final class XMLCheck {
      */
     static void checkParent(String context, String name, XSDDeclElem xe)
             throws ValidationError {
-        ListArray<String> parent = xe.getParent();
+        AssocArray<String, Integer> parent = xe.getParent();
         if (parent == null)
             return;
         for (int i = 0; i < parent.size(); i++) {
-            String par = parent.get(i);
+            String par = parent.getKey(i);
             if (context.equalsIgnoreCase(par))
                 return;
         }
@@ -260,11 +258,11 @@ public final class XMLCheck {
     /**
      * <p>Check occurs constraint.</p>
      *
-     * @param de The data dom element.
-     * @param xe The XSD schema element declaration.
+     * @param xe    The XSD schema element declaration.
+     * @param nodes The nodes.
      * @throws ValidationError Check error.
      */
-    private static void checkConstraint(DomElement de, XSDDeclElem xe)
+    private static void checkConstraint(AbstractDom[] nodes, XSDDeclElem xe)
             throws ValidationError {
         AssocArray<String, Integer> constraint = xe.getConstraint();
         if (constraint == null)
@@ -272,34 +270,21 @@ public final class XMLCheck {
         for (int i = 0; i < constraint.size(); i++) {
             String child = constraint.getKey(i);
             int occurs = constraint.getValue(i).intValue();
+            int count = countChild(nodes, child, 2);
             switch (occurs) {
                 case XSDDeclElem.OCCURS_MULTI:
-                    int k = de.getChildIndex(child, 0);
-                    if (k < 0) {
+                    if (count < 1)
                         throw new ValidationError(DATA_MISSING_ELEM, child);
-                    }
                     break;
                 case XSDDeclElem.OCCURS_DET:
-                    k = de.getChildIndex(child, 0);
-                    if (k < 0) {
+                    if (count < 1)
                         throw new ValidationError(DATA_MISSING_ELEM, child);
-                    } else {
-                        k = de.getChildIndex(child, k + 1);
-                        if (k >= 0) {
-                            throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
-                        }
-                    }
+                    if (count > 1)
+                        throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
                     break;
                 case XSDDeclElem.OCCURS_SEMIDET:
-                    k = de.getChildIndex(child, 0);
-                    if (k < 0) {
-                        /* */
-                    } else {
-                        k = de.getChildIndex(child, k + 1);
-                        if (k >= 0) {
-                            throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
-                        }
-                    }
+                    if (count > 1)
+                        throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal occurs");
@@ -307,41 +292,23 @@ public final class XMLCheck {
         }
     }
 
-    /**********************************************************/
-    /* Schema Access                                          */
-    /**********************************************************/
-
     /**
-     * <p>Retrieve an element declaration.</p>
+     * <p>Returns the count.</p>
      *
-     * @param de The DOM element.
-     * @return The element declaration.
-     * @throws ValidationError Check error.
+     * @param nodes The DOM nodes.
+     * @param key   The child name.
+     * @param limit The limit of interest.
+     * @return The count.
      */
-    private XSDDeclElem getDeclElem(DomElement de)
-            throws ValidationError {
-        String name = de.getName();
-        XSDDecl decl = schema.getDecl(name);
-        if (decl == null || !(decl instanceof XSDDeclElem))
-            throw new ValidationError(DATA_UNDECLARED_ELEM, name);
-        return (XSDDeclElem) decl;
-    }
-
-    /**
-     * <p>Retrieve an attribute declaration.</p>
-     *
-     * @param de   The DOM element.
-     * @param attr The attribute name.
-     * @return The element declaration.
-     * @throws ValidationError Check error.
-     */
-    private XSDDeclAttr getDeclAttr(DomElement de, String attr)
-            throws ValidationError {
-        String name = de.getName();
-        XSDDecl decl = schema.getDecl(name + "." + attr);
-        if (decl == null || !(decl instanceof XSDDeclAttr))
-            throw new ValidationError(DATA_UNDECLARED_ATTR, name + "." + attr);
-        return (XSDDeclAttr) decl;
+    private static int countChild(AbstractDom[] nodes, String key, int limit) {
+        int k = 0;
+        for (int i = 0; i < nodes.length && k < limit; i++) {
+            AbstractDom node = nodes[i];
+            if (node instanceof DomElement &&
+                    ((DomElement) node).isName(key))
+                k++;
+        }
+        return k;
     }
 
     /**

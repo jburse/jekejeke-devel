@@ -59,7 +59,7 @@ public final class XSDDeclAttr extends XSDDecl {
      *
      * @param o The optional flag.
      */
-    void setOptional(boolean o) {
+    private void setOptional(boolean o) {
         optional = o;
     }
 
@@ -68,7 +68,7 @@ public final class XSDDeclAttr extends XSDDecl {
      *
      * @return The type.
      */
-    public int getType() {
+    int getType() {
         return type;
     }
 
@@ -77,7 +77,7 @@ public final class XSDDeclAttr extends XSDDecl {
      *
      * @param t The type.
      */
-    public void setType(int t) {
+    private void setType(int t) {
         type = t;
     }
 
@@ -88,20 +88,20 @@ public final class XSDDeclAttr extends XSDDecl {
      * @return The digested attribute.
      * @throws ValidationError Check error.
      */
-    static XSDDeclAttr traverseAttribute(DomElement de) 
+    static XSDDeclAttr traverseAttribute(DomElement de)
             throws ValidationError {
         XSDDeclAttr xa = new XSDDeclAttr();
         String val = de.getAttr(ATTR_ATTRIBUTE_USE);
-        xa.setOptional(checkUse(de,val));
+        xa.setOptional(checkUse(de, val));
         val = de.getAttr(ATTR_ATTRIBUTE_TYPE);
-        xa.setType(checkType(de,val));
+        xa.setType(checkType(de, val));
         return xa;
     }
 
     /**
      * <p>Check a use attribute value.</p>
      *
-     * @param de The dom element.
+     * @param de  The dom element.
      * @param use The attribute value.
      * @return The optional flag.
      * @throws ValidationError Check error.
@@ -114,8 +114,8 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_OPTIONAL.equalsIgnoreCase(use)) {
             opflag = true;
         } else {
-            String name=de.getName();
-            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".use");
+            String name = de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name + ".use");
         }
         return opflag;
     }
@@ -123,12 +123,12 @@ public final class XSDDeclAttr extends XSDDecl {
     /**
      * <p>Check a type attribute value.</p>
      *
-     * @param de The dom element.
+     * @param de   The dom element.
      * @param type The attribute value.
      * @return The type id.
      * @throws ValidationError Check error.
      */
-    public static int checkType(DomElement de, String type) 
+    public static int checkType(DomElement de, String type)
             throws ValidationError {
         int typeid = TYPE_OBJECT;
         if (type == null) {
@@ -138,8 +138,8 @@ public final class XSDDeclAttr extends XSDDecl {
         } else if (OP_INTEGER.equalsIgnoreCase(type)) {
             typeid = TYPE_INTEGER;
         } else {
-            String name=de.getName();
-            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".type");
+            String name = de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name + ".type");
         }
         return typeid;
     }

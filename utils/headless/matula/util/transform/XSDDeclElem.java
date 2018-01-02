@@ -31,6 +31,8 @@ import matula.util.format.DomElement;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSDDeclElem extends XSDDecl {
+    private static final String SCHEMA_DUPLICATE_PAR = "schema_duplicate_par";
+
     static final String NAME_ELEMENT = "element";
     static final String ATTR_ELEMENT_NAME = "name";
     static final String ATTR_ELEMENT_COMPLEX = "complex";
@@ -43,7 +45,7 @@ public final class XSDDeclElem extends XSDDecl {
     static final String OP_SEMIDET = "semidet";
 
     private ListArray<String> mandatory;
-    private ListArray<String> parent;
+    private AssocArray<String, Integer> parent;
     private int complex;
     private AssocArray<String, Integer> constraint;
 
@@ -66,30 +68,12 @@ public final class XSDDeclElem extends XSDDecl {
     }
 
     /**
-     * <p>Set the mandatory attribute names.</p>
-     *
-     * @param m The mandatory attribute names.
-     */
-    void setMandatory(ListArray<String> m) {
-        mandatory = m;
-    }
-
-    /**
      * <p>Retrieve the parent.</p>
      *
      * @return The parent.
      */
-    public ListArray<String> getParent() {
+    AssocArray<String, Integer> getParent() {
         return parent;
-    }
-
-    /**
-     * <p>Set the parent.</p>
-     *
-     * @param p The parent.
-     */
-    void setParent(ListArray<String> p) {
-        parent = p;
     }
 
     /**
@@ -106,7 +90,7 @@ public final class XSDDeclElem extends XSDDecl {
      *
      * @param c The complex type.
      */
-    void setComplex(int c) {
+    private void setComplex(int c) {
         complex = c;
     }
 
@@ -120,15 +104,6 @@ public final class XSDDeclElem extends XSDDecl {
     }
 
     /**
-     * <p>Set the constraint constraints.</p>
-     *
-     * @param o The constraint constraints.
-     */
-    void setConstraint(AssocArray<String, Integer> o) {
-        constraint = o;
-    }
-
-    /**
      * <p>Digest an element of the XSD schema.</p>
      *
      * @param de The schema dom element.
@@ -139,14 +114,14 @@ public final class XSDDeclElem extends XSDDecl {
             throws ValidationError {
         XSDDeclElem xe = new XSDDeclElem();
         String val = de.getAttr(ATTR_ELEMENT_COMPLEX);
-        xe.setComplex(checkComplex(de,val));
+        xe.setComplex(checkComplex(de, val));
         return xe;
     }
 
     /**
      * <p>Check a complex attribute value.</p>
      *
-     * @param de The dom element.
+     * @param de  The dom element.
      * @param str The complex value.
      * @return The complex id.
      * @throws ValidationError Check error.
@@ -161,18 +136,18 @@ public final class XSDDeclElem extends XSDDecl {
         } else if (OP_EMPTY.equalsIgnoreCase(str)) {
             complex = COMPLEX_EMPTY;
         } else {
-            String name=de.getName();
-            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".complex");
+            String name = de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name + ".complex");
         }
         return complex;
     }
 
     /**
-     * <p>Check a constraint attribute value.</p>
+     * <p>Check a occurs attribute value.</p>
      *
-     * @param de The dom element.
-     * @param str The constraint value.
-     * @return The constraint id.
+     * @param de  The dom element.
+     * @param str The occurs value.
+     * @return The occurs id.
      * @throws ValidationError Check error.
      */
     static int checkOccurs(DomElement de, String str)
@@ -187,10 +162,52 @@ public final class XSDDeclElem extends XSDDecl {
         } else if (OP_SEMIDET.equalsIgnoreCase(str)) {
             occurs = OCCURS_SEMIDET;
         } else {
-            String name=de.getName();
-            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name+".occurs");
+            String name = de.getName();
+            throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name + ".occurs");
         }
         return occurs;
+    }
+
+    /*********************************************************/
+    /* Modification                                          */
+    /*********************************************************/
+
+    /**
+     * <p>Add a mandatory attribute.</p>
+     *
+     * @param attr The attribute name.
+     */
+    void addMandatory(String attr) {
+        if (mandatory == null)
+            mandatory = new ListArray<String>();
+        mandatory.add(attr);
+    }
+
+    /**
+     * <p>Add a parent.</p>
+     *
+     * @param par    The parent name.
+     * @param occurs The occurs id.
+     */
+    void putParent(String par, int occurs)
+            throws ValidationError {
+        if (parent == null)
+            parent = new AssocArray<String, Integer>();
+        if (parent.get(par) != null)
+            throw new ValidationError(SCHEMA_DUPLICATE_PAR, par);
+        parent.add(par, Integer.valueOf(occurs));
+    }
+
+    /**
+     * <p>Add a constraint.</p>
+     *
+     * @param name   The element name.
+     * @param occurs The occurs id.
+     */
+    void addConstraint(String name, int occurs) {
+        if (constraint == null)
+            constraint = new AssocArray<String, Integer>();
+        constraint.add(name, Integer.valueOf(occurs));
     }
 
 }
