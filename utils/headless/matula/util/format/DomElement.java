@@ -50,7 +50,9 @@ public final class DomElement extends AbstractDom {
 
     private String name = XmlMachine.VALUE_EMPTY;
     private AssocArray<String, Object> kvs;
+    private String[] cachekvs;
     private ListArray<AbstractDom> children;
+    private AbstractDom[] cachechildren;
 
     /**
      * <p>Retrieve the name.</p>
@@ -119,19 +121,15 @@ public final class DomElement extends AbstractDom {
                         newkvs = new AssocArray<String, Object>();
                     newkvs.add(dr.getAttr(i), val);
                 }
-                name = type;
-                synchronized (this) {
-                    kvs = newkvs;
-                }
                 boolean empty = checkEmpty(dr.getControl(), type);
-                ListArray<AbstractDom> cs;
+                ListArray<AbstractDom> newchildren;
                 if (!closed && !empty) {
                     if ((dr.getMask() & AbstractDom.MASK_TEXT) == 0 &&
                             checkAny(dr.getControl(), type)) {
                         int backmask = dr.getMask();
                         try {
                             dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
-                            cs = DomElement.loadNodes(dr);
+                            newchildren = DomElement.loadNodes(dr);
                             dr.setMask(backmask);
                         } catch (IOException x) {
                             dr.setMask(backmask);
@@ -141,16 +139,18 @@ public final class DomElement extends AbstractDom {
                             throw x;
                         }
                     } else {
-                        cs = DomElement.loadNodes(dr);
+                        newchildren = DomElement.loadNodes(dr);
                     }
                     checkEnd(type, dr);
                 } else {
                     if (closed && empty)
                         throw new ScannerError(DOM_CLOSED_EMPTY, -1);
-                    cs = null;
+                    newchildren = null;
                     dr.nextTagOrText();
                 }
-                setChildrenFast(cs);
+                name = type;
+                setKeyValuesFast(newkvs);
+                setChildrenFast(newchildren);
                 break;
             case XmlMachine.RES_EOF:
                 throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
@@ -160,8 +160,19 @@ public final class DomElement extends AbstractDom {
     }
 
     /**
+     * <p>Set the key-value pairs fast.</p>
+     *
+     * @param as The key-value pairs.
+     */
+    void setKeyValuesFast(AssocArray<String, Object> as) {
+        synchronized (this) {
+            kvs = as;
+            cachekvs = null;
+        }
+    }
+
+    /**
      * <p>Set the children fast.</p>
-     * <p>Not synchronized, uses cut-over.</p>
      *
      * @param cs The children or null.
      */
@@ -174,6 +185,7 @@ public final class DomElement extends AbstractDom {
         }
         synchronized (this) {
             children = cs;
+            cachechildren = null;
         }
     }
 
@@ -460,6 +472,31 @@ public final class DomElement extends AbstractDom {
     }
 
     /**
+     * <p>Create a snapshot of the attribute names.</p>
+     *
+     * @return The snapshot.
+     */
+    public String[] snapshotAttrs() {
+        String[] names = cachekvs;
+        if (names != null)
+            return names;
+        synchronized (this) {
+            names = cachekvs;
+            if (names != null)
+                return names;
+            if (kvs != null) {
+                names = new String[kvs.size()];
+                for (int i = 0; i < kvs.size(); i++)
+                    names[i] = kvs.getKey(i);
+            } else {
+                names = VOID_ATTRS;
+            }
+            cachekvs = names;
+        }
+        return names;
+    }
+
+    /**
      * <p>Add the key to the map.</p>
      * <p>Entry is create at the bottom.</p>
      *
@@ -479,6 +516,7 @@ public final class DomElement extends AbstractDom {
                 if (kvs == null)
                     kvs = new AssocArray<String, Object>();
                 kvs.add(key, val);
+                cachekvs = null;
             }
         }
     }
@@ -500,32 +538,38 @@ public final class DomElement extends AbstractDom {
                 } else {
                     kvs.resize();
                 }
+                cachekvs = null;
             }
         }
-    }
-
-    /**
-     * <p>Create a snapshot of the attribute names.</p>
-     *
-     * @return The snapshot.
-     */
-    public String[] snapshotAttrs() {
-        String[] names;
-        synchronized (this) {
-            if (kvs != null) {
-                names = new String[kvs.size()];
-                for (int i = 0; i < kvs.size(); i++)
-                    names[i] = kvs.getKey(i);
-            } else {
-                names = VOID_ATTRS;
-            }
-        }
-        return names;
     }
 
     /*****************************************************/
     /* Synchronized API Nodes                            */
     /*****************************************************/
+
+    /**
+     * <p>Retrieve a children snapshot.</p>
+     *
+     * @return The children snapshot.
+     */
+    public AbstractDom[] snapshotNodes() {
+        AbstractDom[] nodes = cachechildren;
+        if (nodes != null)
+            return nodes;
+        synchronized (this) {
+            nodes = cachechildren;
+            if (nodes != null)
+                return nodes;
+            if (children != null) {
+                nodes = new AbstractDom[children.size()];
+                children.toArray(nodes);
+            } else {
+                nodes = VOID_CHILDREN;
+            }
+            cachechildren = nodes;
+        }
+        return nodes;
+    }
 
     /**
      * <p>Add a child.</p>
@@ -536,93 +580,6 @@ public final class DomElement extends AbstractDom {
      */
     public boolean addNode(AbstractDom node) throws InterruptedException {
         return addNode(-1, node);
-    }
-
-    /**
-     * <p>Remove a child.</p>
-     *
-     * @param node The DOM node.
-     * @throws InterruptedException Transaction was interrupted.
-     */
-    public boolean removeNode(AbstractDom node)
-            throws InterruptedException {
-        if (node == null)
-            throw new NullPointerException("node missing");
-        node.beginReparent();
-        try {
-            if (node.parent != this)
-                return false;
-            synchronized (this) {
-                int k = (children != null ? children.indexOf(node) : -1);
-                if (k >= 0) {
-                    children.remove(k);
-                    if (children.size() == 0)
-                        children = null;
-                } else {
-                    throw new RuntimeException("internal error");
-                }
-            }
-            node.parent = null;
-        } finally {
-            node.endReparent();
-        }
-        return true;
-    }
-
-    /**
-     * <p>Retrieve a children snapshot.</p>
-     *
-     * @return The children snapshot.
-     */
-    public AbstractDom[] snapshotNodes() {
-        AbstractDom[] nodes;
-        synchronized (this) {
-            if (children != null) {
-                nodes = new AbstractDom[children.size()];
-                children.toArray(nodes);
-            } else {
-                nodes = VOID_CHILDREN;
-            }
-        }
-        return nodes;
-    }
-
-    /**
-     * <p>Retrieve the child index.</p>
-     *
-     * @param node The DOM node.
-     * @return The index.
-     */
-    public int getNodeIndex(AbstractDom node) {
-        if (node == null)
-            throw new NullPointerException("node missing");
-        int k;
-        synchronized (this) {
-            k = (children != null ? children.indexOf(node) : -1);
-        }
-        return k;
-    }
-
-    /**
-     * <p>Retrieve the child at some index.</p>
-     *
-     * @param i The index, negative index counts from last.
-     * @return The child, or null.
-     */
-    public AbstractDom getNode(int i) {
-        AbstractDom node;
-        synchronized (this) {
-            if (children == null)
-                return null;
-            if (i < 0)
-                i += children.size();
-            if (i < 0)
-                return null;
-            if (i >= children.size())
-                return null;
-            node = children.get(i);
-        }
-        return node;
     }
 
     /**
@@ -651,12 +608,79 @@ public final class DomElement extends AbstractDom {
                 if (i > children.size())
                     i = children.size();
                 children.add(i, node);
+                cachechildren = null;
             }
             node.parent = this;
         } finally {
             node.endReparent();
         }
         return true;
+    }
+
+    /**
+     * <p>Remove a child.</p>
+     *
+     * @param node The DOM node.
+     * @throws InterruptedException Transaction was interrupted.
+     */
+    public boolean removeNode(AbstractDom node)
+            throws InterruptedException {
+        if (node == null)
+            throw new NullPointerException("node missing");
+        node.beginReparent();
+        try {
+            if (node.parent != this)
+                return false;
+            synchronized (this) {
+                int k = (children != null ? children.indexOf(node) : -1);
+                if (k >= 0) {
+                    children.remove(k);
+                    if (children.size() == 0)
+                        children = null;
+                } else {
+                    throw new RuntimeException("internal error");
+                }
+                cachechildren = null;
+            }
+            node.parent = null;
+        } finally {
+            node.endReparent();
+        }
+        return true;
+    }
+
+    /**
+     * <p>Retrieve the child index.</p>
+     *
+     * @param node The DOM node.
+     * @return The index.
+     */
+    public int getNodeIndex(AbstractDom node) {
+        if (node == null)
+            throw new NullPointerException("node missing");
+        AbstractDom[] nodes = snapshotNodes();
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i].equals(node))
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * <p>Retrieve the child at some index.</p>
+     *
+     * @param i The index, negative index counts from last.
+     * @return The child, or null.
+     */
+    public AbstractDom getNode(int i) {
+        AbstractDom[] nodes = snapshotNodes();
+        if (i < 0)
+            i += nodes.length;
+        if (i < 0)
+            return null;
+        if (i >= nodes.length)
+            return null;
+        return nodes[i];
     }
 
     /*****************************************************/
@@ -672,30 +696,24 @@ public final class DomElement extends AbstractDom {
     public DomElement getChild(String key) {
         if (key == null)
             throw new NullPointerException("key missing");
-        synchronized (this) {
-            int k = indexOfChild(key);
-            if (k >= 0) {
-                return (DomElement) children.get(k);
-            } else {
-                return null;
-            }
-        }
+        AbstractDom[] nodes = snapshotNodes();
+        int k = indexOfChild(nodes, key);
+        return (k >= 0 ? (DomElement) nodes[k] : null);
     }
 
     /**
      * <p>Returns the first index of the element occurence</p>
      *
-     * @param key The child name.
+     * @param nodes The DOM nodes.
+     * @param key   The child name.
      * @return The index, or -1.
      */
-    private int indexOfChild(String key) {
-        if (children != null) {
-            for (int i = 0; i < children.size(); i++) {
-                AbstractDom node = children.get(i);
-                if (node instanceof DomElement &&
-                        ((DomElement) node).isName(key))
-                    return i;
-            }
+    private int indexOfChild(AbstractDom[] nodes, String key) {
+        for (int i = 0; i < nodes.length; i++) {
+            AbstractDom node = nodes[i];
+            if (node instanceof DomElement &&
+                    ((DomElement) node).isName(key))
+                return i;
         }
         return -1;
     }
@@ -713,16 +731,9 @@ public final class DomElement extends AbstractDom {
             throw new NullPointerException("key missing");
         if (node == null)
             throw new NullPointerException("node missing");
-        int k;
-        DomElement elem;
-        synchronized (this) {
-            k = indexOfChild(key);
-            if (k >= 0) {
-                elem = (DomElement) children.get(k);
-            } else {
-                elem = null;
-            }
-        }
+        AbstractDom[] nodes = snapshotNodes();
+        int k = indexOfChild(nodes, key);
+        DomElement elem = (k >= 0 ? (DomElement) nodes[k] : null);
         if (elem != null)
             removeNode(elem);
         addNode(k, node);
@@ -741,15 +752,6 @@ public final class DomElement extends AbstractDom {
             removeNode(elem);
     }
 
-    /**
-     * <p>Check whether the element is empty.</p>
-     *
-     * @return True if the element is empty, otherwise false.
-     */
-    public boolean isEmpty() {
-        return (children == null);
-    }
-
     /***************************************************************/
     /* Object Protocol                                             */
     /***************************************************************/
@@ -765,18 +767,18 @@ public final class DomElement extends AbstractDom {
         synchronized (this) {
             newkvs = (kvs != null ? (AssocArray<String, Object>) kvs.clone() : null);
         }
-        ListArray<AbstractDom> res = null;
+        ListArray<AbstractDom> newchildren = null;
         AbstractDom[] nodes = snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
-            if (res == null)
-                res = new ListArray<AbstractDom>();
+            if (newchildren == null)
+                newchildren = new ListArray<AbstractDom>();
             node = (AbstractDom) node.clone();
             node.parent = de;
-            res.add(node);
+            newchildren.add(node);
         }
         de.kvs = newkvs;
-        de.children = res;
+        de.children = newchildren;
         return de;
     }
 
@@ -786,7 +788,9 @@ public final class DomElement extends AbstractDom {
     void reinitialize() {
         super.reinitialize();
         kvs = null;
+        cachekvs = null;
         children = null;
+        cachechildren = null;
     }
 
     /**

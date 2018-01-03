@@ -41,6 +41,7 @@ public final class XMLCheck {
     public static final String DATA_FORBIDDEN_ELEM = "data_forbidden_elem";
     public static final String DATA_ILLEGAL_PARENT = "data_illegal_parent";
     public static final String DATA_ILLEGAL_VALUE = "data_illegal_value";
+    public static final String DATA_NOT_EMPTY = "data_not_empty";
 
     private String context = "";
     private int mask;
@@ -220,6 +221,8 @@ public final class XMLCheck {
         checkParent(context, name, xe);
         AbstractDom[] nodes = de.snapshotNodes();
         checkConstraint(nodes, xe);
+        if (nodes.length != 0 && xe.getComplex() == XSDDeclElem.COMPLEX_EMPTY)
+            throw new ValidationError(DATA_NOT_EMPTY, name);
         String backcontext = context;
         try {
             context = de.getName();

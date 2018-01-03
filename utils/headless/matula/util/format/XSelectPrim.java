@@ -145,7 +145,7 @@ public final class XSelectPrim extends XSelect {
                 val = getCnst();
                 StringWriter sr = new StringWriter();
                 try {
-                    ((DomElement)val).store(sr, null, AbstractDom.MASK_TEXT);
+                    ((DomElement) val).store(sr, null, AbstractDom.MASK_TEXT);
                 } catch (IOException x) {
                     throw new RuntimeException("internal error", x);
                 }

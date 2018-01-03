@@ -26,7 +26,7 @@ package matula.util.format;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class XSelectComb extends XSelect {
+public final class XSelectComb extends XSelect {
     public static final int SELE_COMB_NEG = 0;
     public static final int SELE_COMB_ADD = 1;
     public static final int SELE_COMB_SUB = 2;
