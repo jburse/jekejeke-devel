@@ -611,6 +611,8 @@ public final class DomElement extends AbstractDom {
             if (k >= 0) {
                 children.set(k, node);
             } else {
+                if (children == null)
+                    children = new ListArray<AbstractDom>();
                 children.add(node);
             }
             node.parent = this;
@@ -661,7 +663,7 @@ public final class DomElement extends AbstractDom {
      * <p>Retrieve a DOM node index.</p>
      *
      * @param node The DOM node.
-     * @return The index.
+     * @return The DOM node index, or -1.
      */
     public int getNodeIndex(AbstractDom node) {
         synchronized (this) {
@@ -696,7 +698,7 @@ public final class DomElement extends AbstractDom {
      */
     public int getNodesCount() {
         synchronized (this) {
-            return (children != null ? children.size() : null);
+            return (children != null ? children.size() : 0);
         }
     }
 
