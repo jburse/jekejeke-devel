@@ -273,6 +273,30 @@ text_escape(X, Y) :-
 :- virtual elem_reset_child/2.
 :- foreign(elem_reset_child/2, 'DomElement', resetChild('String')).
 
+/**
+ * elem_node_index(D, C, I):
+ * The predicate succeeds in I with index of the DOM node C in the DOM element D.
+ */
+:- public elem_node_index/3.
+:- virtual elem_node_index/3.
+:- foreign(elem_node_index/3, 'DomElement', getNodeIndex('AbstractDom')).
+
+/**
+ * elem_node(D, I, C):
+ * The predicate succeeds in C with the DOM node at I in the DOM element D.
+ */
+:- public elem_node/3.
+:- virtual elem_node/3.
+:- foreign(elem_node/3, 'DomElement', getNode(int)).
+
+/**
+ * elem_nodes_count(D, N):
+ * The predicate succeeds in N with the DOM node count of the DOM element D.
+ */
+:- public elem_nodes_count/2.
+:- virtual elem_nodes_count/2.
+:- foreign(elem_nodes_count/2, 'DomElement', getNodesCount).
+
 /*******************************************************************/
 /* Text Access & Modification                                      */
 /*******************************************************************/
