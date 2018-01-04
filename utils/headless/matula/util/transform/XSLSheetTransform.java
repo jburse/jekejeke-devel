@@ -156,7 +156,7 @@ public final class XSLSheetTransform extends XSLSheet {
                 xsltChoose(de);
             } else {
                 if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                        DomElement.checkAny(writer.getControl(), de.getName())) {
+                        DomWriter.checkAny(writer.getControl(), de.getName())) {
                     int backmask = writer.getMask();
                     try {
                         writer.setMask(writer.getMask() | AbstractDom.MASK_TEXT);
@@ -190,7 +190,7 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         AbstractDom[] nodes = de.snapshotNodes();
         if (nodes.length == 0 &&
-                DomElement.checkEmpty(writer.getControl(), de.getName())) {
+                DomWriter.checkEmpty(writer.getControl(), de.getName())) {
             writer.copyStart(de);
         } else if (nodes.length != 0 ||
                 (writer.getMask() & AbstractDom.MASK_TEXT) != 0) {

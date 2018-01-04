@@ -204,13 +204,13 @@ text_escape(X, Y) :-
 :- foreign(elem_set_attr/3, 'ForeignDom', sysSetElemAttr('DomElement','String','Object')).
 
 /**
- * elem_remove_attr(D, A):
+ * elem_reset_attr(D, A):
  * The predicate succeeds in removing the attribute A from the DOM element D.
  */
-% elem_remove_attr(+DomElement, +Atom)
-:- public elem_remove_attr/2.
-:- virtual elem_remove_attr/2.
-:- foreign(elem_remove_attr/2, 'DomElement', removeAttr('String')).
+% elem_reset_attr(+DomElement, +Atom)
+:- public elem_reset_attr/2.
+:- virtual elem_reset_attr/2.
+:- foreign(elem_reset_attr/2, 'DomElement', resetAttr('String')).
 
 /**
  * elem_attr(D, A):
@@ -265,13 +265,13 @@ text_escape(X, Y) :-
 :- foreign(elem_set_child/3, 'DomElement', setChild('String','AbstractDom')).
 
 /**
- * elem_remove_child(D, N):
+ * elem_reset_child(D, N):
  * The predicate succeeds in removing the child N from the DOM element D.
  */
-% elem_remove_child(+DomElement, +String)
-:- public elem_remove_child/2.
-:- virtual elem_remove_child/2.
-:- foreign(elem_remove_child/2, 'DomElement', removeChild('String')).
+% elem_reset_child(+DomElement, +String)
+:- public elem_reset_child/2.
+:- virtual elem_reset_child/2.
+:- foreign(elem_reset_child/2, 'DomElement', resetChild('String')).
 
 /*******************************************************************/
 /* Text Access & Modification                                      */

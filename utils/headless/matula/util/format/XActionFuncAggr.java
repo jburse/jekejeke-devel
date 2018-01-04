@@ -151,10 +151,9 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param r The target dom element.
      * @param e The source dom element.
      * @throws ScannerError         Shit happens.
-     * @throws InterruptedException Shit happens.
      */
     public void updateElement(DomElement r, DomElement e)
-            throws ScannerError, InterruptedException {
+            throws ScannerError {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             entry.value.updateElement(r, e);

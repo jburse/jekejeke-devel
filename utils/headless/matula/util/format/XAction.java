@@ -143,11 +143,10 @@ public final class XAction {
      * <p>Perform the actions.</p>
      *
      * @param e The current dom element.
-     * @throws InterruptedException Transaction was interrupted.
-     * @throws ScannerError         Shit happens.
+     * @throws ScannerError Shit happens.
      */
     public DomElement performActions(DomElement e)
-            throws InterruptedException, ScannerError {
+            throws ScannerError {
         for (int i = 0; i < acts.size(); i++) {
             XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {

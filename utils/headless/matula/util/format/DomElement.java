@@ -2,7 +2,6 @@ package matula.util.format;
 
 import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
-import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 import matula.util.system.OpenOpts;
@@ -12,8 +11,12 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 
 /**
- * <p>This class provides a dom element.</p>
- * </p>
+ * <p>This class provides a dom element. The API is simplicistic in
+ * that a DOM node might appear in multiple DOM elements. This
+ * happends when the same DOM node is added twice. As a result we
+ * might have update anomalise. Thereofore this is not recommended
+ * and the API programmer has to avoid the situation.</p>
+ * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -121,11 +124,11 @@ public final class DomElement extends AbstractDom {
                         newkvs = new AssocArray<String, Object>();
                     newkvs.add(dr.getAttr(i), val);
                 }
-                boolean empty = checkEmpty(dr.getControl(), type);
+                boolean empty = DomWriter.checkEmpty(dr.getControl(), type);
                 ListArray<AbstractDom> newchildren;
                 if (!closed && !empty) {
                     if ((dr.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                            checkAny(dr.getControl(), type)) {
+                            DomWriter.checkAny(dr.getControl(), type)) {
                         int backmask = dr.getMask();
                         try {
                             dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
@@ -251,7 +254,7 @@ public final class DomElement extends AbstractDom {
      */
     void storeNode(DomWriter dw) throws IOException {
         if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                checkAny(dw.getControl(), name)) {
+                DomWriter.checkAny(dw.getControl(), name)) {
             int backmask = dw.getMask();
             try {
                 dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
@@ -276,7 +279,7 @@ public final class DomElement extends AbstractDom {
             throws IOException {
         AbstractDom[] nodes = snapshotNodes();
         if (nodes.length == 0 &&
-                checkEmpty(dw.getControl(), name)) {
+                DomWriter.checkEmpty(dw.getControl(), name)) {
             dw.copyStart(this);
         } else if (nodes.length != 0 ||
                 (dw.getMask() & MASK_TEXT) != 0) {
@@ -361,52 +364,6 @@ public final class DomElement extends AbstractDom {
     }
 
     /*****************************************************/
-    /* Tag Control                                       */
-    /*****************************************************/
-
-    /**
-     * <p>Check whether the tag type is empty.</p>
-     *
-     * @param control The tag control.
-     * @param type    The tag type.
-     * @return True if the tag type is empty, otherwise false.
-     */
-    public static boolean checkEmpty(MapHash<String, Integer> control,
-                                     String type) {
-        if (control == null)
-            return false;
-        Integer val = control.get(type);
-        if (val == null) {
-            return false;
-        } else if (val.intValue() == AbstractDom.TYPE_EMPTY) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the tag type is any.</p>
-     *
-     * @param control The tag control.
-     * @param type    The tag type.
-     * @return True if the tag type is any, otherwise false.
-     */
-    public static boolean checkAny(MapHash<String, Integer> control,
-                                   String type) {
-        if (control == null)
-            return false;
-        Integer val = control.get(type);
-        if (val == null) {
-            return false;
-        } else if (val.intValue() == AbstractDom.TYPE_ANY) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /*****************************************************/
     /* Synchronized API Attributes                       */
     /*****************************************************/
 
@@ -441,34 +398,8 @@ public final class DomElement extends AbstractDom {
             throw new NullPointerException("key missing");
         synchronized (this) {
             int k = (kvs != null ? XmlMachine.indexAttr(kvs, key) : -1);
-            if (k != -1) {
-                return kvs.getValue(k);
-            } else {
-                return null;
-            }
+            return (k >= 0 ? kvs.getValue(k) : null);
         }
-    }
-
-    /**
-     * <p>Add the key to the map.</p>
-     * <p>Entry is create at the bottom.</p>
-     *
-     * @param key The key.
-     * @param val The String value.
-     */
-    public void setAttr(String key, String val) {
-        setAttrObj(key, val);
-    }
-
-    /**
-     * <p>Add the key to the map.</p>
-     * <p>Entry is create at the bottom.</p>
-     *
-     * @param key The key.
-     * @param val The long value.
-     */
-    public void setAttrLong(String key, long val) {
-        setAttrObj(key, Long.valueOf(val));
     }
 
     /**
@@ -501,6 +432,28 @@ public final class DomElement extends AbstractDom {
      * <p>Entry is create at the bottom.</p>
      *
      * @param key The key.
+     * @param val The String value.
+     */
+    public void setAttr(String key, String val) {
+        setAttrObj(key, val);
+    }
+
+    /**
+     * <p>Add the key to the map.</p>
+     * <p>Entry is create at the bottom.</p>
+     *
+     * @param key The key.
+     * @param val The long value.
+     */
+    public void setAttrLong(String key, long val) {
+        setAttrObj(key, Long.valueOf(val));
+    }
+
+    /**
+     * <p>Add the key to the map.</p>
+     * <p>Entry is create at the bottom.</p>
+     *
+     * @param key The key.
      * @param val The value.
      */
     public void setAttrObj(String key, Object val) {
@@ -510,7 +463,7 @@ public final class DomElement extends AbstractDom {
             throw new NullPointerException("value missing");
         synchronized (this) {
             int k = (kvs != null ? XmlMachine.indexAttr(kvs, key) : -1);
-            if (k != -1) {
+            if (k >= 0) {
                 kvs.setValue(k, val);
             } else {
                 if (kvs == null)
@@ -526,12 +479,12 @@ public final class DomElement extends AbstractDom {
      *
      * @param key The key.
      */
-    public void removeAttr(String key) {
+    public void resetAttr(String key) {
         if (key == null)
             throw new NullPointerException("key missing");
         synchronized (this) {
             int k = (kvs != null ? XmlMachine.indexAttr(kvs, key) : -1);
-            if (k != -1) {
+            if (k >= 0) {
                 kvs.removeEntry(k);
                 if (kvs.size() == 0) {
                     kvs = null;
@@ -548,9 +501,9 @@ public final class DomElement extends AbstractDom {
     /*****************************************************/
 
     /**
-     * <p>Retrieve a children snapshot.</p>
+     * <p>Retrieve a DOM nodes snapshot.</p>
      *
-     * @return The children snapshot.
+     * @return The DOM nodes snapshot.
      */
     public AbstractDom[] snapshotNodes() {
         AbstractDom[] nodes = cachechildren;
@@ -572,115 +525,55 @@ public final class DomElement extends AbstractDom {
     }
 
     /**
-     * <p>Add a child.</p>
+     * <p>Add a DOM node.</p>
      *
      * @param node The DOM node.
-     * @return True if add succeeded, otherwise false.
-     * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean addNode(AbstractDom node) throws InterruptedException {
-        return addNode(-1, node);
+    public void addNode(AbstractDom node) {
+        addNode(-1, node);
     }
 
     /**
-     * <p>Add a child at some index.</p>
+     * <p>Add a DOM node at some index.</p>
      *
      * @param i    The index, negative index counts from last.
      * @param node The DOM node.
-     * @return True if add succeeded, otherwise false.
-     * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean addNode(int i, AbstractDom node)
-            throws InterruptedException {
+    public void addNode(int i, AbstractDom node) {
         if (node == null)
             throw new NullPointerException("node missing");
-        node.beginReparent();
-        try {
-            if (node.parent != null)
-                return false;
-            synchronized (this) {
-                if (children == null)
-                    children = new ListArray<AbstractDom>();
-                if (i < 0)
-                    i += children.size() + 1;
-                if (i < 0)
-                    i = 0;
-                if (i > children.size())
-                    i = children.size();
-                children.add(i, node);
-                cachechildren = null;
-            }
+        synchronized (this) {
+            if (children == null)
+                children = new ListArray<AbstractDom>();
+            if (i < 0)
+                i += children.size() + 1;
+            if (i < 0)
+                i = 0;
+            if (i > children.size())
+                i = children.size();
+            children.add(i, node);
             node.parent = this;
-        } finally {
-            node.endReparent();
+            cachechildren = null;
         }
-        return true;
     }
 
     /**
-     * <p>Remove a child.</p>
+     * <p>Remove a DOM node.</p>
      *
      * @param node The DOM node.
-     * @throws InterruptedException Transaction was interrupted.
      */
-    public boolean removeNode(AbstractDom node)
-            throws InterruptedException {
+    public void removeNode(AbstractDom node) {
         if (node == null)
             throw new NullPointerException("node missing");
-        node.beginReparent();
-        try {
-            if (node.parent != this)
-                return false;
-            synchronized (this) {
-                int k = (children != null ? children.indexOf(node) : -1);
-                if (k >= 0) {
-                    children.remove(k);
-                    if (children.size() == 0)
-                        children = null;
-                } else {
-                    throw new RuntimeException("internal error");
-                }
+        synchronized (this) {
+            int k = (children != null ? children.indexOf(node) : -1);
+            if (k >= 0) {
+                children.remove(k);
+                if (children.size() == 0)
+                    children = null;
                 cachechildren = null;
             }
-            node.parent = null;
-        } finally {
-            node.endReparent();
         }
-        return true;
-    }
-
-    /**
-     * <p>Retrieve the child index.</p>
-     *
-     * @param node The DOM node.
-     * @return The index.
-     */
-    public int getNodeIndex(AbstractDom node) {
-        if (node == null)
-            throw new NullPointerException("node missing");
-        AbstractDom[] nodes = snapshotNodes();
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].equals(node))
-                return i;
-        }
-        return -1;
-    }
-
-    /**
-     * <p>Retrieve the child at some index.</p>
-     *
-     * @param i The index, negative index counts from last.
-     * @return The child, or null.
-     */
-    public AbstractDom getNode(int i) {
-        AbstractDom[] nodes = snapshotNodes();
-        if (i < 0)
-            i += nodes.length;
-        if (i < 0)
-            return null;
-        if (i >= nodes.length)
-            return null;
-        return nodes[i];
     }
 
     /*****************************************************/
@@ -691,31 +584,15 @@ public final class DomElement extends AbstractDom {
      * <p>Retrieve a child by name,</p>
      *
      * @param key The child name,
-     * @return The child, or null.
+     * @return The DOM element, or null.
      */
     public DomElement getChild(String key) {
         if (key == null)
             throw new NullPointerException("key missing");
-        AbstractDom[] nodes = snapshotNodes();
-        int k = indexOfChild(nodes, key);
-        return (k >= 0 ? (DomElement) nodes[k] : null);
-    }
-
-    /**
-     * <p>Returns the first index of the element occurence</p>
-     *
-     * @param nodes The DOM nodes.
-     * @param key   The child name.
-     * @return The index, or -1.
-     */
-    private int indexOfChild(AbstractDom[] nodes, String key) {
-        for (int i = 0; i < nodes.length; i++) {
-            AbstractDom node = nodes[i];
-            if (node instanceof DomElement &&
-                    ((DomElement) node).isName(key))
-                return i;
+        synchronized (this) {
+            int k = (children != null ? indexChild(children, key) : -1);
+            return (k >= 0 ? (DomElement) children.get(k) : null);
         }
-        return -1;
     }
 
     /**
@@ -723,33 +600,104 @@ public final class DomElement extends AbstractDom {
      *
      * @param key  The child name
      * @param node The DOM node.
-     * @throws InterruptedException Transaction was interrupted.
      */
-    public void setChild(String key, AbstractDom node)
-            throws InterruptedException {
+    public void setChild(String key, AbstractDom node) {
         if (key == null)
             throw new NullPointerException("key missing");
         if (node == null)
             throw new NullPointerException("node missing");
-        AbstractDom[] nodes = snapshotNodes();
-        int k = indexOfChild(nodes, key);
-        DomElement elem = (k >= 0 ? (DomElement) nodes[k] : null);
-        if (elem != null)
-            removeNode(elem);
-        addNode(k, node);
+        synchronized (this) {
+            int k = (children != null ? indexChild(children, key) : -1);
+            if (k >= 0) {
+                children.set(k, node);
+            } else {
+                children.add(node);
+            }
+            node.parent = this;
+            cachechildren = null;
+        }
     }
 
     /**
      * <p>Remove a child by name.</p>
      *
      * @param key The name.
-     * @throws InterruptedException Transaction was interrupted.
      */
-    public void removeChild(String key)
-            throws InterruptedException {
-        DomElement elem = getChild(key);
-        if (elem != null)
-            removeNode(elem);
+    public void resetChild(String key) {
+        synchronized (this) {
+            int k = (children != null ? indexChild(children, key) : -1);
+            if (k >= 0) {
+                children.remove(k);
+                if (children.size() == 0)
+                    children = null;
+                cachechildren = null;
+            }
+        }
+    }
+
+    /**
+     * <p>Find the index of a child.</p>
+     * <p>The case of the child is ignored.</p>
+     *
+     * @param n The child name.
+     * @return The DOM element index, or -1.
+     */
+    private static int indexChild(ListArray<AbstractDom> l, String n) {
+        int m = l.size();
+        for (int i = 0; i < m; i++) {
+            AbstractDom node = l.get(i);
+            if (node instanceof DomElement &&
+                    ((DomElement) node).isName(n))
+                return i;
+        }
+        return -1;
+    }
+
+    /*****************************************************/
+    /* Synchronized API Index                            */
+    /*****************************************************/
+
+    /**
+     * <p>Retrieve a DOM node index.</p>
+     *
+     * @param node The DOM node.
+     * @return The index.
+     */
+    public int getNodeIndex(AbstractDom node) {
+        synchronized (this) {
+            return (children != null ? children.indexOf(node) : -1);
+        }
+    }
+
+    /**
+     * <p>Retrieve the child at some index.</p>
+     *
+     * @param i The index, negative index counts from last.
+     * @return The child, or null.
+     */
+    public AbstractDom getNode(int i) {
+        synchronized (this) {
+            if (children == null)
+                return null;
+            if (i < 0)
+                i += children.size();
+            if (i < 0)
+                return null;
+            if (i >= children.size())
+                return null;
+            return children.get(i);
+        }
+    }
+
+    /**
+     * <p>Retrieve the DOM nodes count.</p>
+     *
+     * @return The DOM nodes count.
+     */
+    public int getNodesCount() {
+        synchronized (this) {
+            return (children != null ? children.size() : null);
+        }
     }
 
     /***************************************************************/

@@ -652,7 +652,7 @@ public class XmlMachine {
      * <p>Find the index of an attribute.</p>
      * <p>The case of the attribute is ignored.</p>
      *
-     * @param a The attribute.
+     * @param a The attribute name.
      * @return The index, or -1.
      */
     public static <V> int indexAttr(AssocArray<String, V> l, String a) {

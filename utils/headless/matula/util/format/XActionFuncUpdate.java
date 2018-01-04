@@ -73,10 +73,9 @@ public final class XActionFuncUpdate extends XActionFunc {
      * @param r The target dom element.
      * @param e The source dom element.
      * @throws ScannerError         Shit happens.
-     * @throws InterruptedException Transaction was interrupted.
      */
     public void updateElement(DomElement r, DomElement e)
-            throws ScannerError, InterruptedException {
+            throws ScannerError {
         switch (update) {
             case UPDATE_NAME:
                 r.setName(keyorname);
@@ -87,7 +86,6 @@ public final class XActionFuncUpdate extends XActionFunc {
                 break;
             case UPDATE_CHILD:
                 val = value.evalElement(e);
-                val = ((DomElement) val).clone();
                 r.setChild(keyorname, (DomElement) val);
                 break;
             default:

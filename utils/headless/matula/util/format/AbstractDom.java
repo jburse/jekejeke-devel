@@ -44,7 +44,6 @@ public abstract class AbstractDom
     public static final int TYPE_ANY = 2; /* enable text and list */
 
     DomElement parent;
-    private boolean lock;
 
     /**
      * <p>Retrieve the parent.</p>
@@ -53,29 +52,6 @@ public abstract class AbstractDom
      */
     public DomElement getParent() {
         return parent;
-    }
-
-    /**
-     * <p>Begin of reparaenting of this node.</p>
-     *
-     * @throws InterruptedException Shit happens.
-     */
-    void beginReparent() throws InterruptedException {
-        synchronized (this) {
-            while (lock)
-                this.wait();
-            lock = true;
-        }
-    }
-
-    /**
-     * <p>End of reparaenting of this node.</p>
-     */
-    void endReparent() {
-        synchronized (this) {
-            lock = false;
-            this.notifyAll();
-        }
     }
 
     /*****************************************************/

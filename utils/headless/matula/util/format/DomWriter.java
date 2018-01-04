@@ -249,6 +249,52 @@ public final class DomWriter {
         write(">");
     }
 
+    /*****************************************************/
+    /* Tag Control                                       */
+    /*****************************************************/
+
+    /**
+     * <p>Check whether the tag type is empty.</p>
+     *
+     * @param control The tag control.
+     * @param type    The tag type.
+     * @return True if the tag type is empty, otherwise false.
+     */
+    public static boolean checkEmpty(MapHash<String, Integer> control,
+                                     String type) {
+        if (control == null)
+            return false;
+        Integer val = control.get(type);
+        if (val == null) {
+            return false;
+        } else if (val.intValue() == AbstractDom.TYPE_EMPTY) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the tag type is any.</p>
+     *
+     * @param control The tag control.
+     * @param type    The tag type.
+     * @return True if the tag type is any, otherwise false.
+     */
+    public static boolean checkAny(MapHash<String, Integer> control,
+                                   String type) {
+        if (control == null)
+            return false;
+        Integer val = control.get(type);
+        if (val == null) {
+            return false;
+        } else if (val.intValue() == AbstractDom.TYPE_ANY) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * <p>Some test cases.</p>
      *
