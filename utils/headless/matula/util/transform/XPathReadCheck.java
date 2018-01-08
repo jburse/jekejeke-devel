@@ -1,6 +1,7 @@
 package matula.util.transform;
 
 import matula.util.data.MapHash;
+import matula.util.format.DomElement;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
@@ -34,6 +35,7 @@ final class XPathReadCheck extends XPathRead {
     private static final String PATH_UNDECLARED_VAR = "path_undeclared_var";
 
     private static Object VOID_OBJECT = new Object();
+    private static Object VOID_ELEMENT = new DomElement();
 
     private MapHash<String, Integer> parameters;
 
@@ -68,6 +70,8 @@ final class XPathReadCheck extends XPathRead {
                 return "";
             case XSDDeclAttr.TYPE_INTEGER:
                 return Long.valueOf(0);
+            case XSLSheet.TYPE_ELEMENT:
+                return VOID_ELEMENT;
             default:
                 throw new IllegalArgumentException("illegal type");
         }

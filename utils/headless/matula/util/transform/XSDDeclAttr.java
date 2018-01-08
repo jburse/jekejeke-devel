@@ -94,7 +94,7 @@ public final class XSDDeclAttr extends XSDDecl {
         String val = de.getAttr(ATTR_ATTRIBUTE_USE);
         xa.setOptional(checkUse(de, val));
         val = de.getAttr(ATTR_ATTRIBUTE_TYPE);
-        xa.setType(checkType(de, val));
+        xa.setType(checkAttrType(de, val));
         return xa;
     }
 
@@ -128,7 +128,7 @@ public final class XSDDeclAttr extends XSDDecl {
      * @return The type id.
      * @throws ValidationError Check error.
      */
-    public static int checkType(DomElement de, String type)
+    public static int checkAttrType(DomElement de, String type)
             throws ValidationError {
         int typeid = TYPE_OBJECT;
         if (type == null) {

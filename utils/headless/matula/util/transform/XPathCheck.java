@@ -40,6 +40,7 @@ final class XPathCheck {
     private static final String PATH_OVERRUN_PARENT = "path_overrun_parent";
     private static final String PATH_MISSING_FOREACH = "path_missing_foreach";
     private static final String PATH_INTEGER_SELE = "path_integer_sele";
+    static final String PATH_STRING_SELE = "path_string_sele";
 
     private XSDSchema schema;
     private ListArray<String> simulation;
@@ -108,8 +109,7 @@ final class XPathCheck {
                     throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 String name = ((XSelectPrim) prim.getFirst()).getAttr();
                 XSDDeclElem decl = schema.getDeclElem(name);
-                String context = (simulation.size() > 0 ? simulation.get(simulation.size() - 1) : "");
-                XMLCheck.checkParent(context, name, decl);
+                XMLCheck.checkParent(getContext(), name, decl);
                 simulation.add(name);
                 entry = exs.successor(entry);
                 while (entry != null) {
@@ -127,6 +127,15 @@ final class XPathCheck {
             default:
                 throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
         }
+    }
+
+    /**
+     * <p>Retrieve the current context.</p>
+     *
+     * @return The current context.
+     */
+    private String getContext() {
+        return (simulation.size() > 0 ? simulation.get(simulation.size() - 1) : "");
     }
 
     /**
@@ -197,13 +206,20 @@ final class XPathCheck {
                     return decl.getType();
                 case XSelectPrim.SELE_PRIM_CONST:
                     Object val = xp.getCnst();
-                    if (val instanceof String) {
+                    if (val instanceof DomElement) {
+                        return XSLSheet.TYPE_ELEMENT;
+                    } else if (val instanceof String) {
                         return XSDDeclAttr.TYPE_STRING;
                     } else if (val instanceof Long) {
                         return XSDDeclAttr.TYPE_INTEGER;
                     } else {
                         return XSDDeclAttr.TYPE_OBJECT;
                     }
+                case XSelectPrim.SELE_PRIM_CHILD:
+                    name = xp.getAttr();
+                    XSDDeclElem decl2 = schema.getDeclElem(name);
+                    XMLCheck.checkParent(getContext(), name, decl2);
+                    return XSLSheet.TYPE_ELEMENT;
                 default:
                     throw new ValidationError(PATH_CANT_SELE, xs.toString());
             }

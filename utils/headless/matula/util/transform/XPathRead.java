@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import matula.util.data.MapHash;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -459,9 +460,10 @@ abstract class XPathRead {
      *     simple      --> "(" predicate ")"
      *                   | "@" name
      *                   | "'" { char } "'"
-     *                   | """" { char } """"
      *                   | digit { digit }
      *                   | "$" name.
+     *                   | """" { char } """"
+     *                   | name
      * </pre>
      *
      * @return The xselect.
@@ -484,7 +486,7 @@ abstract class XPathRead {
             String name = st.sval;
             st.nextToken();
             res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_ATTR);
-        } else if (st.ttype == '"' || st.ttype == '\'') {
+        } else if (st.ttype == '\'') {
             String cnst = st.sval;
             st.nextToken();
             res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
@@ -500,6 +502,18 @@ abstract class XPathRead {
             st.nextToken();
             Object cnst = getVariable(var);
             res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+        } else if (st.ttype == '"') {
+            String cnst = st.sval;
+            st.nextToken();
+            StringReader sr = new StringReader(cnst);
+            DomElement de = new DomElement();
+            int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
+            de.load(sr, mask);
+            res = new XSelectPrim(de, XSelectPrim.SELE_PRIM_CONST);
+        } else if (isName()) {
+            String name = st.sval;
+            st.nextToken();
+            res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_CHILD);
         } else {
             throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
         }
@@ -581,7 +595,6 @@ abstract class XPathRead {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    /*
     public static void main(String[] args)
             throws IOException, ScannerError {
         XPathReadTransform xr = new XPathReadTransform();
@@ -600,7 +613,9 @@ abstract class XPathRead {
         XPathExpr xe = xr.createXPathExpr("$x='bar' and $y<456");
         System.out.println("xpathexpr=" + xe);
         System.out.println("check(xpathexpr)=" + xe.checkElement(null));
+
+        xe = xr.createXPathExpr("child = \"Hello <b>Jack</b>!\"");
+        System.out.println("xpathexpr=" + xe);
     }
-    */
 
 }

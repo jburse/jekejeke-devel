@@ -37,6 +37,8 @@ public final class DomWriter {
     private static final int INDENT_INCREMENT = 4;
     private static final int LINE_WIDTH = 80;
 
+    public static final int MASK_PLIN = 0x00000010;
+
     private Writer writer;
     private int mask;
     private MapHash<String, Integer> control;
@@ -113,7 +115,7 @@ public final class DomWriter {
     /**
      * <p>Write the indent.</p>
      *
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public void writeIndent() throws IOException {
         for (int i = 0; i < indent; i++)
@@ -123,7 +125,7 @@ public final class DomWriter {
     /**
      * <p>Write a time stamp.</p>
      *
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public void writeComment(String comment) throws IOException {
         write("<!-- ");
@@ -135,7 +137,7 @@ public final class DomWriter {
      * <p>Write a string.</p>
      *
      * @param str The string.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public void write(String str) throws IOException {
         writer.write(str);
@@ -146,12 +148,28 @@ public final class DomWriter {
     /****************************************************************/
 
     /**
+     * <p>Copy the given text.</p>
+     *
+     * @param data The text.
+     * @throws IOException IO error.
+     */
+    public void copyText(String data) throws IOException {
+        if ((mask & MASK_PLIN) != 0) {
+            write(data);
+        } else {
+            write(ForeignXml.sysTextEscape(data));
+        }
+    }
+
+    /**
      * <p>Copy an empty dom element.</p>
      *
      * @param de The template dom element.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public void copyEmpty(DomElement de) throws IOException {
+        if ((mask & MASK_PLIN) != 0)
+            return;
         write("<");
         write(de.getName());
         copyAttributes(de);
@@ -162,9 +180,11 @@ public final class DomWriter {
      * <p>Copy a start dom element.</p>
      *
      * @param de The template dom element.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public void copyStart(DomElement de) throws IOException {
+        if ((mask & MASK_PLIN) != 0)
+            return;
         write("<");
         write(de.getName());
         copyAttributes(de);
@@ -175,7 +195,7 @@ public final class DomWriter {
      * <p>Copy the attributes of a dom element.</p>
      *
      * @param de The template dom element.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     private void copyAttributes(DomElement de) throws IOException {
         String[] attrs = de.snapshotAttrs();
@@ -241,9 +261,11 @@ public final class DomWriter {
      * <p>Copy an end dom element.</p>
      *
      * @param de The template dom element.
-     * @throws IOException Shit happens.
+     * @throws IOException IO error.
      */
     public void copyEnd(DomElement de) throws IOException {
+        if ((mask & MASK_PLIN) != 0)
+            return;
         write("</");
         write(de.getName());
         write(">");

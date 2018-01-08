@@ -1,6 +1,6 @@
 package matula.util.transform;
 
-import matula.util.regex.ScannerError;
+import matula.util.format.DomElement;
 import matula.util.system.AbstractRuntime;
 
 /**
@@ -34,6 +34,17 @@ class XSLSheet {
     private static final String SHEET_MISMATCHED_BEAN = "sheet_mismatched_bean";
     private static final String SHEET_ILLEGAL_ACCESS = "sheet_illegal_access";
     private static final String SHEET_INST_EXCEPTION = "sheet_inst_exception";
+    static final String SHEET_ILLEGAL_VALUE = "sheet_illegal_value";
+
+    private static final String OP_ELEMENT = "element";
+
+    private static final String OP_TEXT_PLAIN = "text/plain";
+    private static final String OP_TEXT_HTML = "text/html";
+
+    public static final int TYPE_ELEMENT = 3;
+
+    public static final int TEXT_PLAIN = 0;
+    public static final int TEXT_HTML = 1;
 
     /**
      * <p>Resolve the bean.</p>
@@ -57,6 +68,51 @@ class XSLSheet {
             throw new ValidationError(SHEET_ILLEGAL_ACCESS, bean);
         } catch (InstantiationException x) {
             throw new ValidationError(SHEET_INST_EXCEPTION, bean);
+        }
+    }
+
+    /**
+     * <p>Check a parameter type attribute value.</p>
+     *
+     * @param de   The dom element.
+     * @param type The attribute value.
+     * @return The parameter type id.
+     * @throws ValidationError Check error.
+     */
+    static int checkParamType(DomElement de, String type)
+            throws ValidationError {
+        int typeid = XSDDeclAttr.TYPE_OBJECT;
+        if (type == null) {
+            /* */
+        } else if (XSDDeclAttr.OP_STRING.equalsIgnoreCase(type)) {
+            typeid = XSDDeclAttr.TYPE_STRING;
+        } else if (XSDDeclAttr.OP_INTEGER.equalsIgnoreCase(type)) {
+            typeid = XSDDeclAttr.TYPE_INTEGER;
+        } else if (OP_ELEMENT.equalsIgnoreCase(type)) {
+            typeid = TYPE_ELEMENT;
+        } else {
+            String name = de.getName();
+            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".type");
+        }
+        return typeid;
+    }
+
+    /**
+     * <p>Check a mime type attribute value.</p>
+     * @param de   The dom element.
+     * @param type The attribute value.
+     * @return The mime type id.
+     * @throws ValidationError Check error.
+     */
+    static int checkMimeType(DomElement de, String type)
+            throws ValidationError {
+        if (OP_TEXT_PLAIN.equalsIgnoreCase(type)) {
+            return TEXT_PLAIN;
+        } else if (OP_TEXT_HTML.equalsIgnoreCase(type)) {
+            return TEXT_HTML;
+        } else {
+            String name = de.getName();
+            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".mime");
         }
     }
 

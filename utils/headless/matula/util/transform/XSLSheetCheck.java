@@ -41,7 +41,6 @@ import java.io.InputStreamReader;
 public final class XSLSheetCheck extends XSLSheet {
     private static final String PATH_DUPLICATE_VAR = "path_duplicate_var";
 
-    private static final String SHEET_ILLEGAL_VALUE = "sheet_illegal_value";
     private static final String SHEET_FORBIDDEN_TEXT = "sheet_forbidden_text";
     private static final String SHEET_FORBIDDEN_ELEM = "sheet_forbidden_elem";
     private static final String SHEET_FORBIDDEN_ATTR = "sheet_forbidden_attr";
@@ -51,7 +50,6 @@ public final class XSLSheetCheck extends XSLSheet {
 
     private static XSDSchema meta = new XSDSchema();
 
-    private boolean type;
     private MapHash<String, Integer> parameters = new MapHash<String, Integer>();
     private int mask;
     private XSDSchema schema;
@@ -127,8 +125,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private void xsltNode(AbstractDom dn)
             throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
-            if (!type)
-                throw new ValidationError(SHEET_MISSING_OUTPUT, "#text");
+            /* */
         } else {
             DomElement de = (DomElement) dn;
             if (de.isName(XSLSheetTransform.NAME_FOREACH)) {
@@ -216,10 +213,6 @@ public final class XSLSheetCheck extends XSLSheet {
             throws ScannerError, ValidationError {
         String select = de.getAttr(XSLSheetTransform.ATTR_VALUEOF_SELECT);
         attrSelect(select);
-        if (!type) {
-            String name = de.getName();
-            throw new ValidationError(SHEET_MISSING_OUTPUT, name);
-        }
     }
 
     /**
@@ -242,7 +235,9 @@ public final class XSLSheetCheck extends XSLSheet {
                 String name = de.getName();
                 throw new ValidationError(SHEET_MISSING_ATTR, name + ".select");
             }
-            attrSelect(select);
+            int typeid=attrSelect(select);
+            if (typeid!=XSDDeclAttr.TYPE_STRING)
+                throw new ValidationError(XPathCheck.PATH_STRING_SELE, select);
         } else {
             String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
             if (select != null) {
@@ -295,14 +290,7 @@ public final class XSLSheetCheck extends XSLSheet {
         String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
-        if ("text/plain".equals(typesubtype)) {
-            type = true;
-        } else if ("text/html".equals(typesubtype)) {
-            type = true;
-        } else {
-            String name = de.getName();
-            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".mime");
-        }
+        checkMimeType(de, typesubtype);
     }
 
     /**
@@ -318,7 +306,7 @@ public final class XSLSheetCheck extends XSLSheet {
         if (parameters.get(name) != null)
             throw new ValidationError(PATH_DUPLICATE_VAR, name);
         String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
-        int typeid = XSDDeclAttr.checkType(de, type);
+        int typeid = XSLSheet.checkParamType(de, type);
         parameters.add(name, Integer.valueOf(typeid));
     }
 
@@ -377,7 +365,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void attrSelect(String select)
+    private int attrSelect(String select)
             throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
@@ -385,7 +373,7 @@ public final class XSLSheetCheck extends XSLSheet {
         XPathCheck xc = new XPathCheck();
         xc.setSchema(schema);
         xc.setSimulation(simulation);
-        xc.select(xs);
+        return xc.select(xs);
     }
 
     /**

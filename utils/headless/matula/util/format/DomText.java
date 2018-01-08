@@ -86,7 +86,7 @@ public final class DomText extends AbstractDom {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        dw.write(ForeignXml.sysTextEscape(data));
+        dw.copyText(data);
     }
 
 }

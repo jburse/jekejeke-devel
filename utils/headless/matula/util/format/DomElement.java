@@ -349,7 +349,7 @@ public final class DomElement extends AbstractDom {
      * @param nodes The nodes.
      * @throws IOException Shit happens.
      */
-    static void storeNodes(DomWriter dw, AbstractDom[] nodes)
+    public static void storeNodes(DomWriter dw, AbstractDom[] nodes)
             throws IOException {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
@@ -599,9 +599,9 @@ public final class DomElement extends AbstractDom {
      * <p>Set a child by name</p>
      *
      * @param key  The child name
-     * @param node The DOM node.
+     * @param node The DOM element.
      */
-    public void setChild(String key, AbstractDom node) {
+    public void setChild(String key, DomElement node) {
         if (key == null)
             throw new NullPointerException("key missing");
         if (node == null)

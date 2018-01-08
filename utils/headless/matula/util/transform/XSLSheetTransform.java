@@ -3,7 +3,6 @@ package matula.util.transform;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
-import matula.util.system.ForeignXml;
 import matula.util.system.MimeHeader;
 
 import java.io.IOException;
@@ -58,10 +57,6 @@ public final class XSLSheetTransform extends XSLSheet {
     public static final String ATTR_WHEN_TEST = "test";
     public static final String NAME_OTHERWISE = "otherwise";
 
-    private static final int TYPE_TEXT_PLAIN = 0;
-    private static final int TYPE_TEXT_HTML = 1;
-
-    private int type = -1;
     private MapHash<String, Object> variables;
     private DomElement data;
     private DomWriter writer = new DomWriter();
@@ -134,7 +129,7 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             DomText dt = (DomText) dn;
-            copyText(dt.getData());
+            writer.copyText(dt.getData());
         } else {
             DomElement de = (DomElement) dn;
             if (de.isName(NAME_FOREACH)) {
@@ -276,8 +271,17 @@ public final class XSLSheetTransform extends XSLSheet {
     private void xsltValueOf(DomElement de)
             throws IOException, ScannerError, ValidationError {
         String select = de.getAttr(ATTR_VALUEOF_SELECT);
-        String val = attrSelect(select);
-        copyText(val);
+        Object val = attrSelect(select);
+        if (val instanceof DomElement) {
+            AbstractDom[] nodes = ((DomElement) val).snapshotNodes();
+            DomElement.storeNodes(writer, nodes);
+        } else {
+            if (val instanceof String) {
+                writer.copyText((String) val);
+            } else {
+                writer.write(Long.toString(((Long) val).longValue()));
+            }
+        }
     }
 
     /**
@@ -294,7 +298,7 @@ public final class XSLSheetTransform extends XSLSheet {
         InterfacePath pu = resolveBean(bean);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
             String select = de.getAttr(ATTR_WITHDATA_SELECT);
-            String doc = attrSelect(select);
+            String doc = (String) attrSelect(select);
             pu.setDocument(doc);
         }
         pu.setFlags(pu.getFlags() & ~InterfacePath.FLAG_SCHM);
@@ -330,14 +334,15 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Syntax error.
      */
     private void xsltOutput(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
-        if ("text/plain".equals(typesubtype)) {
-            type = TYPE_TEXT_PLAIN;
+        int typeid = XSLSheet.checkMimeType(de, typesubtype);
+        if (typeid == TEXT_PLAIN) {
+            writer.setMask(writer.getMask() | DomWriter.MASK_PLIN);
         } else {
-            type = TYPE_TEXT_HTML;
+            writer.setMask(writer.getMask() & ~DomWriter.MASK_PLIN);
         }
     }
 
@@ -359,7 +364,7 @@ public final class XSLSheetTransform extends XSLSheet {
             return;
         }
         String type = de.getAttr(ATTR_PARAM_TYPE);
-        int typeid = XSDDeclAttr.checkType(de, type);
+        int typeid = XSLSheet.checkParamType(de, type);
         switch (typeid) {
             case XSDDeclAttr.TYPE_OBJECT:
                 break;
@@ -371,6 +376,12 @@ public final class XSLSheetTransform extends XSLSheet {
                 if (!(val instanceof Long))
                     throw new ValidationError(PATH_ILLEGAL_VALUE, name);
                 break;
+            case XSLSheet.TYPE_ELEMENT:
+                if (!(val instanceof DomElement))
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
+                break;
+            default:
+                throw new IllegalArgumentException("illegal type");
         }
     }
 
@@ -433,12 +444,12 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private String attrSelect(String select)
+    private Object attrSelect(String select)
             throws IOException, ScannerError, ValidationError {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XSelect xs = xr.createXSelect(select);
-        return (String) xs.evalElement(data);
+        return xs.evalElement(data);
     }
 
     /**
@@ -456,28 +467,6 @@ public final class XSLSheetTransform extends XSLSheet {
         xr.setVariables(variables);
         XPathExpr xe = xr.createXPathExpr(test);
         return xe.checkElement(data);
-    }
-
-    /****************************************************************/
-    /* Tag Copying                                                  */
-    /****************************************************************/
-
-    /**
-     * <p>Copy text.</p>
-     *
-     * @param data The text.
-     */
-    private void copyText(String data) throws IOException {
-        switch (type) {
-            case TYPE_TEXT_PLAIN:
-                writer.write(data);
-                break;
-            case TYPE_TEXT_HTML:
-                writer.write(ForeignXml.sysTextEscape(data));
-                break;
-            default:
-                throw new IllegalArgumentException("type missing");
-        }
     }
 
     /**

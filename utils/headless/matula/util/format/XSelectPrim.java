@@ -33,10 +33,9 @@ public final class XSelectPrim extends XSelect {
     public static final int SELE_PRIM_ATTR = 0;
     public static final int SELE_PRIM_CONST = 1;
     public static final int SELE_PRIM_CHILD = 2;
-    public static final int SELE_PRIM_ELEM = 3;
 
     /* illegal argument errors */
-    public static final String PATH_UNKNOWN_ATTRIBUTE = "path_unknown_attribute";
+    public static final String PATH_UNKNOWN_ATTR = "path_unknown_attr";
     public static final String PATH_UNKNOWN_CHILD = "path_unknown_child";
 
     private Object attrorcnst;
@@ -95,7 +94,7 @@ public final class XSelectPrim extends XSelect {
             case SELE_PRIM_ATTR:
                 res = d.getAttrObj(getAttr());
                 if (res == null)
-                    throw new IllegalArgumentException(PATH_UNKNOWN_ATTRIBUTE);
+                    throw new IllegalArgumentException(PATH_UNKNOWN_ATTR);
                 break;
             case SELE_PRIM_CONST:
                 res = getCnst();
@@ -104,9 +103,6 @@ public final class XSelectPrim extends XSelect {
                 res = d.getChild(getAttr());
                 if (res == null)
                     throw new IllegalArgumentException(PATH_UNKNOWN_CHILD);
-                break;
-            case SELE_PRIM_ELEM:
-                res = getCnst();
                 break;
             default:
                 throw new IllegalArgumentException("illegal primitive");
@@ -129,27 +125,31 @@ public final class XSelectPrim extends XSelect {
                 return buf.toString();
             case SELE_PRIM_CONST:
                 Object val = getCnst();
-                buf = new StringBuilder();
-                if (val instanceof String) {
-                    buf.append("\'");
-                    buf.append((String) val);
-                    buf.append("\'");
+                if (val instanceof DomElement) {
+                    StringWriter sr = new StringWriter();
+                    int mask=AbstractDom.MASK_LIST+AbstractDom.MASK_TEXT;
+                    try {
+                        sr.write("\"");
+                        ((DomElement) val).store(sr, null, mask);
+                        sr.write("\"");
+                    } catch (IOException x) {
+                        throw new RuntimeException("internal error", x);
+                    }
+                    return sr.toString();
                 } else {
-                    buf.append(Long.toString(((Long) val).longValue()));
+                    buf = new StringBuilder();
+                    if (val instanceof String) {
+                        buf.append("\'");
+                        buf.append((String) val);
+                        buf.append("\'");
+                    } else {
+                        buf.append(Long.toString(((Long) val).longValue()));
+                    }
+                    return buf.toString();
                 }
-                return buf.toString();
             case SELE_PRIM_CHILD:
                 name = getAttr();
                 return name;
-            case SELE_PRIM_ELEM:
-                val = getCnst();
-                StringWriter sr = new StringWriter();
-                try {
-                    ((DomElement) val).store(sr, null, AbstractDom.MASK_TEXT);
-                } catch (IOException x) {
-                    throw new RuntimeException("internal error", x);
-                }
-                return sr.toString();
             default:
                 throw new IllegalArgumentException("illegal primitive");
         }
