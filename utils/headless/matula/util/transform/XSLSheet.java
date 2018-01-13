@@ -29,7 +29,7 @@ import matula.util.system.AbstractRuntime;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-class XSLSheet {
+abstract class XSLSheet {
     private static final String SHEET_MISSING_CLASS = "sheet_missing_class";
     private static final String SHEET_MISMATCHED_BEAN = "sheet_mismatched_bean";
     private static final String SHEET_ILLEGAL_ACCESS = "sheet_illegal_access";

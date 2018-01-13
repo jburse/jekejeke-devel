@@ -3,7 +3,7 @@
    <attribute name="last-modified" use="optional" type="integer"/>
 </element>
 <element name="output">
-   <parent name="stylesheet"/>
+   <parent name="stylesheet" occurs="det"/>
    <attribute name="mime" type="string"/>
 </element>
 <element name="param">
@@ -27,9 +27,9 @@
 </element>
 <element name="choose"/>
 <element name="when">
-   <parent name="choose"/>
+   <parent name="choose" occurs="multi"/>
    <attribute name="test" type="string"/>
 </element>
 <element name="otherwise">
-   <parent name="choose"/>
+   <parent name="choose" occurs="semidet"/>
 </element>

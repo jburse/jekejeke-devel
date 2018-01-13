@@ -595,6 +595,7 @@ abstract class XPathRead {
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
+    /*
     public static void main(String[] args)
             throws IOException, ScannerError {
         XPathReadTransform xr = new XPathReadTransform();
@@ -617,5 +618,6 @@ abstract class XPathRead {
         xe = xr.createXPathExpr("child = \"Hello <b>Jack</b>!\"");
         System.out.println("xpathexpr=" + xe);
     }
+    */
 
 }

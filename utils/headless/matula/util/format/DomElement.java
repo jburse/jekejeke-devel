@@ -748,6 +748,7 @@ public final class DomElement extends AbstractDom {
      *
      * @param args Not used.
      */
+    /*
     public static void main(String[] args) throws IOException, ScannerError {
         PrintWriter pw = new PrintWriter(System.out);
         String str = "<>Some <b>text</b></>";
@@ -777,5 +778,6 @@ public final class DomElement extends AbstractDom {
         de.store(pw, null, AbstractDom.MASK_TEXT);
         pw.println();
     }
+    */
 
 }

@@ -266,14 +266,15 @@ public final class XSDSchema {
      *
      * @param args Not used.
      */
+    /*
     public static void main(String[] args) {
-        String[] decls = meta.snapshotDecls();
+        String[] decls = XSLSheetCheck.meta.snapshotDecls();
         for (int i = 0; i < decls.length; i++) {
             String attr = decls[i];
             if ("".equals(attr))
                 continue;
             System.out.print(attr);
-            XSDDecl decl = meta.getDecl(attr);
+            XSDDecl decl = XSLSheetCheck.meta.getDecl(attr);
             if (decl instanceof XSDDeclElem) {
                 int complex = ((XSDDeclElem) decl).getComplex();
                 if (complex == XSDDeclElem.COMPLEX_EMPTY) {
@@ -281,11 +282,22 @@ public final class XSDSchema {
                 } else if (complex == XSDDeclElem.COMPLEX_ANY) {
                     System.out.print(" complex=\"any\"");
                 }
+                System.out.println();
                 AssocArray<String, Integer> parent = ((XSDDeclElem) decl).getParent();
-                if (parent != null) {
-                    for (int j = 0; j < parent.size(); j++) {
-                        System.out.print(" parent=\"" + parent.getKey(j) + "\"");
+                if (parent == null)
+                    continue;
+                for (int j = 0; j < parent.size(); j++) {
+                    System.out.print(attr + "." + j);
+                    System.out.print(" name=\"" + parent.getKey(j) + "\"");
+                    int occurs = parent.getValue(j).intValue();
+                    if (occurs == XSDDeclElem.OCCURS_DET) {
+                        System.out.print(" occurs=\"" + XSDDeclElem.OP_DET + "\"");
+                    } else if (occurs == XSDDeclElem.OCCURS_SEMIDET) {
+                        System.out.print(" occurs=\"" + XSDDeclElem.OP_SEMIDET + "\"");
+                    } else if (occurs == XSDDeclElem.OCCURS_MULTI) {
+                        System.out.print(" occurs=\"" + XSDDeclElem.OP_MULTI + "\"");
                     }
+                    System.out.println();
                 }
             } else {
                 boolean optional = ((XSDDeclAttr) decl).getOptional();
@@ -293,13 +305,14 @@ public final class XSDSchema {
                     System.out.print(" use=\"optional\"");
                 int type = ((XSDDeclAttr) decl).getType();
                 if (type == XSDDeclAttr.TYPE_STRING) {
-                    System.out.print(" type=\"string\"");
+                    System.out.print(" type=\"" + XSDDeclAttr.OP_STRING + "\"");
                 } else if (type == XSDDeclAttr.TYPE_INTEGER) {
-                    System.out.print(" type=\"integer\"");
+                    System.out.print(" type=\"" + XSDDeclAttr.OP_INTEGER + "\"");
                 }
+                System.out.println();
             }
-            System.out.println();
         }
     }
+    */
 
 }

@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import idxtab.Temprepo.TemprepoPath;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
@@ -48,7 +49,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
     private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
 
-    private static XSDSchema meta = new XSDSchema();
+    static XSDSchema meta = new XSDSchema();
 
     private MapHash<String, Integer> parameters = new MapHash<String, Integer>();
     private int mask;
