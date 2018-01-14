@@ -142,13 +142,12 @@ public final class XPath {
     /**
      * <p>Find a first dom element.</p>
      *
-     * @param pos The child number.
-     * @param e   The child dom element.
+     * @param pos The start choice index.
+     * @param e   The start dom element.
      * @return The found dom element, or null.
-     * @throws ScannerError Shit happens
+     * @throws ScannerError Syntax error.
      */
-    public DomElement findFirst(int pos, DomElement e)
-            throws ScannerError {
+    public DomElement findFirst(int pos, DomElement e) throws ScannerError {
         if (pos == cps.size())
             return e;
         ChoicePoint hit = cps.get(pos);
@@ -166,7 +165,7 @@ public final class XPath {
      * <p>Find a next dom element.</p>
      *
      * @return The found dom element, or null.
-     * @throws ScannerError Shit happens
+     * @throws ScannerError Syntax error.
      */
     public DomElement findNext() throws ScannerError {
         for (int pos = cps.size() - 1; pos >= 0; pos--) {
@@ -190,6 +189,24 @@ public final class XPath {
             ChoicePoint hit = cps.get(pos);
             hit.findClose();
         }
+    }
+
+    /**
+     * <p>Count the whered elements.</p>
+     *
+     * @param e The start dom element.
+     * @return The count.
+     * @throws ScannerError Syntax error.
+     */
+    public long findCount(DomElement e) throws ScannerError {
+        long res = 0;
+        DomElement found = findFirst(0, e);
+        while (found != null) {
+            res++;
+            found = findNext();
+        }
+        findClose();
+        return res;
     }
 
     /*****************************************************/
