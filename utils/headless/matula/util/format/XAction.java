@@ -72,67 +72,13 @@ public final class XAction {
         acts.add(xfa);
     }
 
-    /*****************************************************/
-    /* XAction Updates                                   */
-    /*****************************************************/
-
     /**
-     * <p>Add an element name action.</p>
+     * <p>Retrieve the top action aggregate.</p>
      *
-     * @param n The name.
+     * @return The top action aggregate.
      */
-    public void calcName(String n) {
-        acts.get(acts.size() - 1).calcName(n);
-    }
-
-    /**
-     * <p>Add an element attribute action.</p>
-     *
-     * @param a The attribute name.
-     * @param v The String value.
-     */
-    public void calcAttr(String a, String v) {
-        acts.get(acts.size() - 1).calcAttr(a, v);
-    }
-
-    /**
-     * <p>Add an element attribute action.</p>
-     *
-     * @param a The attribute name.
-     * @param v The long value.
-     */
-    public void calcAttrLong(String a, long v) {
-        acts.get(acts.size() - 1).calcAttrLong(a, v);
-    }
-
-    /**
-     * <p>Add an element attribute action.</p>
-     *
-     * @param a The attribute name.
-     * @param v The value.
-     */
-    public void calcAttrObj(String a, Object v) {
-        acts.get(acts.size() - 1).calcAttrObj(a, v);
-    }
-
-    /**
-     * <p>Add an element children action.</p>
-     *
-     * @param n The child name.
-     * @param v The list.
-     */
-    public void calcChild(String n, DomElement v) {
-        acts.get(acts.size() - 1).calcChild(n, v);
-    }
-
-    /**
-     * <p>Add an xaction function.</p>
-     *
-     * @param k The key.
-     * @param v The xaction function.
-     */
-    public void calcFunc(String k, XActionFunc v) {
-        acts.get(acts.size() - 1).calcFunc(k, v);
+    public XActionFuncAggr getTop() {
+        return acts.get(acts.size() - 1);
     }
 
     /*****************************************************/

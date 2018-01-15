@@ -25,13 +25,15 @@ import matula.util.regex.ScannerError;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
- * Trademarks
+ * Trademarks§
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XActionFuncUpdate extends XActionFunc {
     public static final int UPDATE_NAME = 0;
-    public static final int UPDATE_ATTR = 1;
-    public static final int UPDATE_CHILD = 2;
+    public static final int UPDATE_SET_ATTR = 1;
+    public static final int UPDATE_SET_CHILD = 2;
+    public static final int UPDATE_RESET_ATTR = 3;
+    public static final int UPDATE_RESET_CHILD = 4;
 
     private String keyorname;
     private XSelect value;
@@ -80,13 +82,19 @@ public final class XActionFuncUpdate extends XActionFunc {
             case UPDATE_NAME:
                 r.setName(keyorname);
                 break;
-            case UPDATE_ATTR:
+            case UPDATE_SET_ATTR:
                 Object val = value.evalElement(e);
                 r.setAttrObj(keyorname, val);
                 break;
-            case UPDATE_CHILD:
+            case UPDATE_SET_CHILD:
                 val = value.evalElement(e);
                 r.setChild(keyorname, (DomElement) val);
+                break;
+            case UPDATE_RESET_ATTR:
+                r.resetAttr(keyorname);
+                break;
+            case UPDATE_RESET_CHILD:
+                r.resetChild(keyorname);
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");
@@ -102,18 +110,28 @@ public final class XActionFuncUpdate extends XActionFunc {
         switch (update) {
             case UPDATE_NAME:
                 return keyorname;
-            case UPDATE_ATTR:
+            case UPDATE_SET_ATTR:
                 StringBuilder buf = new StringBuilder();
                 buf.append("@");
                 buf.append(keyorname);
                 buf.append("=");
                 buf.append(value.toString());
                 return buf.toString();
-            case UPDATE_CHILD:
+            case UPDATE_SET_CHILD:
                 buf = new StringBuilder();
                 buf.append(keyorname);
                 buf.append("=");
                 buf.append(value.toString());
+                return buf.toString();
+            case UPDATE_RESET_ATTR:
+                buf = new StringBuilder();
+                buf.append("delete @");
+                buf.append(keyorname);
+                return buf.toString();
+            case UPDATE_RESET_CHILD:
+                buf = new StringBuilder();
+                buf.append("delete ");
+                buf.append(keyorname);
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");
