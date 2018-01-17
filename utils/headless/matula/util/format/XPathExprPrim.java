@@ -128,42 +128,34 @@ public final class XPathExprPrim extends XPathExpr {
                 case EXPR_PRIM_NQ:
                     return !val.equals(val2);
                 case EXPR_PRIM_LS:
-                    if (val instanceof Long) {
+                    if (val instanceof String) {
+                        return ((String) val).compareTo((String) val2) < 0;
+                    } else if (val instanceof Long) {
                         return ((Long) val).longValue() < ((Long) val2).longValue();
-                    } else if (val instanceof Double) {
-                        return ((Double) val).doubleValue() < ((Double) val2).doubleValue();
-                    } else if (val instanceof Timestamp) {
-                        return ((Timestamp) val).compareTo((Timestamp) val2) < 0;
                     } else {
                         throw new IllegalArgumentException("unsupported value");
                     }
                 case EXPR_PRIM_GR:
-                    if (val instanceof Long) {
+                    if (val instanceof String) {
+                        return ((String) val).compareTo((String) val2) > 0;
+                    } else if (val instanceof Long) {
                         return ((Long) val).longValue() > ((Long) val2).longValue();
-                    } else if (val instanceof Double) {
-                        return ((Double) val).doubleValue() > ((Double) val2).doubleValue();
-                    } else if (val instanceof Timestamp) {
-                        return ((Timestamp) val).compareTo((Timestamp) val2) > 0;
                     } else {
                         throw new IllegalArgumentException("unsupported value");
                     }
                 case EXPR_PRIM_LQ:
-                    if (val instanceof Long) {
+                    if (val instanceof String) {
+                        return ((String) val).compareTo((String) val2) <= 0;
+                    } else if (val instanceof Long) {
                         return ((Long) val).longValue() <= ((Long) val2).longValue();
-                    } else if (val instanceof Double) {
-                        return ((Double) val).doubleValue() <= ((Double) val2).doubleValue();
-                    } else if (val instanceof Timestamp) {
-                        return ((Timestamp) val).compareTo((Timestamp) val2) <= 0;
                     } else {
                         throw new IllegalArgumentException("unsupported value");
                     }
                 case EXPR_PRIM_GQ:
-                    if (val instanceof Long) {
+                    if (val instanceof String) {
+                        return ((String) val).compareTo((String) val2) >= 0;
+                    } else if (val instanceof Long) {
                         return ((Long) val).longValue() >= ((Long) val2).longValue();
-                    } else if (val instanceof Double) {
-                        return ((Double) val).doubleValue() >= ((Double) val2).doubleValue();
-                    } else if (val instanceof Timestamp) {
-                        return ((Timestamp) val).compareTo((Timestamp) val2) >= 0;
                     } else {
                         throw new IllegalArgumentException("unsupported value");
                     }

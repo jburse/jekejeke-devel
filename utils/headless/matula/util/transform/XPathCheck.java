@@ -42,8 +42,6 @@ final class XPathCheck {
     private static final String PATH_MISSING_FOREACH = "path_missing_foreach";
     private static final String PATH_INTEGER_SELE = "path_integer_sele";
     static final String PATH_STRING_SELE = "path_string_sele";
-    private static final String PATH_FLOAT_SELE = "path_float_sele";
-    private static final String PATH_TIMESTAMP_SELE = "path_timestamp_sele";
     private static final String PATH_PRIMITIV_SELE = "path_timestamp_sele";
 
     private XSDSchema schema;
@@ -154,9 +152,6 @@ final class XPathCheck {
             switch (prim.getPrimitive()) {
                 case XPathExprPrim.EXPR_PRIM_EQ:
                 case XPathExprPrim.EXPR_PRIM_NQ:
-                    select(prim.getFirst());
-                    select(prim.getSecond());
-                    break;
                 case XPathExprPrim.EXPR_PRIM_LS:
                 case XPathExprPrim.EXPR_PRIM_GR:
                 case XPathExprPrim.EXPR_PRIM_LQ:
@@ -164,17 +159,13 @@ final class XPathCheck {
                     int typeid = select(prim.getFirst());
                     int typeid2 = select(prim.getSecond());
                     switch (typeid) {
+                        case XSDDeclAttr.TYPE_STRING:
+                            if (typeid2 != XSDDeclAttr.TYPE_STRING)
+                                throw new ValidationError(PATH_STRING_SELE, prim.getFirst().toString());
+                            break;
                         case XSDDeclAttr.TYPE_INTEGER:
                             if (typeid2 != XSDDeclAttr.TYPE_INTEGER)
                                 throw new ValidationError(PATH_INTEGER_SELE, prim.getFirst().toString());
-                            break;
-                        case XSDDeclAttr.TYPE_FLOAT:
-                            if (typeid2 != XSDDeclAttr.TYPE_FLOAT)
-                                throw new ValidationError(PATH_FLOAT_SELE, prim.getFirst().toString());
-                            break;
-                        case XSDDeclAttr.TYPE_TIMESTAMP:
-                            if (typeid2 != XSDDeclAttr.TYPE_TIMESTAMP)
-                                throw new ValidationError(PATH_TIMESTAMP_SELE, prim.getFirst().toString());
                             break;
                         default:
                             throw new ValidationError(PATH_PRIMITIV_SELE, prim.getFirst().toString());
@@ -228,10 +219,6 @@ final class XPathCheck {
                         return XSDDeclAttr.TYPE_STRING;
                     } else if (val instanceof Long) {
                         return XSDDeclAttr.TYPE_INTEGER;
-                    } else if (val instanceof Double) {
-                        return XSDDeclAttr.TYPE_FLOAT;
-                    } else if (val instanceof Timestamp) {
-                        return XSDDeclAttr.TYPE_TIMESTAMP;
                     } else {
                         return XSDDeclAttr.TYPE_OBJECT;
                     }

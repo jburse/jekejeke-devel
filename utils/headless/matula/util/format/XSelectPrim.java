@@ -41,10 +41,6 @@ public final class XSelectPrim extends XSelect {
     public static final String PATH_UNKNOWN_ATTR = "path_unknown_attr";
     public static final String PATH_UNKNOWN_CHILD = "path_unknown_child";
 
-    public static final String TIMESTAMP_XPATH = "yyyy-MM-dd HH:mm:ss.SSS";
-
-    public static final String OP_TS = "ts";
-
     private Object attrorcnst;
     private int primitive;
 
@@ -150,20 +146,8 @@ public final class XSelectPrim extends XSelect {
                         buf.append((String) val);
                         buf.append("\'");
                         return buf.toString();
-                    } else if (val instanceof Timestamp) {
-                        buf = new StringBuilder();
-                        buf.append(OP_TS);
-                        buf.append(" \'");
-                        SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_XPATH);
-                        buf.append(sd.format(new Date(((Timestamp) val).getTime())));
-                        buf.append("\'");
-                        return buf.toString();
                     } else {
-                        if (val instanceof Double) {
-                            return Double.toString(((Double)val).doubleValue());
-                        } else {
-                            return Long.toString(((Long)val).longValue());
-                        }
+                        return Long.toString(((Long)val).longValue());
                     }
                 }
             case SELE_PRIM_CHILD:

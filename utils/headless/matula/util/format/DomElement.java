@@ -114,9 +114,7 @@ public final class DomElement extends AbstractDom {
                         val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
                     } else if (XmlMachine.isNumber(valstr)) {
                         try {
-                            val = AbstractDom.parseNumber(valstr);
-                        } catch (ParseException x) {
-                            throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
+                            val = Long.valueOf(valstr);
                         } catch (NumberFormatException x) {
                             throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
                         }

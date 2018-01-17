@@ -63,7 +63,6 @@ abstract class XPathRead {
         reserved.add(XPathExprComb.OP_FALSE);
         reserved.add(XPathExprComb.OP_OR);
         reserved.add(XPathExprComb.OP_AND);
-        reserved.add(XSelectPrim.OP_TS);
     }
 
     /**
@@ -499,25 +498,8 @@ abstract class XPathRead {
         } else if (st.ttype == StreamTokenizer.TT_WORD && Character.isDigit(st.sval.charAt(0))) {
             Object cnst;
             try {
-                if (st.sval.indexOf('.') != -1) {
-                    cnst = Double.valueOf(st.sval);
-                } else {
-                    cnst = Long.valueOf(st.sval);
-                }
+                cnst = Long.valueOf(st.sval);
             } catch (NumberFormatException x) {
-                throw new ScannerError(PATH_ILLEGAL_VALUE, OpenOpts.getOffset(reader));
-            }
-            st.nextToken();
-            res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
-        } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XSelectPrim.OP_TS)) {
-            st.nextToken();
-            if (st.ttype != '\'')
-                throw new ScannerError(PATH_ILLEGAL_VALUE, OpenOpts.getOffset(reader));
-            Object cnst;
-            try {
-                SimpleDateFormat sd = new SimpleDateFormat(XSelectPrim.TIMESTAMP_XPATH);
-                cnst = new Timestamp(sd.parse(st.sval).getTime());
-            } catch (ParseException x) {
                 throw new ScannerError(PATH_ILLEGAL_VALUE, OpenOpts.getOffset(reader));
             }
             st.nextToken();

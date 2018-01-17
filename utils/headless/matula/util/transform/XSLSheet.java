@@ -88,10 +88,6 @@ abstract class XSLSheet {
             typeid = XSDDeclAttr.TYPE_STRING;
         } else if (XSDDeclAttr.OP_INTEGER.equalsIgnoreCase(type)) {
             typeid = XSDDeclAttr.TYPE_INTEGER;
-        } else if (XSDDeclAttr.OP_FLOAT.equalsIgnoreCase(type)) {
-            typeid = XSDDeclAttr.TYPE_FLOAT;
-        } else if (XSDDeclAttr.OP_TIMESTAMP.equalsIgnoreCase(type)) {
-            typeid = XSDDeclAttr.TYPE_TIMESTAMP;
         } else if (OP_ELEMENT.equalsIgnoreCase(type)) {
             typeid = TYPE_ELEMENT;
         } else {

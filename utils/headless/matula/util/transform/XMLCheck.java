@@ -179,24 +179,6 @@ public final class XMLCheck {
                     throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
                 }
                 break;
-            case XSDDeclAttr.TYPE_FLOAT:
-                val = de.getAttrObj(attr);
-                if (val == null)
-                    break;
-                if (!(val instanceof Double)) {
-                    String name = de.getName();
-                    throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
-                }
-                break;
-            case XSDDeclAttr.TYPE_TIMESTAMP:
-                val = de.getAttrObj(attr);
-                if (val == null)
-                    break;
-                if (!(val instanceof Timestamp)) {
-                    String name = de.getName();
-                    throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
-                }
-                break;
             default:
                 throw new IllegalArgumentException("illegal type");
         }

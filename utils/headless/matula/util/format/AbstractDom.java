@@ -225,50 +225,12 @@ public abstract class AbstractDom
     /***************************************************************/
 
     /**
-     * <p>Parse a number.</p>
-     *
-     * @param val The number.
-     * @return The long, double or timestamp.
-     * @throws ParseException        Parsing exception.
-     * @throws NumberFormatException Parsing exeption.
-     */
-    public static Object parseNumber(String val)
-            throws ParseException, NumberFormatException {
-        if (val.indexOf('T') != -1) {
-            SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
-            return new Timestamp(sd.parse(val).getTime());
-        } else if (val.indexOf('.') != -1) {
-            return Double.valueOf(val);
-        } else {
-            return Long.valueOf(val);
-        }
-    }
-
-    /**
-     * <p>Parse a number.</p>
-     *
-     * @param val The number.
-     * @return The long, double or timestamp.
-     * @throws NumberFormatException Parsing exeption.
-     */
-    public static String unparseNumber(Object val) {
-        if (val instanceof Timestamp) {
-            SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
-            return sd.format(new Date(((Timestamp) val).getTime()));
-        } else if (val instanceof Double) {
-            return Double.toString(((Double) val).doubleValue());
-        } else {
-            return Long.toString(((Long) val).longValue());
-        }
-    }
-
-    /**
      * <p>Some test cases.</p>
      *
      * @param args Not used.
      */
-    /*
     public static void main(String[] args) throws ParseException {
+        String TIMESTAMP_DOM = "yyyy-MM-dd'T'HH:mm:ss.SSS";
         SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
 
         Timestamp ts = new Timestamp(new Date().getTime());
@@ -281,6 +243,5 @@ public abstract class AbstractDom
         System.out.println("str=" + str);
         System.out.println("parse(str)=" + new Timestamp(sd.parse(str).getTime()));
     }
-    */
 
 }

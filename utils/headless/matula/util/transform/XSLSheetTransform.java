@@ -377,14 +377,6 @@ public final class XSLSheetTransform extends XSLSheet {
                 if (!(val instanceof Long))
                     throw new ValidationError(PATH_ILLEGAL_VALUE, name);
                 break;
-            case XSDDeclAttr.TYPE_FLOAT:
-                if (!(val instanceof Double))
-                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
-                break;
-            case XSDDeclAttr.TYPE_TIMESTAMP:
-                if (!(val instanceof Timestamp))
-                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
-                break;
             case XSLSheet.TYPE_ELEMENT:
                 if (!(val instanceof DomElement))
                     throw new ValidationError(PATH_ILLEGAL_VALUE, name);
