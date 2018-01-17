@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 /**
  * <p>This class provides an xpath reader.</p>
@@ -48,6 +51,7 @@ abstract class XPathRead {
     private static final String PATH_MISSING_ATTR = "path_missing_attr";
     private static final String PATH_MISSING_VAR = "path_missing_var";
     private static final String PATH_SUPERFLOUS_TOKEN = "path_superflous_token";
+    private static final String PATH_ILLEGAL_VALUE = "path_illegal_value";
 
     private static SetHash<String> reserved = new SetHash<String>();
 
@@ -59,6 +63,7 @@ abstract class XPathRead {
         reserved.add(XPathExprComb.OP_FALSE);
         reserved.add(XPathExprComb.OP_OR);
         reserved.add(XPathExprComb.OP_AND);
+        reserved.add(XSelectPrim.OP_TS);
     }
 
     /**
@@ -85,6 +90,7 @@ abstract class XPathRead {
         st.wordChars('a', 'z');
         st.wordChars('A', 'Z');
         st.wordChars('0', '9');
+        st.wordChars('.', '.');
         st.whitespaceChars(0, ' ');
         st.quoteChar('"');
         st.quoteChar('\'');
@@ -491,7 +497,29 @@ abstract class XPathRead {
             st.nextToken();
             res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
         } else if (st.ttype == StreamTokenizer.TT_WORD && Character.isDigit(st.sval.charAt(0))) {
-            Long cnst = Long.parseLong(st.sval);
+            Object cnst;
+            try {
+                if (st.sval.indexOf('.') != -1) {
+                    cnst = Double.valueOf(st.sval);
+                } else {
+                    cnst = Long.valueOf(st.sval);
+                }
+            } catch (NumberFormatException x) {
+                throw new ScannerError(PATH_ILLEGAL_VALUE, OpenOpts.getOffset(reader));
+            }
+            st.nextToken();
+            res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+        } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XSelectPrim.OP_TS)) {
+            st.nextToken();
+            if (st.ttype != '\'')
+                throw new ScannerError(PATH_ILLEGAL_VALUE, OpenOpts.getOffset(reader));
+            Object cnst;
+            try {
+                SimpleDateFormat sd = new SimpleDateFormat(XSelectPrim.TIMESTAMP_XPATH);
+                cnst = new Timestamp(sd.parse(st.sval).getTime());
+            } catch (ParseException x) {
+                throw new ScannerError(PATH_ILLEGAL_VALUE, OpenOpts.getOffset(reader));
+            }
             st.nextToken();
             res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
         } else if (st.ttype == '$') {
@@ -617,6 +645,14 @@ abstract class XPathRead {
 
         xe = xr.createXPathExpr("child = \"Hello <b>Jack</b>!\"");
         System.out.println("xpathexpr=" + xe);
+
+        xe = xr.createXPathExpr("1.234 < 12.34");
+        System.out.println("xpathexpr=" + xe);
+        System.out.println("check(xpathexpr)=" + xe.checkElement(null));
+
+        xe = xr.createXPathExpr("ts '2018-01-17 00:44:19.062' > ts '2018-01-17 00:44:19.061'");
+        System.out.println("xpathexpr=" + xe);
+        System.out.println("check(xpathexpr)=" + xe.checkElement(null));
     }
     */
 

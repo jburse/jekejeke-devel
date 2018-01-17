@@ -2,6 +2,8 @@ package matula.util.format;
 
 import matula.util.regex.ScannerError;
 
+import java.sql.Timestamp;
+
 /**
  * <p>This predicate implements an xpath primitive expression.</p>
  * </p>
@@ -126,13 +128,45 @@ public final class XPathExprPrim extends XPathExpr {
                 case EXPR_PRIM_NQ:
                     return !val.equals(val2);
                 case EXPR_PRIM_LS:
-                    return ((Long) val).longValue() < ((Long) val2).longValue();
+                    if (val instanceof Long) {
+                        return ((Long) val).longValue() < ((Long) val2).longValue();
+                    } else if (val instanceof Double) {
+                        return ((Double) val).doubleValue() < ((Double) val2).doubleValue();
+                    } else if (val instanceof Timestamp) {
+                        return ((Timestamp) val).compareTo((Timestamp) val2) < 0;
+                    } else {
+                        throw new IllegalArgumentException("unsupported value");
+                    }
                 case EXPR_PRIM_GR:
-                    return ((Long) val).longValue() > ((Long) val2).longValue();
+                    if (val instanceof Long) {
+                        return ((Long) val).longValue() > ((Long) val2).longValue();
+                    } else if (val instanceof Double) {
+                        return ((Double) val).doubleValue() > ((Double) val2).doubleValue();
+                    } else if (val instanceof Timestamp) {
+                        return ((Timestamp) val).compareTo((Timestamp) val2) > 0;
+                    } else {
+                        throw new IllegalArgumentException("unsupported value");
+                    }
                 case EXPR_PRIM_LQ:
-                    return ((Long) val).longValue() <= ((Long) val2).longValue();
+                    if (val instanceof Long) {
+                        return ((Long) val).longValue() <= ((Long) val2).longValue();
+                    } else if (val instanceof Double) {
+                        return ((Double) val).doubleValue() <= ((Double) val2).doubleValue();
+                    } else if (val instanceof Timestamp) {
+                        return ((Timestamp) val).compareTo((Timestamp) val2) <= 0;
+                    } else {
+                        throw new IllegalArgumentException("unsupported value");
+                    }
                 case EXPR_PRIM_GQ:
-                    return ((Long) val).longValue() >= ((Long) val2).longValue();
+                    if (val instanceof Long) {
+                        return ((Long) val).longValue() >= ((Long) val2).longValue();
+                    } else if (val instanceof Double) {
+                        return ((Double) val).doubleValue() >= ((Double) val2).doubleValue();
+                    } else if (val instanceof Timestamp) {
+                        return ((Timestamp) val).compareTo((Timestamp) val2) >= 0;
+                    } else {
+                        throw new IllegalArgumentException("unsupported value");
+                    }
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }

@@ -2,6 +2,9 @@ package matula.util.format;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * <p>The class represent an xselect prim.</p>
@@ -37,6 +40,10 @@ public final class XSelectPrim extends XSelect {
     /* illegal argument errors */
     public static final String PATH_UNKNOWN_ATTR = "path_unknown_attr";
     public static final String PATH_UNKNOWN_CHILD = "path_unknown_child";
+
+    public static final String TIMESTAMP_XPATH = "yyyy-MM-dd HH:mm:ss.SSS";
+
+    public static final String OP_TS = "ts";
 
     private Object attrorcnst;
     private int primitive;
@@ -137,15 +144,27 @@ public final class XSelectPrim extends XSelect {
                     }
                     return sr.toString();
                 } else {
-                    buf = new StringBuilder();
                     if (val instanceof String) {
+                        buf = new StringBuilder();
                         buf.append("\'");
                         buf.append((String) val);
                         buf.append("\'");
+                        return buf.toString();
+                    } else if (val instanceof Timestamp) {
+                        buf = new StringBuilder();
+                        buf.append(OP_TS);
+                        buf.append(" \'");
+                        SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_XPATH);
+                        buf.append(sd.format(new Date(((Timestamp) val).getTime())));
+                        buf.append("\'");
+                        return buf.toString();
                     } else {
-                        buf.append(Long.toString(((Long) val).longValue()));
+                        if (val instanceof Double) {
+                            return Double.toString(((Double)val).doubleValue());
+                        } else {
+                            return Long.toString(((Long)val).longValue());
+                        }
                     }
-                    return buf.toString();
                 }
             case SELE_PRIM_CHILD:
                 name = getAttr();

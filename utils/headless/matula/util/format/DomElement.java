@@ -9,6 +9,7 @@ import matula.util.system.OpenOpts;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.text.ParseException;
 
 /**
  * <p>This class provides a dom element. The API is simplicistic in
@@ -113,7 +114,9 @@ public final class DomElement extends AbstractDom {
                         val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
                     } else if (XmlMachine.isNumber(valstr)) {
                         try {
-                            val = Long.parseLong(valstr);
+                            val = AbstractDom.parseNumber(valstr);
+                        } catch (ParseException x) {
+                            throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
                         } catch (NumberFormatException x) {
                             throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(dr.getReader()));
                         }

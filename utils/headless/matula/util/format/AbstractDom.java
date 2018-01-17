@@ -7,6 +7,10 @@ import matula.util.regex.ScannerError;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * <p>This class provides a dom node.</p>
@@ -36,6 +40,8 @@ import java.io.Writer;
  */
 public abstract class AbstractDom
         implements Cloneable {
+    public static final String TIMESTAMP_DOM = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
     public static final int MASK_TEXT = 0x00000001;
     public static final int MASK_LIST = 0x00000002;
 
@@ -213,5 +219,68 @@ public abstract class AbstractDom
     void reinitialize() {
         parent = null;
     }
+
+    /***************************************************************/
+    /* Name Token Conversion                                       */
+    /***************************************************************/
+
+    /**
+     * <p>Parse a number.</p>
+     *
+     * @param val The number.
+     * @return The long, double or timestamp.
+     * @throws ParseException        Parsing exception.
+     * @throws NumberFormatException Parsing exeption.
+     */
+    public static Object parseNumber(String val)
+            throws ParseException, NumberFormatException {
+        if (val.indexOf('T') != -1) {
+            SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
+            return new Timestamp(sd.parse(val).getTime());
+        } else if (val.indexOf('.') != -1) {
+            return Double.valueOf(val);
+        } else {
+            return Long.valueOf(val);
+        }
+    }
+
+    /**
+     * <p>Parse a number.</p>
+     *
+     * @param val The number.
+     * @return The long, double or timestamp.
+     * @throws NumberFormatException Parsing exeption.
+     */
+    public static String unparseNumber(Object val) {
+        if (val instanceof Timestamp) {
+            SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
+            return sd.format(new Date(((Timestamp) val).getTime()));
+        } else if (val instanceof Double) {
+            return Double.toString(((Double) val).doubleValue());
+        } else {
+            return Long.toString(((Long) val).longValue());
+        }
+    }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
+
+        Timestamp ts = new Timestamp(new Date().getTime());
+        System.out.println("ts=" + ts);
+        String str = sd.format(new Date(ts.getTime()));
+        System.out.println("format(ts)=" + str);
+
+        System.out.println();
+
+        System.out.println("str=" + str);
+        System.out.println("parse(str)=" + new Timestamp(sd.parse(str).getTime()));
+    }
+    */
 
 }

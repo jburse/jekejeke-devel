@@ -37,10 +37,14 @@ public final class XSDDeclAttr extends XSDDecl {
     static final String OP_OPTIONAL = "optional";
     static final String OP_STRING = "string";
     static final String OP_INTEGER = "integer";
+    static final String OP_FLOAT = "float";
+    static final String OP_TIMESTAMP = "timestamp";
 
     public static final int TYPE_OBJECT = 0;
     public static final int TYPE_STRING = 1;
     public static final int TYPE_INTEGER = 2;
+    public static final int TYPE_FLOAT = 3;
+    public static final int TYPE_TIMESTAMP = 4;
 
     private boolean optional;
     private int type;
@@ -137,6 +141,10 @@ public final class XSDDeclAttr extends XSDDecl {
             typeid = TYPE_STRING;
         } else if (OP_INTEGER.equalsIgnoreCase(type)) {
             typeid = TYPE_INTEGER;
+        } else if (OP_FLOAT.equalsIgnoreCase(type)) {
+            typeid = TYPE_FLOAT;
+        } else if (OP_INTEGER.equalsIgnoreCase(type)) {
+            typeid = TYPE_TIMESTAMP;
         } else {
             String name = de.getName();
             throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name + ".type");

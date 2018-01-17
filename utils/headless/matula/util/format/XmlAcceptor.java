@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.text.ParseException;
 
 /**
  * <p>The base class for a xml acceptor.</p>
@@ -182,6 +183,8 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
             }
         } catch (ScannerError x) {
             throw new RuntimeException("problem writing", x);
+        } catch (ParseException x) {
+            throw new RuntimeException("problem writing", x);
         } catch (InterruptedIOException x) {
             Thread.currentThread().interrupt();
         } catch (IOException x) {
@@ -200,6 +203,8 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
                 nextTagOrText();
         } catch (ScannerError x) {
             throw new RuntimeException("problem writing", x);
+        } catch (ParseException x) {
+            throw new RuntimeException("problem writing", x);
         } catch (InterruptedIOException x) {
             Thread.currentThread().interrupt();
         } catch (IOException x) {
@@ -210,9 +215,10 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
     /**
      * <p>Retrieve the next tag or text.</p>
      *
-     * @throws IOException  problem reading character.
-     * @throws ScannerError Rewriting problem.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     * @throws ParseException Shit happens.
      */
-    public abstract void nextTagOrText() throws IOException, ScannerError;
+    public abstract void nextTagOrText() throws IOException, ScannerError, ParseException;
 
 }

@@ -5,6 +5,8 @@ import matula.util.format.DomElement;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
+import java.sql.Timestamp;
+
 /**
  * <p>This class provides an xpath reader during check.</p>
  * </p>
@@ -36,6 +38,8 @@ final class XPathReadCheck extends XPathRead {
 
     private static Object VOID_OBJECT = new Object();
     private static Object VOID_ELEMENT = new DomElement();
+    private static Object VOID_DOUBLE = Double.valueOf(0);
+    private static Object VOID_TIMESTAMP = new Timestamp(0);
 
     private MapHash<String, Integer> parameters;
 
@@ -70,6 +74,10 @@ final class XPathReadCheck extends XPathRead {
                 return "";
             case XSDDeclAttr.TYPE_INTEGER:
                 return Long.valueOf(0);
+            case XSDDeclAttr.TYPE_FLOAT:
+                return VOID_DOUBLE;
+            case XSDDeclAttr.TYPE_TIMESTAMP:
+                return VOID_TIMESTAMP;
             case XSLSheet.TYPE_ELEMENT:
                 return VOID_ELEMENT;
             default:

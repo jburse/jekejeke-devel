@@ -214,7 +214,7 @@ public final class DomWriter {
                         write(ForeignXml.sysTextEscape((String) val));
                         write("\"");
                     } else {
-                        write(Long.toString(((Long) val).longValue()));
+                        write(AbstractDom.unparseNumber(val));
                     }
                 }
             }
@@ -236,7 +236,7 @@ public final class DomWriter {
                         buf.append(ForeignXml.sysTextEscape((String) val));
                         buf.append("\"");
                     } else {
-                        buf.append(Long.toString(((Long) val).longValue()));
+                        buf.append(AbstractDom.unparseNumber(val));
                     }
                 }
                 off2 += 3 + buf.length();
