@@ -74,20 +74,23 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set at end.</p>
+     * <p>Add entry to the set at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key The key, can be null.
+     * @param f The entry.
      */
-    public void add(E key) {
-        SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
+    public void putEntry(SetEntry<E> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) f;
 
-        int i = index(key);
+        int i = index(e.key);
 
         SetHashLinkEntry<E> g = table[i];
         if (g != null)
             g.prev = e;
         e.next = g;
+        e.prev = null;
         table[i] = e;
 
         e.before = last;
@@ -104,13 +107,23 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key The key.
+     * @return The entry.
+     */
+    public SetEntry<E> newEntry(E key) {
+        return new SetHashLinkEntry<E>(key);
+    }
+
+    /**
      * <p>Add key to the set at beginning.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
      * @param key The key.
      */
     public void addFirst(E key) {
-        SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
+        SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) newEntry(key);
 
         int i = index(key);
 

@@ -39,11 +39,9 @@ final class SetTreeEntry<K> extends SetEntry<K> {
      * <p>Create a tree set entry.</p>
      *
      * @param k The key.
-     * @param p The parent.
      */
-    SetTreeEntry(K k, SetTreeEntry<K> p) {
+    SetTreeEntry(K k) {
         super(k);
-        parent = p;
     }
 
 }

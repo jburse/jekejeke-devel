@@ -37,7 +37,7 @@ public abstract class AbstractMap<K, V>
      * <p>Add the key to the map.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key   The key.
+     * @param key   The key, can be null.
      * @param value The value.
      * @return The new enry.
      */
@@ -51,11 +51,12 @@ public abstract class AbstractMap<K, V>
      * <p>Add the key to the map.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key   The key.
+     * @param key   The key, can be null.
      * @param value The value.
      */
     public final void add(K key, V value) {
-        put(key, value);
+        MapEntry<K, V> e = newEntry(key, value);
+        putEntry(e);
     }
 
     /**

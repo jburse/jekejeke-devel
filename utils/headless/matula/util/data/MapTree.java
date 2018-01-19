@@ -93,7 +93,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
             }
         }
 
-        e.setParent(b);
+        e.parent = b;
 
         if (b == null) {
             root = e;
@@ -265,7 +265,6 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
 
     /**********************************************************************/
     /* Some Helpers                                                       */
-
     /**********************************************************************/
 
     // Copied from Java Tree

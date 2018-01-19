@@ -35,7 +35,7 @@ final class SetHashEntry<K> extends SetEntry<K> {
      *
      * @param k The key.
      */
-    public SetHashEntry(K k) {
+    SetHashEntry(K k) {
         super(k);
     }
 

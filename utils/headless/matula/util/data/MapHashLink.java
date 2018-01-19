@@ -75,12 +75,12 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * <p>Assumption is that key is not yet present.</p>
      * <p>Entry is add at the bottom.</p>
      *
-     * @param f   The entry.
+     * @param f The entry.
      */
     public void putEntry(MapEntry<K, V> f) {
         if (f == null)
             throw new NullPointerException("entry missing");
-        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>)f;
+        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>) f;
 
         int i = index(e.key);
 
@@ -107,12 +107,12 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
     /**
      * <p>Create a new entry.</p>
      *
-     * @param key The key.
+     * @param key   The key.
      * @param value The value.
      * @return The entry.
      */
     public MapEntry<K, V> newEntry(K key, V value) {
-        return new MapHashLinkEntry<K,V>(key,value);
+        return new MapHashLinkEntry<K, V>(key, value);
     }
 
     /**
@@ -173,7 +173,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * @param value The value.
      */
     public void putFirst(K key, V value) {
-        MapHashLinkEntry<K, V> e = new MapHashLinkEntry<K, V>(key, value);
+        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>) newEntry(key, value);
 
         int i = index(e.key);
 

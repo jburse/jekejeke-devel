@@ -71,25 +71,38 @@ public final class SetHash<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set at end.</p>
+     * <p>Add entry to the set at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key The key, can be null.
+     * @param f The entry.
      */
-    public void add(E key) {
-        SetHashEntry<E> e = new SetHashEntry<E>(key);
+    public void putEntry(SetEntry<E> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        SetHashEntry<E> e = (SetHashEntry<E>) f;
 
-        int i = index(key);
+        int i = index(e.key);
 
         SetHashEntry<E> g = table[i];
         if (g != null)
             g.prev = e;
         e.next = g;
+        e.prev = null;
         table[i] = e;
 
         size++;
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
+    }
+
+    /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key The key.
+     * @return The entry.
+     */
+    public SetEntry<E> newEntry(E key) {
+        return new SetHashEntry<E>(key);
     }
 
     /**

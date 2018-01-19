@@ -36,7 +36,7 @@ final class MapHashEntry<K, V> extends MapEntry<K, V> {
      * @param k The key.
      * @param v The value;
      */
-    public MapHashEntry(K k, V v) {
+    MapHashEntry(K k, V v) {
         super(k, v);
     }
 

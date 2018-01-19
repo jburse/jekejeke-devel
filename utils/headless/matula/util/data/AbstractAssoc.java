@@ -24,7 +24,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractAssoc<K,V>
+public abstract class AbstractAssoc<K, V>
         implements Cloneable {
     public int size;
 

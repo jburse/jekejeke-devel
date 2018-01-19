@@ -45,6 +45,30 @@ public abstract class AbstractSet<E>
     }
 
     /**
+     * <p>Add key to the set at end.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key, can be null.
+     * @return The new entry.
+     */
+    public final SetEntry<E> put(E key) {
+        SetEntry<E> e = newEntry(key);
+        putEntry(e);
+        return e;
+    }
+
+    /**
+     * <p>Add key to the set at end.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key, can be null.
+     */
+    public final void add(E key) {
+        SetEntry<E> e = newEntry(key);
+        putEntry(e);
+    }
+
+    /**
      * <p>Remove the key from the set.</p>
      *
      * @param key The key.
@@ -81,6 +105,22 @@ public abstract class AbstractSet<E>
      * @return The entry, or null.
      */
     public abstract SetEntry<E> getEntry(E key);
+
+    /**
+     * <p>Add entry to the set at end.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param f The entry.
+     */
+    public abstract void putEntry(SetEntry<E> f);
+
+    /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key The key.
+     * @return The entry.
+     */
+    public abstract SetEntry<E> newEntry(E key);
 
     /**
      * <p>Remove the entry from the set.</p>

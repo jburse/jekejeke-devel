@@ -45,13 +45,4 @@ final class MapTreeEntry<K, V> extends MapEntry<K, V> {
         super(k, v);
     }
 
-    /**
-     * <p>Set the parent.</p>
-     *
-     * @param p The parent.
-     */
-    public void setParent(MapTreeEntry<K, V> p) {
-        parent = p;
-    }
-
 }

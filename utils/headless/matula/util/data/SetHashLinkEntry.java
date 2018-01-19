@@ -26,7 +26,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class SetHashLinkEntry<K> extends SetEntry<K> {
+public class SetHashLinkEntry<K> extends SetEntry<K> {
     SetHashLinkEntry<K> prev;
     SetHashLinkEntry<K> next;
     SetHashLinkEntry<K> before;
@@ -37,7 +37,7 @@ final class SetHashLinkEntry<K> extends SetEntry<K> {
      *
      * @param k The key.
      */
-    SetHashLinkEntry(K k) {
+    public SetHashLinkEntry(K k) {
         super(k);
     }
 

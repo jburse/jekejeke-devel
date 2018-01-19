@@ -67,19 +67,24 @@ public final class SetTree<E> extends AbstractSet<E> {
         return null;
     }
 
+
     /**
-     * <p>Add key to the set.</p>
+     * <p>Add entry to the set at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key The key, can be null.
+     * @param f The entry.
      */
-    public void add(E key) {
+    public void putEntry(SetEntry<E> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        SetTreeEntry<E> e = (SetTreeEntry<E>) f;
+
         SetTreeEntry<E> p = root;
         SetTreeEntry<E> b = null;
         int k = 0;
         while (p != null) {
             b = p;
-            k = comparator.compare(key, p.key);
+            k = comparator.compare(e.key, p.key);
             if (k < 0) {
                 p = p.left;
             } else if (k > 0) {
@@ -88,7 +93,9 @@ public final class SetTree<E> extends AbstractSet<E> {
                 throw new IllegalStateException("duplicate key");
             }
         }
-        SetTreeEntry<E> e = new SetTreeEntry<E>(key, b);
+
+        e.parent = b;
+
         if (b == null) {
             root = e;
         } else {
@@ -100,6 +107,16 @@ public final class SetTree<E> extends AbstractSet<E> {
             fixAfterInsertion(e);
         }
         size++;
+    }
+
+    /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key The key.
+     * @return The entry.
+     */
+    public SetEntry<E> newEntry(E key) {
+        return new SetTreeEntry<E>(key);
     }
 
     /**
@@ -118,7 +135,7 @@ public final class SetTree<E> extends AbstractSet<E> {
      * @param f The entry.
      */
     public void removeEntry(SetEntry<E> f) {
-        if (f==null)
+        if (f == null)
             throw new NullPointerException("entry missing");
         SetTreeEntry<E> p = (SetTreeEntry<E>) f;
 
