@@ -30,9 +30,6 @@ import matula.util.regex.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class XPathReadTransform extends XPathRead {
-    /* illegal argument errors */
-    public static final String PATH_UNKNOWN_VARIABLE = "path_unknown_variable";
-
     private MapHash<String, Object> variables;
 
     /**
@@ -55,10 +52,7 @@ final class XPathReadTransform extends XPathRead {
      * @return The variable value.
      */
     Object getVariable(String n) {
-        Object cnst = variables.get(n);
-        if (cnst == null)
-            throw new IllegalArgumentException(PATH_UNKNOWN_VARIABLE);
-        return cnst;
+        return variables.get(n);
     }
 
 }

@@ -112,11 +112,7 @@ public final class XSelectComb extends XSelect {
             }
         } else {
             Long val = (Long) first.evalElement(d);
-            if (!(val instanceof Long))
-                throw new IllegalArgumentException("long expected");
             Long val2 = (Long) second.evalElement(d);
-            if (!(val2 instanceof Long))
-                throw new IllegalArgumentException("long expected");
             switch (combination) {
                 case SELE_COMB_ADD:
                     return Long.valueOf(val.longValue() + val2.longValue());

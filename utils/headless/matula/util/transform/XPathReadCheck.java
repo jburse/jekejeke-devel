@@ -36,7 +36,6 @@ import java.sql.Timestamp;
 final class XPathReadCheck extends XPathRead {
     private static final String PATH_UNDECLARED_VAR = "path_undeclared_var";
 
-    private static Object VOID_OBJECT = new Object();
     private static Object VOID_ELEMENT = new DomElement();
 
     private MapHash<String, Integer> parameters;
@@ -67,7 +66,7 @@ final class XPathReadCheck extends XPathRead {
             throw new ScannerError(PATH_UNDECLARED_VAR, OpenOpts.getOffset(reader));
         switch (type.intValue()) {
             case XSDDeclAttr.TYPE_OBJECT:
-                return VOID_OBJECT;
+                return null;
             case XSDDeclAttr.TYPE_STRING:
                 return "";
             case XSDDeclAttr.TYPE_INTEGER:

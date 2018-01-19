@@ -96,15 +96,6 @@ public final class XPath {
     }
 
     /**
-     * <p>Add an attribute name predicate.</p>
-     *
-     * @param a The attribute name.
-     */
-    public void whereExists(String a) {
-        cps.get(cps.size() - 1).getExpr().whereExists(a);
-    }
-
-    /**
      * <p>Add a string attribute value predicate.</p>
      *
      * @param a The attribute name.

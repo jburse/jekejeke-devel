@@ -6,7 +6,6 @@ import matula.util.data.MapHashLink;
 import matula.util.format.*;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 /**
  * <p>This class provides an xpath checker.</p>
@@ -152,24 +151,19 @@ final class XPathCheck {
             switch (prim.getPrimitive()) {
                 case XPathExprPrim.EXPR_PRIM_EQ:
                 case XPathExprPrim.EXPR_PRIM_NQ:
+                    select(prim.getFirst());
+                    select(prim.getSecond());
+                    break;
                 case XPathExprPrim.EXPR_PRIM_LS:
                 case XPathExprPrim.EXPR_PRIM_GR:
                 case XPathExprPrim.EXPR_PRIM_LQ:
                 case XPathExprPrim.EXPR_PRIM_GQ:
                     int typeid = select(prim.getFirst());
-                    int typeid2 = select(prim.getSecond());
-                    switch (typeid) {
-                        case XSDDeclAttr.TYPE_STRING:
-                            if (typeid2 != XSDDeclAttr.TYPE_STRING)
-                                throw new ValidationError(PATH_STRING_SELE, prim.getFirst().toString());
-                            break;
-                        case XSDDeclAttr.TYPE_INTEGER:
-                            if (typeid2 != XSDDeclAttr.TYPE_INTEGER)
-                                throw new ValidationError(PATH_INTEGER_SELE, prim.getFirst().toString());
-                            break;
-                        default:
-                            throw new ValidationError(PATH_PRIMITIV_SELE, prim.getFirst().toString());
-                    }
+                    if (typeid == XSLSheet.TYPE_ELEMENT)
+                        throw new ValidationError(PATH_PRIMITIV_SELE, prim.getFirst().toString());
+                    typeid = select(prim.getSecond());
+                    if (typeid == XSLSheet.TYPE_ELEMENT)
+                        throw new ValidationError(PATH_PRIMITIV_SELE, prim.getSecond().toString());
                     break;
                 default:
                     throw new ValidationError(PATH_CANT_PRED, ex.toString());
@@ -213,20 +207,22 @@ final class XPathCheck {
                     return decl.getType();
                 case XSelectPrim.SELE_PRIM_CONST:
                     Object val = xp.getCnst();
-                    if (val instanceof DomElement) {
-                        return XSLSheet.TYPE_ELEMENT;
-                    } else if (val instanceof String) {
+                    if (val instanceof String) {
                         return XSDDeclAttr.TYPE_STRING;
                     } else if (val instanceof Long) {
                         return XSDDeclAttr.TYPE_INTEGER;
+                    } else if (val instanceof DomElement) {
+                        return XSLSheet.TYPE_ELEMENT;
                     } else {
-                        return XSDDeclAttr.TYPE_OBJECT;
+                        throw new ValidationError(PATH_CANT_SELE, xs.toString());
                     }
                 case XSelectPrim.SELE_PRIM_CHILD:
                     name = xp.getAttr();
                     XSDDeclElem decl2 = schema.getDeclElem(name);
                     XMLCheck.checkParent(getContext(), name, decl2);
                     return XSLSheet.TYPE_ELEMENT;
+                case XSelectPrim.SELE_PRIM_NULL:
+                    return XSDDeclAttr.TYPE_OBJECT;
                 default:
                     throw new ValidationError(PATH_CANT_SELE, xs.toString());
             }

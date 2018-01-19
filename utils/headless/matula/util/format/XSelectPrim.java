@@ -36,10 +36,9 @@ public final class XSelectPrim extends XSelect {
     public static final int SELE_PRIM_ATTR = 0;
     public static final int SELE_PRIM_CONST = 1;
     public static final int SELE_PRIM_CHILD = 2;
+    public static final int SELE_PRIM_NULL = 3;
 
-    /* illegal argument errors */
-    public static final String PATH_UNKNOWN_ATTR = "path_unknown_attr";
-    public static final String PATH_UNKNOWN_CHILD = "path_unknown_child";
+    public static final String OP_NULL = "null";
 
     private Object attrorcnst;
     private int primitive;
@@ -74,6 +73,15 @@ public final class XSelectPrim extends XSelect {
     /**
      * <p>>Create a new xselect prim.</p>
      *
+     * @param s The type of primitive.
+     */
+    public XSelectPrim(int s) {
+        primitive = s;
+    }
+
+    /**
+     * <p>>Create a new xselect prim.</p>
+     *
      * @param a The attribute or variable.
      * @param s The type of primitive.
      */
@@ -96,16 +104,15 @@ public final class XSelectPrim extends XSelect {
         switch (getPrimitive()) {
             case SELE_PRIM_ATTR:
                 res = d.getAttrObj(getAttr());
-                if (res == null)
-                    throw new IllegalArgumentException(PATH_UNKNOWN_ATTR);
                 break;
             case SELE_PRIM_CONST:
                 res = getCnst();
                 break;
             case SELE_PRIM_CHILD:
                 res = d.getChild(getAttr());
-                if (res == null)
-                    throw new IllegalArgumentException(PATH_UNKNOWN_CHILD);
+                break;
+            case SELE_PRIM_NULL:
+                res = null;
                 break;
             default:
                 throw new IllegalArgumentException("illegal primitive");
@@ -153,6 +160,8 @@ public final class XSelectPrim extends XSelect {
             case SELE_PRIM_CHILD:
                 name = getAttr();
                 return name;
+            case SELE_PRIM_NULL:
+                return OP_NULL;
             default:
                 throw new IllegalArgumentException("illegal primitive");
         }

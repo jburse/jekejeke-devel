@@ -36,6 +36,7 @@ import java.sql.Timestamp;
  */
 public final class XSLSheetTransform extends XSLSheet {
     private static final String PATH_ILLEGAL_VALUE = "path_illegal_value";
+    private static final String PATH_UNKNOWN_VARIABLE = "path_unknown_variable";
 
     public static final String NAME_STYLESHEET = "stylesheet";
     public static final String NAME_OUTPUT = "output";
@@ -361,7 +362,7 @@ public final class XSLSheetTransform extends XSLSheet {
             String use = de.getAttr(ATTR_PARAM_USE);
             boolean opflag = XSDDeclAttr.checkUse(de, use);
             if (!opflag)
-                throw new IllegalArgumentException(XPathReadTransform.PATH_UNKNOWN_VARIABLE);
+                throw new IllegalArgumentException(PATH_UNKNOWN_VARIABLE);
             return;
         }
         String type = de.getAttr(ATTR_PARAM_TYPE);

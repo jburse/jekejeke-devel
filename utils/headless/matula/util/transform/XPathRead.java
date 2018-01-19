@@ -1,6 +1,5 @@
 package matula.util.transform;
 
-import matula.util.data.MapHash;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -11,9 +10,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 /**
  * <p>This class provides an xpath reader.</p>
@@ -63,6 +59,8 @@ abstract class XPathRead {
         reserved.add(XPathExprComb.OP_FALSE);
         reserved.add(XPathExprComb.OP_OR);
         reserved.add(XPathExprComb.OP_AND);
+        reserved.add(XPathExprComb.OP_NOT);
+        reserved.add(XSelectPrim.OP_NULL);
     }
 
     /**
@@ -248,13 +246,13 @@ abstract class XPathRead {
      */
     private Object predicateTerm()
             throws IOException, ScannerError {
-        Object res = predicatesSimple();
+        Object res = predicateSimple();
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_AND)) {
             st.nextToken();
             if (!(res instanceof XPathExpr))
                 throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             res = ((XPathExpr) res).lift(XPathExprComb.EXPR_COMB_AND);
-            Object res2 = predicatesSimple();
+            Object res2 = predicateSimple();
             if (!(res2 instanceof XPathExpr))
                 throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_AND);
@@ -267,35 +265,36 @@ abstract class XPathRead {
      * <p>Parse a simple predicate.</p>
      * <p>The following syntax is used:</p>
      * <pre>
-     *     simple    -->  "~" simple
-     *                 | "false"
+     *     simple    --> "false"
      *                 | "true"
+     *                 | "not" simple
+     *                 | select "=&lt;" select.
      *                 | select "=" select.
-     *
-     *     const --> "'" { char } "'"
-     *             | """" { char } """"
-     *             | "$" name.
+     *                 | select "&lt;&gt;" select.
+     *                 | select "&lt;" select.
+     *                 | select "&gt;=" select.
+     *                 | select "&gt;" select.
      * </pre>
      *
      * @return The simple predicate.
      * @throws IOException  IO error.
      * @throws ScannerError Syntax error.
      */
-    private Object predicatesSimple()
+    private Object predicateSimple()
             throws IOException, ScannerError {
         Object res;
-        if (st.ttype == '~') {
-            st.nextToken();
-            res = select();
-            if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
-            ((XPathExpr) res).complement();
-        } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_FALSE)) {
+        if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_FALSE)) {
             st.nextToken();
             res = new XPathExprComb(XPathExprComb.EXPR_COMB_OR);
         } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_TRUE)) {
             st.nextToken();
             res = new XPathExprComb(XPathExprComb.EXPR_COMB_AND);
+        } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_NOT)) {
+            st.nextToken();
+            res = predicateSimple();
+            if (!(res instanceof XPathExpr))
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
+            ((XPathExpr) res).complement();
         } else {
             res = select();
             int compid;
@@ -353,7 +352,7 @@ abstract class XPathRead {
             setReader(cr);
             Object res = predicate();
             if (!(res instanceof XPathExpr))
-                throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
+                throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
             checkEof();
             return (XPathExpr) res;
         } catch (IOException x) {
@@ -468,6 +467,7 @@ abstract class XPathRead {
      *                   | digit { digit }
      *                   | "$" name.
      *                   | """" { char } """"
+     *                   | "null"
      *                   | name
      * </pre>
      *
@@ -511,7 +511,11 @@ abstract class XPathRead {
             String var = st.sval;
             st.nextToken();
             Object cnst = getVariable(var);
-            res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+            if (cnst != null) {
+                res = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+            } else {
+                res = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+            }
         } else if (st.ttype == '"') {
             String cnst = st.sval;
             st.nextToken();
@@ -520,6 +524,9 @@ abstract class XPathRead {
             int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
             de.load(sr, mask);
             res = new XSelectPrim(de, XSelectPrim.SELE_PRIM_CONST);
+        } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XSelectPrim.OP_NULL)) {
+            st.nextToken();
+            res = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
         } else if (isName()) {
             String name = st.sval;
             st.nextToken();

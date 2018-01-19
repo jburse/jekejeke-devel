@@ -115,7 +115,12 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param v The value.
      */
     public void calcAttrObj(String a, Object v) {
-        XSelect xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        XSelect xs;
+        if (v!=null) {
+            xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        } else {
+            xs = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+        }
         calcFunc(a, new XActionFuncUpdate(a, xs, XActionFuncUpdate.UPDATE_SET_ATTR));
     }
 
@@ -126,26 +131,13 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param v The elem.
      */
     public void calcChild(String n, DomElement v) {
-        XSelect xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        XSelect xs;
+        if (v!=null) {
+            xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        } else {
+            xs = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+        }
         calcFunc(n, new XActionFuncUpdate(n, xs, XActionFuncUpdate.UPDATE_SET_CHILD));
-    }
-
-    /**
-     * <p>Delete an element attribute action.</p>
-     *
-     * @param a The attribute name.
-     */
-    public void calcDelAttr(String a) {
-        calcFunc(a, new XActionFuncUpdate(a, XActionFuncUpdate.UPDATE_RESET_ATTR));
-    }
-
-    /**
-     * <p>Delete an element child action.</p>
-     *
-     * @param n The child name.
-     */
-    public void calcDelChild(String n) {
-        calcFunc(n, new XActionFuncUpdate(n, XActionFuncUpdate.UPDATE_RESET_CHILD));
     }
 
     /**

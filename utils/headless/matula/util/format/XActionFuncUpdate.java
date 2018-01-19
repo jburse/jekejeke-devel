@@ -32,8 +32,6 @@ public final class XActionFuncUpdate extends XActionFunc {
     public static final int UPDATE_NAME = 0;
     public static final int UPDATE_SET_ATTR = 1;
     public static final int UPDATE_SET_CHILD = 2;
-    public static final int UPDATE_RESET_ATTR = 3;
-    public static final int UPDATE_RESET_CHILD = 4;
 
     private String keyorname;
     private XSelect value;
@@ -84,17 +82,19 @@ public final class XActionFuncUpdate extends XActionFunc {
                 break;
             case UPDATE_SET_ATTR:
                 Object val = value.evalElement(e);
-                r.setAttrObj(keyorname, val);
+                if (val!=null) {
+                    r.setAttrObj(keyorname, val);
+                } else {
+                    r.resetAttr(keyorname);
+                }
                 break;
             case UPDATE_SET_CHILD:
                 val = value.evalElement(e);
-                r.setChild(keyorname, (DomElement) val);
-                break;
-            case UPDATE_RESET_ATTR:
-                r.resetAttr(keyorname);
-                break;
-            case UPDATE_RESET_CHILD:
-                r.resetChild(keyorname);
+                if (val!=null) {
+                    r.setChild(keyorname, (DomElement) val);
+                } else {
+                    r.resetChild(keyorname);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("illegal update");
@@ -122,16 +122,6 @@ public final class XActionFuncUpdate extends XActionFunc {
                 buf.append(keyorname);
                 buf.append("=");
                 buf.append(value.toString());
-                return buf.toString();
-            case UPDATE_RESET_ATTR:
-                buf = new StringBuilder();
-                buf.append("delete @");
-                buf.append(keyorname);
-                return buf.toString();
-            case UPDATE_RESET_CHILD:
-                buf = new StringBuilder();
-                buf.append("delete ");
-                buf.append(keyorname);
                 return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");

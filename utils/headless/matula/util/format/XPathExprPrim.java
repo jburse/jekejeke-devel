@@ -1,6 +1,7 @@
 package matula.util.format;
 
 import matula.util.regex.ScannerError;
+import matula.util.transform.XSDDeclAttr;
 
 /**
  * <p>This predicate implements an xpath primitive expression.</p>
@@ -30,15 +31,12 @@ import matula.util.regex.ScannerError;
  */
 public final class XPathExprPrim extends XPathExpr {
     public static final int EXPR_PRIM_NAME = 0;
-    public static final int EXPR_PRIM_NOT_NAME = 1;
-    public static final int EXPR_PRIM_ATTR = 2;
-    public static final int EXPR_PRIM_NOT_ATTR = 3;
-    public static final int EXPR_PRIM_EQ = 4;
-    public static final int EXPR_PRIM_NQ = 5;
-    public static final int EXPR_PRIM_LS = 6;
-    public static final int EXPR_PRIM_GR = 7;
-    public static final int EXPR_PRIM_LQ = 8;
-    public static final int EXPR_PRIM_GQ = 9;
+    public static final int EXPR_PRIM_EQ = 1;
+    public static final int EXPR_PRIM_NQ = 2;
+    public static final int EXPR_PRIM_LS = 3;
+    public static final int EXPR_PRIM_GR = 4;
+    public static final int EXPR_PRIM_LQ = 5;
+    public static final int EXPR_PRIM_GQ = 6;
 
     private XSelect first;
     private XSelect second;
@@ -112,17 +110,11 @@ public final class XPathExprPrim extends XPathExpr {
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
     public boolean checkElement(DomElement e) throws ScannerError {
-        if (primitive <= EXPR_PRIM_NOT_ATTR) {
+        if (primitive <= EXPR_PRIM_NAME) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
                 case EXPR_PRIM_NAME:
                     return e.isName(name);
-                case EXPR_PRIM_NOT_NAME:
-                    return !e.isName(name);
-                case EXPR_PRIM_ATTR:
-                    return e.getAttrObj(name) != null;
-                case EXPR_PRIM_NOT_ATTR:
-                    return e.getAttrObj(name) == null;
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
@@ -131,44 +123,72 @@ public final class XPathExprPrim extends XPathExpr {
             Object val2 = second.evalElement(e);
             switch (primitive) {
                 case EXPR_PRIM_EQ:
-                    return val.equals(val2);
+                    return equals(val, val2);
                 case EXPR_PRIM_NQ:
-                    return !val.equals(val2);
+                    return !equals(val, val2);
                 case EXPR_PRIM_LS:
-                    if (val instanceof String) {
-                        return ((String) val).compareTo((String) val2) < 0;
-                    } else if (val instanceof Long) {
-                        return ((Long) val).longValue() < ((Long) val2).longValue();
-                    } else {
-                        throw new IllegalArgumentException("unsupported value");
-                    }
+                    return compareTo(val, val2) < 0;
                 case EXPR_PRIM_GR:
-                    if (val instanceof String) {
-                        return ((String) val).compareTo((String) val2) > 0;
-                    } else if (val instanceof Long) {
-                        return ((Long) val).longValue() > ((Long) val2).longValue();
-                    } else {
-                        throw new IllegalArgumentException("unsupported value");
-                    }
+                    return compareTo(val, val2) > 0;
                 case EXPR_PRIM_LQ:
-                    if (val instanceof String) {
-                        return ((String) val).compareTo((String) val2) <= 0;
-                    } else if (val instanceof Long) {
-                        return ((Long) val).longValue() <= ((Long) val2).longValue();
-                    } else {
-                        throw new IllegalArgumentException("unsupported value");
-                    }
+                    return compareTo(val, val2) <= 0;
                 case EXPR_PRIM_GQ:
-                    if (val instanceof String) {
-                        return ((String) val).compareTo((String) val2) >= 0;
-                    } else if (val instanceof Long) {
-                        return ((Long) val).longValue() >= ((Long) val2).longValue();
-                    } else {
-                        throw new IllegalArgumentException("unsupported value");
-                    }
+                    return compareTo(val, val2) >= 0;
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
+        }
+    }
+
+    /**
+     * <p>Test equality of two values.</p>
+     *
+     * @param val The first value.
+     * @param val2 The second value.
+     * @return True if equal, otherwise false.
+     */
+    private boolean equals(Object val, Object val2) {
+        return (val != null ? val.equals(val2) : null == val2);
+    }
+
+    /**
+     * <p>Compare of two primitive values.</p>
+     *
+     * @param val The first value.
+     * @param val2 The second value.
+     * @return less < 0, equals = 0, greater > 0
+     */
+    private static int compareTo(Object val, Object val2) {
+        int type=typeOf(val);
+        int type2=typeOf(val2);
+        if (type!=type2)
+            return (type<type2?-1:1);
+        switch (type) {
+            case XSDDeclAttr.TYPE_OBJECT:
+                return 0;
+            case XSDDeclAttr.TYPE_STRING:
+                return ((String)val).compareTo((String)val2);
+            case XSDDeclAttr.TYPE_INTEGER:
+                return ((Long)val).compareTo((Long)val2);
+            default:
+                throw new IllegalArgumentException("illegal type");
+        }
+    }
+
+    /**
+     * <p>Determine the type of the value.</p>
+     * @param val The value.
+     * @return The type.
+     */
+    private static int typeOf(Object val) {
+        if (val==null) {
+            return XSDDeclAttr.TYPE_OBJECT;
+        } else if (val instanceof String) {
+            return XSDDeclAttr.TYPE_STRING;
+        } else if (val instanceof Long) {
+            return XSDDeclAttr.TYPE_INTEGER;
+        } else {
+            throw new IllegalArgumentException("unsupported value");
         }
     }
 
@@ -178,26 +198,11 @@ public final class XPathExprPrim extends XPathExpr {
      * @return The string.
      */
     public String toString() {
-        if (primitive <= EXPR_PRIM_NOT_ATTR) {
+        if (primitive <= EXPR_PRIM_NAME) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
                 case EXPR_PRIM_NAME:
                     return name;
-                case EXPR_PRIM_NOT_NAME:
-                    StringBuilder buf = new StringBuilder();
-                    buf.append("~");
-                    buf.append(name);
-                    return buf.toString();
-                case EXPR_PRIM_ATTR:
-                    buf = new StringBuilder();
-                    buf.append("@");
-                    buf.append(name);
-                    return buf.toString();
-                case EXPR_PRIM_NOT_ATTR:
-                    buf = new StringBuilder();
-                    buf.append("~@");
-                    buf.append(name);
-                    return buf.toString();
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
@@ -237,17 +242,7 @@ public final class XPathExprPrim extends XPathExpr {
     public void complement() {
         switch (primitive) {
             case EXPR_PRIM_NAME:
-                primitive = EXPR_PRIM_NOT_NAME;
-                break;
-            case EXPR_PRIM_NOT_NAME:
-                primitive = EXPR_PRIM_NAME;
-                break;
-            case EXPR_PRIM_ATTR:
-                primitive = EXPR_PRIM_NOT_ATTR;
-                break;
-            case EXPR_PRIM_NOT_ATTR:
-                primitive = EXPR_PRIM_ATTR;
-                break;
+                throw new IllegalArgumentException("complement unsupported");
             case EXPR_PRIM_EQ:
                 primitive = EXPR_PRIM_NQ;
                 break;

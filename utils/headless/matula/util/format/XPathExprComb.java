@@ -39,6 +39,7 @@ public final class XPathExprComb extends XPathExpr {
     public static final String OP_FALSE = "false";
     public static final String OP_OR = "or";
     public static final String OP_AND = "and";
+    public static final String OP_NOT = "not";
 
     private MapHashLink<String, XPathExpr> exprs = new MapHashLink<String, XPathExpr>();
     private int combination;
@@ -82,16 +83,6 @@ public final class XPathExprComb extends XPathExpr {
     void whereName(String n) {
         XSelect first = new XSelectPrim(n, XSelectPrim.SELE_PRIM_CHILD);
         whereExpr("_name", new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_NAME));
-    }
-
-    /**
-     * <p>Add an attribute name predicate.</p>
-     *
-     * @param a The attribute name.
-     */
-    void whereExists(String a) {
-        XSelect first = new XSelectPrim(a, XSelectPrim.SELE_PRIM_ATTR);
-        whereExpr(a, new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_ATTR));
     }
 
     /**
