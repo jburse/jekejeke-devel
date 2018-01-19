@@ -89,14 +89,23 @@ public final class XPath {
     /**
      * <p>Add an element name predicate.</p>
      *
-     * @param n The name.
+     * @param n The element name.
      */
     public void whereName(String n) {
         cps.get(cps.size() - 1).getExpr().whereName(n);
     }
 
     /**
-     * <p>Add an element attribute predicate.</p>
+     * <p>Add an attribute name predicate.</p>
+     *
+     * @param a The attribute name.
+     */
+    public void whereExists(String a) {
+        cps.get(cps.size() - 1).getExpr().whereExists(a);
+    }
+
+    /**
+     * <p>Add a string attribute value predicate.</p>
      *
      * @param a The attribute name.
      * @param v The String value.
@@ -106,7 +115,7 @@ public final class XPath {
     }
 
     /**
-     * <p>Add an element attribute predicate.</p>
+     * <p>Add a long attribute value predicate.</p>
      *
      * @param a The attribute name.
      * @param v The long value.
@@ -116,7 +125,7 @@ public final class XPath {
     }
 
     /**
-     * <p>Add an element attribute predicate.</p>
+     * <p>Add an attribute value predicate.</p>
      *
      * @param a The attribute name.
      * @param v The value.

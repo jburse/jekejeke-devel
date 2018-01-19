@@ -41,7 +41,6 @@ public final class XSDDeclAttr extends XSDDecl {
     public static final int TYPE_OBJECT = 0;
     public static final int TYPE_STRING = 1;
     public static final int TYPE_INTEGER = 2;
-    public static final int TYPE_FLOAT = 3;
 
     private boolean optional;
     private int type;

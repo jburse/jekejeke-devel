@@ -77,7 +77,7 @@ public final class XPathExprComb extends XPathExpr {
     /**
      * <p>Add an element name predicate.</p>
      *
-     * @param n The name.
+     * @param n The element name.
      */
     void whereName(String n) {
         XSelect first = new XSelectPrim(n, XSelectPrim.SELE_PRIM_ATTR);
@@ -85,7 +85,17 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Add an element attribute predicate.</p>
+     * <p>Add an attribute name predicate.</p>
+     *
+     * @param a The attribute name.
+     */
+    void whereExists(String a) {
+        XSelect first = new XSelectPrim(a, XSelectPrim.SELE_PRIM_ATTR);
+        whereExpr(a, new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_ATTR));
+    }
+
+    /**
+     * <p>Add a string attribute value predicate.</p>
      *
      * @param a The attribute name.
      * @param v The String value.
@@ -95,7 +105,7 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Add an element attribute predicate.</p>
+     * <p>Add a long attribute value predicate.</p>
      *
      * @param a The attribute name.
      * @param v The long value.
@@ -105,7 +115,7 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Add an element attribute predicate.</p>
+     * <p>Add an attribute value predicate.</p>
      *
      * @param a The attribute name.
      * @param v The value.

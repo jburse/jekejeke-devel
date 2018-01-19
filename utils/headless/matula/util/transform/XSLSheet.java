@@ -41,7 +41,7 @@ abstract class XSLSheet {
     private static final String OP_TEXT_PLAIN = "text/plain";
     private static final String OP_TEXT_HTML = "text/html";
 
-    public static final int TYPE_ELEMENT = 10;
+    public static final int TYPE_ELEMENT = 3;
 
     public static final int TEXT_PLAIN = 0;
     public static final int TEXT_HTML = 1;

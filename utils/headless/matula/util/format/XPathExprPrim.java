@@ -2,8 +2,6 @@ package matula.util.format;
 
 import matula.util.regex.ScannerError;
 
-import java.sql.Timestamp;
-
 /**
  * <p>This predicate implements an xpath primitive expression.</p>
  * </p>
@@ -32,12 +30,13 @@ import java.sql.Timestamp;
  */
 public final class XPathExprPrim extends XPathExpr {
     public static final int EXPR_PRIM_NAME = 0;
-    public static final int EXPR_PRIM_EQ = 1;
-    public static final int EXPR_PRIM_NQ = 2;
-    public static final int EXPR_PRIM_LS = 3;
-    public static final int EXPR_PRIM_GR = 4;
-    public static final int EXPR_PRIM_LQ = 5;
-    public static final int EXPR_PRIM_GQ = 6;
+    public static final int EXPR_PRIM_ATTR = 1;
+    public static final int EXPR_PRIM_EQ = 2;
+    public static final int EXPR_PRIM_NQ = 3;
+    public static final int EXPR_PRIM_LS = 4;
+    public static final int EXPR_PRIM_GR = 5;
+    public static final int EXPR_PRIM_LQ = 6;
+    public static final int EXPR_PRIM_GQ = 7;
 
     private XSelect first;
     private XSelect second;
@@ -111,11 +110,13 @@ public final class XPathExprPrim extends XPathExpr {
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
     public boolean checkElement(DomElement e) throws ScannerError {
-        if (primitive <= EXPR_PRIM_NAME) {
+        if (primitive <= EXPR_PRIM_ATTR) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
                 case EXPR_PRIM_NAME:
                     return e.isName(name);
+                case EXPR_PRIM_ATTR:
+                    return e.getAttrObj(name) != null;
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
@@ -171,10 +172,16 @@ public final class XPathExprPrim extends XPathExpr {
      * @return The string.
      */
     public String toString() {
-        if (primitive <= EXPR_PRIM_NAME) {
+        if (primitive <= EXPR_PRIM_ATTR) {
+            String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
                 case EXPR_PRIM_NAME:
-                    return ((XSelectPrim) first).getAttr();
+                    return name;
+                case EXPR_PRIM_ATTR:
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("exists @");
+                    buf.append(name);
+                    return buf.toString();
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
