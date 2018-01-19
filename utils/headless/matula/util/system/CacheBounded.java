@@ -59,40 +59,39 @@ public final class CacheBounded<K, V> extends MapHashLink<K, V> {
         if (m < 0)
             throw new IllegalArgumentException("negative max");
         while (m < size)
-            remove(getFirstEntry().key);
+            removeEntry(getFirstEntry());
+        resize();
         max = m;
     }
 
     /**
-     * <p>Set a value for a key.</p>
-     * <p>Assumption is that key does not yet have a value.</p>
+     * <p>Add the key to the map.</p>
+     * <p>Assumption is that key is not yet present.</p>
      * <p>Entry is create at the bottom.</p>
      * <p>Superflows entry at the top is removed.</p>
      *
-     * @param key   The key.
-     * @param value The value.
+     * @param f The entry.
      */
-    public MapEntry<K, V> put(K key, V value) {
-        MapEntry<K, V> h = super.put(key, value);
+    public void putEntry(MapEntry<K, V> f) {
+        super.putEntry(f);
         if (max < size)
-            remove(getFirstEntry().key);
-        return h;
+            removeEntry(getFirstEntry());
     }
 
     /**
-     * <p>Retrieve a value for a key.</p>
+     * <p>Find the key in the map.</p>
      * <p>If there is a hit, then move pair to botton.</p>
      *
      * @param key The key.
-     * @return The value or null.
+     * @return The entry.
      */
-    public V get(K key) {
-        V value = super.get(key);
-        if (value != null) {
-            remove(key);
-            super.put(key, value);
+    public MapEntry<K, V> getEntry(K key) {
+        MapEntry<K, V> pair = super.getEntry(key);
+        if (pair != null) {
+            removeEntry(pair);
+            super.putEntry(pair);
         }
-        return value;
+        return pair;
     }
 
 }

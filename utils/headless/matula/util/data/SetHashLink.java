@@ -52,22 +52,9 @@ public class SetHashLink<E> extends AbstractSet<E> {
         reinitialize(capa);
     }
 
-    /**
-     * <p>Retrieve the stored key.</p>
-     *
-     * @param key The search key, can be null.
-     * @return The stored key or null.
-     */
-    public E getKey(E key) {
-        int i = index(key);
-
-        SetHashLinkEntry<E> e;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
-            ;
-
-        return (e != null ? e.key : null);
-    }
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the entry in the set.</p>

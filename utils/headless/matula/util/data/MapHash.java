@@ -49,24 +49,9 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
         reinitialize(capa);
     }
 
-    /**
-     * <p>Find the key in the map.</p>
-     *
-     * @param key The key.
-     * @return The value, or null.
-     */
-    public V get(K key) {
-        int i = index(key);
-
-        MapHashEntry<K, V> e;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
-            ;
-
-        if (e == null)
-            return null;
-        return e.value;
-    }
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the entry in the map.</p>
@@ -88,76 +73,60 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
     /**
      * <p>Add the key to the map.</p>
      *
-     * @param key   The key.
-     * @param value The value.
-     * @return The new enry.
+     * @param f The entry, not null.
      */
-    public MapEntry<K, V> put(K key, V value) {
-        int i = index(key);
+    public void putEntry(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapHashEntry<K, V> e = (MapHashEntry<K, V>) f;
 
-        MapHashEntry<K, V> e = new MapHashEntry<K, V>(key, value);
-        MapHashEntry<K, V> f = table[i];
-        if (f != null)
-            f.prev = e;
-        e.next = f;
+        int i = index(e.key);
+
+        MapHashEntry<K, V> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
+        e.prev = null;
         table[i] = e;
-        size++;
 
+        size++;
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
-
-        return e;
     }
 
     /**
-     * <p>Remove the key from the map.</p>
+     * <p>Create a new entry.</p>
      *
-     * @param key The key.
+     * @param key   The key.
+     * @param value The value.
+     * @return The entry.
      */
-    public void remove(K key) {
-        int i = index(key);
-
-        MapHashEntry<K, V> e;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
-            ;
-
-        if (e == null)
-            return;
-
-        MapHashEntry<K, V> f = e.prev;
-        MapHashEntry<K, V> g = e.next;
-        if (f != null) {
-            f.next = g;
-        } else {
-            table[i] = g;
-        }
-        if (g != null)
-            g.prev = f;
-        size--;
-
-        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
-            resize(table.length / 2);
+    public MapEntry<K, V> newEntry(K key, V value) {
+        return new MapHashEntry<K, V>(key, value);
     }
 
     /**
      * <p>Remove an entry, but do not resize.</p>
      *
-     * @param s The entry, not null.
+     * @param f The entry, not null.
      */
-    public void removeEntry(MapEntry<K, V> s) {
-        MapHashEntry<K, V> e = (MapHashEntry<K, V>) s;
+    public void removeEntry(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapHashEntry<K, V> e = (MapHashEntry<K, V>) f;
+
         int i = index(e.key);
 
-        MapHashEntry<K, V> f = e.prev;
         MapHashEntry<K, V> g = e.next;
-        if (f != null) {
-            f.next = g;
+        MapHashEntry<K, V> h = e.prev;
+        if (g != null)
+            g.prev = h;
+        if (h != null) {
+            h.next = g;
         } else {
             table[i] = g;
         }
-        if (g != null)
-            g.prev = f;
+
         size--;
     }
 

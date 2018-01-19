@@ -27,6 +27,7 @@ package matula.util.data;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class MapHashLinkEntry<K, V> extends MapEntry<K, V> {
+    MapHashLinkEntry<K, V> prev;
     MapHashLinkEntry<K, V> next;
     MapHashLinkEntry<K, V> after;
     MapHashLinkEntry<K, V> before;

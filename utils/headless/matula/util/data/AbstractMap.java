@@ -29,6 +29,10 @@ package matula.util.data;
 public abstract class AbstractMap<K, V>
         extends AbstractAssoc<K, V> {
 
+    /************************************************************/
+    /* Derived Methods                                          */
+    /************************************************************/
+
     /**
      * <p>Add the key to the map.</p>
      * <p>Assumption is that key is not yet present.</p>
@@ -37,7 +41,11 @@ public abstract class AbstractMap<K, V>
      * @param value The value.
      * @return The new enry.
      */
-    public abstract MapEntry<K, V> put(K key, V value);
+    public final MapEntry<K, V> put(K key, V value) {
+        MapEntry<K, V> e = newEntry(key, value);
+        putEntry(e);
+        return e;
+    }
 
     /**
      * <p>Add the key to the map.</p>
@@ -46,9 +54,60 @@ public abstract class AbstractMap<K, V>
      * @param key   The key.
      * @param value The value.
      */
-    public void add(K key, V value) {
-        put(key,value);
+    public final void add(K key, V value) {
+        put(key, value);
     }
+
+    /**
+     * <p>Find the key in the map.</p>
+     *
+     * @param key The key.
+     * @return The value.
+     */
+    public final V get(K key) {
+        MapEntry<K, V> e = getEntry(key);
+        return (e != null ? e.value : null);
+    }
+
+    /**
+     * <p>Remove the key from the map.</p>
+     *
+     * @param key The key.
+     */
+    public final void remove(K key) {
+        MapEntry<K, V> e = getEntry(key);
+        if (e == null)
+            return;
+        removeEntry(e);
+        resize();
+    }
+
+    /**
+     * <p>Copy the hash map entries to an array.</p>
+     *
+     * @param target The array.
+     */
+    public final void toArray(MapEntry<K, V>[] target) {
+        toArray(target, 0);
+    }
+
+    /**
+     * <p>Copy the hash map entries to an array.</p>
+     *
+     * @param target The array.
+     * @param pos    The start index.
+     */
+    public final void toArray(MapEntry<K, V>[] target, int pos) {
+        for (MapEntry<K, V> entry = getFirstEntry();
+             entry != null; entry = successor(entry)) {
+            target[pos] = entry;
+            pos++;
+        }
+    }
+
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the key in the map.</p>
@@ -57,6 +116,35 @@ public abstract class AbstractMap<K, V>
      * @return The entry, or null.
      */
     public abstract MapEntry<K, V> getEntry(K key);
+
+    /**
+     * <p>Add the key to the map.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param f The enry, not null.
+     */
+    public abstract void putEntry(MapEntry<K, V> f);
+
+    /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key   The key.
+     * @param value The value.
+     * @return The entry.
+     */
+    public abstract MapEntry<K, V> newEntry(K key, V value);
+
+    /**
+     * <p>Remove the key from the map.</p>
+     *
+     * @param f The entry, not null.
+     */
+    public abstract void removeEntry(MapEntry<K, V> f);
+
+    /**
+     * <p>Resize after remove entry.</p>
+     */
+    public abstract void resize();
 
     /**
      * <p>Retrieve the last entry.</p>
@@ -87,29 +175,6 @@ public abstract class AbstractMap<K, V>
      * @return The successor, can be null.
      */
     public abstract MapEntry<K, V> successor(MapEntry<K, V> s);
-
-    /**
-     * <p>Copy the hash map entries to an array.</p>
-     *
-     * @param target The array.
-     */
-    public void toArray(MapEntry<K, V>[] target) {
-        toArray(target, 0);
-    }
-
-    /**
-     * <p>Copy the hash map entries to an array.</p>
-     *
-     * @param target The array.
-     * @param pos    The start index.
-     */
-    public void toArray(MapEntry<K, V>[] target, int pos) {
-        for (MapEntry<K, V> entry = getFirstEntry();
-             entry != null; entry = successor(entry)) {
-            target[pos] = entry;
-            pos++;
-        }
-    }
 
     /***************************************************************/
     /* Object Protocol                                             */

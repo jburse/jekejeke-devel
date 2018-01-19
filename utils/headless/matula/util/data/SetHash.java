@@ -49,22 +49,9 @@ public final class SetHash<E> extends AbstractSet<E> {
         reinitialize(capa);
     }
 
-    /**
-     * <p>Retrieve the stored key.</p>
-     *
-     * @param key The search key, can be null.
-     * @return The stored key or null.
-     */
-    public E getKey(E key) {
-        int i = index(key);
-
-        SetHashEntry<E> e;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
-            ;
-
-        return (e != null ? e.key : null);
-    }
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the entry in the set.</p>
@@ -114,6 +101,32 @@ public final class SetHash<E> extends AbstractSet<E> {
         throw new IllegalArgumentException("not supported");
     }
 
+    /**
+     * <p>Remove the entry from the set.</p>
+     *
+     * @param f The entry.
+     */
+    public void removeEntry(SetEntry<E> f) {
+        if (f==null)
+            throw new NullPointerException("entry missing");
+        SetHashEntry<E> e = (SetHashEntry<E>)f;
+
+        int i = index(e.key);
+
+        SetHashEntry<E> h = e.prev;
+        SetHashEntry<E> g = e.next;
+        if (h != null) {
+            h.next = g;
+        } else {
+            table[i] = g;
+        }
+        if (g != null)
+            g.prev = h;
+        size--;
+
+        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
+            resize(table.length / 2);
+    }
     /**
      * <p>Remove the key from the set.</p>
      *

@@ -78,10 +78,6 @@ public final class XPathExprPrim extends XPathExpr {
     public XPathExprPrim(XSelect f, int p) {
         if (f == null)
             throw new NullPointerException("first missing");
-        if (!(f instanceof XSelectPrim))
-            throw new IllegalArgumentException("not prim");
-        if (((XSelectPrim) f).getPrimitive() != XSelectPrim.SELE_PRIM_ATTR)
-            throw new IllegalArgumentException("not attr");
         first = f;
         primitive = p;
     }

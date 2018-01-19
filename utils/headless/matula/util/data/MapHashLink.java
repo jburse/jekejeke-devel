@@ -49,24 +49,9 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         reinitialize(capa);
     }
 
-    /**
-     * <p>Find the key in the map.</p>
-     *
-     * @param key The key.
-     * @return The value.
-     */
-    public V get(K key) {
-        int i = index(key);
-
-        MapHashLinkEntry<K, V> e;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
-            ;
-
-        if (e == null)
-            return null;
-        return e.value;
-    }
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the key in the map.</p>
@@ -87,17 +72,23 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
 
     /**
      * <p>Add the key to the map.</p>
-     * <p>Entry is create at the bottom.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     * <p>Entry is add at the bottom.</p>
      *
-     * @param key   The key.
-     * @param value The value.
-     * @return The new enry.
+     * @param f   The entry.
      */
-    public MapEntry<K, V> put(K key, V value) {
-        int i = index(key);
+    public void putEntry(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>)f;
 
-        MapHashLinkEntry<K, V> e = new MapHashLinkEntry<K, V>(key, value);
-        e.next = table[i];
+        int i = index(e.key);
+
+        MapHashLinkEntry<K, V> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
+        e.prev = null;
         table[i] = e;
 
         e.before = last;
@@ -111,21 +102,85 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         size++;
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
-        return e;
+    }
+
+    /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key The key.
+     * @param value The value.
+     * @return The entry.
+     */
+    public MapEntry<K, V> newEntry(K key, V value) {
+        return new MapHashLinkEntry<K,V>(key,value);
+    }
+
+    /**
+     * <p>Remove an entry, but do not resize.</p>
+     *
+     * @param f The entry, not null.
+     */
+    public void removeEntry(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>) f;
+
+        int i = index(e.key);
+
+        MapHashLinkEntry<K, V> g = e.next;
+        MapHashLinkEntry<K, V> h = e.prev;
+        if (g != null)
+            g.prev = h;
+        if (h != null) {
+            h.next = g;
+        } else {
+            table[i] = g;
+        }
+
+        g = e.after;
+        h = e.before;
+        if (g != null) {
+            g.before = h;
+        } else {
+            last = h;
+        }
+        if (h != null) {
+            h.after = g;
+        } else {
+            first = g;
+        }
+
+        size--;
+    }
+
+    /**
+     * <p>Resize after remove entry.</p>
+     */
+    public void resize() {
+        int len = table.length;
+        while (size < len / 4 && len / 2 > MIN_SIZE)
+            len = len / 2;
+        if (len != table.length)
+            resize(len);
     }
 
     /**
      * <p>Add the key to the map.</p>
+     * <p>Assumption is that key is not yet present.</p>
      * <p>Entry is create at the top.</p>
      *
      * @param key   The key.
      * @param value The value.
      */
     public void putFirst(K key, V value) {
-        int i = index(key);
-
         MapHashLinkEntry<K, V> e = new MapHashLinkEntry<K, V>(key, value);
-        e.next = table[i];
+
+        int i = index(e.key);
+
+        MapHashLinkEntry<K, V> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
         table[i] = e;
 
         e.after = first;
@@ -139,44 +194,6 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         size++;
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
-    }
-
-    /**
-     * <p>Remove the key from the map.</p>
-     *
-     * @param key The key.
-     */
-    public void remove(K key) {
-        int i = index(key);
-
-        MapHashLinkEntry<K, V> e;
-        MapHashLinkEntry<K, V> b = null;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); b = e, e = b.next)
-            ;
-        if (e == null)
-            return;
-
-        if (b == null) {
-            table[i] = e.next;
-        } else {
-            b.next = e.next;
-        }
-        size--;
-
-        if (e.after != null) {
-            e.after.before = e.before;
-        } else {
-            last = e.before;
-        }
-        if (e.before != null) {
-            e.before.after = e.after;
-        } else {
-            first = e.after;
-        }
-
-        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
-            resize(table.length / 2);
     }
 
     /**
@@ -196,14 +213,23 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * @param s The new size.
      */
     private void resize(int s) {
+        MapHashLinkEntry<K, V>[] oldtable = table;
         table = new MapHashLinkEntry[s];
 
-        MapHashLinkEntry<K, V> e = last;
-        while (e != null) {
-            int i = index(e.key);
-            e.next = table[i];
-            table[i] = e;
-            e = e.before;
+        for (int i = 0; i < oldtable.length; i++) {
+            MapHashLinkEntry<K, V> e = oldtable[i];
+            while (e != null) {
+                MapHashLinkEntry<K, V> b = e;
+                e = b.next;
+                int j = index(b.key);
+
+                b.prev = null;
+                MapHashLinkEntry<K, V> f = table[j];
+                if (f != null)
+                    f.prev = b;
+                b.next = f;
+                table[j] = b;
+            }
         }
     }
 

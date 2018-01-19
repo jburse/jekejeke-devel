@@ -42,26 +42,9 @@ public final class SetTree<E> extends AbstractSet<E> {
         reinitialize(0);
     }
 
-    /**
-     * <p>Check whether key is present.</p>
-     *
-     * @param key The key.
-     * @return True if key is present, otherwise false.
-     */
-    public E getKey(E key) {
-        SetTreeEntry<E> p = root;
-        while (p != null) {
-            int k = comparator.compare(key, p.key);
-            if (k < 0) {
-                p = p.left;
-            } else if (k > 0) {
-                p = p.right;
-            } else {
-                return p.key;
-            }
-        }
-        return null;
-    }
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the entry in the set.</p>
@@ -130,14 +113,14 @@ public final class SetTree<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Remove the key from the set.</p>
+     * <p>Remove the entry from the set.</p>
      *
-     * @param key The key.
+     * @param f The entry.
      */
-    public void remove(E key) {
-        SetTreeEntry<E> p = (SetTreeEntry<E>) getEntry(key);
-        if (p == null)
-            return;
+    public void removeEntry(SetEntry<E> f) {
+        if (f==null)
+            throw new NullPointerException("entry missing");
+        SetTreeEntry<E> p = (SetTreeEntry<E>) f;
 
         // If strictly internal, copy successor's element to p and then make p
         // point to successor.

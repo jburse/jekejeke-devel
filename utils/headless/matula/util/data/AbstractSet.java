@@ -29,6 +29,51 @@ package matula.util.data;
 public abstract class AbstractSet<E>
         extends AbstractList<E> {
 
+    /************************************************************/
+    /* Derived Methods                                          */
+    /************************************************************/
+
+    /**
+     * <p>Find the stored key.</p>
+     *
+     * @param key The search key, can be null.
+     * @return The stored key or null.
+     */
+    public final E getKey(E key) {
+        SetEntry<E> e = getEntry(key);
+        return (e != null ? e.key : null);
+    }
+
+    /**
+     * <p>Remove the key from the set.</p>
+     *
+     * @param key The key.
+     */
+    public final void remove(E key) {
+        SetEntry<E> e = getEntry(key);
+        if (e == null)
+            return;
+        removeEntry(e);
+    }
+
+    /**
+     * <p>Copy the hash map entries to an array.</p>
+     *
+     * @param target The array.
+     * @param pos    The start index.
+     */
+    public final void toArray(E[] target, int pos) {
+        for (SetEntry<E> entry = getFirstEntry();
+             entry != null; entry = successor(entry)) {
+            target[pos] = entry.key;
+            pos++;
+        }
+    }
+
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
+
     /**
      * <p>Find the entry in the set.</p>
      *
@@ -36,6 +81,13 @@ public abstract class AbstractSet<E>
      * @return The entry, or null.
      */
     public abstract SetEntry<E> getEntry(E key);
+
+    /**
+     * <p>Remove the entry from the set.</p>
+     *
+     * @param f The entry.
+     */
+    public abstract void removeEntry(SetEntry<E> f);
 
     /**
      * <p>Retrieve the last entry.</p>
@@ -66,20 +118,6 @@ public abstract class AbstractSet<E>
      * @return The successor, can be null.
      */
     public abstract SetEntry<E> successor(SetEntry<E> s);
-
-    /**
-     * <p>Copy the hash map entries to an array.</p>
-     *
-     * @param target The array.
-     * @param pos    The start index.
-     */
-    public void toArray(E[] target, int pos) {
-        for (SetEntry<E> entry = getFirstEntry();
-             entry != null; entry = successor(entry)) {
-            target[pos] = entry.key;
-            pos++;
-        }
-    }
 
     /***************************************************************/
     /* Object Protocol                                             */

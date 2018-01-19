@@ -42,26 +42,9 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
         reinitialize(0);
     }
 
-    /**
-     * <p>Find the key in the map.</p>
-     *
-     * @param key The key.
-     * @return The value.
-     */
-    public V get(K key) {
-        MapTreeEntry<K, V> p = root;
-        while (p != null) {
-            int k = comparator.compare(key, p.key);
-            if (k < 0) {
-                p = p.left;
-            } else if (k > 0) {
-                p = p.right;
-            } else {
-                return p.value;
-            }
-        }
-        return null;
-    }
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
 
     /**
      * <p>Find the key in the map.</p>
@@ -85,20 +68,22 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Set a value for a key.</p>
-     * <p>Assumption is that key does not yet a value.</p>
+     * <p>Add the key to the map.</p>
+     * <p>Assumption is that key is not yet present.</p>
      *
-     * @param key   The key.
-     * @param value The value.
-     * @return The new enry.
+     * @param f The new enry.
      */
-    public MapEntry<K, V> put(K key, V value) {
+    public void putEntry(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapTreeEntry<K, V> e = (MapTreeEntry<K, V>) f;
+
         MapTreeEntry<K, V> p = root;
         MapTreeEntry<K, V> b = null;
         int k = 0;
         while (p != null) {
             b = p;
-            k = comparator.compare(key, p.key);
+            k = comparator.compare(e.key, p.key);
             if (k < 0) {
                 p = p.left;
             } else if (k > 0) {
@@ -107,7 +92,9 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
                 throw new IllegalStateException("duplicate key");
             }
         }
-        MapTreeEntry<K, V> e = new MapTreeEntry<K, V>(key, value, b);
+
+        e.setParent(p);
+
         if (b == null) {
             root = e;
         } else {
@@ -119,19 +106,28 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
             fixAfterInsertion(e);
         }
         size++;
-        return e;
+    }
+
+    /**
+     * <p>Create a new entry.</p>
+     *
+     * @param key   The key.
+     * @param value The value.
+     * @return The entry.
+     */
+    public MapEntry<K, V> newEntry(K key, V value) {
+        return new MapTreeEntry<K, V>(key, value);
     }
 
     /**
      * <p>Remove the key from the map.</p>
      *
-     * @param key The key.
+     * @param f The entry.
      */
-
-    public void remove(K key) {
-        MapTreeEntry<K, V> p = (MapTreeEntry<K, V>) getEntry(key);
-        if (p == null)
-            return;
+    public void removeEntry(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapTreeEntry<K, V> p = (MapTreeEntry<K, V>) f;
 
         // If strictly internal, copy successor's element to p and then make p
         // point to successor.
@@ -176,6 +172,13 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
             }
         }
         size--;
+    }
+
+    /**
+     * <p>Resize after remove entry.</p>
+     */
+    public void resize() {
+        /* do nothing */
     }
 
     /**
@@ -262,6 +265,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
 
     /**********************************************************************/
     /* Some Helpers                                                       */
+
     /**********************************************************************/
 
     // Copied from Java Tree

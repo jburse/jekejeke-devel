@@ -38,7 +38,7 @@ public abstract class AbstractList<E>
     }
 
     /**
-     * <p>Retrieve the stored key.</p>
+     * <p>Find the stored key.</p>
      *
      * @param key The search key, can be null.
      * @return The stored key or null.
