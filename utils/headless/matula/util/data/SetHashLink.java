@@ -80,10 +80,14 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @param key The key, can be null.
      */
     public void add(E key) {
+        SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
+
         int i = index(key);
 
-        SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
-        e.next = table[i];
+        SetHashLinkEntry<E> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
         table[i] = e;
 
         e.before = last;
@@ -106,10 +110,14 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @param key The key.
      */
     public void addFirst(E key) {
+        SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
+
         int i = index(key);
 
-        SetHashLinkEntry<E> e = new SetHashLinkEntry<E>(key);
-        e.next = table[i];
+        SetHashLinkEntry<E> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
         table[i] = e;
 
         e.after = first;
@@ -126,39 +134,41 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Remove key from the set.</p>
+     * <p>Remove the entry from the set.</p>
      *
-     * @param key The key.
+     * @param f The entry.
      */
-    public void remove(E key) {
-        int i = index(key);
+    public void removeEntry(SetEntry<E> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) f;
 
-        SetHashLinkEntry<E> e;
-        SetHashLinkEntry<E> b = null;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); b = e, e = b.next)
-            ;
-        if (e == null)
-            return;
+        int i = index(e.key);
 
-        if (b == null) {
-            table[i] = e.next;
+        SetHashLinkEntry<E> g = e.next;
+        SetHashLinkEntry<E> h = e.prev;
+        if (g != null)
+            g.prev = h;
+        if (h != null) {
+            h.next = g;
         } else {
-            b.next = e.next;
+            table[i] = g;
         }
+
+        g = e.after;
+        h = e.before;
+        if (g != null) {
+            g.before = h;
+        } else {
+            last = h;
+        }
+        if (h != null) {
+            h.after = g;
+        } else {
+            first = g;
+        }
+
         size--;
-
-        if (e.before != null) {
-            e.before.after = e.after;
-        } else {
-            first = e.after;
-        }
-        if (e.after != null) {
-            e.after.before = e.before;
-        } else {
-            last = e.before;
-        }
-
         if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
             resize(table.length / 2);
     }
@@ -180,14 +190,23 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @param s The new size.
      */
     private void resize(int s) {
+        SetHashLinkEntry<E>[] oldtable = table;
         table = new SetHashLinkEntry[s];
 
-        SetHashLinkEntry<E> e = first;
-        while (e != null) {
-            int i = index(e.key);
-            e.next = table[i];
-            table[i] = e;
-            e = e.after;
+        for (int i = 0; i < oldtable.length; i++) {
+            SetHashLinkEntry<E> e = oldtable[i];
+            while (e != null) {
+                SetHashLinkEntry<E> b = e;
+                e = b.next;
+                int j = index(b.key);
+
+                b.prev = null;
+                SetHashLinkEntry<E> f = table[j];
+                if (f != null)
+                    f.prev = b;
+                b.next = f;
+                table[j] = b;
+            }
         }
     }
 

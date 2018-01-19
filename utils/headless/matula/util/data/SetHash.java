@@ -77,16 +77,17 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @param key The key, can be null.
      */
     public void add(E key) {
+        SetHashEntry<E> e = new SetHashEntry<E>(key);
+
         int i = index(key);
 
-        SetHashEntry<E> e = new SetHashEntry<E>(key);
-        SetHashEntry<E> f = table[i];
-        if (f != null)
-            f.prev = e;
-        e.next = f;
+        SetHashEntry<E> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
         table[i] = e;
-        size++;
 
+        size++;
         if (size > table.length * 3 / 4)
             resize(table.length * 2);
     }
@@ -107,53 +108,23 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @param f The entry.
      */
     public void removeEntry(SetEntry<E> f) {
-        if (f==null)
+        if (f == null)
             throw new NullPointerException("entry missing");
-        SetHashEntry<E> e = (SetHashEntry<E>)f;
+        SetHashEntry<E> e = (SetHashEntry<E>) f;
 
         int i = index(e.key);
 
-        SetHashEntry<E> h = e.prev;
         SetHashEntry<E> g = e.next;
+        SetHashEntry<E> h = e.prev;
+        if (g != null)
+            g.prev = h;
         if (h != null) {
             h.next = g;
         } else {
             table[i] = g;
         }
-        if (g != null)
-            g.prev = h;
+
         size--;
-
-        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
-            resize(table.length / 2);
-    }
-    /**
-     * <p>Remove the key from the set.</p>
-     *
-     * @param key The key.
-     */
-    public void remove(E key) {
-        int i = index(key);
-
-        SetHashEntry<E> e;
-        for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
-            ;
-
-        if (e == null)
-            return;
-
-        SetHashEntry<E> f = e.prev;
-        SetHashEntry<E> g = e.next;
-        if (f != null) {
-            f.next = g;
-        } else {
-            table[i] = g;
-        }
-        if (g != null)
-            g.prev = f;
-        size--;
-
         if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
             resize(table.length / 2);
     }
