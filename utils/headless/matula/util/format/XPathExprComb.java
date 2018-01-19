@@ -80,7 +80,7 @@ public final class XPathExprComb extends XPathExpr {
      * @param n The element name.
      */
     void whereName(String n) {
-        XSelect first = new XSelectPrim(n, XSelectPrim.SELE_PRIM_ATTR);
+        XSelect first = new XSelectPrim(n, XSelectPrim.SELE_PRIM_CHILD);
         whereExpr("_name", new XPathExprPrim(first, XPathExprPrim.EXPR_PRIM_NAME));
     }
 

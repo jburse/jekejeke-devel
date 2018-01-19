@@ -30,13 +30,15 @@ import matula.util.regex.ScannerError;
  */
 public final class XPathExprPrim extends XPathExpr {
     public static final int EXPR_PRIM_NAME = 0;
-    public static final int EXPR_PRIM_ATTR = 1;
-    public static final int EXPR_PRIM_EQ = 2;
-    public static final int EXPR_PRIM_NQ = 3;
-    public static final int EXPR_PRIM_LS = 4;
-    public static final int EXPR_PRIM_GR = 5;
-    public static final int EXPR_PRIM_LQ = 6;
-    public static final int EXPR_PRIM_GQ = 7;
+    public static final int EXPR_PRIM_NOT_NAME = 1;
+    public static final int EXPR_PRIM_ATTR = 2;
+    public static final int EXPR_PRIM_NOT_ATTR = 3;
+    public static final int EXPR_PRIM_EQ = 4;
+    public static final int EXPR_PRIM_NQ = 5;
+    public static final int EXPR_PRIM_LS = 6;
+    public static final int EXPR_PRIM_GR = 7;
+    public static final int EXPR_PRIM_LQ = 8;
+    public static final int EXPR_PRIM_GQ = 9;
 
     private XSelect first;
     private XSelect second;
@@ -110,13 +112,17 @@ public final class XPathExprPrim extends XPathExpr {
      * @return True if th dom element satisfies this xpath expression, otherwise false.
      */
     public boolean checkElement(DomElement e) throws ScannerError {
-        if (primitive <= EXPR_PRIM_ATTR) {
+        if (primitive <= EXPR_PRIM_NOT_ATTR) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
                 case EXPR_PRIM_NAME:
                     return e.isName(name);
+                case EXPR_PRIM_NOT_NAME:
+                    return !e.isName(name);
                 case EXPR_PRIM_ATTR:
                     return e.getAttrObj(name) != null;
+                case EXPR_PRIM_NOT_ATTR:
+                    return e.getAttrObj(name) == null;
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
@@ -172,14 +178,24 @@ public final class XPathExprPrim extends XPathExpr {
      * @return The string.
      */
     public String toString() {
-        if (primitive <= EXPR_PRIM_ATTR) {
+        if (primitive <= EXPR_PRIM_NOT_ATTR) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
                 case EXPR_PRIM_NAME:
                     return name;
-                case EXPR_PRIM_ATTR:
+                case EXPR_PRIM_NOT_NAME:
                     StringBuilder buf = new StringBuilder();
-                    buf.append("exists @");
+                    buf.append("~");
+                    buf.append(name);
+                    return buf.toString();
+                case EXPR_PRIM_ATTR:
+                    buf = new StringBuilder();
+                    buf.append("@");
+                    buf.append(name);
+                    return buf.toString();
+                case EXPR_PRIM_NOT_ATTR:
+                    buf = new StringBuilder();
+                    buf.append("~@");
                     buf.append(name);
                     return buf.toString();
                 default:
@@ -220,6 +236,18 @@ public final class XPathExprPrim extends XPathExpr {
      */
     public void complement() {
         switch (primitive) {
+            case EXPR_PRIM_NAME:
+                primitive = EXPR_PRIM_NOT_NAME;
+                break;
+            case EXPR_PRIM_NOT_NAME:
+                primitive = EXPR_PRIM_NAME;
+                break;
+            case EXPR_PRIM_ATTR:
+                primitive = EXPR_PRIM_NOT_ATTR;
+                break;
+            case EXPR_PRIM_NOT_ATTR:
+                primitive = EXPR_PRIM_ATTR;
+                break;
             case EXPR_PRIM_EQ:
                 primitive = EXPR_PRIM_NQ;
                 break;
@@ -239,7 +267,7 @@ public final class XPathExprPrim extends XPathExpr {
                 primitive = EXPR_PRIM_LS;
                 break;
             default:
-                throw new IllegalArgumentException("not complementable");
+                throw new IllegalArgumentException("illegal primitive");
         }
     }
 
