@@ -81,7 +81,7 @@ abstract class XSLSheet {
      */
     static int checkParamType(DomElement de, String type)
             throws ValidationError {
-        int typeid = XSDDeclAttr.TYPE_OBJECT;
+        int typeid = XSDDeclAttr.TYPE_PRIMITIVE;
         if (type == null) {
             /* */
         } else if (XSDDeclAttr.OP_STRING.equalsIgnoreCase(type)) {

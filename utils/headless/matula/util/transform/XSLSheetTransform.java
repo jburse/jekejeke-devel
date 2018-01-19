@@ -6,7 +6,6 @@ import matula.util.regex.ScannerError;
 import matula.util.system.MimeHeader;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 /**
  * <p>This class provides an XSL style sheet transform.</p>
@@ -368,7 +367,9 @@ public final class XSLSheetTransform extends XSLSheet {
         String type = de.getAttr(ATTR_PARAM_TYPE);
         int typeid = XSLSheet.checkParamType(de, type);
         switch (typeid) {
-            case XSDDeclAttr.TYPE_OBJECT:
+            case XSDDeclAttr.TYPE_PRIMITIVE:
+                if (!(val instanceof String) && !(val instanceof Long))
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
                 break;
             case XSDDeclAttr.TYPE_STRING:
                 if (!(val instanceof String))

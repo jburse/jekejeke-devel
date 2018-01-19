@@ -151,9 +151,6 @@ final class XPathCheck {
             switch (prim.getPrimitive()) {
                 case XPathExprPrim.EXPR_PRIM_EQ:
                 case XPathExprPrim.EXPR_PRIM_NQ:
-                    select(prim.getFirst());
-                    select(prim.getSecond());
-                    break;
                 case XPathExprPrim.EXPR_PRIM_LS:
                 case XPathExprPrim.EXPR_PRIM_GR:
                 case XPathExprPrim.EXPR_PRIM_LQ:
@@ -222,7 +219,7 @@ final class XPathCheck {
                     XMLCheck.checkParent(getContext(), name, decl2);
                     return XSLSheet.TYPE_ELEMENT;
                 case XSelectPrim.SELE_PRIM_NULL:
-                    return XSDDeclAttr.TYPE_OBJECT;
+                    return XSDDeclAttr.TYPE_PRIMITIVE;
                 default:
                     throw new ValidationError(PATH_CANT_SELE, xs.toString());
             }

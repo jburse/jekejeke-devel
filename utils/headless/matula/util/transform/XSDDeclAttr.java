@@ -38,7 +38,7 @@ public final class XSDDeclAttr extends XSDDecl {
     static final String OP_STRING = "string";
     static final String OP_INTEGER = "integer";
 
-    public static final int TYPE_OBJECT = 0;
+    public static final int TYPE_PRIMITIVE = 0;
     public static final int TYPE_STRING = 1;
     public static final int TYPE_INTEGER = 2;
 
@@ -130,7 +130,7 @@ public final class XSDDeclAttr extends XSDDecl {
      */
     public static int checkAttrType(DomElement de, String type)
             throws ValidationError {
-        int typeid = TYPE_OBJECT;
+        int typeid = TYPE_PRIMITIVE;
         if (type == null) {
             /* */
         } else if (OP_STRING.equalsIgnoreCase(type)) {

@@ -141,35 +141,48 @@ public final class XPathExprPrim extends XPathExpr {
     }
 
     /**
-     * <p>Test equality of two values.</p>
+     * <p>Test equality of two primitive values.</p>
      *
-     * @param val The first value.
+     * @param val  The first value.
      * @param val2 The second value.
      * @return True if equal, otherwise false.
      */
     private boolean equals(Object val, Object val2) {
-        return (val != null ? val.equals(val2) : null == val2);
+        int type = typeOf(val);
+        int type2 = typeOf(val2);
+        if (type != type2)
+            return false;
+        switch (type) {
+            case XSDDeclAttr.TYPE_PRIMITIVE:
+                return true;
+            case XSDDeclAttr.TYPE_STRING:
+                return ((String)val).equals((String)val2);
+            case XSDDeclAttr.TYPE_INTEGER:
+                return ((Long)val).equals((Long)val2);
+            default:
+                throw new IllegalArgumentException("illegal type");
+        }
     }
 
     /**
      * <p>Compare of two primitive values.</p>
      *
-     * @param val The first value.
+     * @param val  The first value.
      * @param val2 The second value.
      * @return less < 0, equals = 0, greater > 0
      */
     private static int compareTo(Object val, Object val2) {
-        int type=typeOf(val);
-        int type2=typeOf(val2);
-        if (type!=type2)
-            return (type<type2?-1:1);
+        int type = typeOf(val);
+        int type2 = typeOf(val2);
+        if (type != type2)
+            return (type < type2 ? -1 : 1);
         switch (type) {
-            case XSDDeclAttr.TYPE_OBJECT:
+            case XSDDeclAttr.TYPE_PRIMITIVE:
                 return 0;
             case XSDDeclAttr.TYPE_STRING:
-                return ((String)val).compareTo((String)val2);
+                return ((String) val).compareTo((String) val2);
             case XSDDeclAttr.TYPE_INTEGER:
-                return ((Long)val).compareTo((Long)val2);
+                return ((Long) val).compareTo((Long) val2);
             default:
                 throw new IllegalArgumentException("illegal type");
         }
@@ -177,12 +190,13 @@ public final class XPathExprPrim extends XPathExpr {
 
     /**
      * <p>Determine the type of the value.</p>
+     *
      * @param val The value.
      * @return The type.
      */
     private static int typeOf(Object val) {
-        if (val==null) {
-            return XSDDeclAttr.TYPE_OBJECT;
+        if (val == null) {
+            return XSDDeclAttr.TYPE_PRIMITIVE;
         } else if (val instanceof String) {
             return XSDDeclAttr.TYPE_STRING;
         } else if (val instanceof Long) {

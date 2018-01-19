@@ -7,7 +7,6 @@ import matula.util.format.DomElement;
 import matula.util.format.DomText;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 
 /**
  * <p>This class provides an xml schema checker.</p>
@@ -159,7 +158,7 @@ public final class XMLCheck {
     private static void checkType(DomElement de, String attr, XSDDeclAttr xa)
             throws ValidationError {
         switch (xa.getType()) {
-            case XSDDeclAttr.TYPE_OBJECT:
+            case XSDDeclAttr.TYPE_PRIMITIVE:
                 break;
             case XSDDeclAttr.TYPE_STRING:
                 Object val = de.getAttrObj(attr);

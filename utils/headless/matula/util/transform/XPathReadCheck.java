@@ -5,8 +5,6 @@ import matula.util.format.DomElement;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
-import java.sql.Timestamp;
-
 /**
  * <p>This class provides an xpath reader during check.</p>
  * </p>
@@ -65,7 +63,7 @@ final class XPathReadCheck extends XPathRead {
         if (type == null)
             throw new ScannerError(PATH_UNDECLARED_VAR, OpenOpts.getOffset(reader));
         switch (type.intValue()) {
-            case XSDDeclAttr.TYPE_OBJECT:
+            case XSDDeclAttr.TYPE_PRIMITIVE:
                 return null;
             case XSDDeclAttr.TYPE_STRING:
                 return "";
