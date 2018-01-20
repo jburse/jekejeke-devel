@@ -1,7 +1,11 @@
 package matula.util.format;
 
 import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
+import matula.util.data.MapTree;
 import matula.util.regex.ScannerError;
+
+import java.util.Comparator;
 
 /**
  * <p>This class provides an xpath.</p>
@@ -29,8 +33,9 @@ import matula.util.regex.ScannerError;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XPath {
-    private ListArray<ChoicePoint> cps = new ListArray<ChoicePoint>();
+public final class XPath implements Comparator<Object[]> {
+    private ListArray<ChoicePoint> cps;
+    private ListArray<XPathOrder> obs;
 
     /**
      * <p>Retrieve the number of xpath choices.</p>
@@ -60,6 +65,8 @@ public final class XPath {
     public void whereChild() {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILDREN);
         cp.setExpr(new XPathExprComb(XPathExprComb.EXPR_COMB_PRED));
+        if (cps == null)
+            cps = new ListArray<ChoicePoint>();
         cps.add(cp);
     }
 
@@ -68,6 +75,8 @@ public final class XPath {
      */
     public void whereParent() {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_PARENT);
+        if (cps == null)
+            cps = new ListArray<ChoicePoint>();
         cps.add(cp);
     }
 
@@ -79,11 +88,13 @@ public final class XPath {
     public void whereChildIndex(int i) {
         ChoicePoint cp = new ChoicePoint(ChoicePoint.CHOICEPOINT_CHILD_INDEX);
         cp.setPos(i);
+        if (cps == null)
+            cps = new ListArray<ChoicePoint>();
         cps.add(cp);
     }
 
     /*****************************************************/
-    /* XPath Expressions                                 */
+    /* XPath Where Conditions                            */
     /*****************************************************/
 
     /**
@@ -133,6 +144,32 @@ public final class XPath {
      */
     public void whereExpr(String k, XPathExpr v) {
         cps.get(cps.size() - 1).getExpr().whereExpr(k, v);
+    }
+
+    /*****************************************************/
+    /* XPath Sort Conditions                             */
+    /*****************************************************/
+
+    /**
+     * <p>Sort an attribute.</p>
+     *
+     * @param a The attribute name.
+     */
+    public void sortAttr(String a) {
+        XSelect xs = new XSelectPrim(a, XSelectPrim.SELE_PRIM_ATTR);
+        XPathOrder xo = new XPathOrder(xs, XPathOrder.ORDER_ASC);
+        sortOrder(xo);
+    }
+
+    /**
+     * <p>Sort by a clause.</p>
+     *
+     * @param xo The clause.
+     */
+    public void sortOrder(XPathOrder xo) {
+        if (obs == null)
+            obs = new ListArray<XPathOrder>();
+        obs.add(xo);
     }
 
     /*****************************************************/
@@ -191,6 +228,10 @@ public final class XPath {
         }
     }
 
+    /*****************************************************/
+    /* Sort Helper                                       */
+    /*****************************************************/
+
     /**
      * <p>Count the whered elements.</p>
      *
@@ -207,6 +248,70 @@ public final class XPath {
         }
         findClose();
         return res;
+    }
+
+    /**
+     * <p>Sort the whered elements.</p>
+     *
+     * @param e The start dom element.
+     * @return The sort.
+     */
+    public ListArray<DomElement> findSort(DomElement e) throws ScannerError {
+        MapTree<Object[], ListArray<DomElement>> tm =
+                new MapTree<Object[], ListArray<DomElement>>(this);
+
+        DomElement found = findFirst(0, e);
+        while (found != null) {
+            Object[] key = computeKey(found);
+            ListArray<DomElement> vec = tm.get(key);
+            if (vec == null) {
+                vec = new ListArray<DomElement>();
+                tm.put(key, vec);
+            }
+            vec.add(found);
+            found = findNext();
+        }
+        findClose();
+
+        ListArray<DomElement> list = new ListArray<DomElement>();
+        for (MapEntry<Object[], ListArray<DomElement>> etr = tm.getFirstEntry();
+             etr != null; etr = tm.successor(etr)) {
+            ListArray<DomElement> vec = etr.value;
+            for (int i = 0; i < vec.size(); i++)
+                list.add(vec.get(i));
+        }
+        return list;
+    }
+
+    /**
+     * <p>Compare two keys.</p>
+     *
+     * @param o1 The first key.
+     * @param o2 The second key.
+     * @return less < 0, equals = 0, greater > 0
+     */
+    public int compare(Object[] o1, Object[] o2) {
+        for (int i = 0; i < obs.size(); i++) {
+            int res = obs.get(i).compare(o1[i], o2[i]);
+            if (res != 0)
+                return res;
+        }
+        return 0;
+    }
+
+    /**
+     * <p>Compute a key.</p>
+     *
+     * @param e The dom element.
+     * @return The key.
+     */
+    private Object[] computeKey(DomElement e) {
+        Object[] key = new Object[obs.size()];
+        for (int i = 0; i < obs.size(); i++) {
+            XSelect select = obs.get(i).getSelect();
+            key[i] = select.evalElement(e);
+        }
+        return key;
     }
 
     /*****************************************************/

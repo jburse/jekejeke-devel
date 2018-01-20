@@ -143,7 +143,7 @@ public final class XPathExprPrim extends XPathExpr {
      * @param val2 The second value.
      * @return True if equal, otherwise false.
      */
-    private boolean equals(Object val, Object val2) {
+    private static boolean equals(Object val, Object val2) {
         int type = typeOf(val);
         int type2 = typeOf(val2);
         if (type != type2)
@@ -167,7 +167,7 @@ public final class XPathExprPrim extends XPathExpr {
      * @param val2 The second value.
      * @return less < 0, equals = 0, greater > 0
      */
-    private static int compareTo(Object val, Object val2) {
+    public static int compareTo(Object val, Object val2) {
         int type = typeOf(val);
         int type2 = typeOf(val2);
         if (type != type2)
@@ -275,5 +275,30 @@ public final class XPathExprPrim extends XPathExpr {
                 throw new IllegalArgumentException("illegal primitive");
         }
     }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        String str1="2012-05-29 12:07:15";
+        String str2="2013-11-10 00:11:11";
+        int res=compareTo(str1,str2);
+        System.out.println("str1= "+str1);
+        System.out.println("str2= "+str2);
+        System.out.println("compareTo(str1,str2)= "+res);
+
+        System.out.println();
+
+        str1="2012-05-29 12:07:15";
+        str2="2013-11-10 00:11:11";
+        boolean flag=equals(str1,str2);
+        System.out.println("str1= "+str1);
+        System.out.println("str2= "+str2);
+        System.out.println("equals(str1,str2)= "+flag);
+    }
+    */
 
 }

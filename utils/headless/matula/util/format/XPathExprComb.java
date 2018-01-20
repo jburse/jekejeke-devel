@@ -113,7 +113,12 @@ public final class XPathExprComb extends XPathExpr {
      */
     void whereAttrObj(String a, Object v) {
         XSelect first = new XSelectPrim(a, XSelectPrim.SELE_PRIM_ATTR);
-        XSelect second = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        XSelect second;
+        if (v != null) {
+            second = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        } else {
+            second = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+        }
         whereExpr(a, new XPathExprPrim(first, second, XPathExprPrim.EXPR_PRIM_EQ));
     }
 
