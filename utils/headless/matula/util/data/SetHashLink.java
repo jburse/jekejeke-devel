@@ -182,8 +182,17 @@ public class SetHashLink<E> extends AbstractSet<E> {
         }
 
         size--;
-        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
-            resize(table.length / 2);
+    }
+
+    /**
+     * <p>Resize after bulk delete.</p>
+     */
+    public void resize() {
+        int len = table.length;
+        while (size < len / 4 && len / 2 > MIN_SIZE)
+            len = len / 2;
+        if (len != table.length)
+            resize(len);
     }
 
     /**

@@ -138,8 +138,6 @@ public final class SetHash<E> extends AbstractSet<E> {
         }
 
         size--;
-        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
-            resize(table.length / 2);
     }
 
     /**

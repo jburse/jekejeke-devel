@@ -78,6 +78,7 @@ public abstract class AbstractSet<E>
         if (e == null)
             return;
         removeEntry(e);
+        resize();
     }
 
     /**
@@ -128,6 +129,11 @@ public abstract class AbstractSet<E>
      * @param f The entry.
      */
     public abstract void removeEntry(SetEntry<E> f);
+
+    /**
+     * <p>Resize after remove entry.</p>
+     */
+    public abstract void resize();
 
     /**
      * <p>Retrieve the last entry.</p>

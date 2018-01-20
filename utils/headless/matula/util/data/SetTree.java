@@ -184,6 +184,13 @@ public final class SetTree<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Resize after bulk delete.</p>
+     */
+    public void resize() {
+        /* do nothing */
+    }
+
+    /**
      * <p>Retrieve the last entry.</p>
      *
      * @return The last entry, can be null.
