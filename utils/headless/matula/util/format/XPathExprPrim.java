@@ -218,7 +218,11 @@ public final class XPathExprPrim extends XPathExpr {
             }
         } else {
             StringBuilder buf = new StringBuilder();
+            if (!XSelectComb.isSelectTerm(first))
+                buf.append('(');
             buf.append(first.toString());
+            if (!XSelectComb.isSelectTerm(first))
+                buf.append(')');
             switch (primitive) {
                 case EXPR_PRIM_EQ:
                     buf.append("=");
@@ -241,7 +245,11 @@ public final class XPathExprPrim extends XPathExpr {
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
+            if (!XSelectComb.isSelectTerm(second))
+                buf.append('(');
             buf.append(second.toString());
+            if (!XSelectComb.isSelectTerm(second))
+                buf.append(')');
             return buf.toString();
         }
     }

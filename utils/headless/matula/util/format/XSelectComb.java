@@ -181,11 +181,11 @@ public final class XSelectComb extends XSelect {
                 case SELE_COMB_NEG:
                     StringBuilder buf = new StringBuilder();
                     buf.append("-");
-                    if (!isTerm(first))
-                        buf.append("(");
+                    if (!isSelectFactor(first))
+                        buf.append('(');
                     buf.append(first.toString());
-                    if (!isTerm(first))
-                        buf.append(")");
+                    if (!isSelectFactor(first))
+                        buf.append(')');
                     return buf.toString();
                 default:
                     throw new IllegalArgumentException("illegal combiination");
@@ -194,51 +194,59 @@ public final class XSelectComb extends XSelect {
             switch (combination) {
                 case SELE_COMB_ADD:
                     StringBuilder buf = new StringBuilder();
+                    if (!isSelectTerm(first))
+                        buf.append('(');
                     buf.append(first.toString());
+                    if (!isSelectTerm(first))
+                        buf.append(')');
                     buf.append("+");
-                    if (!isTerm(second))
-                        buf.append("(");
+                    if (!isSelectFactor(second))
+                        buf.append('(');
                     buf.append(second.toString());
-                    if (!isTerm(second))
-                        buf.append(")");
+                    if (!isSelectFactor(second))
+                        buf.append(')');
                     return buf.toString();
                 case SELE_COMB_SUB:
                     buf = new StringBuilder();
+                    if (!isSelectTerm(first))
+                        buf.append('(');
                     buf.append(first.toString());
+                    if (!isSelectTerm(first))
+                        buf.append(')');
                     buf.append("-");
-                    if (!isTerm(second))
-                        buf.append("(");
+                    if (!isSelectFactor(second))
+                        buf.append('(');
                     buf.append(second.toString());
-                    if (!isTerm(second))
-                        buf.append(")");
+                    if (!isSelectFactor(second))
+                        buf.append(')');
                     return buf.toString();
                 case SELE_COMB_MUL:
                     buf = new StringBuilder();
-                    if (!isTerm(first))
-                        buf.append("(");
+                    if (!isSelectFactor(first))
+                        buf.append('(');
                     buf.append(first.toString());
-                    if (!isTerm(first))
-                        buf.append(")");
+                    if (!isSelectFactor(first))
+                        buf.append(')');
                     buf.append("*");
-                    if (!isSimple(second))
-                        buf.append("(");
+                    if (!isSelectSimple(second))
+                        buf.append('(');
                     buf.append(second.toString());
-                    if (!isSimple(second))
-                        buf.append(")");
+                    if (!isSelectSimple(second))
+                        buf.append(')');
                     return buf.toString();
                 case SELE_COMB_DIV:
                     buf = new StringBuilder();
-                    if (!isTerm(first))
-                        buf.append("(");
+                    if (!isSelectFactor(first))
+                        buf.append('(');
                     buf.append(first.toString());
-                    if (!isTerm(first))
-                        buf.append(")");
+                    if (!isSelectFactor(first))
+                        buf.append(')');
                     buf.append("/");
-                    if (!isSimple(second))
-                        buf.append("(");
+                    if (!isSelectSimple(second))
+                        buf.append('(');
                     buf.append(second.toString());
-                    if (!isSimple(second))
-                        buf.append(")");
+                    if (!isSelectSimple(second))
+                        buf.append(')');
                     return buf.toString();
                 default:
                     throw new IllegalArgumentException("illegal combiination");
@@ -261,13 +269,29 @@ public final class XSelectComb extends XSelect {
     }
 
     /**
-     * <p>Check whether the given select is a term.</p>
+     * <p>Check whether given select is a term.</p>
      *
      * @param select The select.
      * @return True if the select is a term, otherwise false.
      */
-    private static boolean isTerm(XSelect select) {
-        if (isSimple(select))
+    public static boolean isSelectTerm(XSelect select) {
+        if (isSelectFactor(select))
+            return true;
+        if (select instanceof XSelectComb)
+            return ((XSelectComb) select).getCombination() == XSelectComb.SELE_COMB_NEG ||
+                    ((XSelectComb) select).getCombination() == XSelectComb.SELE_COMB_ADD ||
+                    ((XSelectComb) select).getCombination() == XSelectComb.SELE_COMB_SUB;
+        return false;
+    }
+
+    /**
+     * <p>Check whether the given select is a factor.</p>
+     *
+     * @param select The select.
+     * @return True if the select is a factor, otherwise false.
+     */
+    private static boolean isSelectFactor(XSelect select) {
+        if (isSelectSimple(select))
             return true;
         if (select instanceof XSelectComb)
             return ((XSelectComb) select).getCombination() == XSelectComb.SELE_COMB_MUL ||
@@ -281,7 +305,7 @@ public final class XSelectComb extends XSelect {
      * @param select The select.
      * @return True if the select is simple, otherwise false.
      */
-    private static boolean isSimple(XSelect select) {
+    private static boolean isSelectSimple(XSelect select) {
         if (select instanceof XSelectPrim)
             return true;
         return false;

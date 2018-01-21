@@ -206,21 +206,21 @@ public final class XPathExprComb extends XPathExpr {
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (first) {
-                        if (!isTerm(entry.value))
-                            buf.append("(");
+                        if (!isPredicateFactor(entry.value))
+                            buf.append('(');
                         buf.append(entry.value.toString());
-                        if (!isTerm(entry.value))
-                            buf.append(")");
+                        if (!isPredicateFactor(entry.value))
+                            buf.append(')');
                         first = false;
                     } else {
-                        buf.append(" ");
+                        buf.append(' ');
                         buf.append(OP_OR);
-                        buf.append(" ");
-                        if (!isTerm(entry.value))
-                            buf.append("(");
+                        buf.append(' ');
+                        if (!isPredicateFactor(entry.value))
+                            buf.append('(');
                         buf.append(entry.value.toString());
-                        if (!isTerm(entry.value))
-                            buf.append(")");
+                        if (!isPredicateFactor(entry.value))
+                            buf.append(')');
                     }
                 }
                 return buf.toString();
@@ -232,21 +232,21 @@ public final class XPathExprComb extends XPathExpr {
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
                     if (first) {
-                        if (!isSimple(entry.value))
-                            buf.append("(");
+                        if (!isPredicateSimple(entry.value))
+                            buf.append('(');
                         buf.append(entry.value.toString());
-                        if (!isSimple(entry.value))
-                            buf.append(")");
+                        if (!isPredicateSimple(entry.value))
+                            buf.append(')');
                         first = false;
                     } else {
-                        buf.append(" ");
+                        buf.append(' ');
                         buf.append(OP_AND);
-                        buf.append(" ");
-                        if (!isSimple(entry.value))
-                            buf.append("(");
+                        buf.append(' ');
+                        if (!isPredicateSimple(entry.value))
+                            buf.append('(');
                         buf.append(entry.value.toString());
-                        if (!isSimple(entry.value))
-                            buf.append(")");
+                        if (!isPredicateSimple(entry.value))
+                            buf.append(')');
                     }
                 }
                 return buf.toString();
@@ -256,13 +256,13 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Check whether the given expression is a term.</p>
+     * <p>Check whether the given expression is a factor.</p>
      *
      * @param expr The expression.
-     * @return True if the expression is a term, otherwise false.
+     * @return True if the expression is a factor, otherwise false.
      */
-    private static boolean isTerm(XPathExpr expr) {
-        if (isSimple(expr))
+    private static boolean isPredicateFactor(XPathExpr expr) {
+        if (isPredicateSimple(expr))
             return true;
         if (expr instanceof XPathExprComb)
             return ((XPathExprComb) expr).getCombination() == EXPR_COMB_AND;
@@ -275,7 +275,7 @@ public final class XPathExprComb extends XPathExpr {
      * @param expr The expression.
      * @return True if the expression is simple, otherwise false.
      */
-    private static boolean isSimple(XPathExpr expr) {
+    private static boolean isPredicateSimple(XPathExpr expr) {
         if (expr instanceof XPathExprPrim)
             return true;
         if (expr instanceof XPathExprComb)
