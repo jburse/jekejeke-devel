@@ -1,7 +1,6 @@
 package matula.util.transform;
 
 import matula.util.data.ListArray;
-import matula.util.data.MapHash;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;

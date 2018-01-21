@@ -45,7 +45,6 @@ public final class XSLSheetCheck extends XSLSheet {
     private static final String SHEET_FORBIDDEN_ELEM = "sheet_forbidden_elem";
     private static final String SHEET_FORBIDDEN_ATTR = "sheet_forbidden_attr";
     private static final String SHEET_MISSING_ATTR = "sheet_missing_attr";
-    private static final String SHEET_MISSING_OUTPUT = "sheet_missing_output";
     private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
 
     static XSDSchema meta = new XSDSchema();
@@ -108,7 +107,8 @@ public final class XSLSheetCheck extends XSLSheet {
         xc.setSchema(meta);
         xc.check(node);
         if ((mask & AbstractDom.MASK_LIST) != 0) {
-            xsltNodes((DomElement) node);
+            AbstractDom[] nodes = ((DomElement) node).snapshotNodes();
+            xsltNodes(0, nodes);
         } else {
             xsltNode(node);
         }
@@ -139,13 +139,15 @@ public final class XSLSheetCheck extends XSLSheet {
             } else if (de.isName(XSLSheetTransform.NAME_PARAM)) {
                 xsltParam(de);
             } else if (de.isName(XSLSheetTransform.NAME_STYLESHEET)) {
-                xsltNodes(de);
+                AbstractDom[] nodes = de.snapshotNodes();
+                xsltNodes(0, nodes);
             } else if (de.isName(XSLSheetTransform.NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(XSLSheetTransform.NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
-                xsltNodes(de);
+                AbstractDom[] nodes = de.snapshotNodes();
+                xsltNodes(0, nodes);
             }
         }
     }
@@ -153,15 +155,15 @@ public final class XSLSheetCheck extends XSLSheet {
     /**
      * <p>Check the children.</p>
      *
-     * @param de The template dom element.
+     * @param i     The start index.
+     * @param nodes The dom elements.
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltNodes(DomElement de)
+    private void xsltNodes(int i, AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
-        AbstractDom[] nodes = de.snapshotNodes();
-        for (int i = 0; i < nodes.length; i++) {
+        for (; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             xsltNode(node);
         }
@@ -177,18 +179,33 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltForEach(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        String select = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
+        String attr = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
         xr.setParameters(parameters);
-        XPath xpath = xr.createXPath(select);
+        XPath xpath = xr.createXPath(attr);
         XPathCheck xc = new XPathCheck();
         xc.setSchema(schema);
         xc.setSimulation((ListArray<String>) simulation.clone());
         xc.xpath(xpath);
+        AbstractDom[] nodes = de.snapshotNodes();
+        int i = 0;
+        for (; i < nodes.length; i++) {
+            AbstractDom node = nodes[i];
+            if (!(node instanceof DomElement))
+                break;
+            DomElement elem = (DomElement) node;
+            if (!elem.isName(XSLSheetTransform.NAME_SORT))
+                break;
+            attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_SELECT);
+            XSelect xselect = xr.createXSelect(attr);
+            xc.select(xselect);
+            attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_ORDER);
+            XSLSheet.checkOrder(elem, attr);
+        }
         ListArray<String> backsimulation = simulation;
         try {
             simulation = xc.getSimulation();
-            xsltNodes(de);
+            xsltNodes(i, nodes);
             simulation = backsimulation;
         } catch (IOException x) {
             simulation = backsimulation;
@@ -260,7 +277,8 @@ public final class XSLSheetCheck extends XSLSheet {
         try {
             simulation = new ListArray<String>();
             schema = xdef;
-            xsltNodes(de);
+            AbstractDom[] nodes = de.snapshotNodes();
+            xsltNodes(0, nodes);
             schema = backschema;
             simulation = backsimulation;
         } catch (IOException x) {
@@ -297,11 +315,10 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a param tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     private void xsltParam(DomElement de)
-            throws ScannerError, ValidationError {
+            throws ValidationError {
         String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
             throw new ValidationError(PATH_DUPLICATE_VAR, name);
@@ -322,7 +339,8 @@ public final class XSLSheetCheck extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
         attrTest(test);
-        xsltNodes(de);
+        AbstractDom[] nodes = de.snapshotNodes();
+        xsltNodes(0, nodes);
     }
 
     /**
@@ -344,9 +362,11 @@ public final class XSLSheetCheck extends XSLSheet {
             if (de2.isName(XSLSheetTransform.NAME_WHEN)) {
                 String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
                 attrTest(test);
-                xsltNodes(de2);
+                AbstractDom[] nodes2 = de2.snapshotNodes();
+                xsltNodes(0, nodes2);
             } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
-                xsltNodes(de2);
+                AbstractDom[] nodes2 = de2.snapshotNodes();
+                xsltNodes(0, nodes2);
             } else {
                 String name = de2.getName();
                 throw new ValidationError(SHEET_FORBIDDEN_ELEM, name);
@@ -398,8 +418,8 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Some test cases.</p
      *
      * @param args Not used.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
     /*

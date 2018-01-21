@@ -32,6 +32,9 @@ public final class XPathOrder implements Comparator<Object> {
     public static final int ORDER_ASC = 0;
     public static final int ORDER_DESC = 1;
 
+    public static final String OP_ASCENDING = "ascending";
+    public static final String OP_DESCENDING = "descending";
+
     private XSelect select;
     private int direction;
 
@@ -79,6 +82,26 @@ public final class XPathOrder implements Comparator<Object> {
                 return XPathExprPrim.compareTo(o1, o2);
             case XPathOrder.ORDER_DESC:
                 return XPathExprPrim.compareTo(o2, o1);
+            default:
+                throw new IllegalArgumentException("illegal order");
+        }
+    }
+
+    /**
+     * <p>Convert the choice points to a string.</p>
+     *
+     * @return The string.
+     */
+    public String toString() {
+        switch (direction) {
+            case XPathOrder.ORDER_ASC:
+                return select.toString();
+            case XPathOrder.ORDER_DESC:
+                StringBuilder buf = new StringBuilder();
+                buf.append(select.toString());
+                buf.append(' ');
+                buf.append(OP_DESCENDING);
+                return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal order");
         }

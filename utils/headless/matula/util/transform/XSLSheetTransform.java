@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -57,6 +58,9 @@ public final class XSLSheetTransform extends XSLSheet {
     public static final String NAME_WHEN = "when";
     public static final String ATTR_WHEN_TEST = "test";
     public static final String NAME_OTHERWISE = "otherwise";
+    public static final String NAME_SORT = "sort";
+    public static final String ATTR_SORT_SELECT = "select";
+    public static final String ATTR_SORT_ORDER = "order";
 
     private MapHash<String, Object> variables;
     private DomElement data;
@@ -103,8 +107,9 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param dn      The template.
      * @param comment The comment.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     public void xslt(AbstractDom dn, String comment)
             throws IOException, ScannerError, ValidationError {
@@ -113,7 +118,7 @@ public final class XSLSheetTransform extends XSLSheet {
         if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
             DomElement elem = (DomElement) dn;
             AbstractDom[] nodes = elem.snapshotNodes();
-            xsltNodes(nodes);
+            xsltNodes(0, nodes);
         } else {
             xsltNode(dn);
         }
@@ -123,8 +128,9 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Transform a template to a result.</p>
      *
      * @param dn The template.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltNode(AbstractDom dn)
             throws IOException, ScannerError, ValidationError {
@@ -145,7 +151,7 @@ public final class XSLSheetTransform extends XSLSheet {
                 xsltParam(de);
             } else if (de.isName(NAME_STYLESHEET)) {
                 AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(nodes);
+                xsltNodes(0, nodes);
             } else if (de.isName(NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(NAME_CHOOSE)) {
@@ -179,8 +185,9 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Transform the children.</p>
      *
      * @param de The template DOM elememt.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltNodes2(DomElement de)
             throws IOException, ScannerError, ValidationError {
@@ -192,11 +199,11 @@ public final class XSLSheetTransform extends XSLSheet {
                 (writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
             writer.copyStart(de);
             if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
-                xsltNodes(nodes);
+                xsltNodes(0, nodes);
             } else {
                 writer.write("\n");
                 writer.incIndent();
-                xsltNodes(nodes);
+                xsltNodes(0, nodes);
                 writer.decIndent();
                 writer.writeIndent();
             }
@@ -209,13 +216,15 @@ public final class XSLSheetTransform extends XSLSheet {
     /**
      * <p>Transform the children.</p>
      *
+     * @param i     The start index.
      * @param nodes The template dom nodes.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
-    private void xsltNodes(AbstractDom[] nodes)
+    private void xsltNodes(int i, AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
-        for (int i = 0; i < nodes.length; i++) {
+        for (; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
                 xsltNode(node);
@@ -231,22 +240,46 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a for each tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltForEach(DomElement de)
             throws IOException, ScannerError, ValidationError {
-        String select = de.getAttr(ATTR_FOREACH_SELECT);
+        String attr = de.getAttr(ATTR_FOREACH_SELECT);
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
-        XPath xpath = xr.createXPath(select);
+        XPath xpath = xr.createXPath(attr);
+        AbstractDom[] nodes = de.snapshotNodes();
+        int i = 0;
+        for (; i < nodes.length; i++) {
+            AbstractDom node = nodes[i];
+            if (!(node instanceof DomElement))
+                break;
+            DomElement elem = (DomElement) node;
+            if (!elem.isName(NAME_SORT))
+                break;
+            attr = elem.getAttr(ATTR_SORT_SELECT);
+            XSelect xselect = xr.createXSelect(attr);
+            attr = elem.getAttr(ATTR_SORT_ORDER);
+            int orderid = XSLSheet.checkOrder(elem, attr);
+            XPathOrder xo = new XPathOrder(xselect, orderid);
+            xpath.sortOrder(Integer.toString(i), xo);
+        }
         DomElement backdata = data;
         try {
-            data = xpath.findFirst(0, data);
-            while (data != null) {
-                AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(nodes);
-                data = xpath.findNext();
+            if (i != 0) {
+                ListArray<DomElement> list = xpath.findSort(data);
+                for (int j = 0; j < list.size(); j++) {
+                    data = list.get(j);
+                    xsltNodes(i, nodes);
+                }
+            } else {
+                data = xpath.findFirst(0, data);
+                while (data != null) {
+                    xsltNodes(0, nodes);
+                    data = xpath.findNext();
+                }
             }
             data = backdata;
         } catch (IOException x) {
@@ -265,12 +298,11 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a value of tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException     IO error.
-     * @throws ScannerError    Syntax error.
-     * @throws ValidationError Check error.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
     private void xsltValueOf(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError {
         String select = de.getAttr(ATTR_VALUEOF_SELECT);
         Object val = attrSelect(select);
         if (val instanceof DomElement) {
@@ -313,7 +345,7 @@ public final class XSLSheetTransform extends XSLSheet {
         try {
             data = pu.getFound();
             AbstractDom[] nodes = de.snapshotNodes();
-            xsltNodes(nodes);
+            xsltNodes(0, nodes);
             data = backdata;
         } catch (IOException x) {
             data = backdata;
@@ -331,11 +363,11 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute an output tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltOutput(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError, ValidationError {
         String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
         MimeHeader mh = new MimeHeader(mime);
         String typesubtype = mh.getType() + "/" + mh.getSubType();
@@ -351,10 +383,10 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Execute a param tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private void xsltParam(DomElement de)
-            throws ScannerError, ValidationError {
+            throws ValidationError {
         String name = de.getAttr(ATTR_PARAM_NAME);
         Object val = variables.get(name);
         if (val == null) {
@@ -401,7 +433,7 @@ public final class XSLSheetTransform extends XSLSheet {
         boolean val = attrTest(test);
         if (val) {
             AbstractDom[] nodes = de.snapshotNodes();
-            xsltNodes(nodes);
+            xsltNodes(0, nodes);
         }
     }
 
@@ -423,12 +455,12 @@ public final class XSLSheetTransform extends XSLSheet {
                 boolean val = attrTest(test);
                 if (val) {
                     AbstractDom[] nodes2 = de2.snapshotNodes();
-                    xsltNodes(nodes2);
+                    xsltNodes(0, nodes2);
                     break;
                 }
             } else {
                 AbstractDom[] nodes2 = de2.snapshotNodes();
-                xsltNodes(nodes2);
+                xsltNodes(0, nodes2);
                 break;
             }
         }
@@ -443,12 +475,10 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param select The xselect.
      * @return The evaluation.
-     * @throws IOException     IO error.
-     * @throws ScannerError    Syntax error.
-     * @throws ValidationError Check error.
+     * @throws ScannerError Syntax error.
      */
     private Object attrSelect(String select)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XSelect xs = xr.createXSelect(select);
@@ -460,12 +490,10 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param test The xpath expr.
      * @return The evaluation.
-     * @throws IOException     IO error.
-     * @throws ScannerError    Syntax error.
-     * @throws ValidationError Check error.
+     * @throws ScannerError Syntax error.
      */
     private boolean attrTest(String test)
-            throws IOException, ScannerError, ValidationError {
+            throws ScannerError {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XPathExpr xe = xr.createXPathExpr(test);
@@ -481,8 +509,11 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     /*
     public static void main(String[] args)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         PrintWriter pw = new PrintWriter(System.out);
+        DomWriter dw = new DomWriter();
+        dw.setMask(AbstractDom.MASK_TEXT);
+        dw.setWriter(pw);
 
         SimpleDateFormat sdf2 = new SimpleDateFormat(FormatterDateTime.PATTERN_DATETIME);
         String sent = sdf2.format(new java.util.Date());
@@ -505,8 +536,8 @@ public final class XSLSheetTransform extends XSLSheet {
 
         XSLSheetTransform transform = new XSLSheetTransform();
         transform.setVariables(variables);
-        transform.setWriter(pw);
-        transform.setMask(AbstractDom.MASK_TEXT);
+        transform.setWriter(dw);
+
         transform.xslt(template, null);
         pw.flush();
 
@@ -526,8 +557,7 @@ public final class XSLSheetTransform extends XSLSheet {
 
         transform = new XSLSheetTransform();
         transform.setVariables(variables);
-        transform.setWriter(pw);
-        transform.setMask(AbstractDom.MASK_TEXT);
+        transform.setWriter(dw);
         transform.xslt(template, null);
         pw.flush();
         System.out.println();

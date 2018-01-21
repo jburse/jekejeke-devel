@@ -47,6 +47,15 @@ public final class XPath implements Comparator<Object[]> {
         return cps;
     }
 
+    /**
+     * <p>Retrieve the order bys.</p>
+     *
+     * @return The order bys.
+     */
+    public MapHashLink<String, XPathOrder> getOrderBys() {
+        return obs;
+    }
+
     /*****************************************************/
     /* Choice Points                                     */
     /*****************************************************/
@@ -182,8 +191,10 @@ public final class XPath implements Comparator<Object[]> {
      * @return The found dom element, or null.
      * @throws ScannerError Syntax error.
      */
-    public DomElement findFirst(int pos, DomElement e) throws ScannerError {
-        if (pos == cps.size())
+    public DomElement findFirst(int pos, DomElement e)
+            throws ScannerError {
+        int n = (cps != null ? cps.size() : 0);
+        if (!(pos < n))
             return e;
         ChoicePoint hit = cps.get(pos);
         e = hit.findFirst(e);
@@ -202,15 +213,18 @@ public final class XPath implements Comparator<Object[]> {
      * @return The found dom element, or null.
      * @throws ScannerError Syntax error.
      */
-    public DomElement findNext() throws ScannerError {
-        for (int pos = cps.size() - 1; pos >= 0; pos--) {
-            ChoicePoint hit = cps.get(pos);
-            DomElement e = hit.findNext();
-            while (e != null) {
-                e = findFirst(pos + 1, e);
-                if (e != null)
-                    return e;
-                e = hit.findNext();
+    public DomElement findNext()
+            throws ScannerError {
+        if (cps != null) {
+            for (int pos = cps.size() - 1; pos >= 0; pos--) {
+                ChoicePoint hit = cps.get(pos);
+                DomElement e = hit.findNext();
+                while (e != null) {
+                    e = findFirst(pos + 1, e);
+                    if (e != null)
+                        return e;
+                    e = hit.findNext();
+                }
             }
         }
         return null;
@@ -220,9 +234,11 @@ public final class XPath implements Comparator<Object[]> {
      * <p>Close the cursor.</p>
      */
     public void findClose() {
-        for (int pos = cps.size() - 1; pos >= 0; pos--) {
-            ChoicePoint hit = cps.get(pos);
-            hit.findClose();
+        if (cps != null) {
+            for (int pos = cps.size() - 1; pos >= 0; pos--) {
+                ChoicePoint hit = cps.get(pos);
+                hit.findClose();
+            }
         }
     }
 
@@ -323,17 +339,37 @@ public final class XPath implements Comparator<Object[]> {
     /*****************************************************/
 
     /**
-     * <p>Convert the xpath to a string.</p>
+     * <p>Convert the choice points to a string.</p>
      *
      * @return The string.
      */
-    public String toString() {
+    public String toStringChoicePoints() {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < cps.size(); i++) {
             if (i != 0)
                 buf.append("/");
             ChoicePoint hit = cps.get(i);
             buf.append(hit.toString());
+        }
+        return buf.toString();
+    }
+
+    /**
+     * <p>Convert the order bys to a string.</p>
+     *
+     * @return The string.
+     */
+    public String toStringOrderBys() {
+        StringBuilder buf = new StringBuilder();
+        boolean first = true;
+        for (MapEntry<String, XPathOrder> entry = obs.getFirstEntry();
+             entry != null; entry = obs.successor(entry)) {
+            if (first) {
+                first = false;
+            } else {
+                buf.append(", ");
+            }
+            buf.append(entry.value.toString());
         }
         return buf.toString();
     }

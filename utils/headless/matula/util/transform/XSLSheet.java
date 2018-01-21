@@ -1,6 +1,7 @@
 package matula.util.transform;
 
 import matula.util.format.DomElement;
+import matula.util.format.XPathOrder;
 import matula.util.system.AbstractRuntime;
 
 /**
@@ -115,6 +116,30 @@ abstract class XSLSheet {
             String name = de.getName();
             throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".mime");
         }
+    }
+
+    /**
+     * <p>Check an order attribute value.</p>
+     *
+     * @param de    The dom element.
+     * @param order The attribute value.
+     * @return The parameter type id.
+     * @throws ValidationError Check error.
+     */
+    static int checkOrder(DomElement de, String order)
+            throws ValidationError {
+        int orderid = XPathOrder.ORDER_ASC;
+        if (order == null) {
+            /* */
+        } else if (XPathOrder.OP_ASCENDING.equalsIgnoreCase(order)) {
+            /* */
+        } else if (XPathOrder.OP_DESCENDING.equalsIgnoreCase(order)) {
+            orderid = XPathOrder.ORDER_DESC;
+        } else {
+            String name = de.getName();
+            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".order");
+        }
+        return orderid;
     }
 
 }

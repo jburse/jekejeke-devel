@@ -19,6 +19,11 @@
 <element name="for-each">
    <attribute name="select" type="string"/>
 </element>
+<element name="sort">
+   <parent name="for-each"/>
+   <attribute name="select" type="string"/>
+   <attribute name="order" use="optional" type="string"/>
+</element>
 <element name="value-of">
    <attribute name="select" type="string"/>
 </element>
