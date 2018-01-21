@@ -215,8 +215,8 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
     /**
      * <p>Retrieve the next tag or text.</p>
      *
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException    IO error.
+     * @throws ScannerError   Syntax error.
      * @throws ParseException Shit happens.
      */
     public abstract void nextTagOrText() throws IOException, ScannerError, ParseException;

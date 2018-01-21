@@ -68,6 +68,7 @@ public final class XPathOrder implements Comparator<Object> {
 
     /**
      * <p>Compare two values.</p>
+     *
      * @param o1 The first value.
      * @param o2 The second value.
      * @return less < 0, equals = 0, greater > 0

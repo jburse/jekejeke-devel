@@ -121,9 +121,9 @@ public final class ValidationError extends Exception {
      * @return The scanner error as a string.
      */
     public String toString() {
-        String s=id;
+        String s = id;
         if (culprit != null)
-            s+= "#" + culprit;
+            s += "#" + culprit;
         return s;
     }
 

@@ -150,7 +150,7 @@ abstract class XPathRead {
                 if (!(res2 instanceof XPathExpr))
                     throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
                 res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_PRED);
-                ListArray<ChoicePoint> cps=xp.getChoicePoints();
+                ListArray<ChoicePoint> cps = xp.getChoicePoints();
                 XPathExprComb res = cps.get(cps.size() - 1).getExpr();
                 res.join((XPathExprComb) res2);
                 if (st.ttype != ']')

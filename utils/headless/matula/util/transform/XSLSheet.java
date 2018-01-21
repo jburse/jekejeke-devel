@@ -99,6 +99,7 @@ abstract class XSLSheet {
 
     /**
      * <p>Check a mime type attribute value.</p>
+     *
      * @param de   The dom element.
      * @param type The attribute value.
      * @return The mime type id.

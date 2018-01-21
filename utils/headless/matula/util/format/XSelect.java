@@ -1,7 +1,5 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
-
 /**
  * <p>The class represent an abstract xselect.</p>
  * <p/>

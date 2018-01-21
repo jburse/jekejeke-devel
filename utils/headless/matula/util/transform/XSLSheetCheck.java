@@ -1,6 +1,5 @@
 package matula.util.transform;
 
-import idxtab.Temprepo.TemprepoPath;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
@@ -119,7 +118,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a template.</p>
      *
      * @param dn The template.
-     * @throws IOException    IO error.
+     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -155,7 +154,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check the children.</p>
      *
      * @param de The template dom element.
-     * @throws IOException    IO error.
+     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -220,7 +219,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a with data tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException    IO error.
+     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -236,8 +235,8 @@ public final class XSLSheetCheck extends XSLSheet {
                 String name = de.getName();
                 throw new ValidationError(SHEET_MISSING_ATTR, name + ".select");
             }
-            int typeid=attrSelect(select);
-            if (typeid!=XSDDeclAttr.TYPE_STRING)
+            int typeid = attrSelect(select);
+            if (typeid != XSDDeclAttr.TYPE_STRING)
                 throw new ValidationError(XPathCheck.PATH_STRING_SELE, select);
         } else {
             String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
@@ -315,7 +314,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a if tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException    IO error.
+     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
@@ -330,7 +329,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * <p>Check a choose tag.</p>
      *
      * @param de The template dom element.
-     * @throws IOException    IO error.
+     * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */

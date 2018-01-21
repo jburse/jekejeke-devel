@@ -7,9 +7,6 @@ import matula.util.system.ForeignXml;
 import matula.util.system.OpenOpts;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.text.ParseException;
 
 /**
  * <p>This class provides a dom element. The API is simplicistic in

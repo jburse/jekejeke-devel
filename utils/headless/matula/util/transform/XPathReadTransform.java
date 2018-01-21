@@ -1,7 +1,6 @@
 package matula.util.transform;
 
 import matula.util.data.MapHash;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>This class provides an xpath reader during transform.</p>

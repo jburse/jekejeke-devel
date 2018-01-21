@@ -72,7 +72,7 @@ public final class XActionFuncUpdate extends XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
-     * @throws ScannerError         Shit happens.
+     * @throws ScannerError Shit happens.
      */
     public void updateElement(DomElement r, DomElement e)
             throws ScannerError {
@@ -82,7 +82,7 @@ public final class XActionFuncUpdate extends XActionFunc {
                 break;
             case UPDATE_SET_ATTR:
                 Object val = value.evalElement(e);
-                if (val!=null) {
+                if (val != null) {
                     r.setAttrObj(keyorname, val);
                 } else {
                     r.resetAttr(keyorname);
@@ -90,7 +90,7 @@ public final class XActionFuncUpdate extends XActionFunc {
                 break;
             case UPDATE_SET_CHILD:
                 val = value.evalElement(e);
-                if (val!=null) {
+                if (val != null) {
                     r.setChild(keyorname, (DomElement) val);
                 } else {
                     r.resetChild(keyorname);

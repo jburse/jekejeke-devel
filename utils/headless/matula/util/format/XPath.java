@@ -156,7 +156,7 @@ public final class XPath implements Comparator<Object[]> {
     /**
      * <p>Sort by a clause.</p>
      *
-     * @param k The key.
+     * @param k  The key.
      * @param xo The clause.
      */
     public void sortOrder(String k, XPathOrder xo) {
@@ -289,9 +289,9 @@ public final class XPath implements Comparator<Object[]> {
      * @return less < 0, equals = 0, greater > 0
      */
     public int compare(Object[] o1, Object[] o2) {
-        int i=0;
-        for (MapEntry<String,XPathOrder> entry=obs.getFirstEntry();
-             entry!=null; entry=obs.successor(entry)) {
+        int i = 0;
+        for (MapEntry<String, XPathOrder> entry = obs.getFirstEntry();
+             entry != null; entry = obs.successor(entry)) {
             int res = entry.value.compare(o1[i], o2[i]);
             if (res != 0)
                 return res;
@@ -308,9 +308,9 @@ public final class XPath implements Comparator<Object[]> {
      */
     private Object[] computeKey(DomElement e) {
         Object[] key = new Object[obs.size()];
-        int i=0;
-        for (MapEntry<String,XPathOrder> entry=obs.getFirstEntry();
-                entry!=null; entry=obs.successor(entry)) {
+        int i = 0;
+        for (MapEntry<String, XPathOrder> entry = obs.getFirstEntry();
+             entry != null; entry = obs.successor(entry)) {
             XSelect select = entry.value.getSelect();
             key[i] = select.evalElement(e);
             i++;

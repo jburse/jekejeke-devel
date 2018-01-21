@@ -2,7 +2,6 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>This class represents an xpath combination expression.</p>

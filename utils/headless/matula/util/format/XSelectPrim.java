@@ -2,9 +2,6 @@ package matula.util.format;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * <p>The class represent an xselect prim.</p>
@@ -136,7 +133,7 @@ public final class XSelectPrim extends XSelect {
                 Object val = getCnst();
                 if (val instanceof DomElement) {
                     StringWriter sr = new StringWriter();
-                    int mask=AbstractDom.MASK_LIST+AbstractDom.MASK_TEXT;
+                    int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
                     try {
                         sr.write("\"");
                         ((DomElement) val).store(sr, null, mask);
@@ -153,7 +150,7 @@ public final class XSelectPrim extends XSelect {
                         buf.append("\'");
                         return buf.toString();
                     } else {
-                        return Long.toString(((Long)val).longValue());
+                        return Long.toString(((Long) val).longValue());
                     }
                 }
             case SELE_PRIM_CHILD:

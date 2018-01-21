@@ -1,6 +1,5 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
 import matula.util.transform.XSDDeclAttr;
 
 /**
@@ -153,9 +152,9 @@ public final class XPathExprPrim extends XPathExpr {
             case XSDDeclAttr.TYPE_PRIMITIVE:
                 return true;
             case XSDDeclAttr.TYPE_STRING:
-                return ((String)val).equals((String)val2);
+                return ((String) val).equals((String) val2);
             case XSDDeclAttr.TYPE_INTEGER:
-                return ((Long)val).equals((Long)val2);
+                return ((Long) val).equals((Long) val2);
             default:
                 throw new IllegalArgumentException("illegal type");
         }

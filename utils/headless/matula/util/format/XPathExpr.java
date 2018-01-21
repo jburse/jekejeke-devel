@@ -1,7 +1,5 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
-
 /**
  * <p>This class is the base class of xpath expressions.</p>
  * </p>

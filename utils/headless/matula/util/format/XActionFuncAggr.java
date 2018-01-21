@@ -116,7 +116,7 @@ public final class XActionFuncAggr extends XActionFunc {
      */
     public void calcAttrObj(String a, Object v) {
         XSelect xs;
-        if (v!=null) {
+        if (v != null) {
             xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
         } else {
             xs = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
@@ -132,7 +132,7 @@ public final class XActionFuncAggr extends XActionFunc {
      */
     public void calcChild(String n, DomElement v) {
         XSelect xs;
-        if (v!=null) {
+        if (v != null) {
             xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
         } else {
             xs = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
@@ -160,7 +160,7 @@ public final class XActionFuncAggr extends XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
-     * @throws ScannerError         Shit happens.
+     * @throws ScannerError Shit happens.
      */
     public void updateElement(DomElement r, DomElement e)
             throws ScannerError {
