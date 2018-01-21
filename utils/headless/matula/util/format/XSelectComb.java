@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 /**
  * <p>The class represent an xselect prim.</p>
  * <p/>
@@ -32,9 +34,11 @@ public final class XSelectComb extends XSelect {
     public static final int SELE_COMB_SUB = 2;
     public static final int SELE_COMB_MUL = 3;
     public static final int SELE_COMB_DIV = 4;
+    public static final int SELE_COMB_WHEN = 5;
 
     private XSelect first;
     private XSelect second;
+    private XPathExpr third;
     private int combination;
 
     /**
@@ -53,6 +57,15 @@ public final class XSelectComb extends XSelect {
      */
     public XSelect getSecond() {
         return second;
+    }
+
+    /**
+     * <p>Retrieve the third argument.</p>
+     *
+     * @return The third argument.
+     */
+    public XPathExpr getThird() {
+        return third;
     }
 
     /**
@@ -87,10 +100,31 @@ public final class XSelectComb extends XSelect {
     public XSelectComb(XSelect f, XSelect s, int c) {
         if (f == null)
             throw new NullPointerException("first missing");
-        first = f;
         if (s == null)
             throw new NullPointerException("second missing");
+        first = f;
         second = s;
+        combination = c;
+    }
+
+    /**
+     * <p>>Create a new xselect comb.</p>
+     *
+     * @param f The first xselect.
+     * @param s The second xselect.
+     * @param r The third xpathexpr.
+     * @param c The type of combination.
+     */
+    public XSelectComb(XSelect f, XSelect s, XPathExpr r, int c) {
+        if (f == null)
+            throw new NullPointerException("first missing");
+        if (s == null)
+            throw new NullPointerException("second missing");
+        if (r == null)
+            throw new NullPointerException("third missing");
+        first = f;
+        second = s;
+        third = r;
         combination = c;
     }
 
@@ -99,9 +133,8 @@ public final class XSelectComb extends XSelect {
      *
      * @param d The dom element.
      * @return The value.
-     * @throws IllegalArgumentException Shit happens.
      */
-    public Object evalElement(DomElement d) throws IllegalArgumentException {
+    public Object evalElement(DomElement d) {
         if (combination <= SELE_COMB_NEG) {
             Long val = (Long) first.evalElement(d);
             switch (combination) {
@@ -110,7 +143,7 @@ public final class XSelectComb extends XSelect {
                 default:
                     throw new IllegalArgumentException("illegal combiination");
             }
-        } else {
+        } else if (combination <= SELE_COMB_DIV) {
             Long val = (Long) first.evalElement(d);
             Long val2 = (Long) second.evalElement(d);
             switch (combination) {
@@ -122,6 +155,17 @@ public final class XSelectComb extends XSelect {
                     return Long.valueOf(val.longValue() * val2.longValue());
                 case SELE_COMB_DIV:
                     return Long.valueOf(val.longValue() / val2.longValue());
+                default:
+                    throw new IllegalArgumentException("illegal combiination");
+            }
+        } else {
+            switch (combination) {
+                case SELE_COMB_WHEN:
+                    if (third.checkElement(d)) {
+                        return first.evalElement(d);
+                    } else {
+                        return second.evalElement(d);
+                    }
                 default:
                     throw new IllegalArgumentException("illegal combiination");
             }
@@ -148,7 +192,7 @@ public final class XSelectComb extends XSelect {
                 default:
                     throw new IllegalArgumentException("illegal combiination");
             }
-        } else {
+        } else if (combination <= SELE_COMB_DIV) {
             switch (combination) {
                 case SELE_COMB_ADD:
                     StringBuilder buf = new StringBuilder();
@@ -200,6 +244,20 @@ public final class XSelectComb extends XSelect {
                     return buf.toString();
                 default:
                     throw new IllegalArgumentException("illegal combiination");
+            }
+        } else {
+            switch (combination) {
+                case SELE_COMB_WHEN:
+                    StringBuilder buf = new StringBuilder();
+                    buf.append(third.toString());
+                    buf.append("?");
+                    buf.append(first.toString());
+                    buf.append(":");
+                    buf.append(second.toString());
+                    return buf.toString();
+                default:
+                    throw new IllegalArgumentException("illegal combiination");
+
             }
         }
     }

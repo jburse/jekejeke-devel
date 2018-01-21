@@ -103,9 +103,10 @@ public final class XPathExprPrim extends XPathExpr {
      * <p>Check whether a dom element satisfies this xpath expression.</p>
      *
      * @param e The dom element.
-     * @return True if th dom element satisfies this xpath expression, otherwise false.
+     * @return True if the xpath expression is satisified, otherwise false.
      */
-    public boolean checkElement(DomElement e) throws ScannerError {
+    public boolean checkElement(DomElement e)
+            throws IllegalArgumentException {
         if (primitive <= EXPR_PRIM_NAME) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {

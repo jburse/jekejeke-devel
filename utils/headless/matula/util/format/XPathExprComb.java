@@ -41,7 +41,7 @@ public final class XPathExprComb extends XPathExpr {
     public static final String OP_AND = "and";
     public static final String OP_NOT = "not";
 
-    private MapHashLink<String, XPathExpr> exprs = new MapHashLink<String, XPathExpr>();
+    private MapHashLink<String, XPathExpr> exprs;
     private int combination;
 
     /**
@@ -129,6 +129,8 @@ public final class XPathExprComb extends XPathExpr {
      * @param v The xpath expression.
      */
     public void whereExpr(String k, XPathExpr v) {
+        if (exprs == null)
+            exprs = new MapHashLink<String, XPathExpr>();
         MapEntry<String, XPathExpr> entry = exprs.getEntry(k);
         if (entry != null) {
             entry.value = v;
@@ -142,10 +144,8 @@ public final class XPathExprComb extends XPathExpr {
      *
      * @param e The dom element.
      * @return True if th dom element satisfies this xpath expression, otherwise false.
-     * @throws ScannerError Shit happens
      */
-    public boolean checkElement(DomElement e)
-            throws ScannerError {
+    public boolean checkElement(DomElement e) {
         switch (combination) {
             case EXPR_COMB_PRED:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
@@ -155,17 +155,21 @@ public final class XPathExprComb extends XPathExpr {
                 }
                 return true;
             case EXPR_COMB_OR:
-                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
-                     entry != null; entry = exprs.successor(entry)) {
-                    if (entry.value.checkElement(e))
-                        return true;
+                if (exprs != null) {
+                    for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                         entry != null; entry = exprs.successor(entry)) {
+                        if (entry.value.checkElement(e))
+                            return true;
+                    }
                 }
                 return false;
             case EXPR_COMB_AND:
-                for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
-                     entry != null; entry = exprs.successor(entry)) {
-                    if (!entry.value.checkElement(e))
-                        return false;
+                if (exprs != null) {
+                    for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                         entry != null; entry = exprs.successor(entry)) {
+                        if (!entry.value.checkElement(e))
+                            return false;
+                    }
                 }
                 return true;
             default:
@@ -196,7 +200,7 @@ public final class XPathExprComb extends XPathExpr {
                 }
                 return buf.toString();
             case EXPR_COMB_OR:
-                if (exprs.size() == 0)
+                if (exprs == null)
                     return OP_FALSE;
                 buf = new StringBuilder();
                 first = true;
@@ -222,7 +226,7 @@ public final class XPathExprComb extends XPathExpr {
                 }
                 return buf.toString();
             case EXPR_COMB_AND:
-                if (exprs.size() == 0)
+                if (exprs == null)
                     return OP_TRUE;
                 buf = new StringBuilder();
                 first = true;
@@ -276,7 +280,7 @@ public final class XPathExprComb extends XPathExpr {
         if (expr instanceof XPathExprPrim)
             return true;
         if (expr instanceof XPathExprComb)
-            return ((XPathExprComb) expr).getExprs().size() == 0;
+            return ((XPathExprComb) expr).getExprs() == null;
         return false;
     }
 
@@ -287,8 +291,10 @@ public final class XPathExprComb extends XPathExpr {
      * @param beta The second combined expression.
      */
     public void join(XPathExprComb beta) {
-        int n = exprs.size();
         MapHashLink<String, XPathExpr> ex = beta.getExprs();
+        if (ex == null)
+            return;
+        int n = exprs.size();
         for (MapEntry<String, XPathExpr> entry = ex.getFirstEntry();
              entry != null; entry = ex.successor(entry)) {
             whereExpr(Integer.toString(n), entry.value);
@@ -310,9 +316,11 @@ public final class XPathExprComb extends XPathExpr {
             default:
                 throw new IllegalArgumentException("not complementable");
         }
-        for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
-             entry != null; entry = exprs.successor(entry)) {
-            entry.value.complement();
+        if (exprs != null) {
+            for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                 entry != null; entry = exprs.successor(entry)) {
+                entry.value.complement();
+            }
         }
     }
 

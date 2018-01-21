@@ -97,9 +97,8 @@ public final class XSelectPrim extends XSelect {
      *
      * @param d The dom element.
      * @return The value.
-     * @throws IllegalArgumentException Shit happens.
      */
-    public Object evalElement(DomElement d) throws IllegalArgumentException {
+    public Object evalElement(DomElement d) {
         Object res;
         switch (getPrimitive()) {
             case SELE_PRIM_ATTR:

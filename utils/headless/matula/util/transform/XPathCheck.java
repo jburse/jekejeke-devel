@@ -99,10 +99,10 @@ final class XPathCheck {
                 XPathExprComb ex = cp.getExpr();
                 if (ex.getCombination() != XPathExprComb.EXPR_COMB_PRED)
                     throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
-                MapHashLink<String, XPathExpr> exs = ex.getExprs();
-                MapEntry<String, XPathExpr> entry = exs.getFirstEntry();
-                if (entry == null)
+                MapHashLink<String, XPathExpr> exprs = ex.getExprs();
+                if (exprs == null)
                     throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
+                MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                 if (!(entry.value instanceof XPathExprPrim))
                     throw new ValidationError(PATH_CANT_CHCPNT, cp.toString());
                 XPathExprPrim prim = (XPathExprPrim) entry.value;
@@ -112,10 +112,10 @@ final class XPathCheck {
                 XSDDeclElem decl = schema.getDeclElem(name);
                 XMLCheck.checkParent(getContext(), name, decl);
                 simulation.add(name);
-                entry = exs.successor(entry);
+                entry = exprs.successor(entry);
                 while (entry != null) {
                     predicate(entry.value);
-                    entry = exs.successor(entry);
+                    entry = exprs.successor(entry);
                 }
                 break;
             case ChoicePoint.CHOICEPOINT_PARENT:
@@ -171,9 +171,11 @@ final class XPathCheck {
                 case XPathExprComb.EXPR_COMB_OR:
                 case XPathExprComb.EXPR_COMB_AND:
                     MapHashLink<String, XPathExpr> exprs = comb.getExprs();
-                    for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
-                         entry != null; entry = exprs.successor(entry)) {
-                        predicate(entry.value);
+                    if (exprs != null) {
+                        for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                             entry != null; entry = exprs.successor(entry)) {
+                            predicate(entry.value);
+                        }
                     }
                     break;
                 default:
@@ -242,6 +244,19 @@ final class XPathCheck {
                     if (typeid != XSDDeclAttr.TYPE_INTEGER)
                         throw new ValidationError(PATH_INTEGER_SELE, xc.getSecond().toString());
                     break;
+                case XSelectComb.SELE_COMB_WHEN:
+                    predicate(xc.getThird());
+                    typeid = select(xc.getFirst());
+                    int typeid2 = select(xc.getSecond());
+                    if (typeid == typeid2) {
+                        return typeid;
+                    } else if (typeid == XSLSheet.TYPE_ELEMENT) {
+                        throw new ValidationError(PATH_PRIMITIV_SELE, xc.getFirst().toString());
+                    } else if (typeid2 == XSLSheet.TYPE_ELEMENT) {
+                        throw new ValidationError(PATH_PRIMITIV_SELE, xc.getSecond().toString());
+                    } else {
+                        return XSDDeclAttr.TYPE_PRIMITIVE;
+                    }
                 default:
                     throw new ValidationError(PATH_CANT_SELE, xs.toString());
             }

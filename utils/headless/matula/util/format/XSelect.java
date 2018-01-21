@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 /**
  * <p>The class represent an abstract xselect.</p>
  * <p/>
@@ -33,9 +35,8 @@ public abstract class XSelect {
      *
      * @param d The dom element.
      * @return The value.
-     * @throws IllegalArgumentException Shit happens.
      */
-    public abstract Object evalElement(DomElement d) throws IllegalArgumentException;
+    public abstract Object evalElement(DomElement d);
 
     /**
      * <p>Convert this xpath select to a string.</p>

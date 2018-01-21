@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHashLink;
 import matula.util.data.MapTree;
 import matula.util.regex.ScannerError;
 
@@ -35,16 +36,7 @@ import java.util.Comparator;
  */
 public final class XPath implements Comparator<Object[]> {
     private ListArray<ChoicePoint> cps;
-    private ListArray<XPathOrder> obs;
-
-    /**
-     * <p>Retrieve the number of xpath choices.</p>
-     *
-     * @return The number of xpath choices.
-     */
-    public int size() {
-        return cps.size();
-    }
+    private MapHashLink<String, XPathOrder> obs;
 
     /**
      * <p>Retrieve the choice points.</p>
@@ -158,18 +150,24 @@ public final class XPath implements Comparator<Object[]> {
     public void sortAttr(String a) {
         XSelect xs = new XSelectPrim(a, XSelectPrim.SELE_PRIM_ATTR);
         XPathOrder xo = new XPathOrder(xs, XPathOrder.ORDER_ASC);
-        sortOrder(xo);
+        sortOrder(a, xo);
     }
 
     /**
      * <p>Sort by a clause.</p>
      *
+     * @param k The key.
      * @param xo The clause.
      */
-    public void sortOrder(XPathOrder xo) {
+    public void sortOrder(String k, XPathOrder xo) {
         if (obs == null)
-            obs = new ListArray<XPathOrder>();
-        obs.add(xo);
+            obs = new MapHashLink<String, XPathOrder>();
+        MapEntry<String, XPathOrder> entry = obs.getEntry(k);
+        if (entry != null) {
+            entry.value = xo;
+        } else {
+            obs.add(k, xo);
+        }
     }
 
     /*****************************************************/
@@ -291,10 +289,13 @@ public final class XPath implements Comparator<Object[]> {
      * @return less < 0, equals = 0, greater > 0
      */
     public int compare(Object[] o1, Object[] o2) {
-        for (int i = 0; i < obs.size(); i++) {
-            int res = obs.get(i).compare(o1[i], o2[i]);
+        int i=0;
+        for (MapEntry<String,XPathOrder> entry=obs.getFirstEntry();
+             entry!=null; entry=obs.successor(entry)) {
+            int res = entry.value.compare(o1[i], o2[i]);
             if (res != 0)
                 return res;
+            i++;
         }
         return 0;
     }
@@ -307,9 +308,12 @@ public final class XPath implements Comparator<Object[]> {
      */
     private Object[] computeKey(DomElement e) {
         Object[] key = new Object[obs.size()];
-        for (int i = 0; i < obs.size(); i++) {
-            XSelect select = obs.get(i).getSelect();
+        int i=0;
+        for (MapEntry<String,XPathOrder> entry=obs.getFirstEntry();
+                entry!=null; entry=obs.successor(entry)) {
+            XSelect select = entry.value.getSelect();
             key[i] = select.evalElement(e);
+            i++;
         }
         return key;
     }

@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import matula.util.data.ListArray;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -149,7 +150,8 @@ abstract class XPathRead {
                 if (!(res2 instanceof XPathExpr))
                     throw new ScannerError(PATH_MISSING_PRED, OpenOpts.getOffset(reader));
                 res2 = ((XPathExpr) res2).lift(XPathExprComb.EXPR_COMB_PRED);
-                XPathExprComb res = xp.getChoicePoints().get(xp.size() - 1).getExpr();
+                ListArray<ChoicePoint> cps=xp.getChoicePoints();
+                XPathExprComb res = cps.get(cps.size() - 1).getExpr();
                 res.join((XPathExprComb) res2);
                 if (st.ttype != ']')
                     throw new ScannerError(PATH_MISSING_SQRBKT, OpenOpts.getOffset(reader));

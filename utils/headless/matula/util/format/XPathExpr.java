@@ -34,11 +34,9 @@ public abstract class XPathExpr {
      * <p>Check whether a dom element satisfies this xpath expression.</p>
      *
      * @param e The dom element.
-     * @return True if th dom element satisfies this xpath expression, otherwise false.
-     * @throws ScannerError Shit happens
+     * @return True if the the xpath expression is satisified, otherwise false.
      */
-    public abstract boolean checkElement(DomElement e)
-            throws ScannerError;
+    public abstract boolean checkElement(DomElement e);
 
     /**
      * <p>Convert this xpath expression to a string.</p>
