@@ -118,7 +118,7 @@ public final class XSLSheetTransform extends XSLSheet {
         if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
             DomElement elem = (DomElement) dn;
             AbstractDom[] nodes = elem.snapshotNodes();
-            xsltNodes(0, nodes);
+            xsltNodes(nodes);
         } else {
             xsltNode(dn);
         }
@@ -141,6 +141,8 @@ public final class XSLSheetTransform extends XSLSheet {
             DomElement de = (DomElement) dn;
             if (de.isName(NAME_FOREACH)) {
                 xsltForEach(de);
+            } else if (de.isName(NAME_SORT)) {
+                /* do nothing */
             } else if (de.isName(NAME_VALUEOF)) {
                 xsltValueOf(de);
             } else if (de.isName(NAME_WITHDATA)) {
@@ -151,7 +153,7 @@ public final class XSLSheetTransform extends XSLSheet {
                 xsltParam(de);
             } else if (de.isName(NAME_STYLESHEET)) {
                 AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(0, nodes);
+                xsltNodes(nodes);
             } else if (de.isName(NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(NAME_CHOOSE)) {
@@ -199,11 +201,11 @@ public final class XSLSheetTransform extends XSLSheet {
                 (writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
             writer.copyStart(de);
             if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
-                xsltNodes(0, nodes);
+                xsltNodes(nodes);
             } else {
                 writer.write("\n");
                 writer.incIndent();
-                xsltNodes(0, nodes);
+                xsltNodes(nodes);
                 writer.decIndent();
                 writer.writeIndent();
             }
@@ -216,15 +218,14 @@ public final class XSLSheetTransform extends XSLSheet {
     /**
      * <p>Transform the children.</p>
      *
-     * @param i     The start index.
      * @param nodes The template dom nodes.
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltNodes(int i, AbstractDom[] nodes)
+    private void xsltNodes(AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
-        for (; i < nodes.length; i++) {
+        for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
                 xsltNode(node);
@@ -251,14 +252,13 @@ public final class XSLSheetTransform extends XSLSheet {
         xr.setVariables(variables);
         XPath xpath = xr.createXPath(attr);
         AbstractDom[] nodes = de.snapshotNodes();
-        int i = 0;
-        for (; i < nodes.length; i++) {
+        for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if (!(node instanceof DomElement))
-                break;
+                continue;
             DomElement elem = (DomElement) node;
             if (!elem.isName(NAME_SORT))
-                break;
+                continue;
             attr = elem.getAttr(ATTR_SORT_SELECT);
             XSelect xselect = xr.createXSelect(attr);
             attr = elem.getAttr(ATTR_SORT_ORDER);
@@ -268,16 +268,16 @@ public final class XSLSheetTransform extends XSLSheet {
         }
         DomElement backdata = data;
         try {
-            if (i != 0) {
+            if (xpath.getOrderBys() != null) {
                 ListArray<DomElement> list = xpath.findSort(data);
                 for (int j = 0; j < list.size(); j++) {
                     data = list.get(j);
-                    xsltNodes(i, nodes);
+                    xsltNodes(nodes);
                 }
             } else {
                 data = xpath.findFirst(0, data);
                 while (data != null) {
-                    xsltNodes(0, nodes);
+                    xsltNodes(nodes);
                     data = xpath.findNext();
                 }
             }
@@ -305,6 +305,8 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError {
         String select = de.getAttr(ATTR_VALUEOF_SELECT);
         Object val = attrSelect(select);
+        if (val == null)
+            return;
         if (val instanceof DomElement) {
             AbstractDom[] nodes = ((DomElement) val).snapshotNodes();
             DomElement.storeNodes(writer, nodes);
@@ -345,7 +347,7 @@ public final class XSLSheetTransform extends XSLSheet {
         try {
             data = pu.getFound();
             AbstractDom[] nodes = de.snapshotNodes();
-            xsltNodes(0, nodes);
+            xsltNodes(nodes);
             data = backdata;
         } catch (IOException x) {
             data = backdata;
@@ -433,7 +435,7 @@ public final class XSLSheetTransform extends XSLSheet {
         boolean val = attrTest(test);
         if (val) {
             AbstractDom[] nodes = de.snapshotNodes();
-            xsltNodes(0, nodes);
+            xsltNodes(nodes);
         }
     }
 
@@ -455,12 +457,12 @@ public final class XSLSheetTransform extends XSLSheet {
                 boolean val = attrTest(test);
                 if (val) {
                     AbstractDom[] nodes2 = de2.snapshotNodes();
-                    xsltNodes(0, nodes2);
+                    xsltNodes(nodes2);
                     break;
                 }
             } else {
                 AbstractDom[] nodes2 = de2.snapshotNodes();
-                xsltNodes(0, nodes2);
+                xsltNodes(nodes2);
                 break;
             }
         }
@@ -504,8 +506,9 @@ public final class XSLSheetTransform extends XSLSheet {
      * <p>Some test cases.</p
      *
      * @param args Not used.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     /*
     public static void main(String[] args)

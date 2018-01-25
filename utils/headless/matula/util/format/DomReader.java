@@ -182,7 +182,6 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         }
     }
 
-
     /**
      * <p>Check whether the text is a white space text.</p>
      *

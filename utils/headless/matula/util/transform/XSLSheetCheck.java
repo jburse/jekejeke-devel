@@ -108,7 +108,7 @@ public final class XSLSheetCheck extends XSLSheet {
         xc.check(node);
         if ((mask & AbstractDom.MASK_LIST) != 0) {
             AbstractDom[] nodes = ((DomElement) node).snapshotNodes();
-            xsltNodes(0, nodes);
+            xsltNodes(nodes);
         } else {
             xsltNode(node);
         }
@@ -130,6 +130,8 @@ public final class XSLSheetCheck extends XSLSheet {
             DomElement de = (DomElement) dn;
             if (de.isName(XSLSheetTransform.NAME_FOREACH)) {
                 xsltForEach(de);
+            } else if (de.isName(XSLSheetTransform.NAME_SORT)) {
+                /* do nothing */
             } else if (de.isName(XSLSheetTransform.NAME_VALUEOF)) {
                 xsltValueOf(de);
             } else if (de.isName(XSLSheetTransform.NAME_WITHDATA)) {
@@ -140,14 +142,14 @@ public final class XSLSheetCheck extends XSLSheet {
                 xsltParam(de);
             } else if (de.isName(XSLSheetTransform.NAME_STYLESHEET)) {
                 AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(0, nodes);
+                xsltNodes(nodes);
             } else if (de.isName(XSLSheetTransform.NAME_IF)) {
                 xsltIf(de);
             } else if (de.isName(XSLSheetTransform.NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
                 AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(0, nodes);
+                xsltNodes(nodes);
             }
         }
     }
@@ -155,15 +157,14 @@ public final class XSLSheetCheck extends XSLSheet {
     /**
      * <p>Check the children.</p>
      *
-     * @param i     The start index.
      * @param nodes The dom elements.
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltNodes(int i, AbstractDom[] nodes)
+    private void xsltNodes(AbstractDom[] nodes)
             throws IOException, ScannerError, ValidationError {
-        for (; i < nodes.length; i++) {
+        for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             xsltNode(node);
         }
@@ -188,14 +189,13 @@ public final class XSLSheetCheck extends XSLSheet {
         xc.setSimulation((ListArray<String>) simulation.clone());
         xc.xpath(xpath);
         AbstractDom[] nodes = de.snapshotNodes();
-        int i = 0;
-        for (; i < nodes.length; i++) {
+        for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if (!(node instanceof DomElement))
-                break;
+                continue;
             DomElement elem = (DomElement) node;
             if (!elem.isName(XSLSheetTransform.NAME_SORT))
-                break;
+                continue;
             attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_SELECT);
             XSelect xselect = xr.createXSelect(attr);
             xc.select(xselect);
@@ -205,7 +205,7 @@ public final class XSLSheetCheck extends XSLSheet {
         ListArray<String> backsimulation = simulation;
         try {
             simulation = xc.getSimulation();
-            xsltNodes(i, nodes);
+            xsltNodes(nodes);
             simulation = backsimulation;
         } catch (IOException x) {
             simulation = backsimulation;
@@ -278,7 +278,7 @@ public final class XSLSheetCheck extends XSLSheet {
             simulation = new ListArray<String>();
             schema = xdef;
             AbstractDom[] nodes = de.snapshotNodes();
-            xsltNodes(0, nodes);
+            xsltNodes(nodes);
             schema = backschema;
             simulation = backsimulation;
         } catch (IOException x) {
@@ -340,7 +340,7 @@ public final class XSLSheetCheck extends XSLSheet {
         String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
         attrTest(test);
         AbstractDom[] nodes = de.snapshotNodes();
-        xsltNodes(0, nodes);
+        xsltNodes(nodes);
     }
 
     /**
@@ -363,10 +363,10 @@ public final class XSLSheetCheck extends XSLSheet {
                 String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
                 attrTest(test);
                 AbstractDom[] nodes2 = de2.snapshotNodes();
-                xsltNodes(0, nodes2);
+                xsltNodes(nodes2);
             } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
                 AbstractDom[] nodes2 = de2.snapshotNodes();
-                xsltNodes(0, nodes2);
+                xsltNodes(nodes2);
             } else {
                 String name = de2.getName();
                 throw new ValidationError(SHEET_FORBIDDEN_ELEM, name);

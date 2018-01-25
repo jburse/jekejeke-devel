@@ -1,8 +1,15 @@
 package matula.util.transform;
 
+import idxtab.Temprepo.TemprepoPath;
+import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
+import matula.util.format.DomWriter;
 import matula.util.format.XPathOrder;
+import matula.util.regex.ScannerError;
 import matula.util.system.AbstractRuntime;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * <p>This class provides an XSL style sheet base.</p>
@@ -140,6 +147,77 @@ abstract class XSLSheet {
             throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".order");
         }
         return orderid;
+    }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args Not used.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
+     */
+    public static void main(String[] args)
+            throws IOException, ScannerError, ValidationError {
+        TemprepoPath tp = new TemprepoPath();
+        tp.setDocument("package");
+        tp.list();
+        boolean f = tp.next();
+        tp.close();
+        if (!f)
+            throw new IllegalArgumentException("template missing");
+        DomElement template = tp.getFound();
+
+        TemprepoPath tp2 = new TemprepoPath();
+        tp2.setFlags(tp2.getFlags() | TemprepoPath.FLAG_SCHM);
+        tp2.setDocument("package");
+        tp2.list();
+        f = tp2.next();
+        tp2.close();
+        if (!f)
+            throw new IllegalArgumentException("schema missing");
+        DomElement de = tp2.getFound();
+        XSDSchema schema = new XSDSchema();
+        schema.digestElements(de);
+
+        XSLSheetCheck xc = new XSLSheetCheck();
+        xc.setMask(AbstractDom.MASK_TEXT);
+        xc.setSchema(schema);
+        xc.check(template);
+        System.out.println("XSL template package ok");
+
+        PrintWriter pw = new PrintWriter(System.out);
+        DomWriter dw = new DomWriter();
+        dw.setMask(AbstractDom.MASK_TEXT);
+        dw.setWriter(pw);
+
+        de = new DomElement();
+        DomElement de1 = new DomElement();
+        de1.setName("demo");
+        de1.setAttr("jack", "abc");
+        de1.setAttrLong("jill", 123);
+        de.addNode(de1);
+        de1 = new DomElement();
+        de1.setName("demo");
+        de1.setAttr("jack", "ghi");
+        de1.setAttrLong("jill", 456);
+        de.addNode(de1);
+        de1 = new DomElement();
+        de1.setName("demo");
+        de1.setAttrLong("jill", 789);
+        de.addNode(de1);
+        de1 = new DomElement();
+        de1.setName("demo");
+        de1.setAttr("jack", "def");
+
+        de.addNode(de1);
+
+        XSLSheetTransform transform = new XSLSheetTransform();
+        transform.setData(de);
+        transform.setWriter(dw);
+
+        transform.xslt(template, null);
+        pw.flush();
     }
 
 }
