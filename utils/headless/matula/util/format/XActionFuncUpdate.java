@@ -72,10 +72,8 @@ public final class XActionFuncUpdate extends XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
-     * @throws ScannerError Shit happens.
      */
-    public void updateElement(DomElement r, DomElement e)
-            throws ScannerError {
+    public void updateElement(DomElement r, DomElement e) {
         switch (update) {
             case UPDATE_NAME:
                 r.setName(keyorname);

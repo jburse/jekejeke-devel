@@ -92,4 +92,18 @@ public interface InterfacePath {
      */
     DomElement getFound();
 
+    /**
+     * <p>Retrieve the root.</p>
+     *
+     * @return The root.
+     */
+    DomElement getRoot();
+
+    /**
+     * <p>Set the root.</p>
+     *
+     * @param r The root.
+     */
+    void setRoot(DomElement r);
+
 }

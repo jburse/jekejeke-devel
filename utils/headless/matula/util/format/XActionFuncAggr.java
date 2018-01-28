@@ -160,10 +160,8 @@ public final class XActionFuncAggr extends XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
-     * @throws ScannerError Shit happens.
      */
-    public void updateElement(DomElement r, DomElement e)
-            throws ScannerError {
+    public void updateElement(DomElement r, DomElement e) {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             entry.value.updateElement(r, e);

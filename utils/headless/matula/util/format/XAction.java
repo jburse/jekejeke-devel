@@ -1,7 +1,7 @@
 package matula.util.format;
 
 import matula.util.data.ListArray;
-import matula.util.regex.ScannerError;
+import matula.util.transform.InterfacePath;
 
 /**
  * <p>This class provides an xaction.</p>
@@ -88,17 +88,20 @@ public final class XAction {
     /**
      * <p>Perform the actions.</p>
      *
-     * @param e The current dom element.
-     * @throws ScannerError Shit happens.
+     * @param path The path.
      */
-    public DomElement performActions(DomElement e)
-            throws ScannerError {
+    public DomElement performActions(InterfacePath path) {
+        DomElement e = path.getFound();
         for (int i = 0; i < acts.size(); i++) {
             XActionFuncAggr act = acts.get(i);
             switch (act.getAction()) {
                 case XActionFuncAggr.ACTION_DELETE:
                     DomElement e2 = e.getParent();
-                    e2.removeNode(e);
+                    if (e2 == null) {
+                        path.setRoot(null);
+                    } else {
+                        e2.removeNode(e);
+                    }
                     e = e2;
                     break;
                 case XActionFuncAggr.ACTION_UPDATE:
@@ -107,7 +110,13 @@ public final class XAction {
                 case XActionFuncAggr.ACTION_INSERT_INDEX:
                     e2 = new DomElement();
                     act.updateElement(e2, e);
-                    e.addNode(act.getPos(), e2);
+                    if (e == null) {
+                        if (path.getRoot() == null)
+                            throw new IllegalArgumentException("duplicate root");
+                        path.setRoot(e2);
+                    } else {
+                        e.addNode(act.getPos(), e2);
+                    }
                     e = e2;
                     break;
                 default:

@@ -560,11 +560,12 @@ public final class DomElement extends AbstractDom {
      *
      * @param node The DOM node.
      */
-    public void removeNode(AbstractDom node) {
+    public int removeNode(AbstractDom node) {
         if (node == null)
             throw new NullPointerException("node missing");
+        int k;
         synchronized (this) {
-            int k = (children != null ? children.indexOf(node) : -1);
+            k = (children != null ? children.indexOf(node) : -1);
             if (k >= 0) {
                 children.remove(k);
                 if (children.size() == 0)
@@ -572,6 +573,7 @@ public final class DomElement extends AbstractDom {
                 cachechildren = null;
             }
         }
+        return k;
     }
 
     /*****************************************************/
@@ -624,6 +626,8 @@ public final class DomElement extends AbstractDom {
      * @param key The name.
      */
     public void resetChild(String key) {
+        if (key == null)
+            throw new NullPointerException("key missing");
         synchronized (this) {
             int k = (children != null ? indexChild(children, key) : -1);
             if (k >= 0) {

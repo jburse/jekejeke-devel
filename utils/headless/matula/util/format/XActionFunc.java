@@ -35,10 +35,8 @@ public abstract class XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
-     * @throws ScannerError Shit happens.
      */
-    public abstract void updateElement(DomElement r, DomElement e)
-            throws ScannerError;
+    public abstract void updateElement(DomElement r, DomElement e);
 
     /**
      * <p>Convert this xaction function to a string.</p>
