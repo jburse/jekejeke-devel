@@ -1,7 +1,5 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
-
 /**
  * <p>This class represents an xaction update function.</p>
  * </p>
@@ -32,6 +30,7 @@ public final class XActionFuncUpdate extends XActionFunc {
     public static final int UPDATE_NAME = 0;
     public static final int UPDATE_SET_ATTR = 1;
     public static final int UPDATE_SET_CHILD = 2;
+    public static final int UPDATE_WITH = 3;
 
     private String keyorname;
     private XSelect value;
@@ -47,6 +46,19 @@ public final class XActionFuncUpdate extends XActionFunc {
         if (n == null)
             throw new NullPointerException("name missing");
         keyorname = n;
+        update = u;
+    }
+
+    /**
+     * <p>>Create a new xaction update.</p>
+     *
+     * @param v The value.
+     * @param u The type of update.
+     */
+    public XActionFuncUpdate(XSelect v, int u) {
+        if (v == null)
+            throw new NullPointerException("value missing");
+        value = v;
         update = u;
     }
 
@@ -72,8 +84,9 @@ public final class XActionFuncUpdate extends XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
+     * @return The result dom element.
      */
-    public void updateElement(DomElement r, DomElement e) {
+    public DomElement updateElement(DomElement r, DomElement e) {
         switch (update) {
             case UPDATE_NAME:
                 r.setName(keyorname);
@@ -94,9 +107,13 @@ public final class XActionFuncUpdate extends XActionFunc {
                     r.resetChild(keyorname);
                 }
                 break;
+            case UPDATE_WITH:
+                r = (DomElement) value.evalElement(e);
+                break;
             default:
                 throw new IllegalArgumentException("illegal update");
         }
+        return r;
     }
 
     /**
@@ -121,6 +138,8 @@ public final class XActionFuncUpdate extends XActionFunc {
                 buf.append("=");
                 buf.append(value.toString());
                 return buf.toString();
+            case UPDATE_WITH:
+                return value.toString();
             default:
                 throw new IllegalArgumentException("illegal update");
         }

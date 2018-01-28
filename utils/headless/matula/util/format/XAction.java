@@ -30,15 +30,15 @@ import matula.util.transform.InterfacePath;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XAction {
-    private ListArray<XActionFuncAggr> acts = new ListArray<XActionFuncAggr>();
+    private ListArray<XActionFuncAggr> acts;
 
     /**
-     * <p>Retrieve the number of xaction functions.</p>
+     * <p>Retrieve the acts.</p>
      *
-     * @return The number of xaction functions.
+     * @return The acts.
      */
-    public int size() {
-        return acts.size();
+    public ListArray<XActionFuncAggr> getActs() {
+        return acts;
     }
 
     /*****************************************************/
@@ -50,7 +50,7 @@ public final class XAction {
      */
     public void calcDelete() {
         XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_DELETE);
-        acts.add(xfa);
+        calcAction(xfa);
     }
 
     /**
@@ -58,7 +58,7 @@ public final class XAction {
      */
     public void calcUpdate() {
         XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_UPDATE);
-        acts.add(xfa);
+        calcAction(xfa);
     }
 
     /**
@@ -69,6 +69,25 @@ public final class XAction {
     public void calcInsertIndex(int i) {
         XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_INSERT_INDEX);
         xfa.setPos(i);
+        calcAction(xfa);
+    }
+
+    /**
+     * <p>Add a new replace xaction.</p>
+     */
+    public void calcReplace() {
+        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_REPLACE);
+        calcAction(xfa);
+    }
+
+    /**
+     * <p>Add a new xaction aggregate.</p>
+     *
+     * @param xfa The xaction aggregate.
+     */
+    public void calcAction(XActionFuncAggr xfa) {
+        if (acts == null)
+            acts = new ListArray<XActionFuncAggr>();
         acts.add(xfa);
     }
 
@@ -92,35 +111,40 @@ public final class XAction {
      */
     public DomElement performActions(InterfacePath path) {
         DomElement e = path.getFound();
-        for (int i = 0; i < acts.size(); i++) {
-            XActionFuncAggr act = acts.get(i);
-            switch (act.getAction()) {
-                case XActionFuncAggr.ACTION_DELETE:
-                    DomElement e2 = e.getParent();
-                    if (e2 == null) {
-                        path.setRoot(null);
-                    } else {
+        if (acts != null) {
+            for (int i = 0; i < acts.size(); i++) {
+                XActionFuncAggr act = acts.get(i);
+                switch (act.getAction()) {
+                    case XActionFuncAggr.ACTION_DELETE:
+                        DomElement e2 = e.getParent();
                         e2.removeNode(e);
-                    }
-                    e = e2;
-                    break;
-                case XActionFuncAggr.ACTION_UPDATE:
-                    act.updateElement(e, e);
-                    break;
-                case XActionFuncAggr.ACTION_INSERT_INDEX:
-                    e2 = new DomElement();
-                    act.updateElement(e2, e);
-                    if (e == null) {
-                        if (path.getRoot() == null)
-                            throw new IllegalArgumentException("duplicate root");
-                        path.setRoot(e2);
-                    } else {
+                        e = e2;
+                        break;
+                    case XActionFuncAggr.ACTION_UPDATE:
+                        e = act.updateElement(e, e);
+                        break;
+                    case XActionFuncAggr.ACTION_INSERT_INDEX:
+                        e2 = new DomElement();
+                        e2 = act.updateElement(e2, e);
                         e.addNode(act.getPos(), e2);
-                    }
-                    e = e2;
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal action");
+                        e = e2;
+                        break;
+                    case XActionFuncAggr.ACTION_REPLACE:
+                        e2 = new DomElement();
+                        e2 = act.updateElement(e2, e);
+                        DomElement e3 = e.getParent();
+                        if (e3 == null) {
+                            path.setRoot(e2);
+                        } else {
+                            int k = e3.removeNode(e);
+                            if (e2 != null)
+                                e3.addNode(k, e2);
+                        }
+                        e = e2;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal action");
+                }
             }
         }
         return e;
@@ -137,26 +161,32 @@ public final class XAction {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < acts.size(); i++) {
-            if (i != 0)
-                buf.append("/");
-            XActionFuncAggr act = acts.get(i);
-            switch (act.getAction()) {
-                case XActionFuncAggr.ACTION_DELETE:
-                    buf.append("..");
-                    break;
-                case XActionFuncAggr.ACTION_UPDATE:
-                    buf.append(".");
-                    buf.append(act.toString());
-                    break;
-                case XActionFuncAggr.ACTION_INSERT_INDEX:
-                    buf.append("[");
-                    buf.append(act.getPos());
-                    buf.append("]");
-                    buf.append(act.toString());
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal action");
+        if (acts != null) {
+            for (int i = 0; i < acts.size(); i++) {
+                if (i != 0)
+                    buf.append("/");
+                XActionFuncAggr act = acts.get(i);
+                switch (act.getAction()) {
+                    case XActionFuncAggr.ACTION_DELETE:
+                        buf.append("..");
+                        break;
+                    case XActionFuncAggr.ACTION_UPDATE:
+                        buf.append(".");
+                        buf.append(act.toString());
+                        break;
+                    case XActionFuncAggr.ACTION_INSERT_INDEX:
+                        buf.append("[");
+                        buf.append(act.getPos());
+                        buf.append("]");
+                        buf.append(act.toString());
+                        break;
+                    case XActionFuncAggr.ACTION_REPLACE:
+                        buf.append("..[]");
+                        buf.append(act.toString());
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal action");
+                }
             }
         }
         return buf.toString();

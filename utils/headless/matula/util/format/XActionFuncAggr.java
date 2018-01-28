@@ -2,7 +2,6 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.regex.ScannerError;
 
 /**
  * <p>This class represents an xaction aggregate function.</p>
@@ -34,6 +33,7 @@ public final class XActionFuncAggr extends XActionFunc {
     public static final int ACTION_DELETE = 0;
     public static final int ACTION_UPDATE = 1;
     public static final int ACTION_INSERT_INDEX = 2;
+    public static final int ACTION_REPLACE = 3;
 
     private MapHashLink<String, XActionFunc> funcs = new MapHashLink<String, XActionFunc>();
     private int action;
@@ -141,6 +141,21 @@ public final class XActionFuncAggr extends XActionFunc {
     }
 
     /**
+     * <p>Add an element with action.</p>
+     *
+     * @param v The elem.
+     */
+    public void calcWith(DomElement v) {
+        XSelect xs;
+        if (v != null) {
+            xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
+        } else {
+            xs = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+        }
+        calcFunc("_with", new XActionFuncUpdate(xs, XActionFuncUpdate.UPDATE_WITH));
+    }
+
+    /**
      * <p>Add an xaction function.</p>
      *
      * @param k The key.
@@ -160,12 +175,14 @@ public final class XActionFuncAggr extends XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
+     * @return The result dom element.
      */
-    public void updateElement(DomElement r, DomElement e) {
+    public DomElement updateElement(DomElement r, DomElement e) {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
-            entry.value.updateElement(r, e);
+            r = entry.value.updateElement(r, e);
         }
+        return r;
     }
 
     /**

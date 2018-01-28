@@ -1,7 +1,5 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
-
 /**
  * <p>This class is the base class of xaction functions.</p>
  * </p>
@@ -35,8 +33,9 @@ public abstract class XActionFunc {
      *
      * @param r The target dom element.
      * @param e The source dom element.
+     * @return The result dom element.
      */
-    public abstract void updateElement(DomElement r, DomElement e);
+    public abstract DomElement updateElement(DomElement r, DomElement e);
 
     /**
      * <p>Convert this xaction function to a string.</p>

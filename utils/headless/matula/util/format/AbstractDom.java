@@ -60,6 +60,15 @@ public abstract class AbstractDom
         return parent;
     }
 
+    /**
+     * <p>Set the parent.</p>
+     *
+     * @param p The parent.
+     */
+    public void setParent(DomElement p) {
+        parent = p;
+    }
+
     /*****************************************************/
     /* Properties Like Lifecycle                         */
     /*****************************************************/
