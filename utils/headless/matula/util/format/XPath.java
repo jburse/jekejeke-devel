@@ -4,7 +4,6 @@ import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.data.MapTree;
-import matula.util.regex.ScannerError;
 
 import java.util.Comparator;
 
@@ -187,12 +186,12 @@ public final class XPath implements Comparator<Object[]> {
      * <p>Find a first dom element.</p>
      *
      * @param pos The start choice index.
-     * @param e   The start dom element.
+     * @param e   The start dom element, can be null.
      * @return The found dom element, or null.
-     * @throws ScannerError Syntax error.
      */
-    public DomElement findFirst(int pos, DomElement e)
-            throws ScannerError {
+    public DomElement findFirst(int pos, DomElement e) {
+        if (e == null)
+            return null;
         int n = (cps != null ? cps.size() : 0);
         if (!(pos < n))
             return e;
@@ -211,10 +210,8 @@ public final class XPath implements Comparator<Object[]> {
      * <p>Find a next dom element.</p>
      *
      * @return The found dom element, or null.
-     * @throws ScannerError Syntax error.
      */
-    public DomElement findNext()
-            throws ScannerError {
+    public DomElement findNext() {
         if (cps != null) {
             for (int pos = cps.size() - 1; pos >= 0; pos--) {
                 ChoicePoint hit = cps.get(pos);
@@ -251,9 +248,8 @@ public final class XPath implements Comparator<Object[]> {
      *
      * @param e The start dom element.
      * @return The count.
-     * @throws ScannerError Syntax error.
      */
-    public long findCount(DomElement e) throws ScannerError {
+    public long findCount(DomElement e) {
         long res = 0;
         DomElement found = findFirst(0, e);
         while (found != null) {
@@ -270,7 +266,7 @@ public final class XPath implements Comparator<Object[]> {
      * @param e The start dom element.
      * @return The sort.
      */
-    public ListArray<DomElement> findSort(DomElement e) throws ScannerError {
+    public ListArray<DomElement> findSort(DomElement e) {
         MapTree<Object[], ListArray<DomElement>> tm =
                 new MapTree<Object[], ListArray<DomElement>>(this);
 

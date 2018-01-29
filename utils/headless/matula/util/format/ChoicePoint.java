@@ -92,9 +92,8 @@ public final class ChoicePoint {
      *
      * @param e The dom element.
      * @return The dom element, or null.
-     * @throws ScannerError Shit happens
      */
-    DomElement findFirst(DomElement e) throws ScannerError {
+    DomElement findFirst(DomElement e) {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 AbstractDom[] nodes = e.snapshotNodes();
@@ -126,9 +125,8 @@ public final class ChoicePoint {
      * <p>Advance the cursor.</p>
      *
      * @return The dom element, or null.
-     * @throws ScannerError Shit happens
      */
-    DomElement findNext() throws ScannerError {
+    DomElement findNext() {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 AbstractDom[] nodes = children;
