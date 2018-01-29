@@ -94,6 +94,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
         table[i] = e;
 
         e.before = last;
+        e.after = null;
         if (last != null) {
             last.after = e;
         } else {
@@ -131,9 +132,11 @@ public class SetHashLink<E> extends AbstractSet<E> {
         if (g != null)
             g.prev = e;
         e.next = g;
+        e.prev = null;
         table[i] = e;
 
         e.after = first;
+        e.before = null;
         if (first != null) {
             first.before = e;
         } else {

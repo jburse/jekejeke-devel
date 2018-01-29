@@ -92,6 +92,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         table[i] = e;
 
         e.before = last;
+        e.after = null;
         if (last != null) {
             last.after = e;
         } else {
@@ -181,9 +182,11 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         if (g != null)
             g.prev = e;
         e.next = g;
+        e.prev = null;
         table[i] = e;
 
         e.after = first;
+        e.before = null;
         if (first != null) {
             first.before = e;
         } else {

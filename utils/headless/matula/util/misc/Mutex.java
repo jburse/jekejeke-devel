@@ -107,4 +107,17 @@ public final class Mutex extends AbstractLock {
         }
     }
 
+    /******************************************************/
+    /* Lock Inspection                                    */
+    /******************************************************/
+
+    /**
+     * <p>Retrieve the locked thread.</p>
+     *
+     * @return The locked thread.
+     */
+    public Thread getLocked() {
+        return locked;
+    }
+
 }
