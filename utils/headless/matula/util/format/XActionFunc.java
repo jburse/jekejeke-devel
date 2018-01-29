@@ -35,7 +35,7 @@ public abstract class XActionFunc {
      * @param e The source dom element.
      * @return The result dom element.
      */
-    public abstract DomElement updateElement(DomElement r, DomElement e);
+    abstract DomElement updateElement(DomElement r, DomElement e);
 
     /**
      * <p>Convert this xaction function to a string.</p>

@@ -86,7 +86,7 @@ public final class XActionFuncUpdate extends XActionFunc {
      * @param e The source dom element.
      * @return The result dom element.
      */
-    public DomElement updateElement(DomElement r, DomElement e) {
+    DomElement updateElement(DomElement r, DomElement e) {
         switch (update) {
             case UPDATE_NAME:
                 r.setName(keyorname);
@@ -139,7 +139,11 @@ public final class XActionFuncUpdate extends XActionFunc {
                 buf.append(value.toString());
                 return buf.toString();
             case UPDATE_WITH:
-                return value.toString();
+                buf = new StringBuilder();
+                buf.append(XSelectPrim.OP_THIS);
+                buf.append("=");
+                buf.append(value.toString());
+                return buf.toString();
             default:
                 throw new IllegalArgumentException("illegal update");
         }

@@ -34,8 +34,10 @@ public final class XSelectPrim extends XSelect {
     public static final int SELE_PRIM_CONST = 1;
     public static final int SELE_PRIM_CHILD = 2;
     public static final int SELE_PRIM_NULL = 3;
+    public static final int SELE_PRIM_THIS = 4;
 
     public static final String OP_NULL = "null";
+    public static final String OP_THIS = "this";
 
     private Object attrorcnst;
     private int primitive;
@@ -110,6 +112,9 @@ public final class XSelectPrim extends XSelect {
             case SELE_PRIM_NULL:
                 res = null;
                 break;
+            case SELE_PRIM_THIS:
+                res = d;
+                break;
             default:
                 throw new IllegalArgumentException("illegal primitive");
         }
@@ -158,6 +163,8 @@ public final class XSelectPrim extends XSelect {
                 return name;
             case SELE_PRIM_NULL:
                 return OP_NULL;
+            case SELE_PRIM_THIS:
+                return OP_THIS;
             default:
                 throw new IllegalArgumentException("illegal primitive");
         }

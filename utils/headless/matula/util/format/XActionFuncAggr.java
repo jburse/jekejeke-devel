@@ -141,21 +141,6 @@ public final class XActionFuncAggr extends XActionFunc {
     }
 
     /**
-     * <p>Add an element with action.</p>
-     *
-     * @param v The elem.
-     */
-    public void calcWith(DomElement v) {
-        XSelect xs;
-        if (v != null) {
-            xs = new XSelectPrim(v, XSelectPrim.SELE_PRIM_CONST);
-        } else {
-            xs = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
-        }
-        calcFunc("_with", new XActionFuncUpdate(xs, XActionFuncUpdate.UPDATE_WITH));
-    }
-
-    /**
      * <p>Add an xaction function.</p>
      *
      * @param k The key.
@@ -177,7 +162,7 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param e The source dom element.
      * @return The result dom element.
      */
-    public DomElement updateElement(DomElement r, DomElement e) {
+    DomElement updateElement(DomElement r, DomElement e) {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             r = entry.value.updateElement(r, e);

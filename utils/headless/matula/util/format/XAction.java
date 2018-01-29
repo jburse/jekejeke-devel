@@ -73,14 +73,6 @@ public final class XAction {
     }
 
     /**
-     * <p>Add a new replace xaction.</p>
-     */
-    public void calcReplace() {
-        XActionFuncAggr xfa = new XActionFuncAggr(XActionFuncAggr.ACTION_REPLACE);
-        calcAction(xfa);
-    }
-
-    /**
      * <p>Add a new xaction aggregate.</p>
      *
      * @param xfa The xaction aggregate.
@@ -107,47 +99,50 @@ public final class XAction {
     /**
      * <p>Perform the actions.</p>
      *
+     * @param r    The target dom element.
+     * @param e    The source dom element.
      * @param path The path.
+     * @return The result dom element.
      */
-    public DomElement performActions(InterfacePath path) {
-        DomElement e = path.getFound();
+    public DomElement performActions(DomElement r, DomElement e,
+                                     InterfacePath path) {
         if (acts != null) {
             for (int i = 0; i < acts.size(); i++) {
                 XActionFuncAggr act = acts.get(i);
                 switch (act.getAction()) {
                     case XActionFuncAggr.ACTION_DELETE:
-                        DomElement e2 = e.getParent();
-                        e2.removeNode(e);
-                        e = e2;
+                        DomElement r2 = r.getParent();
+                        r2.removeNode(r);
+                        r = r2;
                         break;
                     case XActionFuncAggr.ACTION_UPDATE:
-                        e = act.updateElement(e, e);
+                        r = act.updateElement(r, e);
                         break;
                     case XActionFuncAggr.ACTION_INSERT_INDEX:
-                        e2 = new DomElement();
-                        e2 = act.updateElement(e2, e);
-                        e.addNode(act.getPos(), e2);
-                        e = e2;
+                        r2 = new DomElement();
+                        r2 = act.updateElement(r2, e);
+                        r.addNode(act.getPos(), r2);
+                        r = r2;
                         break;
                     case XActionFuncAggr.ACTION_REPLACE:
-                        e2 = new DomElement();
-                        e2 = act.updateElement(e2, e);
-                        DomElement e3 = e.getParent();
-                        if (e3 == null) {
-                            path.setRoot(e2);
+                        r2 = new DomElement();
+                        r2 = act.updateElement(r2, e);
+                        DomElement r3 = r.getParent();
+                        if (r3 == null) {
+                            path.setRoot(r2);
                         } else {
-                            int k = e3.removeNode(e);
-                            if (e2 != null)
-                                e3.addNode(k, e2);
+                            int k = r3.removeNode(r);
+                            if (r2 != null)
+                                r3.addNode(k, r2);
                         }
-                        e = e2;
+                        r = r2;
                         break;
                     default:
                         throw new IllegalArgumentException("illegal action");
                 }
             }
         }
-        return e;
+        return r;
     }
 
     /*****************************************************/

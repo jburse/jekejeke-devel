@@ -63,6 +63,7 @@ abstract class XPathRead {
         reserved.add(XPathExprComb.OP_AND);
         reserved.add(XPathExprComb.OP_NOT);
         reserved.add(XSelectPrim.OP_NULL);
+        reserved.add(XSelectPrim.OP_THIS);
     }
 
     /**
@@ -566,6 +567,9 @@ abstract class XPathRead {
         } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XSelectPrim.OP_NULL)) {
             st.nextToken();
             res = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+        } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XSelectPrim.OP_THIS)) {
+            st.nextToken();
+            res = new XSelectPrim(XSelectPrim.SELE_PRIM_THIS);
         } else if (isName()) {
             String name = st.sval;
             st.nextToken();
