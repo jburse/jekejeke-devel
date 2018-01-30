@@ -2,10 +2,12 @@ package jekpro.tools.proxy;
 
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
+import jekpro.model.rope.LoadOpts;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 import matula.util.sharik.Livestock;
@@ -55,6 +57,7 @@ public final class FlagAPI extends AbstractFlag {
     public final static String OP_FLAG_SYS_BELONGS_TO = "sys_belongs_to";
     public final static String OP_FLAG_SYS_CPU_COUNT = "sys_cpu_count";
     public final static String OP_FLAG_SYS_RUNTIME_VERSION = "sys_runtime_version";
+    public final static String OP_FLAG_VERBOSE = "verbose";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_DISP_INPUT = 1;
@@ -69,6 +72,7 @@ public final class FlagAPI extends AbstractFlag {
     private static final int FLAG_SYS_BELONGS_TO = 10;
     private static final int FLAG_SYS_CPU_COUNT = 11;
     private static final int FLAG_SYS_RUNTIME_VERSION = 12;
+    private static final int FLAG_VERBOSE = 13;
 
     /**
      * <p>Create a flag.</p>
@@ -99,6 +103,7 @@ public final class FlagAPI extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_BELONGS_TO, new FlagAPI(FLAG_SYS_BELONGS_TO));
         prologflags.add(OP_FLAG_SYS_CPU_COUNT, new FlagAPI(FLAG_SYS_CPU_COUNT));
         prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagAPI(FLAG_SYS_RUNTIME_VERSION));
+        prologflags.add("verbose", new FlagAPI(FLAG_VERBOSE));
         return prologflags;
     }
 
@@ -140,6 +145,30 @@ public final class FlagAPI extends AbstractFlag {
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
             case FLAG_SYS_RUNTIME_VERSION:
                 return System.getProperty("java.vm.specification.version");
+            case FLAG_VERBOSE:
+                int verb = 0;
+                if ((en.store.flags & Store.MASK_STORE_SMRY) != 0)
+                    verb |= LoadOpts.VERBOSE_SUMMARY;
+                if ((en.store.flags & Store.MASK_STORE_DTLS) != 0)
+                    verb |= LoadOpts.VERBOSE_DETAILS;
+                String name;
+                switch (verb) {
+                    case 0:
+                        name = Store.OP_OFF;
+                        break;
+                    case LoadOpts.VERBOSE_SUMMARY:
+                        name = LoadOpts.OP_VERBOSE_SUMMARY;
+                        break;
+                    case LoadOpts.VERBOSE_DETAILS:
+                        name = LoadOpts.OP_VERBOSE_DETAILS;
+                        break;
+                    case LoadOpts.VERBOSE_SUMMARY + LoadOpts.VERBOSE_DETAILS:
+                        name = Store.OP_ON;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal verbosity");
+                }
+                return new SkelAtom(name);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -241,6 +270,19 @@ public final class FlagAPI extends AbstractFlag {
             case FLAG_SYS_RUNTIME_VERSION:
                 /* can't modify */
                 return false;
+            case FLAG_VERBOSE:
+                int verb = LoadOpts.atomToVerbose(m, d, en);
+                if ((verb & LoadOpts.VERBOSE_SUMMARY) != 0) {
+                    en.store.flags |= Store.MASK_STORE_SMRY;
+                } else {
+                    en.store.flags &= ~Store.MASK_STORE_SMRY;
+                }
+                if ((verb & LoadOpts.VERBOSE_DETAILS) != 0) {
+                    en.store.flags |= Store.MASK_STORE_DTLS;
+                } else {
+                    en.store.flags &= ~Store.MASK_STORE_DTLS;
+                }
+                return true;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
