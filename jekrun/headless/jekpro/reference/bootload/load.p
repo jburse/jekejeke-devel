@@ -78,7 +78,7 @@ ensure_loaded(X) :-
    sys_import_file(X, []).
 ensure_loaded(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),verbose(summary),sys_link(use_module)]).
+   sys_load_file(Pin, [condition(on),sys_link(use_module)]).
 :- set_predicate_property(ensure_loaded/1, visible(public)).
 
 /**
@@ -98,7 +98,7 @@ consult(X) :-
    sys_import_file(X, []).
 consult(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [verbose(summary),sys_link(use_module)]).
+   sys_load_file(Pin, [sys_link(use_module)]).
 :- set_predicate_property(consult/1, visible(public)).
 
 /**
@@ -108,7 +108,7 @@ consult(Path) :-
 % unload_file(Path)
 unload_file(Path) :-
    absolute_file_name(Path, Pin),
-   sys_detach_file(Pin, [verbose(summary),sys_link(reexport)]).
+   sys_detach_file(Pin, [sys_link(reexport)]).
 :- set_predicate_property(unload_file/1, visible(public)).
 
 /**
@@ -143,7 +143,7 @@ unload_file(Path) :-
  */
 % make
 make :-
-   sys_load_file(user, [condition(on),verbose(summary)]).
+   sys_load_file(user, [condition(on)]).
 :- set_predicate_property(make/0, visible(public)).
 
 /**
@@ -152,7 +152,7 @@ make :-
  */
 % rebuild
 rebuild :-
-   sys_load_file(user, [verbose(summary)]).
+   sys_load_file(user, []).
 :- set_predicate_property(rebuild/0, visible(public)).
 
 /**

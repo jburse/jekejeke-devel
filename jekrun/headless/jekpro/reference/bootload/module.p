@@ -203,7 +203,7 @@ sys_get_key(C, N) :-
 % use_module(+Atom)
 use_module(Slash) :-
    absolute_file_name(Slash, Pin),
-   sys_load_file(Pin, [condition(on),verbose(summary),sys_link(use_module)]).
+   sys_load_file(Pin, [condition(on),sys_link(use_module)]).
 :- set_predicate_property(use_module/1, visible(public)).
 
 /**
@@ -215,7 +215,7 @@ use_module(Slash) :-
 % reexport(+Atom)
 reexport(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),verbose(summary),sys_link(reexport)]).
+   sys_load_file(Pin, [condition(on),sys_link(reexport)]).
 :- set_predicate_property(reexport/1, visible(public)).
 
 /**
@@ -237,7 +237,7 @@ sys_auto_load(Path) :-
 % sys_load_resource(+Atom)
 sys_load_resource(Path) :-
    absolute_resource_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),verbose(summary),sys_link(sys_load_resource)]).
+   sys_load_file(Pin, [condition(on),sys_link(sys_load_resource)]).
 :- set_predicate_property(sys_load_resource/1, visible(public)).
 
 /**

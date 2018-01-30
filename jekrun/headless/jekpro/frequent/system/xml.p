@@ -230,13 +230,14 @@ text_escape(X, Y) :-
 :- foreign(elem_add_node/2, 'DomElement', addNode('AbstractDom')).
 
 /**
- * elem_remove_node(D, C):
- * The predicate succeeds in removing the DOM node C from the DOM element D.
+ * elem_remove_node(D, C, I):
+ * The predicate succeeds in removing the DOM node C from the DOM element D
+ * returning the index I.
  */
-% elem_remove_node(+DomElement, +AbstractDom)
-:- public elem_remove_node/2.
-:- virtual elem_remove_node/2.
-:- foreign(elem_remove_node/2, 'DomElement', removeNode('AbstractDom')).
+% elem_remove_node(+DomElement, +AbstractDom, -Integer)
+:- public elem_remove_node/3.
+:- virtual elem_remove_node/3.
+:- foreign(elem_remove_node/3, 'DomElement', removeNode('AbstractDom')).
 
 /**
  * elem_node(D, C):
@@ -262,7 +263,7 @@ text_escape(X, Y) :-
 % elem_set_child(+DomElement, +String, +AbstractDom)
 :- public elem_set_child/3.
 :- virtual elem_set_child/3.
-:- foreign(elem_set_child/3, 'DomElement', setChild('String','AbstractDom')).
+:- foreign(elem_set_child/3, 'DomElement', setChild('String','DomElement')).
 
 /**
  * elem_reset_child(D, N):
