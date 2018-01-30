@@ -114,10 +114,10 @@ public final class EngineVars {
                     TermVar key = new TermVar(v, d);
                     if (vars == null) {
                         vars = new SetHashLink<TermVar>();
-                        vars.putKey(key);
+                        vars.add(key);
                     } else {
                         if (vars.getKey(key) == null)
-                            vars.putKey(key);
+                            vars.add(key);
                     }
                     break;
                 }
@@ -134,10 +134,10 @@ public final class EngineVars {
                             TermVar key = new TermVar(v, d);
                             if (vars == null) {
                                 vars = new SetHashLink<TermVar>();
-                                vars.putKey(key);
+                                vars.add(key);
                             } else {
                                 if (vars.getKey(key) == null)
-                                    vars.putKey(key);
+                                    vars.add(key);
                             }
                         }
                     }
@@ -150,10 +150,10 @@ public final class EngineVars {
                         TermVar key = new TermVar(v, d);
                         if (vars == null) {
                             vars = new SetHashLink<TermVar>();
-                            vars.putKey(key);
+                            vars.add(key);
                         } else {
                             if (vars.getKey(key) == null)
-                                vars.putKey(key);
+                                vars.add(key);
                         }
                         break;
                     }
@@ -261,10 +261,10 @@ public final class EngineVars {
                     f = vars.getKey(key) != null;
                 }
                 if (!f) {
-                    vars.putKey(key);
+                    vars.add(key);
                     if (anon == null)
                         anon = new SetHashLink<TermVar>();
-                    anon.putKey(key);
+                    anon.add(key);
                 } else {
                     anon.remove(key);
                 }
@@ -303,10 +303,10 @@ public final class EngineVars {
                     TermVar key = new TermVar(v, d);
                     if (vars == null) {
                         vars = new SetHashLink<TermVar>();
-                        vars.putKey(key);
+                        vars.add(key);
                     } else {
                         if (vars.getKey(key) == null) {
-                            vars.putKey(key);
+                            vars.add(key);
                         } else {
                             return false;
                         }
@@ -328,10 +328,10 @@ public final class EngineVars {
                             TermVar key = new TermVar(v, d);
                             if (vars == null) {
                                 vars = new SetHashLink<TermVar>();
-                                vars.putKey(key);
+                                vars.add(key);
                             } else {
                                 if (vars.getKey(key) == null) {
-                                    vars.putKey(key);
+                                    vars.add(key);
                                 } else {
                                     return false;
                                 }
@@ -347,10 +347,10 @@ public final class EngineVars {
                         TermVar key = new TermVar(v, d);
                         if (vars == null) {
                             vars = new SetHashLink<TermVar>();
-                            vars.putKey(key);
+                            vars.add(key);
                         } else {
                             if (vars.getKey(key) == null) {
-                                vars.putKey(key);
+                                vars.add(key);
                             } else {
                                 return false;
                             }
@@ -416,14 +416,14 @@ public final class EngineVars {
             TermVar key = entry.key;
             NamedDistance nd = entry.value;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.put(key, new NamedDistance(0, PrologReader.OP_ANON));
+                copy.add(key, new NamedDistance(0, PrologReader.OP_ANON));
             } else {
-                copy.put(key, nd);
+                copy.add(key, nd);
             }
             mvs3.remove(key);
             if (range == null)
                 range = new SetHash<String>();
-            range.putKey(nd.getName());
+            range.add(nd.getName());
         }
         return range;
     }
@@ -445,7 +445,7 @@ public final class EngineVars {
              entry != null; entry = mvs3.successor(entry)) {
             TermVar key = entry.key;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.put(key, new NamedDistance(0, PrologReader.OP_ANON));
+                copy.add(key, new NamedDistance(0, PrologReader.OP_ANON));
             } else {
                 for (; ; ) {
                     StringBuilder buf = new StringBuilder();
@@ -455,7 +455,7 @@ public final class EngineVars {
                     k++;
                     String name = buf.toString();
                     if (range == null || range.getKey(name) == null) {
-                        copy.put(key, new NamedDistance(0, name));
+                        copy.add(key, new NamedDistance(0, name));
                         break;
                     }
                 }

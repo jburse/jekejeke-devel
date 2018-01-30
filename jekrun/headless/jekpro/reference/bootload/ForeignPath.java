@@ -227,7 +227,8 @@ public final class ForeignPath {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError("list", opt));
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, opt));
         }
         return mask;
     }

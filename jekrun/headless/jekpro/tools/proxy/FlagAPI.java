@@ -147,9 +147,10 @@ public final class FlagAPI extends AbstractFlag {
                 return System.getProperty("java.vm.specification.version");
             case FLAG_VERBOSE:
                 int verb = 0;
-                if ((en.store.flags & Store.MASK_STORE_SMRY) != 0)
+                int flags=en.store.getBits();
+                if ((flags & Store.MASK_STORE_SMRY) != 0)
                     verb |= LoadOpts.VERBOSE_SUMMARY;
-                if ((en.store.flags & Store.MASK_STORE_DTLS) != 0)
+                if ((flags & Store.MASK_STORE_DTLS) != 0)
                     verb |= LoadOpts.VERBOSE_DETAILS;
                 String name;
                 switch (verb) {
@@ -273,14 +274,14 @@ public final class FlagAPI extends AbstractFlag {
             case FLAG_VERBOSE:
                 int verb = LoadOpts.atomToVerbose(m, d, en);
                 if ((verb & LoadOpts.VERBOSE_SUMMARY) != 0) {
-                    en.store.flags |= Store.MASK_STORE_SMRY;
+                    en.store.setBit(Store.MASK_STORE_SMRY);
                 } else {
-                    en.store.flags &= ~Store.MASK_STORE_SMRY;
+                    en.store.resetBit(Store.MASK_STORE_SMRY);
                 }
                 if ((verb & LoadOpts.VERBOSE_DETAILS) != 0) {
-                    en.store.flags |= Store.MASK_STORE_DTLS;
+                    en.store.setBit(Store.MASK_STORE_DTLS);
                 } else {
-                    en.store.flags &= ~Store.MASK_STORE_DTLS;
+                    en.store.resetBit(Store.MASK_STORE_DTLS);
                 }
                 return true;
             default:

@@ -126,19 +126,19 @@ public final class Flag extends AbstractFlag {
     public Object getFlag(Engine en) {
         switch (id) {
             case FLAG_SYS_CHOICE_POINT:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NCHC) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NCHC) == 0);
             case FLAG_SYS_BODY_VARIABLE:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NBDY) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NLST) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NLST) == 0);
             case FLAG_SYS_HEAD_VARIABLE:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NHED) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NHED) == 0);
             case FLAG_SYS_BODY_CONVERT:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NBCV) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NBCV) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_CEXP) != 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_CEXP) != 0);
             case FLAG_SYS_CLAUSE_INDEX:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NIDX) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NIDX) == 0);
             case FLAG_BOUNDED:
                 return new SkelAtom(Store.OP_FALSE);
             case FLAG_INTEGER_ROUNDING_FUNCTION:
@@ -216,51 +216,51 @@ public final class Flag extends AbstractFlag {
         switch (id) {
             case FLAG_SYS_CHOICE_POINT:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NCHC;
+                    en.store.resetBit(Store.MASK_STORE_NCHC);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NCHC;
+                    en.store.setBit(Store.MASK_STORE_NCHC);
                 }
                 return true;
             case FLAG_SYS_BODY_VARIABLE:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NBDY;
+                    en.store.resetBit(Store.MASK_STORE_NBDY);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NBDY;
+                    en.store.setBit(Store.MASK_STORE_NBDY);
                 }
                 return true;
             case FLAG_SYS_STACK_FRAME:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NLST;
+                    en.store.resetBit(Store.MASK_STORE_NLST);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NLST;
+                    en.store.setBit(Store.MASK_STORE_NLST);
                 }
                 return true;
             case FLAG_SYS_HEAD_VARIABLE:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NHED;
+                    en.store.resetBit(Store.MASK_STORE_NHED);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NHED;
+                    en.store.setBit(Store.MASK_STORE_NHED);
                 }
                 return true;
             case FLAG_SYS_BODY_CONVERT:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NBCV;
+                    en.store.resetBit(Store.MASK_STORE_NBCV);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NBCV;
+                    en.store.setBit(Store.MASK_STORE_NBCV);
                 }
                 return true;
             case FLAG_SYS_CLAUSE_EXPAND:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags |= Store.MASK_STORE_CEXP;
+                    en.store.setBit(Store.MASK_STORE_CEXP);
                 } else {
-                    en.store.flags &= ~Store.MASK_STORE_CEXP;
+                    en.store.resetBit(Store.MASK_STORE_CEXP);
                 }
                 return true;
             case FLAG_SYS_CLAUSE_INDEX:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NIDX;
+                    en.store.resetBit(Store.MASK_STORE_NIDX);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NIDX;
+                    en.store.setBit(Store.MASK_STORE_NIDX);
                 }
                 return true;
             case FLAG_BOUNDED:

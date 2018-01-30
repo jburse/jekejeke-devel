@@ -367,7 +367,7 @@ public final class SpecialVars extends Special {
             if (en.skel instanceof SkelVar) {
                 TermVar pair = new TermVar((SkelVar) en.skel, en.display);
                 if (set.getKey(pair) == null)
-                    set.putKey(pair);
+                    set.add(pair);
             }
             en.skel = mc.args[1];
             en.display = d;
@@ -441,10 +441,10 @@ public final class SpecialVars extends Special {
                     print = new MapHashLink<TermVar, NamedDistance>();
                 NamedDistance nd2 = print.get(pair);
                 if (nd2 == null) {
-                    print.put(pair, nd);
+                    print.add(pair, nd);
                 } else if (nd.getDistance() < nd2.getDistance()) {
                     print.remove(pair);
-                    print.put(pair, nd);
+                    print.add(pair, nd);
                 }
             }
             en.skel = mc[1];

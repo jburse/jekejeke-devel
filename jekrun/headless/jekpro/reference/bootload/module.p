@@ -174,15 +174,22 @@ module(N, L) :-
    reset_source_property(C, sys_source_visible(public)),
    set_source_property(C, sys_source_name(N)),
    (public L),
-   sys_check_key(N).
+   sys_get_key(C, K),
+   sys_check_key(C, K).
 :- set_predicate_property(module/2, visible(public)).
 
-sys_check_key(N) :-
-   absolute_file_name(library(N), C),
-   sys_get_context(N, C), !.
-sys_check_key(N) :-
-   throw(error(syntax_error(key_mismatch,N),_)).
-:- set_predicate_property(sys_check_key/1, visible(private)).
+sys_check_key(C, K) :-
+   absolute_file_name(library(K), C), !.
+sys_check_key(_, K) :-
+   throw(error(syntax_error(key_mismatch,K),_)).
+:- set_predicate_property(sys_check_key/2, visible(private)).
+
+sys_get_key(C, P/N) :-
+   source_property(C, package(library(P))), !,
+   source_property(C, sys_source_name(N)).
+sys_get_key(C, N) :-
+   source_property(C, sys_source_name(N)).
+:- set_predicate_property(sys_get_key/2, visible(private)).
 
 /*************************************************************/
 /* Loading Modules                                           */

@@ -20,7 +20,6 @@ final class InitOpts {
 
     /* error terms */
     private final static String OP_INIT_OPTION = "init_option";
-    private final static String OP_FLAG_VALUE = "flag_value";
     private final static String OP_LIST = "list";
 
     private boolean prompt;
@@ -97,7 +96,7 @@ final class InitOpts {
             return false;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
-                    OP_FLAG_VALUE, t));
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
         }
     }
 
