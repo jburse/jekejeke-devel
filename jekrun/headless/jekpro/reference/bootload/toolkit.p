@@ -23,10 +23,11 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- package(library(jekpro/reference/bootload)).
 :- use_package(foreign(jekpro/reference/bootload)).
 :- use_package(foreign(jekpro/tools/call)).
 
-:- module(user, []).
+:- module(toolkit, []).
 
 /**
  * sys_activate_capability(C, H):

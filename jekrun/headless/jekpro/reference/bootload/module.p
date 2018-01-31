@@ -71,6 +71,8 @@
 :- set_source_property(system, use_file_extension(text('.pro'))).
 :- set_source_property(system, use_file_extension(resource('.propertiesx'))).
 :- set_source_property(system, use_file_extension(resource('.properties'))).
+:- set_source_property(system, use_file_extension(resource('.txtx'))).
+:- set_source_property(system, use_file_extension(resource('.txt'))).
 
 :- set_source_property(system, use_package(library(jekpro/frequent))).
 :- set_source_property(system, use_package(library(jekpro/reference))).
@@ -401,7 +403,7 @@ sys_declaration_indicator((override D), I) :-
 /********************************************************/
 
 :- ensure_loaded(library(bootload/engine)).
-:- ensure_loaded(library(bootload/toolkit)).
+% :- ensure_loaded(library(bootload/toolkit)).
 
 :- ensure_loaded(library(arithmetic/eval)).
 :- ensure_loaded(library(arithmetic/elem)).

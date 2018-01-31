@@ -56,6 +56,9 @@
 :- use_module(library(system/locale)).
 :- use_module(library(stream/console)).
 :- use_module(library(misc/residue)).
+:- use_module(library(misc/text)).
+:- use_module(library(bootload/toolkit)).
+:- use_module(library(basic/lists)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/
@@ -255,3 +258,68 @@ session_module(N) :-
 :- private sys_push_stack/1.
 :- special(sys_push_stack/1, 'SpecialSession', 6).
 */
+
+/***********************************************************/
+/* Apropos Utility                                         */
+/***********************************************************/
+
+/**
+ * apropos(P):
+ * The predicate succeeds in listing the public predicates on the
+ * terminal that are advertised by the loaded capabilities and that
+ * contain the given atom P in their name.
+ */
+% apropos(+Atom)
+:- public apropos/1.
+apropos(P) :-
+   sys_compile_pattern(P, [boundary(part)], H),
+   sys_enum_table(N),
+   sys_enum_apropos(N, F/A, M),
+   sys_match_pattern(H, F),
+   ttywriteq(F/A),
+   ttywrite('\t'),
+   ttywrite(M), ttynl, fail.
+apropos(_).
+:- set_predicate_property(apropos/1, sys_notrace).
+
+% sys_compile_pattern(+Atom, -Options, -Compiled)
+:- private sys_compile_pattern/3.
+sys_compile_pattern(P, O, H) :-
+   sys_get_iso_compiler(C),
+   sys_pattern_options(O, Q),
+   sys_make_pattern(C, P, Q, H).
+
+% sys_enum_table(-Spec)
+:- private sys_enum_table/1.
+sys_enum_table(library(T)) :-
+   sys_current_capability(C),
+   sys_capability_property(C, apropos_table(L)),
+   member(T, L).
+
+% sys_enum_apropos(+Atom, -Indicator, -Module)
+:- private sys_enum_apropos/3.
+sys_enum_apropos(N, I, M) :-
+   setup_call_cleanup(
+      sys_open_resource(N, S),
+      (  repeat,
+         (  read_line(S, L)
+         -> sys_split_line(L, H, T),
+            term_atom(I, H),
+            term_atom(M, T); !, fail)),
+      close(S)).
+
+% sys_open_resource(+Atom, -Stream)
+:- private sys_open_resource/2.
+sys_open_resource(N, S) :-
+   absolute_resource_name(N, P),
+   sys_open(P, read, [], S).
+
+% sys_split_line(+Atom, -Atom, -Atom)
+:- private sys_split_line/3.
+sys_split_line(L, H, T) :-
+   sub_atom(L, P, 1, '\t'),
+   sub_atom(L, 0, P, H),
+   atom_length(L, N),
+   Q is P+1,
+   M is N-Q,
+   sub_atom(L, Q, M, T).
