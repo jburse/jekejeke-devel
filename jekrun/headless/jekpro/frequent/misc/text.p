@@ -176,7 +176,7 @@ pattern_match(S, P) :-
    sys_create_specimen(C, P, H),
    sys_match_pattern(H, S).
 
-% pattern_match(+Atom, +Pattern, +PatternOptions)
+% pattern_match(+Atom, +Pattern, +Options)
 :- public pattern_match/3.
 pattern_match(S, P, O) :-
    sys_get_iso_compiler(C),
@@ -201,7 +201,7 @@ pattern_replace(S, P, R, T) :-
    sys_replace_to(H, J),
    sys_pattern_replace(H, S, T).
 
-% pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
+% pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +Options)
 :- public pattern_replace/5.
 pattern_replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
@@ -226,7 +226,7 @@ last_pattern_replace(S, P, R, T) :-
    sys_replace_to(H, J),
    sys_pattern_last_replace(H, S, T).
 
-% last_pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +PatternOptions)
+% last_pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +Options)
 :- public last_pattern_replace/5.
 last_pattern_replace(S, P, R, T, O) :-
    sys_get_iso_compiler(C),
@@ -236,18 +236,21 @@ last_pattern_replace(S, P, R, T, O) :-
    sys_replace_to(H, J),
    sys_pattern_last_replace(H, S, T).
 
-:- private sys_get_iso_compiler/1.
+% sys_get_iso_compiler(-Compiler)
+:- public sys_get_iso_compiler/1.
 :- foreign_getter(sys_get_iso_compiler/1, 'CompilerSimple', 'ISO_COMPILERSIMPLE').
 
 :- private sys_create_specimen/3.
 :- foreign(sys_create_specimen/3, 'ForeignText',
       sysCreateSpecimen('Interpreter','AbstractCompiler','String')).
 
-:- private sys_make_pattern/4.
+% sys_make_pattern(+Compiler, +Atom, +Integer, -Compiled)
+:- public sys_make_pattern/4.
 :- foreign(sys_make_pattern/4, 'ForeignText',
       sysMakePattern('Interpreter','AbstractCompiler','String',int)).
 
-:- private sys_match_pattern/2.
+% sys_match_pattern(+Compiled, +Atom)
+:- public sys_match_pattern/2.
 :- virtual sys_match_pattern/2.
 :- foreign(sys_match_pattern/2, 'AbstractPattern', matchPattern('String')).
 
@@ -267,8 +270,8 @@ last_pattern_replace(S, P, R, T, O) :-
  * sys_pattern_options(O, Q):
  * The predicate succeeds in Q for the value of the options O.
  */
-% sys_pattern_options(+PatternOptions, -Integer)
-:- private sys_pattern_options/2.
+% sys_pattern_options(+Options, -Integer)
+:- public sys_pattern_options/2.
 sys_pattern_options(O, Q) :-
    sys_get_match_whole(M),
    sys_pattern_options(O, M, Q).
@@ -278,7 +281,7 @@ sys_pattern_options(O, Q) :-
  * The predicate succeeds in Q for the value of the
  * options O starting with the default value P.
  */
-% sys_pattern_options(+PatternOptions, +Integer, -Integer)
+% sys_pattern_options(+Options, +Integer, -Integer)
 :- private sys_pattern_options/3.
 sys_pattern_options(V, _, _) :-
    var(V),

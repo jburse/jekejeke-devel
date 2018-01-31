@@ -51,11 +51,10 @@ public final class ForeignConsole {
      *
      * @param obj The reader.
      * @return The line.
-     * @throws InterpreterMessage Not a text input stream.
      * @throws IOException        IO error.
      */
     public static String sysReadLine(Reader obj)
-            throws InterpreterMessage, IOException {
+            throws IOException {
         return readLine(obj);
     }
 

@@ -229,6 +229,43 @@ public final class ForeignAtom {
         return null;
     }
 
+    /**
+     * <p>Advance a word index by code point offset.</p>
+     *
+     * @param val    The string.
+     * @param index  The word index.
+     * @param offset The code point offset.
+     * @return The new word index.
+     */
+    public static Integer sysOffsetByCodePoints(String val,
+                                                int index, int offset) {
+        int x = index;
+        if (offset >= 0) {
+            int i;
+            for (i = 0; x < val.length() && i < offset; i++) {
+                if (Character.isHighSurrogate(val.charAt(x++)) &&
+                        x < val.length() &&
+                        Character.isLowSurrogate(val.charAt(x))) {
+                    x++;
+                }
+            }
+            if (i < offset)
+                return null;
+        } else {
+            int i;
+            for (i = offset; x > 0 && i < 0; i++) {
+                if (Character.isLowSurrogate(val.charAt(--x)) &&
+                        x > 0 &&
+                        Character.isHighSurrogate(val.charAt(x - 1))) {
+                    x--;
+                }
+            }
+            if (i < 0)
+                return null;
+        }
+        return Integer.valueOf(x);
+    }
+
     /****************************************************************/
     /* Number Predicates                                            */
     /****************************************************************/

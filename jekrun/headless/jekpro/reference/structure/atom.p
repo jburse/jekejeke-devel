@@ -396,8 +396,8 @@ number_codes(Number, Codes) :-
       sysAtomWordPos('CallOut','String',int,int)).
 
 :- private sys_atom_word_offset/4.
-:- virtual sys_atom_word_offset/4.
-:- foreign(sys_atom_word_offset/4, 'String', offsetByCodePoints(int,int)).
+:- foreign(sys_atom_word_offset/4, 'ForeignAtom',
+      sysOffsetByCodePoints('String',int,int)).
 
 :- private sys_atom_word_match/5.
 :- virtual sys_atom_word_match/5.
