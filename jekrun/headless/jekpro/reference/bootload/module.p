@@ -403,7 +403,6 @@ sys_declaration_indicator((override D), I) :-
 /********************************************************/
 
 :- ensure_loaded(library(bootload/engine)).
-% :- ensure_loaded(library(bootload/toolkit)).
 
 :- ensure_loaded(library(arithmetic/eval)).
 :- ensure_loaded(library(arithmetic/elem)).
@@ -438,5 +437,6 @@ sys_declaration_indicator((override D), I) :-
 
 :- ensure_loaded(library(basic/proxy)).
 :- ensure_loaded(library(basic/array)).
+:- ensure_loaded(library(basic/utility)).
 
 :- set_prolog_flag(sys_clause_expand, on).

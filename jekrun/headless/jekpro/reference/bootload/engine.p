@@ -4,6 +4,11 @@
  * predicate set_prolog_flag/2 allows updating an interpreter attribute.
  * The predicates halt/[0,1] allow exiting the current process.
  *
+ * The predicates begin_module/1 and end_module/0 can be used to open
+ * respectively close a local module. For a consulted file the predicate
+ * begin_module/1 will also do first a clear of the local module, and
+ * the predicate end_module/0 will do a style check of the local module.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -80,3 +85,35 @@ halt :-
 :- public halt/1.
 :- foreign(halt/1, 'ForeignEngine',
       sysHalt('Object')).
+
+/********************************************************/
+/* Locale Modules                                       */
+/********************************************************/
+
+/**
+ * begin_module(N):
+ * The predicate begins a new typein module N.
+ */
+% begin_module(+Atom)
+:- public begin_module/1.
+begin_module(N) :-
+   absolute_file_name(verbatim(N), D),
+   sys_module_action(D, [action(begin_module),sys_link(sys_auto_load)]),
+   set_prolog_flag(sys_last_pred, null).
+
+/**
+ * end_module:
+ * The predicate ends the current typein module.
+ */
+% end_module
+:- public end_module/0.
+end_module :-
+   sys_peek_stack(D),
+   sys_module_action(D, [action(end_module),sys_link(sys_auto_load)]),
+   set_prolog_flag(sys_last_pred, null).
+
+:- private sys_module_action/2.
+:- special(sys_module_action/2, 'SpecialLoad', 11).
+
+:- private sys_peek_stack/1.
+:- special(sys_peek_stack/1, 'SpecialLoad', 412).

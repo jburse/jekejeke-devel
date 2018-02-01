@@ -140,7 +140,8 @@ open(Path, Mode, Stream, Opt) :-
 open(Path, Mode, Stream) :-
    open(Path, Mode, Stream, []).
 
-:- private sys_open/4.
+% sys_open(+Pin, +Mode, +Options, -Stream)
+:- public sys_open/4.
 :- foreign(sys_open/4, 'ForeignStream',
       sysOpen('Interpreter','String','String','Object')).
 
@@ -250,3 +251,18 @@ sys_put_alias(Alias, Stream) :-
 :- private sys_remove_alias/2.
 sys_remove_alias(Alias, Stream) :-
    retract(sys_alias(Alias, Stream)).
+
+/*************************************************************************/
+/* Resource Streams                                                      */
+/*************************************************************************/
+
+/**
+ * open_resource(P, S):
+ * The predicate succeeds when S unifies with the new
+ * resource stream associated with the path P.
+ */
+% open_resource(+Atom, -Stream)
+:- public open_resource/2.
+open_resource(Path, Stream) :-
+   absolute_resource_name(Path, Pin),
+   sys_open(Pin, read, [], Stream).

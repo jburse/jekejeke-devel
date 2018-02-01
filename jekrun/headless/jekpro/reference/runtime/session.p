@@ -19,13 +19,6 @@
  * operator is displayed. For printable and equation hooks see the
  * module residue.
  *
- * The predicates begin_module/1 and end_module/0 can be used from
- * the interpreter top-level loop or inside a consulted file. In both
- * cases the predicates will open respectively close a local module.
- * For a consulted file the predicate begin_module/1 will also do first
- * a clear of the local module, and the predicate end_module/0 will do
- * a style check of the local module.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -56,9 +49,6 @@
 :- use_module(library(system/locale)).
 :- use_module(library(stream/console)).
 :- use_module(library(misc/residue)).
-:- use_module(library(misc/text)).
-:- use_module(library(bootload/toolkit)).
-:- use_module(library(basic/lists)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/
@@ -207,126 +197,3 @@ sys_show_name_or_eq(T) :-
 % sys_write_var(+Atom)
 :- private sys_write_var/1.
 :- special(sys_write_var/1, 'SpecialSession', 2).
-
-/********************************************************/
-/* Locale Modules                                       */
-/********************************************************/
-
-/**
- * begin_module(N):
- * The predicate begins a new typein module N.
- */
-% begin_module(+Atom)
-:- public begin_module/1.
-begin_module(N) :-
-   absolute_file_name(verbatim(N), D),
-   sys_module_action(D, [action(begin_module),sys_link(sys_auto_load)]),
-   set_prolog_flag(sys_last_pred, null).
-
-/**
- * end_module:
- * The predicate ends the current typein module.
- */
-% end_module
-:- public end_module/0.
-end_module :-
-   sys_peek_stack(D),
-   sys_module_action(D, [action(end_module),sys_link(sys_auto_load)]),
-   set_prolog_flag(sys_last_pred, null).
-
-/**
- * session_module:
- * The predicate creates a session typein module.
- */
-/*
-:- public session_module/1.
-session_module(N) :-
-   sys_pop_stack,
-   sys_push_stack(N).
-*/
-
-:- private sys_module_action/2.
-:- special(sys_module_action/2, 'SpecialSession', 3).
-
-:- private sys_peek_stack/1.
-:- special(sys_peek_stack/1, 'SpecialSession', 4).
-
-/*
-:- private sys_pop_stack/0.
-:- special(sys_pop_stack/0, 'SpecialSession', 5).
-
-:- private sys_push_stack/1.
-:- special(sys_push_stack/1, 'SpecialSession', 6).
-*/
-
-/***********************************************************/
-/* Apropos Utility                                         */
-/***********************************************************/
-
-/**
- * apropos(P):
- * The predicate succeeds in listing the public predicates on the
- * terminal that are advertised by the loaded capabilities and that
- * contain the given atom P in their name.
- */
-% apropos(+Atom)
-:- public apropos/1.
-apropos(P) :-
-   sys_compile_pattern(P, [boundary(part)], H),
-   sys_apropos_table(N),
-   sys_enum_apropos(N, I, M),
-   sys_get_functor(I, F),
-   sys_match_pattern(H, F),
-   ttywriteq(I),
-   ttywrite('\t'),
-   ttywrite(M), ttynl, fail.
-apropos(_).
-:- set_predicate_property(apropos/1, sys_notrace).
-
-/**
- * sys_apropos_table(T):
- * The predicate succeeds with the file name of a apropos table.
- */
-:- multifile sys_apropos_table/1.
-:- public sys_apropos_table/1.
-:- static sys_apropos_table/1.
-
-% sys_get_functor(+Indicator, -Functor)
-:- private sys_get_functor/2.
-sys_get_functor(F/_, F).
-sys_get_functor(_:F/_, F).
-
-% sys_compile_pattern(+Atom, -Options, -Compiled)
-:- private sys_compile_pattern/3.
-sys_compile_pattern(P, O, H) :-
-   sys_get_iso_compiler(C),
-   sys_pattern_options(O, Q),
-   sys_make_pattern(C, P, Q, H).
-
-% sys_enum_apropos(+Atom, -Indicator, -Module)
-:- private sys_enum_apropos/3.
-sys_enum_apropos(N, I, M) :-
-   setup_call_cleanup(
-      sys_open_resource(N, S),
-      (  repeat,
-         (  read_line(S, L)
-         -> sys_split_line(L, H, T),
-            term_atom(I, H),
-            term_atom(M, T); !, fail)),
-      close(S)).
-
-% sys_open_resource(+Atom, -Stream)
-:- private sys_open_resource/2.
-sys_open_resource(N, S) :-
-   absolute_resource_name(N, P),
-   sys_open(P, read, [], S).
-
-% sys_split_line(+Atom, -Atom, -Atom)
-:- private sys_split_line/3.
-sys_split_line(L, H, T) :-
-   sub_atom(L, P, 1, '\t'),
-   sub_atom(L, 0, P, H),
-   atom_length(L, N),
-   Q is P+1,
-   M is N-Q,
-   sub_atom(L, Q, M, T).

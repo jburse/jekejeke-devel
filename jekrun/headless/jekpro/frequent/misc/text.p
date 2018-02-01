@@ -159,7 +159,7 @@ sys_type_name(9, graph).
 :- foreign(atom_upper/2, 'String', toUpperCase).
 
 /******************************************************************/
-/* Pattern Matching                                               */
+/* Matching & Replace                                             */
 /******************************************************************/
 
 /**
@@ -172,17 +172,14 @@ sys_type_name(9, graph).
 % pattern_match(+Atom, +Pattern)
 :- public pattern_match/2.
 pattern_match(S, P) :-
-   sys_get_iso_compiler(C),
-   sys_create_specimen(C, P, H),
-   sys_match_pattern(H, S).
+   pattern_compile(P, H),
+   compiled_match(H, S).
 
 % pattern_match(+Atom, +Pattern, +Options)
 :- public pattern_match/3.
 pattern_match(S, P, O) :-
-   sys_get_iso_compiler(C),
-   sys_pattern_options(O, Q),
-   sys_make_pattern(C, P, Q, H),
-   sys_match_pattern(H, S).
+   pattern_compile(P, O, H),
+   compiled_match(H, S).
 
 /**
  * pattern_replace(S, P, R, T):
@@ -195,19 +192,16 @@ pattern_match(S, P, O) :-
 % pattern_replace(+Atom, +Pattern, +Pattern, -Atom)
 :- public pattern_replace/4.
 pattern_replace(S, P, R, T) :-
-   sys_get_iso_compiler(C),
-   sys_create_specimen(C, P, H),
-   sys_create_specimen(C, R, J),
+   pattern_compile(P, H),
+   pattern_compile(R, J),
    sys_replace_to(H, J),
    sys_pattern_replace(H, S, T).
 
 % pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +Options)
 :- public pattern_replace/5.
 pattern_replace(S, P, R, T, O) :-
-   sys_get_iso_compiler(C),
-   sys_pattern_options(O, Q),
-   sys_make_pattern(C, P, Q, H),
-   sys_make_pattern(C, R, Q, J),
+   pattern_compile(P, O, H),
+   pattern_compile(R, O, J),
    sys_replace_to(H, J),
    sys_pattern_replace(H, S, T).
 
@@ -220,39 +214,18 @@ pattern_replace(S, P, R, T, O) :-
 % last_pattern_replace(+Atom, +Pattern, +Pattern, -Atom)
 :- public last_pattern_replace/4.
 last_pattern_replace(S, P, R, T) :-
-   sys_get_iso_compiler(C),
-   sys_create_specimen(C, P, H),
-   sys_create_specimen(C, R, J),
+   pattern_compile(P, H),
+   pattern_compile(R, J),
    sys_replace_to(H, J),
    sys_pattern_last_replace(H, S, T).
 
 % last_pattern_replace(+Atom, +Pattern, +Pattern, -Atom, +Options)
 :- public last_pattern_replace/5.
 last_pattern_replace(S, P, R, T, O) :-
-   sys_get_iso_compiler(C),
-   sys_pattern_options(O, Q),
-   sys_make_pattern(C, P, Q, H),
-   sys_make_pattern(C, R, Q, J),
+   pattern_compile(P, O, H),
+   pattern_compile(R, O, J),
    sys_replace_to(H, J),
    sys_pattern_last_replace(H, S, T).
-
-% sys_get_iso_compiler(-Compiler)
-:- public sys_get_iso_compiler/1.
-:- foreign_getter(sys_get_iso_compiler/1, 'CompilerSimple', 'ISO_COMPILERSIMPLE').
-
-:- private sys_create_specimen/3.
-:- foreign(sys_create_specimen/3, 'ForeignText',
-      sysCreateSpecimen('Interpreter','AbstractCompiler','String')).
-
-% sys_make_pattern(+Compiler, +Atom, +Integer, -Compiled)
-:- public sys_make_pattern/4.
-:- foreign(sys_make_pattern/4, 'ForeignText',
-      sysMakePattern('Interpreter','AbstractCompiler','String',int)).
-
-% sys_match_pattern(+Compiled, +Atom)
-:- public sys_match_pattern/2.
-:- virtual sys_match_pattern/2.
-:- foreign(sys_match_pattern/2, 'AbstractPattern', matchPattern('String')).
 
 :- private sys_replace_to/2.
 :- virtual sys_replace_to/2.
@@ -266,12 +239,63 @@ last_pattern_replace(S, P, R, T, O) :-
 :- virtual sys_pattern_last_replace/3.
 :- foreign(sys_pattern_last_replace/3, 'AbstractPattern', patternLastReplace('String')).
 
+/******************************************************************/
+/* Compiled Patterns                                              */
+/******************************************************************/
+
+/**
+ * pattern_compile(P, H):
+ * pattern_compile(P, O, H):
+ * The predicate succeeds in H with the compiled shell pattern P.
+ * The ternary predicate allows specifying match options O. 
+ */
+% pattern_compile(+Atom, -Compiled)
+:- public pattern_compile/2.
+pattern_compile(P, H) :-
+   sys_get_iso_compiler(C),
+   sys_create_specimen(C, P, H).
+
+% pattern_compile(+Atom, -Options, -Compiled)
+:- public pattern_compile/3.
+pattern_compile(P, O, H) :-
+   sys_get_iso_compiler(C),
+   sys_pattern_options(O, Q),
+   sys_make_pattern(C, P, Q, H).
+
+% sys_get_iso_compiler(-Compiler)
+:- private sys_get_iso_compiler/1.
+:- foreign_getter(sys_get_iso_compiler/1, 'CompilerSimple', 'ISO_COMPILERSIMPLE').
+
+% sys_create_specimen(+Compiler, +Atom, -Compiled)
+:- private sys_create_specimen/3.
+:- foreign(sys_create_specimen/3, 'ForeignText',
+      sysCreateSpecimen('Interpreter','AbstractCompiler','String')).
+
+% sys_make_pattern(+Compiler, +Atom, +Integer, -Compiled)
+:- private sys_make_pattern/4.
+:- foreign(sys_make_pattern/4, 'ForeignText',
+      sysMakePattern('Interpreter','AbstractCompiler','String',int)).
+
+/**
+ * compiled_match(H, S):
+ * pattern_match(S, P, O):
+ * The predicate succeeds when the atom S matches the compiled pattern H.
+ */
+% compiled_match(+Compiled, +Atom)
+:- public compiled_match/2.
+:- virtual compiled_match/2.
+:- foreign(compiled_match/2, 'AbstractPattern', matchPattern('String')).
+
+/******************************************************************/
+/* Match Options                                                  */
+/******************************************************************/
+
 /**
  * sys_pattern_options(O, Q):
  * The predicate succeeds in Q for the value of the options O.
  */
 % sys_pattern_options(+Options, -Integer)
-:- public sys_pattern_options/2.
+:- private sys_pattern_options/2.
 sys_pattern_options(O, Q) :-
    sys_get_match_whole(M),
    sys_pattern_options(O, M, Q).
@@ -298,8 +322,8 @@ sys_pattern_options(L, _, _) :-
  * The predicate succeeds in Q for the value of the
  * option O starting with the default value P.
  */
+% sys_pattern_option(+Option, +Integer, -Integer)
 :- private sys_pattern_option/3.
-% sys_pattern_option(+PatternOption, +Integer, -Integer)
 sys_pattern_option(V, _, _) :-
    var(V),
    throw(error(instantiation_error,_)).
@@ -337,6 +361,18 @@ sys_option_boundary(word, P, Q) :- !,
 sys_option_boundary(O, _, _) :-
    throw(error(type_error(option,boundary(O)),_)).
 
+:- private sys_get_match_boundary/1.
+:- foreign_getter(sys_get_match_boundary/1, 'AbstractSpecimen', 'MATCH_BDRY').
+
+:- private sys_get_match_word/1.
+:- foreign_getter(sys_get_match_word/1, 'AbstractSpecimen', 'MATCH_WORD').
+
+:- private sys_get_match_whole/1.
+:- foreign_getter(sys_get_match_whole/1, 'AbstractSpecimen', 'MATCH_WHLE').
+
+:- private sys_get_match_part/1.
+:- foreign_getter(sys_get_match_part/1, 'AbstractSpecimen', 'MATCH_PART').
+
 /**
  * sys_option_ignore_case(O, P, Q):
  * The predicate succeeds in Q for the value of the
@@ -355,6 +391,9 @@ sys_option_ignore_case(false, P, Q) :- !,
    Q is P/\ \M.
 sys_option_ignore_case(O, _, _) :-
    throw(error(type_error(option,ignore_case(O)),_)).
+
+:- private sys_get_match_ignore_case/1.
+:- foreign_getter(sys_get_match_ignore_case/1, 'AbstractSpecimen', 'MATCH_IGCS').
 
 /**
  * sys_option_style(O, P, Q):
@@ -377,18 +416,6 @@ sys_option_style(parse, P, Q) :- !,
 sys_option_style(O, _, _) :-
    throw(error(type_error(option,style(O)),_)).
 
-:- private sys_get_match_boundary/1.
-:- foreign_getter(sys_get_match_boundary/1, 'AbstractSpecimen', 'MATCH_BDRY').
-
-:- private sys_get_match_whole/1.
-:- foreign_getter(sys_get_match_whole/1, 'AbstractSpecimen', 'MATCH_WHLE').
-
-:- private sys_get_match_part/1.
-:- foreign_getter(sys_get_match_part/1, 'AbstractSpecimen', 'MATCH_PART').
-
-:- private sys_get_match_word/1.
-:- foreign_getter(sys_get_match_word/1, 'AbstractSpecimen', 'MATCH_WORD').
-
 :- private sys_get_match_style/1.
 :- foreign_getter(sys_get_match_style/1, 'AbstractSpecimen', 'MATCH_STLE').
 
@@ -398,5 +425,3 @@ sys_option_style(O, _, _) :-
 :- private sys_get_match_parse/1.
 :- foreign_getter(sys_get_match_parse/1, 'AbstractSpecimen', 'MATCH_PRSE').
 
-:- private sys_get_match_ignore_case/1.
-:- foreign_getter(sys_get_match_ignore_case/1, 'AbstractSpecimen', 'MATCH_IGCS').

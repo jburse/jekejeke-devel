@@ -121,7 +121,6 @@ writeq(Alias, Term) :-
 writeq(Stream, Term) :-
    sys_writeq(Stream, Term).
 
-:- private sys_writeq/2.
 :- foreign(sys_writeq/2, 'ForeignTerm',
       sysWriteq('Interpreter','CallOut','Writer','Object')).
 

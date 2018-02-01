@@ -218,6 +218,17 @@ ttywrite(Term) :-
    sys_write(Stream, Term).
 
 /**
+ * ttywriteq(E):
+ * The predicate writes the term E to the terminal whereby
+ * quoting atoms and variables if necessary.
+ */
+% ttywriteq(+Term)
+:- public ttywriteq/1.
+ttywriteq(Term) :-
+   current_prolog_flag(sys_disp_output, Stream),
+   sys_writeq(Stream, Term).
+
+/**
  * ttywrite_term(E, O):
  * The predicate writes the term E to the terminal taking
  * into account the write options O.
