@@ -138,3 +138,17 @@ sys_time_record(T, K, V) :-
 :- private sys_get_record_stat/3.
 :- virtual sys_get_record_stat/3.
 :- foreign(sys_get_record_stat/3, 'TimeRecord', getStat('String')).
+
+/***********************************************************/
+/* Apropos Utility                                         */
+/***********************************************************/
+
+/**
+ * sys_apropos_table(T):
+ * The predicate succeeds with the file name of a apropos table.
+ */
+:- multifile sys_apropos_table/1.
+:- public sys_apropos_table/1.
+sys_apropos_table(library(bootload/reference)).
+sys_apropos_table(library(swing/platform)).
+sys_apropos_table(library(stream/frequent)).

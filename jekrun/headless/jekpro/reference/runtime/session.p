@@ -273,14 +273,28 @@ session_module(N) :-
 :- public apropos/1.
 apropos(P) :-
    sys_compile_pattern(P, [boundary(part)], H),
-   sys_enum_table(N),
-   sys_enum_apropos(N, F/A, M),
+   sys_apropos_table(N),
+   sys_enum_apropos(N, I, M),
+   sys_get_functor(I, F),
    sys_match_pattern(H, F),
-   ttywriteq(F/A),
+   ttywriteq(I),
    ttywrite('\t'),
    ttywrite(M), ttynl, fail.
 apropos(_).
 :- set_predicate_property(apropos/1, sys_notrace).
+
+/**
+ * sys_apropos_table(T):
+ * The predicate succeeds with the file name of a apropos table.
+ */
+:- multifile sys_apropos_table/1.
+:- public sys_apropos_table/1.
+:- static sys_apropos_table/1.
+
+% sys_get_functor(+Indicator, -Functor)
+:- private sys_get_functor/2.
+sys_get_functor(F/_, F).
+sys_get_functor(_:F/_, F).
 
 % sys_compile_pattern(+Atom, -Options, -Compiled)
 :- private sys_compile_pattern/3.
@@ -288,13 +302,6 @@ sys_compile_pattern(P, O, H) :-
    sys_get_iso_compiler(C),
    sys_pattern_options(O, Q),
    sys_make_pattern(C, P, Q, H).
-
-% sys_enum_table(-Spec)
-:- private sys_enum_table/1.
-sys_enum_table(library(T)) :-
-   sys_current_capability(C),
-   sys_capability_property(C, apropos_table(L)),
-   member(T, L).
 
 % sys_enum_apropos(+Atom, -Indicator, -Module)
 :- private sys_enum_apropos/3.
