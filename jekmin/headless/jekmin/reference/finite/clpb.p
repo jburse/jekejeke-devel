@@ -27,6 +27,11 @@
  * sat((X->(Y->1;0);1)),
  * sat((Y->(Z->1;0);1))
  *
+ * The Boolean constraint can be used to define more complex
+ * conditions. A recurring problem is stating the cardinality
+ * of a couple of Boolean expressions. The predicate card/2 has
+ * been defined as a corresponding convenience.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -310,7 +315,7 @@ sat_sum([], 0).
 
 /**
  * card(N, L):
- * If N is an integer and L is a variable list then he constraint
+ * If N is an integer and L is a variable list then the constraint
  * that the number of true variables amounts exactly to N is posted.
  */
 % card(+Integer, +List)

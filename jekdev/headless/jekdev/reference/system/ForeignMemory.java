@@ -147,7 +147,7 @@ public class ForeignMemory {
         } else {
             InterpreterMessage.checkInstantiated(help);
             throw new InterpreterMessage(InterpreterMessage.typeError(
-                    ForeignStream.OP_TYPE_LIST, help));
+                    InterpreterMessage.OP_TYPE_LIST, help));
         }
         return len;
     }
@@ -180,7 +180,7 @@ public class ForeignMemory {
         } else {
             InterpreterMessage.checkInstantiated(help);
             throw new InterpreterMessage(InterpreterMessage.typeError(
-                    ForeignStream.OP_TYPE_LIST, help));
+                    InterpreterMessage.OP_TYPE_LIST, help));
         }
     }
 

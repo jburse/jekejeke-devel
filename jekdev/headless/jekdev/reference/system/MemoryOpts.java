@@ -161,7 +161,7 @@ final class MemoryOpts {
         } else {
             InterpreterMessage.checkInstantiated(opt);
             throw new InterpreterMessage(InterpreterMessage.typeError(
-                    ForeignStream.OP_TYPE_LIST, opt));
+                    InterpreterMessage.OP_TYPE_LIST, opt));
         }
     }
 

@@ -31,12 +31,6 @@
  * expressions. The predicate all_different/2 has been defined as a
  * corresponding convenience.
  *
- * Example:
- * ?- all_different([X,Y,Z]).
- * Z #\= X,
- * Z #\= Y,
- * X #\= Y
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties

@@ -44,7 +44,7 @@
 :- use_package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekmin/frequent/gauss)).
 
-:- module(deriv, []).
+:- module(subst, []).
 
 :- use_module(../groebner/polynom).
 :- use_module(../groebner/generic).
