@@ -141,7 +141,7 @@ open(Path, Mode, Stream) :-
    open(Path, Mode, Stream, []).
 
 % sys_open(+Pin, +Mode, +Options, -Stream)
-:- public sys_open/4.
+:- private sys_open/4.
 :- foreign(sys_open/4, 'ForeignStream',
       sysOpen('Interpreter','String','String','Object')).
 
