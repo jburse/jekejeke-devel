@@ -1,0 +1,221 @@
+package jekpro.tools.array;
+
+import jekpro.model.builtin.SpecialSpecial;
+import jekpro.model.inter.AbstractFactory;
+import jekpro.model.inter.Delegate;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
+import jekpro.tools.proxy.AbstractAuto;
+import jekpro.tools.proxy.LookupJava;
+import jekpro.tools.term.SkelAtom;
+import jekpro.model.pretty.StoreKey;
+import jekpro.model.rope.Intermediate;
+import jekpro.reference.bootload.SpecialLoad;
+import jekpro.tools.proxy.BranchAPI;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
+
+import java.io.Reader;
+
+/**
+ * <p>Specialization of the synthetic source class for Java arrays.</p>
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
+ */
+public final class AutoArray extends AbstractAuto {
+    private MapHash<StoreKey, Lense> meths;
+
+    /**
+     * <p>Create a source from path.</p>
+     *
+     * @param p The path.
+     */
+    public AutoArray(String p) {
+        super(p);
+    }
+
+    /**************************************************************/
+    /* Clear, Load & Check Module                                 */
+    /**************************************************************/
+
+    /**
+     * <p>Consult a foreign module.</p>
+     *
+     * @param r   The continuation skeleton.
+     * @param u   The continuation display.
+     * @param en  The interpreter.
+     * @param rec The recursion flag.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public void loadModule(Reader lr,
+                           Intermediate r, DisplayClause u,
+                           Engine en, boolean rec)
+            throws EngineMessage, EngineException {
+        super.loadModule(lr, r, u, en, rec);
+
+        reexportSuperclass(r, u, en);
+        reexportInterfaces(r, u, en);
+
+        meths = new MapHash<StoreKey, Lense>();
+        collectArrays(en);
+
+        defineMeths(r, u, en, rec);
+    }
+
+    /*******************************************************************/
+    /* Collect preds & Evaluables                                      */
+    /*******************************************************************/
+
+    /**
+     * <p>Collect the arrays.</p>
+     *
+     * @param en The interpreter.
+     * @throws EngineMessage Shit happens.
+     */
+    private void collectArrays(Engine en) throws EngineMessage {
+        if (createArray(getAuto(), en, AbstractFactory.ARRAY_NEW))
+            addForeign((Lense) en.skel);
+        if (createArray(getAuto(), en, AbstractFactory.ARRAY_LENGTH))
+            addForeign((Lense) en.skel);
+        if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET_EVAL)) {
+            addForeign((Lense) en.skel);
+        } else if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET_PRED)) {
+            addForeign((Lense) en.skel);
+        }
+        if (createArray(getAuto(), en, AbstractFactory.ARRAY_SET))
+            addForeign((Lense) en.skel);
+    }
+
+    /**
+     * <p>Add a foreign to the meths.</p>
+     *
+     * @param del The foreign.
+     */
+    public void addForeign(Lense del) {
+        StoreKey sk = new StoreKey(del.getFun(), del.getArity());
+        if (meths.get(sk) != null)
+            throw new IllegalArgumentException("indicator clash");
+        meths.add(sk, del);
+    }
+
+    /*******************************************************************/
+    /* Define preds & Evaluables                                  */
+    /*******************************************************************/
+
+    /**
+     * <p>Define the predicates.</p>
+     *
+     * @param r   The continuation skeleton.
+     * @param u   The continuation display.
+     * @param en  The interpreter.
+     * @param rec The recursion flag.
+     */
+    private void defineMeths(Intermediate r, DisplayClause u, Engine en,
+                             boolean rec)
+            throws EngineException, EngineMessage {
+        for (MapEntry<StoreKey, Lense> entry = meths.getLastEntry();
+             entry != null; entry = meths.predecessor(entry)) {
+            StoreKey sk = entry.key;
+            Lense del = entry.value;
+            SkelAtom sa = new SkelAtom(sk.getFun(), this);
+            try {
+                boolean virt = (del.subflags & Delegate.MASK_DELE_VIRT) != 0;
+                Predicate pick = makePublic(sa, sk.getArity(), virt, r, u, en);
+                Predicate over = makeOverride(pick, r, u, en);
+                if (over != null)
+                    throw new IllegalArgumentException("indicator clash");
+                SpecialSpecial.definePredicate(pick, del);
+                Predicate.checkPredicateDecl(pick, sa, r, u, en);
+            } catch (EngineException x) {
+                if (SpecialLoad.systemConsultBreak(x, r, u, en, rec))
+                    break;
+            } catch (EngineMessage x) {
+                EngineException y = new EngineException(x, EngineException.fetchStack(r, u, en));
+                if (SpecialLoad.systemConsultBreak(y, r, u, en, rec))
+                    break;
+            }
+        }
+    }
+
+    /*******************************************************************/
+    /* Create Foreigns                                                 */
+    /*******************************************************************/
+
+    /**
+     * <p>Create an array delegate.</p>
+     * <p>Result or culprit is returned in the engine skel.</p>
+     *
+     * @param c  The class.
+     * @param en The engine.
+     * @param k  The desired delegate.
+     * @return True if creation of the delegate succeeded, otherwise false.
+     * @throws EngineMessage Shit happens.
+     */
+    public static boolean createArray(Class c, Engine en, int k)
+            throws EngineMessage {
+        if (!c.isArray()) {
+            en.skel = EngineMessage.domainError(
+                    BranchAPI.OP_DOMAIN_FOREIGN_ARRAY,
+                    SpecialSpecial.classToName(c, en.store.SOURCE_SYSTEM, en));
+            return false;
+        }
+        Lense del;
+        switch (k) {
+            case AbstractFactory.ARRAY_LENGTH:
+                del = new LenseLength(c);
+                if (!del.encodeSignatureEval(en))
+                    return false;
+                break;
+            case AbstractFactory.ARRAY_GET_EVAL:
+                del = new LenseMember(c);
+                if (!del.encodeSignatureEval(en))
+                    return false;
+                break;
+            case AbstractFactory.ARRAY_NEW:
+                del = new LenseDimension(c);
+                if (!del.encodeSignaturePred(en))
+                    return false;
+                break;
+            case AbstractFactory.ARRAY_GET_PRED:
+                del = new LenseElement(c);
+                if (!del.encodeSignaturePred(en))
+                    return false;
+                break;
+            case AbstractFactory.ARRAY_SET:
+                del = new LenseUpdate(c);
+                if (!del.encodeSignaturePred(en))
+                    return false;
+                break;
+            default:
+                throw new IllegalArgumentException("illegal delegate");
+        }
+        en.skel = del;
+        return true;
+    }
+
+}
