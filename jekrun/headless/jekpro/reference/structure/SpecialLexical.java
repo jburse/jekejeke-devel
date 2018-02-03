@@ -1,7 +1,7 @@
 package jekpro.reference.structure;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelAtom;
@@ -38,7 +38,7 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialLexical extends Special {
+public final class SpecialLexical extends AbstractSpecial {
     public final static int CMP_TYPE_VAR = 0;
     public final static int CMP_TYPE_DECIMAL = 1;
     public final static int CMP_TYPE_FLOAT = 2;

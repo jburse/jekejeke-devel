@@ -1,7 +1,7 @@
 package jekpro.frequent.standard;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Goal;
@@ -40,7 +40,7 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialSort extends Special {
+public final class SpecialSort extends AbstractSpecial {
     private final static int SPECIAL_SORT = 0;
     private final static int SPECIAL_SYS_DISTINCT = 1;
     private final static int SPECIAL_KEYSORT = 2;

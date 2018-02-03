@@ -1,7 +1,7 @@
 package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.reference.structure.SpecialLexical;
@@ -37,7 +37,7 @@ import java.math.BigInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialCompare extends Special {
+public final class SpecialCompare extends AbstractSpecial {
     private final static int SPECIAL_COMPARE_EQ = 0;
     private final static int SPECIAL_COMPARE_NQ = 1;
     private final static int SPECIAL_COMPARE_LS = 2;

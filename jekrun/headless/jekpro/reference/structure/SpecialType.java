@@ -1,7 +1,7 @@
 package jekpro.reference.structure;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.AbstractSkel;
@@ -38,7 +38,7 @@ import java.math.BigInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialType extends Special {
+public final class SpecialType extends AbstractSpecial {
     private final static int SPECIAL_INTEGER = 0;
     private final static int SPECIAL_FLOAT = 1;
     private final static int SPECIAL_ATOM = 2;

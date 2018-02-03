@@ -1,7 +1,7 @@
 package jekpro.reference.arithmetic;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
@@ -38,7 +38,7 @@ import java.math.BigInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class EvaluableBits extends Special {
+public final class EvaluableBits extends AbstractSpecial {
     private final static int EVALUABLE_NOT = 0;
     private final static int EVALUABLE_AND = 1;
     private final static int EVALUABLE_OR = 2;

@@ -1,9 +1,9 @@
 package jekpro.reference.structure;
 
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.pretty.Store;
@@ -39,7 +39,7 @@ import matula.util.data.SetHashLink;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialVars extends Special {
+public final class SpecialVars extends AbstractSpecial {
     private final static int SPECIAL_TERM_VARIABLES = 0;
     private final static int SPECIAL_TERM_VARIABLES_DIFF = 1;
     private final static int SPECIAL_SYS_TERM_SINGELTONS = 2;

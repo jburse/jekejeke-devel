@@ -1,9 +1,21 @@
 package jekpro.reference.bootload;
 
+import derek.util.protect.LicenseError;
+import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.inter.AbstractFactory;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermCompound;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
+import matula.util.sharik.AbstractBundle;
+import matula.util.sharik.AbstractTracking;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -97,6 +109,88 @@ public final class ForeignEngine {
                     "max_status"));
         }
         System.exit(num.intValue());
+    }
+
+    /*************************************************************/
+    /* Prolog Flags                                              */
+    /*************************************************************/
+
+    /**
+     * <p>Change the value of a prolog flag.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param flag The name of the flag.
+     * @param m    The value skel.
+     * @param d    The value display.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void setFlag(String flag, Object m, Display d, Engine en)
+            throws EngineMessage {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
+            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (af != null) {
+                if (af.setFlag(m, d, en)) {
+                    return;
+                } else {
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            EngineMessage.OP_PERMISSION_MODIFY,
+                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+                }
+            }
+        }
+        AbstractFactory factory = (AbstractFactory) en.store.getFramework();
+        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
+        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+        if (af != null) {
+            if (af.setFlag(m, d, en)) {
+                return;
+            } else {
+                throw new EngineMessage(EngineMessage.permissionError(
+                        EngineMessage.OP_PERMISSION_MODIFY,
+                        EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+            }
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                new SkelAtom(flag)));
+    }
+
+    /**
+     * <p>Retrieve the value of the given flag.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param flag The flag.
+     * @param en   The engine.
+     * @return The value or null.
+     */
+    public static Object getFlag(String flag, Engine en) {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
+            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (af != null)
+                return af.getFlag(en);
+        }
+        AbstractFactory factory = (AbstractFactory) en.store.getFramework();
+        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
+        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+        if (af != null)
+            return af.getFlag(en);
+        return null;
     }
 
 }

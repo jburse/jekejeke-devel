@@ -286,9 +286,9 @@ public final class AutoClass extends AbstractAuto {
                         }
                         PreClause pre = new PreClause();
                         pre.molec = new SkelCompound(new SkelAtom(Store.OP_TURNSTILE), head, goal);
-                        PreClause.consultClause(Defined.OPT_PROM_STAT |
-                                Defined.OPT_CHCK_DEFN |
-                                Defined.OPT_ACTI_BOTT, pre, r, u, en);
+                        PreClause.consultClause(AbstractDefined.OPT_PROM_STAT |
+                                AbstractDefined.OPT_CHCK_DEFN |
+                                AbstractDefined.OPT_ACTI_BOTT, pre, r, u, en);
                     }
                     for (int i = 0; i < dels.length; i++) {
                         AbstractMember del = dels[i];

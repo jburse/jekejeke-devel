@@ -1,7 +1,7 @@
 package jekpro.frequent.standard;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
@@ -35,7 +35,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialFind extends Special {
+public final class SpecialFind extends AbstractSpecial {
     private final static int SPECIAL_FINDALL = 0;
     private final static int SPECIAL_COPY_TERM = 1;
 

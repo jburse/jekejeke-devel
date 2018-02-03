@@ -1,7 +1,7 @@
 package jekpro.reference.arithmetic;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
@@ -32,7 +32,7 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialEval extends Special {
+public final class SpecialEval extends AbstractSpecial {
     private final static int SPECIAL_IS = 0;
 
     /**

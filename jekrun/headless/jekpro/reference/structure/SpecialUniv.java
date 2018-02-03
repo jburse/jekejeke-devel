@@ -1,8 +1,8 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Goal;
@@ -37,7 +37,7 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialUniv extends Special {
+public final class SpecialUniv extends AbstractSpecial {
     private final static int SPECIAL_UNIV = 0;
     private final static int SPECIAL_ARG = 1;
     private final static int SPECIAL_SET_ARG = 2;
