@@ -1,7 +1,7 @@
 package jekmin.frequent.decimal;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
@@ -34,7 +34,7 @@ import jekpro.model.rope.Goal;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SpecialHelper extends Special {
+public class SpecialHelper extends AbstractSpecial {
     private final static int EVALUABLE_LOG2 = 0;
     private final static int EVALUABLE_LOG10 = 1;
 

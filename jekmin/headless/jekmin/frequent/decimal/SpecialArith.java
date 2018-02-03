@@ -1,7 +1,7 @@
 package jekmin.frequent.decimal;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
@@ -41,7 +41,7 @@ import java.math.MathContext;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SpecialArith extends Special {
+public class SpecialArith extends AbstractSpecial {
     private final static int SPECIAL_MP_DECIMAL = 0;
     private final static int SPECIAL_MP_ADD = 1;
     private final static int SPECIAL_MP_SUB = 2;

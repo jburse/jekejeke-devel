@@ -55,7 +55,7 @@ public final class FlagForward extends AbstractFlag {
      */
     static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.put(OP_FLAG_SYS_VERIFY, new FlagForward(FLAG_SYS_VERIFY));
+        prologflags.add(OP_FLAG_SYS_VERIFY, new FlagForward(FLAG_SYS_VERIFY));
         return prologflags;
     }
 

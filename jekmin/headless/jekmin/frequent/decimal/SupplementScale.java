@@ -1,7 +1,7 @@
 package jekmin.frequent.decimal;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
@@ -41,7 +41,7 @@ import java.math.RoundingMode;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SupplementScale extends Special {
+public class SupplementScale extends AbstractSpecial {
     private final static int EVALUABLE_SCALE = 0;
     private final static int EVALUABLE_UNSCALED_VALUE = 1;
     private final static int EVALUABLE_NEW_DECIMAL = 2;

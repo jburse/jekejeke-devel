@@ -1,17 +1,15 @@
 package jekmin.reference.misc;
 
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Special;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
-import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.TermAtomic;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
-import java.math.RoundingMode;
 
 /**
  * <p>Provides additional bitwise predicates.</p>
@@ -39,7 +37,7 @@ import java.math.RoundingMode;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialBits extends Special {
+public final class SpecialBits extends AbstractSpecial {
     private final static int SPECIAL_SYS_TEST_BIT = 0;
 
     /**
