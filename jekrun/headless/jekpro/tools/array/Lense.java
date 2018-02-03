@@ -1,17 +1,19 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialSpecial;
-import jekpro.model.inter.Delegate;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.term.SkelAtom;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -44,7 +46,7 @@ import java.util.HashMap;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class Lense extends Delegate {
+public abstract class Lense extends AbstractDelegate {
     public final static int MASK_METH_FUNC = 0x00000100;
 
     final static int[] VOID_PARAS = new int[0];
@@ -83,7 +85,7 @@ public abstract class Lense extends Delegate {
      *
      * @param en The engine.
      * @return True if the signature is ok, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public boolean encodeSignatureEval(Engine en)
             throws EngineMessage {
@@ -95,7 +97,7 @@ public abstract class Lense extends Delegate {
         }
 
         if (!Modifier.isStatic(getModifiers())) {
-            subflags |= Delegate.MASK_DELE_VIRT;
+            subflags |= AbstractDelegate.MASK_DELE_VIRT;
             Class ret = getDeclaringClass();
             Integer encode = typeeval.get(ret);
             if (encode == null ||
@@ -181,7 +183,7 @@ public abstract class Lense extends Delegate {
      *
      * @param en The engine.
      * @return True if the signature is ok, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public boolean encodeSignaturePred(Engine en)
             throws EngineMessage {
@@ -193,7 +195,7 @@ public abstract class Lense extends Delegate {
         }
 
         if (!Modifier.isStatic(getModifiers())) {
-            subflags |= Delegate.MASK_DELE_VIRT;
+            subflags |= AbstractDelegate.MASK_DELE_VIRT;
             Class ret = getDeclaringClass();
             Integer encode = typepred.get(ret);
             if (encode == null) {
@@ -355,7 +357,7 @@ public abstract class Lense extends Delegate {
      */
     public int getArity() {
         int count = getParaCount();
-        if ((subflags & Delegate.MASK_DELE_VIRT) != 0)
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
             count++;
         if ((subflags & MASK_METH_FUNC) != 0)
             count++;
@@ -406,6 +408,37 @@ public abstract class Lense extends Delegate {
             }
         }
         return k;
+    }
+
+    /***********************************************************/
+    /* Foreign Invokation                                      */
+    /***********************************************************/
+
+    /**
+     * <p>Determine the receiver object. The first argument of
+     * the goal is checked and converted if necessary.</p>
+     *
+     * @param temp The skeleton.
+     * @param ref  The display.
+     * @param en   The engine.
+     * @return The arguments array.
+     * @throws EngineMessage FFI error.
+     */
+    public final Object convertObj(Object temp, Display ref, Engine en)
+            throws EngineMessage {
+        try {
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                en.skel = ((SkelCompound) temp).args[0];
+                en.display = ref;
+                en.deref();
+                Object res = AbstractTerm.createTerm(en.skel, en.display);
+                return Types.denormProlog(encodeobj, res);
+            } else {
+                return null;
+            }
+        } catch (InterpreterMessage x) {
+            throw (EngineMessage) x.getException();
+        }
     }
 
 }

@@ -2,7 +2,10 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.tools.proxy.BranchAPI;
@@ -104,8 +107,8 @@ final class LenseDimension extends Lense {
      * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     public final boolean findFirst(Goal r, DisplayClause u,
                                    Engine en)
@@ -131,7 +134,7 @@ final class LenseDimension extends Lense {
      * @param s  The size.
      * @param en The engine.
      * @return The new array.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     private Object newInstance(int s, Engine en)
             throws EngineMessage {
@@ -177,7 +180,7 @@ final class LenseDimension extends Lense {
      * @param source The source.
      * @param en     The engine.
      * @return The spec.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {

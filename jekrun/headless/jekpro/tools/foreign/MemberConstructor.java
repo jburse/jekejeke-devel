@@ -2,7 +2,10 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.tools.array.Types;
@@ -106,8 +109,8 @@ final class MemberConstructor extends Member {
      * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     public final boolean findFirst(Goal r, DisplayClause u,
                                    Engine en)
@@ -159,7 +162,7 @@ final class MemberConstructor extends Member {
      * @param source The source.
      * @param en     The engine.
      * @return The spec.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {

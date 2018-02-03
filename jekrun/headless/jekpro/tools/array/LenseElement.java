@@ -2,7 +2,10 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.tools.proxy.BranchAPI;
@@ -106,16 +109,16 @@ final class LenseElement extends Lense {
      * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     public final boolean findFirst(Goal r, DisplayClause u,
                                    Engine en)
             throws EngineException, EngineMessage {
-        Object[] temp = ((SkelCompound) en.skel).args;
+        Object temp = en.skel;
         Display ref = en.display;
-        Object obj = Types.castRef(temp[0], ref, en);
-        en.skel = temp[1];
+        Object obj = convertObj(temp, ref, en);
+        en.skel = ((SkelCompound) temp).args[1];
         en.display = ref;
         en.deref();
         EngineMessage.checkInstantiated(en.skel);
@@ -127,7 +130,7 @@ final class LenseElement extends Lense {
         if (res == null)
             return false;
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(temp[2], ref,
+                !en.unifyTerm(((SkelCompound) temp).args[2], ref,
                         AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res), r, u))
             return false;
         return r.getNext(u, en);
@@ -140,7 +143,7 @@ final class LenseElement extends Lense {
      * @param i  The index.
      * @param en The engine.
      * @return The element.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     private Object get(Object o, int i, Engine en)
             throws EngineMessage {
@@ -191,7 +194,7 @@ final class LenseElement extends Lense {
      * @param source The source.
      * @param en     The engine.
      * @return The spec.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {

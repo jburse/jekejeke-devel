@@ -1,6 +1,6 @@
 package jekpro.tools.foreign;
 
-import jekpro.model.inter.Delegate;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -21,7 +21,6 @@ import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * <p>Base class for the Java class delegates.</p>
@@ -82,7 +81,7 @@ abstract class Member extends Lense
             return s;
         Class[] paras = getParameterTypes();
         s = 0;
-        if ((subflags & Delegate.MASK_DELE_VIRT) != 0)
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
             s += Score.getScore(encodeobj, getDeclaringClass());
         for (int i = 0; i < encodeparas.length; i++)
             s += Score.getScore(encodeparas[i], paras[i]);
@@ -100,7 +99,7 @@ abstract class Member extends Lense
         int n = getArity();
         Object[] t = (n != 0 ? new Object[n] : VOID_ARGS);
         int k = 0;
-        if ((subflags & Delegate.MASK_DELE_VIRT) != 0) {
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
             t[k] = Score.getTest(encodeobj, getDeclaringClass());
             k++;
         }
@@ -132,7 +131,8 @@ abstract class Member extends Lense
      * @param u    The continuation display.
      * @param en   The engine.
      * @return The arguments array.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
+     * @throws EngineException FFI error.
      */
     final Object[] computeAndConvertArgs(Object temp, Display ref,
                                          Goal r, DisplayClause u,
@@ -142,7 +142,7 @@ abstract class Member extends Lense
             Object[] args = (encodeparas.length != 0 ?
                     new Object[encodeparas.length] : Member.VOID_ARGS);
             int k = 0;
-            if ((subflags & Delegate.MASK_DELE_VIRT) != 0)
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
                 k++;
             for (int i = 0; i < encodeparas.length; i++) {
                 int typ = encodeparas[i];
@@ -169,7 +169,7 @@ abstract class Member extends Lense
      * @param ref  The display.
      * @param en   The engine.
      * @return The arguments array.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     final Object[] convertArgs(Object temp, Display ref, Engine en)
             throws EngineMessage {
@@ -177,7 +177,7 @@ abstract class Member extends Lense
             Object[] args = (encodeparas.length != 0 ?
                     new Object[encodeparas.length] : Member.VOID_ARGS);
             int k = 0;
-            if ((subflags & Delegate.MASK_DELE_VIRT) != 0)
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
                 k++;
             for (int i = 0; i < encodeparas.length; i++) {
                 int typ = encodeparas[i];
@@ -205,33 +205,6 @@ abstract class Member extends Lense
         }
     }
 
-    /**
-     * <p>Determine the receiver object. The first argument of
-     * the goal is checked and converted if necessary.</p>
-     *
-     * @param temp The skeleton.
-     * @param ref  The display.
-     * @param en   The engine.
-     * @return The arguments array.
-     * @throws EngineMessage Shit happens.
-     */
-    final Object convertObj(Object temp, Display ref, Engine en)
-            throws EngineMessage {
-        try {
-            if ((subflags & Delegate.MASK_DELE_VIRT) != 0) {
-                en.skel = ((SkelCompound) temp).args[0];
-                en.display = ref;
-                en.deref();
-                Object res = AbstractTerm.createTerm(en.skel, en.display);
-                return Types.denormProlog(encodeobj, res);
-            } else {
-                return null;
-            }
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
-        }
-    }
-
     /***********************************************************/
     /* Invocation Helpers                                      */
     /***********************************************************/
@@ -243,8 +216,8 @@ abstract class Member extends Lense
      * @param args The arguments array.
      * @param en   The engine.
      * @return The invokcation result.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     static Object invokeMethod(Method method, Object obj, Object[] args, Engine en)
             throws EngineException, EngineMessage {

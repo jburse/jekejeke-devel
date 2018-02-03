@@ -4,10 +4,10 @@ import jekpro.model.inter.Choice;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
+import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
@@ -99,8 +99,8 @@ final class ChoiceForeign extends CallOut {
      *
      * @param en The engine.
      * @return True if the foreign predicate succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     public final boolean findNext(Engine en)
             throws EngineException, EngineMessage {

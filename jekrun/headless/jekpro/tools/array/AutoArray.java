@@ -2,19 +2,17 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractFactory;
-import jekpro.model.inter.Delegate;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.proxy.AbstractAuto;
-import jekpro.tools.proxy.LookupJava;
-import jekpro.tools.term.SkelAtom;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.tools.proxy.AbstractAuto;
 import jekpro.tools.proxy.BranchAPI;
+import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
@@ -69,8 +67,8 @@ public final class AutoArray extends AbstractAuto {
      * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
      */
     public void loadModule(Reader lr,
                            Intermediate r, DisplayClause u,
@@ -95,9 +93,10 @@ public final class AutoArray extends AbstractAuto {
      * <p>Collect the arrays.</p>
      *
      * @param en The interpreter.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
-    private void collectArrays(Engine en) throws EngineMessage {
+    private void collectArrays(Engine en)
+            throws EngineMessage {
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_NEW))
             addForeign((Lense) en.skel);
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_LENGTH))
@@ -134,6 +133,8 @@ public final class AutoArray extends AbstractAuto {
      * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
      */
     private void defineMeths(Intermediate r, DisplayClause u, Engine en,
                              boolean rec)
@@ -144,7 +145,7 @@ public final class AutoArray extends AbstractAuto {
             Lense del = entry.value;
             SkelAtom sa = new SkelAtom(sk.getFun(), this);
             try {
-                boolean virt = (del.subflags & Delegate.MASK_DELE_VIRT) != 0;
+                boolean virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                 Predicate pick = makePublic(sa, sk.getArity(), virt, r, u, en);
                 Predicate over = makeOverride(pick, r, u, en);
                 if (over != null)
@@ -174,7 +175,7 @@ public final class AutoArray extends AbstractAuto {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public static boolean createArray(Class c, Engine en, int k)
             throws EngineMessage {

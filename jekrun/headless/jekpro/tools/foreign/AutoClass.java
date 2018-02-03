@@ -2,12 +2,16 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
@@ -83,8 +87,8 @@ public final class AutoClass extends AbstractAuto {
      * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
      */
     public void loadModule(Reader lr,
                            Intermediate r, DisplayClause u,
@@ -116,7 +120,7 @@ public final class AutoClass extends AbstractAuto {
      * <p>Collect the constructors.</p>
      *
      * @param en The interpreter.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     private void collectConstructors(Engine en)
             throws EngineMessage {
@@ -136,7 +140,7 @@ public final class AutoClass extends AbstractAuto {
      * <p>Collect the methods.</p>
      *
      * @param en The interpreter.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     private void collectMethods(Engine en)
             throws EngineMessage {
@@ -159,7 +163,7 @@ public final class AutoClass extends AbstractAuto {
      * <p>Collect the fields.</p>
      *
      * @param en The interpreter.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     private void collectFields(Engine en)
             throws EngineMessage {
@@ -236,6 +240,8 @@ public final class AutoClass extends AbstractAuto {
      * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
      */
     private void defineMeths(Intermediate r, DisplayClause u, Engine en,
                              boolean rec)
@@ -251,7 +257,7 @@ public final class AutoClass extends AbstractAuto {
                 boolean virt = false;
                 for (int i = 0; i < dels.length; i++) {
                     Member del = dels[i];
-                    virt |= (del.subflags & Delegate.MASK_DELE_VIRT) != 0;
+                    virt |= (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                 }
                 Predicate pick = makePublic(sa, sk.getArity(), virt, r, u, en);
                 Predicate over = makeOverride(pick, r, u, en);
@@ -289,7 +295,7 @@ public final class AutoClass extends AbstractAuto {
                         if (!del.getDeclaringClass().equals(getAuto()))
                             continue;
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
-                        virt = (del.subflags & Delegate.MASK_DELE_VIRT) != 0;
+                        virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                         pick = makePrivate(sa, sk.getArity(), virt, r, u, en);
                         SpecialSpecial.definePredicate(pick, del);
                         Predicate.checkPredicateDecl(pick, sa, r, u, en);
@@ -314,7 +320,7 @@ public final class AutoClass extends AbstractAuto {
     private SkelCompound makeGoal(Member del, Predicate over,
                                   Object[] args, int i) {
         SkelCompound goal;
-        if (((del.subflags & Delegate.MASK_DELE_ARIT) != 0)) {
+        if (((del.subflags & AbstractDelegate.MASK_DELE_ARIT) != 0)) {
             Object[] args1 = new Object[args.length - 1];
             System.arraycopy(args, 0, args1, 0, args1.length);
             SkelCompound expr;
@@ -377,7 +383,7 @@ public final class AutoClass extends AbstractAuto {
             throws EngineException, EngineMessage {
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
                 arity, r, u, en, true);
-        Predicate pick=cp.pick;
+        Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPR);
         Usage loc = pick.getUsage(this);
         if (loc != null)
@@ -449,7 +455,7 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public static boolean createMethod(Method m, Engine en, boolean k)
             throws EngineMessage {
@@ -482,7 +488,7 @@ public final class AutoClass extends AbstractAuto {
      * @param c  The constructor.
      * @param en The engine.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public static boolean createConstructor(Constructor c, Engine en)
             throws EngineMessage {
@@ -503,7 +509,7 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public static boolean createField(Field f, Engine en, int k)
             throws EngineMessage {
@@ -544,7 +550,7 @@ public final class AutoClass extends AbstractAuto {
      * @param exces The exception types.
      * @param en    The engine.
      * @return True if the exeception types are ok, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public static boolean validateExceptionTypes(Class[] exces, Engine en)
             throws EngineMessage {
@@ -585,7 +591,7 @@ public final class AutoClass extends AbstractAuto {
      *
      * @param obj The receiver.
      * @return The invokcation result.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public static Object invokeGetter(Field fld, Object obj)
             throws EngineMessage {
@@ -621,8 +627,8 @@ public final class AutoClass extends AbstractAuto {
      * @param args The arguments array.
      * @param en   The engine.
      * @return The invokcation result.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     public static Object invokeNew(Constructor con, Object[] args, Engine en)
             throws EngineException, EngineMessage {

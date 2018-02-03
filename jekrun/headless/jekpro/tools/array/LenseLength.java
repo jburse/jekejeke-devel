@@ -2,7 +2,9 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
@@ -108,14 +110,14 @@ final class LenseLength extends Lense {
      * @param r  The continuation skel.
      * @param u  The continuation display.
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public final void evalEvaluable(Goal r, DisplayClause u,
                                     Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = Types.castRef(((SkelCompound) temp).args[0], ref, en);
+        Object obj = convertObj(temp, ref, en);
         en.skel = Integer.valueOf(getLength(obj, en));
         en.display = Display.DISPLAY_CONST;
     }
@@ -126,7 +128,7 @@ final class LenseLength extends Lense {
      * @param obj The array.
      * @param en  The engine.
      * @return The length.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     private int getLength(Object obj, Engine en)
             throws EngineMessage {
@@ -172,7 +174,7 @@ final class LenseLength extends Lense {
      * @param source The source.
      * @param en     The engine.
      * @return The spec.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {

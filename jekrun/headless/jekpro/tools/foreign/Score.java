@@ -1,8 +1,8 @@
 package jekpro.tools.foreign;
 
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.array.Types;
 
 /**
  * <p>Provides scoring and test predicates of Java data types.

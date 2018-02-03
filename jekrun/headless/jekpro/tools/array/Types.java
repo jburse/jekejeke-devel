@@ -1,10 +1,8 @@
 package jekpro.tools.array;
 
-import jekpro.model.inter.Engine;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.TermAtomic;
 import matula.util.sharik.Livestock;
 
@@ -81,6 +79,7 @@ public final class Types {
      * @param typ The Java type.
      * @param res The result object.
      * @return The normalized result object.
+     * @throws EngineMessage FFI error.
      */
     public static Object normJava(int typ, Object res)
             throws EngineMessage {
@@ -163,6 +162,7 @@ public final class Types {
      * @param typ The Java type.
      * @param res The argument object, can be null.
      * @return The denormalized argument object, can be null.
+     * @throws InterpreterMessage FFI error.
      */
     public static Object denormProlog(int typ, Object res)
             throws InterpreterMessage {
@@ -359,33 +359,6 @@ public final class Types {
             throw (Error) x;
         } else {
             throw new Error("unmappable exception", x);
-        }
-    }
-
-    /***********************************************************/
-    /* Receiver Object                                         */
-    /***********************************************************/
-
-    /**
-     * <p>Retrieve the receiver.</p>
-     *
-     * @param t The skeleton.
-     * @param d The display.
-     * @return The arguments array.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object castRef(Object t, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        if (!(en.skel instanceof AbstractSkel) && !(en.skel instanceof Number)) {
-            return en.skel;
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_REF,
-                    en.skel), en.display);
         }
     }
 

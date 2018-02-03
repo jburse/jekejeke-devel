@@ -2,7 +2,9 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.tools.proxy.BranchAPI;
@@ -107,12 +109,11 @@ final class MemberFieldSet extends Member {
      * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public final boolean findFirst(Goal r, DisplayClause u,
                                    Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);
@@ -126,7 +127,7 @@ final class MemberFieldSet extends Member {
      *
      * @param obj  The receiver.
      * @param args The arguments array.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     final void invokeSetter(Object obj, Object[] args)
             throws EngineMessage {
@@ -187,7 +188,7 @@ final class MemberFieldSet extends Member {
      * @param source The source.
      * @param en     The engine.
      * @return The spec.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {

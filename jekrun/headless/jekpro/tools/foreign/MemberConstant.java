@@ -2,12 +2,14 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.array.Types;
+import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -107,11 +109,11 @@ final class MemberConstant extends Member {
      * @param r  The continuation skel.
      * @param u  The continuation display.
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public final void evalEvaluable(Goal r, DisplayClause u,
                                     Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);
@@ -156,7 +158,7 @@ final class MemberConstant extends Member {
      * @param source The source.
      * @param en     The engine.
      * @return The spec.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage FFI error.
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
