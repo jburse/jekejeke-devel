@@ -132,7 +132,7 @@ final class ChoiceForeign extends CallOut {
                 setRetry(false);
                 setSpecial(false);
                 setCutter(false);
-                Object res = Member.invokeMethod(del.method, obj, args, en);
+                Object res = AbstractMember.invokeMethod(del.method, obj, args, en);
                 res = Types.normJava(del.encoderet, res);
                 if (res == null) {
                     inter.setCallOut(getChain());
@@ -209,7 +209,7 @@ final class ChoiceForeign extends CallOut {
         try {
             setFirst(false);
             setCleanup(true);
-            Member.invokeMethod(del.method, obj, args, en);
+            AbstractMember.invokeMethod(del.method, obj, args, en);
             inter.setCallOut(getChain());
             en.display = back;
             InterpreterException ie = getException();

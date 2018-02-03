@@ -41,7 +41,7 @@ import java.lang.reflect.Method;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberMethodNondet extends Member {
+final class MemberMethodNondet extends AbstractMember {
     final Method method;
 
     /**

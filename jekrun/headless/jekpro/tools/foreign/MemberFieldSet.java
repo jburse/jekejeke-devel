@@ -39,7 +39,7 @@ import java.lang.reflect.Field;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberFieldSet extends Member {
+final class MemberFieldSet extends AbstractMember {
     private final Field field;
     private final String fastname;
     private final Class[] fastpartys;

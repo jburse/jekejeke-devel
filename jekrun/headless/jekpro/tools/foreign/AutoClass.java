@@ -60,7 +60,7 @@ public final class AutoClass extends AbstractAuto {
 
     private static final String OP_VARIANT = "_var";
 
-    private MapHash<StoreKey, ListArray<Member>> meths;
+    private MapHash<StoreKey, ListArray<AbstractMember>> meths;
 
     /**
      * <p>Create a source from path.</p>
@@ -76,7 +76,7 @@ public final class AutoClass extends AbstractAuto {
      *
      * @return The preds.
      */
-    public MapHash<StoreKey, ListArray<Member>> getMeths() {
+    public MapHash<StoreKey, ListArray<AbstractMember>> getMeths() {
         return meths;
     }
 
@@ -99,7 +99,7 @@ public final class AutoClass extends AbstractAuto {
         AutoClass superjava = reexportSuperclass(r, u, en);
         AutoClass[] interfacesjava = reexportInterfaces(r, u, en);
 
-        meths = new MapHash<StoreKey, ListArray<Member>>();
+        meths = new MapHash<StoreKey, ListArray<AbstractMember>>();
         collectConstructors(en);
         collectMethods(en);
         collectFields(en);
@@ -132,7 +132,7 @@ public final class AutoClass extends AbstractAuto {
             if ((constructor.getModifiers() & SYNTHETIC) != 0)
                 continue;
             if (createConstructor(constructor, en))
-                addForeignScore((Member) en.skel);
+                addForeignScore((AbstractMember) en.skel);
         }
     }
 
@@ -152,9 +152,9 @@ public final class AutoClass extends AbstractAuto {
             if ((method.getModifiers() & SYNTHETIC) != 0)
                 continue;
             if (createMethod(method, en, false)) {
-                addForeignScore((Member) en.skel);
+                addForeignScore((AbstractMember) en.skel);
             } else if (createMethod(method, en, true)) {
-                addForeignScore((Member) en.skel);
+                addForeignScore((AbstractMember) en.skel);
             }
         }
     }
@@ -175,14 +175,14 @@ public final class AutoClass extends AbstractAuto {
             if ((field.getModifiers() & SYNTHETIC) != 0)
                 continue;
             if (createField(field, en, AbstractFactory.FIELD_GET_EVAL)) {
-                addForeignScore((Member) en.skel);
+                addForeignScore((AbstractMember) en.skel);
             } else if (createField(field, en, AbstractFactory.FIELD_GET_PRED)) {
-                addForeignScore((Member) en.skel);
+                addForeignScore((AbstractMember) en.skel);
             }
             if (Modifier.isFinal(field.getModifiers()))
                 continue;
             if (createField(field, en, AbstractFactory.FIELD_SET))
-                addForeignScore((Member) en.skel);
+                addForeignScore((AbstractMember) en.skel);
         }
     }
 
@@ -191,11 +191,11 @@ public final class AutoClass extends AbstractAuto {
      *
      * @param del The foreign.
      */
-    public void addForeignScore(Member del) {
+    public void addForeignScore(AbstractMember del) {
         StoreKey sk = new StoreKey(del.getFun(), del.getArity());
-        ListArray<Member> dels = meths.get(sk);
+        ListArray<AbstractMember> dels = meths.get(sk);
         if (dels == null) {
-            dels = new ListArray<Member>();
+            dels = new ListArray<AbstractMember>();
             meths.add(sk, dels);
         }
         dels.add(del);
@@ -211,16 +211,16 @@ public final class AutoClass extends AbstractAuto {
      * @param java The super Java source.
      */
     private void inheritMeths(AutoClass java) {
-        MapHash<StoreKey, ListArray<Member>> preds2 = java.getMeths();
-        for (MapEntry<StoreKey, ListArray<Member>> entry = preds2.getLastEntry();
+        MapHash<StoreKey, ListArray<AbstractMember>> preds2 = java.getMeths();
+        for (MapEntry<StoreKey, ListArray<AbstractMember>> entry = preds2.getLastEntry();
              entry != null; entry = preds2.predecessor(entry)) {
-            ListArray<Member> dels = entry.value;
-            ListArray<Member> dels2 = meths.get(entry.key);
+            ListArray<AbstractMember> dels = entry.value;
+            ListArray<AbstractMember> dels2 = meths.get(entry.key);
             if (dels2 == null) {
                 meths.add(entry.key, dels);
             } else {
                 for (int i = 0; i < dels.size(); i++) {
-                    Member del = dels.get(i);
+                    AbstractMember del = dels.get(i);
                     if (AutoClass.hasParameterTypes(dels2, del.getParameterTypes()))
                         continue;
                     dels2.add(del);
@@ -246,23 +246,23 @@ public final class AutoClass extends AbstractAuto {
     private void defineMeths(Intermediate r, DisplayClause u, Engine en,
                              boolean rec)
             throws EngineException, EngineMessage {
-        for (MapEntry<StoreKey, ListArray<Member>> entry = meths.getLastEntry();
+        for (MapEntry<StoreKey, ListArray<AbstractMember>> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {
             StoreKey sk = entry.key;
             if (!AutoClass.hasDeclaredClass(entry.value, getAuto()))
                 continue;
-            Member[] dels = AutoClass.sortByScore(entry.value);
+            AbstractMember[] dels = AutoClass.sortByScore(entry.value);
             SkelAtom sa = new SkelAtom(sk.getFun(), this);
             try {
                 boolean virt = false;
                 for (int i = 0; i < dels.length; i++) {
-                    Member del = dels[i];
+                    AbstractMember del = dels[i];
                     virt |= (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                 }
                 Predicate pick = makePublic(sa, sk.getArity(), virt, r, u, en);
                 Predicate over = makeOverride(pick, r, u, en);
                 if (dels.length == 1) {
-                    Member del = dels[0];
+                    AbstractMember del = dels[0];
                     SpecialSpecial.definePredicate(pick, del);
                     Predicate.checkPredicateDecl(pick, sa, r, u, en);
                 } else {
@@ -271,7 +271,7 @@ public final class AutoClass extends AbstractAuto {
                         for (int j = 0; j < args.length; j++)
                             args[j] = new SkelVar(j);
                         SkelCompound head = new SkelCompound(sa, args);
-                        Member del = dels[i];
+                        AbstractMember del = dels[i];
                         SkelCompound goal = makeGoal(del, over, args, i);
                         if (i != dels.length - 1) {
                             goal = new SkelCompound(new SkelAtom(","), new SkelAtom("!"), goal);
@@ -291,7 +291,7 @@ public final class AutoClass extends AbstractAuto {
                                 Defined.OPT_ACTI_BOTT, pre, r, u, en);
                     }
                     for (int i = 0; i < dels.length; i++) {
-                        Member del = dels[i];
+                        AbstractMember del = dels[i];
                         if (!del.getDeclaringClass().equals(getAuto()))
                             continue;
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
@@ -317,7 +317,7 @@ public final class AutoClass extends AbstractAuto {
      *
      * @return The branching goal.
      */
-    private SkelCompound makeGoal(Member del, Predicate over,
+    private SkelCompound makeGoal(AbstractMember del, Predicate over,
                                   Object[] args, int i) {
         SkelCompound goal;
         if (((del.subflags & AbstractDelegate.MASK_DELE_ARIT) != 0)) {
@@ -405,7 +405,7 @@ public final class AutoClass extends AbstractAuto {
      * @param types The parameter types.
      * @return True if a member has the given parameter types, otherwise false.
      */
-    private static boolean hasParameterTypes(ListArray<Member> dels,
+    private static boolean hasParameterTypes(ListArray<AbstractMember> dels,
                                              Class[] types) {
         for (int i = 0; i < dels.size(); i++) {
             if (Arrays.equals(dels.get(i).getParameterTypes(), types))
@@ -421,7 +421,7 @@ public final class AutoClass extends AbstractAuto {
      * @param clazz The declared class.
      * @return True if a member has the given declared class, otherwise false.
      */
-    private static boolean hasDeclaredClass(ListArray<Member> dels,
+    private static boolean hasDeclaredClass(ListArray<AbstractMember> dels,
                                             Class clazz) {
         for (int i = 0; i < dels.size(); i++) {
             if (dels.get(i).getDeclaringClass().equals(clazz))
@@ -436,8 +436,8 @@ public final class AutoClass extends AbstractAuto {
      * @param dels The unsorted foreigns.
      * @return The sorted foreigns.
      */
-    private static Member[] sortByScore(ListArray<Member> dels) {
-        Member[] delarray = new Member[dels.size()];
+    private static AbstractMember[] sortByScore(ListArray<AbstractMember> dels) {
+        AbstractMember[] delarray = new AbstractMember[dels.size()];
         dels.toArray(delarray);
         Arrays.sort(delarray);
         return delarray;
@@ -459,7 +459,7 @@ public final class AutoClass extends AbstractAuto {
      */
     public static boolean createMethod(Method m, Engine en, boolean k)
             throws EngineMessage {
-        Member del;
+        AbstractMember del;
         if (k) {
             if (!validateExceptionTypes(m.getExceptionTypes(), en))
                 return false;
@@ -494,7 +494,7 @@ public final class AutoClass extends AbstractAuto {
             throws EngineMessage {
         if (!validateExceptionTypes(c.getExceptionTypes(), en))
             return false;
-        Member del = new MemberConstructor(c);
+        AbstractMember del = new MemberConstructor(c);
         if (!del.encodeSignaturePred(en))
             return false;
         en.skel = del;
@@ -513,7 +513,7 @@ public final class AutoClass extends AbstractAuto {
      */
     public static boolean createField(Field f, Engine en, int k)
             throws EngineMessage {
-        Member del;
+        AbstractMember del;
         switch (k) {
             case AbstractFactory.FIELD_GET_PRED:
                 del = new MemberFieldGet(f);

@@ -8,7 +8,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.array.Lense;
+import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
@@ -48,8 +48,8 @@ import java.lang.reflect.Method;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-abstract class Member extends Lense
-        implements Comparable<Member> {
+abstract class AbstractMember extends AbstractLense
+        implements Comparable<AbstractMember> {
     public final static Object[] VOID_ARGS = new Object[0];
 
     int scores = -1;
@@ -64,7 +64,7 @@ abstract class Member extends Lense
      * @param o The other delegate.
      * @return The result.
      */
-    public int compareTo(Member o) {
+    public int compareTo(AbstractMember o) {
         int score1 = getScores();
         int score2 = o.getScores();
         return (score1 < score2) ? -1 : ((score1 == score2) ? 0 : 1);
@@ -140,7 +140,7 @@ abstract class Member extends Lense
             throws EngineMessage, EngineException {
         try {
             Object[] args = (encodeparas.length != 0 ?
-                    new Object[encodeparas.length] : Member.VOID_ARGS);
+                    new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
             int k = 0;
             if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
                 k++;
@@ -175,7 +175,7 @@ abstract class Member extends Lense
             throws EngineMessage {
         try {
             Object[] args = (encodeparas.length != 0 ?
-                    new Object[encodeparas.length] : Member.VOID_ARGS);
+                    new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
             int k = 0;
             if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
                 k++;

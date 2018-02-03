@@ -46,7 +46,7 @@ import java.util.HashMap;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class Lense extends AbstractDelegate {
+public abstract class AbstractLense extends AbstractDelegate {
     public final static int MASK_METH_FUNC = 0x00000100;
 
     final static int[] VOID_PARAS = new int[0];

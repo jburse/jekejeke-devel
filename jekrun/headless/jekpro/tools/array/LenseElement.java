@@ -43,7 +43,7 @@ import java.lang.reflect.Modifier;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class LenseElement extends Lense {
+final class LenseElement extends AbstractLense {
     private final Class clazz;
 
     /**

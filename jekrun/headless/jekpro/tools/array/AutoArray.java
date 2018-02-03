@@ -45,7 +45,7 @@ import java.io.Reader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class AutoArray extends AbstractAuto {
-    private MapHash<StoreKey, Lense> meths;
+    private MapHash<StoreKey, AbstractLense> meths;
 
     /**
      * <p>Create a source from path.</p>
@@ -79,7 +79,7 @@ public final class AutoArray extends AbstractAuto {
         reexportSuperclass(r, u, en);
         reexportInterfaces(r, u, en);
 
-        meths = new MapHash<StoreKey, Lense>();
+        meths = new MapHash<StoreKey, AbstractLense>();
         collectArrays(en);
 
         defineMeths(r, u, en, rec);
@@ -98,16 +98,16 @@ public final class AutoArray extends AbstractAuto {
     private void collectArrays(Engine en)
             throws EngineMessage {
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_NEW))
-            addForeign((Lense) en.skel);
+            addForeign((AbstractLense) en.skel);
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_LENGTH))
-            addForeign((Lense) en.skel);
+            addForeign((AbstractLense) en.skel);
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET_EVAL)) {
-            addForeign((Lense) en.skel);
+            addForeign((AbstractLense) en.skel);
         } else if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET_PRED)) {
-            addForeign((Lense) en.skel);
+            addForeign((AbstractLense) en.skel);
         }
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_SET))
-            addForeign((Lense) en.skel);
+            addForeign((AbstractLense) en.skel);
     }
 
     /**
@@ -115,7 +115,7 @@ public final class AutoArray extends AbstractAuto {
      *
      * @param del The foreign.
      */
-    public void addForeign(Lense del) {
+    public void addForeign(AbstractLense del) {
         StoreKey sk = new StoreKey(del.getFun(), del.getArity());
         if (meths.get(sk) != null)
             throw new IllegalArgumentException("indicator clash");
@@ -139,10 +139,10 @@ public final class AutoArray extends AbstractAuto {
     private void defineMeths(Intermediate r, DisplayClause u, Engine en,
                              boolean rec)
             throws EngineException, EngineMessage {
-        for (MapEntry<StoreKey, Lense> entry = meths.getLastEntry();
+        for (MapEntry<StoreKey, AbstractLense> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {
             StoreKey sk = entry.key;
-            Lense del = entry.value;
+            AbstractLense del = entry.value;
             SkelAtom sa = new SkelAtom(sk.getFun(), this);
             try {
                 boolean virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
@@ -185,7 +185,7 @@ public final class AutoArray extends AbstractAuto {
                     SpecialSpecial.classToName(c, en.store.SOURCE_SYSTEM, en));
             return false;
         }
-        Lense del;
+        AbstractLense del;
         switch (k) {
             case AbstractFactory.ARRAY_LENGTH:
                 del = new LenseLength(c);

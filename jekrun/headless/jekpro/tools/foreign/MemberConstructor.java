@@ -43,7 +43,7 @@ import java.lang.reflect.Modifier;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberConstructor extends Member {
+final class MemberConstructor extends AbstractMember {
     private final Constructor constructor;
 
     /**
