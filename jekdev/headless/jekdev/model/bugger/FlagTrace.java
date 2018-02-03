@@ -1,6 +1,8 @@
 package jekdev.model.bugger;
 
 import jekdev.reference.debug.SpecialDefault;
+import jekdev.reference.inspection.SpecialFrame;
+import jekdev.reference.inspection.SpecialStack;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
@@ -76,16 +78,16 @@ public final class FlagTrace extends AbstractFlag {
      */
     static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.put(OP_FLAG_UNKNOWN, new FlagTrace(FLAG_UNKNOWN));
-        prologflags.put(OP_FLAG_DEBUG, new FlagTrace(FLAG_DEBUG));
-        prologflags.put(OP_FLAG_SYS_LEASH, new FlagTrace(FLAG_SYS_LEASH));
-        prologflags.put(OP_FLAG_SYS_VISIBLE, new FlagTrace(FLAG_SYS_VISIBLE));
-        prologflags.put(OP_FLAG_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
-        prologflags.put(OP_FLAG_SYS_HEAD_WAKEUP, new FlagTrace(FLAG_SYS_HEAD_WAKEUP));
-        prologflags.put(OP_FLAG_SYS_SKIP_FRAME, new FlagTrace(FLAG_SYS_SKIP_FRAME));
-        prologflags.put(OP_FLAG_SYS_QUERY_FRAME, new FlagTrace(FLAG_SYS_QUERY_FRAME));
-        prologflags.put(OP_FLAG_SYS_CLOAK, new FlagTrace(FLAG_SYS_CLOAK));
-        prologflags.put(OP_FLAG_SYS_MAX_STACK, new FlagTrace(FLAG_SYS_MAX_STACK));
+        prologflags.add(OP_FLAG_UNKNOWN, new FlagTrace(FLAG_UNKNOWN));
+        prologflags.add(OP_FLAG_DEBUG, new FlagTrace(FLAG_DEBUG));
+        prologflags.add(OP_FLAG_SYS_LEASH, new FlagTrace(FLAG_SYS_LEASH));
+        prologflags.add(OP_FLAG_SYS_VISIBLE, new FlagTrace(FLAG_SYS_VISIBLE));
+        prologflags.add(OP_FLAG_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
+        prologflags.add(OP_FLAG_SYS_HEAD_WAKEUP, new FlagTrace(FLAG_SYS_HEAD_WAKEUP));
+        prologflags.add(OP_FLAG_SYS_SKIP_FRAME, new FlagTrace(FLAG_SYS_SKIP_FRAME));
+        prologflags.add(OP_FLAG_SYS_QUERY_FRAME, new FlagTrace(FLAG_SYS_QUERY_FRAME));
+        prologflags.add(OP_FLAG_SYS_CLOAK, new FlagTrace(FLAG_SYS_CLOAK));
+        prologflags.add(OP_FLAG_SYS_MAX_STACK, new FlagTrace(FLAG_SYS_MAX_STACK));
         return prologflags;
     }
 
@@ -106,9 +108,9 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_SYS_VISIBLE:
                 return SpecialDefault.portsToList(en.store, en.visor.flags >> 24);
             case FLAG_SYS_CLAUSE_INSTRUMENT:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NIST) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NIST) == 0);
             case FLAG_SYS_HEAD_WAKEUP:
-                return en.store.switchToAtom((en.store.flags & Store.MASK_STORE_NHWK) == 0);
+                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
                 Frame frame = ((SupervisorTrace) en.visor).getSkipFrame();
                 return (frame != null ? frame : en.store.ATOM_NULL);
@@ -149,26 +151,26 @@ public final class FlagTrace extends AbstractFlag {
                 return true;
             case FLAG_SYS_CLAUSE_INSTRUMENT:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NIST;
+                    en.store.resetBit(Store.MASK_STORE_NIST);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NIST;
+                    en.store.setBit(Store.MASK_STORE_NIST);
                 }
                 return true;
             case FLAG_SYS_HEAD_WAKEUP:
                 if (Store.atomToSwitch(m, d)) {
-                    en.store.flags &= ~Store.MASK_STORE_NHWK;
+                    en.store.resetBit(Store.MASK_STORE_NHWK);
                 } else {
-                    en.store.flags |= Store.MASK_STORE_NHWK;
+                    en.store.setBit(Store.MASK_STORE_NHWK);
                 }
                 return true;
             case FLAG_SYS_SKIP_FRAME:
-                Frame frame = BranchTrace.castFrame(m, d);
-                BranchTrace.checkStackFrame(frame);
+                Frame frame = SpecialFrame.castFrame(m, d);
+                SpecialStack.checkStackFrame(frame);
                 ((SupervisorTrace) en.visor).setSkipFrame(frame);
                 return true;
             case FLAG_SYS_QUERY_FRAME:
-                frame = BranchTrace.castFrame(m, d);
-                BranchTrace.checkStackFrame(frame);
+                frame = SpecialFrame.castFrame(m, d);
+                SpecialStack.checkStackFrame(frame);
                 en.visor.ref = frame;
                 return true;
             case FLAG_SYS_CLOAK:
