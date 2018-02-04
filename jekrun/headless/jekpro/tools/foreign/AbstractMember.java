@@ -8,12 +8,12 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
@@ -235,19 +235,19 @@ abstract class AbstractMember extends AbstractLense
         } catch (IllegalAccessException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_ACCESS,
-                    BranchAPI.OP_PERMISSION_METHOD,
+                    AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
                             method.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_METHOD,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
                             method.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
         } catch (NullPointerException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_LOOKUP,
-                    BranchAPI.OP_PERMISSION_METHOD,
+                    AbstractFactory.OP_PERMISSION_LOOKUP,
+                    AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
                             method.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
         } catch (NoClassDefFoundError x) {

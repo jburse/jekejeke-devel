@@ -1,7 +1,6 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialSpecial;
-import jekpro.model.inter.AbstractFactory;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.DisplayClause;
@@ -11,7 +10,6 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.proxy.AbstractAuto;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -181,7 +179,7 @@ public final class AutoArray extends AbstractAuto {
             throws EngineMessage {
         if (!c.isArray()) {
             en.skel = EngineMessage.domainError(
-                    BranchAPI.OP_DOMAIN_FOREIGN_ARRAY,
+                    AbstractFactory.OP_DOMAIN_FOREIGN_ARRAY,
                     SpecialSpecial.classToName(c, en.store.SOURCE_SYSTEM, en));
             return false;
         }

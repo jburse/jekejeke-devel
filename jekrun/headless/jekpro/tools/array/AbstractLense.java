@@ -10,7 +10,6 @@ import jekpro.model.pretty.Store;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -91,7 +90,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             throws EngineMessage {
         if (!Modifier.isPublic(getModifiers())) {
             en.skel = EngineMessage.domainError(
-                    BranchAPI.OP_DOMAIN_FOREIGN_VISIBILITY,
+                    AbstractFactory.OP_DOMAIN_FOREIGN_VISIBILITY,
                     new SkelAtom(Modifier.toString(getModifiers())));
             return false;
         }
@@ -103,7 +102,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             if (encode == null ||
                     encode.intValue() == Types.TYPE_INTERPRETER) {
                 en.skel = EngineMessage.domainError(
-                        BranchAPI.OP_DOMAIN_FOREIGN_RECEIVER,
+                        AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
                         SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
                 return false;
             } else {
@@ -119,7 +118,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             Integer encode = typeeval.get(ret);
             if (encode == null) {
                 en.skel = EngineMessage.domainError(
-                        BranchAPI.OP_DOMAIN_FOREIGN_PARAMETER,
+                        AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
                         SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
                 return false;
             } else {
@@ -132,7 +131,7 @@ public abstract class AbstractLense extends AbstractDelegate {
         if (encode == null ||
                 encode.intValue() == Types.TYPE_INTERPRETER) {
             en.skel = EngineMessage.domainError(
-                    BranchAPI.OP_DOMAIN_FOREIGN_RETURN,
+                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
                     SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
             return false;
         } else {
@@ -189,7 +188,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             throws EngineMessage {
         if (!Modifier.isPublic(getModifiers())) {
             en.skel = EngineMessage.domainError(
-                    BranchAPI.OP_DOMAIN_FOREIGN_VISIBILITY,
+                    AbstractFactory.OP_DOMAIN_FOREIGN_VISIBILITY,
                     new SkelAtom(Modifier.toString(getModifiers())));
             return false;
         }
@@ -204,7 +203,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_CALLOUT ||
                     encode.intValue() == Types.TYPE_UNSUPPORTED) {
                 en.skel = EngineMessage.domainError(
-                        BranchAPI.OP_DOMAIN_FOREIGN_RECEIVER,
+                        AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
                         SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
                 return false;
             } else {
@@ -222,7 +221,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             } else if (encode.intValue() == Types.TYPE_VOID ||
                     encode.intValue() == Types.TYPE_UNSUPPORTED) {
                 en.skel = EngineMessage.domainError(
-                        BranchAPI.OP_DOMAIN_FOREIGN_PARAMETER,
+                        AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
                         SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
                 return false;
             } else {
@@ -238,7 +237,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                 encode.intValue() == Types.TYPE_CALLOUT ||
                 encode.intValue() == Types.TYPE_UNSUPPORTED) {
             en.skel = EngineMessage.domainError(
-                    BranchAPI.OP_DOMAIN_FOREIGN_RETURN,
+                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
                     SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
             return false;
         } else {

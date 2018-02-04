@@ -8,8 +8,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -121,7 +121,7 @@ final class MemberConstant extends AbstractMember {
         res = Types.normJava(encoderet, res);
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
-                    BranchAPI.OP_REPRESENTATION_NULL));
+                    AbstractFactory.OP_REPRESENTATION_NULL));
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
     }

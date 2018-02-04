@@ -8,7 +8,6 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -151,13 +150,13 @@ final class LenseElement extends AbstractLense {
             return Array.get(o, i);
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_GETTER,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_GETTER,
                     SpecialSpecial.classToName(clazz, en.store.SOURCE_SYSTEM, en)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_INDEX,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_INDEX,
                     SpecialSpecial.classToName(clazz, en.store.SOURCE_SYSTEM, en)));
         }
     }

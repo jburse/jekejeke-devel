@@ -8,7 +8,6 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -142,8 +141,8 @@ final class LenseDimension extends AbstractLense {
             return Array.newInstance(clazz.getComponentType(), s);
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_CONSTRUCTOR,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.classToName(clazz, en.store.SOURCE_SYSTEM, en)));
         }
     }

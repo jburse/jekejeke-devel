@@ -12,11 +12,11 @@ import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.proxy.AbstractAuto;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -528,7 +528,7 @@ public final class AutoClass extends AbstractAuto {
             case AbstractFactory.FIELD_SET:
                 if (Modifier.isFinal(f.getModifiers())) {
                     en.skel = EngineMessage.domainError(
-                            BranchAPI.OP_DOMAIN_FOREIGN_ACCESS,
+                            AbstractFactory.OP_DOMAIN_FOREIGN_ACCESS,
                             new SkelAtom(Modifier.toString(f.getModifiers())));
                     return false;
                 }
@@ -560,7 +560,7 @@ public final class AutoClass extends AbstractAuto {
             } else if (Types.validateThrowable(ret)) {
             } else {
                 en.skel = EngineMessage.domainError(
-                        BranchAPI.OP_DOMAIN_FOREIGN_EXCEPTION,
+                        AbstractFactory.OP_DOMAIN_FOREIGN_EXCEPTION,
                         SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
                 return false;
             }
@@ -600,17 +600,17 @@ public final class AutoClass extends AbstractAuto {
         } catch (IllegalAccessException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_ACCESS,
-                    BranchAPI.OP_PERMISSION_FIELD,
+                    AbstractFactory.OP_PERMISSION_FIELD,
                     new SkelAtom(fld.getName())));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_GETTER,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_GETTER,
                     new SkelAtom(fld.getName())));
         } catch (NullPointerException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_LOOKUP,
-                    BranchAPI.OP_PERMISSION_GETTER,
+                    AbstractFactory.OP_PERMISSION_LOOKUP,
+                    AbstractFactory.OP_PERMISSION_GETTER,
                     new SkelAtom(fld.getName())));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
@@ -646,18 +646,18 @@ public final class AutoClass extends AbstractAuto {
         } catch (IllegalAccessException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_ACCESS,
-                    BranchAPI.OP_PERMISSION_CONSTRUCTOR,
+                    AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.constructorToCallable(
                             con.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_CONSTRUCTOR,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.constructorToCallable(
                             con.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
         } catch (InstantiationException e) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_NEW,
+                    AbstractFactory.OP_PERMISSION_NEW,
                     EngineMessage.OP_PERMISSION_CLASS,
                     SpecialSpecial.classToName(con.getDeclaringClass(), en.store.SOURCE_SYSTEM, en)));
         } catch (NoClassDefFoundError x) {

@@ -7,7 +7,7 @@ import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
-import jekpro.tools.proxy.BranchAPI;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -136,17 +136,17 @@ final class MemberFieldSet extends AbstractMember {
         } catch (IllegalAccessException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_ACCESS,
-                    BranchAPI.OP_PERMISSION_FIELD,
+                    AbstractFactory.OP_PERMISSION_FIELD,
                     new SkelAtom(field.getName())));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_APPLY,
-                    BranchAPI.OP_PERMISSION_SETTER,
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    AbstractFactory.OP_PERMISSION_SETTER,
                     new SkelAtom(field.getName())));
         } catch (NullPointerException x) {
             throw new EngineMessage(EngineMessage.permissionError(
-                    BranchAPI.OP_PERMISSION_LOOKUP,
-                    BranchAPI.OP_PERMISSION_SETTER,
+                    AbstractFactory.OP_PERMISSION_LOOKUP,
+                    AbstractFactory.OP_PERMISSION_SETTER,
                     new SkelAtom(field.getName())));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
