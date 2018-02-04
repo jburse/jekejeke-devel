@@ -56,8 +56,10 @@
 :- module(tree, []).
 
 :- use_module(library(basic/lists)).
-:- use_module(library(term/state)).
 :- use_module(library(term/unify)).
+:- use_module(library(experiment/trail)).
+:- use_module(library(minimal/assume)).
+:- use_module(library(experiment/ref)).
 
 :- public infix(#).
 :- op(500, yfx, #).
@@ -80,8 +82,8 @@
  */
 expr_tree(X, R) :-
    var(X), !,
-   map_new(X, Y),
-   R = node(Y,one,zero).
+   var_map_new(X, Y),
+   R = node3(Y,[Y],one,zero).
 /**
  * 0 (SAT):
  * 1 (SAT):
@@ -170,15 +172,15 @@ expr_tree((A->B;C), S) :- !,
    expr_tree(A, P),
    expr_tree(B, Q),
    expr_tree(C, R),
-   tree_ite(P, Q, R, S).
+   tree_ite(Q, R, P, S).
 /**
  * V^A (SAT):
  * If V is a native Prolog variable and A is an expression then the Boolean existential quantification V^A is also an expression.
  */
 expr_tree(X^A, R) :- !,
-   map_new(X, Y),
+   var_map_new(X, Y),
    expr_tree(A, P),
-   tree_exists(Y, P, R).
+   tree_exists(P, Y, R).
 expr_tree(E, _) :-
    throw(error(type_error(sat_expr,E),_)).
 
@@ -191,41 +193,11 @@ expr_pretty(zero, R) :- !,
    R = 0.
 expr_pretty(one, R) :- !,
    R = 1.
-expr_pretty(node(X,A,B), R) :-
-   map_back(X, Y),
+expr_pretty(node3(X,_,A,B), R) :-
+   var_map_back(X, Y),
    expr_pretty(A, C),
    expr_pretty(B, D),
    R = (Y->C;D).
-
-/**
- * expr_vars(T, L):
- * The predicae succeeds in L with the indexes in the tree T.
- */
-% expr_vars(+Tree, -List)
-expr_vars(zero, R) :- !,
-   R = [].
-expr_vars(one, R) :- !,
-   R = [].
-expr_vars(node(X,A,B), [X|S]) :-
-   expr_vars(A, L),
-   expr_vars(B, M),
-   vars_union(L, M, S).
-
-% vars_union(+List, +List, -List)
-:- private vars_union/3.
-vars_union([], X, R) :- !,
-   R = X.
-vars_union(X, [], R) :- !,
-   R = X.
-vars_union([X|L], [Y|M], R) :-
-   X < Y, !,
-   vars_union(L, [Y|M], S),
-   R = [X|S].
-vars_union([X|L], [X|M], R) :- !,
-   vars_union(L, M, S),
-   R = [X|S].
-vars_union(L, [Y|M], [Y|S]) :-
-   vars_union(L, M, S).
 
 /*****************************************************************/
 /* Connectives                                                   */
@@ -241,10 +213,9 @@ tree_not(zero, R) :- !,
    R = one.
 tree_not(one, R) :- !,
    R = zero.
-tree_not(node(X,A,B), R) :- !,
+tree_not(node3(X,W,A,B), node3(X,W,C,D)) :-
    tree_not(A, C),
-   tree_not(B, D),
-   tree_make(C, D, X, R).
+   tree_not(B, D).
 
 /**
  * tree_and(P, Q, R):
@@ -259,16 +230,17 @@ tree_and(one, A, R) :- !,
    R = A.
 tree_and(A, one, R) :- !,
    R = A.
-tree_and(node(X,A,B), node(Y,C,D), R) :-
+tree_and(node3(X,_,A,B), N, R) :-
+   N = node3(Y,_,_,_),
    X < Y, !,
-   tree_and(A, node(Y,C,D), E),
-   tree_and(B, node(Y,C,D), F),
+   tree_and(A, N, E),
+   tree_and(B, N, F),
    tree_make(E, F, X, R).
-tree_and(node(X,A,B), node(X,C,D), R) :- !,
+tree_and(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
    tree_and(A, C, E),
    tree_and(B, D, F),
    tree_make(E, F, X, R).
-tree_and(N, node(Y,C,D), R) :-
+tree_and(N, node3(Y,_,C,D), R) :-
    tree_and(N, C, E),
    tree_and(N, D, F),
    tree_make(E, F, Y, R).
@@ -287,16 +259,17 @@ tree_or(zero, A, R) :- !,
    R = A.
 tree_or(A, zero, R) :- !,
    R = A.
-tree_or(node(X,A,B), node(Y,C,D), R) :-
+tree_or(node3(X,_,A,B), N, R) :-
+   N = node3(Y,_,_,_),
    X < Y, !,
-   tree_or(A, node(Y,C,D), E),
-   tree_or(B, node(Y,C,D), F),
+   tree_or(A, N, E),
+   tree_or(B, N, F),
    tree_make(E, F, X, R).
-tree_or(node(X,A,B), node(X,C,D), R) :- !,
+tree_or(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
    tree_or(A, C, E),
    tree_or(B, D, F),
    tree_make(E, F, X, R).
-tree_or(N, node(Y,C,D), R) :-
+tree_or(N, node3(Y,_,C,D), R) :-
    tree_or(N, C, E),
    tree_or(N, D, F),
    tree_make(E, F, Y, R).
@@ -315,16 +288,17 @@ tree_imply(one, A, R) :- !,
    R = A.
 tree_imply(_, one, R) :- !,
    R = one.
-tree_imply(node(X,A,B), node(Y,C,D), R) :-
+tree_imply(node3(X,_,A,B), N, R) :-
+   N = node3(Y,_,_,_),
    X < Y, !,
-   tree_imply(A, node(Y,C,D), E),
-   tree_imply(B, node(Y,C,D), F),
+   tree_imply(A, N, E),
+   tree_imply(B, N, F),
    tree_make(E, F, X, R).
-tree_imply(node(X,A,B), node(X,C,D), R) :- !,
+tree_imply(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
    tree_imply(A, C, E),
    tree_imply(B, D, F),
    tree_make(E, F, X, R).
-tree_imply(N, node(Y,C,D), R) :-
+tree_imply(N, node3(Y,_,C,D), R) :-
    tree_imply(N, C, E),
    tree_imply(N, D, F),
    tree_make(E, F, Y, R).
@@ -342,16 +316,17 @@ tree_equiv(zero, A, R) :- !,
    tree_not(A, R).
 tree_equiv(A, zero, R) :- !,
    tree_not(A, R).
-tree_equiv(node(X,A,B), node(Y,C,D), R) :-
+tree_equiv(node3(X,_,A,B), N, R) :-
+   N = node3(Y,_,_,_),
    X < Y, !,
-   tree_equiv(A, node(Y,C,D), E),
-   tree_equiv(B, node(Y,C,D), F),
+   tree_equiv(A, N, E),
+   tree_equiv(B, N, F),
    tree_make(E, F, X, R).
-tree_equiv(node(X,A,B), node(X,C,D), R) :- !,
+tree_equiv(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
    tree_equiv(A, C, E),
    tree_equiv(B, D, F),
    tree_make(E, F, X, R).
-tree_equiv(N, node(Y,C,D), R) :-
+tree_equiv(N, node3(Y,_,C,D), R) :-
    tree_equiv(N, C, E),
    tree_equiv(N, D, F),
    tree_make(E, F, Y, R).
@@ -375,15 +350,134 @@ tree_xor(P, Q, R) :-
    tree_not(A, R).
 
 /**
- * tree_ite(P, Q, R, S):
+ * tree_ite(Q, R, P, S):
  * The predicate succeeds in S with the boolean if-then-else of P, Q and R.
  */
 % tree_ite(+Tree, +Tree, +Tree, -Tree)
-:- private tree_ite/4.
-tree_ite(P, Q, R, S) :-
+tree_ite(Q, R, P, S) :-
    tree_imply(P, Q, A),
    tree_or(P, R, B),
    tree_and(A, B, S).
+
+/*****************************************************************/
+/* Quantifiers                                                   */
+/*****************************************************************/
+
+/**
+ * tree_exists(Q, P, R):
+ * The predicate succeeds in R with existential removing the variable P from Q.
+ */
+% tree_exists(+Tree, +Index, -Tree)
+tree_exists(zero, _, R) :- !,
+   R = zero.
+tree_exists(one, _, R) :- !,
+   R = one.
+tree_exists(node3(Y,_,A,B), X, R) :-
+   Y < X, !,
+   tree_exists(A, X, C),
+   tree_exists(B, X, D),
+   tree_make(C, D, Y, R).
+tree_exists(node3(X,_,A,B), X, R) :- !,
+   tree_or(A, B, R).
+tree_exists(N, _, N).
+
+/**
+ * tree_one(Q, P, R):
+ * The predicate succeeds in R with substituting 1 for the variable P in Q.
+ */
+% tree_one(+Tree, +Index,-Tree)
+tree_one(zero, _, R) :- !,
+   R = zero.
+tree_one(one, _, R) :- !,
+   R = one.
+tree_one(node3(Y,_,A,B), X, R) :-
+   Y < X, !,
+   tree_one(A, X, C),
+   tree_one(B, X, D),
+   tree_make(C, D, Y, R).
+tree_one(node3(X,_,A,_), X, R) :- !,
+   R = A.
+tree_one(N, _, N).
+
+/**
+ * tree_zero(Q, P, R):
+ * The predicate succeeds in R with substituting 0 for the variable P in Q.
+ */
+% tree_zero(+Tree, +Index, -Tree)
+tree_zero(zero, _, R) :- !,
+   R = zero.
+tree_zero(one, _, R) :- !,
+   R = one.
+tree_zero(node3(Y,_,A,B), X, R) :-
+   Y < X, !,
+   tree_zero(A, X, C),
+   tree_zero(B, X, D),
+   tree_make(C, D, Y, R).
+tree_zero(node3(X,_,_,B), X, R) :- !,
+   R = B.
+tree_zero(N, _, N).
+
+/*****************************************************************/
+/* Generate Index                                                */
+/*****************************************************************/
+
+:- private cache_index/2.
+:- thread_local cache_index/2.
+
+/**
+ * gen_index(K, W):
+ * The predicate succeeds in N with a new index for the base B.
+ */
+% gen_index(+Key, -Value)
+:- public gen_index/2.
+gen_index(K, R) :-
+   clause_ref(cache_index(K, H), true, V), !,
+   sys_retire_ref(V),
+   W is H+1,
+   assumable_ref(cache_index(K, W), U),
+   sys_assume_ref(U),
+   R = W.
+gen_index(K, R) :-
+   assumable_ref(cache_index(K, 1), U),
+   sys_assume_ref(U),
+   R = 1.
+
+/*****************************************************************/
+/* Variable Lookup                                               */
+/*****************************************************************/
+
+:- private cache_var/2.
+:- thread_local cache_var/2.
+
+/**
+ * var_map_new(X, Y):
+ * The predicate succeeds in Y with new mapping of X.
+ */
+% var_map_new(+Variable, -Index)
+var_map_new(X, R) :-
+   get_attr(X, tree, var_index(Y)), !,
+   R = Y.
+var_map_new(X, R) :-
+   gen_index(var_map, Y),
+   sys_freeze_var(H, J),
+   H = wrap(X),
+   assumable_ref(cache_var(Y, J), U),
+   sys_assume_ref(U),
+   put_attr(X, tree, var_index(Y)),
+   R = Y.
+
+/**
+ * var_map_back(X, Y):
+ * The predicate succeeds in Y with the unmapping of X.
+ */
+% var_map_back(+Index, -Variable)
+var_map_back(X, Y) :-
+   cache_var(X, H),
+   sys_melt_var(H, wrap(Y)).
+
+/*****************************************************************/
+/* Tree Make                                                     */
+/*****************************************************************/
 
 /**
  * tree_make(A, B, X, R):
@@ -393,103 +487,42 @@ tree_ite(P, Q, R, S) :-
 :- private tree_make/4.
 tree_make(A, A, _, R) :- !,
    R = A.
-tree_make(A, B, X, node(X,A,B)).
-
-/*****************************************************************/
-/* Quantifiers                                                   */
-/*****************************************************************/
-
-/**
- * tree_exists(P, Q, R):
- * The predicate succeeds in R with existential removing the variable P from Q.
- */
-% tree_exists(+Index, +Tree, -Tree)
-tree_exists(_, zero, R) :- !,
-   R = zero.
-tree_exists(_, one, R) :- !,
-   R = one.
-tree_exists(X, node(Y,A,B), R) :-
-   Y < X, !,
-   tree_exists(X, A, C),
-   tree_exists(X, B, D),
-   tree_make(C, D, Y, R).
-tree_exists(X, node(X,A,B), R) :- !,
-   tree_or(A, B, R).
-tree_exists(_, N, N).
+tree_make(A, B, X, node3(X,[X|W],A,B)) :-
+   expr_vars(A, U),
+   expr_vars(B, V),
+   vars_union(U, V, W).
 
 /**
- * tree_one(P, Q, R):
- * The predicate succeeds in R with substituting 1 for the variable P in Q.
+ * vars_union(U, V, W):
+ * The predicate succeeds in W with the union of the variables U and V.
  */
-% tree_one(+Index, +Tree, -Tree)
-tree_one(_, zero, R) :- !,
-   R = zero.
-tree_one(_, one, R) :- !,
-   R = one.
-tree_one(X, node(Y,A,B), R) :-
-   Y < X, !,
-   tree_one(X, A, C),
-   tree_one(X, B, D),
-   tree_make(C, D, Y, R).
-tree_one(X, node(X,A,_), R) :- !,
-   R = A.
-tree_one(_, N, N).
+% vars_union(+List, +List, -List)
+vars_union([], X, R) :- !,
+   R = X.
+vars_union(X, [], R) :- !,
+   R = X.
+vars_union([X|L], [Y|M], R) :-
+   X < Y, !,
+   vars_union(L, [Y|M], S),
+   R = [X|S].
+vars_union([X|L], [X|M], R) :- !,
+   vars_union(L, M, S),
+   R = [X|S].
+vars_union(L, [Y|M], [Y|S]) :-
+   vars_union(L, M, S).
 
 /**
- * tree_zero(P, Q, R):
- * The predicate succeeds in R with substituting 0 for the variable P in Q.
+ * expr_vars(T, L):
+ * The predicate succeeds in L with the variable
+ * indexes in the tree T.
  */
-% tree_zero(+Index, +Tree, -Tree)
-tree_zero(_, zero, R) :- !,
-   R = zero.
-tree_zero(_, one, R) :- !,
-   R = one.
-tree_zero(X, node(Y,A,B), R) :-
-   Y < X, !,
-   tree_zero(X, A, C),
-   tree_zero(X, B, D),
-   tree_make(C, D, Y, R).
-tree_zero(X, node(X,_,B), R) :- !,
-   R = B.
-tree_zero(_, N, N).
-
-/*****************************************************************/
-/* Variables                                                     */
-/*****************************************************************/
-
-/**
- * map_new(X, Y):
- * The predicate succeeds in Y with new mapping of X.
- */
-% map_new(+Variable, -Index)
-map_new(X, R) :-
-   get_attr(X, tree, var_index(Y)), !,
-   R = Y.
-map_new(X, R) :-
-   map_extend(X, Y),
-   put_attr(X, tree, var_index(Y)),
-   R = Y.
-
-% map_extend(+Variable, -Index)
-:- private map_extend/2.
-map_extend(X, Y) :-
-   nb_current(var_map, M), !,
-   M =.. [_|L],
-   append(L, [X], R),
-   N =.. [vector|R],
-   b_setval(var_map, N),
-   length(R, Y).
-map_extend(X, 1) :-
-   b_setval(var_map, vector(X)).
-
-/**
- * map_back(X, Y):
- * The predicate succeeds in Y with the unmapping of X.
- */
-% map_back(+Index, -Variable)
-map_back(X, Y) :-
-   nb_current(var_map, M),
-   arg(X, M, Y).
+% expr_vars(+Tree, -List)
+:- public expr_vars/2.
+expr_vars(zero, R) :- !,
+   R = [].
+expr_vars(one, R) :- !,
+   R = [].
+expr_vars(node3(_,W,_,_), W).
 
 /*****************************************************************/
 /* Unify Hook                                                    */

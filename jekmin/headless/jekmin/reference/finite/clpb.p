@@ -71,16 +71,16 @@
 :- public sat/1.
 sat(A) :-
    expr_tree(A, T),
-   expr_vars(T, L),
-   sat_post(T, L).
+   sat_post(T).
 
 /**
- * sat_post(T, L):
- * If T is a tree and L are its variables then its satisfiability is posted.
+ * sat_post(T):
+ * If T is a tree then its satisfiability is posted.
  */
-% sat_post(+Tree, +List)
-:- private sat_post/2.
-sat_post(T, L) :-
+% sat_post(+Tree)
+:- private sat_post/1.
+sat_post(T) :-
+   expr_vars(T, L),
    sat_add_vars(L, H),
    sat_trivial(T, H),
    sat_propagate(T).
@@ -92,7 +92,7 @@ sat_post(T, L) :-
 % sat_add_vars(+List, +Fresh)
 :- private sat_add_vars/2.
 sat_add_vars([K|L], H) :-
-   map_back(K, A),
+   var_map_back(K, A),
    sat_add_var(A, K, H),
    sat_add_vars(L, H).
 sat_add_vars([], _).
@@ -123,15 +123,15 @@ sat_trivial(S, H) :-
  */
 % sat_propagate(+Tree)
 :- private sat_propagate/1.
-sat_propagate(node(X,_,zero)) :- !,
-   map_back(X, Y),
+sat_propagate(node3(X,_,_,zero)) :- !,
+   var_map_back(X, Y),
    Y = 1.
-sat_propagate(node(X,zero,_)) :- !,
-   map_back(X, Y),
+sat_propagate(node3(X,_,zero,_)) :- !,
+   var_map_back(X, Y),
    Y = 0.
-sat_propagate(node(X,node(Y,A,zero),node(Y,zero,A))) :- !,
-   map_back(X, Z),
-   map_back(Y, T),
+sat_propagate(node3(X,_,node3(Y,_,A,zero),node3(Y,_,zero,A))) :- !,
+   var_map_back(X, Z),
+   var_map_back(Y, T),
    Z = T.
 sat_propagate(_).
 
@@ -152,12 +152,12 @@ attr_unify_hook(sat_ref(K,F), W) :-
    get_attr(W, clpb, sat_ref(I,G)), !,
    sat_union(F, G, E),
    put_attr(W, clpb, sat_ref(I,E)),
-   sat_unify(G, K, node(I,one,zero)).
+   sat_unify(G, K, node3(I,[I],one,zero)).
 attr_unify_hook(sat_ref(K,F), W) :-
    var(W), !,
-   map_new(W, I),
+   var_map_new(W, I),
    put_attr(W, clpb, sat_ref(I,F)),
-   sat_unify(F, K, node(I,one,zero)).
+   sat_unify(F, K, node3(I,[I],one,zero)).
 attr_unify_hook(sat_ref(K,F), 0) :- !,
    sat_unify(F, K, zero).
 attr_unify_hook(sat_ref(K,F), 1) :- !,
@@ -211,13 +211,13 @@ sat_unify([], _, _).
 % sat_assign(+Tree, +Index, +Tree, -Tree)
 :- private sat_assign/4.
 sat_assign(T, U, one, S) :- !,
-   tree_one(U, T, S).
+   tree_one(T, U, S).
 sat_assign(T, U, zero, S) :- !,
-   tree_zero(U, T, S).
+   tree_zero(T, U, S).
 sat_assign(T, U, W, S) :-
-   tree_equiv(node(U,one,zero), W, P),
+   tree_equiv(node3(U,[U],one,zero), W, P),
    tree_and(T, P, Q),
-   tree_exists(U, Q, S).
+   tree_exists(Q, U, S).
 
 /*****************************************************************/
 /* Portraying the Attributes                                     */
@@ -243,8 +243,8 @@ attribute_goals(A, R, S) :-
 % sat_goals(+List, +Index, -List, +List)
 :- private sat_goals/4.
 sat_goals([H|F], K, [sat(E)|R], S) :-
-   get_attr(H, clpb, sat_root(node(K,C,D))), !,
-   expr_pretty(node(K,C,D), E),
+   get_attr(H, clpb, sat_root(node3(K,W,C,D))), !,
+   expr_pretty(node3(K,W,C,D), E),
    sat_goals(F, K, R, S).
 sat_goals([_|F], K, R, S) :-
    sat_goals(F, K, R, S).
@@ -261,23 +261,15 @@ sat_goals([], _, R, R).
 % labeling(+List)
 :- public labeling/1.
 labeling(L) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-labeling([B|L]) :- !,
-   sat_value(B),
-   labeling(L).
-labeling([]) :- !.
-labeling(L) :-
-   throw(error(type_error(list,L),_)).
+   sys_plan_list(L, R),
+   sys_labeling(R).
 
-/**
- * sat_value(B):
- * The predicate succeeds in B with a sat value.
- */
-% sat_value(-Boolean)
-:- private sat_value/1.
-sat_value(0).
-sat_value(1).
+% sys_labeling(+List)
+:- private sys_labeling/1.
+sys_labeling([B|L]) :-
+   sys_sat_value(B),
+   sys_labeling(L).
+sys_labeling([]).
 
 /**
  * sat_count(L, N):
@@ -286,28 +278,75 @@ sat_value(1).
  */
 % sat_count(+List, -Integer)
 :- public sat_count/2.
-sat_count(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-sat_count([B|L], N) :- !,
-   findall(M, (  sat_value(B),
-                 sat_count(L, M)), R),
-   sat_sum(R, N).
-sat_count([], N) :- !,
-   N = 1.
-sat_count(L, _) :-
-   throw(error(type_error(list,L),_)).
+sat_count(L, N) :-
+   sys_plan_list(L, R),
+   sys_sat_count(R, N).
+
+% sys_sat_count(+List, -Integer)
+:- private sys_sat_count/2.
+sys_sat_count([B|L], N) :-
+   findall(M, (  sys_sat_value(B),
+                 sys_sat_count(L, M)), R),
+   sys_sat_sum(R, N).
+sys_sat_count([], 1).
 
 /**
- * sat_sum(L, N):
+ * sys_sat_value(B):
+ * The predicate succeeds in B with a sat value.
+ */
+% sys_sat_value(-Boolean)
+:- private sys_sat_value/1.
+sys_sat_value(0).
+sys_sat_value(1).
+
+/**
+ * sys_sat_sum(L, N):
  * The predicate succeeds in N with the some of L.
  */
-% sat_sum(+List, -Integer)
-:- private sat_sum/2.
-sat_sum([M,O], N) :- !,
-   N is M+O.
-sat_sum([N], N).
-sat_sum([], 0).
+% sys_sat_sum(+List, -Integer)
+:- private sys_sat_sum/2.
+sys_sat_sum([M|L], N) :- !,
+   sys_sat_sum(L, H),
+   N is M+H.
+sys_sat_sum([], 0).
+
+/*****************************************************************/
+/* Plan List                                                     */
+/*****************************************************************/
+
+% sys_plan_list(+List, -List)
+:- private sys_plan_list/2.
+sys_plan_list(L, R) :-
+   sys_expr_list(L, H),
+   sys_vars_list(H, J),
+   sys_map_list(J, R).
+
+% sys_expr_list(+List, -List)
+:- private sys_expr_list/2.
+sys_expr_list(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sys_expr_list([A|L], [T|R]) :- !,
+   expr_tree(A, T),
+   sys_expr_list(L, R).
+sys_expr_list([], []) :- !.
+sys_expr_list(L, _) :-
+   throw(error(type_error(list,L),_)).
+
+% sys_vars_list(+List, -List)
+:- private sys_vars_list/2.
+sys_vars_list([A|L], W) :-
+   expr_vars(A, U),
+   sys_vars_list(L, V),
+   vars_union(U, V, W).
+sys_vars_list([], []).
+
+% sys_map_list(+List, -List)
+:- private sys_map_list/2.
+sys_map_list([A|L], [B|R]) :-
+   var_map_back(A, B),
+   sys_map_list(L, R).
+sys_map_list([], []).
 
 /*****************************************************************/
 /* Cardinality Constraint                                        */
@@ -315,8 +354,8 @@ sat_sum([], 0).
 
 /**
  * card(N, L):
- * If N is an integer and L is a variable list then the constraint
- * that the number of true variables amounts exactly to N is posted.
+ * If N is an integer and L is an expression list then the constraint
+ * that the number of true expressions amounts exactly to N is posted.
  */
 % card(+Integer, +List)
 :- public card/2.
@@ -332,58 +371,42 @@ card(N, L) :-
    length(L, M),
    M < N, !, fail.
 card(N, L) :-
-   map_new_list(L, H),
-   sort(H, R),
-   exactly(R, N, N, [S]),
-   sat_post(S, R).
+   sys_expr_list(L, H),
+   sys_exactly(H, N, N, [S]),
+   sat_post(S).
 
-% map_new_list(+List, -List)
-:- private map_new_list/2.
-map_new_list(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-map_new_list([X|L], [S|R]) :-
-   var(X), !,
-   map_new(X, S),
-   map_new_list(L, R).
-map_new_list([X|_], _) :-
-   throw(error(type_error(var,X),_)).
-map_new_list([], []) :- !.
-map_new_list(L, _) :-
-   throw(error(type_error(list,L),_)).
-
-% exactly(+List, +Integer, +Integer, -List)
-:- private exactly/4.
-exactly([X|L], N, 0, R) :- !,
-   exactly(L, N, 0, S),
-   exactly_same(S, X, R).
-exactly([X|L], N, M, R) :-
+% sys_exactly(+List, +Integer, +Integer, -List)
+:- private sys_exactly/4.
+sys_exactly([X|L], N, 0, R) :- !,
+   sys_exactly(L, N, 0, S),
+   sys_exactly_same(S, X, R).
+sys_exactly([X|L], N, M, R) :-
    H is M-1,
-   exactly(L, N, H, S),
-   exactly_less(S, X, R).
-exactly([], N, M, L) :-
-   exactly_base(N, M, L).
+   sys_exactly(L, N, H, S),
+   sys_exactly_less(S, X, R).
+sys_exactly([], N, M, L) :-
+   sys_exactly_base(N, M, L).
 
-% exactly_same(+List, +Term, -List)
-:- private exactly_same/3.
-exactly_same([A,B|L], Z, [C|R]) :- !,
-   C = node(Z,B,A),
-   exactly_same([B|L], Z, R).
-exactly_same([A], Z, [B]) :-
-   B = node(Z,zero,A).
+% sys_exactly_same(+List, +Term, -List)
+:- private sys_exactly_same/3.
+sys_exactly_same([A,B|L], Z, [C|R]) :- !,
+   tree_ite(B, A, Z, C),
+   sys_exactly_same([B|L], Z, R).
+sys_exactly_same([A], Z, [B]) :-
+   tree_ite(zero, A, Z, B).
 
-% exactly_less(+List, +Term, -List)
-:- private exactly_less/3.
-exactly_less([A,B|L], Z, [C|R]) :- !,
-   C = node(Z,B,A),
-   exactly_less([B|L], Z, R).
-exactly_less([_], _, []).
+% sys_exactly_less(+List, +Term, -List)
+:- private sys_exactly_less/3.
+sys_exactly_less([A,B|L], Z, [C|R]) :- !,
+   tree_ite(B, A, Z, C),
+   sys_exactly_less([B|L], Z, R).
+sys_exactly_less([_], _, []).
 
-% exactly_base(+Integer, +Integer, -List)
-:- private exactly_base/3.
-exactly_base(0, _, [X]) :- !,
+% sys_exactly_base(+Integer, +Integer, -List)
+:- private sys_exactly_base/3.
+sys_exactly_base(0, _, [X]) :- !,
    X = one.
-exactly_base(N, M, [X|L]) :-
+sys_exactly_base(N, M, [X|L]) :-
    H is N-1,
    X = zero,
-   exactly_base(H, M, L).
+   sys_exactly_base(H, M, L).
