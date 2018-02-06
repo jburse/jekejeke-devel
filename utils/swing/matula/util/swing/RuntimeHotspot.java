@@ -13,7 +13,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
 /**
- * Swing specialization of an abstract runtime.
+ * <p>Swing specialization of an abstract runtime.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -38,7 +38,7 @@ import java.util.jar.Manifest;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class RuntimeHotspot extends AbstractRuntime {
+public final class RuntimeHotspot extends AbstractRuntime {
     public static RuntimeHotspot DEFAULT = new RuntimeHotspot();
     public static final String DIRECTORY_APK = "apk";
 
