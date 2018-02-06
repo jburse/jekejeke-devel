@@ -1,6 +1,7 @@
 package jekpro.frequent.system;
 
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
 import matula.util.system.ForeignUri;
@@ -104,14 +105,14 @@ public final class ForeignDirectory {
      */
     public static String sysDirectoryFile(CallOut co, String uristr)
             throws UnsupportedEncodingException, InterpreterMessage {
-        DomCursor<String> dc;
+        ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             File f = new File(uriToFilePath(uristr));
             String[] list = f.list();
-            dc = new DomCursor<String>(list != null ? list : VOID_LIST);
+            dc = new ArrayEnumeration<String>(list != null ? list : VOID_LIST);
             co.setData(dc);
         } else {
-            dc = (DomCursor<String>) co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;

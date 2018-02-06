@@ -1,9 +1,6 @@
 package jekpro.frequent.system;
 
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.TermAtomic;
 import matula.util.format.AbstractDom;
@@ -140,12 +137,12 @@ public final class ForeignDom {
      * @return The attribute names.
      */
     public static String sysElemAttr(CallOut co, DomElement dh) {
-        DomCursor<String> dc;
+        ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            dc = new DomCursor<String>(dh.snapshotAttrs());
+            dc = new ArrayEnumeration<String>(dh.snapshotAttrs());
             co.setData(dc);
         } else {
-            dc = (DomCursor<String>) co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
@@ -194,15 +191,15 @@ public final class ForeignDom {
      *
      * @param co The call out.
      * @param dh The dom hashtable.
-     * @return The attribute names.
+     * @return The DOM node.
      */
     public static AbstractDom sysElemNode(CallOut co, DomElement dh) {
-        DomCursor<AbstractDom> dc;
+        ArrayEnumeration<AbstractDom> dc;
         if (co.getFirst()) {
-            dc = new DomCursor<AbstractDom>(dh.snapshotNodes());
+            dc = new ArrayEnumeration<AbstractDom>(dh.snapshotNodes());
             co.setData(dc);
         } else {
-            dc = (DomCursor<AbstractDom>) co.getData();
+            dc = (ArrayEnumeration<AbstractDom>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;

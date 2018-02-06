@@ -46,8 +46,8 @@ public final class SpecialSort extends AbstractSpecial {
     private final static int SPECIAL_KEYSORT = 2;
     private final static int SPECIAL_SYS_KEYGROUP = 3;
     private final static int SPECIAL_HASH_CODE = 4;
-    private final static int SPECIAL_TERM_GROUND = 5;
-    private final static int SPECIAL_TERM_HASH = 6;
+    private final static int SPECIAL_SYS_GROUND = 5;
+    private final static int SPECIAL_SYS_HASH_CODE = 6;
     private final static int SPECIAL_LOCALE_SORT = 7;
     private final static int SPECIAL_LOCALE_KEYSORT = 8;
 
@@ -112,7 +112,7 @@ public final class SpecialSort extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST, r, u))
                     return false;
                 return r.getNext(u, en);
-            case SPECIAL_TERM_GROUND:
+            case SPECIAL_SYS_GROUND:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 en.skel = temp[1];
@@ -123,7 +123,7 @@ public final class SpecialSort extends AbstractSpecial {
                 if (!termGround(temp[0], ref, EngineMessage.castIntValue(val)))
                     return false;
                 return r.getNext(u, en);
-            case SPECIAL_TERM_HASH:
+            case SPECIAL_SYS_HASH_CODE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 en.skel = temp[1];
