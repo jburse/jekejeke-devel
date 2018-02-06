@@ -1,4 +1,4 @@
-package jekpro.platform.swing;
+package matula.util.swing;
 
 import java.lang.reflect.*;
 
@@ -137,10 +137,8 @@ public final class InterruptHandler implements InvocationHandler {
      * @param method The method.
      * @param args   The arguments
      * @return The return value.
-     * @throws Throwable The exception.
      */
-    public Object invoke(Object proxy, Method method, Object[] args)
-            throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args) {
         runnable.run();
         return null;
     }
