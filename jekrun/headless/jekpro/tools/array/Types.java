@@ -4,7 +4,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.TermAtomic;
-import matula.util.sharik.Livestock;
+import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -346,7 +346,7 @@ public final class Types {
         } else if (x instanceof IOException) {
             return EngineMessage.mapIOException((IOException) x);
         } else if (x instanceof InterruptedException) {
-            return (EngineMessage) Livestock.sysThreadClear();
+            return (EngineMessage) AbstractLivestock.sysThreadClear();
         } else if (x instanceof ArithmeticException) {
             String y = x.getMessage();
             if ("/ by zero".equals(y))

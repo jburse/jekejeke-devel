@@ -9,7 +9,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import matula.util.data.MapHash;
-import matula.util.sharik.AbstractFramework;
+import matula.comp.sharik.AbstractFramework;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

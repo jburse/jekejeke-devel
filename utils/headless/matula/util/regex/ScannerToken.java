@@ -1,7 +1,7 @@
 package matula.util.regex;
 
 import matula.util.system.OpenOpts;
-import matula.util.text.LangProperties;
+import matula.comp.text.LangProperties;
 
 import java.io.IOException;
 import java.io.Reader;

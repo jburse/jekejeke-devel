@@ -10,7 +10,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
-import matula.util.sharik.Livestock;
+import matula.util.wire.AbstractLivestock;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -117,7 +117,7 @@ public final class FlagAPI extends AbstractFlag {
     public Object getFlag(Engine en) {
         switch (id) {
             case FLAG_SYS_MASK:
-                return en.store.switchToAtom((en.visor.flags & Livestock.MASK_LIVESTOCK_NOSG) == 0);
+                return en.store.switchToAtom((en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0);
             case FLAG_SYS_DISP_INPUT:
                 return en.visor.dispinput;
             case FLAG_SYS_DISP_OUTPUT:

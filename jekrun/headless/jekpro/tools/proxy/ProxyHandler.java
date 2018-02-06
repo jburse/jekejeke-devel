@@ -10,7 +10,6 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.RuntimeWrap;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;

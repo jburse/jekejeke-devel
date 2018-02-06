@@ -17,7 +17,7 @@ import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.proxy.AbstractAuto;
-import jekpro.tools.term.RuntimeWrap;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
