@@ -139,7 +139,6 @@ public class EngineCopy {
     /**************************************************************************/
     /* Body Conversion Assert                                                 */
     /**************************************************************************/
-
     /**
      * <p>Copy the goal and wrap naked calls.</p>
      * <p>Implements the following rules:</p>
@@ -155,15 +154,12 @@ public class EngineCopy {
      *
      * @param t  The goal skel.
      * @param d  The goal display.
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return A copy of the goal with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
     public Object copyGoalAndWrap(Object t, Display d,
-                                  Intermediate r, DisplayClause u,
                                   Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -181,15 +177,15 @@ public class EngineCopy {
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, r, u, en);
+                CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, en);
                 Object[] decl = EngineCopy.metaPredicateBody(cp);
                 if (decl != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++) {
                         if (EngineCopy.argZero(decl, i)) {
-                            args[i] = copyGoalAndWrap(sc.args[i], d, r, u, en);
+                            args[i] = copyGoalAndWrap(sc.args[i], d, en);
                         } else if (EngineCopy.argMinusOne(decl, i)) {
-                            args[i] = copyTermAndWrap(sc.args[i], d, r, u, en);
+                            args[i] = copyTermAndWrap(sc.args[i], d, en);
                         } else {
                             args[i] = copyTerm(sc.args[i], d);
                         }
@@ -199,7 +195,7 @@ public class EngineCopy {
                         back = new SkelCompound(sc.sym, args, null);
                         t = sc.args[sc.args.length - 1];
                     } else if (EngineCopy.argMinusOne(decl, sc.args.length - 1)) {
-                        args[sc.args.length - 1] = copyTermAndWrap(sc.args[sc.args.length - 1], d, r, u, en);
+                        args[sc.args.length - 1] = copyTermAndWrap(sc.args[sc.args.length - 1], d, en);
                         t = new SkelCompound(sc.sym, args);
                         break;
                     } else {
@@ -253,15 +249,12 @@ public class EngineCopy {
      *
      * @param t  The term skel.
      * @param d  The term display.
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return A copy of the goal with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
     public Object copyTermAndWrap(Object t, Display d,
-                                  Intermediate r, DisplayClause u,
                                   Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -278,15 +271,15 @@ public class EngineCopy {
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, r, u, en);
+                CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, en);
                 Object[] decl = EngineCopy.metaPredicateRule(cp);
                 if (decl != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++) {
                         if (EngineCopy.argZero(decl, i)) {
-                            args[i] = copyTermAndWrap(sc.args[i], d, r, u, en);
+                            args[i] = copyTermAndWrap(sc.args[i], d, en);
                         } else if (EngineCopy.argMinusOne(decl, i)) {
-                            args[i] = copyGoalAndWrap(sc.args[i], d, r, u, en);
+                            args[i] = copyGoalAndWrap(sc.args[i], d, en);
                         } else {
                             args[i] = copyTerm(sc.args[i], d);
                         }
@@ -296,7 +289,7 @@ public class EngineCopy {
                         back = new SkelCompound(sc.sym, args, null);
                         t = sc.args[sc.args.length - 1];
                     } else if (EngineCopy.argMinusOne(decl, sc.args.length - 1)) {
-                        args[sc.args.length - 1] = copyGoalAndWrap(sc.args[sc.args.length - 1], d, r, u, en);
+                        args[sc.args.length - 1] = copyGoalAndWrap(sc.args[sc.args.length - 1], d, en);
                         t = new SkelCompound(sc.sym, args);
                         break;
                     } else {

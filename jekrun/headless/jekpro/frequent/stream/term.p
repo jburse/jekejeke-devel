@@ -97,7 +97,7 @@ write(Stream, Term) :-
    sys_write(Stream, Term).
 
 :- foreign(sys_write/2, 'ForeignTerm',
-      sysWrite('Interpreter','CallOut','Writer','Object')).
+      sysWrite('Interpreter','Writer','Object')).
 
 /**
  * writeq(E): [ISO 8.14.2]
@@ -122,7 +122,7 @@ writeq(Stream, Term) :-
    sys_writeq(Stream, Term).
 
 :- foreign(sys_writeq/2, 'ForeignTerm',
-      sysWriteq('Interpreter','CallOut','Writer','Object')).
+      sysWriteq('Interpreter','Writer','Object')).
 
 /**
  * write_canonical(E): [ISO 8.14.2]
@@ -149,7 +149,7 @@ write_canonical(Stream, Term) :-
 
 :- private sys_write_canonical/2.
 :- foreign(sys_write_canonical/2, 'ForeignTerm',
-      sysWriteCanonical('Interpreter','CallOut','Writer','Object')).
+      sysWriteCanonical('Interpreter','Writer','Object')).
 
 /**
  * write_term(E, O): [ISO 8.14.2]
@@ -175,7 +175,7 @@ write_term(Stream, Term, Opt) :-
    sys_write_term(Stream, Term, Opt).
 
 :- foreign(sys_write_term/3, 'ForeignTerm',
-      sysWriteTerm('Interpreter','CallOut','Writer','AbstractTerm','Object')).
+      sysWriteTerm('Interpreter','Writer','AbstractTerm','Object')).
 
 /**
  * read(E): [ISO 8.14.1]
@@ -205,7 +205,7 @@ read(Stream, Term) :-
 
 :- private sys_read/2.
 :- foreign(sys_read/2, 'ForeignTerm',
-      sysRead('Interpreter','CallOut','Reader')).
+      sysRead('Interpreter','Reader')).
 
 /**
  * read_term(E, O): [ISO 8.14.1]
@@ -231,4 +231,4 @@ read_term(Stream, Term, Opt) :-
 
 :- private sys_read_term/3.
 :- foreign(sys_read_term/3, 'ForeignTerm',
-      sysReadTerm('Interpreter','CallOut','Reader','Object')).
+      sysReadTerm('Interpreter','Reader','Object')).

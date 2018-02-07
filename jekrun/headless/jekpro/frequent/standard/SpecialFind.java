@@ -4,7 +4,6 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
@@ -54,24 +53,21 @@ public final class SpecialFind extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_FINDALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                SpecialFind.findAll(temp, ref, r, u, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display, r, u))
+                SpecialFind.findAll(temp, ref, en);
+                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -85,11 +81,11 @@ public final class SpecialFind extends AbstractSpecial {
                 ec.vars = null;
                 int size = Display.displaySize(temp2);
                 Display ref2 = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-                if (!en.unifyTerm(temp[1], ref, temp2, ref2, r, u))
+                if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 
@@ -103,19 +99,16 @@ public final class SpecialFind extends AbstractSpecial {
      *
      * @param temp The goal skel.
      * @param ref  The goal display.
-     * @param r    The continuation skeleton.
-     * @param u    The continuation display.
      * @param en   The engine.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Some non callable encountered.
      */
     private static void findAll(Object[] temp, Display ref,
-                                Intermediate r, DisplayClause u, Engine en)
-            throws EngineException, EngineMessage {
+                                Engine en)
+            throws EngineException {
         en.skel = temp[1];
         en.display = ref;
         en.deref();
-        ListArray<Object> list = iterFindAll(temp[0], ref, r, u, en);
+        ListArray<Object> list = iterFindAll(temp[0], ref, en);
         SpecialFind.createList(list, en);
     }
 
@@ -125,33 +118,32 @@ public final class SpecialFind extends AbstractSpecial {
      *
      * @param t2 The template term skel.
      * @param d2 The template term display.
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return The list of solutions.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Some non callable encountered.
      */
     private static ListArray<Object> iterFindAll(Object t2, Display d2,
-                                                 Intermediate r, DisplayClause u,
                                                  Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         EngineCopy ec = en.enginecopy;
         if (ec == null) {
             ec = new EngineCopy();
             en.enginecopy = ec;
         }
 
+        Intermediate r = en.contskel;
+        DisplayClause u = en.contdisplay;
         ListArray<Object> temp = null;
         Bind mark = en.bind;
         int snap = en.number;
         try {
-            en.wrapGoal(r, u);
+            en.wrapGoal();
             Clause clause = en.store.CLAUSE_CALL;
             DisplayClause ref = new DisplayClause(clause.dispsize);
             ref.addArgument(en.skel, en.display, en);
-            ref.setEngine(r, u, en);
-            clause.getNextRaw(ref, en);
+            ref.setEngine(en);
+            en.contskel = clause.getNextRaw(en);
+            en.contdisplay = ref;
             boolean found = en.runFirst(snap);
             while (found) {
                 ec.vars = null;
@@ -163,10 +155,18 @@ public final class SpecialFind extends AbstractSpecial {
                 found = en.runNext(snap);
             }
         } catch (EngineMessage x) {
-            throw new EngineException(x, EngineException.fetchStack(r, u, en));
+            en.contskel = r;
+            en.contdisplay = u;
+            throw new EngineException(x, EngineException.fetchStack(en));
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            throw x;
         }
+        en.contskel = r;
+        en.contdisplay = u;
         en.skel = null;
-        en.releaseBind(r, u, mark);
+        en.releaseBind(mark);
         if (en.skel != null)
             throw (EngineException) en.skel;
         return temp;

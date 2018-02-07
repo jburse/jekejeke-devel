@@ -44,8 +44,7 @@ public final class ForeignChar {
      * @param para The stream.
      * @throws IOException IO error.
      */
-    public static void sysNl(Writer para)
-            throws IOException {
+    public static void sysNl(Writer para) throws IOException {
         para.write('\n');
         para.flush();
     }

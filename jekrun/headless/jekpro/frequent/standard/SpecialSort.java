@@ -1,10 +1,9 @@
 package jekpro.frequent.standard;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
-import jekpro.model.rope.Goal;
 import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -66,52 +65,49 @@ public final class SpecialSort extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_SORT:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 SpecialSort.sort(en, temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_DISTINCT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 SpecialSort.distinct(temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_KEYSORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 SpecialSort.keySort(en, temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_KEYGROUP:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 SpecialSort.keyGroup(temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_HASH_CODE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
-                if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST, r, u))
+                if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_GROUND:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -122,7 +118,7 @@ public final class SpecialSort extends AbstractSpecial {
                 val = EngineMessage.castInteger(en.skel, en.display);
                 if (!termGround(temp[0], ref, EngineMessage.castIntValue(val)))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_HASH_CODE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -133,27 +129,27 @@ public final class SpecialSort extends AbstractSpecial {
                 val = EngineMessage.castInteger(en.skel, en.display);
                 val = Integer.valueOf(termHash(temp[0], ref,
                         EngineMessage.castIntValue(val), 0));
-                if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST, r, u))
+                if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_LOCALE_SORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
                 SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_LOCALE_KEYSORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
                 SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 

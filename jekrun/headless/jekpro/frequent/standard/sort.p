@@ -91,44 +91,29 @@
 
 /**
  * hash_code(T, H):
- * The predicate succeeds when H unifies with the hash code of T. The term
- * T need not be ground. The hash will be in the range from -2147483648
- * to 2147483647.
+ * The predicate succeeds when H unifies with the hash code of T.
+ * The term T need not be ground. The hash will be in the range
+ * from -2147483648 to 2147483647.
  */
 % hash_code(+Term, -Integer)
 :- public hash_code/2.
 :- special(hash_code/2, 'SpecialSort', 4).
 
 /**
- * term_hash(T, H):
- * term_hash(T, D, R, H):
- * The predicate succeeds when T is ground and when H unifies with the
- * hash code of T. The predicate also succeeds when T is non-ground, the H
- * argument is then simply ignored. The quinary predicate allows specifying a
- * depth D and a modulus R. A negative depth D is interpreted as infinity.
+ * sys_ground(T, D):
+ * The predicate succeeds when T is ground up to depth D.
  */
-% term_hash(+Term, -Integer)
-:- public term_hash/2.
-term_hash(T, H) :-
-   ground(T), !,
-   hash_code(T, H).
-term_hash(_, _).
+:- public sys_ground/2.
+:- special(sys_ground/2, 'SpecialSort', 5).
 
-% term_hash(+Term, +Integer, +Integer, -Integer)
-:- public term_hash/4.
-term_hash(T, D, R, H) :-
-   sys_term_ground(T, D), !,
-   sys_term_hash(T, D, J),
-   (  R == 0
-   -> H = J
-   ;  H is J mod R).
-term_hash(_, _, _, _).
-
-:- private sys_term_ground/2.
-:- special(sys_term_ground/2, 'SpecialSort', 5).
-
-:- public sys_term_hash/3.
-:- special(sys_term_hash/3, 'SpecialSort', 6).
+/**
+ * sys_hash_code(T, D, H):
+ * The predicate succeeds in H with hash code of T up to depth D.
+ * The term T need not be ground up to depth D. The hash will be
+ * in the range from -2147483648 to 2147483647.
+ */
+:- public sys_hash_code/3.
+:- special(sys_hash_code/3, 'SpecialSort', 6).
 
 /**
  * locale_sort(L, R):

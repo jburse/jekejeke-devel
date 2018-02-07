@@ -1,4 +1,6 @@
 /*
+ * This module provides help utilities.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -55,7 +57,7 @@ apropos(_).
 
 /**
  * sys_apropos_table(T):
- * The predicate succeeds with the file name of a apropos table.
+ * The predicate succeeds in T with the file name of a apropos table.
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
