@@ -225,24 +225,13 @@ public abstract class AbstractTerm {
      */
     public static boolean unifyTerm(Interpreter inter, Object fst, Object snd)
             throws InterpreterException, InterpreterMessage {
-        CallOut co = inter.getCallOut();
-        Intermediate r;
-        DisplayClause u;
-        if (co == null) {
-            r = null;
-            u = null;
-        } else {
-            r = co.getGoalSkel();
-            u = co.getGoalDisplay();
-        }
-
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         boolean res;
         try {
             res = en.unifyTerm(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
-                    AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd), r, u);
+                    AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
         } catch (EngineMessage x) {
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -266,22 +255,12 @@ public abstract class AbstractTerm {
      */
     public static void releaseBind(Interpreter inter, Bind mark)
             throws InterpreterException {
-        CallOut co = inter.getCallOut();
-        Intermediate r;
-        DisplayClause u;
-        if (co == null) {
-            r = null;
-            u = null;
-        } else {
-            r = co.getGoalSkel();
-            u = co.getGoalDisplay();
-        }
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {
             en.skel = null;
-            en.releaseBind(r, u, mark);
+            en.releaseBind(mark);
             if (en.skel != null)
                 throw (EngineException) en.skel;
         } catch (EngineException x) {

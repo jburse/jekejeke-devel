@@ -11,8 +11,8 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
@@ -83,21 +83,18 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Consult a foreign module.</p>
      *
-     * @param r   The continuation skeleton.
-     * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
     public void loadModule(Reader lr,
-                           Intermediate r, DisplayClause u,
                            Engine en, boolean rec)
             throws EngineMessage, EngineException {
-        super.loadModule(lr, r, u, en, rec);
+        super.loadModule(lr, en, rec);
 
-        AutoClass superjava = reexportSuperclass(r, u, en);
-        AutoClass[] interfacesjava = reexportInterfaces(r, u, en);
+        AutoClass superjava = reexportSuperclass(en);
+        AutoClass[] interfacesjava = reexportInterfaces(en);
 
         meths = new MapHash<StoreKey, ListArray<AbstractMember>>();
         collectConstructors(en);
@@ -109,7 +106,7 @@ public final class AutoClass extends AbstractAuto {
         for (int i = 0; i < interfacesjava.length; i++)
             inheritMeths(interfacesjava[i]);
 
-        defineMeths(r, u, en, rec);
+        defineMeths(en, rec);
     }
 
     /*******************************************************************/
@@ -236,14 +233,12 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Define the predicates.</p>
      *
-     * @param r   The continuation skeleton.
-     * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Intermediate r, DisplayClause u, Engine en,
+    private void defineMeths(Engine en,
                              boolean rec)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, ListArray<AbstractMember>> entry = meths.getLastEntry();
@@ -259,12 +254,12 @@ public final class AutoClass extends AbstractAuto {
                     AbstractMember del = dels[i];
                     virt |= (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                 }
-                Predicate pick = makePublic(sa, sk.getArity(), virt, r, u, en);
-                Predicate over = makeOverride(pick, r, u, en);
+                Predicate pick = makePublic(sa, sk.getArity(), virt, en);
+                Predicate over = makeOverride(pick, en);
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
                     SpecialSpecial.definePredicate(pick, del);
-                    Predicate.checkPredicateDecl(pick, sa, r, u, en);
+                    Predicate.checkPredicateDecl(pick, sa, en);
                 } else {
                     for (int i = 0; i < dels.length; i++) {
                         Object[] args = new Object[sk.getArity()];
@@ -288,7 +283,7 @@ public final class AutoClass extends AbstractAuto {
                         pre.molec = new SkelCompound(new SkelAtom(Store.OP_TURNSTILE), head, goal);
                         PreClause.consultClause(AbstractDefined.OPT_PROM_STAT |
                                 AbstractDefined.OPT_CHCK_DEFN |
-                                AbstractDefined.OPT_ACTI_BOTT, pre, r, u, en);
+                                AbstractDefined.OPT_ACTI_BOTT, pre, en);
                     }
                     for (int i = 0; i < dels.length; i++) {
                         AbstractMember del = dels[i];
@@ -296,17 +291,17 @@ public final class AutoClass extends AbstractAuto {
                             continue;
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
                         virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
-                        pick = makePrivate(sa, sk.getArity(), virt, r, u, en);
+                        pick = makePrivate(sa, sk.getArity(), virt, en);
                         SpecialSpecial.definePredicate(pick, del);
-                        Predicate.checkPredicateDecl(pick, sa, r, u, en);
+                        Predicate.checkPredicateDecl(pick, sa, en);
                     }
                 }
             } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, r, u, en, rec))
+                if (SpecialLoad.systemConsultBreak(x, en, rec))
                     break;
             } catch (EngineMessage x) {
-                EngineException y = new EngineException(x, EngineException.fetchStack(r, u, en));
-                if (SpecialLoad.systemConsultBreak(y, r, u, en, rec))
+                EngineException y = new EngineException(x, EngineException.fetchStack(en));
+                if (SpecialLoad.systemConsultBreak(y, en, rec))
                     break;
             }
         }
@@ -372,17 +367,14 @@ public final class AutoClass extends AbstractAuto {
      * @param sa    The name and call-site.
      * @param arity The length.
      * @param virt  The static flag.
-     * @param r     The continuation skeleton.
-     * @param u     The continuation display.
      * @param en    The interpreter.
      */
     private Predicate makePrivate(SkelAtom sa, int arity,
                                   boolean virt,
-                                  Intermediate r, DisplayClause u,
                                   Engine en)
             throws EngineException, EngineMessage {
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
-                arity, r, u, en, true);
+                arity, en, true);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPR);
         Usage loc = pick.getUsage(this);

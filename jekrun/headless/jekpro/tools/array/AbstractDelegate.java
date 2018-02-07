@@ -4,12 +4,14 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -29,6 +31,7 @@ import jekpro.tools.term.SkelVar;
  * <li><b>MASK_DELE_MULT:</b> The delegate implements
  * a multifile predicate.</li>
  * </ul>
+ * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -60,26 +63,6 @@ public abstract class AbstractDelegate {
     public int subflags;
 
     /**
-     * <p>Promote a predicate to a builtin.</p>
-     *
-     * @param pick The predicate.
-     * @param d    The builtin delegate.
-     */
-    public static void promoteBuiltin(Predicate pick, AbstractDelegate d) {
-        if (pick.del != null)
-            return;
-        synchronized (pick) {
-            if (pick.del != null)
-                return;
-            pick.del = d;
-        }
-    }
-
-    /************************************************************************************/
-    /* Life-Cycle Services                                                              */
-    /************************************************************************************/
-
-    /**
      * <p>Shrink this predicate from the store for a source.</p>
      *
      * @param pick   The predicate.
@@ -102,30 +85,28 @@ public abstract class AbstractDelegate {
     /********************************************************************/
 
     /**
-     * <p>Delegate a predicate to an evaluable function.</p>
+     * <p>Delegate a predicate.</p>
      * <p>The goal is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
-     * <p>The new continuation is returned via the skel and display of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
+     * <p>The new continuation is returned via the contskel and contdisplay of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public boolean findFirst(Goal r, DisplayClause u, Engine en)
+    public boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         SkelCompound temp = (SkelCompound) en.skel;
         Display ref = en.display;
 
         Object expr = checkArgs(temp, ref, en);
-        en.computeExpr(expr, ref, r, u);
+        en.computeExpr(expr, ref);
 
         if (!en.unifyTerm(temp.args[temp.args.length - 1], ref,
-                en.skel, en.display, r, u))
+                en.skel, en.display))
             return false;
-        return r.getNext(u, en);
+        return en.getNext();
     }
 
     /**
@@ -161,24 +142,21 @@ public abstract class AbstractDelegate {
     /********************************************************************/
 
     /**
-     * <p>Delegate the evaluation function to a predicate.</p>
+     * <p>Delegate an evaluable function.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public void evalEvaluable(Goal r, DisplayClause u,
-                              Engine en)
+    public void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
 
-        Object[] args = computeArgs(temp, ref, r, u, en);
+        Object[] args = computeArgs(temp, ref, en);
         SkelAtom sa = Frame.callableToName(temp);
         ref = bridgeCount(args);
         temp = bridgeAlloc(args, ref, en);
@@ -186,7 +164,7 @@ public abstract class AbstractDelegate {
         en.skel = new SkelCompound(sa, args);
         en.display = ref;
 
-        AbstractDelegate.invokeOther(r, u, en);
+        AbstractDelegate.invokeOther(en);
 
         en.skel = temp;
         en.display = ref;
@@ -201,14 +179,11 @@ public abstract class AbstractDelegate {
      *
      * @param temp The skeleton.
      * @param ref  The display.
-     * @param r    The continuation skel.
-     * @param u    The continuation display.
      * @param en   The engine.
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      */
     private Object[] computeArgs(Object temp, Display ref,
-                                 Goal r, DisplayClause u,
                                  Engine en)
             throws EngineException, EngineMessage {
         if (!(temp instanceof SkelCompound))
@@ -224,7 +199,7 @@ public abstract class AbstractDelegate {
             i++;
         }
         for (; i < sc.args.length; i++) {
-            en.computeExpr(sc.args[i], ref, r, u);
+            en.computeExpr(sc.args[i], ref);
             args[i] = AbstractTerm.createMolec(en.skel, en.display);
         }
         return args;
@@ -279,22 +254,23 @@ public abstract class AbstractDelegate {
     /**
      * <p>Invoke the other predicate and remove choice points.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    private static void invokeOther(Intermediate r, DisplayClause u,
-                                    Engine en)
+    private static void invokeOther(Engine en)
             throws EngineException, EngineMessage {
+        Goal r = (Goal) en.contskel;
+        DisplayClause u = en.contdisplay;
+
         int snap = en.number;
-        en.wrapGoal(r, u);
+        en.wrapGoal();
         Clause clause = en.store.CLAUSE_CALL;
         DisplayClause ref = new DisplayClause(clause.dispsize);
         ref.addArgument(en.skel, en.display, en);
-        ref.setEngine(r, u, en);
-        clause.getNextRaw(ref, en);
+        ref.setEngine(en);
+        en.contskel = clause.getNextRaw(en);
+        en.contdisplay = ref;
         if (!en.runFirst(snap))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));

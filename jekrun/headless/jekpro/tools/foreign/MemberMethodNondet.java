@@ -2,12 +2,14 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Bind;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.Types;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -103,75 +105,58 @@ final class MemberMethodNondet extends AbstractMember {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
 
         ChoiceForeign co = new ChoiceForeign(en.choices);
-        co.setGoalSkel(r);
-        co.setGoalDisplay(u);
+        co.setGoalSkel((Goal) en.contskel);
+        co.setGoalDisplay(en.contdisplay);
 
-        Interpreter inter = (Interpreter) en.proxy;
         Bind mark = en.bind;
-        co.setChain(inter.getCallOut());
-        inter.setCallOut(co);
-        try {
-            Object temp = en.skel;
-            Display ref = en.display;
-            Object obj = convertObj(temp, ref, en);
-            Object[] args = convertArgs(temp, ref, en);
-            co.setFirst(true);
-            for (; ; ) {
-                co.setCleanup(false);
-                co.setRetry(false);
-                co.setSpecial(false);
-                co.setCutter(false);
-                Object res = invokeMethod(method, obj, args, en);
-                res = Types.normJava(encoderet, res);
-                if (res == null) {
-                    inter.setCallOut(co.getChain());
-                    return false;
-                }
-                if (res == AbstractSkel.VOID_OBJ ||
-                        en.unifyTerm(((SkelCompound) temp).args[
-                                        ((SkelCompound) temp).args.length - 1], ref,
-                                AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res), r, u)) {
-                    inter.setCallOut(co.getChain());
-                    if (co.getRetry()) {
-                        co.setDelegate(this);
-                        co.setReceiver(obj);
-                        co.setArguments(args);
-                        co.setMark(mark);
-                        en.choices = co;
-                        en.number++;
-                    }
-                    return r.getNext(u, en);
-                }
-                if (!co.getRetry()) {
-                    inter.setCallOut(co.getChain());
-                    return false;
-                }
-                if (!co.getSpecial()) {
-                    en.skel = null;
-                    en.releaseBind(r, u, mark);
-                    if (en.skel != null)
-                        throw (EngineException) en.skel;
-                }
-                co.setFirst(false);
+        Object temp = en.skel;
+        Display ref = en.display;
+        Object obj = convertObj(temp, ref, en);
+        Object[] args = convertArgs(temp, ref, en, co);
+        co.setFirst(true);
+        for (; ; ) {
+            co.setCleanup(false);
+            co.setRetry(false);
+            co.setSpecial(false);
+            co.setCutter(false);
+            Object res = invokeMethod(method, obj, args, en);
+            res = Types.normJava(encoderet, res);
+            if (res == null) {
+                return false;
             }
-        } catch (EngineException x) {
-            inter.setCallOut(co.getChain());
-            throw x;
-        } catch (EngineMessage x) {
-            inter.setCallOut(co.getChain());
-            throw x;
+            if (res == AbstractSkel.VOID_OBJ ||
+                    en.unifyTerm(((SkelCompound) temp).args[
+                                    ((SkelCompound) temp).args.length - 1], ref,
+                            AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
+                if (co.getRetry()) {
+                    co.setDelegate(this);
+                    co.setReceiver(obj);
+                    co.setArguments(args);
+                    co.setMark(mark);
+                    en.choices = co;
+                    en.number++;
+                }
+                return en.getNext();
+            }
+            if (!co.getRetry()) {
+                return false;
+            }
+            if (!co.getSpecial()) {
+                en.skel = null;
+                en.releaseBind(mark);
+                if (en.skel != null)
+                    throw (EngineException) en.skel;
+            }
+            co.setFirst(false);
         }
     }
 

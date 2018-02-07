@@ -8,6 +8,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -102,15 +103,12 @@ final class LenseDimension extends AbstractLense {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
@@ -122,9 +120,9 @@ final class LenseDimension extends AbstractLense {
         EngineMessage.checkNotLessThanZero(num);
         int size = EngineMessage.castIntValue(num);
         Object val = newInstance(size, en);
-        if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST, r, u))
+        if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
             return false;
-        return r.getNext(u, en);
+        return en.getNext();
     }
 
     /**

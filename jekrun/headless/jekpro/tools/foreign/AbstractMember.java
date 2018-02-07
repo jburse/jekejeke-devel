@@ -1,6 +1,6 @@
 package jekpro.tools.foreign;
 
-import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.*;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -8,9 +8,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.array.AbstractLense;
-import jekpro.tools.array.Types;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
@@ -149,7 +147,7 @@ abstract class AbstractMember extends AbstractLense
                 if (typ == Types.TYPE_INTERPRETER) {
                     args[i] = en.proxy;
                 } else {
-                    en.computeExpr(((SkelCompound) temp).args[k], ref, r, u);
+                    en.computeExpr(((SkelCompound) temp).args[k], ref);
                     k++;
                     Object res = AbstractTerm.createTerm(en.skel, en.display);
                     args[i] = Types.denormProlog(typ, res);
@@ -168,10 +166,11 @@ abstract class AbstractMember extends AbstractLense
      * @param temp The skeleton.
      * @param ref  The display.
      * @param en   The engine.
+     *             @param co The call-out.
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      */
-    final Object[] convertArgs(Object temp, Display ref, Engine en)
+    final Object[] convertArgs(Object temp, Display ref, Engine en, CallOut co)
             throws EngineMessage {
         try {
             Object[] args = (encodeparas.length != 0 ?
@@ -184,7 +183,7 @@ abstract class AbstractMember extends AbstractLense
                 if (typ == Types.TYPE_INTERPRETER) {
                     args[i] = en.proxy;
                 } else if (typ == Types.TYPE_CALLOUT) {
-                    args[i] = ((Interpreter) en.proxy).getCallOut();
+                    args[i] = co;
                 } else {
                     en.skel = ((SkelCompound) temp).args[k];
                     en.display = ref;

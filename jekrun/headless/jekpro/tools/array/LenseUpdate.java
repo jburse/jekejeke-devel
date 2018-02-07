@@ -4,9 +4,11 @@ import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -67,14 +69,11 @@ final class LenseUpdate extends AbstractLense {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
      * @throws EngineMessage FFI error.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
@@ -88,7 +87,7 @@ final class LenseUpdate extends AbstractLense {
         int idx = EngineMessage.castIntValue(num);
         Object res = convertArg(temp, ref, en);
         set(obj, idx, res, en);
-        return r.getNextRaw(u, en);
+        return en.getNextRaw();
     }
 
     /**

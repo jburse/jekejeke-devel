@@ -1,12 +1,12 @@
 package jekpro.tools.foreign;
 
-import jekpro.model.inter.Choice;
+import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
+import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -52,7 +52,7 @@ final class ChoiceForeign extends CallOut {
      *
      * @param u The parent choice.
      */
-    ChoiceForeign(Choice u) {
+    ChoiceForeign(AbstractChoice u) {
         super(u);
     }
 
@@ -102,27 +102,24 @@ final class ChoiceForeign extends CallOut {
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public final boolean findNext(Engine en)
+    public final boolean moniNext(Engine en)
             throws EngineException, EngineMessage {
         /* remove choice point */
         en.choices = next;
         en.number--;
 
+        en.contskel = getGoalSkel();
+        en.contdisplay = getGoalDisplay();
         if (!getSpecial()) {
             en.skel = null;
-            en.releaseBind(getGoalSkel(),
-                    getGoalDisplay(), mark);
+            en.releaseBind(mark);
             if (en.skel != null) {
                 en.display = getGoalDisplay();
                 throw (EngineException) en.skel;
             }
         }
 
-        Interpreter inter = (Interpreter) en.proxy;
-        setChain(inter.getCallOut());
-        inter.setCallOut(this);
-        Frame.callGoal(getGoalSkel(),
-                getGoalDisplay(), en);
+        Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
         Object term = en.skel;
         Display ref = en.display;
         try {
@@ -135,16 +132,12 @@ final class ChoiceForeign extends CallOut {
                 Object res = AbstractMember.invokeMethod(del.method, obj, args, en);
                 res = Types.normJava(del.encoderet, res);
                 if (res == null) {
-                    inter.setCallOut(getChain());
                     return false;
                 }
                 if (res == AbstractSkel.VOID_OBJ ||
                         en.unifyTerm(((SkelCompound) term).args[
                                         ((SkelCompound) term).args.length - 1], ref,
-                                AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res),
-                                getGoalSkel(),
-                                getGoalDisplay())) {
-                    inter.setCallOut(getChain());
+                                AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
                     if (getRetry()) {
                         /* meta argument change */
                         if (getSpecial())
@@ -153,28 +146,23 @@ final class ChoiceForeign extends CallOut {
                         en.choices = this;
                         en.number++;
                     }
-                    return getGoalSkel().getNext(
-                            getGoalDisplay(), en);
+                    return en.getNext();
                 }
                 if (!getRetry()) {
-                    inter.setCallOut(getChain());
                     return false;
                 }
                 if (!getSpecial()) {
                     en.skel = null;
-                    en.releaseBind(getGoalSkel(),
-                            getGoalDisplay(), mark);
+                    en.releaseBind(mark);
                     if (en.skel != null)
                         throw (EngineException) en.skel;
                 }
             }
         } catch (EngineMessage x) {
-            inter.setCallOut(getChain());
             en.skel = getGoalSkel();
             en.display = getGoalDisplay();
             throw x;
         } catch (EngineException x) {
-            inter.setCallOut(getChain());
             en.display = getGoalDisplay();
             throw x;
         }
@@ -188,7 +176,7 @@ final class ChoiceForeign extends CallOut {
      * @param n  The cut level.
      * @param en The engine.
      */
-    public final void findCut(int n, Engine en) {
+    public final void moniCut(int n, Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;
@@ -196,27 +184,24 @@ final class ChoiceForeign extends CallOut {
         if (!getCutter())
             return;
 
+        Intermediate r = en.contskel;
+        DisplayClause u = en.contdisplay;
+        en.contskel = getGoalSkel();
+        en.contdisplay = getGoalDisplay();
         DisplayClause back = (DisplayClause) en.display;
         if (en.skel != null) {
             setException(new InterpreterException((EngineException) en.skel));
         } else {
             setException(null);
         }
-        Interpreter inter = (Interpreter) en.proxy;
-        setChain(inter.getCallOut());
-        inter.setCallOut(this);
         Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
         try {
             setFirst(false);
             setCleanup(true);
             AbstractMember.invokeMethod(del.method, obj, args, en);
-            inter.setCallOut(getChain());
-            en.display = back;
             InterpreterException ie = getException();
             en.skel = (ie != null ? (EngineException) ie.getException() : null);
         } catch (EngineException x) {
-            inter.setCallOut(getChain());
-            en.display = back;
             InterpreterException ie = getException();
             en.skel = (ie != null ? (EngineException) ie.getException() : null);
             if (en.skel != null) {
@@ -225,18 +210,20 @@ final class ChoiceForeign extends CallOut {
                 en.skel = x;
             }
         } catch (EngineMessage y) {
-            inter.setCallOut(getChain());
-            en.display = back;
             InterpreterException ie = getException();
             en.skel = (ie != null ? (EngineException) ie.getException() : null);
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(getGoalSkel(), getGoalDisplay(), en));
+            EngineException x = new EngineException(y, EngineException.fetchStack(en));
             if (en.skel != null) {
                 en.skel = new EngineException((EngineException) en.skel, x);
             } else {
                 en.skel = x;
             }
         }
+
+        /* stack and sliding window */
+        en.contskel = r;
+        en.contdisplay = u;
+        en.display = back;
     }
 
 }

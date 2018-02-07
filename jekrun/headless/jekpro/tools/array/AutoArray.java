@@ -61,26 +61,23 @@ public final class AutoArray extends AbstractAuto {
     /**
      * <p>Consult a foreign module.</p>
      *
-     * @param r   The continuation skeleton.
-     * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
     public void loadModule(Reader lr,
-                           Intermediate r, DisplayClause u,
                            Engine en, boolean rec)
             throws EngineMessage, EngineException {
-        super.loadModule(lr, r, u, en, rec);
+        super.loadModule(lr, en, rec);
 
-        reexportSuperclass(r, u, en);
-        reexportInterfaces(r, u, en);
+        reexportSuperclass(en);
+        reexportInterfaces(en);
 
         meths = new MapHash<StoreKey, AbstractLense>();
         collectArrays(en);
 
-        defineMeths(r, u, en, rec);
+        defineMeths(en, rec);
     }
 
     /*******************************************************************/
@@ -127,14 +124,12 @@ public final class AutoArray extends AbstractAuto {
     /**
      * <p>Define the predicates.</p>
      *
-     * @param r   The continuation skeleton.
-     * @param u   The continuation display.
      * @param en  The interpreter.
      * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Intermediate r, DisplayClause u, Engine en,
+    private void defineMeths(Engine en,
                              boolean rec)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, AbstractLense> entry = meths.getLastEntry();
@@ -144,18 +139,18 @@ public final class AutoArray extends AbstractAuto {
             SkelAtom sa = new SkelAtom(sk.getFun(), this);
             try {
                 boolean virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
-                Predicate pick = makePublic(sa, sk.getArity(), virt, r, u, en);
-                Predicate over = makeOverride(pick, r, u, en);
+                Predicate pick = makePublic(sa, sk.getArity(), virt, en);
+                Predicate over = makeOverride(pick, en);
                 if (over != null)
                     throw new IllegalArgumentException("indicator clash");
                 SpecialSpecial.definePredicate(pick, del);
-                Predicate.checkPredicateDecl(pick, sa, r, u, en);
+                Predicate.checkPredicateDecl(pick, sa, en);
             } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, r, u, en, rec))
+                if (SpecialLoad.systemConsultBreak(x, en, rec))
                     break;
             } catch (EngineMessage x) {
-                EngineException y = new EngineException(x, EngineException.fetchStack(r, u, en));
-                if (SpecialLoad.systemConsultBreak(y, r, u, en, rec))
+                EngineException y = new EngineException(x, EngineException.fetchStack(en));
+                if (SpecialLoad.systemConsultBreak(y,en, rec))
                     break;
             }
         }

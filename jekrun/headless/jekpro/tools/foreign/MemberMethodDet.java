@@ -8,6 +8,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
@@ -105,20 +106,17 @@ final class MemberMethodDet extends AbstractMember {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The interpreter.
      * @return True if the goal succeeded, otherwise false.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);
-        Object[] args = convertArgs(temp, ref, en);
+        Object[] args = convertArgs(temp, ref, en, null);
         Object res = invokeMethod(method, obj, args, en);
         res = Types.normJava(encoderet, res);
         if (res == null)
@@ -126,9 +124,9 @@ final class MemberMethodDet extends AbstractMember {
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
-                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res), r, u))
+                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res)))
             return false;
-        return r.getNext(u, en);
+        return en.getNext();
     }
 
     /***************************************************************/

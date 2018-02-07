@@ -92,7 +92,7 @@ public final class Fence {
      *
      * @return The enforced listeners.
      */
-    private MapEntry<Thread, AbstractLivestock>[] snapshotLivestocks() {
+    public MapEntry<Thread, AbstractLivestock>[] snapshotLivestocks() {
         MapEntry<Thread, AbstractLivestock>[] res = cacheactive;
         if (res != null)
             return res;
