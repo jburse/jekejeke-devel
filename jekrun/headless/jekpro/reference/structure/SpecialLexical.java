@@ -1,9 +1,8 @@
 package jekpro.reference.structure;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -74,14 +73,12 @@ public final class SpecialLexical extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
@@ -90,49 +87,49 @@ public final class SpecialLexical extends AbstractSpecial {
                     Display ref = en.display;
                     if (!equalTerm(temp[0], ref, temp[1], ref))
                         return false;
-                    return r.getNextRaw(u, en);
+                    return en.getNextRaw();
                 case SPECIAL_LEX_NQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (equalTerm(temp[0], ref, temp[1], ref))
                         return false;
-                    return r.getNextRaw(u, en);
+                    return en.getNextRaw();
                 case SPECIAL_LEX_LS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref, en) >= 0)
                         return false;
-                    return r.getNextRaw(u, en);
+                    return en.getNextRaw();
                 case SPECIAL_LEX_LQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref, en) > 0)
                         return false;
-                    return r.getNextRaw(u, en);
+                    return en.getNextRaw();
                 case SPECIAL_LEX_GR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref, en) <= 0)
                         return false;
-                    return r.getNextRaw(u, en);
+                    return en.getNextRaw();
                 case SPECIAL_LEX_GQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref, en) < 0)
                         return false;
-                    return r.getNextRaw(u, en);
+                    return en.getNextRaw();
                 case SPECIAL_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Object witmolec = SpecialLexical.comparisonAtom(
                             SpecialLexical.compareTerm(temp[1], ref, temp[2], ref, en), en);
-                    if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST, r, u))
+                    if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -140,11 +137,11 @@ public final class SpecialLexical extends AbstractSpecial {
                     witmolec = SpecialLexical.comparisonAtom(
                             new EngineLexical(cmp, en)
                                     .localeCompareTerm(temp[2], ref, temp[3], ref), en);
-                    if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST, r, u))
+                    if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 default:
-                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));

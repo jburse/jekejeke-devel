@@ -1,12 +1,10 @@
 package jekpro.reference.arithmetic;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -69,20 +67,17 @@ public final class EvaluableElem extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_MINUS:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     Number alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = neg(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -90,7 +85,7 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_PLUS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = alfa;
                     en.display = Display.DISPLAY_CONST;
@@ -98,7 +93,7 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_ABS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = abs(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -106,7 +101,7 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_SIGN:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = sign(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -114,7 +109,7 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_FLOAT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = (alfa instanceof Double ? alfa :
                             TermAtomic.guardDouble(Double.valueOf(alfa.doubleValue())));
@@ -123,7 +118,7 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_DECIMAL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = decimal(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -131,7 +126,7 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_FLOAT32:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = (alfa instanceof Float ? alfa :
                             TermAtomic.guardFloat(Float.valueOf(alfa.floatValue())));
@@ -140,9 +135,9 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_ADD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     Number beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = add(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -150,9 +145,9 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_SUB:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = sub(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -160,9 +155,9 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_MUL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = mul(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -170,9 +165,9 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = slash(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -180,15 +175,15 @@ public final class EvaluableElem extends AbstractSpecial {
                 case EVALUABLE_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castInteger(en.skel, en.display);
                     en.skel = intPow(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
-                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));

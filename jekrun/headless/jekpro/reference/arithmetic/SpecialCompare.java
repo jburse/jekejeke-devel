@@ -1,9 +1,8 @@
 package jekpro.reference.arithmetic;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Goal;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
@@ -69,48 +68,45 @@ public final class SpecialCompare extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        en.computeExpr(temp[0], ref, r, u);
+        en.computeExpr(temp[0], ref);
         Number val = EngineMessage.castNumber(en.skel, en.display);
-        en.computeExpr(temp[1], ref, r, u);
+        en.computeExpr(temp[1], ref);
         Number val2 = EngineMessage.castNumber(en.skel, en.display);
         switch (id) {
             case SPECIAL_COMPARE_EQ:
                 if (!SpecialCompare.testEq(val, val2))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_COMPARE_NQ:
                 if (SpecialCompare.testEq(val, val2))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_COMPARE_LS:
                 if (SpecialCompare.computeCmp(val, val2) >= 0)
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_COMPARE_LQ:
                 if (SpecialCompare.computeCmp(val, val2) > 0)
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_COMPARE_GR:
                 if (SpecialCompare.computeCmp(val, val2) <= 0)
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_COMPARE_GQ:
                 if (SpecialCompare.computeCmp(val, val2) < 0)
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 

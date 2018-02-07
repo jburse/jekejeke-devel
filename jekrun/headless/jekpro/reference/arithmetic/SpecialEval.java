@@ -3,7 +3,6 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -50,25 +49,22 @@ public final class SpecialEval extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_IS:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.computeExpr(temp[1], ref, r, u);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display, r, u))
+                en.computeExpr(temp[1], ref);
+                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 

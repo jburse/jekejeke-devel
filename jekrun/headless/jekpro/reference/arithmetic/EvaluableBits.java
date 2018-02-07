@@ -3,10 +3,8 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -62,19 +60,16 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case EVALUABLE_NOT:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 Number alfa = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = not(alfa);
                 en.display = Display.DISPLAY_CONST;
@@ -82,9 +77,9 @@ public final class EvaluableBits extends AbstractSpecial {
             case EVALUABLE_AND:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
+                en.computeExpr(temp[1], ref);
                 Number beta = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = and(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
@@ -92,9 +87,9 @@ public final class EvaluableBits extends AbstractSpecial {
             case EVALUABLE_OR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
+                en.computeExpr(temp[1], ref);
                 beta = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = or(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
@@ -102,9 +97,9 @@ public final class EvaluableBits extends AbstractSpecial {
             case EVALUABLE_XOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
+                en.computeExpr(temp[1], ref);
                 beta = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = xor(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
@@ -112,9 +107,9 @@ public final class EvaluableBits extends AbstractSpecial {
             case EVALUABLE_SHIFT_LEFT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
+                en.computeExpr(temp[1], ref);
                 beta = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = shiftLeft(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
@@ -122,15 +117,15 @@ public final class EvaluableBits extends AbstractSpecial {
             case EVALUABLE_SHIFT_RIGHT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
+                en.computeExpr(temp[1], ref);
                 beta = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = shiftRight(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
                 return;
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 

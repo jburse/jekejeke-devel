@@ -66,15 +66,12 @@ public final class SpecialVars extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_TERM_VARIABLES:
@@ -85,9 +82,9 @@ public final class SpecialVars extends AbstractSpecial {
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
                 AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[1], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_TERM_VARIABLES_DIFF:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
@@ -96,9 +93,9 @@ public final class SpecialVars extends AbstractSpecial {
                 en.skel = t[2];
                 en.display = d;
                 AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[1], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_TERM_SINGELTONS:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
@@ -107,16 +104,16 @@ public final class SpecialVars extends AbstractSpecial {
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
                 AbstractProperty.consSet(ev.anon, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[1], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_GOAL_KERNEL:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
                 SpecialVars.goalKernel(t[0], d, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[1], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_GOAL_GLOBALS:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
@@ -125,9 +122,9 @@ public final class SpecialVars extends AbstractSpecial {
                 en.skel = en.store.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
                 AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[1], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_NUMBERVARS:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
@@ -138,19 +135,19 @@ public final class SpecialVars extends AbstractSpecial {
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 EngineMessage.castIntValue(num);
-                num = SpecialVars.numberVars(t[0], d, (Integer) en.skel, r, u, en);
+                num = SpecialVars.numberVars(t[0], d, (Integer) en.skel, en);
                 if (num == null)
                     return false;
-                if (!en.unifyTerm(t[2], d, num, Display.DISPLAY_CONST, r, u))
+                if (!en.unifyTerm(t[2], d, num, Display.DISPLAY_CONST))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_NUMBER_VARIABLES:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
                 SpecialVars.numberVariables(t, d, en);
-                if (!en.unifyTerm(t[3], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[3], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_SYS_GET_VARIABLE_NAMES:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
@@ -160,16 +157,16 @@ public final class SpecialVars extends AbstractSpecial {
                 MapHashLink<TermVar, NamedDistance> print =
                         Named.namedToMap((def != null ? def.vars : null), ref, en);
                 mapToAssoc(print, en);
-                if (!en.unifyTerm(t[0], d, en.skel, en.display, r, u))
+                if (!en.unifyTerm(t[0], d, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_ACYCLIC_TERM:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
                 ev = new EngineVars();
                 if (!ev.isAcyclic(t[0], d))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 t = ((SkelCompound) en.skel).args;
                 d = en.display;
@@ -177,11 +174,11 @@ public final class SpecialVars extends AbstractSpecial {
                 ref = (frame != null ? frame.getDisplay() : null);
                 def = (frame != null ? frame.getClause() : null);
                 en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref, en.store);
-                if (!en.unifyTerm(t[0], d, en.skel, ref, r, u))
+                if (!en.unifyTerm(t[0], d, en.skel, ref))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 
@@ -259,15 +256,13 @@ public final class SpecialVars extends AbstractSpecial {
      * @param m   The skel.
      * @param d   The display.
      * @param val The start number.
-     * @param r   The continuation skel.
-     * @param u   The continuation display.
      * @param en  The engine.
      * @return The end number or null.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
     private static Integer numberVars(Object m, Display d, Integer val,
-                                      Intermediate r, DisplayClause u, Engine en)
+                                      Engine en)
             throws EngineException, EngineMessage {
         for (; ; ) {
             if (m instanceof SkelVar) {
@@ -278,7 +273,7 @@ public final class SpecialVars extends AbstractSpecial {
                     d = b.display;
                 } else {
                     Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                    if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST, r, u))
+                    if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                         return null;
                     return Integer.valueOf(val.intValue() + 1);
                 }
@@ -289,12 +284,12 @@ public final class SpecialVars extends AbstractSpecial {
                         SkelVar v = tc.vars[j];
                         BindVar b = d.bind[v.id];
                         if (b.display != null) {
-                            val = numberVars(b.skel, b.display, val, r, u, en);
+                            val = numberVars(b.skel, b.display, val, en);
                             if (val == null)
                                 return null;
                         } else {
                             Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                            if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST, r, u))
+                            if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                                 return null;
                             val = Integer.valueOf(val.intValue() + 1);
                         }
@@ -306,7 +301,7 @@ public final class SpecialVars extends AbstractSpecial {
                         d = b.display;
                     } else {
                         Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                        if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST, r, u))
+                        if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                             return null;
                         return Integer.valueOf(val.intValue() + 1);
                     }

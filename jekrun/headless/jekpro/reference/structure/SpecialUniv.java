@@ -5,8 +5,6 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -60,15 +58,12 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_UNIV:
@@ -78,17 +73,17 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 if (SpecialUniv.termToList(en)) {
-                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display, r, u))
+                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 }
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 SpecialUniv.listToTerm(en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display, r, u))
+                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_ARG:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -108,9 +103,9 @@ public final class SpecialUniv extends AbstractSpecial {
                         return false;
                     if (nth < 1)
                         return false;
-                    if (!en.unifyTerm(temp[2], ref, cmp[nth - 1], en.display, r, u))
+                    if (!en.unifyTerm(temp[2], ref, cmp[nth - 1], en.display))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 } else if (en.skel instanceof SkelAtom) {
                     return false;
                 } else {
@@ -141,9 +136,9 @@ public final class SpecialUniv extends AbstractSpecial {
                     Display d2 = en.display;
                     boolean multi = setCount(cmp.args, d2, temp[2], ref, nth - 1, en);
                     en.skel = new SkelCompound(cmp.sym, setAlloc(cmp.args, d2, temp[2], ref, nth - 1, multi, en));
-                    if (!en.unifyTerm(temp[3], ref, en.skel, en.display, r, u))
+                    if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 } else if (en.skel instanceof SkelAtom) {
                     return false;
                 } else {
@@ -155,28 +150,28 @@ public final class SpecialUniv extends AbstractSpecial {
             case SPECIAL_UNIFY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!en.unifyTerm(temp[1], ref, temp[0], ref, r, u))
+                if (!en.unifyTerm(temp[1], ref, temp[0], ref))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_UNIFY_CHECKED:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, r, u, en))
+                if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
                     return false;
-                return r.getNext(u, en);
+                return en.getNext();
             case SPECIAL_NOT_UNIFY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Bind mark = en.bind;
-                if (en.unifyTerm(temp[1], ref, temp[0], ref, r, u))
+                if (en.unifyTerm(temp[1], ref, temp[0], ref))
                     return false;
                 en.skel = null;
-                en.releaseBind(r, u, mark);
+                en.releaseBind(mark);
                 if (en.skel != null)
                     throw (EngineException) en.skel;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 
@@ -462,15 +457,12 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param beta The second term.
      * @param d2   The display of the second term.
      * @param en   The engine.
-     * @param r    The continuation skel.
-     * @param u    The continuation display.
      * @return True if the two terms unify, otherwise false.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
     private static boolean unifyTermChecked(Object alfa, Display d1,
                                             Object beta, Display d2,
-                                            Intermediate r, DisplayClause u,
                                             Engine en)
             throws EngineException, EngineMessage {
         for (; ; ) {
@@ -490,16 +482,16 @@ public final class SpecialUniv extends AbstractSpecial {
                         return true;
                     if (hasVar(alfa, d1, (SkelVar) beta, d2))
                         return false;
-                    return d2.bind[((SkelVar) beta).id].bindAttr(alfa, d1, d2, r, u, en);
+                    return d2.bind[((SkelVar) beta).id].bindAttr(alfa, d1, d2, en);
                 }
                 if (hasVar(beta, d2, (SkelVar) alfa, d1))
                     return false;
-                return d1.bind[((SkelVar) alfa).id].bindAttr(beta, d2, d1, r, u, en);
+                return d1.bind[((SkelVar) alfa).id].bindAttr(beta, d2, d1, en);
             }
             if (beta instanceof SkelVar) {
                 if (hasVar(alfa, d1, (SkelVar) beta, d2))
                     return false;
-                return d2.bind[((SkelVar) beta).id].bindAttr(alfa, d1, d2, r, u, en);
+                return d2.bind[((SkelVar) beta).id].bindAttr(alfa, d1, d2, en);
             }
             if (!(alfa instanceof SkelCompound))
                 return alfa.equals(beta);
@@ -513,7 +505,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 return false;
             int i = 0;
             for (; i < t1.length - 1; i++) {
-                if (!unifyTermChecked(t1[i], d1, t2[i], d2, r, u, en))
+                if (!unifyTermChecked(t1[i], d1, t2[i], d2, en))
                     return false;
             }
             alfa = t1[i];

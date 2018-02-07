@@ -3,10 +3,8 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -66,20 +64,17 @@ public final class EvaluableRound extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_INTEGER:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     Number alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = integer(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -87,7 +82,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_TRUNCATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = truncate(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -95,7 +90,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_FLOOR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = floor(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -103,7 +98,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_CEILING:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = ceiling(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -111,7 +106,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_ROUND:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = round(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -119,9 +114,9 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_SLASH_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     Number beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = slashSlash(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -129,9 +124,9 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_REM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = rem(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -139,9 +134,9 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_DIV:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = div(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
@@ -149,15 +144,15 @@ public final class EvaluableRound extends AbstractSpecial {
                 case EVALUABLE_MOD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = mod(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
-                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));

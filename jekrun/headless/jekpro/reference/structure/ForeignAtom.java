@@ -182,11 +182,11 @@ public final class ForeignAtom {
         } else {
             ac = (AtomCursor) co.getData();
         }
-        if (ac.hasMoreElements()) {
-            co.setRetry(true);
-            return ac.nextElement();
-        }
-        return null;
+        if (!ac.hasMoreElements())
+            return null;
+        Integer res = ac.nextElement();
+        co.setRetry(ac.hasMoreElements());
+        return res;
     }
 
     /**

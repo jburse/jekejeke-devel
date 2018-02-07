@@ -3,7 +3,6 @@ package jekpro.reference.structure;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -66,16 +65,10 @@ public final class SpecialType extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
-            throws EngineMessage, EngineException {
+    public final boolean moniFirst(Engine en) {
         switch (id) {
             case SPECIAL_INTEGER:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -85,7 +78,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof Integer) && !(en.skel instanceof BigInteger))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_FLOAT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -94,7 +87,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof Float) && !(en.skel instanceof Double))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_ATOM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -103,7 +96,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof SkelAtom))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_COMPOUND:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -112,7 +105,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof SkelCompound))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_REFERENCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -121,7 +114,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (en.skel instanceof AbstractSkel || en.skel instanceof Number)
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_DECIMAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -130,7 +123,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof Long) && !(en.skel instanceof BigDecimal))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_NUMBER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -139,7 +132,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof Number))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_CALLABLE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -148,7 +141,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof SkelAtom) && !(en.skel instanceof SkelCompound))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_ATOMIC:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -157,7 +150,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (en.skel instanceof SkelVar || en.skel instanceof SkelCompound)
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_FLOAT32:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -166,7 +159,7 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof Float))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             case SPECIAL_FLOAT64:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -175,9 +168,9 @@ public final class SpecialType extends AbstractSpecial {
                 en.deref();
                 if (!(en.skel instanceof Double))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 }

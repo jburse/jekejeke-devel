@@ -1,9 +1,8 @@
 package jekpro.reference.arithmetic;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -52,18 +51,16 @@ public final class EvaluableCompare extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u, Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        en.computeExpr(temp[0], ref, r, u);
+        en.computeExpr(temp[0], ref);
         Number alfa = EngineMessage.castNumber(en.skel, en.display);
-        en.computeExpr(temp[1], ref, r, u);
+        en.computeExpr(temp[1], ref);
         Number beta = EngineMessage.castNumber(en.skel, en.display);
         switch (id) {
             case EVALUABLE_MIN:
@@ -75,7 +72,7 @@ public final class EvaluableCompare extends AbstractSpecial {
                 en.display = Display.DISPLAY_CONST;
                 return;
             default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 
