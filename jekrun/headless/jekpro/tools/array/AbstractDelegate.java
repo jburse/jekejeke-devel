@@ -262,7 +262,6 @@ public abstract class AbstractDelegate {
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
         DisplayClause u = en.contdisplay;
-
         int snap = en.number;
         en.wrapGoal();
         Clause clause = en.store.CLAUSE_CALL;
@@ -274,6 +273,8 @@ public abstract class AbstractDelegate {
         if (!en.runFirst(snap))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));
+        en.contskel = r;
+        en.contdisplay = u;
         en.skel = null;
         en.display = null;
         en.cutChoices(snap);

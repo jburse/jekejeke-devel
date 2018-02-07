@@ -125,15 +125,12 @@ abstract class AbstractMember extends AbstractLense
      *
      * @param temp The skeleton.
      * @param ref  The display.
-     * @param r    The continuation skel.
-     * @param u    The continuation display.
      * @param en   The engine.
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      * @throws EngineException FFI error.
      */
     final Object[] computeAndConvertArgs(Object temp, Display ref,
-                                         Goal r, DisplayClause u,
                                          Engine en)
             throws EngineMessage, EngineException {
         try {

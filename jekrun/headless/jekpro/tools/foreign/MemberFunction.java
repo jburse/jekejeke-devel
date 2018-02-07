@@ -107,19 +107,16 @@ final class MemberFunction extends AbstractMember {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);
-        Object[] args = computeAndConvertArgs(temp, ref, r, u, en);
+        Object[] args = computeAndConvertArgs(temp, ref, en);
         Object res = invokeMethod(method, obj, args, en);
         res = Types.normJava(encoderet, res);
         if (res == null)
