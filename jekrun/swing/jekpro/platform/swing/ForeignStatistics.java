@@ -1,5 +1,7 @@
 package jekpro.platform.swing;
 
+import jekpro.tools.call.ArrayEnumeration;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
@@ -61,16 +63,21 @@ public final class ForeignStatistics {
     /**
      * <p>Retrieve the known statistics keys.</p>
      *
-     * @return The known statistics keys.
-     * @throws InterpreterMessage Validation error.
+     * @param co The call out.
+     * @return The statistics key.
      */
-    public static Object sysListStats()
-            throws InterpreterMessage {
-        Object res = Knowledgebase.OP_NIL;
-        for (int i = OP_STATISTICS.length - 1; i >= 0; i--) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    OP_STATISTICS[i], res);
+    public static String sysCurrentStat(CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<String>(OP_STATISTICS);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>)co.getData();
         }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
         return res;
     }
 

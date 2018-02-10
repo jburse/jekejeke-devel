@@ -1,10 +1,14 @@
 package jekpro.platform.android;
 
+import android.os.Debug;
 import android.os.SystemClock;
+import jekpro.tools.call.ArrayEnumeration;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * The foreign predicates for the module stats.
@@ -40,6 +44,7 @@ public final class ForeignStatistics {
     final static String OP_STATISTIC_GCTIME = "gctime";
     final static String OP_STATISTIC_TIME = "time";
     final static String OP_STATISTIC_WALL = "wall";
+    private static Method getRuntimeStat;
 
     private final static String[] OP_STATISTICS = {
             OP_STATISTIC_MAX,
@@ -50,6 +55,15 @@ public final class ForeignStatistics {
             OP_STATISTIC_TIME,
             OP_STATISTIC_WALL};
 
+    static {
+        try {
+            Class<?> debugClass = Debug.class;
+            getRuntimeStat = debugClass.getDeclaredMethod("getRuntimeStat", String.class);
+        } catch (NoSuchMethodException x) {
+            getRuntimeStat = null;
+        }
+    }
+
     /*********************************************************************/
     /* Foreigns                                                          */
     /*********************************************************************/
@@ -57,16 +71,21 @@ public final class ForeignStatistics {
     /**
      * <p>Retrieve the known statistics keys.</p>
      *
-     * @return The known statistics keys.
-     * @throws InterpreterMessage Validation error.
+     * @param co The call out.
+     * @return The statistics key.
      */
-    public static Object sysListStats()
-            throws InterpreterMessage {
-        Object res = Knowledgebase.OP_NIL;
-        for (int i = OP_STATISTICS.length - 1; i >= 0; i--) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    OP_STATISTICS[i], res);
+    public static String sysCurrentStat(CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<String>(OP_STATISTICS);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
         }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
         return res;
     }
 
@@ -89,7 +108,20 @@ public final class ForeignStatistics {
         } else if (OP_STATISTIC_UPTIME.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.uptimeMillis());
         } else if (OP_STATISTIC_GCTIME.equals(name)) {
-            return null;
+            String gctimestr;
+            try {
+                gctimestr = (String) (getRuntimeStat != null ? getRuntimeStat.invoke(null, "art.gc.gc-time") : null);
+            } catch (IllegalAccessException e) {
+                gctimestr = null;
+            } catch (InvocationTargetException e) {
+                gctimestr = null;
+            }
+            if (gctimestr != null) {
+                long gctime = Long.parseLong(gctimestr);
+                return TermAtomic.normBigInteger(gctime);
+            } else {
+                return null;
+            }
         } else if (OP_STATISTIC_TIME.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
         } else if (OP_STATISTIC_WALL.equals(name)) {

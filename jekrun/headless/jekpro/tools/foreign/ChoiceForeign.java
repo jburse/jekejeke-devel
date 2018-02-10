@@ -113,58 +113,45 @@ final class ChoiceForeign extends CallOut {
         if (!getSpecial()) {
             en.skel = null;
             en.releaseBind(mark);
-            if (en.skel != null) {
-                en.display = getGoalDisplay();
+            if (en.skel != null)
                 throw (EngineException) en.skel;
-            }
         }
 
         Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
         Object term = en.skel;
         Display ref = en.display;
-        try {
-            for (; ; ) {
-                setFirst(false);
-                setCleanup(false);
-                setRetry(false);
-                setSpecial(false);
-                setCutter(false);
-                Object res = AbstractMember.invokeMethod(del.method, obj, args, en);
-                res = Types.normJava(del.encoderet, res);
-                if (res == null) {
-                    return false;
+        for (; ; ) {
+            setFirst(false);
+            setCleanup(false);
+            setRetry(false);
+            setSpecial(false);
+            setCutter(false);
+            Object res = AbstractMember.invokeMethod(del.method, obj, args, en);
+            res = Types.normJava(del.encoderet, res);
+            if (res == null)
+                return false;
+            if (res == AbstractSkel.VOID_OBJ ||
+                    en.unifyTerm(((SkelCompound) term).args[
+                                    ((SkelCompound) term).args.length - 1], ref,
+                            AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
+                if (getRetry()) {
+                    /* meta argument change */
+                    if (getSpecial())
+                        next = en.choices;
+                    /* reuse choice point */
+                    en.choices = this;
+                    en.number++;
                 }
-                if (res == AbstractSkel.VOID_OBJ ||
-                        en.unifyTerm(((SkelCompound) term).args[
-                                        ((SkelCompound) term).args.length - 1], ref,
-                                AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
-                    if (getRetry()) {
-                        /* meta argument change */
-                        if (getSpecial())
-                            next = en.choices;
-                        /* reuse choice point */
-                        en.choices = this;
-                        en.number++;
-                    }
-                    return en.getNext();
-                }
-                if (!getRetry()) {
-                    return false;
-                }
-                if (!getSpecial()) {
-                    en.skel = null;
-                    en.releaseBind(mark);
-                    if (en.skel != null)
-                        throw (EngineException) en.skel;
-                }
+                return en.getNext();
             }
-        } catch (EngineMessage x) {
-            en.skel = getGoalSkel();
-            en.display = getGoalDisplay();
-            throw x;
-        } catch (EngineException x) {
-            en.display = getGoalDisplay();
-            throw x;
+            if (!getRetry())
+                return false;
+            if (!getSpecial()) {
+                en.skel = null;
+                en.releaseBind(mark);
+                if (en.skel != null)
+                    throw (EngineException) en.skel;
+            }
         }
     }
 
