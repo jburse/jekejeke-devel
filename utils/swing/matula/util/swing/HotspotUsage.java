@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * <p>The class represents a usage threshold.</p>
+ * <p>Hotspot memory usage events.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -34,8 +34,8 @@ import java.util.Iterator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class UsageThreshold {
-    public static UsageThreshold DEFAULT = new UsageThreshold();
+public final class HotspotUsage {
+    public static HotspotUsage DEFAULT = new HotspotUsage();
 
     private final HashMap<String, Long> thresholds = new HashMap<String, Long>();
     private int count;
@@ -43,7 +43,7 @@ public final class UsageThreshold {
     /**
      * <p>Create an usage threshold.</p>
      */
-    private UsageThreshold() {
+    private HotspotUsage() {
     }
 
     /**

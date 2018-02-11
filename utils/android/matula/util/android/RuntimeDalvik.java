@@ -110,7 +110,7 @@ public final class RuntimeDalvik extends AbstractRuntime {
 
             String[] res = new String[reslist.size()];
             reslist.toArray(res);
-            return new ExtensibleLoader(buf.toString(), defer.getParent(), res);
+            return new DalvikExtensible(buf.toString(), defer.getParent(), res);
         } else {
             return loader;
         }

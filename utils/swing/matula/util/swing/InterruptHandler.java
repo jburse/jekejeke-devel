@@ -33,6 +33,30 @@ public final class InterruptHandler implements InvocationHandler {
 
     private final Runnable runnable;
     private Object backsignal;
+    private static Constructor sigNew;
+    private static Method sigHand;
+    private static Constructor proxyNew;
+
+    static {
+        try {
+            Class<?> sigClass = Class.forName("sun.misc.Signal");
+            sigNew = sigClass.getConstructor(String.class);
+
+            Class<?> sigHandClass = Class.forName("sun.misc.SignalHandler");
+            sigHand = sigClass.getMethod("handle", sigClass, sigHandClass);
+
+            Class<?> proxyClass = Proxy.getProxyClass(sigHandClass.getClassLoader(), sigHandClass);
+            proxyNew = proxyClass.getConstructor(InvocationHandler.class);
+        } catch (ClassNotFoundException e) {
+            sigNew = null;
+            sigHand = null;
+            proxyNew = null;
+        } catch (NoSuchMethodException e) {
+            sigNew = null;
+            sigHand = null;
+            proxyNew = null;
+        }
+    }
 
     /**
      * <p>Create an interrupt handler.</p>
@@ -44,89 +68,66 @@ public final class InterruptHandler implements InvocationHandler {
     }
 
     /**
+     * <p>Create SignalHandler via reflection.</p>
+     *
+     * @return The signal handler.
+     */
+    private Object refHandler() {
+        Object res;
+        try {
+            res = proxyNew.newInstance(this);
+        } catch (InvocationTargetException e) {
+            res = null;
+        } catch (IllegalAccessException e) {
+            res = null;
+        } catch (InstantiationException e) {
+            res = null;
+        }
+        return res;
+    }
+
+    /**
      * <p>Call Signal.handle via reflection.</p>
      *
      * @param sig  The signal.
      * @param hand The new signal handler.
      * @return The old signal handler.
-     * @throws ClassNotFoundException    Shit happens.
-     * @throws NoSuchMethodException     Shit happens.
-     * @throws InvocationTargetException Shit happens.
-     * @throws IllegalAccessException    Shit happens.
-     * @throws InstantiationException    Shit happens.
      */
-    private Object refHandle(String sig, Object hand)
-            throws ClassNotFoundException, NoSuchMethodException,
-            InvocationTargetException, IllegalAccessException,
-            InstantiationException {
-        Class<?> sigClass = Class.forName("sun.misc.Signal");
-        Constructor sigNew = sigClass.getConstructor(String.class);
-        Object sigObj = sigNew.newInstance(sig);
-
-        Class<?> sigHandClass = Class.forName("sun.misc.SignalHandler");
-        Method sigHand = sigClass.getMethod("handle", sigClass, sigHandClass);
-        return sigHand.invoke(null, sigObj, hand);
+    private Object refHandle(String sig, Object hand) {
+        Object res;
+        try {
+            Object sigObj = sigNew.newInstance(sig);
+            res = sigHand.invoke(null, sigObj, hand);
+        } catch (InvocationTargetException e) {
+            res = null;
+        } catch (IllegalAccessException e) {
+            res = null;
+        } catch (InstantiationException e) {
+            res = null;
+        }
+        return res;
     }
 
-    /**
-     * <p>Create SignalHandler via reflection.</p>
-     *
-     * @return The signal handler.
-     * @throws ClassNotFoundException    Shit happens.
-     * @throws NoSuchMethodException     Shit happens.
-     * @throws InvocationTargetException Shit happens.
-     * @throws IllegalAccessException    Shit happens.
-     * @throws InstantiationException    Shit happens.
-     */
-    private Object refHandler() throws ClassNotFoundException,
-            NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, InstantiationException {
-        Class<?> sigHandClass = Class.forName("sun.misc.SignalHandler");
-        Class<?> proxyClass = Proxy.getProxyClass(sigHandClass.getClassLoader(), sigHandClass);
-        Constructor proxyNew = proxyClass.getConstructor(InvocationHandler.class);
-        return proxyNew.newInstance(this);
-    }
 
     /**
      * <p>Install ctrl break handler.</p>
      */
     public final void installRunnable() {
-        try {
-            if (backsignal == null) {
-                backsignal = refHandle(OP_INTERRUPT, refHandler());
-            }
-        } catch (ClassNotFoundException e) {
-            /* */
-        } catch (NoSuchMethodException e) {
-            /* */
-        } catch (InvocationTargetException e) {
-            /* */
-        } catch (IllegalAccessException e) {
-            /* */
-        } catch (InstantiationException e) {
-            /* */
-        }
+        if (proxyNew == null)
+            return;
+        if (backsignal == null)
+            backsignal = refHandle(OP_INTERRUPT, refHandler());
     }
 
     /**
      * <p>Deinstall ctrl break handler.</p>
      */
     public final void deinstallRunnable() {
-        try {
-            if (backsignal != null) {
-                refHandle(OP_INTERRUPT, backsignal);
-                backsignal = null;
-            }
-        } catch (ClassNotFoundException e) {
-            /* */
-        } catch (NoSuchMethodException e) {
-            /* */
-        } catch (InvocationTargetException e) {
-            /* */
-        } catch (IllegalAccessException e) {
-            /* */
-        } catch (InstantiationException e) {
-            /* */
+        if (proxyNew == null)
+            return;
+        if (backsignal != null) {
+            refHandle(OP_INTERRUPT, backsignal);
+            backsignal = null;
         }
     }
 

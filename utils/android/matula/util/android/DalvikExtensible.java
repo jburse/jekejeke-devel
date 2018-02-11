@@ -37,7 +37,7 @@ import java.util.Enumeration;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ExtensibleLoader extends PathClassLoader {
+final class DalvikExtensible extends PathClassLoader {
     private final String[] residuals;
 
     /**
@@ -47,7 +47,7 @@ final class ExtensibleLoader extends PathClassLoader {
      * @param p The parent class loader.
      * @param r The residual paths.
      */
-    ExtensibleLoader(String d, ClassLoader p, String[] r) {
+    DalvikExtensible(String d, ClassLoader p, String[] r) {
         super(d, p);
         residuals = r;
     }

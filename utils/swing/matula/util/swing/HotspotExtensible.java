@@ -29,14 +29,14 @@ import java.net.URLClassLoader;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ExtensibleLoader extends URLClassLoader {
+final class HotspotExtensible extends URLClassLoader {
 
     /**
      * <p>Create an extensible class loader.</p>
      *  @param url The url.
      *            @param parent The parent.
      */
-    ExtensibleLoader(URL url, ClassLoader parent) {
+    HotspotExtensible(URL url, ClassLoader parent) {
         super(new URL[]{url}, parent);
     }
 

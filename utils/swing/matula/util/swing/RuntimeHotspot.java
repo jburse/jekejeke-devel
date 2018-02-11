@@ -65,11 +65,11 @@ public final class RuntimeHotspot extends AbstractRuntime {
         } catch (MalformedURLException x) {
             throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
         }
-        if (loader instanceof ExtensibleLoader) {
-            ((ExtensibleLoader) loader).addURL(url);
+        if (loader instanceof HotspotExtensible) {
+            ((HotspotExtensible) loader).addURL(url);
             return loader;
         } else {
-            return new ExtensibleLoader(url, (ClassLoader) loader);
+            return new HotspotExtensible(url, (ClassLoader) loader);
         }
     }
 
