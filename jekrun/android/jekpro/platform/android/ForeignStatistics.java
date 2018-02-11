@@ -93,7 +93,7 @@ public final class ForeignStatistics {
      * <p>Retrieve a statistic.</p>
      * <p>Android version.</p>
      *
-     * @param name The name.
+     * @param name The statistics name.
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */

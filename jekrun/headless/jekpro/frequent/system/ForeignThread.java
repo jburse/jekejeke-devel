@@ -1,9 +1,13 @@
 package jekpro.frequent.system;
 
 import jekpro.tools.call.*;
+import jekpro.tools.proxy.FlagAPI;
 import jekpro.tools.term.AbstractTerm;
+import matula.util.data.MapEntry;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
+import matula.util.wire.AbstractLivestock;
+import matula.util.wire.Fence;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,6 +40,10 @@ import java.io.BufferedWriter;
  */
 public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
+
+    private final static String OP_SYS_STACK_DEPTH = "sys_stack_depth";
+
+    private final static String[] OP_PROPS = {OP_SYS_STACK_DEPTH};
 
     /****************************************************************/
     /* Thread Creation                                              */
@@ -111,10 +119,6 @@ public final class ForeignThread {
         inter2.getController().setFence(thread);
         return thread;
     }
-
-    /****************************************************************/
-    /* System Error Helper                                          */
-    /****************************************************************/
 
     /**
      * <p>Show the death exception.</p>
@@ -235,6 +239,100 @@ public final class ForeignThread {
     }
 
     /****************************************************************/
+    /* Thread Joining                                               */
+    /****************************************************************/
+
+    /**
+     * <p>Check if a thread has terminated.</p>
+     *
+     * @param t The thread.
+     * @return True if thread is terminated, otherwise false.
+     */
+    public static boolean sysThreadCombine(Thread t) {
+        return !t.isAlive();
+    }
+
+    /**
+     * <p>Wait till a thread has terminated or time-out.</p>
+     *
+     * @param t     The thread.
+     * @param sleep The time-out.
+     * @return True if thread is terminated, otherwise false.
+     * @throws InterruptedException The current thread was interrupted.
+     */
+    public static boolean sysThreadCombine(Thread t, long sleep)
+            throws InterruptedException {
+        t.join(sleep);
+        return !t.isAlive();
+    }
+
+    /****************************************************************/
+    /* Thread Inspection                                            */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the known threads.</p>
+     *
+     * @param co The call out.
+     * @return The thread.
+     */
+    public static Thread sysCurrentThread(CallOut co) {
+        ArrayEnumeration<MapEntry<Thread, AbstractLivestock>> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>(Fence.DEFAULT.snapshotLivestocks());
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        Thread res = dc.nextElement().key;
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Retrieve the known properties.</p>
+     *
+     * @param co The call out.
+     * @return The known property.
+     */
+    public static String sysCurrentProp(CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<String>(OP_PROPS);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Retrieve a property.</p>
+     *
+     * @param t    The thread.
+     * @param name The property name.
+     * @return The value, or null.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static Object sysGetProp(Thread t, String name)
+            throws InterpreterMessage {
+        if (OP_SYS_STACK_DEPTH.equals(name)) {
+            Controller contr = Controller.currentController(t);
+            Interpreter inter = (contr != null ? contr.getInuse() : null);
+            return (inter != null ? inter.getProperty(FlagAPI.OP_FLAG_SYS_STACK_DEPTH) : null);
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    "prolog_flag", name));
+        }
+    }
+
+    /****************************************************************/
     /* Controller Helper                                            */
     /****************************************************************/
 
@@ -277,34 +375,6 @@ public final class ForeignThread {
         if (contr == null)
             return false;
         return contr.setMask(m);
-    }
-
-    /****************************************************************/
-    /* Thread Joining                                               */
-    /****************************************************************/
-
-    /**
-     * <p>Check if a thread has terminated.</p>
-     *
-     * @param t The thread.
-     * @return True if thread is terminated, otherwise false.
-     */
-    public static boolean sysThreadCombine(Thread t) {
-        return !t.isAlive();
-    }
-
-    /**
-     * <p>Wait till a thread has terminated or time-out.</p>
-     *
-     * @param t     The thread.
-     * @param sleep The time-out.
-     * @return True if thread is terminated, otherwise false.
-     * @throws InterruptedException The current thread was interrupted.
-     */
-    public static boolean sysThreadCombine(Thread t, long sleep)
-            throws InterruptedException {
-        t.join(sleep);
-        return !t.isAlive();
     }
 
 }
