@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 
 /**
- * Path class loader that can also find resources.
+ * <p>Path class loader that can also find resources.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -41,9 +41,10 @@ public final class HotspotUsage {
     private int count;
 
     /**
-     * <p>Create an usage threshold.</p>
+     * <p>Create a hotspot usage.</p>
      */
     private HotspotUsage() {
+        /* do nothing */
     }
 
     /**
