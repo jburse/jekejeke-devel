@@ -4,7 +4,6 @@ import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
-import sun.management.VMManagement;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -132,18 +131,6 @@ public final class ForeignStatistics {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
         }
-    }
-
-    public static void main(String[] args)
-            throws NoSuchFieldException, IllegalAccessException {
-        RuntimeMXBean mxbean = ManagementFactory.getRuntimeMXBean();
-        Field jvmField = mxbean.getClass().getDeclaredField("jvm");
-
-        jvmField.setAccessible(true);
-        VMManagement management = (VMManagement) jvmField.get(mxbean);
-
-        System.out.println("VMManagement isThreadAllocatedMemorySupported()=" + management.isThreadAllocatedMemorySupported());
-        System.out.println("VMManagement isThreadAllocatedMemoryEnabled()=" + management.isThreadAllocatedMemoryEnabled());
     }
 
 }
