@@ -43,6 +43,8 @@ import java.lang.reflect.Field;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class MemberConstant extends AbstractMember {
+    private static final String OP_FOREIGN_CONST = "foreign_const";
+
     private final Field field;
 
     /**
@@ -159,7 +161,7 @@ final class MemberConstant extends AbstractMember {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_const"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_CONST),
                 SpecialSpecial.classToName(field.getDeclaringClass(), source, en),
                 new SkelAtom(field.getName()));
     }

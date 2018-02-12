@@ -112,7 +112,7 @@ public final class Fence {
     /**********************************************************/
 
     /**
-     * <p>Fire an enforced event to a snaphot.</p>
+     * <p>Fire a livestock event to a snaphot.</p>
      *
      * @param e The enforced event.
      * @throws InterruptedException The current tread was interrupted.
@@ -174,6 +174,31 @@ public final class Fence {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * <p>Fire a livestock event to the worst offender.</p>
+     *
+     * @param e The enforced event.
+     * @throws InterruptedException The current tread was interrupted.
+     */
+    public void fireEventWorstOffender(LivestockEvent e)
+            throws InterruptedException {
+        MapEntry<Thread, AbstractLivestock> worst = null;
+        long top = 0;
+        MapEntry<Thread, AbstractLivestock>[] listeners = snapshotLivestocks();
+        for (int i = 0; i < listeners.length; i++) {
+            MapEntry<Thread, AbstractLivestock> entry = listeners[i];
+            if (entry.value.source != e.getSource())
+                continue;
+            long score = entry.value.getOffenderScore();
+            if (worst == null || top < score) {
+                worst = entry;
+                top = score;
+            }
+        }
+        if (worst != null)
+            worst.value.handleEvent(worst.key, e);
     }
 
 }

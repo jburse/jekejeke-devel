@@ -41,6 +41,7 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class LenseLength extends AbstractLense {
+    private static final String OP_FOREIGN_LENGTH = "foreign_length";
     private static final String OP_NAME_LENGTH = "length";
 
     private final Class clazz;
@@ -174,7 +175,7 @@ final class LenseLength extends AbstractLense {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_length"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_LENGTH),
                 SpecialSpecial.classToName(clazz, source, en));
     }
 

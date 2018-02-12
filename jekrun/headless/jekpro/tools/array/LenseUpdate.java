@@ -44,6 +44,7 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class LenseUpdate extends AbstractLense {
+    private static final String OP_FOREIGN_UPDATE = "foreign_update";
     private static final String OP_NAME_SETTER = "set_at";
 
     private final Class clazz;
@@ -221,7 +222,7 @@ final class LenseUpdate extends AbstractLense {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_update"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_UPDATE),
                 SpecialSpecial.classToName(clazz, source, en));
     }
 

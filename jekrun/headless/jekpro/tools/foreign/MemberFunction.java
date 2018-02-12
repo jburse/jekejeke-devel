@@ -44,6 +44,8 @@ import java.lang.reflect.Method;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class MemberFunction extends AbstractMember {
+    private static final String OP_FOREIGN_FUN = "foreign_fun";
+
     private final Method method;
 
     /**
@@ -162,7 +164,7 @@ final class MemberFunction extends AbstractMember {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_fun"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_FUN),
                 SpecialSpecial.classToName(method.getDeclaringClass(),
                         source, en),
                 SpecialForeign.methodToCallable(method.getName(),

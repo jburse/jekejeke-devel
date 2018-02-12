@@ -45,6 +45,8 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class MemberConstructor extends AbstractMember {
+    private static final String OP_FOREIGN_CONSTRUCTOR = "foreign_constructor";
+
     private final Constructor constructor;
 
     /**
@@ -164,7 +166,7 @@ final class MemberConstructor extends AbstractMember {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_constructor"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_CONSTRUCTOR),
                 SpecialSpecial.classToName(constructor.getDeclaringClass(), source, en),
                 SpecialSpecial.constructorToCallable(
                         constructor.getParameterTypes(), source, en));

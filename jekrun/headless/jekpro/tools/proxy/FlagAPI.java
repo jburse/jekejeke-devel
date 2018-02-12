@@ -2,7 +2,6 @@ package jekpro.tools.proxy;
 
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -103,7 +102,7 @@ public final class FlagAPI extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_BELONGS_TO, new FlagAPI(FLAG_SYS_BELONGS_TO));
         prologflags.add(OP_FLAG_SYS_CPU_COUNT, new FlagAPI(FLAG_SYS_CPU_COUNT));
         prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagAPI(FLAG_SYS_RUNTIME_VERSION));
-        prologflags.add("verbose", new FlagAPI(FLAG_VERBOSE));
+        prologflags.add(OP_FLAG_VERBOSE, new FlagAPI(FLAG_VERBOSE));
         return prologflags;
     }
 
@@ -147,7 +146,7 @@ public final class FlagAPI extends AbstractFlag {
                 return System.getProperty("java.vm.specification.version");
             case FLAG_VERBOSE:
                 int verb = 0;
-                int flags=en.store.getBits();
+                int flags = en.store.getBits();
                 if ((flags & Store.MASK_STORE_SMRY) != 0)
                     verb |= LoadOpts.VERBOSE_SUMMARY;
                 if ((flags & Store.MASK_STORE_DTLS) != 0)
@@ -334,7 +333,7 @@ public final class FlagAPI extends AbstractFlag {
             return null;
         } else {
             EngineMessage.checkInstantiated(en.skel);
-            EngineMessage.checkRef(en.skel,en.display);
+            EngineMessage.checkRef(en.skel, en.display);
             return en.skel;
         }
     }

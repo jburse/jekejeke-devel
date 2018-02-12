@@ -138,4 +138,17 @@ public abstract class AbstractLivestock extends AbstractDomestic {
         return live.setMask(m);
     }
 
+    /****************************************************************/
+    /* Thread Statistics                                            */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the offender score.</p>
+     *
+     * @return The offender score.
+     */
+    public long getOffenderScore() {
+        return 0;
+    }
+
 }

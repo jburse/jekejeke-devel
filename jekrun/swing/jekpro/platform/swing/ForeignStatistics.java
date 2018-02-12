@@ -3,13 +3,14 @@ package jekpro.platform.swing;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
+import sun.management.VMManagement;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Field;
 import java.util.Iterator;
 
 /**
@@ -72,7 +73,7 @@ public final class ForeignStatistics {
             dc = new ArrayEnumeration<String>(OP_STATISTICS);
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>)co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
@@ -120,7 +121,8 @@ public final class ForeignStatistics {
         } else if (OP_STATISTIC_TIME.equals(name)) {
             ThreadMXBean tb = ManagementFactory.getThreadMXBean();
             if (tb.isThreadCpuTimeEnabled()) {
-                return TermAtomic.normBigInteger(tb.getCurrentThreadCpuTime() / 1000000L);
+                long cputime = tb.getCurrentThreadCpuTime() / 1000000L;
+                return TermAtomic.normBigInteger(cputime);
             } else {
                 return null;
             }
@@ -130,6 +132,18 @@ public final class ForeignStatistics {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
         }
+    }
+
+    public static void main(String[] args)
+            throws NoSuchFieldException, IllegalAccessException {
+        RuntimeMXBean mxbean = ManagementFactory.getRuntimeMXBean();
+        Field jvmField = mxbean.getClass().getDeclaredField("jvm");
+
+        jvmField.setAccessible(true);
+        VMManagement management = (VMManagement) jvmField.get(mxbean);
+
+        System.out.println("VMManagement isThreadAllocatedMemorySupported()=" + management.isThreadAllocatedMemorySupported());
+        System.out.println("VMManagement isThreadAllocatedMemoryEnabled()=" + management.isThreadAllocatedMemoryEnabled());
     }
 
 }

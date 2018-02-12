@@ -196,7 +196,7 @@ final class MemberMethodNondet extends AbstractMember {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign"),
+        return new SkelCompound(new SkelAtom(MemberMethodDet.OP_FOREIGN),
                 SpecialSpecial.classToName(method.getDeclaringClass(),
                         source, en),
                 SpecialForeign.methodToCallable(method.getName(),

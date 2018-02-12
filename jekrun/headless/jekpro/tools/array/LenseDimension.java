@@ -42,6 +42,8 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class LenseDimension extends AbstractLense {
+    private static final String OP_FOREIGN_DIMENSION = "foreign_dimension";
+
     private final Class clazz;
 
     /**
@@ -181,7 +183,7 @@ final class LenseDimension extends AbstractLense {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_dimension"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_DIMENSION),
                 SpecialSpecial.classToName(clazz, source, en));
     }
 

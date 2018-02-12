@@ -353,8 +353,9 @@ public final class Types {
                 y = EngineMessage.OP_EVALUATION_ZERO_DIVISOR;
             return new EngineMessage(EngineMessage.evaluationError(y));
         } else if (x instanceof Exception) {
+            String message = x.getMessage();
             return new EngineMessage(EngineMessage.representationError(
-                    x.getMessage()));
+                    (message != null ? message : "")));
         } else if (x instanceof Error) {
             throw (Error) x;
         } else {

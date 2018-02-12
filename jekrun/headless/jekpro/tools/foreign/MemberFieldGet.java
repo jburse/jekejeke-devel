@@ -45,6 +45,8 @@ import java.lang.reflect.Field;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class MemberFieldGet extends AbstractMember {
+    private static final String OP_FOREIGN_GETTER = "foreign_getter";
+
     private final Field field;
 
     /**
@@ -164,7 +166,7 @@ final class MemberFieldGet extends AbstractMember {
      */
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
-        return new SkelCompound(new SkelAtom("foreign_getter"),
+        return new SkelCompound(new SkelAtom(OP_FOREIGN_GETTER),
                 SpecialSpecial.classToName(field.getDeclaringClass(), source, en),
                 new SkelAtom(field.getName()));
     }
