@@ -1,8 +1,8 @@
 package jekpro.frequent.system;
 
 import jekpro.tools.call.*;
-import jekpro.tools.proxy.FlagAPI;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.TermAtomic;
 import matula.util.data.MapEntry;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
@@ -41,9 +41,9 @@ import java.io.BufferedWriter;
 public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
 
-    private final static String OP_SYS_STACK_DEPTH = "sys_stack_depth";
+    private final static String OP_SYS_OFFENDER_SCORE = "sys_offender_score";
 
-    private final static String[] OP_PROPS = {OP_SYS_STACK_DEPTH};
+    private final static String[] OP_PROPS = {OP_SYS_OFFENDER_SCORE};
 
     /****************************************************************/
     /* Thread Creation                                              */
@@ -279,7 +279,8 @@ public final class ForeignThread {
     public static Thread sysCurrentThread(CallOut co) {
         ArrayEnumeration<MapEntry<Thread, AbstractLivestock>> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>(Fence.DEFAULT.snapshotLivestocks());
+            dc = new ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>(
+                    Fence.DEFAULT.snapshotLivestocks());
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>) co.getData();
@@ -322,10 +323,14 @@ public final class ForeignThread {
      */
     public static Object sysGetProp(Thread t, String name)
             throws InterpreterMessage {
-        if (OP_SYS_STACK_DEPTH.equals(name)) {
+        if (OP_SYS_OFFENDER_SCORE.equals(name)) {
             Controller contr = Controller.currentController(t);
-            Interpreter inter = (contr != null ? contr.getInuse() : null);
-            return (inter != null ? inter.getProperty(FlagAPI.OP_FLAG_SYS_STACK_DEPTH) : null);
+            if (contr != null) {
+                long total = contr.getOffenderScore();
+                return TermAtomic.normBigInteger(total);
+            } else {
+                return null;
+            }
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
