@@ -1,9 +1,13 @@
 package jekpro.frequent.stream;
 
 import jekpro.frequent.system.ForeignLocale;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 
@@ -97,113 +101,15 @@ public final class ForeignConsole {
     public static void sysPrintStackTrace(Interpreter inter, Writer wr, Object term,
                                           String locstr, Properties prop)
             throws IOException, InterpreterMessage, InterpreterException {
-        Locale locale = ForeignLocale.stringToLocale(locstr);
-        printStackTrace(inter, wr, term, locale, prop);
-    }
-
-    /**
-     * <p>Print the user-friendly detailed message and stack trace from the exception term.</p>
-     * <p>The following rules apply:</p>
-     * <pre>
-     *      error(Message, Context):   errorMake(this) "\n" printContext(Context)
-     *      warning(Message, Context): errorMake(this) "\n" printContext(Context)
-     *      cause(Primary, Secondary): printStackTrace(Primary} printStackTrace(Secondary)
-     *      term                       errorMake(this) "\n"
-     * </pre>
-     *
-     * @param inter  The interpreter or null.
-     * @param wr     The writer.
-     * @param term   The exception term.
-     * @param locale The locale.
-     * @param prop   The properties.
-     * @throws IOException          IO error.
-     * @throws InterpreterMessage   Not a number.
-     * @throws InterpreterException Shit happens.
-     */
-    private static void printStackTrace(Interpreter inter, Writer wr, Object term,
-                                        Locale locale, Properties prop)
-            throws IOException, InterpreterMessage, InterpreterException {
-        for (; ; ) {
-            if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals("error")) {
-                TermCompound tc = (TermCompound) term;
-                wr.write(ForeignLocale.errorMake(inter, term, locale, prop));
-                wr.write('\n');
-                wr.flush();
-                ForeignConsole.printContext(inter, wr, tc.getArg(1), locale, prop);
-                return;
-            } else if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals("warning")) {
-                TermCompound tc = (TermCompound) term;
-                wr.write(ForeignLocale.errorMake(inter, term, locale, prop));
-                wr.write('\n');
-                wr.flush();
-                ForeignConsole.printContext(inter, wr, tc.getArg(1), locale, prop);
-                return;
-            } else if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals("cause")) {
-                TermCompound tc = (TermCompound) term;
-                ForeignConsole.printStackTrace(inter, wr,
-                        tc.getArg(ForeignLocale.ARG_PRIMARY), locale, prop);
-                term = tc.getArg(ForeignLocale.ARG_SECONDARY);
-            } else {
-                wr.write(ForeignLocale.errorMake(inter, term, locale, prop));
-                wr.write('\n');
-                wr.flush();
-                return;
-            }
-        }
-    }
-
-    /**
-     * <p>Print the user-friendly exception context.</p>
-     * <p>The following rules apply:</p>
-     * <pre>
-     *      [Message|Context]: message(Message) "\n" printContext(Context)
-     *      []:                []
-     *      AbstractTerm:              property('context.unknown') ": " string(AbstractTerm) "\n"
-     * <pre>
-     *
-     * @param inter  The interreter or null.
-     * @param wr     The writer.
-     * @param term   The context term.
-     * @param locale The locale.
-     * @param prop   The properties.
-     * @throws IOException          Shit happens.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    private static void printContext(Interpreter inter, Writer wr, Object term,
-                                     Locale locale, Properties prop)
-            throws IOException, InterpreterMessage, InterpreterException {
-        for (; ; ) {
-            if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals(
-                            Knowledgebase.OP_CONS)) {
-                TermCompound tc = (TermCompound) term;
-                wr.write(ForeignLocale.messageMake(inter, tc.getArg(0), locale, prop));
-                wr.write('\n');
-                wr.flush();
-                term = tc.getArg(1);
-            } else if (term.equals(Knowledgebase.OP_NIL)) {
-                /* do nothing */
-                return;
-            } else {
-                wr.write(prop.getProperty("context.unknown"));
-                wr.write(": ");
-                if (inter != null) {
-                    inter.unparseTerm(wr, Interpreter.FLAG_QUOTED, term);
-                } else {
-                    Interpreter.toString(wr, Interpreter.FLAG_QUOTED, term);
-                }
-                wr.write('\n');
-                wr.flush();
-                return;
-            }
+        try {
+            Locale locale = ForeignLocale.stringToLocale(locstr);
+            Engine en = (Engine) inter.getEngine();
+            EngineException.printStackTrace(wr, AbstractTerm.getSkel(term),
+                    AbstractTerm.getDisplay(term), locale, prop, en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
         }
     }
 

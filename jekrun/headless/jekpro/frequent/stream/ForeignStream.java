@@ -67,6 +67,15 @@ public final class ForeignStream {
     public final static String OP_REPOSITION = "reposition";
     public final static String OP_NEWLINE = "newline";
 
+    /* stream properties */
+    public final static String OP_OUTPUT = "output";
+    public final static String OP_INPUT = "input";
+    public final static String OP_MODE = "mode";
+    public final static String OP_FILE_NAME = "file_name";
+    public final static String OP_LAST_MODIFIED = "last_modified";
+    public final static String OP_VERSION_TAG = "version_tag";
+    public final static String OP_EXPIRATION = "expiration";
+
     /* error terms */
     public final static String OP_PERMISSION_OPEN = "open";
     public final static String OP_OPEN_OPTION = "open_option";
@@ -161,30 +170,30 @@ public final class ForeignStream {
         Object res = Knowledgebase.OP_NIL;
         if (str instanceof Reader) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound("type", "text"), res);
+                    new TermCompound(OP_TYPE, OP_TEXT), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    "input", res);
+                    OP_INPUT, res);
             if (str instanceof ConnectionReader)
                 res = sysReaderProperties((ConnectionReader) str, res);
         } else if (str instanceof Writer) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound("type", "text"), res);
+                    new TermCompound(OP_TYPE, OP_TEXT), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    "output", res);
+                    OP_OUTPUT, res);
             if (str instanceof ConnectionWriter)
                 res = sysWriterProperties((ConnectionWriter) str, res);
         } else if (str instanceof InputStream) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound("type", "binary"), res);
+                    new TermCompound(OP_TYPE, OP_BINARY), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    "input", res);
+                    OP_INPUT, res);
             if (str instanceof ConnectionInput)
                 res = sysInputProperties((ConnectionInput) str, res);
         } else if (str instanceof OutputStream) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound("type", "binary"), res);
+                    new TermCompound(OP_TYPE, OP_BINARY), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    "output", res);
+                    OP_OUTPUT, res);
             if (str instanceof ConnectionOutput)
                 res = sysOutputProperties((ConnectionOutput) str, res);
         } else {
@@ -193,8 +202,8 @@ public final class ForeignStream {
         }
         RandomAccessFile raf = ForeignStream.getRaf(str);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("reposition",
-                        (raf != null ? "true" : "false")), res);
+                new TermCompound(OP_REPOSITION,
+                        (raf != null ? OP_TRUE : OP_FALSE)), res);
         if (raf != null) {
             res = new TermCompound(Knowledgebase.OP_CONS,
                     new TermCompound("position",
@@ -218,8 +227,8 @@ public final class ForeignStream {
             throws InterpreterMessage, IOException {
         RandomAccessFile raf = ForeignStream.getRaf(str);
         if (raf == null)
-            throw new InterpreterMessage(InterpreterMessage.permissionError("reposition",
-                    "stream", str));
+            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                    "reposition", "stream", str));
         raf.seek(fpos);
     }
 
@@ -234,8 +243,8 @@ public final class ForeignStream {
             throws InterpreterMessage, IOException {
         RandomAccessFile raf = ForeignStream.getRaf(str);
         if (raf == null)
-            throw new InterpreterMessage(InterpreterMessage.permissionError("reposition",
-                    "stream", str));
+            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                    "reposition", "stream", str));
         raf.setLength(fpos);
     }
 
@@ -273,23 +282,27 @@ public final class ForeignStream {
      */
     public static Object sysInputProperties(ConnectionInput in, Object res) {
         long lastmodified = in.getLastModified();
+        String etag = in.getETag();
         long expiration = in.getExpiration();
         String path = in.getPath();
         int buffer = in.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("last_modified",
+                new TermCompound(OP_LAST_MODIFIED,
                         TermAtomic.normBigInteger(lastmodified)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("expiration",
+                new TermCompound(OP_VERSION_TAG,
+                        etag), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(OP_EXPIRATION,
                         TermAtomic.normBigInteger(expiration)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(buffer)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("mode",
-                        "read"), res);
+                new TermCompound(OP_MODE,
+                        OP_READ), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("file_name",
+                new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
         return res;
     }
@@ -310,10 +323,10 @@ public final class ForeignStream {
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(buffer)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("mode",
-                        (append ? "append" : "write")), res);
+                new TermCompound(OP_MODE,
+                        (append ? OP_APPEND : OP_WRITE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("file_name",
+                new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
         return res;
     }
@@ -336,18 +349,18 @@ public final class ForeignStream {
         int lineno = read.getLineNumber();
         int buffer = read.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("encoding",
+                new TermCompound(OP_ENCODING,
                         encoding), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BOM, (bom ? "true" : "false")), res);
+                new TermCompound(OP_BOM, (bom ? OP_TRUE : OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("last_modified",
+                new TermCompound(OP_LAST_MODIFIED,
                         TermAtomic.normBigInteger(lastmodified)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("version_tag",
+                new TermCompound(OP_VERSION_TAG,
                         etag), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("expiration",
+                new TermCompound(OP_EXPIRATION,
                         TermAtomic.normBigInteger(expiration)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound("line_no",
@@ -356,10 +369,10 @@ public final class ForeignStream {
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(buffer)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("mode",
-                        "read"), res);
+                new TermCompound(OP_MODE,
+                        OP_READ), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("file_name",
+                new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
         return res;
     }
@@ -379,19 +392,19 @@ public final class ForeignStream {
         boolean append = write.getAppend();
         int buffer = write.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("encoding",
+                new TermCompound(OP_ENCODING,
                         encoding), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BOM,
-                        (bom ? "true" : "false")), res);
+                        (bom ? OP_TRUE : OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(buffer)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("mode",
-                        (append ? "append" : "write")), res);
+                new TermCompound(OP_MODE,
+                        (append ? OP_APPEND : OP_WRITE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("file_name",
+                new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
         return res;
     }

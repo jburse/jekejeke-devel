@@ -1,18 +1,21 @@
 package jekpro.frequent.system;
 
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
-import jekpro.tools.term.TermVar;
 import matula.util.system.ForeignCache;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * <p>The foreign predicates for the module system/locale.</p>
@@ -41,13 +44,6 @@ import java.util.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignLocale {
-    public final static int ARG_PRIMARY = 0;
-    public final static int ARG_SECONDARY = 1;
-
-    public static final String ARGTYPE_PARASQ = "parasq";
-    public static final String ARGTYPE_PARAQ = "paraq";
-    public static final String ARGTYPE_PARA = "para";
-    public static final String ARGTYPE_ID = "id";
 
     /****************************************************************/
     /* Properties Lookup & Retrieval                                */
@@ -60,11 +56,11 @@ public final class ForeignLocale {
      * @param pin    The pin.
      * @param locstr The locale.
      * @return The properties.
-     * @throws InterpreterMessage Capability not found.
+     * @throws IOException IO error.
      */
     public static Properties sysGetLang(Interpreter inter, String pin,
                                         String locstr)
-            throws InterpreterMessage, IOException {
+            throws IOException {
         Knowledgebase know = inter.getKnowledgebase();
         HashMap<String, Properties> cache = know.getCache(pin);
         if (cache == null)
@@ -109,11 +105,11 @@ public final class ForeignLocale {
      * @param locstr The locale.
      * @param format The format.
      * @param list   The list of terms.
-     * @throws InterpreterMessage
+     * @throws InterpreterMessage Not a list.
      */
     public static String sysAtomFormat(Interpreter inter, String locstr,
                                        String format, Object list)
-            throws InterpreterMessage, IOException {
+            throws InterpreterMessage {
         Locale locale = ForeignLocale.stringToLocale(locstr);
         Object[] args = ForeignLocale.prepareArguments(inter, list);
         return String.format(locale, format, args);
@@ -129,13 +125,16 @@ public final class ForeignLocale {
      */
     private static Object[] prepareArguments(Interpreter inter, Object term)
             throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
         ArrayList<Object> vec = new ArrayList<Object>();
         while (term instanceof TermCompound &&
                 ((TermCompound) term).getArity() == 2 &&
                 ((TermCompound) term).getFunctor().equals(
                         Knowledgebase.OP_CONS)) {
             TermCompound tc = (TermCompound) term;
-            vec.add(prepareArgument(inter, tc.getArg(0)));
+            Object arg = tc.getArgMolec(0);
+            vec.add(EngineMessage.prepareArgument(AbstractTerm.getSkel(arg),
+                    AbstractTerm.getDisplay(arg), en));
             term = tc.getArg(1);
         }
         if (term.equals(Knowledgebase.OP_NIL)) {
@@ -184,210 +183,13 @@ public final class ForeignLocale {
      * @param obj    The properties.
      * @param term   The message term.
      * @return The formatted term.
-     * @throws InterpreterMessage Validation error.
      */
     public static String sysMessageMake(Interpreter inter, String locstr,
-                                        Properties obj, Object term)
-            throws InterpreterMessage {
+                                        Properties obj, Object term) {
         Locale locale = ForeignLocale.stringToLocale(locstr);
-        return messageMake(inter, term, locale, obj);
-    }
-
-    /**
-     * <p>Format a term from properties.</p>
-     * <p>The rules are as follows:</p>
-     * <pre>
-     *     prop == null: Formatted via AbstractTerm.unparseTerm(FLAG_QUOTED,inter)
-     *     pat == null: Error text and formatted via AbstractTerm.unparseTerm(FLAG_QUOTED,inter)
-     *     temp == null: Error text and formatted via AbstractTerm.unparseTerm(FLAG_QUOTED,inter)
-     *     otherwise: Formatted according to message template and message parameters.
-     * </pre>
-     *
-     * @param inter  The interpreter or null.
-     * @param term   The message term.
-     * @param locale The locale.
-     * @param prop   The properties file.
-     * @return The formatted term.
-     */
-    public static String messageMake(Interpreter inter, Object term,
-                                     Locale locale, Properties prop) {
-        if (prop == null)
-            return (inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
-                    Interpreter.toString(Interpreter.FLAG_QUOTED, term));
-        ArrayList<String> pat = messagePattern(term, prop);
-        if (pat == null) {
-            StringBuilder buf = new StringBuilder();
-            buf.append(prop.getProperty("term.pattern"));
-            buf.append(": ");
-            buf.append((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
-                    Interpreter.toString(Interpreter.FLAG_QUOTED, term)));
-            return buf.toString();
-        }
-        String temp = ForeignLocale.messageTemplate(term, pat, prop);
-        if (temp == null) {
-            StringBuilder buf = new StringBuilder();
-            buf.append(prop.getProperty("term.template"));
-            buf.append(": ");
-            buf.append((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
-                    Interpreter.toString(Interpreter.FLAG_QUOTED, term)));
-            return buf.toString();
-        }
-        Object[] paras = ForeignLocale.messageParameters(inter, term, pat);
-        return String.format(locale, temp, paras);
-    }
-
-    /**
-     * <p>Retrieve the message pattern.</p>
-     * <p>An message pattern is stored in the properties file as follows:</p>
-     * <pre>
-     *        pattern.functor.length=<pattern>
-     * </pre>
-     * <p>A pattern has the following syntax, whereby the number of
-     * argument type specifiers must match the length:</p>
-     * <pre>
-     *        pattern :== { 'parasq'
-     *                    | 'paraq'
-     *                    | 'para'
-     *                    | 'id' }
-     * </pre>
-     * <p>Will return null when the term is not a callable.</p>
-     * <p>Will return null when the message pattern cannot be found.</p>
-     * <p>Will throw an unchecked exception when the message pattern
-     * does not conform.</p>
-     *
-     * @param term The message term.
-     * @param prop The properties file.
-     * @return The message pattern or null.
-     */
-    public static ArrayList<String> messagePattern(Object term,
-                                                   Properties prop) {
-        String fun;
-        int arity;
-        if (term instanceof String) {
-            fun = (String) term;
-            arity = 0;
-        } else if (term instanceof TermCompound) {
-            fun = ((TermCompound) term).getFunctor();
-            arity = ((TermCompound) term).getArity();
-        } else {
-            return null;
-        }
-        String patstr = prop.getProperty("pattern." + fun + "." + arity);
-        if (patstr == null)
-            return null;
-        ArrayList<String> pat = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(patstr);
-        while (st.hasMoreTokens()) {
-            String argtype = st.nextToken();
-            if (argtype.equals(ForeignLocale.ARGTYPE_PARASQ)) {
-                pat.add(ForeignLocale.ARGTYPE_PARASQ);
-            } else if (argtype.equals(ForeignLocale.ARGTYPE_PARAQ)) {
-                pat.add(ForeignLocale.ARGTYPE_PARAQ);
-            } else if (argtype.equals(ForeignLocale.ARGTYPE_PARA)) {
-                pat.add(ForeignLocale.ARGTYPE_PARA);
-            } else if (argtype.equals(ForeignLocale.ARGTYPE_ID)) {
-                pat.add(ForeignLocale.ARGTYPE_ID);
-            } else {
-                throw new IllegalArgumentException("illegal argument type");
-            }
-        }
-        if (pat.size() != arity)
-            throw new IllegalArgumentException("length mismatch");
-        return pat;
-    }
-
-    /**
-     * <p>Extract the message template.</p>
-     * <p>An id is extracted according to the message pattern:</p>
-     * <pre>
-     *     id: The argument is converted with TermLiteral.unparseTerm()
-     * </pre>
-     *
-     * @param term The message term.
-     * @param pat  The message pattern.
-     * @param prop The properties file.
-     * @return The message template or null.
-     */
-    private static String messageTemplate(Object term, ArrayList<String> pat,
-                                          Properties prop) {
-        String fun;
-        if (term instanceof String) {
-            fun = (String) term;
-        } else if (term instanceof TermCompound) {
-            fun = ((TermCompound) term).getFunctor();
-        } else {
-            fun = null;
-        }
-        StringBuilder buf = new StringBuilder();
-        buf.append(fun);
-        for (int i = 0; i < pat.size(); i++) {
-            if (ForeignLocale.ARGTYPE_ID.equals(pat.get(i))) {
-                Object t = ((TermCompound) term).getArg(i);
-                buf.append('.');
-                buf.append(Interpreter.toString(0, t));
-            }
-        }
-        return prop.getProperty(buf.toString());
-    }
-
-    /**
-     * <p>Extract the message parameters.</p>
-     * <p>A parameter is extracted according to the messsage pattern:</p>
-     * <pre>
-     *     parasq: The argument is converted with AbstractSource.shortName() and TermLiteral.unparseTerm()
-     *     paraq: The argument is converted with TermLiteral.unparseTerm(FLAG_QUOT,inter)
-     *     para: The argument is converted with TermLiteral.unparseTerm(0,inter)
-     * </pre>
-     *
-     * @param inter The interpreter or null.
-     * @param term  The message term.
-     * @param pat   The message pattern.
-     * @return The message parameters.
-     */
-    private static Object[] messageParameters(Interpreter inter, Object term,
-                                              ArrayList<String> pat) {
-        ArrayList<Object> paravec = new ArrayList<Object>();
-        for (int i = 0; i < pat.size(); i++) {
-            String argtype = pat.get(i);
-            if (!ForeignLocale.ARGTYPE_ID.equals(argtype)) {
-                Object t = ((TermCompound) term).getArg(i);
-                if (ForeignLocale.ARGTYPE_PARASQ.equals(argtype)) {
-                    paravec.add(shortName((String) t));
-                } else if (ForeignLocale.ARGTYPE_PARAQ.equals(argtype)) {
-                    paravec.add((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, t) :
-                            Interpreter.toString(Interpreter.FLAG_QUOTED, t)));
-                } else {
-                    paravec.add(ForeignLocale.prepareArgument(inter, t));
-                }
-            }
-        }
-        Object[] paras = new Object[paravec.size()];
-        paravec.toArray(paras);
-        return paras;
-    }
-
-    /**
-     * <p>Unpack a term to a Java object.</p>
-     *
-     * @param inter The interpreter or null.
-     * @param t     The argument.
-     * @return The Java object.
-     */
-    public static Object prepareArgument(Interpreter inter, Object t) {
-        if (t instanceof Double || t instanceof Float) {
-            return t;
-        } else if (t instanceof Long || t instanceof BigDecimal) {
-            return TermAtomic.widenBigDecimal((Number) t);
-        } else if (t instanceof Integer || t instanceof BigInteger) {
-            return t;
-        } else if (t instanceof String) {
-            return t;
-        } else if (!(t instanceof TermCompound) && !(t instanceof TermVar)) {
-            return t;
-        } else {
-            return (inter != null ? inter.unparseTerm(0, t) :
-                    Interpreter.toString(0, t));
-        }
+        Engine en = (Engine) inter.getEngine();
+        return EngineMessage.messageMake(AbstractTerm.getSkel(term),
+                AbstractTerm.getDisplay(term), locale, obj, en);
     }
 
     /****************************************************************/
@@ -402,67 +204,13 @@ public final class ForeignLocale {
      * @param obj    The properties.
      * @param term   The message term.
      * @return The formatted term.
-     * @throws InterpreterMessage Validation error.
      */
     public static String sysErrorMake(Interpreter inter, String locstr,
-                                      Properties obj, Object term)
-            throws InterpreterMessage {
+                                      Properties obj, Object term) {
         Locale locale = ForeignLocale.stringToLocale(locstr);
-        return errorMake(inter, term, locale, obj);
-    }
-
-    /**
-     * <p>Create the user-friendly detail message from the exception term.</p>
-     * <p>Will dynamically build the message each time the method is called.</p>
-     * <p>The following rules apply.</p>
-     * <pre>
-     *      error(Message, Context):   property('exception.error') ": ", message(Message)
-     *      warning(Message, Context): property('exception.warning') ": ", message(message)
-     *      cause(Primary, Secondary): errorMake(Primary)
-     *      TermLiteral                       property('exception.unknown') ": " string(TermLiteral)
-     * </pre>
-     *
-     * @param inter  The interpreter or null.
-     * @param term   The exception term.
-     * @param locale The locale.
-     * @param prop   The properties.
-     * @return The exception message.
-     */
-    public static String errorMake(Interpreter inter, Object term,
-                                   Locale locale, Properties prop) {
-        for (; ; ) {
-            if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals("error")) {
-                TermCompound tc = (TermCompound) term;
-                StringBuilder buf = new StringBuilder();
-                buf.append(prop.getProperty("exception.error"));
-                buf.append(": ");
-                buf.append(ForeignLocale.messageMake(inter, tc.getArg(0), locale, prop));
-                return buf.toString();
-            } else if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals("warning")) {
-                TermCompound tc = (TermCompound) term;
-                StringBuilder buf = new StringBuilder();
-                buf.append(prop.getProperty("exception.warning"));
-                buf.append(": ");
-                buf.append(ForeignLocale.messageMake(inter, tc.getArg(0), locale, prop));
-                return buf.toString();
-            } else if ((term instanceof TermCompound) &&
-                    ((TermCompound) term).getArity() == 2 &&
-                    ((TermCompound) term).getFunctor().equals("cause")) {
-                TermCompound tc = (TermCompound) term;
-                term = tc.getArg(ForeignLocale.ARG_PRIMARY);
-            } else {
-                StringBuilder buf = new StringBuilder();
-                buf.append(prop.getProperty("exception.unknown"));
-                buf.append(": ");
-                buf.append((inter != null ? inter.unparseTerm(Interpreter.FLAG_QUOTED, term) :
-                        Interpreter.toString(Interpreter.FLAG_QUOTED, term)));
-                return buf.toString();
-            }
-        }
+        Engine en = (Engine) inter.getEngine();
+        return EngineException.errorMake(AbstractTerm.getSkel(term),
+                AbstractTerm.getDisplay(term), locale, obj, en);
     }
 
     /****************************************************************/

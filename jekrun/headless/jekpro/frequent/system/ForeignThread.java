@@ -41,9 +41,12 @@ import java.io.BufferedWriter;
 public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
 
-    private final static String OP_SYS_OFFENDER_SCORE = "sys_offender_score";
+    private final static String OP_SYS_THREAD_ID = "sys_thread_id";
+    private final static String OP_SYS_IS_ALIVE = "sys_is_alive";
 
-    private final static String[] OP_PROPS = {OP_SYS_OFFENDER_SCORE};
+    private final static String[] OP_PROPS = {
+            OP_SYS_THREAD_ID,
+            OP_SYS_IS_ALIVE};
 
     /****************************************************************/
     /* Thread Creation                                              */
@@ -298,7 +301,7 @@ public final class ForeignThread {
      * @param co The call out.
      * @return The known property.
      */
-    public static String sysCurrentProp(CallOut co) {
+    public static String sysCurrentThreadFlag(CallOut co) {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             dc = new ArrayEnumeration<String>(OP_PROPS);
@@ -321,16 +324,12 @@ public final class ForeignThread {
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysGetProp(Thread t, String name)
+    public static Object sysGetThreadFlag(Thread t, String name)
             throws InterpreterMessage {
-        if (OP_SYS_OFFENDER_SCORE.equals(name)) {
-            Controller contr = Controller.currentController(t);
-            if (contr != null) {
-                long total = contr.getOffenderScore();
-                return TermAtomic.normBigInteger(total);
-            } else {
-                return null;
-            }
+        if (OP_SYS_THREAD_ID.equals(name)) {
+            return TermAtomic.normBigInteger(t.getId());
+        } else if (OP_SYS_IS_ALIVE.equals(name)) {
+            return t.isAlive() ? "true" : "false";
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
