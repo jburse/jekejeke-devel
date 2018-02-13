@@ -2,14 +2,13 @@ package jekpro.platform.swing;
 
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Controller;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Field;
 import java.util.Iterator;
 
 /**
@@ -47,6 +46,8 @@ public final class ForeignStatistics {
     final static String OP_STATISTIC_TIME = "time";
     final static String OP_STATISTIC_WALL = "wall";
 
+    private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
+
     private final static String[] OP_STATISTICS = {
             OP_STATISTIC_MAX,
             OP_STATISTIC_USED,
@@ -56,15 +57,18 @@ public final class ForeignStatistics {
             OP_STATISTIC_TIME,
             OP_STATISTIC_WALL};
 
+    private final static String[] OP_THREAD_STATISTICS = {
+            OP_SYS_THREAD_LOCAL_CLAUSES};
+
     /*********************************************************************/
-    /* Foreigns                                                          */
+    /* Statistics                                                        */
     /*********************************************************************/
 
     /**
-     * <p>Retrieve the known statistics keys.</p>
+     * <p>Retrieve the known statistics names.</p>
      *
      * @param co The call out.
-     * @return The statistics key.
+     * @return The statistics name.
      */
     public static String sysCurrentStat(CallOut co) {
         ArrayEnumeration<String> dc;
@@ -89,7 +93,8 @@ public final class ForeignStatistics {
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysGetStat(String name) throws InterpreterMessage {
+    public static Object sysGetStat(String name)
+            throws InterpreterMessage {
         if (OP_STATISTIC_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
         } else if (OP_STATISTIC_USED.equals(name)) {
@@ -127,6 +132,54 @@ public final class ForeignStatistics {
             }
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    "prolog_flag", name));
+        }
+    }
+
+    /*********************************************************************/
+    /* Thread Statistics                                                 */
+    /*********************************************************************/
+
+    /**
+     * <p>Retrieve the known thread statistics names.</p>
+     *
+     * @param co The call out.
+     * @return The thread statistics name.
+     */
+    public static String sysCurrentThreadStat(CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<String>(OP_THREAD_STATISTICS);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Retrieve a thread statistic.</p>
+     *
+     * @param name The thread statistics name.
+     * @return The value, or null.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static Object sysGetThreadStat(Thread t, String name)
+            throws InterpreterMessage {
+        if (OP_SYS_THREAD_LOCAL_CLAUSES.equals(name)) {
+            Controller contr = Controller.currentController(t);
+            if (contr != null) {
+                long total = contr.getThreadLocalClauses();
+                return TermAtomic.normBigInteger(total);
+            } else {
+                return null;
+            }
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));

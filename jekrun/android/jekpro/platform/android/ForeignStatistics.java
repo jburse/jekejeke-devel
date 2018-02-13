@@ -4,6 +4,7 @@ import android.os.Debug;
 import android.os.SystemClock;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Controller;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 
@@ -46,6 +47,8 @@ public final class ForeignStatistics {
     final static String OP_STATISTIC_WALL = "wall";
     private static Method getRuntimeStat;
 
+    private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
+
     private final static String[] OP_STATISTICS = {
             OP_STATISTIC_MAX,
             OP_STATISTIC_USED,
@@ -54,6 +57,9 @@ public final class ForeignStatistics {
             OP_STATISTIC_GCTIME,
             OP_STATISTIC_TIME,
             OP_STATISTIC_WALL};
+
+    private final static String[] OP_THREAD_STATISTICS = {
+            OP_SYS_THREAD_LOCAL_CLAUSES};
 
     static {
         try {
@@ -65,7 +71,7 @@ public final class ForeignStatistics {
     }
 
     /*********************************************************************/
-    /* Foreigns                                                          */
+    /* Statistics                                                        */
     /*********************************************************************/
 
     /**
@@ -108,9 +114,11 @@ public final class ForeignStatistics {
         } else if (OP_STATISTIC_UPTIME.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.uptimeMillis());
         } else if (OP_STATISTIC_GCTIME.equals(name)) {
+            if (getRuntimeStat == null)
+                return null;
             String gctimestr;
             try {
-                gctimestr = (String) (getRuntimeStat != null ? getRuntimeStat.invoke(null, "art.gc.gc-time") : null);
+                gctimestr = (String) getRuntimeStat.invoke(null, "art.gc.gc-time");
             } catch (IllegalAccessException e) {
                 gctimestr = null;
             } catch (InvocationTargetException e) {
@@ -126,6 +134,54 @@ public final class ForeignStatistics {
             return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    "prolog_flag", name));
+        }
+    }
+
+    /*********************************************************************/
+    /* Thread Statistics                                                 */
+    /*********************************************************************/
+
+    /**
+     * <p>Retrieve the known thread statistics names.</p>
+     *
+     * @param co The call out.
+     * @return The thread statistics name.
+     */
+    public static String sysCurrentThreadStat(CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<String>(OP_THREAD_STATISTICS);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Retrieve a thread statistic.</p>
+     *
+     * @param name The thread statistics name.
+     * @return The value, or null.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static Object sysGetThreadStat(Thread t, String name)
+            throws InterpreterMessage {
+        if (OP_SYS_THREAD_LOCAL_CLAUSES.equals(name)) {
+            Controller contr = Controller.currentController(t);
+            if (contr != null) {
+                long total = contr.getThreadLocalClauses();
+                return TermAtomic.normBigInteger(total);
+            } else {
+                return null;
+            }
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
