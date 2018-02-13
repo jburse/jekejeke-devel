@@ -154,3 +154,33 @@
 :- virtual thread_kill/1.
 :- foreign(thread_kill/1, 'Thread', stop).
 
+/**
+ * current_thread(T):
+ * The predicate succeeds in T with the current threads.
+ */
+% current_thread(-Thread)
+:- public current_thread/1.
+:- foreign(current_thread/1, 'ForeignThread', sysCurrentThread('CallOut')).
+
+/**
+ * current_thread_flag(T, K, V):
+ * The predicate succeeds for the values V of the keys K concerning the
+ * thread T. The following keys are returned by the predicate. For
+ * a list of keys see the API documentation.
+ */
+% current_thread_flag(+Thread, +Atom, -Atomic)
+:- public current_thread_flag/3.
+current_thread_flag(T, K, V) :-
+   var(K), !,
+   sys_current_thread_flag(K),
+   sys_get_thread_flag(T, K, V).
+current_thread_flag(T, K, V) :-
+   sys_get_thread_flag(T, K, V).
+
+% sys_current_thread_flag(-Atom)
+:- private sys_current_thread_flag/1.
+:- foreign(sys_current_thread_flag/1, 'ForeignThread', sysCurrentThreadFlag('CallOut')).
+
+% sys_get_thread_flag(+Thread, +Atom, -Atomic)
+:- private sys_get_thread_flag/3.
+:- foreign(sys_get_thread_flag/3, 'ForeignThread', sysGetThreadFlag('Thread','String')).
