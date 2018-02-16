@@ -1,6 +1,7 @@
 package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -63,16 +64,13 @@ public class SpecialArith extends AbstractSpecial {
      * <p>The goal is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
-     *
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
+     * 
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
@@ -88,9 +86,9 @@ public class SpecialArith extends AbstractSpecial {
                     en.deref();
                     MathContext mc = castContext(en.skel, en.display);
                     if (!en.unifyTerm(temp[2], ref, mpDecimal(alfa, mc),
-                            Display.DISPLAY_CONST, r, u))
+                            Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 case SPECIAL_MP_ADD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -107,9 +105,9 @@ public class SpecialArith extends AbstractSpecial {
                     en.deref();
                     mc = castContext(en.skel, en.display);
                     if (!en.unifyTerm(temp[3], ref, mpAdd(alfa, beta, mc),
-                            Display.DISPLAY_CONST, r, u))
+                            Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 case SPECIAL_MP_SUB:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -126,9 +124,9 @@ public class SpecialArith extends AbstractSpecial {
                     en.deref();
                     mc = castContext(en.skel, en.display);
                     if (!en.unifyTerm(temp[3], ref, mpSub(alfa, beta, mc),
-                            Display.DISPLAY_CONST, r, u))
+                            Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 case SPECIAL_MP_MUL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -145,9 +143,9 @@ public class SpecialArith extends AbstractSpecial {
                     en.deref();
                     mc = castContext(en.skel, en.display);
                     if (!en.unifyTerm(temp[3], ref, mpMul(alfa, beta, mc),
-                            Display.DISPLAY_CONST, r, u))
+                            Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 case SPECIAL_MP_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -164,9 +162,9 @@ public class SpecialArith extends AbstractSpecial {
                     en.deref();
                     mc = castContext(en.skel, en.display);
                     if (!en.unifyTerm(temp[3], ref, mpSlash(alfa, beta, mc),
-                            Display.DISPLAY_CONST, r, u))
+                            Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 case SPECIAL_MP_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -183,9 +181,9 @@ public class SpecialArith extends AbstractSpecial {
                     en.deref();
                     mc = castContext(en.skel, en.display);
                     if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, beta, mc),
-                            Display.DISPLAY_CONST, r, u))
+                            Display.DISPLAY_CONST))
                         return false;
-                    return r.getNext(u, en);
+                    return en.getNext();
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
@@ -225,9 +223,8 @@ public class SpecialArith extends AbstractSpecial {
      * @param m  The decimal number.
      * @param mc The math context.
      * @return The rounded decimal number.
-     * @throws EngineMessage Not an integer.
      */
-    private static Number mpDecimal(Number m, MathContext mc) throws EngineMessage {
+    private static Number mpDecimal(Number m, MathContext mc) {
         if (m instanceof Integer) {
             if (mc.getPrecision() != 0 &&
                     (SupplementScale.log10(m.intValue()) > mc.getPrecision())) {
@@ -280,10 +277,9 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
-     * @throws EngineMessage Not an integer.
      */
     private static Number mpAdd(Number m, Number n,
-                                MathContext mc) throws EngineMessage {
+                                MathContext mc) {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
@@ -314,10 +310,9 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
-     * @throws EngineMessage Not an integer.
      */
     private static Number mpSub(Number m, Number n,
-                                MathContext mc) throws EngineMessage {
+                                MathContext mc) {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
@@ -348,10 +343,9 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
-     * @throws EngineMessage Not an integer.
      */
     private static Number mpMul(Number m, Number n,
-                                MathContext mc) throws EngineMessage {
+                                MathContext mc) {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
@@ -382,10 +376,9 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
-     * @throws EngineMessage Not an integer.
      */
     private static Number mpSlash(Number m, Number n,
-                                  MathContext mc) throws EngineMessage {
+                                  MathContext mc) {
         BigDecimal b = SupplementScale.widenBigDecimal(n, mc);
         if (b.signum() == 0)
             throw new ArithmeticException(

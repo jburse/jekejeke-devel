@@ -3,10 +3,7 @@ package jekmin.frequent.decimal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 
 /**
  * <p>Provides some constants.</p>
@@ -57,30 +54,20 @@ public class SpecialHelper extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
-            throws EngineMessage, EngineException {
-        try {
-            switch (id) {
-                case EVALUABLE_LOG2:
-                    en.skel = DOUBLE_LOG2;
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_LOG10:
-                    en.skel = DOUBLE_LOG10;
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                default:
-                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-
-            }
-        } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+    public final void moniEvaluate(Engine en) {
+        switch (id) {
+            case EVALUABLE_LOG2:
+                en.skel = DOUBLE_LOG2;
+                en.display = Display.DISPLAY_CONST;
+                return;
+            case EVALUABLE_LOG10:
+                en.skel = DOUBLE_LOG10;
+                en.display = Display.DISPLAY_CONST;
+                return;
+            default:
+                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
     }
 

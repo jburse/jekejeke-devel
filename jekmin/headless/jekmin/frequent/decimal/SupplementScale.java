@@ -1,6 +1,7 @@
 package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -65,18 +66,16 @@ public class SupplementScale extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u, Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case EVALUABLE_SCALE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 Number alfa = EngineMessage.castDecimal(en.skel, en.display);
                 en.skel = Integer.valueOf(TermAtomic.scale(alfa));
                 en.display = Display.DISPLAY_CONST;
@@ -84,7 +83,7 @@ public class SupplementScale extends AbstractSpecial {
             case EVALUABLE_UNSCALED_VALUE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castDecimal(en.skel, en.display);
                 en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
                 en.display = Display.DISPLAY_CONST;
@@ -92,9 +91,9 @@ public class SupplementScale extends AbstractSpecial {
             case EVALUABLE_NEW_DECIMAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref, r, u);
+                en.computeExpr(temp[1], ref);
                 Number beta = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = newDecimal(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
@@ -102,7 +101,7 @@ public class SupplementScale extends AbstractSpecial {
             case EVALUABLE_PRECISION:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castDecimal(en.skel, en.display);
                 en.skel = Integer.valueOf(precision(alfa));
                 en.display = Display.DISPLAY_CONST;
@@ -110,7 +109,7 @@ public class SupplementScale extends AbstractSpecial {
             case EVALUABLE_REQUESTED:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 MathContext mc = SpecialArith.castContext(en.skel, en.display);
                 en.skel = Integer.valueOf(mc.getPrecision());
                 en.display = Display.DISPLAY_CONST;
@@ -118,7 +117,7 @@ public class SupplementScale extends AbstractSpecial {
             case EVALUABLE_NEW_CONTEXT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.computeExpr(temp[0], ref, r, u);
+                en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
                 en.skel = newContext(alfa);
                 en.display = Display.DISPLAY_CONST;

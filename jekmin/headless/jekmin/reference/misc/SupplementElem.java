@@ -1,6 +1,7 @@
 package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -60,20 +61,17 @@ public final class SupplementElem extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skel.
-     * @param u  The continuation display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void evalEvaluable(Goal r, DisplayClause u,
-                                    Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_ULP:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     Number alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = ulp(alfa);
                     en.display = Display.DISPLAY_CONST;
@@ -81,9 +79,9 @@ public final class SupplementElem extends AbstractSpecial {
                 case EVALUABLE_GCD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref, r, u);
+                    en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castInteger(en.skel, en.display);
-                    en.computeExpr(temp[1], ref, r, u);
+                    en.computeExpr(temp[1], ref);
                     Number beta = EngineMessage.castInteger(en.skel, en.display);
                     en.skel = gcd(alfa, beta);
                     en.display = Display.DISPLAY_CONST;

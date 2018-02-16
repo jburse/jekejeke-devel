@@ -1,6 +1,7 @@
 package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -55,16 +56,12 @@ public final class SpecialBits extends AbstractSpecial {
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
-     * @param r  The continuation skeleton.
-     * @param u  The continuation display.
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
-    public final boolean findFirst(Goal r, DisplayClause u,
-                                   Engine en)
-            throws EngineMessage, EngineException {
+    public final boolean moniFirst(Engine en)
+            throws EngineMessage {
         switch (id) {
             case SPECIAL_SYS_TEST_BIT:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -79,7 +76,7 @@ public final class SpecialBits extends AbstractSpecial {
                 Number beta = EngineMessage.castInteger(en.skel, en.display);
                 if (!sysTestBit(alfa, beta))
                     return false;
-                return r.getNextRaw(u, en);
+                return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
