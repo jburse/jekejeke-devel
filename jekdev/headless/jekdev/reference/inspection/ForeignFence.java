@@ -34,25 +34,4 @@ import matula.util.wire.Fence;
  */
 public class ForeignFence {
 
-    /**
-     * <p>Non-deterministic predicate for the livestock.</p>
-     *
-     * @param co The call out.
-     * @return The livestock.
-     */
-    public static AbstractLivestock sysCurrentLivestock(CallOut co) {
-        ArrayEnumeration<MapEntry<Thread, AbstractLivestock>> dc;
-        if (co.getFirst()) {
-            dc = new ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>(Fence.DEFAULT.snapshotLivestocks());
-            co.setData(dc);
-        } else {
-            dc = (ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>)co.getData();
-        }
-        if (!dc.hasMoreElements())
-            return null;
-        AbstractLivestock res=dc.nextElement().value;
-        co.setRetry(dc.hasMoreElements());
-        return res;
-    }
-
 }

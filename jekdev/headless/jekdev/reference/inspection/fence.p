@@ -1,4 +1,16 @@
 /**
+ * This module will allow accessing Prolog interpreters during
+ * debugging. It does complement the other inspection modules in
+ * that it supports the thread view of a debugged Prolog interpreter.
+ * For this purpose we need a stop the world event, because it is
+ * unsafe to access the stack of a Prolog interpreter while it runs.
+ *
+ * Further, in case that variables of the stack are accessed, we
+ * need ways to serialize and deserialize the results, since mixing
+ * non-ground Prolog terms from different Prolog interpreters leads
+ * to unexpected results, when the stop the world event is over.
+ * For the current thread stop the world will be not needed.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -28,10 +40,3 @@
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(fence, []).
-
-/**
- * current_livestock(T):
- * The predicate succeeds with the current livestock.
- */
-:- public current_livestock/1.
-:- foreign(current_livestock/1, 'ForeignFence', sysCurrentLivestock('CallOut')).
