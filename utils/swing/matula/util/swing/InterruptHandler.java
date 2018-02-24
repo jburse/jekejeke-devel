@@ -1,5 +1,7 @@
 package matula.util.swing;
 
+import matula.util.system.ForeignUri;
+
 import java.lang.reflect.*;
 
 /**
@@ -76,12 +78,12 @@ public final class InterruptHandler implements InvocationHandler {
         Object res;
         try {
             res = proxyNew.newInstance(this);
-        } catch (InvocationTargetException e) {
-            res = null;
-        } catch (IllegalAccessException e) {
-            res = null;
-        } catch (InstantiationException e) {
-            res = null;
+        } catch (InvocationTargetException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (IllegalAccessException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (InstantiationException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
         return res;
     }
@@ -98,12 +100,12 @@ public final class InterruptHandler implements InvocationHandler {
         try {
             Object sigObj = sigNew.newInstance(sig);
             res = sigHand.invoke(null, sigObj, hand);
-        } catch (InvocationTargetException e) {
-            res = null;
-        } catch (IllegalAccessException e) {
-            res = null;
-        } catch (InstantiationException e) {
-            res = null;
+        } catch (InvocationTargetException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (IllegalAccessException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (InstantiationException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
         return res;
     }
