@@ -1,7 +1,8 @@
 package matula.util.system;
 
 import java.io.IOException;
-import java.net.IDN;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -34,6 +35,22 @@ import java.net.UnknownHostException;
  */
 public final class ForeignDomain {
     private static final char CHAR_AT = '@';
+    private static Method toascii;
+    private static Method tounicode;
+
+    static {
+        try {
+            Class<?> clazz = Class.forName("java.net.IDN");
+            toascii = clazz.getDeclaredMethod("toASCII", new Class[]{String.class});
+            tounicode = clazz.getDeclaredMethod("toUnicode", new Class[]{String.class});
+        } catch (ClassNotFoundException e) {
+            toascii = null;
+            tounicode = null;
+        } catch (NoSuchMethodException e) {
+            toascii = null;
+            tounicode = null;
+        }
+    }
 
     /**
      * <p>Determine the user of a domain.</p>
@@ -273,14 +290,20 @@ public final class ForeignDomain {
      * @return The encoded domain.
      */
     private static String sysDomainPuny(String dom) {
+        if (toascii == null)
+            return dom;
         try {
             String host = sysDomainHost(dom);
-            String newhost = IDN.toASCII(host);
+            String newhost = (String) toascii.invoke(null, host);
             if (!host.equals(newhost)) {
                 String user = sysDomainUser(dom);
                 dom = sysDomainMake(user, newhost);
             }
         } catch (MalformedURLException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (IllegalAccessException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (InvocationTargetException x) {
             throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
         return dom;
@@ -295,11 +318,19 @@ public final class ForeignDomain {
      */
     private static String sysDomainUnpuny(String dom)
             throws MalformedURLException {
-        String host = sysDomainHost(dom);
-        String newhost = IDN.toUnicode(host);
-        if (!host.equals(newhost)) {
-            String user = sysDomainUser(dom);
-            dom = sysDomainMake(user, newhost);
+        if (tounicode==null)
+            return dom;
+        try {
+            String host = sysDomainHost(dom);
+            String newhost = (String) tounicode.invoke(null, host);
+            if (!host.equals(newhost)) {
+                String user = sysDomainUser(dom);
+                dom = sysDomainMake(user, newhost);
+            }
+        } catch (IllegalAccessException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
+        } catch (InvocationTargetException x) {
+            throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
         return dom;
     }

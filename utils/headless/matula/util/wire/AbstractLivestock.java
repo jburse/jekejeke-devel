@@ -42,6 +42,13 @@ public abstract class AbstractLivestock extends AbstractDomestic {
     public abstract void handleEvent(Thread t, LivestockEvent e)
             throws InterruptedException;
 
+    /**
+     * <p>Retrieve the offender score.</p>
+     *
+     * @return The offender score.
+     */
+    public abstract long getOffenderScore();
+
     /*****************************************************************/
     /* Fence Livecycle                                               */
     /*****************************************************************/
@@ -136,19 +143,6 @@ public abstract class AbstractLivestock extends AbstractDomestic {
         if (live == null)
             return false;
         return live.setMask(m);
-    }
-
-    /****************************************************************/
-    /* Thread Statistics                                            */
-    /****************************************************************/
-
-    /**
-     * <p>Retrieve the offender score.</p>
-     *
-     * @return The offender score.
-     */
-    public long getOffenderScore() {
-        return 0;
     }
 
 }

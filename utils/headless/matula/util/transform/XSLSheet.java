@@ -157,6 +157,7 @@ abstract class XSLSheet {
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
+    /*
     public static void main(String[] args)
             throws IOException, ScannerError, ValidationError {
         TemprepoPath tp = new TemprepoPath();
@@ -219,5 +220,6 @@ abstract class XSLSheet {
         transform.xslt(template, null);
         pw.flush();
     }
+    */
 
 }
