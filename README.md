@@ -16,6 +16,8 @@ The following excerpts have already been uploaded:
   Runtime and Frequent Predicates.
 - [jekrun/swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/swing):
   Swing Thread Statistics.
+- [jekrun/android](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/android):
+  Android Thread Statistics.
 
 # Development Environment Excerpts
 
@@ -46,4 +48,4 @@ Feel free to fork for non-commercial attributed use. There
 request if you find issues, but there is also no service
 agreement by us. Note also that Jekejeke is a trademark.
 
-Jan Burse, 23.08.2016
+Jan Burse, 24.02.2017
