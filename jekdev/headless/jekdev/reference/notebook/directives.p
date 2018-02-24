@@ -5,11 +5,11 @@
  * query which are automatically evaluated by the system and which
  * can be modified by the end-user.
  *
- * Without specifying here how the evaluation or modification
- * is performed we provide directives to embed a query inside
- * Prolog modules. The idea is that normal ISO comments are the
- * text cells of a notebook, that normal ISO clauses are the program
- * cells of a notbook and that directives will mark queries.
+ * Without specifying how the evaluation or the modification is
+ * performed we provide directives to embed queries inside Prolog
+ * modules. The idea is that normal ISO comments are the text cells
+ * of a notebook, that normal ISO clauses/directives are the program
+ * cells of a notbook and that a new directive marks queries.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -46,16 +46,21 @@
 
 /**
  * ?- G:
- * The predicate succeeds always. When the goal G succeeds, the
- * predicate will show the first solution. When the goal G fails,
+ * The predicate succeeds always. Whenever the goal G succeeds,
+ * the predicate will show the solution. When the goal G fails,
  * the predicate will show an internationalized no.
  */
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1,-1).
-user:term_expansion((?- G), (:- sys_show_first(G))).
+user:term_expansion((?- G), (:- sys_show_all(G))).
 
-:- private sys_show_first/1.
-:- meta_predicate sys_show_first(0).
-sys_show_first(G) :- G, !, sys_show_vars, ttynl.
-sys_show_first(_) :- sys_show_no, ttynl.
+:- private sys_show_all/1.
+:- meta_predicate sys_show_all(0).
+sys_show_all(G) :-
+   current_prolog_flag(sys_choices, X),
+   call(G),
+   current_prolog_flag(sys_choices, Y), sys_show_vars,
+   (  X == Y -> !, ttynl
+   ;  ttywrite(' ;'), ttynl, fail).
+sys_show_all(_) :- sys_show_no, ttynl.
