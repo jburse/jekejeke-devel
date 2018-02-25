@@ -1,11 +1,11 @@
 /**
- * This module provides directives for notebooks. Notebooks are
+ * This module provides directives for notebooks. Notebookds are
  * Prolog modules that have a secondary purpose than only being
  * consulted. The secondary purpose is that they are to contain
- * queries which are automatically displayed to the end-user and
- * which can be modified by the end-user.
+ * query which are automatically evaluated by the system and which
+ * can be modified by the end-user.
  *
- * Without specifying how the displaying or the modification is
+ * Without specifying how the evaluation or the modification is
  * performed we provide directives to embed queries inside Prolog
  * modules. The idea is that normal ISO comments are the text cells
  * of a notebook, that normal ISO clauses/directives are the program
@@ -46,14 +46,14 @@
 
 /**
  * ?- G:
- * The directive succeeds always. Whenever the goal G succeeds,
- * the directive will show the solution. When the goal G fails,
- * the directive will show an internationalized no.
+ * The predicate succeeds always. Whenever the goal G succeeds,
+ * the predicate will show the solution. When the goal G fails,
+ * the predicate will show an internationalized no.
  */
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1,-1).
-user:term_expansion((?- G), (:- sys_show_all(G))).
+user:term_expansion((?- G), (:- sys_show_all(G), ttynl)).
 
 :- private sys_show_all/1.
 :- meta_predicate sys_show_all(0).
