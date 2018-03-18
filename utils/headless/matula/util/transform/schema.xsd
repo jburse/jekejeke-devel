@@ -1,3 +1,7 @@
+<element name="import">
+    <parent name=""/>
+    <attribute name="bean" type="string"/>
+</element>
 <element name="element">
     <parent name=""/>
     <attribute name="name" type="string"/>
@@ -13,8 +17,4 @@
     <parent name="element"/>
     <attribute name="name" type="string"/>
     <attribute name="occurs" use="optional" type="string"/>
-</element>
-<element name="include">
-    <parent name=""/>
-    <attribute name="bean" type="string"/>
 </element>

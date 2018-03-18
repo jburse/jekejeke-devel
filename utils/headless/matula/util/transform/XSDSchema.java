@@ -42,11 +42,11 @@ import java.io.InputStreamReader;
 public final class XSDSchema {
     public static final int MODE_DRY = 0x00000001;
 
+    private static final String NAME_IMPORT = "import";
+    private static final String ATTR_IMPORT_BEAN = "bean";
     private static final String NAME_PARENT = "parent";
     private static final String ATTR_PARENT_NAME = "name";
     private static final String ATTR_PARENT_OCCURS = "occurs";
-    private static final String NAME_INCLUDE = "include";
-    private static final String ATTR_INCLUDE_BEAN = "bean";
 
     public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
     public static final String SCHEMA_UNDECLARED_ELEM = "schema_undeclared_elem";
@@ -180,8 +180,8 @@ public final class XSDSchema {
                 XSDDeclElem xe = XSDDeclElem.traverseElement(e);
                 putDecl(name, xe);
                 traverseAttributes(e, xe, mode);
-            } else if (e.isName(NAME_INCLUDE)) {
-                String bean = e.getAttr(ATTR_INCLUDE_BEAN);
+            } else if (e.isName(NAME_IMPORT)) {
+                String bean = e.getAttr(ATTR_IMPORT_BEAN);
                 XSDSchema schema;
                 if ((mode & MODE_DRY) != 0) {
                     schema = new XSDSchema();
