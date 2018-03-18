@@ -38,10 +38,6 @@ import java.io.PrintWriter;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 abstract class XSLSheet {
-    private static final String SHEET_MISSING_CLASS = "sheet_missing_class";
-    private static final String SHEET_MISMATCHED_BEAN = "sheet_mismatched_bean";
-    private static final String SHEET_ILLEGAL_ACCESS = "sheet_illegal_access";
-    private static final String SHEET_INST_EXCEPTION = "sheet_inst_exception";
     static final String SHEET_ILLEGAL_VALUE = "sheet_illegal_value";
 
     private static final String OP_ELEMENT = "element";
@@ -54,30 +50,10 @@ abstract class XSLSheet {
     public static final int TEXT_PLAIN = 0;
     public static final int TEXT_HTML = 1;
 
-    /**
-     * <p>Resolve the bean.</p>
-     *
-     * @param bean The bean.
-     * @return The interface path.
-     * @throws ValidationError Check error.
-     */
-    public InterfacePath resolveBean(String bean)
-            throws ValidationError {
-        try {
-            ClassLoader loader = getClass().getClassLoader();
-            Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
-            if (_class == null)
-                throw new ValidationError(SHEET_MISSING_CLASS, bean);
-            Object obj = _class.newInstance();
-            if (!(obj instanceof InterfacePath))
-                throw new ValidationError(SHEET_MISMATCHED_BEAN, bean);
-            return (InterfacePath) obj;
-        } catch (IllegalAccessException x) {
-            throw new ValidationError(SHEET_ILLEGAL_ACCESS, bean);
-        } catch (InstantiationException x) {
-            throw new ValidationError(SHEET_INST_EXCEPTION, bean);
-        }
-    }
+    private static final String BEAN_MISSING_CLASS = "bean_missing_class";
+    private static final String BEAN_MISMATCHED_BEAN = "bean_mismatched_bean";
+    private static final String BEAN_ILLEGAL_ACCESS = "bean_illegal_access";
+    private static final String BEAN_INST_EXCEPTION = "bean_inst_exception";
 
     /**
      * <p>Check a parameter type attribute value.</p>
@@ -147,6 +123,50 @@ abstract class XSLSheet {
             throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".order");
         }
         return orderid;
+    }
+
+    /*************************************************************/
+    /* Bean Loader                                               */
+    /*************************************************************/
+
+    /**
+     * <p>Find class of a bean.</p>
+     *
+     * @param bean The bean name.
+     * @return The class of the bean.
+     * @throws ValidationError Check error.
+     */
+    static Class<?> findClass(String bean)
+            throws ValidationError {
+        ClassLoader loader = XSDSchema.class.getClassLoader();
+        Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
+        if (_class == null)
+            throw new ValidationError(BEAN_MISSING_CLASS, bean);
+        return _class;
+    }
+
+    /**
+     * <p>Create an instance of a bean.</p>
+     *
+     * @param _class The class of the bean.
+     * @return The instance of the bean.
+     * @throws ValidationError Check error.
+     */
+    static InterfacePath newBean(Class<?> _class)
+            throws ValidationError {
+        try {
+            Object obj = _class.newInstance();
+            if (!(obj instanceof InterfacePath))
+                throw new ValidationError(BEAN_MISMATCHED_BEAN,
+                        AbstractRuntime.classToString(_class));
+            return (InterfacePath) obj;
+        } catch (IllegalAccessException x) {
+            throw new ValidationError(BEAN_ILLEGAL_ACCESS,
+                    AbstractRuntime.classToString(_class));
+        } catch (InstantiationException x) {
+            throw new ValidationError(BEAN_INST_EXCEPTION,
+                    AbstractRuntime.classToString(_class));
+        }
     }
 
     /**

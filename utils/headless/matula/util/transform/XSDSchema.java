@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * <p>This class provides an xml schema.</p>
+ * <p>This class provides an xml schema digester.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,17 +40,25 @@ import java.io.InputStreamReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSDSchema {
+    public static final int MODE_DRY = 0x00000001;
+
     private static final String NAME_PARENT = "parent";
     private static final String ATTR_PARENT_NAME = "name";
     private static final String ATTR_PARENT_OCCURS = "occurs";
-
-    public static XSDSchema meta = new XSDSchema();
+    private static final String NAME_INCLUDE = "include";
+    private static final String ATTR_INCLUDE_BEAN = "bean";
 
     public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
     public static final String SCHEMA_UNDECLARED_ELEM = "schema_undeclared_elem";
     public static final String SCHEMA_UNDECLARED_ATTR = "schema_undeclared_attr";
+    public static final String SCHEMA_DUPLICATE_IMPORT = "schema_duplicate_import";
 
     private final MapHashLink<String, XSDDecl> decls = new MapHashLink<String, XSDDecl>();
+    private final MapHashLink<String, XSDSchema> imports = new MapHashLink<String, XSDSchema>();
+    private int flags;
+    private XSDResolver resolver;
+
+    private static XSDSchema meta = new XSDSchema();
 
     static {
         try {
@@ -62,7 +70,8 @@ public final class XSDSchema {
             schema.load(reader, AbstractDom.MASK_LIST);
             reader.close();
 
-            meta.traverseElements(schema);
+            meta.traverseElements(schema, 0);
+            meta.fixupConstraints();
         } catch (ScannerError x) {
             throw new RuntimeException("meta failed", x);
         } catch (ValidationError x) {
@@ -81,19 +90,71 @@ public final class XSDSchema {
     }
 
     /**
+     * <p>Set the flags.</p>
+     *
+     * @param f The flags.
+     */
+    public void setFlags(int f) {
+        flags = f;
+    }
+
+    /**
+     * <p>Retrieve the flags.</p>
+     *
+     * @return The flags.
+     */
+    public int getFlags() {
+        return flags;
+    }
+
+    /**
+     * <p>Set the resolver.</p>
+     *
+     * @param r The resolver.
+     */
+    public void setResolver(XSDResolver r) {
+        resolver = r;
+    }
+
+    /**
+     * <p>Retrieve the resolver.</p>
+     *
+     * @return The resolver.
+     */
+    public XSDResolver getResolver() {
+        return resolver;
+    }
+
+    /**
      * <p>Check the schema and digest the elements of the XSD schema.</p>
      *
-     * @param de The schema dom element.
+     * @param de   The schema dom element.
+     * @param mode The mode flags.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check errror.
      */
-    public void digestElements(DomElement de)
-            throws ValidationError {
+    public void digestElements(DomElement de, int mode)
+            throws ValidationError, IOException, ScannerError {
         XMLCheck xc = new XMLCheck();
         xc.setMask(AbstractDom.MASK_LIST);
         xc.setSchema(meta);
         xc.check(de);
-        traverseElements(de);
+        traverseElements(de, mode);
         fixupConstraints();
+    }
+
+    /**
+     * <p>Check the schema and digest the elements of the XSD schema.</p>
+     *
+     * @param de The schema dom element.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check errror.
+     */
+    public void digestElements(DomElement de)
+            throws ValidationError, IOException, ScannerError {
+        digestElements(de, 0);
     }
 
     /**********************************************************/
@@ -103,11 +164,14 @@ public final class XSDSchema {
     /**
      * <p>Digest the elements of the XSD schema.</p>
      *
-     * @param de The schema dom element.
-     * @throws ValidationError Check error.
+     * @param de   The schema dom element.
+     * @param mode The mode flags.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check errror.
      */
-    private void traverseElements(DomElement de)
-            throws ValidationError {
+    private void traverseElements(DomElement de, int mode)
+            throws ValidationError, IOException, ScannerError {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];
@@ -115,7 +179,17 @@ public final class XSDSchema {
                 String name = e.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
                 XSDDeclElem xe = XSDDeclElem.traverseElement(e);
                 putDecl(name, xe);
-                traverseAttributes(e, xe);
+                traverseAttributes(e, xe, mode);
+            } else if (e.isName(NAME_INCLUDE)) {
+                String bean = e.getAttr(ATTR_INCLUDE_BEAN);
+                XSDSchema schema;
+                if ((mode & MODE_DRY) != 0) {
+                    schema = new XSDSchema();
+                } else {
+                    Class<?> _class=XSLSheet.findClass(bean);
+                    schema = resolver.resolveSchema(_class);
+                }
+                putImport(bean, schema);
             } else {
                 throw new IllegalArgumentException("illegal node");
             }
@@ -127,9 +201,10 @@ public final class XSDSchema {
      *
      * @param de The schema dom element.
      * @param xe The element declaration.
+     * @param mode The mode flags.
      * @throws ValidationError Check error.
      */
-    private void traverseAttributes(DomElement de, XSDDeclElem xe)
+    private void traverseAttributes(DomElement de, XSDDeclElem xe, int mode)
             throws ValidationError {
         String name = de.getAttr(XSDDeclElem.ATTR_ELEMENT_NAME);
         AbstractDom[] nodes = de.snapshotNodes();
@@ -143,7 +218,12 @@ public final class XSDSchema {
                     xe.addMandatory(attr);
             } else if (e.isName(NAME_PARENT)) {
                 String par = e.getAttr(ATTR_PARENT_NAME);
-                int occurs = XSDDeclElem.checkOccurs(e, e.getAttr(ATTR_PARENT_OCCURS));
+                int occurs;
+                if ((mode & MODE_DRY) != 0) {
+                    occurs = XSDDeclElem.OCCURS_NONDET;
+                } else {
+                    occurs = XSDDeclElem.checkOccurs(e, e.getAttr(ATTR_PARENT_OCCURS));
+                }
                 xe.putParent(par, occurs);
             } else {
                 throw new IllegalArgumentException("illegal node");
@@ -160,7 +240,7 @@ public final class XSDSchema {
      *
      * @throws ValidationError Check error.
      */
-    public void fixupConstraints()
+    private void fixupConstraints()
             throws ValidationError {
         String[] decls = snapshotDecls();
         for (int i = 0; i < decls.length; i++) {
@@ -168,7 +248,7 @@ public final class XSDSchema {
             int k = name.indexOf('.');
             if (k != -1)
                 continue;
-            XSDDeclElem decl = (XSDDeclElem) getDecl(name);
+            XSDDeclElem decl = getDeclElem(name);
             AssocArray<String, Integer> parent = decl.getParent();
             if (parent == null)
                 continue;
@@ -208,6 +288,12 @@ public final class XSDSchema {
      * @return The XSD schema declearation.
      */
     public XSDDecl getDecl(String name) {
+        for (MapEntry<String, XSDSchema> entry = imports.getFirstEntry();
+             entry != null; entry = imports.successor(entry)) {
+            XSDDecl res = entry.value.getDecl(name);
+            if (res != null)
+                return res;
+        }
         return decls.get(name);
     }
 
@@ -260,6 +346,41 @@ public final class XSDSchema {
             throw new ValidationError(SCHEMA_UNDECLARED_ATTR, key);
         return (XSDDeclAttr) decl;
     }
+
+    /*****************************************************/
+    /* Imports Access/Modification                       */
+    /*****************************************************/
+
+    /**
+     * <p>Set a XSD schema declaration.</p>
+     *
+     * @param name The name.
+     * @throws ValidationError Check error.
+     */
+    public void putImport(String name, XSDSchema schema)
+            throws ValidationError {
+        if (imports.get(name) != null)
+            throw new ValidationError(SCHEMA_DUPLICATE_IMPORT, name);
+        imports.add(name, schema);
+    }
+
+    /**
+     * <p>Retrieve the XSD schema imports.</p>
+     *
+     * @return The XSD schema imports.
+     */
+    public String[] snapshotImports() {
+        String[] res = new String[imports.size()];
+        int k = 0;
+        for (MapEntry<String, XSDSchema> entry = imports.getFirstEntry();
+             entry != null; entry = imports.successor(entry))
+            res[k++] = entry.key;
+        return res;
+    }
+
+    /*****************************************************/
+    /* Bean Resolver                                     */
+    /*****************************************************/
 
     /**
      * <p>Some test cases.</p

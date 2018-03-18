@@ -456,7 +456,7 @@ public final class CodeType {
      */
     public boolean wordBreak2(int k, String t) {
         return wordBreak2(k == 0 ? LINE_EOF : t.codePointBefore(k),
-                k == t.length() ? LINE_EOF : t.codePointAt(k));
+                    k == t.length() ? LINE_EOF : t.codePointAt(k));
     }
 
     /**

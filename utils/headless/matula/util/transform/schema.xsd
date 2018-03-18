@@ -14,3 +14,7 @@
     <attribute name="name" type="string"/>
     <attribute name="occurs" use="optional" type="string"/>
 </element>
+<element name="include">
+    <parent name=""/>
+    <attribute name="bean" type="string"/>
+</element>

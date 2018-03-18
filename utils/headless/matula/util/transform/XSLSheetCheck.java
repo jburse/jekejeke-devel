@@ -47,12 +47,12 @@ public final class XSLSheetCheck extends XSLSheet {
     private static final String SHEET_MISSING_ATTR = "sheet_missing_attr";
     private static final String SHEET_MISMATCHED_PATH = "sheet_mismatched_path";
 
-    static XSDSchema meta = new XSDSchema();
-
     private MapHash<String, Integer> parameters = new MapHash<String, Integer>();
     private int mask;
     private XSDSchema schema;
     private ListArray<String> simulation = new ListArray<String>();
+
+    private static XSDSchema meta = new XSDSchema();
 
     static {
         try {
@@ -243,10 +243,14 @@ public final class XSLSheetCheck extends XSLSheet {
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError {
         String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
-        InterfacePath pu = resolveBean(bean);
-        if ((pu.getFlags() & InterfacePath.FLAG_STYL) != 0)
+
+        XSDResolver resolver=schema.getResolver();
+        Class<?> _class=XSLSheet.findClass(bean);
+        XSDSchema xdef=resolver.resolveSchema(_class);
+
+        if ((xdef.getFlags() & InterfacePath.FLAG_STYL) != 0)
             throw new ValidationError(SHEET_MISMATCHED_PATH, bean);
-        if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
+        if ((xdef.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
             String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
             if (select == null) {
                 String name = de.getName();
@@ -262,15 +266,6 @@ public final class XSLSheetCheck extends XSLSheet {
                 throw new ValidationError(SHEET_FORBIDDEN_ATTR, name + ".select");
             }
         }
-        pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
-        pu.list();
-        boolean f = pu.next();
-        pu.close();
-        if (!f)
-            throw new IllegalArgumentException("schema missing");
-
-        XSDSchema xdef = new XSDSchema();
-        xdef.digestElements(pu.getFound());
 
         ListArray<String> backsimulation = simulation;
         XSDSchema backschema = schema;

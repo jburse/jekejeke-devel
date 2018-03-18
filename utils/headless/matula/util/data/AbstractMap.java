@@ -182,9 +182,9 @@ public abstract class AbstractMap<K, V>
     /***************************************************************/
 
     /**
-     * <p>Returns a string representation of this list array.</p>
+     * <p>Returns a string representation of this abstract map.</p>
      *
-     * @return A string representation of this list array.
+     * @return A string representation of this abstract map.
      */
     public String toString() {
         MapEntry<K, V> entry = getFirstEntry();
