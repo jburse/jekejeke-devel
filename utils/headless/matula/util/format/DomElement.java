@@ -98,11 +98,11 @@ public final class DomElement extends AbstractDom {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
-                if (dr.getType().length() > 0 &&
-                        dr.getType().charAt(0) == XmlMachine.CHAR_SLASH)
+                String type = dr.getType();
+                if (type.length() > 0 &&
+                        type.charAt(0) == XmlMachine.CHAR_SLASH)
                     throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
                 boolean closed = checkClosed(dr);
-                String type = dr.getType();
                 AssocArray<String, Object> newkvs = null;
                 for (int i = 0; i < dr.getAttrCount(); i++) {
                     String valstr = dr.getValueAt(i);
@@ -122,14 +122,35 @@ public final class DomElement extends AbstractDom {
                         newkvs = new AssocArray<String, Object>();
                     newkvs.add(dr.getAttr(i), val);
                 }
-                boolean empty = DomWriter.checkEmpty(dr.getControl(), type);
+                boolean empty = (AbstractDom.getControl(dr.getControl(), type) == TYPE_EMPTY);
                 ListArray<AbstractDom> newchildren;
                 if (!closed && !empty) {
-                    if ((dr.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                            DomWriter.checkAny(dr.getControl(), type)) {
-                        int backmask = dr.getMask();
+                    int backmask = dr.getMask();
+                    if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                            (backmask & AbstractDom.MASK_STRP) != 0) &&
+                            getControl(dr.getControl(), type) == TYPE_ANY) {
+                        int mask = backmask;
+                        mask |= AbstractDom.MASK_TEXT;
+                        mask &= ~AbstractDom.MASK_STRP;
+                        dr.setMask(mask);
                         try {
-                            dr.setMask(dr.getMask() | AbstractDom.MASK_TEXT);
+                            newchildren = DomElement.loadNodes(dr);
+                            dr.setMask(backmask);
+                        } catch (IOException x) {
+                            dr.setMask(backmask);
+                            throw x;
+                        } catch (ScannerError x) {
+                            dr.setMask(backmask);
+                            throw x;
+                        }
+                    } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                            (backmask & AbstractDom.MASK_STRP) == 0) &&
+                            getControl(dr.getControl(), type) == TYPE_TEXT) {
+                        int mask = backmask;
+                        mask |= AbstractDom.MASK_TEXT;
+                        mask |= AbstractDom.MASK_STRP;
+                        dr.setMask(mask);
+                        try {
                             newchildren = DomElement.loadNodes(dr);
                             dr.setMask(backmask);
                         } catch (IOException x) {
@@ -225,12 +246,12 @@ public final class DomElement extends AbstractDom {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
-                if (dr.getType().length() == 0 ||
-                        dr.getType().charAt(0) != XmlMachine.CHAR_SLASH)
+                String temp = dr.getType();
+                if (temp.length() == 0 ||
+                        temp.charAt(0) != XmlMachine.CHAR_SLASH)
                     throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(dr.getReader()));
                 if (dr.getAttrCount() != 0)
                     throw new ScannerError(DOM_UNEXPECTED_ATTR, OpenOpts.getOffset(dr.getReader()));
-                String temp = dr.getType();
                 temp = temp.substring(1);
                 if (!type.equals(temp))
                     throw new ScannerError(DOM_MISMATCHED_END, OpenOpts.getOffset(dr.getReader()));
@@ -251,11 +272,29 @@ public final class DomElement extends AbstractDom {
      * @throws IOException Shit happens.
      */
     void storeNode(DomWriter dw) throws IOException {
-        if ((dw.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                DomWriter.checkAny(dw.getControl(), name)) {
-            int backmask = dw.getMask();
+        int backmask = dw.getMask();
+        if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                (backmask & AbstractDom.MASK_STRP) != 0) &&
+                getControl(dw.getControl(), name) == TYPE_ANY) {
+            int mask = backmask;
+            mask |= AbstractDom.MASK_TEXT;
+            mask &= ~AbstractDom.MASK_STRP;
+            dw.setMask(mask);
             try {
-                dw.setMask(dw.getMask() | AbstractDom.MASK_TEXT);
+                storeNodes2(dw);
+                dw.setMask(backmask);
+            } catch (IOException x) {
+                dw.setMask(backmask);
+                throw x;
+            }
+        } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                (backmask & AbstractDom.MASK_STRP) == 0) &&
+                getControl(dw.getControl(), name) == TYPE_TEXT) {
+            int mask = backmask;
+            mask |= AbstractDom.MASK_TEXT;
+            mask |= AbstractDom.MASK_STRP;
+            dw.setMask(mask);
+            try {
                 storeNodes2(dw);
                 dw.setMask(backmask);
             } catch (IOException x) {
@@ -277,7 +316,7 @@ public final class DomElement extends AbstractDom {
             throws IOException {
         AbstractDom[] nodes = snapshotNodes();
         if (nodes.length == 0 &&
-                DomWriter.checkEmpty(dw.getControl(), name)) {
+                (AbstractDom.getControl(dw.getControl(), name) == TYPE_EMPTY)) {
             dw.copyStart(this);
         } else if (nodes.length != 0 ||
                 (dw.getMask() & MASK_TEXT) != 0) {
@@ -323,8 +362,9 @@ public final class DomElement extends AbstractDom {
                     res.add(dt);
                     break;
                 case XmlMachine.RES_TAG:
-                    if (dr.getType().length() > 0 &&
-                            dr.getType().charAt(0) == XmlMachine.CHAR_SLASH)
+                    String temp = dr.getType();
+                    if (temp.length() > 0 &&
+                            temp.charAt(0) == XmlMachine.CHAR_SLASH)
                         return res;
                     DomElement dh = new DomElement();
                     dh.loadNode(dr);

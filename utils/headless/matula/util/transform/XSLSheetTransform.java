@@ -1,5 +1,7 @@
 package matula.util.transform;
 
+import audt.format.FormatterDateTime;
+import idxtab.Temprepo.TemprepoPath;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
@@ -7,6 +9,8 @@ import matula.util.regex.ScannerError;
 import matula.util.system.MimeHeader;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 
 /**
  * <p>This class provides an XSL style sheet transform.</p>
@@ -159,11 +163,35 @@ public final class XSLSheetTransform extends XSLSheet {
             } else if (de.isName(NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
-                if ((writer.getMask() & AbstractDom.MASK_TEXT) == 0 &&
-                        DomWriter.checkAny(writer.getControl(), de.getName())) {
-                    int backmask = writer.getMask();
+                int backmask = writer.getMask();
+                if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                        (backmask & AbstractDom.MASK_STRP) != 0) &&
+                        AbstractDom.getControl(writer.getControl(), de.getName()) == AbstractDom.TYPE_ANY) {
+                    int mask = backmask;
+                    mask |= AbstractDom.MASK_TEXT;
+                    mask &= ~AbstractDom.MASK_STRP;
+                    writer.setMask(mask);
                     try {
-                        writer.setMask(writer.getMask() | AbstractDom.MASK_TEXT);
+                        xsltNodes2(de);
+                        writer.setMask(backmask);
+                    } catch (IOException x) {
+                        writer.setMask(backmask);
+                        throw x;
+                    } catch (ScannerError x) {
+                        writer.setMask(backmask);
+                        throw x;
+                    } catch (ValidationError x) {
+                        writer.setMask(backmask);
+                        throw x;
+                    }
+                } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                        (backmask & AbstractDom.MASK_STRP) == 0) &&
+                        AbstractDom.getControl(writer.getControl(), de.getName()) == AbstractDom.TYPE_TEXT) {
+                    int mask = backmask;
+                    mask |= AbstractDom.MASK_TEXT;
+                    mask |= AbstractDom.MASK_STRP;
+                    writer.setMask(mask);
+                    try {
                         xsltNodes2(de);
                         writer.setMask(backmask);
                     } catch (IOException x) {
@@ -195,7 +223,7 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         AbstractDom[] nodes = de.snapshotNodes();
         if (nodes.length == 0 &&
-                DomWriter.checkEmpty(writer.getControl(), de.getName())) {
+                (AbstractDom.getControl(writer.getControl(), de.getName()) == AbstractDom.TYPE_EMPTY)) {
             writer.copyStart(de);
         } else if (nodes.length != 0 ||
                 (writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
@@ -330,7 +358,7 @@ public final class XSLSheetTransform extends XSLSheet {
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError {
         String bean = de.getAttr(ATTR_WITHDATA_BEAN);
-        Class<?> _class= XSLSheet.findClass(bean);
+        Class<?> _class = XSLSheet.findClass(bean);
         InterfacePath pu = XSLSheet.newBean(_class);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
             String select = de.getAttr(ATTR_WITHDATA_SELECT);
@@ -543,7 +571,7 @@ public final class XSLSheetTransform extends XSLSheet {
         transform.setWriter(dw);
 
         transform.xslt(template, null);
-        pw.flush();
+        dw.flush();
 
         System.out.println();
         System.out.println();
@@ -563,7 +591,7 @@ public final class XSLSheetTransform extends XSLSheet {
         transform.setVariables(variables);
         transform.setWriter(dw);
         transform.xslt(template, null);
-        pw.flush();
+        dw.flush();
         System.out.println();
     }
     */

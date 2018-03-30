@@ -186,7 +186,7 @@ public final class XSDSchema {
                 if ((mode & MODE_DRY) != 0) {
                     schema = new XSDSchema();
                 } else {
-                    Class<?> _class=XSLSheet.findClass(bean);
+                    Class<?> _class = XSLSheet.findClass(bean);
                     schema = resolver.resolveSchema(_class);
                 }
                 putImport(bean, schema);
@@ -199,8 +199,8 @@ public final class XSDSchema {
     /**
      * <p>Digest the attributes of the XSD schema.</p>
      *
-     * @param de The schema dom element.
-     * @param xe The element declaration.
+     * @param de   The schema dom element.
+     * @param xe   The element declaration.
      * @param mode The mode flags.
      * @throws ValidationError Check error.
      */
@@ -269,6 +269,7 @@ public final class XSDSchema {
 
     /**
      * <p>Set a XSD schema declaration.</p>
+     * <p>Name should be passed already lower case.</p>
      *
      * @param name The name.
      * @param xd   The XSD schema declaration.

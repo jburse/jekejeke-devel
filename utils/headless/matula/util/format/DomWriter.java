@@ -4,8 +4,7 @@ import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * <p>This class provides a dom writer.</p>
@@ -37,12 +36,14 @@ public final class DomWriter {
     private static final int INDENT_INCREMENT = 4;
     private static final int LINE_WIDTH = 80;
 
-    public static final int MASK_PLIN = 0x00000010;
+    public static final int MASK_PLIN = 0x00000010; /* suppress tags and entities */
 
     private Writer writer;
     private int mask;
     private MapHash<String, Integer> control;
     private int indent;
+    private int pos;
+    private String pending;
 
     /**
      * <p>Set the writer.</p>
@@ -90,57 +91,98 @@ public final class DomWriter {
     }
 
     /**
-     * <p>Increment the indent.</p>
-     */
-    public void incIndent() {
-        indent += INDENT_INCREMENT;
-    }
-
-    /**
-     * <p>Decrement the indent.</p>
-     */
-    public void decIndent() {
-        indent -= INDENT_INCREMENT;
-    }
-
-    /**
-     * <p>Retrieve the indent.</p>
-     *
-     * @return The indent.
-     */
-    int getIndent() {
-        return indent;
-    }
-
-    /**
-     * <p>Write the indent.</p>
-     *
-     * @throws IOException IO error.
-     */
-    public void writeIndent() throws IOException {
-        for (int i = 0; i < indent; i++)
-            writer.write(" ");
-    }
-
-    /**
-     * <p>Write a time stamp.</p>
-     *
-     * @throws IOException IO error.
-     */
-    public void writeComment(String comment) throws IOException {
-        write("<!-- ");
-        write(ForeignXml.sysTextEscape(comment));
-        write(" -->\n");
-    }
-
-    /**
      * <p>Write a string.</p>
      *
      * @param str The string.
      * @throws IOException IO error.
      */
-    public void write(String str) throws IOException {
-        writer.write(str);
+    public void write(String str)
+            throws IOException {
+        write(str, false);
+    }
+
+    /**
+     * <p>Write a string.</p>
+     *
+     * @param str  The string.
+     * @param wrap The space wrap flag.
+     * @throws IOException IO error.
+     */
+    private void write(String str, boolean wrap)
+            throws IOException {
+        int len = str.length();
+        int k;
+        boolean hasspace;
+        if (pending != null) {
+            k = -pending.length();
+            hasspace = true;
+        } else {
+            k = 0;
+            hasspace = false;
+        }
+        for (int i = 0; i < len; i++) {
+            char ch = str.charAt(i);
+            if (ch == '\n') {
+                if (k < 0) {
+                    writer.write(pending, pending.length() + k, -k);
+                    writer.write(str, 0, i + 1);
+                } else {
+                    writer.write(str, k, i + 1 - k);
+                }
+                k = i + 1;
+                pos = 0;
+                hasspace = false;
+            } else if (wrap && ch == XmlMachine.CHAR_SPACE) {
+                if (k < 0) {
+                    writer.write(pending, pending.length() + k, -k);
+                    writer.write(str, 0, i);
+                } else {
+                    writer.write(str, k, i - k);
+                }
+                k = i;
+                hasspace = true;
+                pos++;
+            } else if (hasspace && pos >= LINE_WIDTH) {
+                incIndent();
+                writer.write("\n");
+                k++;
+                writeIndent();
+                pos = indent + i + 1 - k;
+                decIndent();
+                hasspace = false;
+            } else {
+                pos++;
+            }
+        }
+        if (hasspace) {
+            StringWriter sw = new StringWriter();
+            if (k < 0) {
+                sw.write(pending, pending.length() + k, -k);
+                sw.write(str, 0, len);
+            } else {
+                sw.write(str, k, len - k);
+            }
+            pending = sw.toString();
+        } else {
+            if (k < 0) {
+                writer.write(pending, pending.length() + k, -k);
+                writer.write(str, 0, len);
+            } else {
+                writer.write(str, k, len - k);
+            }
+            pending = null;
+        }
+    }
+
+    /**
+     * <p>Flush the dom writer.</p>
+     *
+     * @throws IOException Shit happens.
+     */
+    public void flush() throws IOException {
+        if (pending != null)
+            writer.write(pending);
+        writer.flush();
     }
 
     /****************************************************************/
@@ -154,12 +196,18 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     public void copyText(String data) throws IOException {
-        if ((mask & MASK_PLIN) != 0) {
-            write(data);
+        if ((mask & MASK_PLIN) == 0)
+            data = ForeignXml.sysTextEscape(data);
+        if ((mask & AbstractDom.MASK_STRP) != 0) {
+            write(data, true);
         } else {
-            write(ForeignXml.sysTextEscape(data));
+            write(data);
         }
     }
+
+    /***************************************************************/
+    /* Tag Writing                                                 */
+    /***************************************************************/
 
     /**
      * <p>Copy an empty dom element.</p>
@@ -199,61 +247,23 @@ public final class DomWriter {
      */
     private void copyAttributes(DomElement de) throws IOException {
         String[] attrs = de.snapshotAttrs();
-        if ((getMask() & AbstractDom.MASK_TEXT) != 0) {
-            for (int i = 0; i < attrs.length; i++) {
-                String attr = attrs[i];
-                Object val = de.getAttrObj(attr);
-                if (val == null)
-                    continue;
-                write(" ");
-                write(attr);
-                if (!"".equals(val)) {
-                    write("=");
-                    if (val instanceof String) {
-                        write("\"");
-                        write(ForeignXml.sysTextEscape((String) val));
-                        write("\"");
-                    } else {
-                        write(Long.toString(((Long) val).longValue()));
-                    }
-                }
-            }
-        } else {
-            String name = de.getName();
-            int off = getIndent() + 1 + name.length();
-            incIndent();
-            for (int i = 0; i < attrs.length; i++) {
-                name = attrs[i];
-                Object val = de.getAttrObj(name);
-                if (val == null)
-                    continue;
-                int off2 = off + 1 + name.length();
-                StringBuilder buf = new StringBuilder();
-                if (!"".equals(val)) {
-                    buf.append("=");
-                    if (val instanceof String) {
-                        buf.append("\"");
-                        buf.append(ForeignXml.sysTextEscape((String) val));
-                        buf.append("\"");
-                    } else {
-                        buf.append(Long.toString(((Long) val).longValue()));
-                    }
-                }
-                off2 += 3 + buf.length();
-                if (off2 >= LINE_WIDTH) {
-                    write("\n");
-                    writeIndent();
-                    off = getIndent();
+        for (int i = 0; i < attrs.length; i++) {
+            String attr = attrs[i];
+            Object val = de.getAttrObj(attr);
+            if (val == null)
+                continue;
+            write(" ", true);
+            write(attr);
+            if (!"".equals(val)) {
+                write("=");
+                if (val instanceof String) {
+                    write("\"");
+                    write(ForeignXml.sysTextEscape((String) val));
+                    write("\"");
                 } else {
-                    write(" ");
-                    off++;
+                    write(Long.toString(((Long) val).longValue()));
                 }
-                write(name);
-                off += name.length();
-                write(buf.toString());
-                off += 3 + buf.length();
             }
-            decIndent();
         }
     }
 
@@ -263,7 +273,8 @@ public final class DomWriter {
      * @param de The template dom element.
      * @throws IOException IO error.
      */
-    public void copyEnd(DomElement de) throws IOException {
+    public void copyEnd(DomElement de)
+            throws IOException {
         if ((mask & MASK_PLIN) != 0)
             return;
         write("</");
@@ -271,49 +282,45 @@ public final class DomWriter {
         write(">");
     }
 
-    /*****************************************************/
-    /* Tag Control                                       */
-    /*****************************************************/
+    /***************************************************************/
+    /* Comment & Indent                                            */
+    /***************************************************************/
 
     /**
-     * <p>Check whether the tag type is empty.</p>
+     * <p>Write a first line comment.</p>
      *
-     * @param control The tag control.
-     * @param type    The tag type.
-     * @return True if the tag type is empty, otherwise false.
+     * @throws IOException IO error.
      */
-    public static boolean checkEmpty(MapHash<String, Integer> control,
-                                     String type) {
-        if (control == null)
-            return false;
-        Integer val = control.get(type);
-        if (val == null) {
-            return false;
-        } else if (val.intValue() == AbstractDom.TYPE_EMPTY) {
-            return true;
-        } else {
-            return false;
-        }
+    public void writeComment(String comment)
+            throws IOException {
+        writer.write("<!-- ");
+        writer.write(ForeignXml.sysTextEscape(comment));
+        writer.write(" -->\n");
     }
 
     /**
-     * <p>Check whether the tag type is any.</p>
-     *
-     * @param control The tag control.
-     * @param type    The tag type.
-     * @return True if the tag type is any, otherwise false.
+     * <p>Increment the indent.</p>
      */
-    public static boolean checkAny(MapHash<String, Integer> control,
-                                   String type) {
-        if (control == null)
-            return false;
-        Integer val = control.get(type);
-        if (val == null) {
-            return false;
-        } else if (val.intValue() == AbstractDom.TYPE_ANY) {
-            return true;
-        } else {
-            return false;
+    public void incIndent() {
+        indent += INDENT_INCREMENT;
+    }
+
+    /**
+     * <p>Decrement the indent.</p>
+     */
+    public void decIndent() {
+        indent -= INDENT_INCREMENT;
+    }
+
+    /**
+     * <p>Write the indent.</p>
+     *
+     * @throws IOException IO error.
+     */
+    public void writeIndent() throws IOException {
+        for (int i = 0; i < indent; i++) {
+            pos++;
+            writer.write(" ");
         }
     }
 
@@ -340,6 +347,21 @@ public final class DomWriter {
         sr = new StringReader(text);
         de = new DomElement();
         de.load(sr, AbstractDom.MASK_LIST, control);
+        de.store(pw, null, AbstractDom.MASK_LIST, control);
+        pw.println();
+
+        MapHash<String, Integer> control = new MapHash<String, Integer>();
+        control.add("p", Integer.valueOf(AbstractDom.TYPE_TEXT));
+        control.add("img", Integer.valueOf(AbstractDom.TYPE_EMPTY));
+
+        File file = new File("D:\\Tablespace\\Config2\\usrtab\\logtab\\richdoc.html");
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(
+                        new FileInputStream(file), "UTF-8"));
+        DomElement de = new DomElement();
+        de.load(reader, AbstractDom.MASK_LIST, control);
+
+        PrintWriter pw = new PrintWriter(System.out);
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
     }

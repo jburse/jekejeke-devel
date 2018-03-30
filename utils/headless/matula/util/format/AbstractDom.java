@@ -40,14 +40,16 @@ import java.util.Date;
  */
 public abstract class AbstractDom
         implements Cloneable {
-    public static final String TIMESTAMP_DOM = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+//    public static final String TIMESTAMP_DOM = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
     public static final int MASK_TEXT = 0x00000001;
     public static final int MASK_LIST = 0x00000002;
+    public static final int MASK_STRP = 0x00000004;
 
     public static final int TYPE_NONE = 0;
-    public static final int TYPE_EMPTY = 1; /* disable text and list */
-    public static final int TYPE_ANY = 2; /* enable text and list */
+    public static final int TYPE_EMPTY = 1; /* disable list */
+    public static final int TYPE_ANY = 2; /* enable text and disable strip */
+    public static final int TYPE_TEXT = 3; /* enable text and enable strip */
 
     DomElement parent;
 
@@ -150,7 +152,7 @@ public abstract class AbstractDom
         } else {
             storeNode(dw);
         }
-        writer.flush();
+        dw.flush();
     }
 
     /**
@@ -178,7 +180,7 @@ public abstract class AbstractDom
         } else {
             storeNode(dw);
         }
-        writer.flush();
+        dw.flush();
     }
 
     /**
@@ -229,6 +231,27 @@ public abstract class AbstractDom
         parent = null;
     }
 
+    /****************************************************************/
+    /* Complex Types                                                */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the complex type value for an element type.</p>
+     *
+     * @param control The control.
+     * @param type    The element type.
+     * @return The complex type.
+     */
+    public static int getControl(MapHash<String, Integer> control,
+                                 String type) {
+        if (control == null)
+            return TYPE_NONE;
+        Integer val = control.get(type);
+        if (val == null)
+            return TYPE_NONE;
+        return val.intValue();
+    }
+
     /***************************************************************/
     /* Name Token Conversion                                       */
     /***************************************************************/
@@ -238,6 +261,7 @@ public abstract class AbstractDom
      *
      * @param args Not used.
      */
+    /*
     public static void main(String[] args) throws ParseException {
         String TIMESTAMP_DOM = "yyyy-MM-dd'T'HH:mm:ss.SSS";
         SimpleDateFormat sd = new SimpleDateFormat(TIMESTAMP_DOM);
@@ -252,5 +276,6 @@ public abstract class AbstractDom
         System.out.println("str=" + str);
         System.out.println("parse(str)=" + new Timestamp(sd.parse(str).getTime()));
     }
+    */
 
 }

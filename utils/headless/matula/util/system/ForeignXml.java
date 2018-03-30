@@ -60,6 +60,7 @@ public final class ForeignXml {
     /*******************************************************************/
     /* Text Escaping/Unescaping                                        */
     /*******************************************************************/
+
     /**
      * <p>Text escape a string.</p>
      *
@@ -67,7 +68,8 @@ public final class ForeignXml {
      * @return The text escaped string.
      */
     public static String sysTextEscape(String s) {
-        return sysTextEscape(s, 0, s.length());
+        String res = sysTextEscape(s, 0, s.length());
+        return (res != null ? res : s);
     }
 
     /**
@@ -76,7 +78,7 @@ public final class ForeignXml {
      * @param s     The string.
      * @param begin the beginning index.
      * @param end   the ending index.
-     * @return The text escaped string.
+     * @return The text escaped string, or null.
      */
     public static String sysTextEscape(String s, int begin, int end) {
         /* we keep buf = null as long as no character was escaped */
@@ -98,7 +100,7 @@ public final class ForeignXml {
             begin += Character.charCount(ch);
         }
         if (buf == null)
-            return s.substring(back, end);
+            return null;
         return buf.toString();
     }
 

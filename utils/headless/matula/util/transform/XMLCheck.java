@@ -66,6 +66,15 @@ public final class XMLCheck {
     }
 
     /**
+     * <p>Retrieve the mask.</p>
+     *
+     * @return The mask.
+     */
+    public int getMask() {
+        return mask;
+    }
+
+    /**
      * <p>Set the XSD schema declarations.</p>
      *
      * @param s The XSD schema declarations.
@@ -105,15 +114,33 @@ public final class XMLCheck {
             DomElement de = (DomElement) node;
             XSDDeclElem xe = schema.getDeclElem(de.getName());
             checkAttributes(de, xe);
-            if ((mask & AbstractDom.MASK_TEXT) == 0 &&
+            int backmask = getMask();
+            if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                    (backmask & AbstractDom.MASK_STRP) != 0) &&
                     xe.getComplex() == XSDDeclElem.COMPLEX_ANY) {
-                int backmask = mask;
+                int mask = backmask;
+                mask |= AbstractDom.MASK_TEXT;
+                mask &= ~AbstractDom.MASK_STRP;
+                setMask(mask);
                 try {
-                    mask |= AbstractDom.MASK_TEXT;
                     checkNodes(de, xe);
-                    mask = backmask;
+                    setMask(backmask);
                 } catch (ValidationError x) {
-                    mask = backmask;
+                    setMask(backmask);
+                    throw x;
+                }
+            } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                    (backmask & AbstractDom.MASK_STRP) == 0) &&
+                        xe.getComplex() == XSDDeclElem.COMPLEX_TEXT) {
+                int mask=backmask;
+                mask |= AbstractDom.MASK_TEXT;
+                mask |= AbstractDom.MASK_STRP;
+                setMask(mask);
+                try {
+                    checkNodes(de, xe);
+                    setMask(backmask);
+                } catch (ValidationError x) {
+                    setMask(backmask);
                     throw x;
                 }
             } else {

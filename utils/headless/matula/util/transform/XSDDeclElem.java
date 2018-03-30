@@ -38,6 +38,7 @@ public final class XSDDeclElem extends XSDDecl {
     static final String ATTR_ELEMENT_COMPLEX = "complex";
 
     static final String OP_ANY = "any";
+    static final String OP_TEXT = "text";
     static final String OP_EMPTY = "empty";
 
     static final String OP_MULTI = "multi";
@@ -50,8 +51,9 @@ public final class XSDDeclElem extends XSDDecl {
     private AssocArray<String, Integer> constraint;
 
     public static final int COMPLEX_NONE = 0;
-    public static final int COMPLEX_EMPTY = 1; /* disable text and list */
-    public static final int COMPLEX_ANY = 2; /* enable text and list */
+    public static final int COMPLEX_EMPTY = 1; /* disable list */
+    public static final int COMPLEX_ANY = 2; /* enable text and disable strip */
+    public static final int COMPLEX_TEXT = 3; /* enable text and enable strip */
 
     public static final int OCCURS_NONDET = 0;  /* mc */
     public static final int OCCURS_MULTI = 1;   /* m */
@@ -131,10 +133,12 @@ public final class XSDDeclElem extends XSDDecl {
         int complex = COMPLEX_NONE;
         if (str == null) {
             /* */
-        } else if (OP_ANY.equalsIgnoreCase(str)) {
-            complex = COMPLEX_ANY;
         } else if (OP_EMPTY.equalsIgnoreCase(str)) {
             complex = COMPLEX_EMPTY;
+        } else if (OP_ANY.equalsIgnoreCase(str)) {
+            complex = COMPLEX_ANY;
+        } else if (OP_TEXT.equalsIgnoreCase(str)) {
+            complex = COMPLEX_TEXT;
         } else {
             String name = de.getName();
             throw new ValidationError(SCHEMA_ILLEGAL_VALUE, name + ".complex");

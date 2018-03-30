@@ -4,7 +4,7 @@ import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * <p>This class provides a dom reader.</p>
@@ -40,6 +40,8 @@ public final class DomReader extends XmlScanner<XmlMachine> {
 
     private static final String STRING_BANG_DASH_DASH = "!--";
     private static final String STRING_DASH_DASH = "--";
+
+    public static final int MASK_LTSP = 0x00000010; /* last read was space */
 
     private int mask;
     private MapHash<String, Integer> control;
@@ -98,18 +100,25 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         for (; ; ) {
             switch (getRes()) {
                 case XmlMachine.RES_TEXT:
-                    if ((mask & AbstractDom.MASK_TEXT) != 0)
-                        return;
+                    if ((mask & AbstractDom.MASK_TEXT) != 0) {
+                        if ((mask & AbstractDom.MASK_STRP) != 0)
+                            stripWhitespace();
+                        if (getTextLen() != 0)
+                            return;
+                        super.nextTagOrText();
+                        break;
+                    }
                     checkWhitespace();
                     super.nextTagOrText();
                     break;
                 case XmlMachine.RES_TAG:
-                    if (getType().equals(STRING_BANG_DASH_DASH)) {
+                    String temp = getType();
+                    if (temp.equals(STRING_BANG_DASH_DASH)) {
                         checkComment();
                         super.nextTagOrText();
                         break;
-                    } else if (getType().length() > 0 &&
-                            getType().charAt(0) == XmlMachine.CHAR_QUESTION) {
+                    } else if (temp.length() > 0 &&
+                            temp.charAt(0) == XmlMachine.CHAR_QUESTION) {
                         checkProcInstr();
                         super.nextTagOrText();
                         break;
@@ -125,6 +134,42 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         }
     }
 
+    /**
+     * <p>Check whether the dom reader is at eof.</p>
+     *
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    void checkEof() throws IOException, ScannerError {
+        for (; ; ) {
+            switch (getRes()) {
+                case XmlMachine.RES_TEXT:
+                    if ((mask & AbstractDom.MASK_TEXT) != 0)
+                        throw new ScannerError(DOM_SUPERFLOUS_TAG, OpenOpts.getOffset(reader));
+                    checkWhitespace();
+                    super.nextTagOrText();
+                    break;
+                case XmlMachine.RES_TAG:
+                    String temp = getType();
+                    if (temp.equals(STRING_BANG_DASH_DASH)) {
+                        checkComment();
+                        super.nextTagOrText();
+                        break;
+                    } else if (temp.length() > 0 &&
+                            temp.charAt(0) == XmlMachine.CHAR_QUESTION) {
+                        checkProcInstr();
+                        super.nextTagOrText();
+                        break;
+                    } else {
+                        throw new ScannerError(DOM_SUPERFLOUS_TAG, OpenOpts.getOffset(reader));
+                    }
+                case XmlMachine.RES_EOF:
+                    return;
+                default:
+                    throw new IllegalArgumentException("illegal res");
+            }
+        }
+    }
 
     /**
      * <p>Check whether the tag is a comment tag.</p>
@@ -160,29 +205,6 @@ public final class DomReader extends XmlScanner<XmlMachine> {
     }
 
     /**
-     * <p>Check whether the dom reader is at eof.</p>
-     *
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
-     */
-    void checkEof() throws IOException, ScannerError {
-        for (; ; ) {
-            switch (getRes()) {
-                case XmlMachine.RES_TEXT:
-                    checkWhitespace();
-                    super.nextTagOrText();
-                    break;
-                case XmlMachine.RES_TAG:
-                    throw new ScannerError(DOM_SUPERFLOUS_TAG, OpenOpts.getOffset(reader));
-                case XmlMachine.RES_EOF:
-                    return;
-                default:
-                    throw new IllegalArgumentException("illegal res");
-            }
-        }
-    }
-
-    /**
      * <p>Check whether the text is a white space text.</p>
      *
      * @throws ScannerError Syntax error.
@@ -197,6 +219,34 @@ public final class DomReader extends XmlScanner<XmlMachine> {
             } else {
                 throw new ScannerError(DOM_NONE_WHITESPACE, OpenOpts.getOffset(reader));
             }
+        }
+    }
+
+    /**
+     * <p>Strip superflous white space from text.</p>
+     */
+    private void stripWhitespace() {
+        char[] buf = getTextBuf();
+        int len = getTextLen();
+        int k = 0;
+        boolean hasspace = ((mask & MASK_LTSP) != 0);
+        for (int i = 0; i < len; i++) {
+            char ch = buf[i];
+            if (ch <= XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM) {
+                if (!hasspace) {
+                    buf[k++] = XmlMachine.CHAR_SPACE;
+                    hasspace = true;
+                }
+            } else {
+                buf[k++] = ch;
+                hasspace = false;
+            }
+        }
+        setTextLen(k);
+        if (hasspace) {
+            mask |= MASK_LTSP;
+        } else {
+            mask &= ~MASK_LTSP;
         }
     }
 

@@ -69,7 +69,8 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
     }
 
     /**
-     * For efficiency, we allow to return the text buf.
+     * <p>For efficiency, we allow to access the text buf.</p>
+     * <p>It is also allowed to modify the text buf.</p>
      *
      * @return The text buf.
      */
@@ -78,12 +79,21 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
     }
 
     /**
-     * For efficiency, we allow to return the text len.
+     * <p>For efficiency, we allow to access the text len.</p>
      *
      * @return The text len.
      */
     public int getTextLen() {
         return mach.getTextLen();
+    }
+
+    /**
+     * <p>For efficiency, we allow to modify the text len.</p>
+     *
+     * @param t The text len.
+     */
+    public void setTextLen(int t) {
+        mach.setTextLen(t);
     }
 
     /**
