@@ -402,9 +402,10 @@ public final class DomWriter {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    /*
+
     public static void main(String[] args)
             throws IOException, ScannerError {
+        /*
         String text = "<foo bar='123'/>  <foo bar='456'/>";
         StringReader sr = new StringReader(text);
         DomElement de = new DomElement();
@@ -421,6 +422,7 @@ public final class DomWriter {
         de.load(sr, AbstractDom.MASK_LIST, control);
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
+        */
 
         MapHash<String, Integer> control = new MapHash<String, Integer>();
         control.add("p", Integer.valueOf(AbstractDom.TYPE_TEXT));
@@ -437,6 +439,6 @@ public final class DomWriter {
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
     }
-    */
+
 
 }

@@ -98,6 +98,7 @@ public final class DomElement extends AbstractDom {
             case XmlMachine.RES_TEXT:
                 throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
             case XmlMachine.RES_TAG:
+                boolean lastspace = ((dr.getMask() & AbstractDom.MASK_LTSP) != 0);
                 String type = dr.getType();
                 if (type.length() > 0 &&
                         type.charAt(0) == XmlMachine.CHAR_SLASH)
@@ -173,6 +174,11 @@ public final class DomElement extends AbstractDom {
                 name = type;
                 setKeyValuesFast(newkvs);
                 setChildrenFast(newchildren);
+                if (lastspace) {
+                    dr.setMask(dr.getMask() | AbstractDom.MASK_LTSP);
+                } else {
+                    dr.setMask(dr.getMask() & ~AbstractDom.MASK_LTSP);
+                }
                 break;
             case XmlMachine.RES_EOF:
                 throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(dr.getReader()));
@@ -314,6 +320,7 @@ public final class DomElement extends AbstractDom {
      */
     private void storeNodes2(DomWriter dw)
             throws IOException {
+        boolean lastspace = ((dw.getMask() & AbstractDom.MASK_LTSP) != 0);
         AbstractDom[] nodes = snapshotNodes();
         if (nodes.length == 0 &&
                 (AbstractDom.getControl(dw.getControl(), name) == TYPE_EMPTY)) {
@@ -333,6 +340,11 @@ public final class DomElement extends AbstractDom {
             dw.copyEnd(this);
         } else {
             dw.copyEmpty(this);
+        }
+        if (lastspace) {
+            dw.setMask(dw.getMask() | AbstractDom.MASK_LTSP);
+        } else {
+            dw.setMask(dw.getMask() & ~AbstractDom.MASK_LTSP);
         }
     }
 

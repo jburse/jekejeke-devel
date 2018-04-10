@@ -1,7 +1,5 @@
 package matula.util.transform;
 
-import audt.format.FormatterDateTime;
-import idxtab.Temprepo.TemprepoPath;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
@@ -9,8 +7,6 @@ import matula.util.regex.ScannerError;
 import matula.util.system.MimeHeader;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 
 /**
  * <p>This class provides an XSL style sheet transform.</p>
@@ -68,7 +64,7 @@ public final class XSLSheetTransform extends XSLSheet {
 
     private MapHash<String, Object> variables;
     private DomElement data;
-    private DomWriter writer = new DomWriter();
+    private DomWriter dw = new DomWriter();
 
     /**
      * <p>Set the variables.</p>§
@@ -94,7 +90,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @return The dom writer.
      */
     public DomWriter getWriter() {
-        return writer;
+        return dw;
     }
 
     /**
@@ -103,7 +99,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @param w The dom writer.
      */
     public void setWriter(DomWriter w) {
-        writer = w;
+        dw = w;
     }
 
     /**
@@ -118,8 +114,8 @@ public final class XSLSheetTransform extends XSLSheet {
     public void xslt(AbstractDom dn, String comment)
             throws IOException, ScannerError, ValidationError {
         if (comment != null && !"".equals(comment))
-            writer.writeComment(comment);
-        if ((writer.getMask() & AbstractDom.MASK_LIST) != 0) {
+            dw.writeComment(comment);
+        if ((dw.getMask() & AbstractDom.MASK_LIST) != 0) {
             DomElement elem = (DomElement) dn;
             AbstractDom[] nodes = elem.snapshotNodes();
             xsltNodes(nodes);
@@ -140,7 +136,7 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             DomText dt = (DomText) dn;
-            writer.copyText(dt.getData());
+            dw.copyText(dt.getData());
         } else {
             DomElement de = (DomElement) dn;
             if (de.isName(NAME_FOREACH)) {
@@ -163,45 +159,45 @@ public final class XSLSheetTransform extends XSLSheet {
             } else if (de.isName(NAME_CHOOSE)) {
                 xsltChoose(de);
             } else {
-                int backmask = writer.getMask();
+                int backmask = dw.getMask();
                 if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
                         (backmask & AbstractDom.MASK_STRP) != 0) &&
-                        AbstractDom.getControl(writer.getControl(), de.getName()) == AbstractDom.TYPE_ANY) {
+                        AbstractDom.getControl(dw.getControl(), de.getName()) == AbstractDom.TYPE_ANY) {
                     int mask = backmask;
                     mask |= AbstractDom.MASK_TEXT;
                     mask &= ~AbstractDom.MASK_STRP;
-                    writer.setMask(mask);
+                    dw.setMask(mask);
                     try {
                         xsltNodes2(de);
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                     } catch (IOException x) {
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                         throw x;
                     } catch (ScannerError x) {
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                         throw x;
                     } catch (ValidationError x) {
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                         throw x;
                     }
                 } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
                         (backmask & AbstractDom.MASK_STRP) == 0) &&
-                        AbstractDom.getControl(writer.getControl(), de.getName()) == AbstractDom.TYPE_TEXT) {
+                        AbstractDom.getControl(dw.getControl(), de.getName()) == AbstractDom.TYPE_TEXT) {
                     int mask = backmask;
                     mask |= AbstractDom.MASK_TEXT;
                     mask |= AbstractDom.MASK_STRP;
-                    writer.setMask(mask);
+                    dw.setMask(mask);
                     try {
                         xsltNodes2(de);
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                     } catch (IOException x) {
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                         throw x;
                     } catch (ScannerError x) {
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                         throw x;
                     } catch (ValidationError x) {
-                        writer.setMask(backmask);
+                        dw.setMask(backmask);
                         throw x;
                     }
                 } else {
@@ -221,25 +217,31 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltNodes2(DomElement de)
             throws IOException, ScannerError, ValidationError {
+        boolean lastspace = ((dw.getMask() & AbstractDom.MASK_LTSP) != 0);
         AbstractDom[] nodes = de.snapshotNodes();
         if (nodes.length == 0 &&
-                (AbstractDom.getControl(writer.getControl(), de.getName()) == AbstractDom.TYPE_EMPTY)) {
-            writer.copyStart(de);
+                (AbstractDom.getControl(dw.getControl(), de.getName()) == AbstractDom.TYPE_EMPTY)) {
+            dw.copyStart(de);
         } else if (nodes.length != 0 ||
-                (writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
-            writer.copyStart(de);
-            if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
+                (dw.getMask() & AbstractDom.MASK_TEXT) != 0) {
+            dw.copyStart(de);
+            if ((dw.getMask() & AbstractDom.MASK_TEXT) != 0) {
                 xsltNodes(nodes);
             } else {
-                writer.write("\n");
-                writer.incIndent();
+                dw.write("\n");
+                dw.incIndent();
                 xsltNodes(nodes);
-                writer.decIndent();
-                writer.writeIndent();
+                dw.decIndent();
+                dw.writeIndent();
             }
-            writer.copyEnd(de);
+            dw.copyEnd(de);
         } else {
-            writer.copyEmpty(de);
+            dw.copyEmpty(de);
+        }
+        if (lastspace) {
+            dw.setMask(dw.getMask() | AbstractDom.MASK_LTSP);
+        } else {
+            dw.setMask(dw.getMask() & ~AbstractDom.MASK_LTSP);
         }
     }
 
@@ -255,12 +257,12 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
-            if ((writer.getMask() & AbstractDom.MASK_TEXT) != 0) {
+            if ((dw.getMask() & AbstractDom.MASK_TEXT) != 0) {
                 xsltNode(node);
             } else {
-                writer.writeIndent();
+                dw.writeIndent();
                 xsltNode(node);
-                writer.write("\n");
+                dw.write("\n");
             }
         }
     }
@@ -337,12 +339,12 @@ public final class XSLSheetTransform extends XSLSheet {
             return;
         if (val instanceof DomElement) {
             AbstractDom[] nodes = ((DomElement) val).snapshotNodes();
-            DomElement.storeNodes(writer, nodes);
+            DomElement.storeNodes(dw, nodes);
         } else {
             if (val instanceof String) {
-                writer.copyText((String) val);
+                dw.copyText((String) val);
             } else {
-                writer.write(Long.toString(((Long) val).longValue()));
+                dw.write(Long.toString(((Long) val).longValue()));
             }
         }
     }
@@ -404,9 +406,9 @@ public final class XSLSheetTransform extends XSLSheet {
         String typesubtype = mh.getType() + "/" + mh.getSubType();
         int typeid = XSLSheet.checkMimeType(de, typesubtype);
         if (typeid == TEXT_PLAIN) {
-            writer.setMask(writer.getMask() | AbstractDom.MASK_PLIN);
+            dw.setMask(dw.getMask() | AbstractDom.MASK_PLIN);
         } else {
-            writer.setMask(writer.getMask() & ~AbstractDom.MASK_PLIN);
+            dw.setMask(dw.getMask() & ~AbstractDom.MASK_PLIN);
         }
     }
 
