@@ -36,8 +36,6 @@ public final class DomWriter {
     private static final int INDENT_INCREMENT = 4;
     private static final int LINE_WIDTH = 80;
 
-    public static final int MASK_PLIN = 0x00000010; /* suppress tags and entities */
-
     private Writer writer;
     private int mask;
     private MapHash<String, Integer> control;
@@ -202,7 +200,7 @@ public final class DomWriter {
         } else {
             wrap = false;
         }
-        if ((mask & MASK_PLIN) == 0)
+        if ((mask & AbstractDom.MASK_PLIN) == 0)
             data = ForeignXml.sysTextEscape(data, 0, data.length(), wrap);
         write(data, wrap);
     }
@@ -218,7 +216,7 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     public void copyEmpty(DomElement de) throws IOException {
-        if ((mask & MASK_PLIN) != 0)
+        if ((mask & AbstractDom.MASK_PLIN) != 0)
             return;
         write("<");
         write(de.getName());
@@ -233,7 +231,7 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     public void copyStart(DomElement de) throws IOException {
-        if ((mask & MASK_PLIN) != 0)
+        if ((mask & AbstractDom.MASK_PLIN) != 0)
             return;
         write("<");
         write(de.getName());
@@ -260,7 +258,7 @@ public final class DomWriter {
                 write("=");
                 if (val instanceof String) {
                     write("\"");
-                    write(ForeignXml.sysTextEscape((String) val));
+                    copyText((String) val);
                     write("\"");
                 } else {
                     write(Long.toString(((Long) val).longValue()));
@@ -277,7 +275,7 @@ public final class DomWriter {
      */
     public void copyEnd(DomElement de)
             throws IOException {
-        if ((mask & MASK_PLIN) != 0)
+        if ((mask & AbstractDom.MASK_PLIN) != 0)
             return;
         write("</");
         write(de.getName());

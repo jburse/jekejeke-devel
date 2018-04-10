@@ -147,15 +147,6 @@ public class XmlScanner<T extends XmlMachine> {
     }
 
     /**
-     * <p>Set the tag type.</p>
-     *
-     * @param t The tag type.
-     */
-    public void setType(String t) {
-        mach.setType(t);
-    }
-
-    /**
      * <p>Convenience method to check the actual tag type.</p>
      * <p>Will check the actual tag type ignoring case.</p>
      *
@@ -190,8 +181,8 @@ public class XmlScanner<T extends XmlMachine> {
     }
 
     /**
-     * Retrieve the number of attributes. Can be retrieved when the
-     * result type is RES_TAG.
+     * <p>Retrieve the number of attributes. Can be retrieved when the
+     * result type is RES_TAG.</p>
      *
      * @return The number of attributes.
      */
@@ -200,8 +191,8 @@ public class XmlScanner<T extends XmlMachine> {
     }
 
     /**
-     * Retrieve the nth attribute name. Can be retrieved when the
-     * result type is RES_TAG.
+     * <p>Retrieve the nth attribute name. Can be retrieved when the
+     * result type is RES_TAG.</p>
      *
      * @param i The index.
      * @return The attribute name.
@@ -211,14 +202,25 @@ public class XmlScanner<T extends XmlMachine> {
     }
 
     /**
-     * Retrieve the nth attribute value. Can be retrieved when the
-     * result type is RES_TAG.
+     * <p>Retrieve the nth attribute value. Can be retrieved
+     * when the result type is RES_TAG.</p>
      *
      * @param i The index.
      * @return The attribute value.
      */
     public String getValueAt(int i) {
         return mach.getValueAt(i);
+    }
+
+    /**
+     * <p>Retrieve the nth attribute value range. Can be retrieved
+     * when the result type is RES_TAG.</p>
+     *
+     * @param i The index.
+     * @return The attribute value range.
+     */
+    public XmlMachineRange getValueRange(int i) {
+        return mach.getValueRange(i);
     }
 
     /**

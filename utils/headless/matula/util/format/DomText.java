@@ -35,7 +35,7 @@ import java.io.IOException;
 public final class DomText extends AbstractDom {
     static final String DOM_MISSING_TEXT = "dom_missing_text";
 
-    private String data = "";
+    private String data = XmlMachine.VALUE_EMPTY;
 
     /**
      * <p>Retrieve the data.</p>
@@ -67,7 +67,7 @@ public final class DomText extends AbstractDom {
     void loadNode(DomReader dr) throws IOException, ScannerError {
         switch (dr.getRes()) {
             case XmlMachine.RES_TEXT:
-                data = ForeignXml.sysTextUnescape(dr.getText());
+                data = ForeignXml.sysTextUnescape(dr.getTextStrip());
                 dr.nextTagOrText();
                 break;
             case XmlMachine.RES_TAG:

@@ -4,7 +4,7 @@ import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * <p>This class provides a dom reader.</p>
@@ -40,8 +40,6 @@ public final class DomReader extends XmlScanner<XmlMachine> {
 
     private static final String STRING_BANG_DASH_DASH = "!--";
     private static final String STRING_DASH_DASH = "--";
-
-    public static final int MASK_LTSP = 0x00000010; /* last read was space */
 
     private int mask;
     private MapHash<String, Integer> control;
@@ -100,14 +98,8 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         for (; ; ) {
             switch (getRes()) {
                 case XmlMachine.RES_TEXT:
-                    if ((mask & AbstractDom.MASK_TEXT) != 0) {
-                        if ((mask & AbstractDom.MASK_STRP) != 0)
-                            stripWhitespace();
-                        if (getTextLen() != 0)
-                            return;
-                        super.nextTagOrText();
-                        break;
-                    }
+                    if ((mask & AbstractDom.MASK_TEXT) != 0)
+                        return;
                     checkWhitespace();
                     super.nextTagOrText();
                     break;
@@ -222,32 +214,77 @@ public final class DomReader extends XmlScanner<XmlMachine> {
         }
     }
 
+    /**********************************************************/
+    /* Texts & Attribute Values                               */
+    /**********************************************************/
+
     /**
-     * <p>Strip superflous white space from text.</p>
+     * <p>Retrieve the actual text.</p>
+     * <p>Can be retrieved when the result type is RES_TEXT.</p>
+     * <p>It can also be used for result type RES_TAG, and it will
+     * then return the full tag.</p>
+     *
+     * @return The actual text.
      */
-    private void stripWhitespace() {
+    String getTextStrip() {
+        if ((mask & AbstractDom.MASK_STRP) == 0)
+            return getText();
         char[] buf = getTextBuf();
         int len = getTextLen();
+        len = stripWhitespace(buf, 0, len);
+        return new String(buf, 0, len);
+    }
+
+    /**
+     * Retrieve the nth attribute value. Can be retrieved
+     * when the result type is RES_TAG.</p>
+     *
+     * @param i The index.
+     * @return The attribute value.
+     */
+    String getValueStripAt(int i) {
+        if ((mask & AbstractDom.MASK_STRP) == 0)
+            return getValueAt(i);
+        char[] buf = getTextBuf();
+        XmlMachineRange xmr = getValueRange(i);
+        int off = xmr.getOff();
+        int len = xmr.getLen();
+        len = stripWhitespace(buf, off, len);
+        return new String(buf, off, len);
+    }
+
+    /**
+     * <p>Strip superflous white space from text.</p>
+     *
+     * @param buf The text.
+     * @param off The offset.
+     * @param len The length.
+     * @return The new length;
+     */
+    private int stripWhitespace(char[] buf, int off, int len) {
         int k = 0;
-        boolean hasspace = ((mask & MASK_LTSP) != 0);
+        boolean hasspace = ((mask & AbstractDom.MASK_LTSP) != 0);
         for (int i = 0; i < len; i++) {
-            char ch = buf[i];
-            if (ch <= XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM) {
+            char ch = buf[off + i];
+            if (ch <= XmlMachine.CHAR_SPACE ||
+                    ch == XmlMachine.CHAR_BOM) {
                 if (!hasspace) {
-                    buf[k++] = XmlMachine.CHAR_SPACE;
+                    buf[off + k] = XmlMachine.CHAR_SPACE;
+                    k++;
                     hasspace = true;
                 }
             } else {
-                buf[k++] = ch;
+                buf[off + k] = ch;
+                k++;
                 hasspace = false;
             }
         }
-        setTextLen(k);
         if (hasspace) {
-            mask |= MASK_LTSP;
+            mask |= AbstractDom.MASK_LTSP;
         } else {
-            mask &= ~MASK_LTSP;
+            mask &= ~AbstractDom.MASK_LTSP;
         }
+        return k;
     }
 
     /**

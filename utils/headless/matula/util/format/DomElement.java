@@ -105,7 +105,7 @@ public final class DomElement extends AbstractDom {
                 boolean closed = checkClosed(dr);
                 AssocArray<String, Object> newkvs = null;
                 for (int i = 0; i < dr.getAttrCount(); i++) {
-                    String valstr = dr.getValueAt(i);
+                    String valstr = dr.getValueStripAt(i);
                     Object val;
                     if (XmlMachine.isQuoted(valstr) || "".equals(valstr)) {
                         val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));

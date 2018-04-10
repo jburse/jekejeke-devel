@@ -42,9 +42,12 @@ public abstract class AbstractDom
         implements Cloneable {
 //    public static final String TIMESTAMP_DOM = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
-    public static final int MASK_TEXT = 0x00000001;
-    public static final int MASK_LIST = 0x00000002;
-    public static final int MASK_STRP = 0x00000004;
+    public static final int MASK_TEXT = 0x00000001; /* should not ignore space */
+    public static final int MASK_LIST = 0x00000002; /* should ignore root */
+    public static final int MASK_STRP = 0x00000004; /* should strip space */
+
+    public static final int MASK_LTSP = 0x00000010; /* last read or write was space */
+    public static final int MASK_PLIN = 0x00000020; /* write suppress tags and entities */
 
     public static final int TYPE_NONE = 0;
     public static final int TYPE_EMPTY = 1; /* disable list */

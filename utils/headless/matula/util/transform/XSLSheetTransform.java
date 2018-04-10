@@ -404,9 +404,9 @@ public final class XSLSheetTransform extends XSLSheet {
         String typesubtype = mh.getType() + "/" + mh.getSubType();
         int typeid = XSLSheet.checkMimeType(de, typesubtype);
         if (typeid == TEXT_PLAIN) {
-            writer.setMask(writer.getMask() | DomWriter.MASK_PLIN);
+            writer.setMask(writer.getMask() | AbstractDom.MASK_PLIN);
         } else {
-            writer.setMask(writer.getMask() & ~DomWriter.MASK_PLIN);
+            writer.setMask(writer.getMask() & ~AbstractDom.MASK_PLIN);
         }
     }
 

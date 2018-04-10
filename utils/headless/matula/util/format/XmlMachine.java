@@ -84,14 +84,16 @@ public class XmlMachine {
     private boolean ignore;
     private String type = VALUE_EMPTY;
     private String key;
-    private AssocArray<String, String> kvs = new AssocArray<String, String>();
+    private AssocArray<String, XmlMachineRange> kvs = new AssocArray<String, XmlMachineRange>();
 
     /**
      * <p>Type call-back.</p>
      *
-     * @param t The type.
+     * @param off The offset.
+     * @param len The length.
      */
-    private void saxType(String t) {
+    private void saxType(int off, int len) {
+        String t = new String(text, off, len);
         if (t.length() > 0 && t.charAt(0) == CHAR_BANG) {
             ignore = true;
         } else {
@@ -103,10 +105,12 @@ public class XmlMachine {
     /**
      * <p>Key call-back.</p>
      *
-     * @param k The key.
+     * @param off The offset.
+     * @param len The length.
      * @throws ScannerError Syntax error,
      */
-    private void saxKey(String k) throws ScannerError {
+    private void saxKey(int off, int len) throws ScannerError {
+        String k = new String(text, off, len);
         if (!ignore) {
             if (XmlMachine.isQuoted(k))
                 throw new ScannerError(XML_ILLEGAL_ATTR, -1);
@@ -121,12 +125,13 @@ public class XmlMachine {
     /**
      * <p>Value call-back.</p>
      *
-     * @param v The value.
+     * @param off The offset.
+     * @param len The length.
      */
-    private void saxValue(String v) {
-        kvs.add(key, v);
+    private void saxValue(int off, int len) {
+        XmlMachineRange xmr = new XmlMachineRange(off, len);
+        kvs.add(key, xmr);
     }
-
 
     /**
      * Reset the state machine.
@@ -228,27 +233,27 @@ public class XmlMachine {
                     if (top == off) {
                         state = XmlMachine.STATE_TEXT;
                     } else {
-                        saxType(new String(text, off, top - off));
+                        saxType(off, top - off);
                         state = XmlMachine.STATE_BLANK;
                     }
                 } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
                     if (top == off) {
                         /* */
                     } else {
-                        saxType(new String(text, off, top - off));
+                        saxType(off, top - off);
                         off = top;
                         state = XmlMachine.STATE_ATTR;
                     }
                 } else if (ch == CHAR_DOUBLE) {
-                    saxType(new String(text, off, top - off));
+                    saxType(off, top - off);
                     off = top;
                     state = XmlMachine.STATE_ATTR_DOUBLE;
                 } else if (ch == CHAR_SINGLE) {
-                    saxType(new String(text, off, top - off));
+                    saxType(off, top - off);
                     off = top;
                     state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    saxType(new String(text, off, top - off));
+                    saxType(off, top - off);
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
@@ -262,10 +267,10 @@ public class XmlMachine {
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_PERCENT) {
-                    saxType(new String(text, off, top - off));
+                    saxType(off, top - off);
                     state = XmlMachine.STATE_PRE;
                 } else {
-                    saxType(new String(text, off, top - off));
+                    saxType(off, top - off);
                 }
                 break;
             case XmlMachine.STATE_PRE:
@@ -305,35 +310,35 @@ public class XmlMachine {
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
-                    saxKey(new String(text, off, top - off));
+                    saxKey(off, top - off);
                     state = XmlMachine.STATE_BEFORE;
                 } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
                     if (top == off) {
                         /* */
                     } else {
-                        saxKey(new String(text, off, top - off));
-                        saxValue(VALUE_EMPTY);
+                        saxKey(off, top - off);
+                        saxValue(0, 0);
                         key = null;
                         off = top;
                     }
                 } else if (ch == CHAR_EQ) {
-                    saxKey(new String(text, off, top - off));
+                    saxKey(off, top - off);
                     state = XmlMachine.STATE_AFTER;
                 } else if (ch == CHAR_DOUBLE) {
-                    saxKey(new String(text, off, top - off));
-                    saxValue(VALUE_EMPTY);
+                    saxKey(off, top - off);
+                    saxValue(0, 0);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_DOUBLE;
                 } else if (ch == CHAR_SINGLE) {
-                    saxKey(new String(text, off, top - off));
-                    saxValue(VALUE_EMPTY);
+                    saxKey(off, top - off);
+                    saxValue(0, 0);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    saxKey(new String(text, off, top - off));
-                    saxValue(VALUE_EMPTY);
+                    saxKey(off, top - off);
+                    saxValue(0, 0);
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
@@ -347,7 +352,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_DOUBLE) {
                     fill(ch);
-                    saxKey(new String(text, off, top - off));
+                    saxKey(off, top - off);
                     state = XmlMachine.STATE_BEFORE;
                     return true;
                 } else {
@@ -359,7 +364,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_SINGLE) {
                     fill(ch);
-                    saxKey(new String(text, off, top - off));
+                    saxKey(off, top - off);
                     state = XmlMachine.STATE_BEFORE;
                     return true;
                 } else {
@@ -370,26 +375,26 @@ public class XmlMachine {
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     state = XmlMachine.STATE_BLANK;
                 } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
                 } else if (ch == CHAR_DOUBLE) {
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_DOUBLE;
                 } else if (ch == CHAR_SINGLE) {
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
@@ -403,7 +408,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_DOUBLE) {
                     fill(ch);
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     state = XmlMachine.STATE_BLANK;
                     return true;
@@ -416,7 +421,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_SINGLE) {
                     fill(ch);
-                    saxValue(new String(text, off, top - off));
+                    saxValue(off, top - off);
                     key = null;
                     state = XmlMachine.STATE_BLANK;
                     return true;
@@ -432,23 +437,23 @@ public class XmlMachine {
                 } else if (ch == CHAR_EQ) {
                     state = XmlMachine.STATE_AFTER;
                 } else if (ch == CHAR_DOUBLE) {
-                    saxValue(VALUE_EMPTY);
+                    saxValue(0, 0);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_DOUBLE;
                 } else if (ch == CHAR_SINGLE) {
-                    saxValue(VALUE_EMPTY);
+                    saxValue(0, 0);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    saxValue(VALUE_EMPTY);
+                    saxValue(0, 0);
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
                 } else {
-                    saxValue(VALUE_EMPTY);
+                    saxValue(0, 0);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
@@ -460,7 +465,7 @@ public class XmlMachine {
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
                     /* */
                 } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
-                    saxValue(VALUE_EMPTY);
+                    saxValue(0, 0);
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
@@ -471,7 +476,7 @@ public class XmlMachine {
                     off = top;
                     state = XmlMachine.STATE_VALUE_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    saxValue(VALUE_EMPTY);
+                    saxValue(0, 0);
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
@@ -548,15 +553,6 @@ public class XmlMachine {
     }
 
     /**
-     * <p>Set the tag type.</p>
-     *
-     * @param t The tag type.
-     */
-    public void setType(String t) {
-        type = t;
-    }
-
-    /**
      * <p>Convenience method to check the actual tag type.</p>
      * <p>Will check the actual tag type ignoring case.</p>
      *
@@ -578,8 +574,8 @@ public class XmlMachine {
     }
 
     /**
-     * <p>Retrieve the nth attribute name. Can be retrieved when the
-     * result type is RES_TAG.</p>
+     * <p>Retrieve the nth attribute name. Can be retrieved
+     * when the result type is RES_TAG.</p>
      *
      * @param i The index.
      * @return The attribute name.
@@ -589,14 +585,26 @@ public class XmlMachine {
     }
 
     /**
-     * <p>Retrieve the nth attribute value. Can be retrieved when the
-     * result type is RES_TAG.</p>
+     * <p>Retrieve the nth attribute value range. Can be retrieved
+     * when the result type is RES_TAG.</p>
+     *
+     * @param i The index.
+     * @return The attribute value range.
+     */
+    public XmlMachineRange getValueRange(int i) {
+        return kvs.getValue(i);
+    }
+
+    /**
+     * <p>Retrieve the nth attribute value. Can be retrieved
+     * when the result type is RES_TAG.</p>
      *
      * @param i The index.
      * @return The attribute value.
      */
     public String getValueAt(int i) {
-        return kvs.getValue(i);
+        XmlMachineRange xmr = getValueRange(i);
+        return new String(text, xmr.getOff(), xmr.getLen());
     }
 
     /**
@@ -630,8 +638,12 @@ public class XmlMachine {
      */
     public String getValue(String a) {
         int k = indexAttr(kvs, a);
-        if (k == -1) return null;
-        return ForeignXml.sysTextUnescape(stripValue(getValueAt(k)));
+        if (k == -1)
+            return null;
+        String v = getValueAt(k);
+        v = stripValue(v);
+        v = ForeignXml.sysTextUnescape(v);
+        return v;
     }
 
     /**
@@ -643,7 +655,8 @@ public class XmlMachine {
      */
     public String getValue(String a, String d) {
         String v = getValue(a);
-        if (v == null) v = d;
+        if (v == null)
+            v = d;
         return v;
     }
 
