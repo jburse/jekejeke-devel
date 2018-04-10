@@ -123,7 +123,7 @@ public class XmlMachine {
      *
      * @param v The value.
      */
-    private void saxValue(String v) throws ScannerError {
+    private void saxValue(String v) {
         kvs.add(key, v);
     }
 
@@ -262,16 +262,16 @@ public class XmlMachine {
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_PERCENT) {
+                    saxType(new String(text, off, top - off));
                     state = XmlMachine.STATE_PRE;
                 } else {
-                    /* */
+                    saxType(new String(text, off, top - off));
                 }
                 break;
             case XmlMachine.STATE_PRE:
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_CLOSE) {
-                    type = new String(text, off, top - off);
                     fill(ch);
                     res = XmlMachine.RES_TAG;
                     return true;
@@ -370,31 +370,26 @@ public class XmlMachine {
                 if (ch == CHAR_EOF) {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch <= CHAR_SPACE || ch == CHAR_BOM) {
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     state = XmlMachine.STATE_BLANK;
                 } else if (ch == CHAR_SLASH || ch == CHAR_QUESTION) {
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR;
                 } else if (ch == CHAR_DOUBLE) {
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_DOUBLE;
                 } else if (ch == CHAR_SINGLE) {
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     off = top;
                     state = XmlMachine.STATE_ATTR_SINGLE;
                 } else if (ch == CHAR_CLOSE) {
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     fill(ch);
                     res = XmlMachine.RES_TAG;
@@ -408,8 +403,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_DOUBLE) {
                     fill(ch);
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     state = XmlMachine.STATE_BLANK;
                     return true;
@@ -422,8 +416,7 @@ public class XmlMachine {
                     throw new ScannerError(XML_PREMATURE_END, -1);
                 } else if (ch == CHAR_SINGLE) {
                     fill(ch);
-                    String temp = new String(text, off, top - off);
-                    saxValue(temp);
+                    saxValue(new String(text, off, top - off));
                     key = null;
                     state = XmlMachine.STATE_BLANK;
                     return true;

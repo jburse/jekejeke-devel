@@ -57,6 +57,55 @@ public final class ForeignXml {
         entityrev[i] = str;
     }
 
+    /**
+     * <p>Retrieve an enity.</p>
+     *
+     * @param str The name
+     * @return The character or -1,
+     */
+    private static int getEntity(String str) {
+        if (str.startsWith("#x")) {
+            try {
+                int ival = Integer.parseInt(str.substring(2), 16);
+                return (0 <= ival && ival <= Character.MAX_CODE_POINT ? ival : -1);
+            } catch (NumberFormatException x) {
+                return -1;
+            }
+        } else if (str.startsWith("#")) {
+            try {
+                int ival = Integer.parseInt(str.substring(1));
+                return (0 <= ival && ival <= Character.MAX_CODE_POINT ? ival : -1);
+            } catch (NumberFormatException x) {
+                return -1;
+            }
+        } else {
+            Integer ival = entity.get(str);
+            return (ival != null ? ival.intValue() : -1);
+        }
+    }
+
+    /**
+     * <p>Retrieve an entity rev.</p>
+     *
+     * @param ch The character.
+     * @return The name or null.
+     */
+    private static String getEntityRev(int ch, boolean wrap) {
+        if (wrap && (ch <= XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM)) {
+            if (ch != '\n' && ch != XmlMachine.CHAR_SPACE) {
+                if (ch > XmlMachine.CHAR_SPACE) {
+                    return "#x" + Integer.toString(ch, 16);
+                } else {
+                    return "#" + Integer.toString(ch);
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return (ch <= 255 ? entityrev[ch] : null);
+        }
+    }
+
     /*******************************************************************/
     /* Text Escaping/Unescaping                                        */
     /*******************************************************************/
@@ -68,8 +117,7 @@ public final class ForeignXml {
      * @return The text escaped string.
      */
     public static String sysTextEscape(String s) {
-        String res = sysTextEscape(s, 0, s.length());
-        return (res != null ? res : s);
+        return sysTextEscape(s, 0, s.length(), false);
     }
 
     /**
@@ -78,15 +126,17 @@ public final class ForeignXml {
      * @param s     The string.
      * @param begin the beginning index.
      * @param end   the ending index.
+     * @param wrap  The wrap flag.
      * @return The text escaped string, or null.
      */
-    public static String sysTextEscape(String s, int begin, int end) {
+    public static String sysTextEscape(String s, int begin,
+                                       int end, boolean wrap) {
         /* we keep buf = null as long as no character was escaped */
         int back = begin;
         StringBuilder buf = null;
         while (begin < end) {
             int ch = s.codePointAt(begin);
-            String help = (ch <= 255 ? entityrev[ch] : null);
+            String help = getEntityRev(ch, wrap);
             if (help != null) {
                 if (buf == null)
                     buf = new StringBuilder(s.substring(back, begin));
@@ -100,7 +150,7 @@ public final class ForeignXml {
             begin += Character.charCount(ch);
         }
         if (buf == null)
-            return null;
+            return s.substring(back, end);
         return buf.toString();
     }
 
@@ -126,17 +176,19 @@ public final class ForeignXml {
                     temp = new StringBuilder();
                 while (pos < n && pos - k < MAX_ENTITY &&
                         (ch = str.codePointAt(pos)) != XmlMachine.CHAR_SEMI &&
-                        ch != XmlMachine.CHAR_AMPER && ch > ' ') {
+                        ch != XmlMachine.CHAR_AMPER &&
+                        ch > XmlMachine.CHAR_SPACE &&
+                        ch != XmlMachine.CHAR_BOM) {
                     temp.appendCodePoint(ch);
                     pos += Character.charCount(ch);
                 }
                 if (pos < n && pos - k < MAX_ENTITY && ch == XmlMachine.CHAR_SEMI) {
                     String help = temp.toString();
-                    Integer ival = entity.get(help);
-                    if (ival != null) {
+                    int ival = getEntity(help);
+                    if (ival != -1) {
                         if (buf == null)
                             buf = new StringBuilder(str.substring(0, k));
-                        buf.appendCodePoint(ival.intValue());
+                        buf.appendCodePoint(ival);
                     } else {
                         if (buf != null) {
                             buf.appendCodePoint(XmlMachine.CHAR_AMPER);
@@ -184,14 +236,16 @@ public final class ForeignXml {
                     buf = new StringBuilder();
                 while (i < n && i - k < MAX_ENTITY &&
                         (ch = str.charAt(i)) != XmlMachine.CHAR_SEMI &&
-                        ch != XmlMachine.CHAR_AMPER && ch > ' ') {
+                        ch != XmlMachine.CHAR_AMPER &&
+                        ch > XmlMachine.CHAR_SPACE &&
+                        ch != XmlMachine.CHAR_BOM) {
                     buf.append(ch);
                     i++;
                 }
                 if (i < n && i - k < MAX_ENTITY && ch == XmlMachine.CHAR_SEMI) {
                     String help = buf.toString();
-                    Integer ival = entity.get(help);
-                    if (ival != null) {
+                    int ival = getEntity(help);
+                    if (ival != -1) {
                         pos--;
                     } else {
                         if (pos < buf.length() + 2)
@@ -255,20 +309,31 @@ public final class ForeignXml {
 
     /**
      * <p>Some tests.</p>
+     *
      * @param args Not used.
      */
-    /*
     public static void main(String[] args) {
-        String str="I don"+(char)39+"t get it";
-        System.out.println("str="+str);
-        System.out.println("sysTextEscape(str)="+sysTextEscape(str));
+        String str = "This is an \"experiment\"";
+        System.out.println("str=" + str);
+        System.out.println("sysTextEscape(str)=" + sysTextEscape(str));
 
         System.out.println();
 
-        str="I don&apos;t get it";
-        System.out.println("str="+str);
-        System.out.println("sysTextUnescape(str)="+sysTextUnescape(str));
+        str = "This is an &quot;experiment&quot;";
+        System.out.println("str=" + str);
+        System.out.println("sysTextUnescape(str)=" + sysTextUnescape(str));
+
+        System.out.println();
+
+        str = "This is an &#x22;experiment&#x22;";
+        System.out.println("str=" + str);
+        System.out.println("sysTextUnescape(str)=" + sysTextUnescape(str));
+
+        System.out.println();
+
+        str = "This is an &#34;experiment&#34;";
+        System.out.println("str=" + str);
+        System.out.println("sysTextUnescape(str)=" + sysTextUnescape(str));
     }
-    */
 
 }
