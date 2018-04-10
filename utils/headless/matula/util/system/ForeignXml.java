@@ -63,7 +63,7 @@ public final class ForeignXml {
      * @param str The name
      * @return The character or -1,
      */
-    private static int getEntity(String str) {
+    public static int getEntity(String str) {
         if (str.startsWith("#x")) {
             try {
                 int ival = Integer.parseInt(str.substring(2), 16);
@@ -90,20 +90,8 @@ public final class ForeignXml {
      * @param ch The character.
      * @return The name or null.
      */
-    private static String getEntityRev(int ch, boolean wrap) {
-        if (wrap && (ch <= XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM)) {
-            if (ch != '\n' && ch != XmlMachine.CHAR_SPACE) {
-                if (ch > XmlMachine.CHAR_SPACE) {
-                    return "#x" + Integer.toString(ch, 16);
-                } else {
-                    return "#" + Integer.toString(ch);
-                }
-            } else {
-                return null;
-            }
-        } else {
-            return (ch <= 255 ? entityrev[ch] : null);
-        }
+    public static String getEntityRev(int ch) {
+        return (ch <= 255 ? entityrev[ch] : null);
     }
 
     /*******************************************************************/
@@ -117,7 +105,7 @@ public final class ForeignXml {
      * @return The text escaped string.
      */
     public static String sysTextEscape(String s) {
-        return sysTextEscape(s, 0, s.length(), false);
+        return sysTextEscape(s, 0, s.length());
     }
 
     /**
@@ -126,17 +114,15 @@ public final class ForeignXml {
      * @param s     The string.
      * @param begin the beginning index.
      * @param end   the ending index.
-     * @param wrap  The wrap flag.
      * @return The text escaped string, or null.
      */
-    public static String sysTextEscape(String s, int begin,
-                                       int end, boolean wrap) {
+    public static String sysTextEscape(String s, int begin, int end) {
         /* we keep buf = null as long as no character was escaped */
         int back = begin;
         StringBuilder buf = null;
         while (begin < end) {
             int ch = s.codePointAt(begin);
-            String help = getEntityRev(ch, wrap);
+            String help = getEntityRev(ch);
             if (help != null) {
                 if (buf == null)
                     buf = new StringBuilder(s.substring(back, begin));
@@ -312,6 +298,7 @@ public final class ForeignXml {
      *
      * @param args Not used.
      */
+    /*
     public static void main(String[] args) {
         String str = "This is an \"experiment\"";
         System.out.println("str=" + str);
@@ -335,5 +322,6 @@ public final class ForeignXml {
         System.out.println("str=" + str);
         System.out.println("sysTextUnescape(str)=" + sysTextUnescape(str));
     }
+    */
 
 }

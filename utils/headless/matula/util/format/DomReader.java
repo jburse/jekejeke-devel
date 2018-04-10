@@ -263,23 +263,23 @@ public final class DomReader extends XmlScanner<XmlMachine> {
      */
     private int stripWhitespace(char[] buf, int off, int len) {
         int k = 0;
-        boolean hasspace = ((mask & AbstractDom.MASK_LTSP) != 0);
+        boolean lastspace = ((mask & AbstractDom.MASK_LTSP) != 0);
         for (int i = 0; i < len; i++) {
             char ch = buf[off + i];
             if (ch <= XmlMachine.CHAR_SPACE ||
                     ch == XmlMachine.CHAR_BOM) {
-                if (!hasspace) {
+                if (!lastspace) {
                     buf[off + k] = XmlMachine.CHAR_SPACE;
                     k++;
-                    hasspace = true;
+                    lastspace = true;
                 }
             } else {
                 buf[off + k] = ch;
                 k++;
-                hasspace = false;
+                lastspace = false;
             }
         }
-        if (hasspace) {
+        if (lastspace) {
             mask |= AbstractDom.MASK_LTSP;
         } else {
             mask &= ~AbstractDom.MASK_LTSP;

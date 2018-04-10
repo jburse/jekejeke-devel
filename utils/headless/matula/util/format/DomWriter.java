@@ -120,17 +120,7 @@ public final class DomWriter {
         }
         for (int i = 0; i < len; i++) {
             char ch = str.charAt(i);
-            if (ch == '\n') {
-                if (k < 0) {
-                    writer.write(pending, pending.length() + k, -k);
-                    writer.write(str, 0, i + 1);
-                } else {
-                    writer.write(str, k, i + 1 - k);
-                }
-                k = i + 1;
-                pos = 0;
-                hasspace = false;
-            } else if (wrap && ch == XmlMachine.CHAR_SPACE) {
+            if (wrap && ch == XmlMachine.CHAR_SPACE) {
                 if (k < 0) {
                     writer.write(pending, pending.length() + k, -k);
                     writer.write(str, 0, i);
@@ -140,6 +130,16 @@ public final class DomWriter {
                 k = i;
                 hasspace = true;
                 pos++;
+            } else if (ch == '\n') {
+                if (k < 0) {
+                    writer.write(pending, pending.length() + k, -k);
+                    writer.write(str, 0, i + 1);
+                } else {
+                    writer.write(str, k, i + 1 - k);
+                }
+                k = i + 1;
+                pos = 0;
+                hasspace = false;
             } else if (hasspace && pos >= LINE_WIDTH) {
                 incIndent();
                 writer.write("\n");
@@ -201,8 +201,79 @@ public final class DomWriter {
             wrap = false;
         }
         if ((mask & AbstractDom.MASK_PLIN) == 0)
-            data = ForeignXml.sysTextEscape(data, 0, data.length(), wrap);
+            data = sysTextEscapeUnstrip(data, 0, data.length(), wrap);
         write(data, wrap);
+    }
+
+    /**
+     * <p>Text escape a string.</p>
+     *
+     * @param s     The string.
+     * @param begin the beginning index.
+     * @param end   the ending index.
+     * @param wrap  The wrap flag.
+     * @return The text escaped string, or null.
+     */
+    private String sysTextEscapeUnstrip(String s, int begin,
+                                        int end, boolean wrap) {
+        /* we keep buf = null as long as no character was escaped */
+        int back = begin;
+        boolean lastspace = ((mask & AbstractDom.MASK_LTSP) != 0);
+        StringBuilder buf = null;
+        while (begin < end) {
+            int ch = s.codePointAt(begin);
+            String help;
+            if (wrap && ch == XmlMachine.CHAR_SPACE) {
+                if (!lastspace) {
+                    help = null;
+                    lastspace = true;
+                } else {
+                    help = "#32";
+                }
+            } else {
+                help = getEntityRev(ch, wrap);
+                lastspace = false;
+            }
+            if (help != null) {
+                if (buf == null)
+                    buf = new StringBuilder(s.substring(back, begin));
+                buf.appendCodePoint(XmlMachine.CHAR_AMPER);
+                buf.append(help);
+                buf.appendCodePoint(XmlMachine.CHAR_SEMI);
+            } else {
+                if (buf != null)
+                    buf.appendCodePoint(ch);
+            }
+            begin += Character.charCount(ch);
+        }
+        if (lastspace) {
+            mask |= AbstractDom.MASK_LTSP;
+        } else {
+            mask &= ~AbstractDom.MASK_LTSP;
+        }
+        if (buf == null)
+            return s.substring(back, end);
+        return buf.toString();
+    }
+
+
+    /**
+     * <p>Retrieve an entity rev.</p>
+     *
+     * @param ch   The character.
+     * @param wrap The wrap flag.
+     * @return The name or null.
+     */
+    private static String getEntityRev(int ch, boolean wrap) {
+        if (wrap && (ch < XmlMachine.CHAR_SPACE || ch == XmlMachine.CHAR_BOM)) {
+            if (ch < XmlMachine.CHAR_SPACE) {
+                return "#" + Integer.toString(ch);
+            } else {
+                return "#x" + Integer.toString(ch, 16);
+            }
+        } else {
+            return ForeignXml.getEntityRev(ch);
+        }
     }
 
     /***************************************************************/
@@ -331,9 +402,9 @@ public final class DomWriter {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
+    /*
     public static void main(String[] args)
             throws IOException, ScannerError {
-        /*
         String text = "<foo bar='123'/>  <foo bar='456'/>";
         StringReader sr = new StringReader(text);
         DomElement de = new DomElement();
@@ -350,7 +421,6 @@ public final class DomWriter {
         de.load(sr, AbstractDom.MASK_LIST, control);
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
-        */
 
         MapHash<String, Integer> control = new MapHash<String, Integer>();
         control.add("p", Integer.valueOf(AbstractDom.TYPE_TEXT));
@@ -367,5 +437,6 @@ public final class DomWriter {
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
     }
+    */
 
 }
