@@ -5,6 +5,8 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.transform.*;
 
+import java.text.ParseException;
+
 /**
  * <p>This class provides an choice point.</p>
  * </p>
@@ -99,7 +101,7 @@ public final class ChoicePoint {
      * @param e The dom element.
      * @return The dom element, or null.
      */
-    DomElement findFirst(DomElement e) {
+    DomElement findFirst(DomElement e) throws ParseException {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 AbstractDom[] nodes = e.snapshotNodes();
@@ -132,7 +134,7 @@ public final class ChoicePoint {
      *
      * @return The dom element, or null.
      */
-    DomElement findNext() {
+    DomElement findNext() throws ParseException {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 AbstractDom[] nodes = children;

@@ -1,5 +1,6 @@
 package matula.util.transform;
 
+import matula.util.data.MapHash;
 import matula.util.format.DomElement;
 import matula.util.format.XPathOrder;
 import matula.util.regex.ScannerError;
@@ -45,6 +46,17 @@ public abstract class XSLSheet {
 
     public static final int TEXT_PLAIN = 0;
     public static final int TEXT_HTML = 1;
+
+    protected MapHash<String, Class<? extends InterfaceFunc>> functions;
+
+    /**
+     * <p>Set the functions.</p>
+     *
+     * @param f The functions.
+     */
+    public void setFunctions(MapHash<String, Class<? extends InterfaceFunc>> f) {
+        functions = f;
+    }
 
     /**
      * <p>Check a parameter type attribute value.</p>

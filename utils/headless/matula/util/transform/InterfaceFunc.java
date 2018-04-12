@@ -1,10 +1,10 @@
 package matula.util.transform;
 
-import matula.util.data.MapHash;
+import matula.util.data.ListArray;
+import matula.util.regex.ScannerError;
 
 /**
- * <p>This class provides an xpath reader during transform.</p>
- * </p>
+ * <p>This class provides a function interface.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -28,30 +28,22 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class XPathReadTransform extends XPathRead {
-    private MapHash<String, Object> variables;
+public interface InterfaceFunc {
 
     /**
-     * <p>Set the variables.</p>
+     * <p>Set the indicator.</p>
      *
-     * @param v The variables.
+     * @param key The indicator.
      */
-    void setVariables(MapHash<String, Object> v) {
-        variables = v;
-    }
-
-    /**************************************************************/
-    /* Variation Points                                           */
-    /**************************************************************/
+    void setKey(String key);
 
     /**
-     * <p>Retrieve a variable value.</p>
+     * <p>Set the arguments.</p>
      *
-     * @param n The variable name.
-     * @return The variable value.
+     * @param args The arguments.
+     * @param poss The positions.
+     * @throws ScannerError Syntax error.
      */
-    Object getVariable(String n) {
-        return variables.get(n);
-    }
+    void setArgs(Object[] args, ListArray<Integer> poss) throws ScannerError;
 
 }

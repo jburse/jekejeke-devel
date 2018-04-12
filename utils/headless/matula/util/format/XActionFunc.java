@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import java.text.ParseException;
+
 /**
  * <p>This class is the base class of xaction functions.</p>
  * </p>
@@ -35,7 +37,7 @@ public abstract class XActionFunc {
      * @param e The source dom element.
      * @return The result dom element.
      */
-    abstract DomElement updateElement(DomElement r, DomElement e);
+    abstract DomElement updateElement(DomElement r, DomElement e) throws ParseException;
 
     /**
      * <p>Convert this xaction function to a string.</p>

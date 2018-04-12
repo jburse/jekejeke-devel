@@ -3,6 +3,8 @@ package matula.util.format;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 
+import java.text.ParseException;
+
 /**
  * <p>This class is the base class of xpath expressions.</p>
  * </p>
@@ -38,7 +40,7 @@ public abstract class XPathExpr {
      * @param e The dom element.
      * @return True if the the xpath expression is satisfied, otherwise false.
      */
-    public abstract boolean evalElement(DomElement e);
+    public abstract boolean evalElement(DomElement e) throws ParseException;
 
     /**
      * <p>Check an xpath expression.</p>

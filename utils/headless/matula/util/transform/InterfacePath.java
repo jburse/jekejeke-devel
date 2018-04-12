@@ -4,6 +4,7 @@ import matula.util.format.DomElement;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * <p>This class provides a path interface.</p>
@@ -13,7 +14,7 @@ import java.io.IOException;
  * <li>FLAG_STYL: Read-only, asks if sheet and not data.</li>
  * <li>FLAG_SCHM: Write-only, tells if schema is requested.</li>
  * </ul>
- * </p>
+ * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -78,7 +79,7 @@ public interface InterfacePath {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    boolean next() throws IOException, ScannerError;
+    boolean next() throws IOException, ScannerError, ParseException;
 
     /**
      * <p>Close the cursor.</p>

@@ -5,6 +5,8 @@ import matula.util.transform.XPathCheck;
 import matula.util.transform.XSDDeclAttr;
 import matula.util.transform.XSLSheet;
 
+import java.text.ParseException;
+
 /**
  * <p>The class represent an xselect prim.</p>
  * <p/>
@@ -137,7 +139,7 @@ public final class XSelectComb extends XSelect {
      * @param d The dom element.
      * @return The value.
      */
-    public Object evalElement(DomElement d) {
+    public Object evalElement(DomElement d) throws ParseException {
         if (combination <= SELE_COMB_NEG) {
             Long val = (Long) first.evalElement(d);
             switch (combination) {

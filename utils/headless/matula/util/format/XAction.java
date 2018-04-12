@@ -3,6 +3,8 @@ package matula.util.format;
 import matula.util.data.ListArray;
 import matula.util.transform.InterfacePath;
 
+import java.text.ParseException;
+
 /**
  * <p>This class provides an xaction.</p>
  * </p>
@@ -105,7 +107,7 @@ public final class XAction {
      * @return The result dom element.
      */
     public DomElement performActions(DomElement r, DomElement e,
-                                     InterfacePath path) {
+                                     InterfacePath path) throws ParseException {
         if (acts != null) {
             for (int i = 0; i < acts.size(); i++) {
                 XActionFuncAggr act = acts.get(i);

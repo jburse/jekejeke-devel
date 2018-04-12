@@ -3,6 +3,7 @@ package matula.util.transform;
 import matula.util.data.*;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
+import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
 
@@ -145,6 +146,9 @@ public final class XPathCheck {
         xc.setSchema(schema);
 
         XPathReadCheck xr = new XPathReadCheck();
+        MapHash<String, Class<? extends InterfaceFunc>> functions=new MapHash<String, Class<? extends InterfaceFunc>>();
+        functions.add(XSelectFormat.KEY_FORM_DATE, XSelectFormat.class);
+        xr.setFunctions(functions);
         MapHash<String, Integer> parameters = new MapHash<String, Integer>();
         parameters.add("x", Integer.valueOf(XSDDeclAttr.TYPE_STRING));
         parameters.add("y", Integer.valueOf(XSDDeclAttr.TYPE_INTEGER));
@@ -159,6 +163,8 @@ public final class XPathCheck {
             System.out.println("check(xpath)=failed");
         }
 
+        System.out.println();
+
         XSelect xs = xr.createXSelect("$y*(3+5) + 1000/($y-1)");
         System.out.println("xselect=" + xs);
         try {
@@ -168,6 +174,8 @@ public final class XPathCheck {
             System.out.println("check(xselect)=failed");
         }
 
+        System.out.println();
+
         XPathExpr xe = xr.createXPathExpr("$x='bar' and $y<456");
         System.out.println("xpathexpr=" + xe);
         try {
@@ -175,6 +183,17 @@ public final class XPathCheck {
             System.out.println("check(xpathexpr)=passed");
         } catch (ValidationError x) {
             System.out.println("check(xpathexpr)=failed");
+        }
+
+        System.out.println();
+
+        xs = xr.createXSelect("format_date('2018-04-12', 'dd. MMM yyyy')");
+        System.out.println("xselect=" + xs);
+        try {
+            xs.checkElement(xc);
+            System.out.println("check(xselect)=passed");
+        } catch (ValidationError x) {
+            System.out.println("check(xselect)=failed");
         }
     }
     */

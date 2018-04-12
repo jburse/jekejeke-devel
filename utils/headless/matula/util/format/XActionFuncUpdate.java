@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import java.text.ParseException;
+
 /**
  * <p>This class represents an xaction update function.</p>
  * </p>
@@ -86,7 +88,7 @@ public final class XActionFuncUpdate extends XActionFunc {
      * @param e The source dom element.
      * @return The result dom element.
      */
-    DomElement updateElement(DomElement r, DomElement e) {
+    DomElement updateElement(DomElement r, DomElement e) throws ParseException {
         switch (update) {
             case UPDATE_NAME:
                 r.setName(keyorname);

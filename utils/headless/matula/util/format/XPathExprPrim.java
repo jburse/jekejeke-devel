@@ -5,6 +5,8 @@ import matula.util.transform.XPathCheck;
 import matula.util.transform.XSDDeclAttr;
 import matula.util.transform.XSLSheet;
 
+import java.text.ParseException;
+
 /**
  * <p>This predicate implements an xpath primitive expression.</p>
  * </p>
@@ -108,7 +110,7 @@ public final class XPathExprPrim extends XPathExpr {
      * @return True if the the xpath expression is satisfied, otherwise false.
      */
     public boolean evalElement(DomElement e)
-            throws IllegalArgumentException {
+            throws IllegalArgumentException, ParseException {
         if (primitive <= EXPR_PRIM_NAME) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {

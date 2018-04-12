@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 
 /**
  * <p>This class provides an XSL style sheet checker.</p>
@@ -70,6 +71,8 @@ public final class XSLSheetCheck extends XSLSheet {
             throw new RuntimeException("meta failed", x);
         } catch (IOException x) {
             throw new RuntimeException("meta failed", x);
+        } catch (ParseException x) {
+            throw new RuntimeException("meta failed", x);
         }
     }
 
@@ -100,7 +103,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     public void check(AbstractDom node)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         XMLCheck xc = new XMLCheck();
         xc.setMask(AbstractDom.MASK_TEXT);
         xc.setSchema(meta);
@@ -122,7 +125,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNode(AbstractDom dn)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         if (dn instanceof DomText) {
             /* */
         } else {
@@ -162,7 +165,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNodes(AbstractDom[] nodes)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             xsltNode(node);
@@ -178,9 +181,10 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltForEach(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         String attr = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
+        xr.setFunctions(functions);
         xr.setParameters(parameters);
         XPath xpath = xr.createXPath(attr);
         XPathCheck xc = new XPathCheck();
@@ -215,6 +219,9 @@ public final class XSLSheetCheck extends XSLSheet {
         } catch (ValidationError x) {
             simulation = backsimulation;
             throw x;
+        } catch (ParseException x) {
+            simulation = backsimulation;
+            throw x;
         }
     }
 
@@ -240,7 +247,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltWithData(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
 
         XSDResolver resolver=schema.getResolver();
@@ -330,7 +337,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltIf(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
         attrTest(test);
         AbstractDom[] nodes = de.snapshotNodes();
@@ -346,7 +353,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltChoose(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
@@ -382,6 +389,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private int attrSelect(String select)
             throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
+        xr.setFunctions(functions);
         xr.setParameters(parameters);
         XSelect xs = xr.createXSelect(select);
         XPathCheck xc = new XPathCheck();
@@ -400,6 +408,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private void attrTest(String test)
             throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
+        xr.setFunctions(functions);
         xr.setParameters(parameters);
         XPathExpr xe = xr.createXPathExpr(test);
         XPathCheck xc = new XPathCheck();

@@ -31,7 +31,7 @@ import matula.util.system.OpenOpts;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class XPathReadCheck extends XPathRead {
+public final class XPathReadCheck extends XPathRead {
     private static final String PATH_UNDECLARED_VAR = "path_undeclared_var";
 
     private static Object VOID_ELEMENT = new DomElement();

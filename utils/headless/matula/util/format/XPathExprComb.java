@@ -5,6 +5,8 @@ import matula.util.data.MapHashLink;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 
+import java.text.ParseException;
+
 /**
  * <p>This class represents an xpath combination expression.</p>
  * </p>
@@ -146,7 +148,7 @@ public final class XPathExprComb extends XPathExpr {
      * @param e The dom element.
      * @return True if the the xpath expression is satisfied, otherwise false.
      */
-    public boolean evalElement(DomElement e) {
+    public boolean evalElement(DomElement e) throws ParseException {
         switch (combination) {
             case EXPR_COMB_PRED:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();

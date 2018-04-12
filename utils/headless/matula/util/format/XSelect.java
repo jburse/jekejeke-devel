@@ -3,6 +3,8 @@ package matula.util.format;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 
+import java.text.ParseException;
+
 /**
  * <p>The class represent an abstract xselect.</p>
  * <p/>
@@ -41,7 +43,7 @@ public abstract class XSelect {
      * @param d The dom element.
      * @return The value.
      */
-    public abstract Object evalElement(DomElement d);
+    public abstract Object evalElement(DomElement d) throws ParseException;
 
     /**
      * <p>Check an xpath select.</p>

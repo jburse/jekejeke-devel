@@ -1,16 +1,19 @@
 package matula.util.transform;
 
 import matula.util.data.ListArray;
+import matula.util.data.MapHash;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
+import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.text.ParseException;
 
 /**
  * <p>This class provides an xpath reader.</p>
@@ -38,23 +41,25 @@ import java.io.StringReader;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-abstract class XPathRead {
+public abstract class XPathRead {
     private static final String PATH_MISSING_PRED = "path_missing_pred";
     private static final String PATH_MISSING_SQRBKT = "path_missing_sqrbkt";
     private static final String PATH_MISSING_PERIOD = "path_missing_period";
     private static final String PATH_MISSING_CHCPNT = "path_missing_chcpnt";
-    private static final String PATH_MISSING_SELE = "path_missing_sele";
+    public static final String PATH_MISSING_SELE = "path_missing_sele";
     private static final String PATH_MISSING_PRNTHS = "path_missing_prnths";
     private static final String PATH_MISSING_ATTR = "path_missing_attr";
     private static final String PATH_MISSING_VAR = "path_missing_var";
     private static final String PATH_SUPERFLOUS_TOKEN = "path_superflous_token";
     private static final String PATH_ILLEGAL_VALUE = "path_illegal_value";
     private static final String PATH_MISSING_COLON = "path_missing_colon";
+    private static final String PATH_UNDECLARED_FUN = "path_undeclared_fun";
 
     private static SetHash<String> reserved = new SetHash<String>();
 
     protected Reader reader;
     protected StreamTokenizer st;
+    protected MapHash<String, Class<? extends InterfaceFunc>> functions;
 
     static {
         reserved.add(XPathExprComb.OP_TRUE);
@@ -91,6 +96,7 @@ abstract class XPathRead {
         st.wordChars('A', 'Z');
         st.wordChars('0', '9');
         st.wordChars('.', '.');
+        st.wordChars('_', '_');
         st.whitespaceChars(0, ' ');
         st.quoteChar('"');
         st.quoteChar('\'');
@@ -98,6 +104,15 @@ abstract class XPathRead {
         st.commentChar('%');
         st.slashStarComments(true);
         return st;
+    }
+
+    /**
+     * <p>Set the functions.</p>
+     *
+     * @param f The functions.
+     */
+    public void setFunctions(MapHash<String, Class<? extends InterfaceFunc>> f) {
+        functions = f;
     }
 
     /**************************************************************/
@@ -126,11 +141,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The xpath.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private XPath xpath()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         XPath xpath = new XPath();
         choicepoint(xpath);
         while (st.ttype == '/') {
@@ -150,11 +166,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @param xp The xpath.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private void choicepoint(XPath xp)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         if (isName()) {
             xp.whereChild();
             String name = st.sval;
@@ -218,6 +235,8 @@ abstract class XPathRead {
         } catch (ScannerError sc) {
             sc.setLine(OpenOpts.getLine(cr));
             throw sc;
+        } catch (ValidationError x) {
+            throw new RuntimeException("internal error", x);
         }
     }
 
@@ -234,11 +253,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The predicate-
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     Shit happens.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object predicate()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res = predicateTerm();
         if (st.ttype == '?') {
             if (!(res instanceof XPathExpr))
@@ -269,9 +289,10 @@ abstract class XPathRead {
      * @return The predicate term.
      * @throws IOException Shit happens.
      * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object predicateTerm()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res = predicateFactor();
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_OR)) {
             if (!(res instanceof XPathExpr))
@@ -297,9 +318,10 @@ abstract class XPathRead {
      * @return The predicate factor.
      * @throws IOException Shit happens.
      * @throws ScannerError Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object predicateFactor()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res = predicateSimple();
         while (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_AND)) {
             if (!(res instanceof XPathExpr))
@@ -331,11 +353,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The predicate simple.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object predicateSimple()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res;
         if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XPathExprComb.OP_FALSE)) {
             st.nextToken();
@@ -414,6 +437,8 @@ abstract class XPathRead {
         } catch (ScannerError sc) {
             sc.setLine(OpenOpts.getLine(cr));
             throw sc;
+        } catch (ValidationError x) {
+            throw new RuntimeException("internal error", x);
         }
     }
 
@@ -432,11 +457,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The select term.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object selectTerm()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res;
         if (st.ttype == '-') {
             st.nextToken();
@@ -481,11 +507,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The select factor.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object selectFactor()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res = selectSimple();
         for (; ; ) {
             if (st.ttype == '*') {
@@ -526,11 +553,12 @@ abstract class XPathRead {
      * </pre>
      *
      * @return The select simple.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
      */
     private Object selectSimple()
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ValidationError {
         Object res;
         if (st.ttype == '(') {
             st.nextToken();
@@ -587,7 +615,35 @@ abstract class XPathRead {
         } else if (isName()) {
             String name = st.sval;
             st.nextToken();
-            res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_CHILD);
+            if (st.ttype == '(') {
+                ListArray<Object> list = new ListArray<Object>();
+                ListArray<Integer> poss= new ListArray<Integer>();
+                st.nextToken();
+                if (st.ttype != ')') {
+                    list.add(predicate());
+                    poss.add(Integer.valueOf(OpenOpts.getOffset(reader)));
+                    while (st.ttype == ',') {
+                        st.nextToken();
+                        list.add(predicate());
+                        poss.add(Integer.valueOf(OpenOpts.getOffset(reader)));
+                    }
+                }
+                if (st.ttype != ')')
+                    throw new ScannerError(PATH_MISSING_PRNTHS, OpenOpts.getOffset(reader));
+                st.nextToken();
+                String key = name + "/" + list.size();
+                Class<? extends InterfaceFunc> clazz = functions.get(key);
+                if (clazz == null)
+                    throw new ScannerError(PATH_UNDECLARED_FUN, OpenOpts.getOffset(reader));
+                InterfaceFunc func = XSDResolver.newFunc(clazz);
+                func.setKey(key);
+                Object[] args = new Object[list.size()];
+                list.toArray(args);
+                func.setArgs(args, poss);
+                res = func;
+            } else {
+                res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_CHILD);
+            }
         } else {
             throw new ScannerError(PATH_MISSING_SELE, OpenOpts.getOffset(reader));
         }
@@ -601,7 +657,7 @@ abstract class XPathRead {
      * @return The xselect.
      * @throws ScannerError Syntax error.
      */
-    XSelect createXSelect(String s)
+    public XSelect createXSelect(String s)
             throws ScannerError {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         cr.setLineNumber(1);
@@ -617,6 +673,8 @@ abstract class XPathRead {
         } catch (ScannerError sc) {
             sc.setLine(OpenOpts.getLine(cr));
             throw sc;
+        } catch (ValidationError x) {
+            throw new RuntimeException("internal error", x);
         }
     }
 
@@ -656,8 +714,11 @@ abstract class XPathRead {
      */
     /*
     public static void main(String[] args)
-            throws ScannerError {
+            throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
+        MapHash<String, Class<? extends InterfaceFunc>> functions=new MapHash<String, Class<? extends InterfaceFunc>>();
+        functions.add(XSelectFormat.KEY_FORM_DATE, XSelectFormat.class);
+        xr.setFunctions(functions);
         MapHash<String, Object> variables = new MapHash<String, Object>();
         variables.add("x", "bar");
         variables.add("y", Long.valueOf(123));
@@ -676,7 +737,7 @@ abstract class XPathRead {
 
         XPathExpr xe = xr.createXPathExpr("$x='bar' and $y<456");
         System.out.println("xpathexpr=" + xe);
-        System.out.println("check(xpathexpr)=" + xe.checkElement(null));
+        System.out.println("check(xpathexpr)=" + xe.evalElement(null));
 
         System.out.println();
 
@@ -686,6 +747,12 @@ abstract class XPathRead {
         System.out.println();
 
         xs = xr.createXSelect("$y < 100 ? 'foo' : $x");
+        System.out.println("xselect=" + xs);
+        System.out.println("eval(xselect)=" + xs.evalElement(null));
+
+        System.out.println();
+
+        xs = xr.createXSelect("format_date('2018-04-12', 'dd. MMM yyyy')");
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
     }

@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 
 /**
  * <p>This class provides an xml schema digester.</p>
@@ -78,6 +79,8 @@ public final class XSDSchema {
             throw new RuntimeException("meta failed", x);
         } catch (IOException x) {
             throw new RuntimeException("meta failed", x);
+        } catch (ParseException x) {
+            throw new RuntimeException("meta failed", x);
         }
     }
 
@@ -135,7 +138,7 @@ public final class XSDSchema {
      * @throws ValidationError Check errror.
      */
     public void digestElements(DomElement de, int mode)
-            throws ValidationError, IOException, ScannerError {
+            throws ValidationError, IOException, ScannerError, ParseException {
         XMLCheck xc = new XMLCheck();
         xc.setMask(AbstractDom.MASK_LIST);
         xc.setSchema(meta);
@@ -153,7 +156,7 @@ public final class XSDSchema {
      * @throws ValidationError Check errror.
      */
     public void digestElements(DomElement de)
-            throws ValidationError, IOException, ScannerError {
+            throws ValidationError, IOException, ScannerError, ParseException {
         digestElements(de, 0);
     }
 
@@ -171,7 +174,7 @@ public final class XSDSchema {
      * @throws ValidationError Check errror.
      */
     private void traverseElements(DomElement de, int mode)
-            throws ValidationError, IOException, ScannerError {
+            throws ValidationError, IOException, ScannerError, ParseException {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             DomElement e = (DomElement) nodes[i];

@@ -5,6 +5,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.data.MapTree;
 
+import java.text.ParseException;
 import java.util.Comparator;
 
 /**
@@ -189,7 +190,7 @@ public final class XPath implements Comparator<Object[]> {
      * @param e   The start dom element, can be null.
      * @return The found dom element, or null.
      */
-    public DomElement findFirst(int pos, DomElement e) {
+    public DomElement findFirst(int pos, DomElement e) throws ParseException {
         if (e == null)
             return null;
         int n = (cps != null ? cps.size() : 0);
@@ -211,7 +212,7 @@ public final class XPath implements Comparator<Object[]> {
      *
      * @return The found dom element, or null.
      */
-    public DomElement findNext() {
+    public DomElement findNext() throws ParseException {
         if (cps != null) {
             for (int pos = cps.size() - 1; pos >= 0; pos--) {
                 ChoicePoint hit = cps.get(pos);
@@ -249,7 +250,7 @@ public final class XPath implements Comparator<Object[]> {
      * @param e The start dom element.
      * @return The count.
      */
-    public long findCount(DomElement e) {
+    public long findCount(DomElement e) throws ParseException {
         long res = 0;
         DomElement found = findFirst(0, e);
         while (found != null) {
@@ -266,7 +267,7 @@ public final class XPath implements Comparator<Object[]> {
      * @param e The start dom element.
      * @return The sort.
      */
-    public ListArray<DomElement> findSort(DomElement e) {
+    public ListArray<DomElement> findSort(DomElement e) throws ParseException {
         MapTree<Object[], ListArray<DomElement>> tm =
                 new MapTree<Object[], ListArray<DomElement>>(this);
 
@@ -318,7 +319,7 @@ public final class XPath implements Comparator<Object[]> {
      * @param e The dom element.
      * @return The key.
      */
-    private Object[] computeKey(DomElement e) {
+    private Object[] computeKey(DomElement e) throws ParseException {
         Object[] key = new Object[obs.size()];
         int i = 0;
         for (MapEntry<String, XPathOrder> entry = obs.getFirstEntry();

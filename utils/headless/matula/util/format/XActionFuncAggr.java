@@ -3,6 +3,8 @@ package matula.util.format;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 
+import java.text.ParseException;
+
 /**
  * <p>This class represents an xaction aggregate function.</p>
  * </p>
@@ -162,7 +164,7 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param e The source dom element.
      * @return The result dom element.
      */
-    DomElement updateElement(DomElement r, DomElement e) {
+    DomElement updateElement(DomElement r, DomElement e) throws ParseException {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             r = entry.value.updateElement(r, e);

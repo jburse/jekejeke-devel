@@ -7,6 +7,7 @@ import matula.util.regex.ScannerError;
 import matula.util.system.MimeHeader;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * <p>This class provides an XSL style sheet transform.</p>
@@ -112,7 +113,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ValidationError Check error.
      */
     public void xslt(AbstractDom dn, String comment)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         if (comment != null && !"".equals(comment))
             dw.writeComment(comment);
         if ((dw.getMask() & AbstractDom.MASK_LIST) != 0) {
@@ -133,7 +134,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNode(AbstractDom dn)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         if (dn instanceof DomText) {
             DomText dt = (DomText) dn;
             dw.copyText(dt.getData());
@@ -179,6 +180,9 @@ public final class XSLSheetTransform extends XSLSheet {
                     } catch (ValidationError x) {
                         dw.setMask(backmask);
                         throw x;
+                    } catch (ParseException x) {
+                        dw.setMask(backmask);
+                        throw x;
                     }
                 } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
                         (backmask & AbstractDom.MASK_STRP) == 0) &&
@@ -199,6 +203,9 @@ public final class XSLSheetTransform extends XSLSheet {
                     } catch (ValidationError x) {
                         dw.setMask(backmask);
                         throw x;
+                    } catch (ParseException x) {
+                        dw.setMask(backmask);
+                        throw x;
                     }
                 } else {
                     xsltNodes2(de);
@@ -216,7 +223,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNodes2(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         boolean lastspace = ((dw.getMask() & AbstractDom.MASK_LTSP) != 0);
         AbstractDom[] nodes = de.snapshotNodes();
         if (nodes.length == 0 &&
@@ -254,7 +261,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNodes(AbstractDom[] nodes)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             if ((dw.getMask() & AbstractDom.MASK_TEXT) != 0) {
@@ -276,9 +283,10 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltForEach(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         String attr = de.getAttr(ATTR_FOREACH_SELECT);
         XPathReadTransform xr = new XPathReadTransform();
+        xr.setFunctions(functions);
         xr.setVariables(variables);
         XPath xpath = xr.createXPath(attr);
         AbstractDom[] nodes = de.snapshotNodes();
@@ -321,6 +329,9 @@ public final class XSLSheetTransform extends XSLSheet {
         } catch (ValidationError x) {
             data = backdata;
             throw x;
+        } catch (ParseException x) {
+            data = backdata;
+            throw x;
         }
     }
 
@@ -332,7 +343,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Syntax error.
      */
     private void xsltValueOf(DomElement de)
-            throws IOException, ScannerError {
+            throws IOException, ScannerError, ParseException {
         String select = de.getAttr(ATTR_VALUEOF_SELECT);
         Object val = attrSelect(select);
         if (val == null)
@@ -358,10 +369,10 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltWithData(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         String bean = de.getAttr(ATTR_WITHDATA_BEAN);
         Class<?> _class = XSDResolver.findClass(bean);
-        InterfacePath pu = XSDResolver.newBean(_class);
+        InterfacePath pu = XSDResolver.newPath(_class);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
             String select = de.getAttr(ATTR_WITHDATA_SELECT);
             String doc = (String) attrSelect(select);
@@ -387,6 +398,9 @@ public final class XSLSheetTransform extends XSLSheet {
             data = backdata;
             throw x;
         } catch (ValidationError x) {
+            data = backdata;
+            throw x;
+        } catch (ParseException x) {
             data = backdata;
             throw x;
         }
@@ -461,7 +475,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  IO error.
      */
     private void xsltIf(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         String test = de.getAttr(ATTR_IF_TEST);
         boolean val = attrTest(test);
         if (val) {
@@ -478,7 +492,7 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws IOException  IO error.
      */
     private void xsltChoose(DomElement de)
-            throws IOException, ScannerError, ValidationError {
+            throws IOException, ScannerError, ValidationError, ParseException {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
@@ -511,8 +525,9 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Syntax error.
      */
     private Object attrSelect(String select)
-            throws ScannerError {
+            throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
+        xr.setFunctions(functions);
         xr.setVariables(variables);
         XSelect xs = xr.createXSelect(select);
         return xs.evalElement(data);
@@ -526,8 +541,9 @@ public final class XSLSheetTransform extends XSLSheet {
      * @throws ScannerError Syntax error.
      */
     private boolean attrTest(String test)
-            throws ScannerError {
+            throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
+        xr.setFunctions(functions);
         xr.setVariables(variables);
         XPathExpr xe = xr.createXPathExpr(test);
         return xe.evalElement(data);
