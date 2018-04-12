@@ -101,6 +101,20 @@ abstract class XPathRead {
     }
 
     /**************************************************************/
+    /* Variation Points                                           */
+    /**************************************************************/
+
+    /**
+     * <p>Retrieve a variable value.</p>
+     *
+     * @param n The variable name.
+     * @return The variable value.
+     * @throws ScannerError Syntax error.
+     */
+    abstract Object getVariable(String n)
+            throws ScannerError;
+
+    /**************************************************************/
     /* Choicepoints                                               */
     /**************************************************************/
 
@@ -633,20 +647,6 @@ abstract class XPathRead {
         if (st.ttype != StreamTokenizer.TT_EOF)
             throw new ScannerError(PATH_SUPERFLOUS_TOKEN, OpenOpts.getOffset(reader));
     }
-
-    /**************************************************************/
-    /* Variation Points                                           */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve a variable value.</p>
-     *
-     * @param n The variable name.
-     * @return The variable value.
-     * @throws ScannerError Syntax error.
-     */
-    abstract Object getVariable(String n)
-            throws ScannerError;
 
     /**
      * <p>Some test cases.</p

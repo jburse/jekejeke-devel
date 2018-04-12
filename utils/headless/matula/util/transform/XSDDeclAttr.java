@@ -68,7 +68,7 @@ public final class XSDDeclAttr extends XSDDecl {
      *
      * @return The type.
      */
-    int getType() {
+    public int getType() {
         return type;
     }
 
@@ -77,7 +77,7 @@ public final class XSDDeclAttr extends XSDDecl {
      *
      * @param t The type.
      */
-    private void setType(int t) {
+    public void setType(int t) {
         type = t;
     }
 

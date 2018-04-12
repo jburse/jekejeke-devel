@@ -39,9 +39,9 @@ public final class XMLCheck {
     public static final String DATA_MISSING_ATTR = "data_missing_attr";
     public static final String DATA_MISSING_ELEM = "data_missing_elem";
     public static final String DATA_FORBIDDEN_ELEM = "data_forbidden_elem";
-    public static final String DATA_ILLEGAL_PARENT = "data_illegal_parent";
     public static final String DATA_ILLEGAL_VALUE = "data_illegal_value";
     public static final String DATA_NOT_EMPTY = "data_not_empty";
+    public static final String DATA_ILLEGAL_PARENT = "data_illegal_parent";
 
     private String context = "";
     private int mask;
@@ -245,7 +245,8 @@ public final class XMLCheck {
     private void checkNodes(DomElement de, XSDDeclElem xe)
             throws ValidationError {
         String name = de.getName();
-        checkParent(context, name, xe);
+        if (!XPathCheck.checkParent(context, xe))
+            throw new ValidationError(DATA_ILLEGAL_PARENT, name);
         AbstractDom[] nodes = de.snapshotNodes();
         checkConstraint(nodes, xe);
         if (nodes.length != 0 && xe.getComplex() == XSDDeclElem.COMPLEX_EMPTY)
@@ -262,27 +263,6 @@ public final class XMLCheck {
             context = backcontext;
             throw x;
         }
-    }
-
-    /**
-     * <p>Check parent element.</p>
-     *
-     * @param context The context.
-     * @param name    The element name.
-     * @param xe      The XSD schema element declaration.
-     * @throws ValidationError Check error.
-     */
-    static void checkParent(String context, String name, XSDDeclElem xe)
-            throws ValidationError {
-        AssocArray<String, Integer> parent = xe.getParent();
-        if (parent == null)
-            return;
-        for (int i = 0; i < parent.size(); i++) {
-            String par = parent.getKey(i);
-            if (context.equalsIgnoreCase(par))
-                return;
-        }
-        throw new ValidationError(DATA_ILLEGAL_PARENT, name);
     }
 
     /**

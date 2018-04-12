@@ -39,7 +39,6 @@ import java.io.InputStreamReader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSLSheetCheck extends XSLSheet {
-    private static final String PATH_DUPLICATE_VAR = "path_duplicate_var";
 
     private static final String SHEET_FORBIDDEN_TEXT = "sheet_forbidden_text";
     private static final String SHEET_FORBIDDEN_ELEM = "sheet_forbidden_elem";
@@ -198,7 +197,7 @@ public final class XSLSheetCheck extends XSLSheet {
                 continue;
             attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_SELECT);
             XSelect xselect = xr.createXSelect(attr);
-            xc.select(xselect);
+            xselect.checkElement(xc);
             attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_ORDER);
             XSLSheet.checkOrder(elem, attr);
         }
@@ -245,7 +244,7 @@ public final class XSLSheetCheck extends XSLSheet {
         String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
 
         XSDResolver resolver=schema.getResolver();
-        Class<?> _class=XSLSheet.findClass(bean);
+        Class<?> _class= XSDResolver.findClass(bean);
         XSDSchema xdef=resolver.resolveSchema(_class);
 
         if ((xdef.getFlags() & InterfacePath.FLAG_STYL) != 0)
@@ -316,7 +315,7 @@ public final class XSLSheetCheck extends XSLSheet {
             throws ValidationError {
         String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
         if (parameters.get(name) != null)
-            throw new ValidationError(PATH_DUPLICATE_VAR, name);
+            throw new ValidationError(XPathCheck.PATH_DUPLICATE_VAR, name);
         String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
         int typeid = XSLSheet.checkParamType(de, type);
         parameters.add(name, Integer.valueOf(typeid));
@@ -388,7 +387,7 @@ public final class XSLSheetCheck extends XSLSheet {
         XPathCheck xc = new XPathCheck();
         xc.setSchema(schema);
         xc.setSimulation(simulation);
-        return xc.select(xs);
+        return xs.checkElement(xc);
     }
 
     /**
@@ -406,7 +405,7 @@ public final class XSLSheetCheck extends XSLSheet {
         XPathCheck xc = new XPathCheck();
         xc.setSchema(schema);
         xc.setSimulation(simulation);
-        xc.predicate(xe);
+        xe.checkElement(xc);
     }
 
     /**

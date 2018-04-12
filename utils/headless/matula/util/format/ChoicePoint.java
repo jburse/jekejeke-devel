@@ -1,6 +1,9 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
+import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHashLink;
+import matula.util.transform.*;
 
 /**
  * <p>This class provides an choice point.</p>
@@ -29,6 +32,9 @@ import matula.util.regex.ScannerError;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ChoicePoint {
+    public static final String PATH_CANT_CHCPNT = "path_cant_chcpnt";
+    public static final String PATH_OVERRUN_PARENT = "path_overrun_parent";
+
     public static final int CHOICEPOINT_CHILDREN = 0;
     public static final int CHOICEPOINT_PARENT = 1;
     public static final int CHOICEPOINT_CHILD_INDEX = 2;
@@ -102,7 +108,7 @@ public final class ChoicePoint {
                     if (!(node instanceof DomElement))
                         continue;
                     e = (DomElement) node;
-                    if (!expr.checkElement(e))
+                    if (!expr.evalElement(e))
                         continue;
                     children = nodes;
                     pos = i;
@@ -135,7 +141,7 @@ public final class ChoicePoint {
                     if (!(node instanceof DomElement))
                         continue;
                     DomElement e = (DomElement) node;
-                    if (!expr.checkElement(e))
+                    if (!expr.evalElement(e))
                         continue;
                     pos = i;
                     return e;
@@ -165,6 +171,58 @@ public final class ChoicePoint {
                 break;
             default:
                 throw new IllegalArgumentException("illegal choice");
+        }
+    }
+
+    /*****************************************************/
+    /* Type Checking                                     */
+    /*****************************************************/
+
+    /**
+     * <p>Check a choice point.</p>
+     *
+     * @param e The schema and simulation.
+     * @throws ValidationError Check error.
+     */
+    public void checkElement(XPathCheck e) throws ValidationError {
+        switch (getChoice()) {
+            case ChoicePoint.CHOICEPOINT_CHILDREN:
+                XPathExprComb ex = getExpr();
+                if (ex.getCombination() != XPathExprComb.EXPR_COMB_PRED)
+                    throw new ValidationError(PATH_CANT_CHCPNT, toString());
+                MapHashLink<String, XPathExpr> exprs = ex.getExprs();
+                if (exprs == null)
+                    throw new ValidationError(PATH_CANT_CHCPNT, toString());
+                MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                if (!(entry.value instanceof XPathExprPrim))
+                    throw new ValidationError(PATH_CANT_CHCPNT, toString());
+                XPathExprPrim prim = (XPathExprPrim) entry.value;
+                if (prim.getPrimitive() != XPathExprPrim.EXPR_PRIM_NAME)
+                    throw new ValidationError(PATH_CANT_CHCPNT, toString());
+                String name = ((XSelectPrim) prim.getFirst()).getAttr();
+                XSDSchema schema = e.getSchema();
+                XSDDeclElem decl = schema.getDeclElem(name);
+                String context = e.getContext();
+                if (!XPathCheck.checkParent(context, decl))
+                    throw new ValidationError(XPathCheck.PATH_ILLEGAL_PARENT, name);
+                ListArray<String> simulation = e.getSimulation();
+                simulation.add(name);
+                entry = exprs.successor(entry);
+                while (entry != null) {
+                    entry.value.checkElement(e);
+                    entry = exprs.successor(entry);
+                }
+                break;
+            case ChoicePoint.CHOICEPOINT_PARENT:
+                simulation = e.getSimulation();
+                if (!(simulation.size() > 0))
+                    throw new ValidationError(PATH_OVERRUN_PARENT, toString());
+                simulation.remove(simulation.size() - 1);
+                break;
+            case ChoicePoint.CHOICEPOINT_CHILD_INDEX:
+                throw new ValidationError(PATH_CANT_CHCPNT, toString());
+            default:
+                throw new ValidationError(PATH_CANT_CHCPNT, toString());
         }
     }
 

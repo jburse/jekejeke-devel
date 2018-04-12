@@ -1,5 +1,10 @@
 package matula.util.format;
 
+import matula.util.transform.ValidationError;
+import matula.util.transform.XPathCheck;
+import matula.util.transform.XSDDeclAttr;
+import matula.util.transform.XSLSheet;
+
 /**
  * <p>The class represent an xselect prim.</p>
  * <p/>
@@ -159,7 +164,7 @@ public final class XSelectComb extends XSelect {
         } else {
             switch (combination) {
                 case SELE_COMB_WHEN:
-                    if (third.checkElement(d)) {
+                    if (third.evalElement(d)) {
                         return first.evalElement(d);
                     } else {
                         return second.evalElement(d);
@@ -168,6 +173,50 @@ public final class XSelectComb extends XSelect {
                     throw new IllegalArgumentException("illegal combiination");
             }
         }
+    }
+
+    /**
+     * <p>Check an xpath select.</p>
+     *
+     * @param d The schema and simulation.
+     * @return The type id.
+     * @throws ValidationError Check error.
+     */
+    public int checkElement(XPathCheck d) throws ValidationError {
+        switch (getCombination()) {
+            case XSelectComb.SELE_COMB_NEG:
+                int typeid = getFirst().checkElement(d);
+                if (typeid != XSDDeclAttr.TYPE_INTEGER)
+                    throw new ValidationError(XSelect.PATH_INTEGER_SELE, getFirst().toString());
+                break;
+            case XSelectComb.SELE_COMB_ADD:
+            case XSelectComb.SELE_COMB_SUB:
+            case XSelectComb.SELE_COMB_MUL:
+            case XSelectComb.SELE_COMB_DIV:
+                typeid = getFirst().checkElement(d);
+                if (typeid != XSDDeclAttr.TYPE_INTEGER)
+                    throw new ValidationError(XSelect.PATH_INTEGER_SELE, getFirst().toString());
+                typeid = getSecond().checkElement(d);
+                if (typeid != XSDDeclAttr.TYPE_INTEGER)
+                    throw new ValidationError(XSelect.PATH_INTEGER_SELE, getSecond().toString());
+                break;
+            case XSelectComb.SELE_COMB_WHEN:
+                getThird().checkElement(d);
+                typeid = getFirst().checkElement(d);
+                int typeid2 = getSecond().checkElement(d);
+                if (typeid == typeid2) {
+                    return typeid;
+                } else if (typeid == XSLSheet.TYPE_ELEMENT) {
+                    throw new ValidationError(XSelect.PATH_PRIMITIV_SELE, getFirst().toString());
+                } else if (typeid2 == XSLSheet.TYPE_ELEMENT) {
+                    throw new ValidationError(XSelect.PATH_PRIMITIV_SELE, getSecond().toString());
+                } else {
+                    return XSDDeclAttr.TYPE_PRIMITIVE;
+                }
+            default:
+                throw new ValidationError(XSelect.PATH_CANT_SELE, toString());
+        }
+        return XSDDeclAttr.TYPE_INTEGER;
     }
 
     /**

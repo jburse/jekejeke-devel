@@ -2,6 +2,8 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.transform.ValidationError;
+import matula.util.transform.XPathCheck;
 
 /**
  * <p>This class represents an xpath combination expression.</p>
@@ -139,17 +141,17 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Check whether a dom element satisfies this xpath expression.</p>
+     * <p>Eval an xpath expression.</p>
      *
      * @param e The dom element.
-     * @return True if th dom element satisfies this xpath expression, otherwise false.
+     * @return True if the the xpath expression is satisfied, otherwise false.
      */
-    public boolean checkElement(DomElement e) {
+    public boolean evalElement(DomElement e) {
         switch (combination) {
             case EXPR_COMB_PRED:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                      entry != null; entry = exprs.successor(entry)) {
-                    if (!entry.value.checkElement(e))
+                    if (!entry.value.evalElement(e))
                         return false;
                 }
                 return true;
@@ -157,7 +159,7 @@ public final class XPathExprComb extends XPathExpr {
                 if (exprs != null) {
                     for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                          entry != null; entry = exprs.successor(entry)) {
-                        if (entry.value.checkElement(e))
+                        if (entry.value.evalElement(e))
                             return true;
                     }
                 }
@@ -166,13 +168,35 @@ public final class XPathExprComb extends XPathExpr {
                 if (exprs != null) {
                     for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
                          entry != null; entry = exprs.successor(entry)) {
-                        if (!entry.value.checkElement(e))
+                        if (!entry.value.evalElement(e))
                             return false;
                     }
                 }
                 return true;
             default:
                 throw new IllegalArgumentException("illegal combination");
+        }
+    }
+
+    /**
+     * <p>Check an xpath expression.</p>
+     *
+     * @param e The schema and simulation.
+     * @throws ValidationError Check error.
+     */
+    public void checkElement(XPathCheck e) throws ValidationError {
+        switch (getCombination()) {
+            case XPathExprComb.EXPR_COMB_OR:
+            case XPathExprComb.EXPR_COMB_AND:
+                MapHashLink<String, XPathExpr> exprs = getExprs();
+                if (exprs != null) {
+                    for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();
+                         entry != null; entry = exprs.successor(entry))
+                        entry.value.checkElement(e);
+                }
+                break;
+            default:
+                throw new ValidationError(XPathExpr.PATH_CANT_PRED, toString());
         }
     }
 
@@ -302,7 +326,7 @@ public final class XPathExprComb extends XPathExpr {
     }
 
     /**
-     * <p>Completent this expression.</p>
+     * <p>Complement this expression.</p>
      */
     public void complement() {
         switch (combination) {

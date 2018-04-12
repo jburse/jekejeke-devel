@@ -2,6 +2,7 @@ package matula.util.transform;
 
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
+import matula.util.system.AbstractRuntime;
 
 import java.io.IOException;
 
@@ -32,6 +33,11 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XSDResolver {
+    public static final String BEAN_MISSING_CLASS = "bean_missing_class";
+    public static final String BEAN_MISMATCHED_BEAN = "bean_mismatched_bean";
+    public static final String BEAN_ILLEGAL_ACCESS = "bean_illegal_access";
+    public static final String BEAN_INST_EXCEPTION = "bean_inst_exception";
+
     private MapHash<Class<?>, XSDSchema> resolved = new MapHash<Class<?>, XSDSchema>();
 
     /**
@@ -47,7 +53,7 @@ public final class XSDResolver {
             throws ValidationError, IOException, ScannerError {
         XSDSchema schema = resolved.get(_class);
         if (schema == null) {
-            InterfacePath pu = XSLSheet.newBean(_class);
+            InterfacePath pu = newBean(_class);
 
             pu.setFlags(pu.getFlags() | InterfacePath.FLAG_SCHM);
             pu.list();
@@ -70,6 +76,50 @@ public final class XSDResolver {
             resolved.add(_class, schema);
         }
         return schema;
+    }
+
+    /*************************************************************/
+    /* Bean Loader                                               */
+    /*************************************************************/
+
+    /**
+     * <p>Find class of a bean.</p>
+     *
+     * @param bean The bean name.
+     * @return The class of the bean.
+     * @throws ValidationError Check error.
+     */
+    static Class<?> findClass(String bean)
+            throws ValidationError {
+        ClassLoader loader = XSDSchema.class.getClassLoader();
+        Class<?> _class = AbstractRuntime.stringToClass(bean, loader);
+        if (_class == null)
+            throw new ValidationError(BEAN_MISSING_CLASS, bean);
+        return _class;
+    }
+
+    /**
+     * <p>Create an instance of a bean.</p>
+     *
+     * @param _class The class of the bean.
+     * @return The instance of the bean.
+     * @throws ValidationError Check error.
+     */
+    static InterfacePath newBean(Class<?> _class)
+            throws ValidationError {
+        try {
+            Object obj = _class.newInstance();
+            if (!(obj instanceof InterfacePath))
+                throw new ValidationError(BEAN_MISMATCHED_BEAN,
+                        AbstractRuntime.classToString(_class));
+            return (InterfacePath) obj;
+        } catch (IllegalAccessException x) {
+            throw new ValidationError(BEAN_ILLEGAL_ACCESS,
+                    AbstractRuntime.classToString(_class));
+        } catch (InstantiationException x) {
+            throw new ValidationError(BEAN_INST_EXCEPTION,
+                    AbstractRuntime.classToString(_class));
+        }
     }
 
 }

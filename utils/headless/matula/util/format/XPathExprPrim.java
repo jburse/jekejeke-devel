@@ -1,6 +1,9 @@
 package matula.util.format;
 
+import matula.util.transform.ValidationError;
+import matula.util.transform.XPathCheck;
 import matula.util.transform.XSDDeclAttr;
+import matula.util.transform.XSLSheet;
 
 /**
  * <p>This predicate implements an xpath primitive expression.</p>
@@ -99,12 +102,12 @@ public final class XPathExprPrim extends XPathExpr {
     }
 
     /**
-     * <p>Check whether a dom element satisfies this xpath expression.</p>
+     * <p>Eval an xpath expression.</p>
      *
      * @param e The dom element.
-     * @return True if the xpath expression is satisified, otherwise false.
+     * @return True if the the xpath expression is satisfied, otherwise false.
      */
-    public boolean checkElement(DomElement e)
+    public boolean evalElement(DomElement e)
             throws IllegalArgumentException {
         if (primitive <= EXPR_PRIM_NAME) {
             String name = ((XSelectPrim) first).getAttr();
@@ -133,6 +136,32 @@ public final class XPathExprPrim extends XPathExpr {
                 default:
                     throw new IllegalArgumentException("illegal primitive");
             }
+        }
+    }
+
+    /**
+     * <p>Check an xpath expression.</p>
+     *
+     * @param e The schema and simulation.
+     * @throws ValidationError Check error.
+     */
+    public void checkElement(XPathCheck e) throws ValidationError {
+        switch (getPrimitive()) {
+            case XPathExprPrim.EXPR_PRIM_EQ:
+            case XPathExprPrim.EXPR_PRIM_NQ:
+            case XPathExprPrim.EXPR_PRIM_LS:
+            case XPathExprPrim.EXPR_PRIM_GR:
+            case XPathExprPrim.EXPR_PRIM_LQ:
+            case XPathExprPrim.EXPR_PRIM_GQ:
+                int typeid = getFirst().checkElement(e);
+                if (typeid == XSLSheet.TYPE_ELEMENT)
+                    throw new ValidationError(XSelect.PATH_PRIMITIV_SELE, getFirst().toString());
+                typeid = getSecond().checkElement(e);
+                if (typeid == XSLSheet.TYPE_ELEMENT)
+                    throw new ValidationError(XSelect.PATH_PRIMITIV_SELE, getSecond().toString());
+                break;
+            default:
+                throw new ValidationError(XPathExpr.PATH_CANT_PRED, toString());
         }
     }
 
@@ -255,7 +284,7 @@ public final class XPathExprPrim extends XPathExpr {
     }
 
     /**
-     * <p>Completent this expression.</p>
+     * <p>Complement this expression.</p>
      */
     public void complement() {
         switch (primitive) {

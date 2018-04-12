@@ -1,5 +1,8 @@
 package matula.util.format;
 
+import matula.util.transform.ValidationError;
+import matula.util.transform.XPathCheck;
+
 /**
  * <p>This class is the base class of xpath expressions.</p>
  * </p>
@@ -27,14 +30,23 @@ package matula.util.format;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class XPathExpr {
+    public static final String PATH_CANT_PRED = "path_cant_pred";
 
     /**
-     * <p>Check whether a dom element satisfies this xpath expression.</p>
+     * <p>Eval an xpath expression.</p>
      *
      * @param e The dom element.
-     * @return True if the the xpath expression is satisified, otherwise false.
+     * @return True if the the xpath expression is satisfied, otherwise false.
      */
-    public abstract boolean checkElement(DomElement e);
+    public abstract boolean evalElement(DomElement e);
+
+    /**
+     * <p>Check an xpath expression.</p>
+     *
+     * @param e The schema and simulation.
+     * @throws ValidationError Check error.
+     */
+    public abstract void checkElement(XPathCheck e) throws ValidationError;
 
     /**
      * <p>Convert this xpath expression to a string.</p>
@@ -59,7 +71,7 @@ public abstract class XPathExpr {
     }
 
     /**
-     * <p>Completent this expression.</p>
+     * <p>Complement this expression.</p>
      */
     public abstract void complement();
 

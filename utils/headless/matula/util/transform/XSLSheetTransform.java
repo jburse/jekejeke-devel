@@ -360,8 +360,8 @@ public final class XSLSheetTransform extends XSLSheet {
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError {
         String bean = de.getAttr(ATTR_WITHDATA_BEAN);
-        Class<?> _class = XSLSheet.findClass(bean);
-        InterfacePath pu = XSLSheet.newBean(_class);
+        Class<?> _class = XSDResolver.findClass(bean);
+        InterfacePath pu = XSDResolver.newBean(_class);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
             String select = de.getAttr(ATTR_WITHDATA_SELECT);
             String doc = (String) attrSelect(select);
@@ -530,7 +530,7 @@ public final class XSLSheetTransform extends XSLSheet {
         XPathReadTransform xr = new XPathReadTransform();
         xr.setVariables(variables);
         XPathExpr xe = xr.createXPathExpr(test);
-        return xe.checkElement(data);
+        return xe.evalElement(data);
     }
 
     /**

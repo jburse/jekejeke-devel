@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.transform.*;
+
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -119,6 +121,49 @@ public final class XSelectPrim extends XSelect {
                 throw new IllegalArgumentException("illegal primitive");
         }
         return res;
+    }
+
+    /**
+     * <p>Check an xpath select.</p>
+     *
+     * @param d The schema and simulation.
+     * @return The type id.
+     * @throws ValidationError Check error.
+     */
+    public int checkElement(XPathCheck d) throws ValidationError {
+        switch (getPrimitive()) {
+            case XSelectPrim.SELE_PRIM_ATTR:
+                String context = d.getContext();
+                if ("".equals(context))
+                    throw new ValidationError(XSelect.PATH_MISSING_FOREACH, toString());
+                String attr = getAttr();
+                XSDSchema schema = d.getSchema();
+                XSDDeclAttr decl = schema.getDeclAttr(context, attr);
+                return decl.getType();
+            case XSelectPrim.SELE_PRIM_CONST:
+                Object val = getCnst();
+                if (val instanceof String) {
+                    return XSDDeclAttr.TYPE_STRING;
+                } else if (val instanceof Long) {
+                    return XSDDeclAttr.TYPE_INTEGER;
+                } else if (val instanceof DomElement) {
+                    return XSLSheet.TYPE_ELEMENT;
+                } else {
+                    throw new ValidationError(XSelect.PATH_CANT_SELE, toString());
+                }
+            case XSelectPrim.SELE_PRIM_CHILD:
+                String name = getAttr();
+                schema = d.getSchema();
+                XSDDeclElem decl2 = schema.getDeclElem(name);
+                context = d.getContext();
+                if (!XPathCheck.checkParent(context, decl2))
+                    throw new ValidationError(XPathCheck.PATH_ILLEGAL_PARENT, name);
+                return XSLSheet.TYPE_ELEMENT;
+            case XSelectPrim.SELE_PRIM_NULL:
+                return XSDDeclAttr.TYPE_PRIMITIVE;
+            default:
+                throw new ValidationError(XSelect.PATH_CANT_SELE, toString());
+        }
     }
 
     /**

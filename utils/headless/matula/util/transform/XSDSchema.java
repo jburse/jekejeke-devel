@@ -186,7 +186,7 @@ public final class XSDSchema {
                 if ((mode & MODE_DRY) != 0) {
                     schema = new XSDSchema();
                 } else {
-                    Class<?> _class = XSLSheet.findClass(bean);
+                    Class<?> _class = XSDResolver.findClass(bean);
                     schema = resolver.resolveSchema(_class);
                 }
                 putImport(bean, schema);
@@ -323,7 +323,7 @@ public final class XSDSchema {
      * @return The element declaration.
      * @throws ValidationError Check error.
      */
-    XSDDeclElem getDeclElem(String name)
+    public XSDDeclElem getDeclElem(String name)
             throws ValidationError {
         XSDDecl decl = getDecl(name);
         if (decl == null || !(decl instanceof XSDDeclElem))
@@ -339,7 +339,7 @@ public final class XSDSchema {
      * @return The element declaration.
      * @throws ValidationError Check error.
      */
-    XSDDeclAttr getDeclAttr(String name, String attr)
+    public XSDDeclAttr getDeclAttr(String name, String attr)
             throws ValidationError {
         String key = name + "." + attr;
         XSDDecl decl = getDecl(name + "." + attr);
