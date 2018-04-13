@@ -39,3 +39,10 @@
 <element name="otherwise">
    <parent name="choose" occurs="semidet"/>
 </element>
+<!-- XPath functions -->
+<resolve bean="matula.util.wire.XSelectFormat">
+   <function key="format_date/2"/>
+   <function key="format_date/3"/>
+   <function key="format_datetime/2"/>
+   <function key="format_datetime/3"/>
+</resolve>
