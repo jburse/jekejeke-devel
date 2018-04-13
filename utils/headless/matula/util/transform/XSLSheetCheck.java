@@ -4,13 +4,9 @@ import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
-import matula.util.system.ForeignUri;
 import matula.util.system.MimeHeader;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 
 /**
@@ -51,30 +47,6 @@ public final class XSLSheetCheck extends XSLSheet {
     private int mask;
     private XSDSchema schema;
     private ListArray<String> simulation = new ListArray<String>();
-
-    private static XSDSchema meta = new XSDSchema();
-
-    static {
-        try {
-            InputStream in = XSDSchema.class.getResourceAsStream("template.xsd");
-
-            DomElement schema = new DomElement();
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(in, ForeignUri.ENCODING_UTF8));
-            schema.load(reader, AbstractDom.MASK_LIST);
-            reader.close();
-
-            meta.digestElements(schema);
-        } catch (ScannerError x) {
-            throw new RuntimeException("meta failed", x);
-        } catch (ValidationError x) {
-            throw new RuntimeException("meta failed", x);
-        } catch (IOException x) {
-            throw new RuntimeException("meta failed", x);
-        } catch (ParseException x) {
-            throw new RuntimeException("meta failed", x);
-        }
-    }
 
     /**
      * <p>Set the mask.</p>
@@ -184,7 +156,7 @@ public final class XSLSheetCheck extends XSLSheet {
             throws IOException, ScannerError, ValidationError, ParseException {
         String attr = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
-        xr.setFunctions(functions);
+        xr.setMeta(meta);
         xr.setParameters(parameters);
         XPath xpath = xr.createXPath(attr);
         XPathCheck xc = new XPathCheck();
@@ -389,7 +361,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private int attrSelect(String select)
             throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
-        xr.setFunctions(functions);
+        xr.setMeta(meta);
         xr.setParameters(parameters);
         XSelect xs = xr.createXSelect(select);
         XPathCheck xc = new XPathCheck();
@@ -408,7 +380,7 @@ public final class XSLSheetCheck extends XSLSheet {
     private void attrTest(String test)
             throws ScannerError, ValidationError {
         XPathReadCheck xr = new XPathReadCheck();
-        xr.setFunctions(functions);
+        xr.setMeta(meta);
         xr.setParameters(parameters);
         XPathExpr xe = xr.createXPathExpr(test);
         XPathCheck xc = new XPathCheck();

@@ -1,12 +1,17 @@
 package matula.util.transform;
 
 import matula.util.data.MapHash;
+import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
 import matula.util.format.XPathOrder;
 import matula.util.regex.ScannerError;
-import matula.util.system.AbstractRuntime;
+import matula.util.system.ForeignUri;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.ParseException;
 
 /**
  * <p>This class provides an XSL style sheet base.</p>
@@ -47,15 +52,28 @@ public abstract class XSLSheet {
     public static final int TEXT_PLAIN = 0;
     public static final int TEXT_HTML = 1;
 
-    protected MapHash<String, Class<? extends InterfaceFunc>> functions;
+    public static XSDSchema meta = new XSDSchema();
 
-    /**
-     * <p>Set the functions.</p>
-     *
-     * @param f The functions.
-     */
-    public void setFunctions(MapHash<String, Class<? extends InterfaceFunc>> f) {
-        functions = f;
+    static {
+        try {
+            InputStream in = XSDSchema.class.getResourceAsStream("template.xsd");
+
+            DomElement schema = new DomElement();
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(in, ForeignUri.ENCODING_UTF8));
+            schema.load(reader, AbstractDom.MASK_LIST);
+            reader.close();
+
+            meta.digestElements(schema);
+        } catch (ScannerError x) {
+            throw new RuntimeException("meta failed", x);
+        } catch (ValidationError x) {
+            throw new RuntimeException("meta failed", x);
+        } catch (IOException x) {
+            throw new RuntimeException("meta failed", x);
+        } catch (ParseException x) {
+            throw new RuntimeException("meta failed", x);
+        }
     }
 
     /**

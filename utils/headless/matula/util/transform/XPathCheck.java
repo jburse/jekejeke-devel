@@ -130,7 +130,6 @@ public final class XPathCheck {
      * @throws ScannerError  Syntax error.
      * @throws ValidationError Check error.
      */
-    /*
     public static void main(String[] args)
             throws ValidationError, ScannerError {
         XSDSchema schema = new XSDSchema();
@@ -146,9 +145,7 @@ public final class XPathCheck {
         xc.setSchema(schema);
 
         XPathReadCheck xr = new XPathReadCheck();
-        MapHash<String, Class<? extends InterfaceFunc>> functions=new MapHash<String, Class<? extends InterfaceFunc>>();
-        functions.add(XSelectFormat.KEY_FORM_DATE, XSelectFormat.class);
-        xr.setFunctions(functions);
+        xr.setMeta(XSLSheet.meta);
         MapHash<String, Integer> parameters = new MapHash<String, Integer>();
         parameters.add("x", Integer.valueOf(XSDDeclAttr.TYPE_STRING));
         parameters.add("y", Integer.valueOf(XSDDeclAttr.TYPE_INTEGER));
@@ -196,6 +193,5 @@ public final class XPathCheck {
             System.out.println("check(xselect)=failed");
         }
     }
-    */
 
 }

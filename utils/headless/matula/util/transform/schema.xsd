@@ -18,3 +18,11 @@
     <attribute name="name" type="string"/>
     <attribute name="occurs" use="optional" type="string"/>
 </element>
+<element name="resolve">
+    <parent name=""/>
+    <attribute name="bean" type="string"/>
+</element>
+<element name="function">
+    <parent name="resolve"/>
+    <attribute name="key" type="string"/>
+</element>

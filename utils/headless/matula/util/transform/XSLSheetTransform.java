@@ -286,7 +286,7 @@ public final class XSLSheetTransform extends XSLSheet {
             throws IOException, ScannerError, ValidationError, ParseException {
         String attr = de.getAttr(ATTR_FOREACH_SELECT);
         XPathReadTransform xr = new XPathReadTransform();
-        xr.setFunctions(functions);
+        xr.setMeta(meta);
         xr.setVariables(variables);
         XPath xpath = xr.createXPath(attr);
         AbstractDom[] nodes = de.snapshotNodes();
@@ -527,7 +527,7 @@ public final class XSLSheetTransform extends XSLSheet {
     private Object attrSelect(String select)
             throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
-        xr.setFunctions(functions);
+        xr.setMeta(meta);
         xr.setVariables(variables);
         XSelect xs = xr.createXSelect(select);
         return xs.evalElement(data);
@@ -543,7 +543,7 @@ public final class XSLSheetTransform extends XSLSheet {
     private boolean attrTest(String test)
             throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
-        xr.setFunctions(functions);
+        xr.setMeta(meta);
         xr.setVariables(variables);
         XPathExpr xe = xr.createXPathExpr(test);
         return xe.evalElement(data);

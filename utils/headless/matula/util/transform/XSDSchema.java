@@ -48,14 +48,20 @@ public final class XSDSchema {
     private static final String NAME_PARENT = "parent";
     private static final String ATTR_PARENT_NAME = "name";
     private static final String ATTR_PARENT_OCCURS = "occurs";
+    private static final String NAME_RESOLVE = "resolve";
+    private static final String ATTR_RESOLVE_BEAN = "bean";
+    private static final String NAME_FUNCTION = "function";
+    private static final String ATTR_FUNCTION_KEY = "key";
 
     public static final String SCHEMA_DUPLICATE_DECL = "schema_duplicate_decl";
     public static final String SCHEMA_UNDECLARED_ELEM = "schema_undeclared_elem";
     public static final String SCHEMA_UNDECLARED_ATTR = "schema_undeclared_attr";
     public static final String SCHEMA_DUPLICATE_IMPORT = "schema_duplicate_import";
+    public static final String SCHEMA_DUPLICATE_FUNC = "schema_duplicate_func";
 
     private final MapHashLink<String, XSDDecl> decls = new MapHashLink<String, XSDDecl>();
     private final MapHashLink<String, XSDSchema> imports = new MapHashLink<String, XSDSchema>();
+    private final MapHashLink<String, Class<?>> funcs = new MapHashLink<String, Class<?>>();
     private int flags;
     private XSDResolver resolver;
 
@@ -193,8 +199,12 @@ public final class XSDSchema {
                     schema = resolver.resolveSchema(_class);
                 }
                 putImport(bean, schema);
+            } else if (e.isName(NAME_RESOLVE)) {
+                String bean=e.getAttr(ATTR_RESOLVE_BEAN);
+                Class<?> _class = XSDResolver.findClass(bean);
+                traverseFunctions(e, _class);
             } else {
-                throw new IllegalArgumentException("illegal node");
+                throw new IllegalArgumentException("illegal element");
             }
         }
     }
@@ -229,7 +239,28 @@ public final class XSDSchema {
                 }
                 xe.putParent(par, occurs);
             } else {
-                throw new IllegalArgumentException("illegal node");
+                throw new IllegalArgumentException("illegal attribute");
+            }
+        }
+    }
+
+    /**
+     * <p>Digest the functions of the XSD schema.</p>
+     *
+     * @param de The schema dom element.
+     * @param _class The bean.
+     * @throws ValidationError Check error.
+     */
+    private void traverseFunctions(DomElement de, Class<?> _class)
+            throws ValidationError {
+        AbstractDom[] nodes = de.snapshotNodes();
+        for (int i = 0; i < nodes.length; i++) {
+            DomElement e = (DomElement) nodes[i];
+            if (e.isName(NAME_FUNCTION)) {
+                String key = e.getAttr(ATTR_FUNCTION_KEY);
+                putFunction(key, _class);
+            } else {
+                throw new IllegalArgumentException("illegal function");
             }
         }
     }
@@ -356,9 +387,10 @@ public final class XSDSchema {
     /*****************************************************/
 
     /**
-     * <p>Set a XSD schema declaration.</p>
+     * <p>Set a XSD schema import.</p>
      *
      * @param name The name.
+     *             @param schema The schema import.
      * @throws ValidationError Check error.
      */
     public void putImport(String name, XSDSchema schema)
@@ -380,6 +412,40 @@ public final class XSDSchema {
              entry != null; entry = imports.successor(entry))
             res[k++] = entry.key;
         return res;
+    }
+
+    /*****************************************************/
+    /* Imports Access/Modification                       */
+    /*****************************************************/
+
+    /**
+     * <p>Set a XSD schema function.</p>
+     *
+     * @param key The function key.
+     * @param _class The provider bean.
+     * @throws ValidationError Check error.
+     */
+    public void putFunction(String key, Class<?> _class)
+            throws ValidationError {
+        if (funcs.get(key) != null)
+            throw new ValidationError(SCHEMA_DUPLICATE_FUNC, key);
+        funcs.add(key, _class);
+    }
+
+    /**
+     * <p>Retrieve a XSD schema function.</p>
+     *
+     * @param key The function key.
+     * @return The XSD schema declearation.
+     */
+    public Class<?> getFunction(String key) {
+        for (MapEntry<String, XSDSchema> entry = imports.getFirstEntry();
+             entry != null; entry = imports.successor(entry)) {
+            Class<?> res = entry.value.getFunction(key);
+            if (res != null)
+                return res;
+        }
+        return funcs.get(key);
     }
 
     /*****************************************************/

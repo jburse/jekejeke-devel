@@ -7,7 +7,6 @@ import matula.util.format.*;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
-import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -59,7 +58,7 @@ public abstract class XPathRead {
 
     protected Reader reader;
     protected StreamTokenizer st;
-    protected MapHash<String, Class<? extends InterfaceFunc>> functions;
+    protected XSDSchema meta;
 
     static {
         reserved.add(XPathExprComb.OP_TRUE);
@@ -107,12 +106,12 @@ public abstract class XPathRead {
     }
 
     /**
-     * <p>Set the functions.</p>
+     * <p>Set the function XSD schema.</p>
      *
-     * @param f The functions.
+     * @param s The function XSD schema.
      */
-    public void setFunctions(MapHash<String, Class<? extends InterfaceFunc>> f) {
-        functions = f;
+    public void setMeta(XSDSchema s) {
+        meta = s;
     }
 
     /**************************************************************/
@@ -632,10 +631,10 @@ public abstract class XPathRead {
                     throw new ScannerError(PATH_MISSING_PRNTHS, OpenOpts.getOffset(reader));
                 st.nextToken();
                 String key = name + "/" + list.size();
-                Class<? extends InterfaceFunc> clazz = functions.get(key);
-                if (clazz == null)
+                Class<?> _class = meta.getFunction(key);
+                if (_class == null)
                     throw new ScannerError(PATH_UNDECLARED_FUN, OpenOpts.getOffset(reader));
-                InterfaceFunc func = XSDResolver.newFunc(clazz);
+                InterfaceFunc func = XSDResolver.newFunc(_class);
                 func.setKey(key);
                 Object[] args = new Object[list.size()];
                 list.toArray(args);
@@ -712,20 +711,17 @@ public abstract class XPathRead {
      * @param args Not used.
      * @throws ScannerError Syntax error.
      */
-    /*
     public static void main(String[] args)
             throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
-        MapHash<String, Class<? extends InterfaceFunc>> functions=new MapHash<String, Class<? extends InterfaceFunc>>();
-        functions.add(XSelectFormat.KEY_FORM_DATE, XSelectFormat.class);
-        xr.setFunctions(functions);
+        xr.setMeta(XSLSheet.meta);
         MapHash<String, Object> variables = new MapHash<String, Object>();
         variables.add("x", "bar");
         variables.add("y", Long.valueOf(123));
         xr.setVariables(variables);
 
         XPath xpath = xr.createXPath("jack[@foo=$x or not (@foo=<$y)]/jill");
-        System.out.println("xpath=" + xpath);
+        System.out.println("xpath=" + xpath.toStringChoicePoints());
 
         System.out.println();
 
@@ -737,7 +733,7 @@ public abstract class XPathRead {
 
         XPathExpr xe = xr.createXPathExpr("$x='bar' and $y<456");
         System.out.println("xpathexpr=" + xe);
-        System.out.println("check(xpathexpr)=" + xe.evalElement(null));
+        System.out.println("eval(xpathexpr)=" + xe.evalElement(null));
 
         System.out.println();
 
@@ -756,6 +752,5 @@ public abstract class XPathRead {
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
     }
-    */
 
 }

@@ -39,20 +39,3 @@
 <element name="otherwise">
    <parent name="choose" occurs="semidet"/>
 </element>
-<!-- some html tags -->
-<element name="h1">
-</element>
-<element name="h2">
-</element>
-<element name="table">
-   <attribute name="border" use="optional"/>
-   <attribute name="bgcolor" use="optional"/>
-</element>
-<element name="tr">
-   <attribute name="bgcolor" use="optional"/>
-</element>
-<element name="th">
-   <attribute name="style" use="optional"/>
-</element>
-<element name="td">
-</element>
