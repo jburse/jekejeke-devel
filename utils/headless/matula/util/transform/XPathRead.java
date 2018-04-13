@@ -711,6 +711,7 @@ public abstract class XPathRead {
      * @param args Not used.
      * @throws ScannerError Syntax error.
      */
+    /*
     public static void main(String[] args)
             throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
@@ -752,5 +753,6 @@ public abstract class XPathRead {
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
     }
+    */
 
 }

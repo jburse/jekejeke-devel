@@ -130,6 +130,7 @@ public final class XPathCheck {
      * @throws ScannerError  Syntax error.
      * @throws ValidationError Check error.
      */
+    /*
     public static void main(String[] args)
             throws ValidationError, ScannerError {
         XSDSchema schema = new XSDSchema();
@@ -193,5 +194,6 @@ public final class XPathCheck {
             System.out.println("check(xselect)=failed");
         }
     }
+    */
 
 }
