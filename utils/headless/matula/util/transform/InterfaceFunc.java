@@ -41,9 +41,8 @@ public interface InterfaceFunc {
      * <p>Set the arguments.</p>
      *
      * @param args The arguments.
-     * @param poss The positions.
-     * @throws ScannerError Syntax error.
+     * @return True if the function node could be intialized, otherwise false.
      */
-    void setArgs(Object[] args, ListArray<Integer> poss) throws ScannerError;
+    boolean setArgs(Object[] args);
 
 }

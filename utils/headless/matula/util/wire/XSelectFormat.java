@@ -80,42 +80,42 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
      * <p>Set the arguments.</p>
      *
      * @param a The arguments.
-     * @param p The positions.
+     * @return True if the function node could be intialized, otherwise false.
      */
-    public void setArgs(Object[] a, ListArray<Integer> p) throws ScannerError {
+    public boolean setArgs(Object[] a) {
         switch (format) {
             case SELE_FORM_DATE:
                 if (!(a[0] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(0).intValue());
+                    return false;
                 if (!(a[1] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(1).intValue());
+                    return false;
                 args = a;
-                break;
+                return true;
             case SELE_FORM_DATE_LOC:
                 if (!(a[0] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(0).intValue());
+                    return false;
                 if (!(a[1] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(1).intValue());
+                    return false;
                 if (!(a[2] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(2).intValue());
+                    return false;
                 args = a;
-                break;
+                return true;
             case SELE_FORM_DATETIME:
                 if (!(a[0] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(0).intValue());
+                    return false;
                 if (!(a[1] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(1).intValue());
+                    return false;
                 args = a;
-                break;
+                return true;
             case SELE_FORM_DATETIME_LOC:
                 if (!(a[0] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(0).intValue());
+                    return false;
                 if (!(a[1] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(1).intValue());
+                    return false;
                 if (!(a[2] instanceof XSelect))
-                    throw new ScannerError(XPathRead.PATH_MISSING_SELE, p.get(2).intValue());
+                    return false;
                 args = a;
-                break;
+                return true;
             default:
                 throw new IllegalArgumentException("illegal format");
         }

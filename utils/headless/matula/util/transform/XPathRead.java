@@ -1,7 +1,6 @@
 package matula.util.transform;
 
 import matula.util.data.ListArray;
-import matula.util.data.MapHash;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.text.ParseException;
 
 /**
  * <p>This class provides an xpath reader.</p>
@@ -52,7 +50,9 @@ public abstract class XPathRead {
     private static final String PATH_SUPERFLOUS_TOKEN = "path_superflous_token";
     private static final String PATH_ILLEGAL_VALUE = "path_illegal_value";
     private static final String PATH_MISSING_COLON = "path_missing_colon";
+
     private static final String PATH_UNDECLARED_FUN = "path_undeclared_fun";
+    private static final String PATH_MISMATCH_ARGS = "path_mismatch_args";
 
     private static SetHash<String> reserved = new SetHash<String>();
 
@@ -616,20 +616,14 @@ public abstract class XPathRead {
             st.nextToken();
             if (st.ttype == '(') {
                 ListArray<Object> list = new ListArray<Object>();
-                ListArray<Integer> poss= new ListArray<Integer>();
                 st.nextToken();
                 if (st.ttype != ')') {
                     list.add(predicate());
-                    poss.add(Integer.valueOf(OpenOpts.getOffset(reader)));
                     while (st.ttype == ',') {
                         st.nextToken();
                         list.add(predicate());
-                        poss.add(Integer.valueOf(OpenOpts.getOffset(reader)));
                     }
                 }
-                if (st.ttype != ')')
-                    throw new ScannerError(PATH_MISSING_PRNTHS, OpenOpts.getOffset(reader));
-                st.nextToken();
                 String key = name + "/" + list.size();
                 Class<?> _class = meta.getFunction(key);
                 if (_class == null)
@@ -638,7 +632,11 @@ public abstract class XPathRead {
                 func.setKey(key);
                 Object[] args = new Object[list.size()];
                 list.toArray(args);
-                func.setArgs(args, poss);
+                if (!func.setArgs(args))
+                    throw new ScannerError(PATH_MISMATCH_ARGS, OpenOpts.getOffset(reader));
+                if (st.ttype != ')')
+                    throw new ScannerError(PATH_MISSING_PRNTHS, OpenOpts.getOffset(reader));
+                st.nextToken();
                 res = func;
             } else {
                 res = new XSelectPrim(name, XSelectPrim.SELE_PRIM_CHILD);
