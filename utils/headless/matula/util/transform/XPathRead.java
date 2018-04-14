@@ -1,6 +1,7 @@
 package matula.util.transform;
 
 import matula.util.data.ListArray;
+import matula.util.data.MapHash;
 import matula.util.data.SetHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.text.ParseException;
 
 /**
  * <p>This class provides an xpath reader.</p>
@@ -52,7 +54,7 @@ public abstract class XPathRead {
     private static final String PATH_MISSING_COLON = "path_missing_colon";
 
     private static final String PATH_UNDECLARED_FUN = "path_undeclared_fun";
-    private static final String PATH_MISMATCH_ARGS = "path_mismatch_args";
+    public static final String PATH_MISMATCH_ARGS = "path_mismatch_args";
 
     private static SetHash<String> reserved = new SetHash<String>();
 
@@ -76,10 +78,19 @@ public abstract class XPathRead {
      * @param r The reader.
      * @throws IOException Shit happens.
      */
-    void setReader(Reader r) throws IOException {
+    public void setReader(Reader r) throws IOException {
         reader = r;
         st = createTokenizer(r);
         st.nextToken();
+    }
+
+    /**
+     * <p>Retrieve the reader.</p>
+     *
+     * @return The reader.
+     */
+    public Reader getReader() {
+        return reader;
     }
 
     /**
@@ -125,7 +136,7 @@ public abstract class XPathRead {
      * @return The variable value.
      * @throws ScannerError Syntax error.
      */
-    abstract Object getVariable(String n)
+    public abstract Object getVariable(String n)
             throws ScannerError;
 
     /**************************************************************/
@@ -632,8 +643,7 @@ public abstract class XPathRead {
                 func.setKey(key);
                 Object[] args = new Object[list.size()];
                 list.toArray(args);
-                if (!func.setArgs(args))
-                    throw new ScannerError(PATH_MISMATCH_ARGS, OpenOpts.getOffset(reader));
+                func.setArgs(args, this);
                 if (st.ttype != ')')
                     throw new ScannerError(PATH_MISSING_PRNTHS, OpenOpts.getOffset(reader));
                 st.nextToken();
@@ -717,6 +727,7 @@ public abstract class XPathRead {
         MapHash<String, Object> variables = new MapHash<String, Object>();
         variables.add("x", "bar");
         variables.add("y", Long.valueOf(123));
+        variables.add("locale", "de_CH");
         xr.setVariables(variables);
 
         XPath xpath = xr.createXPath("jack[@foo=$x or not (@foo=<$y)]/jill");
@@ -747,7 +758,7 @@ public abstract class XPathRead {
 
         System.out.println();
 
-        xs = xr.createXSelect("format_date('2018-04-12', 'dd. MMM yyyy')");
+        xs = xr.createXSelect("format_date('2018-04-12')");
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
     }

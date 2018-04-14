@@ -1,6 +1,5 @@
 package matula.util.transform;
 
-import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 
 /**
@@ -41,8 +40,8 @@ public interface InterfaceFunc {
      * <p>Set the arguments.</p>
      *
      * @param args The arguments.
-     * @return True if the function node could be intialized, otherwise false.
+     * @param ctx  The parsing context.
      */
-    boolean setArgs(Object[] args);
+    void setArgs(Object[] args, XPathRead ctx) throws ScannerError;
 
 }

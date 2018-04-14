@@ -36,7 +36,7 @@ public final class XPathReadTransform extends XPathRead {
      *
      * @param v The variables.
      */
-    void setVariables(MapHash<String, Object> v) {
+    public void setVariables(MapHash<String, Object> v) {
         variables = v;
     }
 
@@ -50,7 +50,7 @@ public final class XPathReadTransform extends XPathRead {
      * @param n The variable name.
      * @return The variable value.
      */
-    Object getVariable(String n) {
+    public Object getVariable(String n) {
         return variables.get(n);
     }
 

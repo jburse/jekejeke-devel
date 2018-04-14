@@ -43,7 +43,7 @@ public final class XPathReadCheck extends XPathRead {
      *
      * @param p The parameters.
      */
-    void setParameters(MapHash<String, Integer> p) {
+    public void setParameters(MapHash<String, Integer> p) {
         parameters = p;
     }
 
@@ -58,7 +58,7 @@ public final class XPathReadCheck extends XPathRead {
      * @return The variable value.
      * @throws ScannerError Syntax error.
      */
-    Object getVariable(String n) throws ScannerError {
+    public Object getVariable(String n) throws ScannerError {
         Integer type = parameters.get(n);
         if (type == null)
             throw new ScannerError(PATH_UNDECLARED_VAR, OpenOpts.getOffset(reader));

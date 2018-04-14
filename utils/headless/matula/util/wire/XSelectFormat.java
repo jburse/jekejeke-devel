@@ -1,14 +1,18 @@
 package matula.util.wire;
 
+import matula.util.data.MapHash;
 import matula.util.format.DomElement;
 import matula.util.format.XSelect;
+import matula.util.format.XSelectPrim;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 import matula.util.transform.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  * <p>This class provides some xpath formatting functions.</p>
@@ -41,79 +45,170 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
     public static final String PATTERN_DATETIME = "yyyy-MM-dd HH:mm:ss";
 
     public static final int SELE_FORM_DATE = 0;
-    public static final int SELE_FORM_DATE_LOC = 1;
-    public static final int SELE_FORM_DATETIME = 2;
-    public static final int SELE_FORM_DATETIME_LOC = 3;
+    public static final int SELE_FORM_DATE_PAT = 1;
+    public static final int SELE_FORM_DATE_PAT_LOC = 2;
+    public static final int SELE_FORM_DATETIME = 3;
+    public static final int SELE_FORM_DATETIME_PAT = 4;
+    public static final int SELE_FORM_DATETIME_PAT_LOC = 5;
+    public static final int SELE_GET_PROPERTY = 6;
+    public static final int SELE_GET_PROPERTY_LOC = 7;
 
-    public static final String KEY_FORM_DATE = "format_date/2";
-    public static final String KEY_FORM_DATE_LOC = "format_date/3";
-    public static final String KEY_FORM_DATETIME = "format_datetime/2";
-    public static final String KEY_FORM_DATETIME_LOC = "format_datetime/3";
+    public static final String OP_FORMAT_DATE = "format_date";
+    public static final String OP_FORMAT_DATETIME = "format_datetime";
+    public static final String OP_GET_PROPERTY = "get_property";
+    public static final String OP_LOCALE = "locale";
 
-    private String key;
-    private Object[] args;
+    private XSelect date;
+    private XSelect pattern;
+    private XSelect locale;
     private int format;
 
     /**
      * <p>Set the indicator.</p>
      *
-     * @param k The indicator.
+     * @param key The indicator.
      */
-    public void setKey(String k) {
-        if (KEY_FORM_DATE.equals(k)) {
+    public void setKey(String key) {
+        int k = key.lastIndexOf('/');
+        String name = key.substring(0, k);
+        int arity = Integer.parseInt(key.substring(k + 1));
+        if (OP_FORMAT_DATE.equals(name) && arity == 1) {
             format = SELE_FORM_DATE;
-        } else if (KEY_FORM_DATE_LOC.equals(k)) {
-            format = SELE_FORM_DATE_LOC;
-        } else if (KEY_FORM_DATETIME.equals(k)) {
+        } else if (OP_FORMAT_DATE.equals(name) && arity == 2) {
+            format = SELE_FORM_DATE_PAT;
+        } else if (OP_FORMAT_DATE.equals(name) && arity == 3) {
+            format = SELE_FORM_DATE_PAT_LOC;
+        } else if (OP_FORMAT_DATETIME.equals(name) && arity == 1) {
             format = SELE_FORM_DATETIME;
-        } else if (KEY_FORM_DATETIME_LOC.equals(k)) {
-            format = SELE_FORM_DATETIME_LOC;
+        } else if (OP_FORMAT_DATETIME.equals(name) && arity == 2) {
+            format = SELE_FORM_DATETIME_PAT;
+        } else if (OP_FORMAT_DATETIME.equals(name) && arity == 3) {
+            format = SELE_FORM_DATETIME_PAT_LOC;
+        } else if (OP_GET_PROPERTY.equals(name) && arity == 1) {
+            format = SELE_GET_PROPERTY;
+        } else if (OP_GET_PROPERTY.equals(name) && arity == 2) {
+            format = SELE_GET_PROPERTY_LOC;
         } else {
             throw new IllegalArgumentException("illegal indicator");
         }
-        key = k;
     }
 
     /**
      * <p>Set the arguments.</p>
      *
      * @param a The arguments.
-     * @return True if the function node could be intialized, otherwise false.
+     * @param c The parsing context.
      */
-    public boolean setArgs(Object[] a) {
+    public void setArgs(Object[] a, XPathRead c)
+            throws ScannerError {
         switch (format) {
             case SELE_FORM_DATE:
                 if (!(a[0] instanceof XSelect))
-                    return false;
-                if (!(a[1] instanceof XSelect))
-                    return false;
-                args = a;
-                return true;
-            case SELE_FORM_DATE_LOC:
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                date = (XSelect) a[0];
+
+                XSelect xs1 = new XSelectPrim("date.medium", XSelectPrim.SELE_PRIM_CONST);
+                Object[] args = new Object[]{xs1};
+                XSelectFormat xs2 = new XSelectFormat();
+                xs2.setKey("get_property/1");
+                xs2.setArgs(args, c);
+                pattern = xs2;
+
+                Object cnst = c.getVariable(OP_LOCALE);
+                if (cnst != null) {
+                    locale = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+                } else {
+                    locale = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+                }
+                break;
+            case SELE_FORM_DATE_PAT:
                 if (!(a[0] instanceof XSelect))
-                    return false;
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                date = (XSelect) a[0];
                 if (!(a[1] instanceof XSelect))
-                    return false;
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                pattern = (XSelect) a[1];
+                cnst = c.getVariable(OP_LOCALE);
+                if (cnst != null) {
+                    locale = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+                } else {
+                    locale = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+                }
+                break;
+            case SELE_FORM_DATE_PAT_LOC:
+                if (!(a[0] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                date = (XSelect) a[0];
+                if (!(a[1] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                pattern = (XSelect) a[1];
                 if (!(a[2] instanceof XSelect))
-                    return false;
-                args = a;
-                return true;
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                locale = (XSelect) a[2];
+                break;
             case SELE_FORM_DATETIME:
                 if (!(a[0] instanceof XSelect))
-                    return false;
-                if (!(a[1] instanceof XSelect))
-                    return false;
-                args = a;
-                return true;
-            case SELE_FORM_DATETIME_LOC:
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                date = (XSelect) a[0];
+
+                xs1 = new XSelectPrim("datetime.medium", XSelectPrim.SELE_PRIM_CONST);
+                args = new Object[]{xs1};
+                xs2 = new XSelectFormat();
+                xs2.setKey("get_property/1");
+                xs2.setArgs(args, c);
+                pattern = xs2;
+
+                cnst = c.getVariable(OP_LOCALE);
+                if (cnst != null) {
+                    locale = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+                } else {
+                    locale = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+                }
+                break;
+            case SELE_FORM_DATETIME_PAT:
                 if (!(a[0] instanceof XSelect))
-                    return false;
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                date = (XSelect) a[0];
                 if (!(a[1] instanceof XSelect))
-                    return false;
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                pattern = (XSelect) a[1];
+                cnst = c.getVariable(OP_LOCALE);
+                if (cnst != null) {
+                    locale = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+                } else {
+                    locale = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+                }
+                break;
+            case SELE_FORM_DATETIME_PAT_LOC:
+                if (!(a[0] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                date = (XSelect) a[0];
+                if (!(a[1] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                pattern = (XSelect) a[1];
                 if (!(a[2] instanceof XSelect))
-                    return false;
-                args = a;
-                return true;
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                locale = (XSelect) a[2];
+                break;
+            case SELE_GET_PROPERTY:
+                if (!(a[0] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                pattern = (XSelect) a[0];
+                cnst = c.getVariable(OP_LOCALE);
+                if (cnst != null) {
+                    locale = new XSelectPrim(cnst, XSelectPrim.SELE_PRIM_CONST);
+                } else {
+                    locale = new XSelectPrim(XSelectPrim.SELE_PRIM_NULL);
+                }
+                break;
+            case SELE_GET_PROPERTY_LOC:
+                if (!(a[0] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                pattern = (XSelect) a[0];
+                if (!(a[1] instanceof XSelect))
+                    throw new ScannerError(XPathRead.PATH_MISMATCH_ARGS, OpenOpts.getOffset(c.getReader()));
+                locale = (XSelect) a[1];
+                break;
             default:
                 throw new IllegalArgumentException("illegal format");
         }
@@ -128,41 +223,37 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
     public Object evalElement(DomElement d) throws ParseException {
         switch (format) {
             case SELE_FORM_DATE:
-                String help = (String) ((XSelect) args[0]).evalElement(d);
+            case SELE_FORM_DATE_PAT:
+            case SELE_FORM_DATE_PAT_LOC:
+                String help = (String) date.evalElement(d);
                 SimpleDateFormat sdf2 = new SimpleDateFormat(PATTERN_DATE);
-                Date date = sdf2.parse(help);
+                Date dateres = sdf2.parse(help);
 
-                String pattern = (String) ((XSelect) args[1]).evalElement(d);
-                SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-                return sdf.format(date);
-            case SELE_FORM_DATE_LOC:
-                help = (String) ((XSelect) args[0]).evalElement(d);
-                sdf2 = new SimpleDateFormat(PATTERN_DATE);
-                date = sdf2.parse(help);
-
-                pattern = (String) ((XSelect) args[1]).evalElement(d);
-                help = (String) ((XSelect) args[2]).evalElement(d);
+                String patternres = (String) pattern.evalElement(d);
+                help = (String) locale.evalElement(d);
                 Locale loc = stringToLocale(help);
-                sdf = new SimpleDateFormat(pattern, loc);
-                return sdf.format(date);
+                SimpleDateFormat sdf = new SimpleDateFormat(patternres, loc);
+                return sdf.format(dateres);
             case SELE_FORM_DATETIME:
-                help = (String) ((XSelect) args[0]).evalElement(d);
+            case SELE_FORM_DATETIME_PAT:
+            case SELE_FORM_DATETIME_PAT_LOC:
+                help = (String) date.evalElement(d);
                 sdf2 = new SimpleDateFormat(PATTERN_DATETIME);
-                date = sdf2.parse(help);
+                dateres = sdf2.parse(help);
 
-                pattern = (String) ((XSelect) args[1]).evalElement(d);
-                sdf = new SimpleDateFormat(pattern);
-                return sdf.format(date);
-            case SELE_FORM_DATETIME_LOC:
-                help = (String) ((XSelect) args[0]).evalElement(d);
-                sdf2 = new SimpleDateFormat(PATTERN_DATETIME);
-                date = sdf2.parse(help);
-
-                pattern = (String) ((XSelect) args[1]).evalElement(d);
-                help = (String) ((XSelect) args[2]).evalElement(d);
+                patternres = (String) pattern.evalElement(d);
+                help = (String) locale.evalElement(d);
                 loc = stringToLocale(help);
-                sdf = new SimpleDateFormat(pattern, loc);
-                return sdf.format(date);
+                sdf = new SimpleDateFormat(patternres, loc);
+                return sdf.format(dateres);
+            case SELE_GET_PROPERTY:
+            case SELE_GET_PROPERTY_LOC:
+                patternres = (String) pattern.evalElement(d);
+
+                help = (String) locale.evalElement(d);
+                loc = stringToLocale(help);
+                Properties prop = LangProperties.getLang(XSelectFormat.class, "preset", loc);
+                return prop.getProperty(patternres);
             default:
                 throw new IllegalArgumentException("illegal format");
         }
@@ -178,42 +269,39 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
     public int checkElement(XPathCheck d) throws ValidationError {
         switch (format) {
             case SELE_FORM_DATE:
-                int typeid = ((XSelect) args[0]).checkElement(d);
+            case SELE_FORM_DATE_PAT:
+            case SELE_FORM_DATE_PAT_LOC:
+                int typeid = date.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[0].toString());
-                typeid = ((XSelect) args[1]).checkElement(d);
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, date.toString());
+                typeid = pattern.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[1].toString());
-                return XSDDeclAttr.TYPE_STRING;
-            case SELE_FORM_DATE_LOC:
-                typeid = ((XSelect) args[0]).checkElement(d);
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, pattern.toString());
+                typeid = locale.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[0].toString());
-                typeid = ((XSelect) args[1]).checkElement(d);
-                if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[1].toString());
-                typeid = ((XSelect) args[2]).checkElement(d);
-                if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[2].toString());
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, locale.toString());
                 return XSDDeclAttr.TYPE_STRING;
             case SELE_FORM_DATETIME:
-                typeid = ((XSelect) args[0]).checkElement(d);
+            case SELE_FORM_DATETIME_PAT:
+            case SELE_FORM_DATETIME_PAT_LOC:
+                typeid = date.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[0].toString());
-                typeid = ((XSelect) args[1]).checkElement(d);
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, date.toString());
+                typeid = pattern.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[1].toString());
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, pattern.toString());
+                typeid = locale.checkElement(d);
+                if (typeid != XSDDeclAttr.TYPE_STRING)
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, locale.toString());
                 return XSDDeclAttr.TYPE_STRING;
-            case SELE_FORM_DATETIME_LOC:
-                typeid = ((XSelect) args[0]).checkElement(d);
+            case SELE_GET_PROPERTY:
+            case SELE_GET_PROPERTY_LOC:
+                typeid = pattern.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[0].toString());
-                typeid = ((XSelect) args[1]).checkElement(d);
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, pattern.toString());
+                typeid = locale.checkElement(d);
                 if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[1].toString());
-                typeid = ((XSelect) args[2]).checkElement(d);
-                if (typeid != XSDDeclAttr.TYPE_STRING)
-                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, args[2].toString());
+                    throw new ValidationError(XPathCheck.PATH_STRING_SELE, locale.toString());
                 return XSDDeclAttr.TYPE_STRING;
             default:
                 throw new IllegalArgumentException("illegal format");
@@ -226,17 +314,80 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
      * @return The string.
      */
     public String toString() {
-        StringBuilder buf = new StringBuilder();
-        int k = key.lastIndexOf('/');
-        buf.append(key.substring(0, k));
-        buf.append("(");
-        buf.append(args[0].toString());
-        for (int i = 1; i < args.length; i++) {
-            buf.append(", ");
-            buf.append(args[i].toString());
+        switch (format) {
+            case SELE_FORM_DATE:
+                StringBuilder buf = new StringBuilder();
+                buf.append(OP_FORMAT_DATE);
+                buf.append("(");
+                buf.append(date.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_FORM_DATE_PAT:
+                buf = new StringBuilder();
+                buf.append(OP_FORMAT_DATE);
+                buf.append("(");
+                buf.append(date.toString());
+                buf.append(", ");
+                buf.append(pattern.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_FORM_DATE_PAT_LOC:
+                buf = new StringBuilder();
+                buf.append(OP_FORMAT_DATE);
+                buf.append("(");
+                buf.append(date.toString());
+                buf.append(", ");
+                buf.append(pattern.toString());
+                buf.append(", ");
+                buf.append(locale.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_FORM_DATETIME:
+                buf = new StringBuilder();
+                buf.append(OP_FORMAT_DATETIME);
+                buf.append("(");
+                buf.append(date.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_FORM_DATETIME_PAT:
+                buf = new StringBuilder();
+                buf.append(OP_FORMAT_DATETIME);
+                buf.append("(");
+                buf.append(date.toString());
+                buf.append(", ");
+                buf.append(pattern.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_FORM_DATETIME_PAT_LOC:
+                buf = new StringBuilder();
+                buf.append(OP_FORMAT_DATETIME);
+                buf.append("(");
+                buf.append(date.toString());
+                buf.append(", ");
+                buf.append(pattern.toString());
+                buf.append(", ");
+                buf.append(locale.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_GET_PROPERTY:
+                buf = new StringBuilder();
+                buf.append(OP_GET_PROPERTY);
+                buf.append("(");
+                buf.append(pattern.toString());
+                buf.append(")");
+                return buf.toString();
+            case SELE_GET_PROPERTY_LOC:
+                buf = new StringBuilder();
+                buf.append(OP_GET_PROPERTY);
+                buf.append("(");
+                buf.append(pattern.toString());
+                buf.append(", ");
+                buf.append(locale.toString());
+                buf.append(")");
+                return buf.toString();
+            default:
+                throw new IllegalArgumentException("illegal format");
         }
-        buf.append(")");
-        return buf.toString();
     }
 
     /****************************************************************/
@@ -271,32 +422,41 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
      * @param args Not used.
      * @throws ScannerError Syntax error.
      */
+    /*
     public static void main(String[] args)
             throws ScannerError, ParseException {
+        MapHash<String, Object> variables = new MapHash<String, Object>();
+        variables.put("locale", "de_CH");
         XPathReadTransform xr = new XPathReadTransform();
+        xr.setVariables(variables);
         xr.setMeta(XSLSheet.meta);
 
-        XSelect xs = xr.createXSelect("format_date('2017-12-31', 'dd. MMM yyyy', 'de_CH')");
+        XSelect xs = xr.createXSelect("format_date('2017-12-31')");
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
 
         System.out.println();
 
-        xs = xr.createXSelect("format_date('2017-12-31', 'MMM dd. yyyy', 'en_UK')");
+        xs = xr.createXSelect("format_datetime('2017-12-31 09:20:13')");
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
 
         System.out.println();
 
-        xs = xr.createXSelect("format_datetime('2017-12-31 09:20:13', 'dd. MMM yyyy, HH:mm', 'de_CH')");
+        variables = new MapHash<String, Object>();
+        variables.put("locale", "en_UK");
+        xr.setVariables(variables);
+
+        xs = xr.createXSelect("format_date('2017-12-31')");
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
 
         System.out.println();
 
-        xs = xr.createXSelect("format_datetime('2017-12-31 09:20:13', 'MMM dd. yyyy, HH:mm', 'en_UK')");
+        xs = xr.createXSelect("format_datetime('2017-12-31 09:20:13')");
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
     }
+    */
 
 }

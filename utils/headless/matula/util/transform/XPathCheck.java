@@ -150,6 +150,7 @@ public final class XPathCheck {
         MapHash<String, Integer> parameters = new MapHash<String, Integer>();
         parameters.add("x", Integer.valueOf(XSDDeclAttr.TYPE_STRING));
         parameters.add("y", Integer.valueOf(XSDDeclAttr.TYPE_INTEGER));
+        parameters.add("locale", Integer.valueOf(XSDDeclAttr.TYPE_STRING));
         xr.setParameters(parameters);
 
         XPath xpath = xr.createXPath("jack[@foo=$x or not (@foo=<$y)]/jill");
@@ -185,7 +186,7 @@ public final class XPathCheck {
 
         System.out.println();
 
-        xs = xr.createXSelect("format_date('2018-04-12', 'dd. MMM yyyy')");
+        xs = xr.createXSelect("format_date('2018-04-12')");
         System.out.println("xselect=" + xs);
         try {
             xs.checkElement(xc);

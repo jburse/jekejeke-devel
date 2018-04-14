@@ -41,8 +41,12 @@
 </element>
 <!-- XPath functions -->
 <resolve bean="matula.util.wire.XSelectFormat">
+   <function key="format_date/1"/>
    <function key="format_date/2"/>
    <function key="format_date/3"/>
+   <function key="format_datetime/1"/>
    <function key="format_datetime/2"/>
    <function key="format_datetime/3"/>
+   <function key="get_property/1"/>
+   <function key="get_property/2"/>
 </resolve>
