@@ -26,7 +26,6 @@ import matula.comp.sharik.Enforced;
  * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
-
  */
 public final class LivestockEventMemory extends LivestockEvent {
 

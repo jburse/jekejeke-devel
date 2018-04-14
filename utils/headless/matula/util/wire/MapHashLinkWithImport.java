@@ -2,7 +2,6 @@ package matula.util.wire;
 
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -40,6 +39,8 @@ public final class MapHashLinkWithImport<K, V> extends MapHashLink<K, V> {
      * @param map The import.
      */
     public void addImport(MapHashLink<K, V> map) {
+        if (map == null)
+            throw new NullPointerException("map missing");
         imports.add(map);
     }
 
@@ -68,7 +69,7 @@ public final class MapHashLinkWithImport<K, V> extends MapHashLink<K, V> {
      * @return A string representation of this abstract map.
      */
     public String toString() {
-        StringBuilder buf=new StringBuilder();
+        StringBuilder buf = new StringBuilder();
         buf.append(super.toString());
         buf.append(imports.toString());
         return buf.toString();

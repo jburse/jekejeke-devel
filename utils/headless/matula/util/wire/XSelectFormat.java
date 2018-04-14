@@ -1,7 +1,5 @@
 package matula.util.wire;
 
-import matula.util.data.ListArray;
-import matula.util.data.MapHash;
 import matula.util.format.DomElement;
 import matula.util.format.XSelect;
 import matula.util.regex.ScannerError;
@@ -273,7 +271,6 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
      * @param args Not used.
      * @throws ScannerError Syntax error.
      */
-    /*
     public static void main(String[] args)
             throws ScannerError, ParseException {
         XPathReadTransform xr = new XPathReadTransform();
@@ -301,6 +298,5 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
         System.out.println("xselect=" + xs);
         System.out.println("eval(xselect)=" + xs.evalElement(null));
     }
-    */
 
 }

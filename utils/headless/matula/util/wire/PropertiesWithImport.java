@@ -1,11 +1,11 @@
 package matula.util.wire;
 
 import matula.util.data.ListArray;
-import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
+
+import java.util.Properties;
 
 /**
- * <p>This class provides a map hash with import.</p>
+ * <p>This class provides a properties with import.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -30,49 +30,33 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class MapHashWithImport<K, V> extends MapHash<K, V> {
-    private ListArray<MapHash<K, V>> imports = new ListArray<MapHash<K, V>>();
+public final class PropertiesWithImport extends Properties {
+    private ListArray<Properties> imports = new ListArray<Properties>();
 
     /**
      * <p>Add an import.</p>
      *
      * @param map The import.
      */
-    public void addImport(MapHash<K, V> map) {
+    public void addImport(Properties map) {
         if (map == null)
             throw new NullPointerException("map missing");
         imports.add(map);
     }
 
     /**
-     * <p>Find the entry in the map.</p>
+     * <p>Retrieve the property.</p>
      *
      * @param key The key.
-     * @return The entry, or null.
+     * @return The property.
      */
-    public MapEntry<K, V> getEntry(K key) {
+    public String getProperty(String key) {
         for (int i = 0; i < imports.size(); i++) {
-            MapEntry<K, V> res = imports.get(i).getEntry(key);
+            String res = imports.get(i).getProperty(key);
             if (res != null)
                 return res;
         }
-        return super.getEntry(key);
-    }
-
-    /***************************************************************/
-    /* Object Protocol                                             */
-    /***************************************************************/
-
-    /**
-     * <p>Returns a string representation of this abstract map.</p>
-     *
-     * @return A string representation of this abstract map.
-     */
-    public String toString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(super.toString());
-        buf.append(imports.toString());
-        return buf.toString();
+        return super.getProperty(key);
     }
 
 }
