@@ -35,6 +35,8 @@ import java.net.*;
 public class OpenCheck {
     public static final int MASK_OPEN_CACH = 0x00000001;
 
+    public static final OpenCheck DEFAULT_CHECK = new OpenCheck();
+
     private int flags;
 
     /**

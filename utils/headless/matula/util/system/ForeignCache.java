@@ -40,11 +40,29 @@ public final class ForeignCache {
     private static final String STATE_LOADED = "loaded";
     private static final String STATE_FAILED = "failed";
 
-    public static final OpenCheck DEFAULT_CHECK = new OpenCheck();
-
     /************************************************************/
     /* Properties Caching                                       */
     /************************************************************/
+
+    /**
+     * <p>Retrieve a cached property.</p>
+     *
+     * @param cache The cache.
+     * @param key   The key.
+     * @return The cached property.
+     */
+    public static Properties getCached(HashMap<String, Properties> cache,
+                                       String key) {
+        Properties prop;
+        synchronized (cache) {
+            prop = cache.get(key);
+            if (prop == null) {
+                prop = new Properties();
+                cache.put(key, prop);
+            }
+        }
+        return prop;
+    }
 
     /**
      * <p>Cache and load language properties.</p>
@@ -98,25 +116,9 @@ public final class ForeignCache {
         return null;
     }
 
-    /**
-     * <p>Retrieve a cached property.</p>
-     *
-     * @param cache The cache.
-     * @param key   The key.
-     * @return The cached property.
-     */
-    public static Properties getCached(HashMap<String, Properties> cache,
-                                       String key) {
-        Properties prop;
-        synchronized (cache) {
-            prop = cache.get(key);
-            if (prop == null) {
-                prop = new Properties();
-                cache.put(key, prop);
-            }
-        }
-        return prop;
-    }
+    /************************************************************/
+    /* Cache Helpers                                            */
+    /************************************************************/
 
     /**
      * <p>Find the best sub locale.</p>
@@ -131,7 +133,7 @@ public final class ForeignCache {
             String key = adr.substring(0, k) + locstr + adr.substring(k);
             boolean ok;
             try {
-                ok = DEFAULT_CHECK.checkHead(key);
+                ok = OpenCheck.DEFAULT_CHECK.checkHead(key);
             } catch (IOException x) {
                 if (x instanceof InterruptedIOException &&
                         !(x instanceof SocketTimeoutException)) {

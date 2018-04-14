@@ -541,7 +541,7 @@ public final class ForeignUri {
         for (; ; ) {
             String res;
             try {
-                res = ForeignCache.DEFAULT_CHECK.checkRedirect(adr);
+                res = OpenCheck.DEFAULT_CHECK.checkRedirect(adr);
             } catch (IOException x) {
                 if (x instanceof InterruptedIOException &&
                         !(x instanceof SocketTimeoutException)) {
