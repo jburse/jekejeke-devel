@@ -3,26 +3,26 @@
     <attribute name="bean" type="string"/>
 </element>
 <element name="element">
-<parent name=""/>
-<attribute name="name" type="string"/>
-<attribute name="complex" use="optional" type="string"/>
+    <parent name=""/>
+    <attribute name="name" type="string"/>
+    <attribute name="complex" use="optional" type="string"/>
 </element>
 <element name="attribute">
-<parent name="element"/>
-<attribute name="name" type="string"/>
-<attribute name="use" use="optional" type="string"/>
-<attribute name="type" use="optional" type="string"/>
+    <parent name="element"/>
+    <attribute name="name" type="string"/>
+    <attribute name="use" use="optional" type="string"/>
+    <attribute name="type" use="optional" type="string"/>
 </element>
 <element name="parent">
-<parent name="element"/>
-<attribute name="name" type="string"/>
-<attribute name="occurs" use="optional" type="string"/>
+    <parent name="element"/>
+    <attribute name="name" type="string"/>
+    <attribute name="occurs" use="optional" type="string"/>
 </element>
 <element name="resolve">
-<parent name=""/>
-<attribute name="bean" type="string"/>
+    <parent name=""/>
+    <attribute name="bean" type="string"/>
 </element>
 <element name="function">
-<parent name="resolve"/>
-<attribute name="key" type="string"/>
+    <parent name="resolve"/>
+    <attribute name="key" type="string"/>
 </element>
