@@ -3,7 +3,10 @@ package matula.util.format;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.transform.*;
+import matula.util.transform.ValidationError;
+import matula.util.transform.XPathCheck;
+import matula.util.transform.XSDDeclElem;
+import matula.util.transform.XSDSchema;
 
 import java.text.ParseException;
 
@@ -206,7 +209,8 @@ public final class ChoicePoint {
                 XSDDeclElem decl = schema.getDeclElem(name);
                 String context = e.getContext();
                 if (!XPathCheck.checkParent(context, decl))
-                    throw new ValidationError(XPathCheck.PATH_ILLEGAL_PARENT, name);
+                    throw new ValidationError(XPathCheck.PATH_ILLEGAL_PARENT,
+                            name + " (" + e.getSchema().getName() + ")");
                 ListArray<String> simulation = e.getSimulation();
                 simulation.add(name);
                 entry = exprs.successor(entry);

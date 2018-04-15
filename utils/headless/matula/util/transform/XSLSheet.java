@@ -1,6 +1,5 @@
 package matula.util.transform;
 
-import matula.util.data.MapHash;
 import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
 import matula.util.format.XPathOrder;
@@ -40,17 +39,43 @@ import java.text.ParseException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class XSLSheet {
+    static final String NAME_STYLESHEET = "stylesheet";
+    static final String NAME_OUTPUT = "output";
+    static final String ATTR_OUTPUT_METHOD = "method";
+    static final String NAME_PARAM = "param";
+    static final String ATTR_PARAM_NAME = "name";
+    static final String ATTR_PARAM_USE = "use";
+    static final String ATTR_PARAM_TYPE = "type";
+    static final String NAME_FOREACH = "for-each";
+    static final String ATTR_FOREACH_SELECT = "select";
+    static final String NAME_VALUEOF = "value-of";
+    static final String ATTR_VALUEOF_SELECT = "select";
+    static final String NAME_COPYOF = "copy-of";
+    static final String ATTR_COPYOF_SELECT = "select";
+    static final String NAME_WITHDATA = "with-data";
+    static final String ATTR_WITHDATA_BEAN = "bean";
+    static final String ATTR_WITHDATA_SELECT = "select";
+    static final String NAME_IF = "if";
+    static final String ATTR_IF_TEST = "test";
+    static final String NAME_CHOOSE = "choose";
+    static final String NAME_WHEN = "when";
+    static final String ATTR_WHEN_TEST = "test";
+    static final String NAME_OTHERWISE = "otherwise";
+    static final String NAME_SORT = "sort";
+    static final String ATTR_SORT_SELECT = "select";
+    static final String ATTR_SORT_ORDER = "order";
+
     static final String SHEET_ILLEGAL_VALUE = "sheet_illegal_value";
 
     private static final String OP_ELEMENT = "element";
 
-    private static final String OP_TEXT_PLAIN = "text/plain";
-    private static final String OP_TEXT_HTML = "text/html";
+    private static final String OP_METHOD_TEXT = "text";
+    private static final String OP_METHOD_HTML = "html";
 
     public static final int TYPE_ELEMENT = 3;
 
-    public static final int TEXT_PLAIN = 0;
-    public static final int TEXT_HTML = 1;
+    public static final int METHOD_TEXT = 0;
+    public static final int METHOD_HTML = 1;
 
     public static XSDSchema meta = new XSDSchema();
 
@@ -110,15 +135,15 @@ public abstract class XSLSheet {
      * @return The mime type id.
      * @throws ValidationError Check error.
      */
-    static int checkMimeType(DomElement de, String type)
+    static int checkMethod(DomElement de, String type)
             throws ValidationError {
-        if (OP_TEXT_PLAIN.equalsIgnoreCase(type)) {
-            return TEXT_PLAIN;
-        } else if (OP_TEXT_HTML.equalsIgnoreCase(type)) {
-            return TEXT_HTML;
+        if (OP_METHOD_TEXT.equalsIgnoreCase(type)) {
+            return METHOD_TEXT;
+        } else if (OP_METHOD_HTML.equalsIgnoreCase(type)) {
+            return METHOD_HTML;
         } else {
             String name = de.getName();
-            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".mime");
+            throw new ValidationError(SHEET_ILLEGAL_VALUE, name + ".method");
         }
     }
 

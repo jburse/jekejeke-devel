@@ -7,10 +7,6 @@ import matula.util.regex.ScannerError;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * <p>This class provides a dom node.</p>

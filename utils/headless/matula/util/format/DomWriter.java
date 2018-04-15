@@ -4,7 +4,9 @@ import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignXml;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 
 /**
  * <p>This class provides a dom writer.</p>
@@ -34,7 +36,7 @@ import java.io.*;
  */
 public final class DomWriter {
     private static final int INDENT_INCREMENT = 4;
-    private static final int LINE_WIDTH = 80;
+    private static final int LINE_WIDTH = 75;
 
     private Writer writer;
     private int mask;
@@ -141,12 +143,14 @@ public final class DomWriter {
                 pos = 0;
                 hasspace = false;
             } else if (hasspace && pos >= LINE_WIDTH) {
-                incIndent();
+                if ((mask & AbstractDom.MASK_PLIN) == 0)
+                    incIndent();
                 writer.write("\n");
                 k++;
                 writeIndent();
                 pos = indent + i + 1 - k;
-                decIndent();
+                if ((mask & AbstractDom.MASK_PLIN) == 0)
+                    decIndent();
                 hasspace = false;
             } else {
                 pos++;
@@ -402,10 +406,9 @@ public final class DomWriter {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-
+    /*
     public static void main(String[] args)
             throws IOException, ScannerError {
-        /*
         String text = "<foo bar='123'/>  <foo bar='456'/>";
         StringReader sr = new StringReader(text);
         DomElement de = new DomElement();
@@ -422,7 +425,6 @@ public final class DomWriter {
         de.load(sr, AbstractDom.MASK_LIST, control);
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
-        */
 
         MapHash<String, Integer> control = new MapHash<String, Integer>();
         control.add("p", Integer.valueOf(AbstractDom.TYPE_TEXT));
@@ -439,6 +441,6 @@ public final class DomWriter {
         de.store(pw, null, AbstractDom.MASK_LIST, control);
         pw.println();
     }
-
+    */
 
 }

@@ -84,6 +84,15 @@ public final class XMLCheck {
     }
 
     /**
+     * <p>Retrieve the schema.</p>
+     *
+     * @return The schema.
+     */
+    public XSDSchema getSchema() {
+        return schema;
+    }
+
+    /**
      * <p>Check XML data.</p>
      *
      * @param node The data dom node.
@@ -109,7 +118,8 @@ public final class XMLCheck {
             throws ValidationError {
         if (node instanceof DomText) {
             if ((mask & AbstractDom.MASK_TEXT) == 0)
-                throw new ValidationError(DATA_UNEXPECTED_TEXT, "#text");
+                throw new ValidationError(DATA_UNEXPECTED_TEXT,
+                        "#text (" + getSchema().getName() + ")");
         } else if (node instanceof DomElement) {
             DomElement de = (DomElement) node;
             XSDDeclElem xe = schema.getDeclElem(de.getName());
@@ -131,8 +141,8 @@ public final class XMLCheck {
                 }
             } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
                     (backmask & AbstractDom.MASK_STRP) == 0) &&
-                        xe.getComplex() == XSDDeclElem.COMPLEX_TEXT) {
-                int mask=backmask;
+                    xe.getComplex() == XSDDeclElem.COMPLEX_TEXT) {
+                int mask = backmask;
                 mask |= AbstractDom.MASK_TEXT;
                 mask |= AbstractDom.MASK_STRP;
                 setMask(mask);
@@ -182,7 +192,7 @@ public final class XMLCheck {
      * @param xa   The XSD schema attribute declaration.
      * @throws ValidationError Check error.
      */
-    private static void checkType(DomElement de, String attr, XSDDeclAttr xa)
+    private void checkType(DomElement de, String attr, XSDDeclAttr xa)
             throws ValidationError {
         switch (xa.getType()) {
             case XSDDeclAttr.TYPE_PRIMITIVE:
@@ -193,7 +203,9 @@ public final class XMLCheck {
                     break;
                 if (!(val instanceof String)) {
                     String name = de.getName();
-                    throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
+                    String key = name + "." + attr;
+                    throw new ValidationError(DATA_ILLEGAL_VALUE,
+                            key + " (" + getSchema().getName() + ")");
                 }
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
@@ -202,7 +214,9 @@ public final class XMLCheck {
                     break;
                 if (!(val instanceof Long)) {
                     String name = de.getName();
-                    throw new ValidationError(DATA_ILLEGAL_VALUE, name + "." + attr);
+                    String key = name + "." + attr;
+                    throw new ValidationError(DATA_ILLEGAL_VALUE,
+                            key + " (" + getSchema().getName() + ")");
                 }
                 break;
             default:
@@ -217,7 +231,7 @@ public final class XMLCheck {
      * @param xe The XSD schema element declaration.
      * @throws ValidationError Check error.
      */
-    private static void checkMandatory(DomElement de, XSDDeclElem xe)
+    private void checkMandatory(DomElement de, XSDDeclElem xe)
             throws ValidationError {
         ListArray<String> mandatory = xe.getMandatory();
         if (mandatory == null)
@@ -226,7 +240,9 @@ public final class XMLCheck {
             String attr = mandatory.get(i);
             if (de.getAttrObj(attr) == null) {
                 String name = de.getName();
-                throw new ValidationError(DATA_MISSING_ATTR, name + "." + attr);
+                String key = name + "." + attr;
+                throw new ValidationError(DATA_MISSING_ATTR,
+                        key + " (" + getSchema().getName() + ")");
             }
         }
     }
@@ -246,11 +262,13 @@ public final class XMLCheck {
             throws ValidationError {
         String name = de.getName();
         if (!XPathCheck.checkParent(context, xe))
-            throw new ValidationError(DATA_ILLEGAL_PARENT, name);
+            throw new ValidationError(DATA_ILLEGAL_PARENT,
+                    name + " (" + getSchema().getName() + ")");
         AbstractDom[] nodes = de.snapshotNodes();
         checkConstraint(nodes, xe);
         if (nodes.length != 0 && xe.getComplex() == XSDDeclElem.COMPLEX_EMPTY)
-            throw new ValidationError(DATA_NOT_EMPTY, name);
+            throw new ValidationError(DATA_NOT_EMPTY,
+                    name + " (" + getSchema().getName() + ")");
         String backcontext = context;
         try {
             context = de.getName();
@@ -272,7 +290,7 @@ public final class XMLCheck {
      * @param nodes The nodes.
      * @throws ValidationError Check error.
      */
-    private static void checkConstraint(AbstractDom[] nodes, XSDDeclElem xe)
+    private void checkConstraint(AbstractDom[] nodes, XSDDeclElem xe)
             throws ValidationError {
         AssocArray<String, Integer> constraint = xe.getConstraint();
         if (constraint == null)
@@ -284,17 +302,21 @@ public final class XMLCheck {
             switch (occurs) {
                 case XSDDeclElem.OCCURS_MULTI:
                     if (count < 1)
-                        throw new ValidationError(DATA_MISSING_ELEM, child);
+                        throw new ValidationError(DATA_MISSING_ELEM,
+                                child + " (" + getSchema().getName() + ")");
                     break;
                 case XSDDeclElem.OCCURS_DET:
                     if (count < 1)
-                        throw new ValidationError(DATA_MISSING_ELEM, child);
+                        throw new ValidationError(DATA_MISSING_ELEM,
+                                child + " (" + getSchema().getName() + ")");
                     if (count > 1)
-                        throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
+                        throw new ValidationError(DATA_FORBIDDEN_ELEM,
+                                child + " (" + getSchema().getName() + ")");
                     break;
                 case XSDDeclElem.OCCURS_SEMIDET:
                     if (count > 1)
-                        throw new ValidationError(DATA_FORBIDDEN_ELEM, child);
+                        throw new ValidationError(DATA_FORBIDDEN_ELEM,
+                                child + " (" + getSchema().getName() + ")");
                     break;
                 default:
                     throw new IllegalArgumentException("illegal occurs");

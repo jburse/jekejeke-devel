@@ -72,6 +72,7 @@ public final class XSDResolver {
             schema = new XSDSchema();
             schema.setFlags(flags);
             schema.setResolver(this);
+            schema.setName(AbstractRuntime.classToString(_class));
             schema.digestElements(pu.getFound());
 
             resolved.add(_class, schema);

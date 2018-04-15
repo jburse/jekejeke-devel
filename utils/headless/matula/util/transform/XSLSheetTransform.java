@@ -4,7 +4,6 @@ import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
-import matula.util.system.MimeHeader;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -38,30 +37,6 @@ import java.text.ParseException;
 public final class XSLSheetTransform extends XSLSheet {
     private static final String PATH_ILLEGAL_VALUE = "path_illegal_value";
     private static final String PATH_UNKNOWN_VARIABLE = "path_unknown_variable";
-
-    public static final String NAME_STYLESHEET = "stylesheet";
-    public static final String NAME_OUTPUT = "output";
-    public static final String ATTR_OUTPUT_MIME = "mime";
-    public static final String NAME_PARAM = "param";
-    public static final String ATTR_PARAM_NAME = "name";
-    public static final String ATTR_PARAM_USE = "use";
-    public static final String ATTR_PARAM_TYPE = "type";
-    public static final String NAME_FOREACH = "for-each";
-    public static final String ATTR_FOREACH_SELECT = "select";
-    public static final String NAME_VALUEOF = "value-of";
-    public static final String ATTR_VALUEOF_SELECT = "select";
-    public static final String NAME_WITHDATA = "with-data";
-    public static final String ATTR_WITHDATA_BEAN = "bean";
-    public static final String ATTR_WITHDATA_SELECT = "select";
-    public static final String NAME_IF = "if";
-    public static final String ATTR_IF_TEST = "test";
-    public static final String NAME_CHOOSE = "choose";
-    public static final String NAME_WHEN = "when";
-    public static final String ATTR_WHEN_TEST = "test";
-    public static final String NAME_OTHERWISE = "otherwise";
-    public static final String NAME_SORT = "sort";
-    public static final String ATTR_SORT_SELECT = "select";
-    public static final String ATTR_SORT_ORDER = "order";
 
     private MapHash<String, Object> variables;
     private DomElement data;
@@ -140,25 +115,26 @@ public final class XSLSheetTransform extends XSLSheet {
             dw.copyText(dt.getData());
         } else {
             DomElement de = (DomElement) dn;
-            if (de.isName(NAME_FOREACH)) {
+            if (de.isName(XSLSheet.NAME_FOREACH)) {
                 xsltForEach(de);
-            } else if (de.isName(NAME_SORT)) {
+            } else if (de.isName(XSLSheet.NAME_SORT)) {
                 /* do nothing */
-            } else if (de.isName(NAME_VALUEOF)) {
-                xsltValueOf(de);
-            } else if (de.isName(NAME_WITHDATA)) {
+            } else if (de.isName(XSLSheet.NAME_WITHDATA)) {
                 xsltWithData(de);
-            } else if (de.isName(NAME_OUTPUT)) {
-                xsltOutput(de);
-            } else if (de.isName(NAME_PARAM)) {
-                xsltParam(de);
-            } else if (de.isName(NAME_STYLESHEET)) {
-                AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(nodes);
-            } else if (de.isName(NAME_IF)) {
+            } else if (de.isName(XSLSheet.NAME_VALUEOF)) {
+                xsltValueOf(de);
+            } else if (de.isName(XSLSheet.NAME_COPYOF)) {
+                xsltCopyOf(de);
+            } else if (de.isName(XSLSheet.NAME_IF)) {
                 xsltIf(de);
-            } else if (de.isName(NAME_CHOOSE)) {
+            } else if (de.isName(XSLSheet.NAME_CHOOSE)) {
                 xsltChoose(de);
+            } else if (de.isName(XSLSheet.NAME_STYLESHEET)) {
+                xsltStyleSheet(de);
+            } else if (de.isName(XSLSheet.NAME_OUTPUT)) {
+                xsltOutput(de);
+            } else if (de.isName(XSLSheet.NAME_PARAM)) {
+                xsltParam(de);
             } else {
                 int backmask = dw.getMask();
                 if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
@@ -274,6 +250,10 @@ public final class XSLSheetTransform extends XSLSheet {
         }
     }
 
+    /************************************************************/
+    /* for-each & with-data                                     */
+    /************************************************************/
+
     /**
      * <p>Execute a for each tag.</p>
      *
@@ -284,7 +264,7 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltForEach(DomElement de)
             throws IOException, ScannerError, ValidationError, ParseException {
-        String attr = de.getAttr(ATTR_FOREACH_SELECT);
+        String attr = de.getAttr(XSLSheet.ATTR_FOREACH_SELECT);
         XPathReadTransform xr = new XPathReadTransform();
         xr.setMeta(meta);
         xr.setVariables(variables);
@@ -295,11 +275,11 @@ public final class XSLSheetTransform extends XSLSheet {
             if (!(node instanceof DomElement))
                 continue;
             DomElement elem = (DomElement) node;
-            if (!elem.isName(NAME_SORT))
+            if (!elem.isName(XSLSheet.NAME_SORT))
                 continue;
-            attr = elem.getAttr(ATTR_SORT_SELECT);
+            attr = elem.getAttr(XSLSheet.ATTR_SORT_SELECT);
             XSelect xselect = xr.createXSelect(attr);
-            attr = elem.getAttr(ATTR_SORT_ORDER);
+            attr = elem.getAttr(XSLSheet.ATTR_SORT_ORDER);
             int orderid = XSLSheet.checkOrder(elem, attr);
             XPathOrder xo = new XPathOrder(xselect, orderid);
             xpath.sortOrder(Integer.toString(i), xo);
@@ -336,31 +316,6 @@ public final class XSLSheetTransform extends XSLSheet {
     }
 
     /**
-     * <p>Execute a value of tag.</p>
-     *
-     * @param de The template dom element.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
-     */
-    private void xsltValueOf(DomElement de)
-            throws IOException, ScannerError, ParseException {
-        String select = de.getAttr(ATTR_VALUEOF_SELECT);
-        Object val = attrSelect(select);
-        if (val == null)
-            return;
-        if (val instanceof DomElement) {
-            AbstractDom[] nodes = ((DomElement) val).snapshotNodes();
-            DomElement.storeNodes(dw, nodes);
-        } else {
-            if (val instanceof String) {
-                dw.copyText((String) val);
-            } else {
-                dw.write(Long.toString(((Long) val).longValue()));
-            }
-        }
-    }
-
-    /**
      * <p>Execute a with data tag.</p>
      *
      * @param de The template dom element.
@@ -370,11 +325,11 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError, ParseException {
-        String bean = de.getAttr(ATTR_WITHDATA_BEAN);
+        String bean = de.getAttr(XSLSheet.ATTR_WITHDATA_BEAN);
         Class<?> _class = XSDResolver.findClass(bean);
         InterfacePath pu = XSDResolver.newPath(_class);
         if ((pu.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
-            String select = de.getAttr(ATTR_WITHDATA_SELECT);
+            String select = de.getAttr(XSLSheet.ATTR_WITHDATA_SELECT);
             String doc = (String) attrSelect(select);
             pu.setDocument(doc);
         }
@@ -406,66 +361,104 @@ public final class XSLSheetTransform extends XSLSheet {
         }
     }
 
+    /************************************************************/
+    /* value-of and copy-of                                     */
+    /************************************************************/
+
     /**
-     * <p>Execute an output tag.</p>
+     * <p>Execute a value of tag.</p>
      *
      * @param de The template dom element.
-     * @throws ScannerError    Syntax error.
-     * @throws ValidationError Check error.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
-    private void xsltOutput(DomElement de)
-            throws ScannerError, ValidationError {
-        String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
-        MimeHeader mh = new MimeHeader(mime);
-        String typesubtype = mh.getType() + "/" + mh.getSubType();
-        int typeid = XSLSheet.checkMimeType(de, typesubtype);
-        if (typeid == TEXT_PLAIN) {
-            dw.setMask(dw.getMask() | AbstractDom.MASK_PLIN);
+    private void xsltValueOf(DomElement de)
+            throws IOException, ScannerError, ParseException {
+        String select = de.getAttr(XSLSheet.ATTR_VALUEOF_SELECT);
+        int backmask = dw.getMask();
+        if ((backmask & AbstractDom.MASK_PLIN) == 0) {
+            int mask = backmask;
+            mask |= AbstractDom.MASK_PLIN;
+            dw.setMask(mask);
+            try {
+                xsltSendData(select);
+                dw.setMask(backmask);
+            } catch (IOException x) {
+                dw.setMask(backmask);
+                throw x;
+            } catch (ScannerError x) {
+                dw.setMask(backmask);
+                throw x;
+            } catch (ParseException x) {
+                dw.setMask(backmask);
+                throw x;
+            }
         } else {
-            dw.setMask(dw.getMask() & ~AbstractDom.MASK_PLIN);
+            xsltSendData(select);
         }
     }
 
     /**
-     * <p>Execute a param tag.</p>
+     * <p>Execute a copy of tag.</p>
      *
      * @param de The template dom element.
-     * @throws ValidationError Check error.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
      */
-    private void xsltParam(DomElement de)
-            throws ValidationError {
-        String name = de.getAttr(ATTR_PARAM_NAME);
-        Object val = variables.get(name);
-        if (val == null) {
-            String use = de.getAttr(ATTR_PARAM_USE);
-            boolean opflag = XSDDeclAttr.checkUse(de, use);
-            if (!opflag)
-                throw new IllegalArgumentException(PATH_UNKNOWN_VARIABLE);
-            return;
-        }
-        String type = de.getAttr(ATTR_PARAM_TYPE);
-        int typeid = XSLSheet.checkParamType(de, type);
-        switch (typeid) {
-            case XSDDeclAttr.TYPE_PRIMITIVE:
-                if (!(val instanceof String) && !(val instanceof Long))
-                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
-                break;
-            case XSDDeclAttr.TYPE_STRING:
-                if (!(val instanceof String))
-                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
-                break;
-            case XSDDeclAttr.TYPE_INTEGER:
-                if (!(val instanceof Long))
-                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
-                break;
-            case XSLSheet.TYPE_ELEMENT:
-                if (!(val instanceof DomElement))
-                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
-                break;
-            default:
-                throw new IllegalArgumentException("illegal type");
+    private void xsltCopyOf(DomElement de)
+            throws IOException, ScannerError, ParseException {
+        String select = de.getAttr(XSLSheet.ATTR_COPYOF_SELECT);
+        int backmask = dw.getMask();
+        if ((backmask & AbstractDom.MASK_PLIN) != 0) {
+            int mask = backmask;
+            mask &= ~AbstractDom.MASK_PLIN;
+            dw.setMask(mask);
+            try {
+                xsltSendData(select);
+                dw.setMask(backmask);
+            } catch (IOException x) {
+                dw.setMask(backmask);
+                throw x;
+            } catch (ScannerError x) {
+                dw.setMask(backmask);
+                throw x;
+            } catch (ParseException x) {
+                dw.setMask(backmask);
+                throw x;
+            }
+        } else {
+            xsltSendData(select);
         }
     }
+
+    /**
+     * <p>Send the data to the output.</p>
+     *
+     * @param select The data select.
+     * @throws IOException    IO error.
+     * @throws ParseException Parse error.
+     * @throws ScannerError   Syntax error.
+     */
+    private void xsltSendData(String select)
+            throws IOException, ParseException, ScannerError {
+        Object val = attrSelect(select);
+        if (val == null)
+            return;
+        if (val instanceof DomElement) {
+            AbstractDom[] nodes = ((DomElement) val).snapshotNodes();
+            DomElement.storeNodes(dw, nodes);
+        } else {
+            if (val instanceof String) {
+                dw.copyText((String) val);
+            } else {
+                dw.write(Long.toString(((Long) val).longValue()));
+            }
+        }
+    }
+
+    /************************************************************/
+    /* if & choose                                              */
+    /************************************************************/
 
     /**
      * <p>Execute an if tag.</p>
@@ -476,7 +469,7 @@ public final class XSLSheetTransform extends XSLSheet {
      */
     private void xsltIf(DomElement de)
             throws IOException, ScannerError, ValidationError, ParseException {
-        String test = de.getAttr(ATTR_IF_TEST);
+        String test = de.getAttr(XSLSheet.ATTR_IF_TEST);
         boolean val = attrTest(test);
         if (val) {
             AbstractDom[] nodes = de.snapshotNodes();
@@ -497,8 +490,8 @@ public final class XSLSheetTransform extends XSLSheet {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             DomElement de2 = (DomElement) node;
-            if (de2.isName(NAME_WHEN)) {
-                String test = de2.getAttr(ATTR_WHEN_TEST);
+            if (de2.isName(XSLSheet.NAME_WHEN)) {
+                String test = de2.getAttr(XSLSheet.ATTR_WHEN_TEST);
                 boolean val = attrTest(test);
                 if (val) {
                     AbstractDom[] nodes2 = de2.snapshotNodes();
@@ -510,6 +503,85 @@ public final class XSLSheetTransform extends XSLSheet {
                 xsltNodes(nodes2);
                 break;
             }
+        }
+    }
+
+    /************************************************************/
+    /* stylesheet & param                                       */
+    /************************************************************/
+
+    /**
+     * <p>Execute an output tag.</p>
+     *
+     * @param de The template dom element.
+     * @throws ValidationError Check error.
+     */
+    private void xsltStyleSheet(DomElement de)
+            throws ValidationError, ScannerError, ParseException, IOException {
+        AbstractDom[] nodes = de.snapshotNodes();
+        xsltNodes(nodes);
+    }
+
+    /**
+     * <p>Execute an output tag.</p>
+     *
+     * @param de The template dom element.
+     * @throws ValidationError Check error.
+     */
+    private void xsltOutput(DomElement de)
+            throws ValidationError {
+        String method = de.getAttr(XSLSheet.ATTR_OUTPUT_METHOD);
+        int methodid = XSLSheet.checkMethod(de, method);
+        switch (methodid) {
+            case XSLSheet.METHOD_TEXT:
+                dw.setMask(dw.getMask() | AbstractDom.MASK_PLIN);
+                break;
+            case XSLSheet.METHOD_HTML:
+                dw.setMask(dw.getMask() & ~AbstractDom.MASK_PLIN);
+                break;
+            default:
+                throw new IllegalArgumentException("illegal method");
+        }
+    }
+
+    /**
+     * <p>Execute a param tag.</p>
+     *
+     * @param de The template dom element.
+     * @throws ValidationError Check error.
+     */
+    private void xsltParam(DomElement de)
+            throws ValidationError {
+        String name = de.getAttr(XSLSheet.ATTR_PARAM_NAME);
+        Object val = variables.get(name);
+        if (val == null) {
+            String use = de.getAttr(XSLSheet.ATTR_PARAM_USE);
+            boolean opflag = XSDDeclAttr.checkUse(de, use);
+            if (!opflag)
+                throw new IllegalArgumentException(PATH_UNKNOWN_VARIABLE);
+            return;
+        }
+        String type = de.getAttr(XSLSheet.ATTR_PARAM_TYPE);
+        int typeid = XSLSheet.checkParamType(de, type);
+        switch (typeid) {
+            case XSDDeclAttr.TYPE_PRIMITIVE:
+                if (!(val instanceof String) && !(val instanceof Long))
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
+                break;
+            case XSDDeclAttr.TYPE_STRING:
+                if (!(val instanceof String))
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
+                break;
+            case XSDDeclAttr.TYPE_INTEGER:
+                if (!(val instanceof Long))
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
+                break;
+            case XSLSheet.TYPE_ELEMENT:
+                if (!(val instanceof DomElement))
+                    throw new ValidationError(PATH_ILLEGAL_VALUE, name);
+                break;
+            default:
+                throw new IllegalArgumentException("illegal type");
         }
     }
 

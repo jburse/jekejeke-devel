@@ -4,7 +4,6 @@ import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.format.*;
 import matula.util.regex.ScannerError;
-import matula.util.system.MimeHeader;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -102,25 +101,26 @@ public final class XSLSheetCheck extends XSLSheet {
             /* */
         } else {
             DomElement de = (DomElement) dn;
-            if (de.isName(XSLSheetTransform.NAME_FOREACH)) {
+            if (de.isName(XSLSheet.NAME_FOREACH)) {
                 xsltForEach(de);
-            } else if (de.isName(XSLSheetTransform.NAME_SORT)) {
+            } else if (de.isName(XSLSheet.NAME_SORT)) {
                 /* do nothing */
-            } else if (de.isName(XSLSheetTransform.NAME_VALUEOF)) {
-                xsltValueOf(de);
-            } else if (de.isName(XSLSheetTransform.NAME_WITHDATA)) {
+            } else if (de.isName(XSLSheet.NAME_WITHDATA)) {
                 xsltWithData(de);
-            } else if (de.isName(XSLSheetTransform.NAME_OUTPUT)) {
-                xsltOutput(de);
-            } else if (de.isName(XSLSheetTransform.NAME_PARAM)) {
-                xsltParam(de);
-            } else if (de.isName(XSLSheetTransform.NAME_STYLESHEET)) {
-                AbstractDom[] nodes = de.snapshotNodes();
-                xsltNodes(nodes);
-            } else if (de.isName(XSLSheetTransform.NAME_IF)) {
+            } else if (de.isName(XSLSheet.NAME_VALUEOF)) {
+                xsltValueOf(de);
+            } else if (de.isName(XSLSheet.NAME_COPYOF)) {
+                xsltCopyOf(de);
+            } else if (de.isName(XSLSheet.NAME_IF)) {
                 xsltIf(de);
-            } else if (de.isName(XSLSheetTransform.NAME_CHOOSE)) {
+            } else if (de.isName(XSLSheet.NAME_CHOOSE)) {
                 xsltChoose(de);
+            } else if (de.isName(XSLSheet.NAME_STYLESHEET)) {
+                xsltStyleSheet(de);
+            } else if (de.isName(XSLSheet.NAME_OUTPUT)) {
+                xsltOutput(de);
+            } else if (de.isName(XSLSheet.NAME_PARAM)) {
+                xsltParam(de);
             } else {
                 AbstractDom[] nodes = de.snapshotNodes();
                 xsltNodes(nodes);
@@ -144,6 +144,10 @@ public final class XSLSheetCheck extends XSLSheet {
         }
     }
 
+    /************************************************************/
+    /* for-each & with-data                                     */
+    /************************************************************/
+
     /**
      * <p>Check a for each tag.</p>
      *
@@ -154,7 +158,7 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltForEach(DomElement de)
             throws IOException, ScannerError, ValidationError, ParseException {
-        String attr = de.getAttr(XSLSheetTransform.ATTR_FOREACH_SELECT);
+        String attr = de.getAttr(XSLSheet.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
         xr.setMeta(meta);
         xr.setParameters(parameters);
@@ -169,12 +173,12 @@ public final class XSLSheetCheck extends XSLSheet {
             if (!(node instanceof DomElement))
                 continue;
             DomElement elem = (DomElement) node;
-            if (!elem.isName(XSLSheetTransform.NAME_SORT))
+            if (!elem.isName(XSLSheet.NAME_SORT))
                 continue;
-            attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_SELECT);
+            attr = elem.getAttr(XSLSheet.ATTR_SORT_SELECT);
             XSelect xselect = xr.createXSelect(attr);
             xselect.checkElement(xc);
-            attr = elem.getAttr(XSLSheetTransform.ATTR_SORT_ORDER);
+            attr = elem.getAttr(XSLSheet.ATTR_SORT_ORDER);
             XSLSheet.checkOrder(elem, attr);
         }
         ListArray<String> backsimulation = simulation;
@@ -198,19 +202,6 @@ public final class XSLSheetCheck extends XSLSheet {
     }
 
     /**
-     * <p>Check a value of tag.</p>
-     *
-     * @param de The template dom element.
-     * @throws ScannerError    Syntax error.
-     * @throws ValidationError Check error.
-     */
-    private void xsltValueOf(DomElement de)
-            throws ScannerError, ValidationError {
-        String select = de.getAttr(XSLSheetTransform.ATTR_VALUEOF_SELECT);
-        attrSelect(select);
-    }
-
-    /**
      * <p>Check a with data tag.</p>
      *
      * @param de The template dom element.
@@ -220,16 +211,16 @@ public final class XSLSheetCheck extends XSLSheet {
      */
     private void xsltWithData(DomElement de)
             throws IOException, ScannerError, ValidationError, ParseException {
-        String bean = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_BEAN);
+        String bean = de.getAttr(XSLSheet.ATTR_WITHDATA_BEAN);
 
-        XSDResolver resolver=schema.getResolver();
-        Class<?> _class= XSDResolver.findClass(bean);
-        XSDSchema xdef=resolver.resolveSchema(_class);
+        XSDResolver resolver = schema.getResolver();
+        Class<?> _class = XSDResolver.findClass(bean);
+        XSDSchema xdef = resolver.resolveSchema(_class);
 
         if ((xdef.getFlags() & InterfacePath.FLAG_STYL) != 0)
             throw new ValidationError(SHEET_MISMATCHED_PATH, bean);
         if ((xdef.getFlags() & InterfacePath.FLAG_DIRE) != 0) {
-            String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
+            String select = de.getAttr(XSLSheet.ATTR_WITHDATA_SELECT);
             if (select == null) {
                 String name = de.getName();
                 throw new ValidationError(SHEET_MISSING_ATTR, name + ".select");
@@ -238,7 +229,7 @@ public final class XSLSheetCheck extends XSLSheet {
             if (typeid != XSDDeclAttr.TYPE_STRING)
                 throw new ValidationError(XPathCheck.PATH_STRING_SELE, select);
         } else {
-            String select = de.getAttr(XSLSheetTransform.ATTR_WITHDATA_SELECT);
+            String select = de.getAttr(XSLSheet.ATTR_WITHDATA_SELECT);
             if (select != null) {
                 String name = de.getName();
                 throw new ValidationError(SHEET_FORBIDDEN_ATTR, name + ".select");
@@ -269,36 +260,39 @@ public final class XSLSheetCheck extends XSLSheet {
         }
     }
 
+    /************************************************************/
+    /* value-of and copy-of                                     */
+    /************************************************************/
+
     /**
-     * <p>Check an output tag.</p>
+     * <p>Check a value of tag.</p>
      *
      * @param de The template dom element.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltOutput(DomElement de)
+    private void xsltValueOf(DomElement de)
             throws ScannerError, ValidationError {
-        String mime = de.getAttr(XSLSheetTransform.ATTR_OUTPUT_MIME);
-        MimeHeader mh = new MimeHeader(mime);
-        String typesubtype = mh.getType() + "/" + mh.getSubType();
-        checkMimeType(de, typesubtype);
+        String select = de.getAttr(XSLSheet.ATTR_VALUEOF_SELECT);
+        attrSelect(select);
     }
 
     /**
-     * <p>Check a param tag.</p>
+     * <p>Check a copy of tag.</p>
      *
      * @param de The template dom element.
+     * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
      */
-    private void xsltParam(DomElement de)
-            throws ValidationError {
-        String name = de.getAttr(XSLSheetTransform.ATTR_PARAM_NAME);
-        if (parameters.get(name) != null)
-            throw new ValidationError(XPathCheck.PATH_DUPLICATE_VAR, name);
-        String type = de.getAttr(XSLSheetTransform.ATTR_PARAM_TYPE);
-        int typeid = XSLSheet.checkParamType(de, type);
-        parameters.add(name, Integer.valueOf(typeid));
+    private void xsltCopyOf(DomElement de)
+            throws ScannerError, ValidationError {
+        String select = de.getAttr(XSLSheet.ATTR_COPYOF_SELECT);
+        attrSelect(select);
     }
+
+    /************************************************************/
+    /* if & choose                                              */
+    /************************************************************/
 
     /**
      * <p>Check a if tag.</p>
@@ -307,10 +301,11 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
+     * @throws ParseException  Parse error.
      */
     private void xsltIf(DomElement de)
             throws IOException, ScannerError, ValidationError, ParseException {
-        String test = de.getAttr(XSLSheetTransform.ATTR_IF_TEST);
+        String test = de.getAttr(XSLSheet.ATTR_IF_TEST);
         attrTest(test);
         AbstractDom[] nodes = de.snapshotNodes();
         xsltNodes(nodes);
@@ -332,12 +327,12 @@ public final class XSLSheetCheck extends XSLSheet {
             if (node instanceof DomText)
                 throw new ValidationError(SHEET_FORBIDDEN_TEXT, "#text");
             DomElement de2 = (DomElement) node;
-            if (de2.isName(XSLSheetTransform.NAME_WHEN)) {
-                String test = de2.getAttr(XSLSheetTransform.ATTR_WHEN_TEST);
+            if (de2.isName(XSLSheet.NAME_WHEN)) {
+                String test = de2.getAttr(XSLSheet.ATTR_WHEN_TEST);
                 attrTest(test);
                 AbstractDom[] nodes2 = de2.snapshotNodes();
                 xsltNodes(nodes2);
-            } else if (de2.isName(XSLSheetTransform.NAME_OTHERWISE)) {
+            } else if (de2.isName(XSLSheet.NAME_OTHERWISE)) {
                 AbstractDom[] nodes2 = de2.snapshotNodes();
                 xsltNodes(nodes2);
             } else {
@@ -345,6 +340,53 @@ public final class XSLSheetCheck extends XSLSheet {
                 throw new ValidationError(SHEET_FORBIDDEN_ELEM, name);
             }
         }
+    }
+
+    /************************************************************/
+    /* stylesheet & param                                       */
+    /************************************************************/
+
+    /**
+     * <p>Check an output tag.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException     IO error.
+     * @throws ScannerError    Syntax error.
+     * @throws ValidationError Check error.
+     * @throws ParseException  Parse error.
+     */
+    private void xsltStyleSheet(DomElement de)
+            throws ValidationError, ScannerError, ParseException, IOException {
+        AbstractDom[] nodes = de.snapshotNodes();
+        xsltNodes(nodes);
+    }
+
+    /**
+     * <p>Check an output tag.</p>
+     *
+     * @param de The template dom element.
+     * @throws ValidationError Check error.
+     */
+    private void xsltOutput(DomElement de)
+            throws ValidationError {
+        String method = de.getAttr(XSLSheet.ATTR_OUTPUT_METHOD);
+        XSLSheet.checkMethod(de, method);
+    }
+
+    /**
+     * <p>Check a param tag.</p>
+     *
+     * @param de The template dom element.
+     * @throws ValidationError Check error.
+     */
+    private void xsltParam(DomElement de)
+            throws ValidationError {
+        String name = de.getAttr(XSLSheet.ATTR_PARAM_NAME);
+        if (parameters.get(name) != null)
+            throw new ValidationError(XPathCheck.PATH_DUPLICATE_VAR, name);
+        String type = de.getAttr(XSLSheet.ATTR_PARAM_TYPE);
+        int typeid = XSLSheet.checkParamType(de, type);
+        parameters.add(name, Integer.valueOf(typeid));
     }
 
     /****************************************************************/

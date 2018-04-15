@@ -157,7 +157,8 @@ public final class XSelectPrim extends XSelect {
                 XSDDeclElem decl2 = schema.getDeclElem(name);
                 context = d.getContext();
                 if (!XPathCheck.checkParent(context, decl2))
-                    throw new ValidationError(XPathCheck.PATH_ILLEGAL_PARENT, name);
+                    throw new ValidationError(XPathCheck.PATH_ILLEGAL_PARENT,
+                            name + " (" + d.getSchema().getName() + ")");
                 return XSLSheet.TYPE_ELEMENT;
             case XSelectPrim.SELE_PRIM_NULL:
                 return XSDDeclAttr.TYPE_PRIMITIVE;

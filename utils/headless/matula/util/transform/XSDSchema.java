@@ -64,6 +64,7 @@ public final class XSDSchema {
     private final MapHashLink<String, Class<?>> funcs = new MapHashLink<String, Class<?>>();
     private int flags;
     private XSDResolver resolver;
+    private String name;
 
     private static XSDSchema meta = new XSDSchema();
 
@@ -135,6 +136,24 @@ public final class XSDSchema {
     }
 
     /**
+     * <p>Set schema name.</p>
+     *
+     * @return The schema name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * <p>Retrieve the schema name,</p>
+     *
+     * @param n The schema name.
+     */
+    public void setName(String n) {
+        name = n;
+    }
+
+    /**
      * <p>Check the schema and digest the elements of the XSD schema.</p>
      *
      * @param de   The schema dom element.
@@ -200,7 +219,7 @@ public final class XSDSchema {
                 }
                 putImport(bean, schema);
             } else if (e.isName(NAME_RESOLVE)) {
-                String bean=e.getAttr(ATTR_RESOLVE_BEAN);
+                String bean = e.getAttr(ATTR_RESOLVE_BEAN);
                 Class<?> _class = XSDResolver.findClass(bean);
                 traverseFunctions(e, _class);
             } else {
@@ -247,7 +266,7 @@ public final class XSDSchema {
     /**
      * <p>Digest the functions of the XSD schema.</p>
      *
-     * @param de The schema dom element.
+     * @param de     The schema dom element.
      * @param _class The bean.
      * @throws ValidationError Check error.
      */
@@ -312,7 +331,8 @@ public final class XSDSchema {
     public void putDecl(String name, XSDDecl xd)
             throws ValidationError {
         if (decls.get(name) != null)
-            throw new ValidationError(SCHEMA_DUPLICATE_DECL, name);
+            throw new ValidationError(SCHEMA_DUPLICATE_DECL,
+                    name + " (" + getName() + ")");
         decls.add(name, xd);
     }
 
@@ -361,7 +381,8 @@ public final class XSDSchema {
             throws ValidationError {
         XSDDecl decl = getDecl(name);
         if (decl == null || !(decl instanceof XSDDeclElem))
-            throw new ValidationError(SCHEMA_UNDECLARED_ELEM, name);
+            throw new ValidationError(SCHEMA_UNDECLARED_ELEM,
+                    name + " (" + getName() + ")");
         return (XSDDeclElem) decl;
     }
 
@@ -378,7 +399,8 @@ public final class XSDSchema {
         String key = name + "." + attr;
         XSDDecl decl = getDecl(name + "." + attr);
         if (decl == null || !(decl instanceof XSDDeclAttr))
-            throw new ValidationError(SCHEMA_UNDECLARED_ATTR, key);
+            throw new ValidationError(SCHEMA_UNDECLARED_ATTR,
+                    key + " (" + getName() + ")");
         return (XSDDeclAttr) decl;
     }
 
@@ -389,14 +411,15 @@ public final class XSDSchema {
     /**
      * <p>Set a XSD schema import.</p>
      *
-     * @param name The name.
-     *             @param schema The schema import.
+     * @param name   The name.
+     * @param schema The schema import.
      * @throws ValidationError Check error.
      */
     public void putImport(String name, XSDSchema schema)
             throws ValidationError {
         if (imports.get(name) != null)
-            throw new ValidationError(SCHEMA_DUPLICATE_IMPORT, name);
+            throw new ValidationError(SCHEMA_DUPLICATE_IMPORT,
+                    name + " (" + getName() + ")");
         imports.add(name, schema);
     }
 
@@ -421,14 +444,15 @@ public final class XSDSchema {
     /**
      * <p>Set a XSD schema function.</p>
      *
-     * @param key The function key.
+     * @param key    The function key.
      * @param _class The provider bean.
      * @throws ValidationError Check error.
      */
     public void putFunction(String key, Class<?> _class)
             throws ValidationError {
         if (funcs.get(key) != null)
-            throw new ValidationError(SCHEMA_DUPLICATE_FUNC, key);
+            throw new ValidationError(SCHEMA_DUPLICATE_FUNC,
+                    key + " (" + getName() + ")");
         funcs.add(key, _class);
     }
 

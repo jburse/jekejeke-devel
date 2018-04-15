@@ -1,11 +1,10 @@
 package matula.util.transform;
 
-import matula.util.data.*;
-import matula.util.format.*;
+import matula.util.data.AssocArray;
+import matula.util.data.ListArray;
+import matula.util.format.ChoicePoint;
+import matula.util.format.XPath;
 import matula.util.regex.ScannerError;
-import matula.util.wire.XSelectFormat;
-
-import java.io.IOException;
 
 /**
  * <p>This class provides an xpath checker.</p>
