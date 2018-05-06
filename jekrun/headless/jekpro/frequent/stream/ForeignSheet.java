@@ -14,6 +14,7 @@ import matula.util.transform.*;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.text.ParseException;
 
 /**
  * <p>The foreign predicates for the module stream/xsl.</p>
@@ -46,14 +47,25 @@ public final class ForeignSheet {
     /**
      * <p>Digest an XSD schema.</p>
      *
+     * @param inter   The interpreter.
      * @param xs The XSD schema.
      * @param de The DOM element.
      * @throws InterpreterMessage Validation error.
+     * @throws InterpreterException Syntax error.
+     * @throws IOException IO error.
      */
-    public static void sysXsdDigest(XSDSchema xs, DomElement de)
-            throws InterpreterMessage {
+    public static void sysXsdDigest(Interpreter inter,
+                                    XSDSchema xs, DomElement de)
+            throws InterpreterMessage, IOException, InterpreterException, ParseException {
         try {
             xs.digestElements(de);
+        } catch (ScannerError y) {
+            String line = ScannerError.linePosition(y.getLine(), y.getPos());
+            InterpreterMessage x = new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getError()));
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchStack(inter), line, inter));
         } catch (ValidationError y) {
             throw new InterpreterMessage(
                     InterpreterMessage.domainError(y.getError(), y.getCulprit()));
@@ -87,7 +99,6 @@ public final class ForeignSheet {
      * <p>Transform an XSL node.</p>
      *
      * @param inter   The interpreter.
-     * @param callout Marker for frame.
      * @param dn      The XSL node.
      * @param writer  The writer.
      * @param comment The comment.
@@ -96,10 +107,10 @@ public final class ForeignSheet {
      * @throws IOException          IO error.
      * @throws InterpreterException Syntax error.
      */
-    public static void sysXSLTransform(Interpreter inter, CallOut callout,
+    public static void sysXSLTransform(Interpreter inter,
                                        AbstractDom dn, Writer writer,
                                        String comment, Object opts)
-            throws InterpreterMessage, IOException, InterpreterException {
+            throws InterpreterMessage, IOException, InterpreterException, ParseException {
         SheetOpts res = SheetOpts.decodeSheetOpts(opts);
         DomWriter dw = new DomWriter();
         dw.setWriter(writer);
@@ -133,9 +144,10 @@ public final class ForeignSheet {
      * @throws IOException          IO error.
      * @throws InterpreterException Syntax error.
      */
-    public static void sysXSLCheck(Interpreter inter, CallOut callout,
+    public static void sysXSLCheck(Interpreter inter,
                                    AbstractDom dn, Object opts)
-            throws InterpreterMessage, IOException, InterpreterException {
+            throws InterpreterMessage, IOException,
+            InterpreterException, ParseException {
         SheetOpts res = SheetOpts.decodeSheetOpts(opts);
         XSLSheetCheck xc = new XSLSheetCheck();
         xc.setMask(res.getMask());

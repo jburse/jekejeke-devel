@@ -183,6 +183,18 @@ goal_expansion(phrase(P, I, O), R) :-
    throw(error(existence_error(body,','/4),_)).
 
 phrase_expansion((  A, B), I, O, (  phrase(A, I, H),
+                                    sys_phrase(B, H, O))) :-
+   sys_var(A).
+phrase_expansion((  (  A, B), C), I, O, (  phrase((  A, B), I, H),
+                                           sys_phrase(C, H, O))) :-
+   sys_var(B).
+phrase_expansion((  U, B), I, O, (  P,
+                                    phrase(B, I, O))) :-
+   sys_phrase_barrier(U, I, P).
+phrase_expansion((  (  A, U), B), I, O, (  phrase(A, I, H), P,
+                                           phrase(B, H, O))) :-
+   sys_phrase_barrier(U, H, P).
+phrase_expansion((  A, B), I, O, (  phrase(A, I, H),
                                     sys_phrase(B, H, O))).
 
 /**
@@ -263,9 +275,14 @@ phrase_expansion(P, _, _, P) :-
 {}(_, _, _) :-
    throw(error(existence_error(body,{}/3),_)).
 
-phrase_expansion(U, I, O, (  A, Q)) :-
-   U = {A},
-   sys_replace_site(Q, U, O=I).
+phrase_expansion(U, I, O, (  P, Q)) :-
+   sys_phrase_barrier(U, I, P),
+   sys_replace_site(Q, U, I=O).
+
+:- private sys_phrase_barrier/3.
+:- discontiguous sys_phrase_barrier/3.
+sys_phrase_barrier(U, _, A) :-
+   U = {A}.
 
 /**
  * \+ A (grammar):
@@ -278,10 +295,9 @@ phrase_expansion(U, I, O, (  A, Q)) :-
 \+(_, _, _) :-
    throw(error(existence_error(body,(\+)/3),_)).
 
-phrase_expansion(U, I, O, (  P, Q)) :-
+sys_phrase_barrier(U, I, P) :-
    U = (\+A),
-   sys_replace_site(P, U, \+phrase(A,I,_)),
-   sys_replace_site(Q, U, O=I).
+   sys_replace_site(P, U, \+phrase(A,I,_)).
 
 /**
  * ! (grammar):
@@ -291,9 +307,8 @@ phrase_expansion(U, I, O, (  P, Q)) :-
 !(_, _) :-
    throw(error(existence_error(body,!/2),_)).
 
-phrase_expansion(U, I, O, (  U, Q)) :-
-   U = !,
-   sys_replace_site(Q, U, O=I).
+sys_phrase_barrier(U, _, U) :-
+   U = !.
 
 /**
  * [A1, …, An] (grammar):
@@ -305,7 +320,7 @@ _ [_] :-
 
 phrase_expansion(U, I, O, Q) :-
    U = [],
-   sys_replace_site(Q, U, O=I).
+   sys_replace_site(Q, U, I=O).
 
 :- public '.'/4.
 :- meta_predicate '.'(2,2,?,?).
@@ -361,6 +376,18 @@ goal_expansion(sys_phrase(P, I, O), R) :-
 :- set_predicate_property(sys_phrase_expansion/4, sys_noexpand).
 
 sys_phrase_expansion((  A, B), I, O, (  sys_phrase(A, I, H),
+                                        sys_phrase(B, H, O))) :-
+   sys_var(A).
+sys_phrase_expansion((  (  A, B), C), I, O, (  sys_phrase((  A, B), I, H),
+                                               sys_phrase(C, H, O))) :-
+   sys_var(B).
+sys_phrase_expansion((  U, B), I, O, (  P,
+                                        phrase(B, I, O))) :-
+   sys_phrase_barrier(U, I, P).
+sys_phrase_expansion((  (  A, U), B), I, O, (  sys_phrase(A, I, H), P,
+                                               phrase(B, H, O))) :-
+   sys_phrase_barrier(U, H, P).
+sys_phrase_expansion((  A, B), I, O, (  sys_phrase(A, I, H),
                                         sys_phrase(B, H, O))).
 sys_phrase_expansion((  A; B), I, O, (  phrase(A, I, O)
                                      ;  phrase(B, I, O))).
@@ -370,16 +397,9 @@ sys_phrase_expansion((  A *-> B), I, O, (  sys_phrase(A, I, H)
                                         *->phrase(B, H, O))).
 sys_phrase_expansion(call(P), I, O, sys_phrase(P, I, O)).
 sys_phrase_expansion(fail, _, _, fail).
-sys_phrase_expansion(U, I, O, (  A, Q)) :-
-   U = {A},
-   sys_replace_site(Q, U, O=I).
 sys_phrase_expansion(U, I, O, (  P, Q)) :-
-   U = (\+A),
-   sys_replace_site(P, U, \+phrase(A,I,_)),
-   sys_replace_site(Q, U, O=I).
-sys_phrase_expansion(U, I, O, (  U, Q)) :-
-   U = !,
-   sys_replace_site(Q, U, O=I).
+   sys_phrase_barrier(U, I, P),
+   sys_replace_site(Q, U, I=O).
 sys_phrase_expansion([], I, I, true).
 sys_phrase_expansion([A|B], [A|I], O, sys_phrase(B, I, O)).
 

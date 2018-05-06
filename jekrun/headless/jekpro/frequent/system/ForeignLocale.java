@@ -10,6 +10,7 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 import matula.util.system.ForeignCache;
+import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public final class ForeignLocale {
     public static String sysAtomFormat(Interpreter inter, String locstr,
                                        String format, Object list)
             throws InterpreterMessage {
-        Locale locale = ForeignLocale.stringToLocale(locstr);
+        Locale locale = XSelectFormat.stringToLocale(locstr);
         Object[] args = ForeignLocale.prepareArguments(inter, list);
         return String.format(locale, format, args);
     }
@@ -149,28 +150,6 @@ public final class ForeignLocale {
         return args;
     }
 
-    /**
-     * <p>Convert a string to a locale.</p>
-     *
-     * @param locstr The string.
-     * @return The locale.
-     */
-    public static Locale stringToLocale(String locstr) {
-        int k1 = locstr.indexOf('_');
-        if (k1 == -1) {
-            return new Locale(locstr);
-        } else {
-            int k2 = locstr.indexOf('_', k1 + 1);
-            if (k2 == -1) {
-                return new Locale(locstr.substring(0, k1),
-                        locstr.substring(k1 + 1));
-            } else {
-                return new Locale(locstr.substring(0, k1),
-                        locstr.substring(k1 + 1, k2), locstr.substring(k2 + 1));
-            }
-        }
-    }
-
     /****************************************************************/
     /* Message Utilities                                            */
     /****************************************************************/
@@ -186,7 +165,7 @@ public final class ForeignLocale {
      */
     public static String sysMessageMake(Interpreter inter, String locstr,
                                         Properties obj, Object term) {
-        Locale locale = ForeignLocale.stringToLocale(locstr);
+        Locale locale = XSelectFormat.stringToLocale(locstr);
         Engine en = (Engine) inter.getEngine();
         return EngineMessage.messageMake(AbstractTerm.getSkel(term),
                 AbstractTerm.getDisplay(term), locale, obj, en);
@@ -207,7 +186,7 @@ public final class ForeignLocale {
      */
     public static String sysErrorMake(Interpreter inter, String locstr,
                                       Properties obj, Object term) {
-        Locale locale = ForeignLocale.stringToLocale(locstr);
+        Locale locale = XSelectFormat.stringToLocale(locstr);
         Engine en = (Engine) inter.getEngine();
         return EngineException.errorMake(AbstractTerm.getSkel(term),
                 AbstractTerm.getDisplay(term), locale, obj, en);
@@ -227,7 +206,7 @@ public final class ForeignLocale {
     public static Properties sysGetErrorProperties(Interpreter inter,
                                                    String locstr)
             throws IOException {
-        Locale locale = ForeignLocale.stringToLocale(locstr);
+        Locale locale = XSelectFormat.stringToLocale(locstr);
         return inter.getKnowledgebase().getErrorProperties(locale);
     }
 
@@ -244,7 +223,7 @@ public final class ForeignLocale {
                                                          String locstr, String clazz)
             throws InterpreterMessage {
         Capability capa = Knowledgebase.stringToCapability(clazz, inter);
-        Locale locale = ForeignLocale.stringToLocale(locstr);
+        Locale locale = XSelectFormat.stringToLocale(locstr);
         return capa.getDescriptionProperties(locale);
     }
 
