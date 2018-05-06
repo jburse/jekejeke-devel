@@ -128,7 +128,7 @@ public final class ForeignEngine {
      */
     public static void setFlag(String flag, Object m, Display d, Engine en)
             throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.snapshotTrackings();
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -147,7 +147,7 @@ public final class ForeignEngine {
                 }
             }
         }
-        AbstractFactory factory = (AbstractFactory) en.store.getFramework();
+        AbstractFactory factory = en.store.getFactory();
         MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
         AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
         if (af != null) {
@@ -173,7 +173,7 @@ public final class ForeignEngine {
      * @return The value or null.
      */
     public static Object getFlag(String flag, Engine en) {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.snapshotTrackings();
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -185,7 +185,7 @@ public final class ForeignEngine {
             if (af != null)
                 return af.getFlag(en);
         }
-        AbstractFactory factory = (AbstractFactory) en.store.getFramework();
+        AbstractFactory factory = en.store.getFactory();
         MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
         AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
         if (af != null)

@@ -10,7 +10,6 @@ import matula.util.system.ForeignUri;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.CharacterCodingException;
-import java.util.ArrayList;
 
 /**
  * <p>The foreign predicates for the module path.</p>
@@ -258,13 +257,12 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @return The list of class paths.
      */
-    public static Object sysGetPaths(Interpreter inter) {
-        ArrayList<String> paths = inter.getKnowledgebase().getClassPaths();
+    public static Object sysGetPaths(Interpreter inter)
+            throws InterpreterMessage {
+        String[] paths = inter.getKnowledgebase().getClassPaths();
         Object end = Knowledgebase.OP_NIL;
-        for (int i = paths.size() - 1; i >= 0; i--) {
-            end = new TermCompound(Knowledgebase.OP_CONS,
-                    paths.get(i), end);
-        }
+        for (int i = paths.length - 1; i >= 0; i--)
+            end = new TermCompound(Knowledgebase.OP_CONS, paths[i], end);
         return end;
     }
 
