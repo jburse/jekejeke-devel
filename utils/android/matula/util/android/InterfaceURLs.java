@@ -1,9 +1,9 @@
 package matula.util.android;
 
-import matula.util.data.ListArray;
+import java.net.URL;
 
 /**
- * Deferred class loader.
+ * <p>Interface for custom class loader that can return URLs.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -28,47 +28,13 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DeferredLoader {
-    private final ListArray<String> paths = new ListArray<String>();
-    private final ClassLoader parent;
+public interface InterfaceURLs {
 
     /**
-     * <p>Create a paths class loader.</p>
+     * <p>Retrieve the URLs.</p>
      *
-     * @param path The path.
-     * @param p The parent.
+     * @return The URLs.
      */
-    DeferredLoader(String path, ClassLoader p) {
-        paths.add(path);
-        parent = p;
-    }
-
-    /**
-     * <p>Retrieve the paths.</p>
-     *
-     * @return The paths.
-     */
-    ListArray<String> getPaths() {
-        return paths;
-    }
-
-    /**
-     * <p>Retrieve the parent.</p>
-     *
-     * @return The parent.
-     */
-    ClassLoader getParent() {
-        return parent;
-    }
-
-    /**
-     * <p>Extend the class loader.</p>
-     *
-     * @param path The path.
-     */
-    void addPath(String path) {
-        paths.add(path);
-    }
+    public URL[] getURLs();
 
 }
-

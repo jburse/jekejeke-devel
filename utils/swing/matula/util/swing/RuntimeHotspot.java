@@ -1,6 +1,7 @@
 package matula.util.swing;
 
 import derek.util.protect.LicenseError;
+import matula.util.data.ListArray;
 import matula.util.system.AbstractRuntime;
 
 import java.io.File;
@@ -8,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -48,39 +50,65 @@ public final class RuntimeHotspot extends AbstractRuntime {
     private RuntimeHotspot() {
     }
 
+    /*******************************************************************/
+    /* New API                                                         */
+    /*******************************************************************/
+
     /**
      * <p>Extend a class loader by a given path.</p>
      *
-     * @param loader The old class loader.
-     * @param path   The path.
+     * @param parent The parent.
+     * @param adr    The URL.
      * @param data   The client data.
      * @return The new class loader.
      * @throws LicenseError License problem.
      */
-    public Object addPath(Object loader, String path, Object data)
+    public ClassLoader addURL(ClassLoader parent, String adr, Object data)
             throws LicenseError {
         URL url;
         try {
-            url = new URL(path);
+            url = new URL(adr);
         } catch (MalformedURLException x) {
             throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
         }
-        if (loader instanceof HotspotExtensible) {
-            ((HotspotExtensible) loader).addURL(url);
-            return loader;
-        } else {
-            return new HotspotExtensible(url, (ClassLoader) loader);
-        }
+        return new URLClassLoader(new URL[]{url}, parent);
     }
 
     /**
-     * <p>Commit the extension of a class loader.</p>
+     * <p>Retrieve the paths.</p>
      *
-     * @param loader The old class loader.
-     * @return The new class loader.
+     * @param loader The loader.
+     * @param stop   The stop.
+     * @param data   The client data.
+     * @return The paths.
+     * @throws LicenseError License problem.
      */
-    public Object commitPaths(Object loader) {
-        return loader;
+    public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop, Object data)
+            throws LicenseError {
+        if (stop == loader)
+            return new ListArray<String>();
+        ListArray<String> res = getURLs(loader.getParent(), stop, data);
+        URL[] urls = getURLs(loader);
+        if (urls == null)
+            return res;
+        for (int i = 0; i < urls.length; i++)
+            res.add(urls[i].toString());
+        return res;
+    }
+
+    /**
+     * <p>Retrieve the paths.</p>
+     *
+     * @param loader The loader.
+     * @return The paths.
+     */
+    private URL[] getURLs(ClassLoader loader) {
+        if (loader instanceof URLClassLoader) {
+            URLClassLoader urlloader = (URLClassLoader) loader;
+            return urlloader.getURLs();
+        } else {
+            return null;
+        }
     }
 
     /****************************************************************/
@@ -107,5 +135,34 @@ public final class RuntimeHotspot extends AbstractRuntime {
         in.close();
         return (mf != null ? mf.getMainAttributes() : null);
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) throws LicenseError {
+        ClassLoader cl = RuntimeHotspot.class.getClassLoader();
+        System.out.println("cl=" + cl);
+        while (cl != null) {
+            Class class_ = cl.getClass();
+            int ident = 0;
+            while (class_ != null) {
+                for (int i = 0; i < ident; i++)
+                    System.out.print("  ");
+                System.out.println(class_.getName());
+                class_ = class_.getSuperclass();
+                ident++;
+            }
+            cl = cl.getParent();
+        }
+
+        cl = RuntimeHotspot.class.getClassLoader();
+        ListArray<String> res = DEFAULT.getURLs(cl, null, null);
+        for (int i = 0; i < res.size(); i++)
+            System.out.println(res.get(i));
+    }
+    */
 
 }

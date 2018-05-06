@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
 import java.lang.reflect.Array;
@@ -48,25 +49,33 @@ public abstract class AbstractRuntime {
         primitive.add(Void.TYPE.getName(), Void.TYPE);
     }
 
+    /*******************************************************************/
+    /* New API                                                         */
+    /*******************************************************************/
+
     /**
      * <p>Extend a class loader by a given path.</p>
      *
-     * @param loader The old class loader.
-     * @param path   The path.
+     * @param parent The parent.
+     * @param adr    The URL.
      * @param data   The client data.
      * @return The new class loader.
      * @throws LicenseError License problem.
      */
-    public abstract Object addPath(Object loader, String path, Object data)
+    public abstract ClassLoader addURL(ClassLoader parent, String adr, Object data)
             throws LicenseError;
 
     /**
-     * <p>Commit the extension of a class loader.</p>
+     * <p>Retrieve the paths.</p>
      *
-     * @param loader The old class loader.
-     * @return The new class loader.
+     * @param loader The loader.
+     * @param stop   The stop.
+     * @param data   The client data.
+     * @return The paths.
+     * @throws LicenseError License problem.
      */
-    public abstract Object commitPaths(Object loader);
+    public abstract ListArray<String> getURLs(ClassLoader loader, ClassLoader stop, Object data)
+            throws LicenseError;
 
     /**
      * <p>Convert a string to a class.</p>

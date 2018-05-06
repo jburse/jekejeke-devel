@@ -1,18 +1,17 @@
 package matula.util.android;
 
-import dalvik.system.PathClassLoader;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 
 /**
- * <p>Path class loader that can also find resources.</p>
+ * <p>Class loader that can find resources and return URLs.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -37,18 +36,17 @@ import java.util.Enumeration;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DalvikExtensible extends PathClassLoader {
+final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
     private final String[] residuals;
 
     /**
      * <p>Create an extensible class loader.</p>
      *
-     * @param d The class paths semicolon separated.
-     * @param p The parent class loader.
      * @param r The residual paths.
+     * @param p The parent class loader.
      */
-    DalvikExtensible(String d, ClassLoader p, String[] r) {
-        super(d, p);
+    ResidualClassLoader(String[] r, ClassLoader p) {
+        super(p);
         residuals = r;
     }
 
@@ -82,8 +80,9 @@ final class DalvikExtensible extends PathClassLoader {
      *
      * @param name The name.
      * @return The URLs.
+     * @throws IOException Shit happens.
      */
-    protected Enumeration<URL> findResources(String name) {
+    protected Enumeration<URL> findResources(String name) throws IOException {
         Enumeration<URL> en = super.findResources(name);
         ArrayList<URL> res = null;
         for (int i = 0; i < residuals.length; i++) {
@@ -104,6 +103,23 @@ final class DalvikExtensible extends PathClassLoader {
         if (res != null)
             en = Collections.enumeration(res);
         return en;
+    }
+
+    /**
+     * <p>Retrieve the URLs.</p>
+     *
+     * @return The URLs.
+     */
+    public URL[] getURLs() {
+        URL[] res = new URL[residuals.length];
+        for (int i = 0; i < residuals.length; i++) {
+            try {
+                res[i] = new URL(ForeignUri.SCHEME_FILE, null, residuals[i]);
+            } catch (MalformedURLException x) {
+                throw new RuntimeException(x);
+            }
+        }
+        return res;
     }
 
 }

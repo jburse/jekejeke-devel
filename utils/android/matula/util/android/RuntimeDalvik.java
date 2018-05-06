@@ -5,10 +5,15 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import dalvik.system.PathClassLoader;
 import derek.util.protect.LicenseError;
 import matula.util.data.ListArray;
 import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignUri;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 /**
  * Android specialization of an abstract runtime.
@@ -47,17 +52,20 @@ public final class RuntimeDalvik extends AbstractRuntime {
     private RuntimeDalvik() {
     }
 
+    /*******************************************************************/
+    /* New API                                                         */
+    /*******************************************************************/
+
     /**
      * <p>Extend a class loader by a given path.</p>
-     * <p>Only understands the file: and apk: protocol.</p>
      *
-     * @param loader The old class loader.
-     * @param adr    The path.
+     * @param parent The parent.
+     * @param adr   The URL.
      * @param data   The client data.
      * @return The new class loader.
      * @throws LicenseError License problem.
      */
-    public Object addPath(Object loader, String adr, Object data)
+    public ClassLoader addURL(ClassLoader parent, String adr, Object data)
             throws LicenseError {
         String spec = ForeignUri.sysUriSpec(adr);
         String scheme = ForeignUri.sysSpecScheme(spec);
@@ -76,43 +84,66 @@ public final class RuntimeDalvik extends AbstractRuntime {
         } else {
             throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
         }
-        if (loader instanceof DeferredLoader) {
-            ((DeferredLoader) loader).addPath(path);
-            return loader;
+        if (path.endsWith("/")) {
+            return new ResidualClassLoader(new String[]{path}, parent);
         } else {
-            return new DeferredLoader(path, (ClassLoader) loader);
+            return new InspectClassLoader(path, parent);
         }
     }
 
     /**
-     * <p>Commit the extension of a class loader.</p>
+     * <p>Retrieve the paths.</p>
      *
-     * @param loader The old class loader.
-     * @return The new class loader.
+     * @param loader The loader.
+     * @param stop   The stop.
+     * @param data   The client data.
+     * @return The paths.
+     * @throws LicenseError License problem.
      */
-    public Object commitPaths(Object loader) {
-        if (loader instanceof DeferredLoader) {
-            DeferredLoader defer = (DeferredLoader) loader;
-            ListArray<String> paths = defer.getPaths();
+    public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop, Object data)
+            throws LicenseError {
+        if (stop == loader)
+            return new ListArray<String>();
+        ListArray<String> res = getURLs(loader.getParent(), stop, data);
+        URL[] urls = getURLs(loader, data);
+        if (urls == null)
+            return res;
+        for (int i = 0; i < urls.length; i++)
+            res.add(urls[i].toString());
+        return res;
+    }
 
-            ListArray<String> reslist = new ListArray<String>();
-            StringBuilder buf = new StringBuilder();
-            for (int i = 0; i < paths.size(); i++) {
-                String path = paths.get(i);
-                if (path.endsWith("/")) {
-                    reslist.add(path);
-                } else {
-                    if (i != 0)
-                        buf.append(":");
-                    buf.append(path);
-                }
+    /**
+     * <p>Retrieve the paths.</p>
+     *
+     * @param loader The loader.
+     * @return The paths.
+     * @throws LicenseError License problem.
+     */
+    private URL[] getURLs(ClassLoader loader, Object data)
+            throws LicenseError {
+        if (loader instanceof InterfaceURLs) {
+            InterfaceURLs urlloader = (InterfaceURLs) loader;
+            return urlloader.getURLs();
+        } else if (loader == ((Application) data).getClassLoader()) {
+            PackageManager pm = ((Application) data).getPackageManager();
+            String path=((Application) data).getPackageName();
+            PackageInfo pi;
+            try {
+                pi = pm.getPackageInfo(path, 0);
+            } catch (PackageManager.NameNotFoundException x) {
+                throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
             }
-
-            String[] res = new String[reslist.size()];
-            reslist.toArray(res);
-            return new DalvikExtensible(buf.toString(), defer.getParent(), res);
+            path = pi.applicationInfo.sourceDir;
+            URL url;
+            try {
+                url = new URL(ForeignUri.SCHEME_FILE, null, path);
+            } catch (MalformedURLException x) {
+                throw new RuntimeException(x);
+            }
+            return new URL[]{url};
         } else {
-            return loader;
+            return null;
         }
     }
 

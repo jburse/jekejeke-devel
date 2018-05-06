@@ -258,7 +258,6 @@ public final class OpenOpts extends OpenCheck {
                         } else {
                             in.close();
                             in = new FileInputStream(file);
-                            cap = know.pathToDecoder(adr);
                             if (cap != null)
                                 in = cap.prepareStream(in, know);
                         }

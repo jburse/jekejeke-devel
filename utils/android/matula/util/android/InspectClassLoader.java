@@ -1,10 +1,14 @@
-package matula.util.swing;
+package matula.util.android;
 
+import dalvik.system.PathClassLoader;
+import matula.util.system.ForeignUri;
+
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.util.StringTokenizer;
 
 /**
- * URL class loader that is opened to add URL.
+ * <p>Class loader that can find jar/apk and return URLs.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -29,24 +33,38 @@ import java.net.URLClassLoader;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class HotspotExtensible extends URLClassLoader {
+final class InspectClassLoader extends PathClassLoader implements InterfaceURLs {
+    private String dexpathback;
 
     /**
-     * <p>Create an extensible class loader.</p>
-     *  @param url The url.
-     *            @param parent The parent.
+     * <p>Create an inspect class loader.</p>
+     *
+     * @param dexpath The jar/apk paths separated by ":".
+     * @param parent  The parent.
      */
-    HotspotExtensible(URL url, ClassLoader parent) {
-        super(new URL[]{url}, parent);
+    public InspectClassLoader(String dexpath, ClassLoader parent) {
+        super(dexpath, parent);
+        dexpathback = dexpath;
     }
 
     /**
-     * <p>Extend the class loader.</p>
+     * <p>Retrieve the URLs.</p>
      *
-     * @param url The url.
+     * @return The URLs.
      */
-    protected void addURL(URL url) {
-        super.addURL(url);
+    public URL[] getURLs() {
+        StringTokenizer st = new StringTokenizer(dexpathback, ":");
+        URL[] res = new URL[st.countTokens()];
+        int k = 0;
+        while (st.hasMoreTokens()) {
+            try {
+                res[k] = new URL(ForeignUri.SCHEME_FILE, null, st.nextToken());
+            } catch (MalformedURLException x) {
+                throw new RuntimeException(x);
+            }
+            k++;
+        }
+        return res;
     }
 
 }
