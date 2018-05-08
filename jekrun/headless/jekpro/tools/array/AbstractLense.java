@@ -6,7 +6,7 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.AbstractStore;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
@@ -103,7 +103,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_INTERPRETER) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
                 return false;
             } else {
                 encodeobj = encode.intValue();
@@ -119,7 +119,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             if (encode == null) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
@@ -132,7 +132,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                 encode.intValue() == Types.TYPE_INTERPRETER) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                    SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
             return false;
         } else {
             encoderet = encode.intValue();
@@ -204,7 +204,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_UNSUPPORTED) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
                 return false;
             } else {
                 encodeobj = encode.intValue();
@@ -222,7 +222,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_UNSUPPORTED) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
@@ -238,7 +238,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                 encode.intValue() == Types.TYPE_UNSUPPORTED) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                    SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
             return false;
         } else {
             encoderet = encode.intValue();
@@ -301,7 +301,7 @@ public abstract class AbstractLense extends AbstractDelegate {
      * @param store  The store.
      */
     public final void shrinkPredicate(Predicate pick, AbstractSource source,
-                                      Store store) {
+                                      AbstractStore store) {
     }
 
     /**
@@ -310,7 +310,7 @@ public abstract class AbstractLense extends AbstractDelegate {
      * @param pick  The predicate.
      * @param store The store.
      */
-    public final void releasePredicate(Predicate pick, Store store) {
+    public final void releasePredicate(Predicate pick, AbstractStore store) {
     }
 
     /******************************************************************/

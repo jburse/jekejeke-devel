@@ -32,6 +32,9 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
+    public final static int MASK_ATOM_ANNO = 0x00000001;
+    public final static int MASK_ATOM_POSI = 0x00000002;
+
     public final String fun;
     public final AbstractSource scope;
     public AbstractCache cache;

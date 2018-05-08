@@ -9,7 +9,7 @@ import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.AbstractStore;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.AbstractTerm;
@@ -70,7 +70,7 @@ public abstract class AbstractDelegate {
      * @param store  The store.
      */
     public abstract void shrinkPredicate(Predicate pick, AbstractSource source,
-                                         Store store) throws EngineMessage;
+                                         AbstractStore store) throws EngineMessage;
 
     /**
      * <p>Release this predicate from the store.</p>
@@ -78,7 +78,7 @@ public abstract class AbstractDelegate {
      * @param pick  The predicate.
      * @param store The store.
      */
-    public abstract void releasePredicate(Predicate pick, Store store);
+    public abstract void releasePredicate(Predicate pick, AbstractStore store);
 
     /********************************************************************/
     /* Tunneling Evaluable Functions                                    */
@@ -264,7 +264,7 @@ public abstract class AbstractDelegate {
         DisplayClause u = en.contdisplay;
         int snap = en.number;
         en.wrapGoal();
-        Clause clause = en.store.CLAUSE_CALL;
+        Clause clause = en.store.foyer.CLAUSE_CALL;
         DisplayClause ref = new DisplayClause(clause.dispsize);
         ref.addArgument(en.skel, en.display, en);
         ref.setEngine(en);

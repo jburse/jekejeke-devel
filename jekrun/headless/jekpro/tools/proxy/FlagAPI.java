@@ -1,15 +1,15 @@
 package jekpro.tools.proxy;
 
-import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
+import matula.util.wire.XSelectFormat;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -116,7 +116,7 @@ public final class FlagAPI extends AbstractFlag {
     public Object getFlag(Engine en) {
         switch (id) {
             case FLAG_SYS_MASK:
-                return en.store.switchToAtom((en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0);
+                return AbstractFlag.switchToAtom((en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0);
             case FLAG_SYS_DISP_INPUT:
                 return en.visor.dispinput;
             case FLAG_SYS_DISP_OUTPUT:
@@ -131,30 +131,30 @@ public final class FlagAPI extends AbstractFlag {
                 return en.visor.curerror;
             case FLAG_SYS_ATTACHED_TO:
                 Object val = en.visor.attachedto;
-                return val != null ? val : en.store.ATOM_NULL;
+                return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
             case FLAG_BASE_URL:
-                String path = en.store.getBase();
+                String path = en.store.foyer.base;
                 return new SkelAtom(path != null ? path : "");
             case FLAG_SYS_LOCALE:
-                return new SkelAtom(en.store.getLocale().toString());
+                return new SkelAtom(en.store.foyer.locale.toString());
             case FLAG_SYS_BELONGS_TO:
-                val = en.store.belongsto;
-                return val != null ? val : en.store.ATOM_NULL;
+                val = en.store.foyer.belongsto;
+                return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
             case FLAG_SYS_CPU_COUNT:
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
             case FLAG_SYS_RUNTIME_VERSION:
                 return System.getProperty("java.vm.specification.version");
             case FLAG_VERBOSE:
                 int verb = 0;
-                int flags = en.store.getBits();
-                if ((flags & Store.MASK_STORE_SMRY) != 0)
+                int flags = en.store.foyer.getBits();
+                if ((flags & Foyer.MASK_STORE_SMRY) != 0)
                     verb |= LoadOpts.VERBOSE_SUMMARY;
-                if ((flags & Store.MASK_STORE_DTLS) != 0)
+                if ((flags & Foyer.MASK_STORE_DTLS) != 0)
                     verb |= LoadOpts.VERBOSE_DETAILS;
                 String name;
                 switch (verb) {
                     case 0:
-                        name = Store.OP_OFF;
+                        name = AbstractFlag.OP_OFF;
                         break;
                     case LoadOpts.VERBOSE_SUMMARY:
                         name = LoadOpts.OP_VERBOSE_SUMMARY;
@@ -163,7 +163,7 @@ public final class FlagAPI extends AbstractFlag {
                         name = LoadOpts.OP_VERBOSE_DETAILS;
                         break;
                     case LoadOpts.VERBOSE_SUMMARY + LoadOpts.VERBOSE_DETAILS:
-                        name = Store.OP_ON;
+                        name = AbstractFlag.OP_ON;
                         break;
                     default:
                         throw new IllegalArgumentException("illegal verbosity");
@@ -186,7 +186,7 @@ public final class FlagAPI extends AbstractFlag {
     public boolean setFlag(Object m, Display d, Engine en) throws EngineMessage {
         switch (id) {
             case FLAG_SYS_MASK:
-                en.visor.setMask(Store.atomToSwitch(m, d));
+                en.visor.setMask(AbstractFlag.atomToSwitch(m, d));
                 return true;
             case FLAG_SYS_DISP_INPUT:
                 en.skel = m;
@@ -251,7 +251,7 @@ public final class FlagAPI extends AbstractFlag {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
-                en.store.setBase(!"".equals(fun) ? fun : null);
+                en.store.foyer.setBase(!"".equals(fun) ? fun : null);
                 return true;
             case FLAG_SYS_LOCALE:
                 en.skel = m;
@@ -259,10 +259,10 @@ public final class FlagAPI extends AbstractFlag {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 fun = EngineMessage.castString(en.skel, en.display);
-                en.store.setLocale(ForeignLocale.stringToLocale(fun));
+                en.store.foyer.locale = XSelectFormat.stringToLocale(fun);
                 return true;
             case FLAG_SYS_BELONGS_TO:
-                en.store.belongsto = castRefOrNull(m, d, en);
+                en.store.foyer.belongsto = castRefOrNull(m, d, en);
                 return true;
             case FLAG_SYS_CPU_COUNT:
                 /* can't modify */
@@ -273,14 +273,14 @@ public final class FlagAPI extends AbstractFlag {
             case FLAG_VERBOSE:
                 int verb = LoadOpts.atomToVerbose(m, d, en);
                 if ((verb & LoadOpts.VERBOSE_SUMMARY) != 0) {
-                    en.store.setBit(Store.MASK_STORE_SMRY);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_SMRY);
                 } else {
-                    en.store.resetBit(Store.MASK_STORE_SMRY);
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_SMRY);
                 }
                 if ((verb & LoadOpts.VERBOSE_DETAILS) != 0) {
-                    en.store.setBit(Store.MASK_STORE_DTLS);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_DTLS);
                 } else {
-                    en.store.resetBit(Store.MASK_STORE_DTLS);
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_DTLS);
                 }
                 return true;
             default:
@@ -329,7 +329,7 @@ public final class FlagAPI extends AbstractFlag {
         en.display = d;
         en.deref();
         if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Store.OP_NULL)) {
+                ((SkelAtom) en.skel).fun.equals(AbstractFlag.OP_NULL)) {
             return null;
         } else {
             EngineMessage.checkInstantiated(en.skel);

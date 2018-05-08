@@ -233,19 +233,19 @@ abstract class AbstractMember extends AbstractLense
                     EngineMessage.OP_PERMISSION_ACCESS,
                     AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
+                            method.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
+                            method.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (NullPointerException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_LOOKUP,
                     AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
+                            method.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_LINK,

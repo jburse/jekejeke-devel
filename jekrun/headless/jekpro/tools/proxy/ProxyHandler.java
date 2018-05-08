@@ -177,7 +177,7 @@ final class ProxyHandler implements InterfaceHandler {
     public InterfaceState createState(int size) {
         ProxyState state = new ProxyState(this, size);
         for (int i = 0; i < size; i++)
-            state.set_at(i, src.getStore().ATOM_NIL);
+            state.set_at(i, src.getStore().foyer.ATOM_NIL);
         return state;
     }
 
@@ -284,7 +284,7 @@ final class ProxyHandler implements InterfaceHandler {
         Class[] interfaces = new Class[list.size()];
         list.toArray(interfaces);
 
-        ClassLoader loader = src.getStore().getCommittedLoader();
+        ClassLoader loader = src.getStore().getLoader();
         return Proxy.getProxyClass(loader, interfaces);
     }
 

@@ -152,12 +152,12 @@ final class LenseElement extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz, en.store.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_INDEX,
-                    SpecialSpecial.classToName(clazz, en.store.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
         }
     }
 

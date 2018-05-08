@@ -3,12 +3,9 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.*;
 import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.array.AbstractFactory;
@@ -280,7 +277,7 @@ public final class AutoClass extends AbstractAuto {
                             }
                         }
                         PreClause pre = new PreClause();
-                        pre.molec = new SkelCompound(new SkelAtom(Store.OP_TURNSTILE), head, goal);
+                        pre.molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);
                         PreClause.consultClause(AbstractDefined.OPT_PROM_STAT |
                                 AbstractDefined.OPT_CHCK_DEFN |
                                 AbstractDefined.OPT_ACTI_BOTT, pre, en);
@@ -553,7 +550,7 @@ public final class AutoClass extends AbstractAuto {
             } else {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_EXCEPTION,
-                        SpecialSpecial.classToName(ret, en.store.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
                 return false;
             }
         }
@@ -640,18 +637,18 @@ public final class AutoClass extends AbstractAuto {
                     EngineMessage.OP_PERMISSION_ACCESS,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.constructorToCallable(
-                            con.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
+                            con.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.constructorToCallable(
-                            con.getParameterTypes(), en.store.SOURCE_SYSTEM, en)));
+                            con.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (InstantiationException e) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_NEW,
                     EngineMessage.OP_PERMISSION_CLASS,
-                    SpecialSpecial.classToName(con.getDeclaringClass(), en.store.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(con.getDeclaringClass(), en.store.foyer.SOURCE_SYSTEM, en)));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_LINK,

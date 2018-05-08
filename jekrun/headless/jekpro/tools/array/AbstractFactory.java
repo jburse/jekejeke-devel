@@ -3,13 +3,12 @@ package jekpro.tools.array;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
-import matula.util.data.MapHash;
+import jekpro.model.pretty.*;
+import jekpro.tools.proxy.InterfaceHandler;
 import matula.comp.sharik.AbstractFramework;
+import matula.util.data.MapHash;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -108,12 +107,11 @@ public abstract class AbstractFactory extends AbstractFramework {
     /*******************************************************************/
 
     /**
-     * <p>Create a store.</p>
+     * <p>Create a fioyer.</p>
      *
-     * @param hint The hint.
-     * @return The store.
+     * @return The foyer.
      */
-    public abstract Store createStore(int hint);
+    public abstract Foyer createFoyer();
 
     /**
      * <p>Retrieve the init branches.</p>
@@ -191,10 +189,10 @@ public abstract class AbstractFactory extends AbstractFramework {
      * <p>Find a branch.</p>
      *
      * @param name The name.
-     * @param en   The engine.
+     * @param store   The store.
      * @throws EngineMessage Shit happens.
      */
-    public abstract AbstractBranch stringToBranch(String name, Engine en)
+    public abstract AbstractBranch stringToBranch(String name, AbstractStore store)
             throws EngineMessage;
 
     /**
@@ -239,14 +237,14 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param store The store.
      * @return The foreign source.
      */
-    public abstract AbstractSource createSynth(String key, Store store);
+    public abstract AbstractSource createSynth(String key, AbstractStore store);
 
     /**
      * <p>Create a foreign or verbatim spec.</p>
      *
-     * @param key    The source key.
+     * @param key The source key.
      * @param src The source.
-     * @param en     The engine.
+     * @param en  The engine.
      * @return The spec.
      */
     public abstract Object synthToSpec(String key, AbstractSource src, Engine en)
@@ -259,7 +257,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param store The store.
      * @return The java class, or null.
      */
-    public abstract Class keyToClass(String key, Store store);
+    public abstract Class keyToClass(String key, AbstractStore store);
 
     /**
      * <p>Create a handler.</p>
@@ -279,6 +277,6 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @return The source key, or null.
      */
     public abstract String findSynthSuffix(String path, AbstractSource src,
-                                           int mask, Store store);
+                                           int mask, AbstractStore store);
 
 }

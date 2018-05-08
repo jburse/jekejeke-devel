@@ -135,7 +135,7 @@ final class LenseLength extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz, en.store.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
         }
     }
 

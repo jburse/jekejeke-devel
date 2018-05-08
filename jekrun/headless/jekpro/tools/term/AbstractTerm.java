@@ -11,52 +11,32 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 
 /**
- * <p>This class provides writing, reading, unification and copying
+ * This class provides writing, reading, unification and copying
  * of Prolog terms. The Java to Prolog API does provide specific
  * data types for all Prolog terms. But the end-user has choices,
  * he might have Prolog atomics unwrapped. Only compounds and
  * variables need always be wrapped, since the API data type
  * aggregates a skeleton and display.
- * </p>
- * <p>The external API roots the terms either in the Java Object
+ *
+ * The external API roots the terms either in the Java Object
  * class or in the AbstractTerm class. In both cases the hashCode(), equals()
  * and unparseTerm() methods of the Java Object class can be used. The
  * realization is such that that even for non-ground Prolog terms
  * these methods correspond to the Prolog term_hash/2, ==/2
  * and write/1.
- * </p>
- * <p>The unparseTerm() methods convert a term to a string. If an
- * interpreter is supplied operator definitions will be available
- * and variable are dereferenced. The following flags are recognized.
- * The method with an option term recognizes all options from the
- * write_term/2 predicate, but cannot handle a null interpreter:</p>
- * <ul>
- * <li><b>FLAG_QUOTED:</b> Quote atoms when necessary.</li>
- * <li><b>FLAG_NUMBERVARS:</b> Write $VAR(n) as a variable name.</li>
- * <li><b>FLAG_IGNORE_OPS:</b> Ignore operator definitions.</li>
- * <li><b>FLAG_IGNORE_MOD:</b>Ignore module prefixes.</li>
- * </ul>
- * <p>The parseNumber() method converts a string to a number
- * term. The parseTerm() methods convert a string or stream to
- * a term. The method that takes a string doesn't require that
- * the term is terminated by a period and returns null when an
- * empty string has been supplied. The method with an option
- * term recognizes all options from the read_term/2 predicate
- * and returns null when the option unification fails.
- * </p>
- * <p>The method unifyTerm() attempts a unification. For performance
+ *
+ * The method unifyTerm() attempts a unification. For performance
  * reasons a failed unification might leave variable bindings.
  * If the variable bindings need an undoing by the application
  * program it is bested to use unification in combination with
  * an empty interactor, see also the class Interpreter.
- * </p>
- * <p>The method copyTerm() creates a copy of the given term. The
+ *
+ * The method copyTerm() creates a copy of the given term. The
  * method will create new compounds for those sub branches of the
  * original term that either contain variables or that need to
  * dereference variables and don't lead to atomics. The method
  * variant copyTermWrapped() returns a wrapped result.
- * </p>
- * <p/>
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -87,7 +67,8 @@ public abstract class AbstractTerm {
      * <p>Create a term by the given skeleton and display.</p>
      * <p>Will first determine the type of the skeleton and
      * then switch to the constructor of the apppropriate subclass.</p>
-     * <p>Will unpack atoms and not wrap numbers and references.</p>
+     * <p>Will unpack atoms.</p>
+     * <p>Will not wrap numbers and references.</p>
      *
      * @param m The skeleton.
      * @param d The display.
@@ -104,23 +85,6 @@ public abstract class AbstractTerm {
             return m;
         } else {
             throw new NullPointerException("internal null");
-        }
-    }
-
-    /**
-     * <p>Create a molec by the given skeleton and display.</p>
-     *
-     * @param m The skeleton.
-     * @param d The display.
-     * @return The molec.
-     */
-    public static Object createMolec(Object m, Display d) {
-        if (m instanceof SkelVar) {
-            return new TermVar((SkelVar) m, d);
-        } else if (m instanceof SkelCompound) {
-            return new TermCompound((SkelCompound) m, d);
-        } else {
-            return m;
         }
     }
 
@@ -143,6 +107,28 @@ public abstract class AbstractTerm {
             return new TermAtomic(m, false);
         } else {
             throw new NullPointerException("internal null");
+        }
+    }
+
+
+    /**
+     * <p>Create a term by the given skeleton and display.</p>
+     * <p>Will first determine the type of the skeleton and
+     * then switch to the constructor of the apppropriate subclass.</p>
+     * <p>Will keep atoms.</p>
+     * <p>Will not wrap numbers and references.</p>
+     *
+     * @param m The skeleton.
+     * @param d The display.
+     * @return The molec.
+     */
+    public static Object createMolec(Object m, Display d) {
+        if (m instanceof SkelVar) {
+            return new TermVar((SkelVar) m, d);
+        } else if (m instanceof SkelCompound) {
+            return new TermCompound((SkelCompound) m, d);
+        } else {
+            return m;
         }
     }
 

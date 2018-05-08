@@ -177,9 +177,10 @@ public final class TermCompound extends AbstractTerm {
     /**
      * <p>Retrieve an argument of a compound.</p>
      * <p>The argument is dereferenced before returning it.</p>
+     * <p>The object format is used.</p>
      *
      * @param k The argument index, 0=first argument, length-1=last argument
-     * @return The argument
+     * @return The argument in object format.
      */
     public Object getArg(int k) {
         Object t = skel.args[k];
@@ -196,9 +197,10 @@ public final class TermCompound extends AbstractTerm {
     /**
      * <p>Retrieve an argument of a compound.</p>
      * <p>The argument is dereferenced before returning it.</p>
+     * <p>The term format is used.</p>
      *
      * @param k The argument index, 0=first argument, length-1=last argument
-     * @return The argument
+     * @return The argument in term format.
      */
     public AbstractTerm getArgWrapped(int k) {
         Object t = skel.args[k];
@@ -210,6 +212,26 @@ public final class TermCompound extends AbstractTerm {
             d = b.display;
         }
         return AbstractTerm.createTermWrapped(t, d);
+    }
+
+    /**
+     * <p>Retrieve an argument of a compound.</p>
+     * <p>The argument is dereferenced before returning it.</p>
+     * <p>The molec format is used.</p>
+     *
+     * @param k The argument index, 0=first argument, length-1=last argument
+     * @return The argument in molec format.
+     */
+    public Object getArgMolec(int k) {
+        Object t = skel.args[k];
+        Display d = display;
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        return AbstractTerm.createMolec(t, d);
     }
 
     /************************************************************************/
