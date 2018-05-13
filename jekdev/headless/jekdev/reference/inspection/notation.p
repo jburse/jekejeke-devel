@@ -1,23 +1,36 @@
 /**
- * For debugging purpose it might be necessary to access sources
- * that are not accessible from the top-level. We provide predicates
- * to allow direct access. For sources there is no need of extra
- * predicates. Access and modification is available through the
- * runtime predicate current_source/1, set_source_property/2 and
- * reset_source_property/2.
+ * For debugging purpose it might be necessary to have direct access
+ * to our Prolog module notation. Our Prolog module notations are
+ * ordinary Prolog terms that are converted to interpreter objects.
+ * The slash notation combines a package name and a module name
+ * into a structured module name. The colon notation separates combines
+ * module name and a predi-cate name into a qualified predicate name.
  *
  * Examples:
  * ?- sys_atom_slash(X, a/b/c).
  * X = 'a.b.c'
- *
  * ?- sys_atom_slash('c[][]', X).
  * X = {{c}}
  *
  * The predicate sys_atom_slash/2 can be used to explicitly invoke a
- * slash (/)/2 notation conversion for an atom. The notation can be
- * used to denote Prolog text modules and Java Classes. We additionally
- * support conversion for the {}/1 notation as well, which can be used
- * to denote Java Array Classes.
+ * slash (/)/2 notation con-version for an atom. The notation can
+ * be used to denote Prolog text modules and Java Classes. We
+ * additionally support conversion for the {}/1 notation as well,
+ * which can be used to denote Java Array Classes.
+ *
+ * Examples:
+ * ?- sys_callable_colon(X, basic/lists:member(A,B)).
+ * X = 'jekpro.frequent.basic.lists\bmember'(A,B)
+ * ?- sys_indicator_colon(X, basic/lists:member/2).
+ * X = 'jekpro.frequent.basic.lists\bmember'/2
+ *
+ * The predicates sys_callable_colon/2 can be used to explicitly invoke
+ * the colon (:)/2 and double colon (::)/2 notation conversion for a
+ * callable. The double colon notation combines the receiver module
+ * name by additionally prepending the receiver itself to the callable
+ * similar to the Python dynamic invocation. The predicate
+ * sys_indicator_colon/2 can be used to explicitly invoke to colon
+ * notation conversion for a predicate indicator.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

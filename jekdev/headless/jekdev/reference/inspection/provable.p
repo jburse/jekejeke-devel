@@ -2,7 +2,15 @@
  * For debugging purposes it might be necessary to access predicates
  * and evaluable functions that are not accessible from the top-level
  * by the module system visibility rules. We provide predicates that
- * allow direct access.
+ * allow direct access. The access is call-site independent, requires
+ * structured module names with package prefixes resolved and the
+ * module already loaded.
+ *
+ * Examples:
+ * ?- current_predicate(basic/lists:member/2).
+ * Yes
+ * ?- current_provable(jekpro/frequent/basic/lists:member/2).
+ * Yes
  *
  * The directly accessible predicates can be tested and enumerated
  * by the predicate current_provable/1. The predicates provable_property/2,
