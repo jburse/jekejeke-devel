@@ -86,16 +86,9 @@
  */
 % dump
 :- public dump/0.
-:- static dump/0.
-:- set_predicate_property(dump/0, sys_nostack).
 dump :-
-   sys_parent_goal(G),
-   sys_dump_site(G).
+   dump(_).
 :- set_predicate_property(dump/0, sys_notrace).
-
-% sys_dump_site(+Term):
-:- private sys_dump_site/1.
-:- special(sys_dump_site/1, 'SpecialDump', 0).
 
 /**
  * dump(P):
@@ -105,15 +98,24 @@ dump :-
 % dump(+Pattern)
 :- public dump/1.
 dump(I) :-
-   ground(I), !,
-   sys_dump(I).
+   ground(I),
+   \+ provable_property(I, built_in),
+   sys_dump_user(I),
+   sys_dump(I), fail.
 dump(I) :-
+   \+ ground(I),
    current_provable(I),
    \+ provable_property(I, built_in),
+   sys_dump_user(I),
    sys_dump(I), fail.
 dump(_).
 :- set_predicate_property(dump/1, sys_notrace).
 
 :- private sys_dump/1.
-:- special(sys_dump/1, 'SpecialDump', 1).
+:- special(sys_dump/1, 'SpecialDump', 0).
 
+% sys_dump_user(+Indicator)
+:- private sys_dump_user/1.
+sys_dump_user(I) :-
+   provable_property(I, sys_usage(U)),
+   sys_listing_user(U), !.

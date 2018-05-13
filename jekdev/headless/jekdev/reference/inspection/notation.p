@@ -1,8 +1,10 @@
 /**
- * For debugging purpose it might be necessary to access sources that
- * are not accessible from the top-level. We provide predicates to
- * allow direct access. The directly accessible sources can be tested
- * and enumerated by the predicate current_base/1.
+ * For debugging purpose it might be necessary to access sources
+ * that are not accessible from the top-level. We provide predicates
+ * to allow direct access. For sources there is no need of extra
+ * predicates. Access and modification is available through the
+ * runtime predicate current_source/1, set_source_property/2 and
+ * reset_source_property/2.
  *
  * Examples:
  * ?- sys_atom_slash(X, a/b/c).
@@ -44,30 +46,7 @@
 :- package(library(jekdev/reference/inspection)).
 :- use_package(foreign(jekdev/reference/inspection)).
 
-:- module(base, []).
-
-/********************************************************************/
-/* Predicates                                                       */
-/********************************************************************/
-
-/**
- * current_base(P):
- * The predicate succeeds for the directly accessible sources P.
- */
-% current_base(-Indicator)
-:- public current_base/1.
-current_base(I) :-
-   ground(I), !,
-   sys_current_base_chk(I).
-current_base(I) :-
-   sys_current_base(L),
-   sys_member(I, L).
-
-:- private sys_current_base/1.
-:- special(sys_current_base/1, 'SpecialBase', 0).
-
-:- private sys_current_base_chk/1.
-:- special(sys_current_base_chk/1, 'SpecialBase', 1).
+:- module(notation, []).
 
 /**
  * sys_atom_slash(S, T):
@@ -77,4 +56,24 @@ current_base(I) :-
  */
 % sys_atom_slash(+-Atom, -+Term)
 :- public sys_atom_slash/2.
-:- special(sys_atom_slash/2, 'SpecialBase', 2).
+:- special(sys_atom_slash/2, 'SpecialNotation', 0).
+
+/**
+ * sys_callable_colon(S, T):
+ * The predicate succeeds when S is a callable of the form
+ * ‘pk-1%pk’(X1, .., Xm) and T is a colon notation callable of the
+ * form p1:..:pk(X1, .., Xm), for 1 ≤ k and 0 ≤ m.
+ */
+% sys_callable_colon(+-Callable, -+Term):
+:- special(sys_callable_colon/2, 'SpecialNotation', 1).
+:- set_predicate_property(sys_callable_colon/2, visible(public)).
+
+/**
+ * sys_indicator_colon(S, T):
+ * The predicate succeeds when S is an indicator of the form
+ * ‘pk-1%pk’/m and T is a colon notation indicator of the form
+ * p1:..:pk/m, for 1 ≤ k and 0 ≤ m.
+ */
+% sys_indicator_colon(+-Indicator, -+Term):
+:- special(sys_indicator_colon/2, 'SpecialNotation', 2).
+:- set_predicate_property(sys_indicator_colon/2, visible(public)).

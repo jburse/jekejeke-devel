@@ -66,6 +66,7 @@
 :- package(library(jekdev/reference/system)).
 
 :- module(automatic, []).
+:- use_module(library(inspection/provable)).
 
 /***************************************************************/
 /* Listing Automatic Members                                   */
@@ -92,33 +93,27 @@ generated :-
 generated(I) :-
    ground(I),
    sys_automatic_check(I, U),
+   sys_listing_user(U),
    sys_show_base(U),
-   sys_automatic_show(I, U), fail.
+   sys_show_provable_source(I, U), fail.
 generated(I) :-
    sys_not(ground(I)),
-   bagof(I, sys_automatic_match(I, U), B),
+   bagof(I, (  sys_automatic_match(I, U),
+               sys_listing_user(U)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_automatic_show(I, U), fail.
+   sys_show_provable_source(I, U), fail.
 generated(_).
 
 % sys_automatic_check(+Indicator, -Source)
 :- private sys_automatic_check/2.
 sys_automatic_check(I, U) :-
-   sys_provable_property_chk(I, automatic/0, [automatic]),
-   sys_provable_property_chk(I, sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
-
-% sys_automatic_show(+Indicator, +Source)
-:- private sys_automatic_show/2.
-sys_automatic_show(I, U) :-
-   sys_show_provable_source(I, U).
+   provable_property(I, automatic),
+   provable_property(I, sys_usage(U)).
 
 % sys_automatic_match(-Indicator, -Source)
 :- private sys_automatic_match/2.
 sys_automatic_match(I, U) :-
-   sys_current_provable(L),
-   sys_member(I, L),
-   sys_provable_property_chk(I, automatic/0, [automatic]),
-   sys_provable_property_chk(I, sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   current_provable(I),
+   provable_property(I, automatic),
+   provable_property(I, sys_usage(U)).

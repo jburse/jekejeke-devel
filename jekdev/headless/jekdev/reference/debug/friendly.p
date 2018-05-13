@@ -105,16 +105,9 @@
  */
 % friendly
 :- public friendly/0.
-:- static friendly/0.
-:- set_predicate_property(friendly/0, sys_nostack).
 friendly :-
-   sys_parent_goal(G),
-   sys_friendly_site(G).
+   friendly(_).
 :- set_predicate_property(friendly/0, sys_notrace).
-
-% sys_friendly_site(+Term):
-:- private sys_friendly_site/1.
-:- special(sys_friendly_site/1, 'SpecialFriendly', 0).
 
 /**
  * friendly(P):
@@ -125,17 +118,26 @@ friendly :-
 % friendly(+Pattern)
 :- public friendly/1.
 friendly(I) :-
-   ground(I), !,
-   sys_friendly(I).
+   ground(I),
+   sys_intermediate_check(I, U),
+   sys_listing_user(U),
+   sys_intermediate_base(U),
+   sys_friendly(I, U), fail.
 friendly(I) :-
-   current_provable(I),
-   \+ provable_property(I, built_in),
-   sys_friendly(I), fail.
+   \+ ground(I),
+   bagof(I, (  sys_intermediate_match(I, U),
+               sys_listing_user(U)), B),
+   sys_intermediate_base(U),
+   sys_member(I, B),
+   sys_friendly(I, U), fail.
 friendly(_).
 :- set_predicate_property(friendly/1, sys_notrace).
 
-:- private sys_friendly/1.
-:- special(sys_friendly/1, 'SpecialFriendly', 1).
+:- private sys_intermediate_base/1.
+:- special(sys_intermediate_base/1, 'SpecialFriendly', 0).
+
+:- private sys_friendly/2.
+:- special(sys_friendly/2, 'SpecialFriendly', 1).
 
 /**
  * instrumented:
@@ -144,16 +146,9 @@ friendly(_).
  */
 % instrumented
 :- public instrumented/0.
-:- static instrumented/0.
-:- set_predicate_property(instrumented/0, sys_nostack).
 instrumented :-
-   sys_parent_goal(G),
-   sys_instrumented_site(G).
+   instrumented(_).
 :- set_predicate_property(instrumented/0, sys_notrace).
-
-% sys_instrumented_site(+Term):
-:- private sys_instrumented_site/1.
-:- special(sys_instrumented_site/1, 'SpecialFriendly', 2).
 
 /**
  * instrumented(P):
@@ -163,14 +158,32 @@ instrumented :-
 % instrumented(+Pattern)
 :- public instrumented/1.
 instrumented(I) :-
-   ground(I), !,
-   sys_instrumented(I).
+   ground(I),
+   sys_intermediate_check(I, U),
+   sys_listing_user(U),
+   sys_intermediate_base(U),
+   sys_instrumented(I, U), fail.
 instrumented(I) :-
-   current_provable(I),
-   \+ provable_property(I, built_in),
-   sys_instrumented(I), fail.
+   \+ ground(I),
+   bagof(I, (  sys_intermediate_match(I, U),
+               sys_listing_user(U)), B),
+   sys_intermediate_base(U),
+   sys_member(I, B),
+   sys_instrumented(I, U), fail.
 instrumented(_).
 :- set_predicate_property(instrumented/1, sys_notrace).
 
-:- private sys_instrumented/1.
-:- special(sys_instrumented/1, 'SpecialFriendly', 3).
+:- private sys_instrumented/2.
+:- special(sys_instrumented/2, 'SpecialFriendly', 2).
+
+:- private sys_intermediate_check/2.
+sys_intermediate_check(I, U) :-
+   \+ provable_property(I, built_in),
+   provable_property(I, sys_usage(U)).
+
+:- private sys_intermediate_match/2.
+sys_intermediate_match(I, U) :-
+   current_provable(I),
+   \+ provable_property(I, built_in),
+   provable_property(I, sys_usage(U)).
+

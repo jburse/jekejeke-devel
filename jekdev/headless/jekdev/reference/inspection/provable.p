@@ -47,10 +47,6 @@
 
 :- module(provable, []).
 
-/********************************************************************/
-/* Predicates                                                       */
-/********************************************************************/
-
 /**
  * current_provable(P):
  * The predicate succeeds for the directly accessible predicates P.
@@ -111,23 +107,3 @@ provable_property(I, R) :-
 % reset_provable_property(+Oper, +Property)
 :- public reset_provable_property/2.
 :- special(reset_provable_property/2, 'SpecialProvable', 5).
-
-/**
- * sys_callable_colon(S, T):
- * The predicate succeeds when S is a callable of the form
- * ‘pk-1%pk’(X1, .., Xm) and T is a colon notation callable of the
- * form p1:..:pk(X1, .., Xm), for 1 ≤ k and 0 ≤ m.
- */
-% sys_callable_colon(+-Callable, -+Term):
-:- special(sys_callable_colon/2, 'SpecialProvable', 6).
-:- set_predicate_property(sys_callable_colon/2, visible(public)).
-
-/**
- * sys_indicator_colon(S, T):
- * The predicate succeeds when S is an indicator of the form
- * ‘pk-1%pk’/m and T is a colon notation indicator of the form
- * p1:..:pk/m, for 1 ≤ k and 0 ≤ m.
- */
-% sys_indicator_colon(+-Indicator, -+Term):
-:- special(sys_indicator_colon/2, 'SpecialProvable', 7).
-:- set_predicate_property(sys_indicator_colon/2, visible(public)).
