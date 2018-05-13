@@ -1,7 +1,12 @@
 package jekpro.reference.bootload;
 
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
@@ -241,13 +246,10 @@ public final class ForeignPath {
      *
      * @param inter The interpreter.
      * @param path  The class path.
-     * @throws InterpreterMessage       Validation error.
-     * @throws CharacterCodingException File canonization problem.
-     * @throws MalformedURLException    URL assembling problem.
+     * @throws InterpreterMessage Validation error.
      */
-    public static void sysAddPath(Interpreter inter, String path)
-            throws InterpreterMessage, IOException {
-        path = sysFindWrite(inter, path);
+    public static void sysAddClassdPath(Interpreter inter, String path)
+            throws InterpreterMessage {
         inter.getKnowledgebase().addClassPath(path);
     }
 
@@ -257,13 +259,36 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @return The list of class paths.
      */
-    public static Object sysGetPaths(Interpreter inter)
+    public static Object sysGetClassPaths(Interpreter inter)
             throws InterpreterMessage {
-        String[] paths = inter.getKnowledgebase().getClassPaths();
+        Knowledgebase know = inter.getKnowledgebase();
         Object end = Knowledgebase.OP_NIL;
-        for (int i = paths.length - 1; i >= 0; i--)
-            end = new TermCompound(Knowledgebase.OP_CONS, paths[i], end);
+        while (know != null) {
+            String[] paths = know.getClassPaths();
+            for (int i = paths.length - 1; i >= 0; i--)
+                end = new TermCompound(Knowledgebase.OP_CONS, paths[i], end);
+            know = know.getParent();
+        }
         return end;
+    }
+
+    /**
+     * <p>Push a new knowledge base.</p>
+     *
+     * @param inter The interpreter.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void sysPushKB(Interpreter inter)
+            throws InterpreterMessage, InterpreterException {
+        Knowledgebase know = inter.getKnowledgebase();
+        know = new Knowledgebase(know);
+        inter.setKnowledgebase(know);
+        Knowledgebase.initKnowledgebase(inter);
+
+        Engine engine=(Engine)inter.getEngine();
+        engine.visor.popStack();
+        engine.visor.pushStack(engine.store.user);
     }
 
 }

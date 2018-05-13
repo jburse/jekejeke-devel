@@ -157,11 +157,11 @@ public final class SpecialLexical extends AbstractSpecial {
      */
     private static SkelAtom comparisonAtom(int res, Engine en) {
         if (res < 0) {
-            return en.store.ATOM_LESS;
+            return en.store.foyer.ATOM_LESS;
         } else if (res == 0) {
-            return en.store.ATOM_EQUAL;
+            return en.store.foyer.ATOM_EQUAL;
         } else {
-            return en.store.ATOM_GREATER;
+            return en.store.foyer.ATOM_GREATER;
         }
     }
 

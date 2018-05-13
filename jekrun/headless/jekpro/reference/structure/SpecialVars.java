@@ -5,8 +5,8 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
@@ -79,7 +79,7 @@ public final class SpecialVars extends AbstractSpecial {
                 Display d = en.display;
                 EngineVars ev = new EngineVars();
                 ev.varInclude(t[0], d);
-                en.skel = en.store.ATOM_NIL;
+                en.skel = en.store.foyer.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
                 AbstractProperty.consSet(ev.vars, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display))
@@ -101,7 +101,7 @@ public final class SpecialVars extends AbstractSpecial {
                 d = en.display;
                 ev = new EngineVars();
                 ev.singsOf(t[0], d);
-                en.skel = en.store.ATOM_NIL;
+                en.skel = en.store.foyer.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
                 AbstractProperty.consSet(ev.anon, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display))
@@ -119,7 +119,7 @@ public final class SpecialVars extends AbstractSpecial {
                 d = en.display;
                 ev = new EngineVars();
                 SpecialVars.goalGlobals(t[0], d, ev);
-                en.skel = en.store.ATOM_NIL;
+                en.skel = en.store.foyer.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
                 AbstractProperty.consSet(ev.vars, en);
                 if (!en.unifyTerm(t[1], d, en.skel, en.display))
@@ -354,7 +354,7 @@ public final class SpecialVars extends AbstractSpecial {
         en.deref();
         while (en.skel instanceof SkelCompound &&
                 ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Store.OP_CONS)) {
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
             SkelCompound mc = (SkelCompound) en.skel;
             d = en.display;
             en.skel = mc.args[0];
@@ -369,7 +369,7 @@ public final class SpecialVars extends AbstractSpecial {
             en.deref();
         }
         if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Store.OP_NIL)) {
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             EngineMessage.checkInstantiated(en.skel);
@@ -398,14 +398,14 @@ public final class SpecialVars extends AbstractSpecial {
         en.deref();
         while (en.skel instanceof SkelCompound &&
                 ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Store.OP_CONS)) {
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
             Object[] mc = ((SkelCompound) en.skel).args;
             d = en.display;
             en.skel = mc[0];
             en.deref();
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 2 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Store.OP_EQUAL)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
                 /* */
             } else {
                 EngineMessage.checkInstantiated(en.skel);
@@ -447,7 +447,7 @@ public final class SpecialVars extends AbstractSpecial {
             en.deref();
         }
         if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Store.OP_NIL)) {
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             EngineMessage.checkInstantiated(en.skel);
@@ -483,7 +483,7 @@ public final class SpecialVars extends AbstractSpecial {
             last = new Display(countvar);
             countvar = 0;
         }
-        Object m = en.store.ATOM_NIL;
+        Object m = en.store.foyer.ATOM_NIL;
         for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             TermVar key = entry.key;
@@ -496,9 +496,9 @@ public final class SpecialVars extends AbstractSpecial {
             } else {
                 val = AbstractTerm.getSkel(key);
             }
-            val = new SkelCompound(en.store.ATOM_EQUAL,
+            val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
                     new SkelAtom(entry.value.getName()), val);
-            m = new SkelCompound(en.store.ATOM_CONS, val, m);
+            m = new SkelCompound(en.store.foyer.ATOM_CONS, val, m);
         }
         en.skel = m;
         en.display = last;

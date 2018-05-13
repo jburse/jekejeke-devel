@@ -4,7 +4,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -292,14 +292,14 @@ public final class SpecialUniv extends AbstractSpecial {
         Object t = en.skel;
         if (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
-            Object res = en.store.ATOM_NIL;
+            Object res = en.store.foyer.ATOM_NIL;
             for (int i = sc.args.length - 1; i >= 0; i--)
-                res = new SkelCompound(en.store.ATOM_CONS, sc.args[i], res);
-            en.skel = new SkelCompound(en.store.ATOM_CONS, sc.sym, res);
+                res = new SkelCompound(en.store.foyer.ATOM_CONS, sc.args[i], res);
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, sc.sym, res);
             return true;
         } else if (!(t instanceof SkelVar)) {
-            Object res = en.store.ATOM_NIL;
-            en.skel = new SkelCompound(en.store.ATOM_CONS, t, res);
+            Object res = en.store.foyer.ATOM_NIL;
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t, res);
             return true;
         } else {
             return false;
@@ -319,7 +319,7 @@ public final class SpecialUniv extends AbstractSpecial {
         Object t = en.skel;
         Display d = en.display;
         if ((t instanceof SkelCompound) &&
-                ((SkelCompound) t).sym.fun.equals(Store.OP_CONS) &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS) &&
                 ((SkelCompound) t).args.length == 2) {
             /* */
         } else {
@@ -367,7 +367,7 @@ public final class SpecialUniv extends AbstractSpecial {
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         while (t instanceof SkelCompound &&
-                ((SkelCompound) t).sym.fun.equals(Store.OP_CONS) &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS) &&
                 ((SkelCompound) t).args.length == 2) {
             SkelCompound sc = (SkelCompound) t;
             en.skel = sc.args[0];
@@ -389,7 +389,7 @@ public final class SpecialUniv extends AbstractSpecial {
             length++;
         }
         if (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Store.OP_NIL)) {
+                ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             EngineMessage.checkInstantiated(t);

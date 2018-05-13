@@ -147,7 +147,7 @@ public final class ForeignEngine {
                 }
             }
         }
-        AbstractFactory factory = en.store.getFactory();
+        AbstractFactory factory = en.store.foyer.getFactory();
         MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
         AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
         if (af != null) {
@@ -185,12 +185,43 @@ public final class ForeignEngine {
             if (af != null)
                 return af.getFlag(en);
         }
-        AbstractFactory factory = en.store.getFactory();
+        AbstractFactory factory = en.store.foyer.getFactory();
         MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
         AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
         if (af != null)
             return af.getFlag(en);
         return null;
+    }
+
+    /**
+     * <p>Retrieve the list of flags.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param en The engine.
+     * @return The list of flags.
+     */
+    public static ArrayList<String> listFlags(Engine en) {
+        ArrayList<String> res = new ArrayList<String>();
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
+            for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+                 entry2 != null; entry2 = pfs.successor(entry2)) {
+                res.add(entry2.key);
+            }
+        }
+        AbstractFactory factory = en.store.foyer.getFactory();
+        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
+        for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+             entry2 != null; entry2 = pfs.successor(entry2)) {
+            res.add(entry2.key);
+        }
+        return res;
     }
 
 }
