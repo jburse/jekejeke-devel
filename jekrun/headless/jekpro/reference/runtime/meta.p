@@ -104,7 +104,7 @@ sys_meta_predicate(P) :-
    R =.. [N|L],
    set_predicate_property(I, (meta_predicate R)),
    sys_get_context(F, C),
-   set_predicate_property(I, sys_accessible_meta_predicate(C)).
+   set_predicate_property(I, sys_meta_predicate(C)).
 
 /**
  * meta_function M, …:

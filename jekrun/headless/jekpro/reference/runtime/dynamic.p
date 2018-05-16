@@ -6,6 +6,15 @@
  * removes clauses and the predicates asserta/1 and assertz/1
  * add a clause.
  *
+ * Examples:
+ * ?- assertz(p(a)).
+ * Yes
+ * ?- p(X).
+ * X = a
+ * ?- clause(p(X),Y).
+ * X = a,
+ * Y = true
+ *
  * The predicates clause/2, retract/1 and retractall/1 can only
  * match clauses that are visible from the head predicate that is
  * used in the search. The predicates asserta/1 and assertz/1 cannot
@@ -14,9 +23,19 @@
  * local predicate on the other hand has its own set of clauses
  * for each thread.
  *
- * The predicate abolish/1 allows removing a predicate turning it
- * into non-existent again. The predicate abolish/1 can be also used
- * to remove operators.
+ * Examples:
+ * ?- abolish(foo/1).
+ * Yes
+ * ?- abolish(infix(=>)).
+ * Yes
+ *
+ * The predicate abolish/1 allows a predicate turning it non-existent
+ * again. The same predicate can be also used to remove operators
+ * by using indicators prefix/1, postfix/1 and infix/1. The predicate
+ * will attempt to remove own user clauses of the predicate, and only
+ * remove it if no system or foreign user clauses remain. If still
+ * some of the aforementioned clauses remain the predicate stays
+ * existent and non-empty.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

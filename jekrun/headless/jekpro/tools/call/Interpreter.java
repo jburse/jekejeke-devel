@@ -28,30 +28,30 @@ import java.util.Comparator;
  * obtained from a knowledge base by the iterable() method. The knowledge
  * base associated with an interpreter can be retrieved and set via
  * the methods getKnowledgebase() and setKnowledgebase().
- *
+ * <p>
  * The controller associated with an interpreter can be retrieved via
  * the method getController(). If multiple interactors are needed a
  * further interpreter object can be forked from an existing interpreter
  * object by the iterable() method. Multiple interactors share the
  * same controller.
- *
+ * <p>
  * To consistently compare variables their serial numbers are used.
  * Serial numbers are allocated and maintained similar to variable bindings
  * in the interpreter. Lexical comparison is therefore defined as a method
  * compare() of the class Interpreter. This method corresponds to the Prolog
  * predicate compare/3.
- *
+ * <p>
  * The interpreter further carries choice points and tail recursion
  * barriers. They are used when solving a goal. An interactor for a
  * solution set can be obtained via the method callin(). The interactor
  * can be controlled via the different methods of the interactor itself.
  * For more details see the CallIn class.
- *
+ * <p>
  * All Prolog flags can be accessed via the methods getProperty() and
  * setProperty(). The set of available Prolog flags depends on the
  * initialized capabilities and on the used toolkit. For properties
  * that represent streams the following Java classes are used:
- *
+ * <p>
  * <b>Table 5: Java Class ISO Stream Mapping</b>
  * <table>
  * <tr valign="baseline"><th>ISO Mode</th><th>ISO Type</th><th>Java Class</th></tr>
@@ -60,29 +60,29 @@ import java.util.Comparator;
  * <tr valign="baseline"><td rowspan="2">Write</td><td>Text Stream</td><td>Writer</td></tr>
  * <tr valign="baseline"><td>Binary Stream</td><td>OutputStream</td></tr>
  * </table>
- *
+ * <p>
  * The methods findKey(), findPrefix() and keyToSpec() do relative file
  * name translation. The translation corresponds to the Prolog predicates
  * absolute_file_name/[2,3].
- *
+ * <p>
  * The toString() methods convert a term to a string. The unparseTerm()
  * methods convert a term to a string or stream. The following flags are
  * recognized. The method with an option term recognizes all options from
  * the write_term/2 predicate. The following flags are available:
- *
+ * <p>
  * <ul>
  * <li><b>FLAG_QUOTED:</b> Quote atoms when necessary.</li>
  * <li><b>FLAG_NUMBERVARS:</b> Write $VAR(n) as a variable name.</li>
  * <li><b>FLAG_IGNORE_OPS:</b> Ignore operator definitions.</li>
  * <li><b>FLAG_IGNORE_MOD:</b>Ignore module prefixes.</li>
  * </ul>
- *
+ * <p>
  * The parseTerm() methods convert a string or stream to a term. The
  * method that takes a string doesn't require that the term is terminated
  * by a period and returns null when an empty string has been supplied.
  * The method with an option term recognizes all options from the
  * read_term/2 predicate and returns null when the option unification fails.
- *
+ * <p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -273,32 +273,10 @@ public final class Interpreter implements Comparator<Object> {
     /*****************************************************************/
 
     /**
-     * <p>Find a key according to the auto loader.</p>
-     *
-     * @param path The path.
-     * @param key  The call-site.
-     * @param mask The mask.
-     * @return The source key.
-     * @throws InterpreterMessage Shit happens.
-     */
-    public String findKey(String path, String key, int mask)
-            throws InterpreterMessage {
-        String res;
-        try {
-            AbstractSource src = (!"".equals(key) ?
-                    AbstractSource.keyToSource(key, engine.store) : null);
-            res = engine.findKey(path, src, mask);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return res;
-    }
-
-    /**
      * <p>Find a prefix according to the auto loader.</p>
      *
      * @param path The path.
-     * @param key  The call-site.
+     * @param key  The call-site, or null.
      * @param mask The mask.
      * @return The prefixed path, or null.
      * @throws InterpreterMessage Shit happens.
@@ -307,9 +285,35 @@ public final class Interpreter implements Comparator<Object> {
             throws InterpreterMessage {
         String res;
         try {
-            AbstractSource src = (!"".equals(key) ?
+            AbstractSource scope = (!"".equals(key) ?
                     AbstractSource.keyToSource(key, engine.store) : null);
-            res = engine.findPrefix(path, src, mask);
+            AbstractSource src = (scope != null ?
+                    scope : engine.store.user);
+            res = Engine.findPrefix(path, src, mask);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Find a key according to the auto loader.</p>
+     *
+     * @param path The path.
+     * @param key  The call-site, or null.
+     * @param mask The mask.
+     * @return The source key.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public String findKey(String path, String key, int mask)
+            throws InterpreterMessage {
+        String res;
+        try {
+            AbstractSource scope = (!"".equals(key) ?
+                    AbstractSource.keyToSource(key, engine.store) : null);
+            AbstractSource src = (scope != null ?
+                    scope : engine.store.user);
+            res = Engine.findKey(path, src, mask);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -326,13 +330,15 @@ public final class Interpreter implements Comparator<Object> {
      */
     public Object keyToSpec(String path, String key, int mask)
             throws InterpreterMessage {
+        String fun = ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 ?
+                LoadForce.OP_LINK_SYS_LOAD_RESOURCE : "");
         Object spec;
         try {
-            AbstractSource src = (!"".equals(key) ?
+            AbstractSource scope = (!"".equals(key) ?
                     AbstractSource.keyToSource(key, engine.store) : null);
-            String fun = ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 ?
-                    LoadForce.OP_LINK_SYS_LOAD_RESOURCE : "");
-            spec = AbstractSource.keyToSpec(path, fun, src, engine);
+            AbstractSource src = (scope != null ?
+                    scope : engine.store.user);
+            spec = AbstractSource.keyToSpec(path, fun, src);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -456,7 +462,7 @@ public final class Interpreter implements Comparator<Object> {
      *
      * @param s The string.
      * @return The term or null.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public Object parseTerm(String s)

@@ -243,11 +243,10 @@ public abstract class AbstractFactory extends AbstractFramework {
      * <p>Create a foreign or verbatim spec.</p>
      *
      * @param key The source key.
-     * @param src The source.
-     * @param en  The engine.
+     * @param scope The call-site, not null.
      * @return The spec.
      */
-    public abstract Object synthToSpec(String key, AbstractSource src, Engine en)
+    public abstract Object synthToSpec(String key, AbstractSource scope)
             throws EngineMessage;
 
     /**
@@ -271,7 +270,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      * <p>Find a path suffix.</p>
      *
      * @param path  The path, in slash notation..
-     * @param src   The source.
+     * @param src   The call-site, not null.
      * @param mask  The mask.
      * @param store The store.
      * @return The source key, or null.

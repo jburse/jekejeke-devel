@@ -92,9 +92,14 @@
  * The predicate adds the relative path R to the class loader.
  */
 % sys_add_path(+Path)
-:- foreign(sys_add_path/1, 'ForeignPath',
-      sysAddPath('Interpreter','String')).
+sys_add_path(P) :-
+   sys_find_write(P, Q),
+   sys_add_class_path(Q).
 :- set_predicate_property(sys_add_path/1, visible(public)).
+
+:- foreign(sys_add_class_path/1, 'ForeignPath',
+      sysAddClassdPath('Interpreter','String')).
+:- set_predicate_property(sys_add_class_path/1, visible(private)).
 
 /**
  * sys_current_path(A):
@@ -102,13 +107,13 @@
  */
 % sys_current_path(-Path)
 sys_current_path(Path) :-
-   sys_get_paths(Paths),
+   sys_get_class_paths(Paths),
    sys_member(Path, Paths).
 :- set_predicate_property(sys_current_path/1, visible(public)).
 
-:- foreign(sys_get_paths/1, 'ForeignPath',
-      sysGetPaths('Interpreter')).
-:- set_predicate_property(sys_get_paths/1, visible(private)).
+:- foreign(sys_get_class_paths/1, 'ForeignPath',
+      sysGetClassPaths('Interpreter')).
+:- set_predicate_property(sys_get_class_paths/1, visible(private)).
 
 /**************************************************/
 /* File Resolution                                */
@@ -312,3 +317,11 @@ sys_path_norm({Dir}, Path) :- !,
 sys_path_norm(X, _) :-
    throw(error(type_error(path,X),_)).
 :- set_predicate_property(sys_path_norm/2, visible(private)).
+
+/**************************************************/
+/* Some Testing                                   */
+/**************************************************/
+
+:- foreign(sys_push_kb/0, 'ForeignPath',
+      sysPushKB('Interpreter')).
+:- set_predicate_property(sys_push_kb/0, visible(public)).

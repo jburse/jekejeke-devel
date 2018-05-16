@@ -81,10 +81,9 @@ public final class RuntimeHotspot extends AbstractRuntime {
      * @param stop   The stop.
      * @param data   The client data.
      * @return The paths.
-     * @throws LicenseError License problem.
      */
-    public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop, Object data)
-            throws LicenseError {
+    public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop,
+                                     Object data) {
         if (stop == loader)
             return new ListArray<String>();
         ListArray<String> res = getURLs(loader.getParent(), stop, data);

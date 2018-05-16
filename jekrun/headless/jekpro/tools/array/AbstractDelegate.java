@@ -9,7 +9,6 @@ import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.AbstractTerm;
@@ -63,22 +62,38 @@ public abstract class AbstractDelegate {
     public int subflags;
 
     /**
+     * <p>Promote a predicate to a builtin.</p>
+     *
+     * @param pick The predicate.
+     * @param d    The builtin delegate.
+     */
+    public static void promoteBuiltin(Predicate pick,
+                                      AbstractDelegate d) {
+        if (pick.del != null)
+            return;
+        synchronized (pick) {
+            if (pick.del != null)
+                return;
+            pick.del = d;
+        }
+    }
+
+    /**
      * <p>Shrink this predicate from the store for a source.</p>
      *
      * @param pick   The predicate.
-     * @param source The source.
-     * @param store  The store.
+     * @param scope The source.
+     * @throws EngineMessage Shit happens.
      */
-    public abstract void shrinkPredicate(Predicate pick, AbstractSource source,
-                                         AbstractStore store) throws EngineMessage;
+    public abstract void shrinkPredicate(Predicate pick, AbstractSource scope)
+            throws EngineMessage;
 
     /**
      * <p>Release this predicate from the store.</p>
+     *  @param pick  The predicate.
      *
-     * @param pick  The predicate.
-     * @param store The store.
      */
-    public abstract void releasePredicate(Predicate pick, AbstractStore store);
+    public abstract void releasePredicate(Predicate pick);
 
     /********************************************************************/
     /* Tunneling Evaluable Functions                                    */

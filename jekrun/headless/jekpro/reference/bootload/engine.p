@@ -116,4 +116,4 @@ end_module :-
 :- special(sys_module_action/2, 'SpecialLoad', 11).
 
 :- private sys_peek_stack/1.
-:- special(sys_peek_stack/1, 'SpecialLoad', 412).
+:- special(sys_peek_stack/1, 'SpecialLoad', 12).

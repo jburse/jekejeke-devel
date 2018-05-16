@@ -34,13 +34,13 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class Score {
+    private final static int MAX_SCORE = 256;
+    private final static int MAX_PRIMITIVE = 6;
+    private final static int MAX_DEPTH = MAX_SCORE - MAX_PRIMITIVE;
 
     /***********************************************************/
     /* Delegate Ordering                                       */
     /***********************************************************/
-
-    private final static int MAX_PRIMITIVE = 6;
-    private final static int MAX_DEPTH = 256 - MAX_PRIMITIVE;
 
     /**
      * <p>Calculate the inheritance depth of a class.</p>
@@ -85,25 +85,37 @@ final class Score {
             case Types.TYPE_PRIMDOUBLE:
                 return 5;
             case Types.TYPE_BOOL:
+                return MAX_SCORE - 1;
             case Types.TYPE_BYTE:
+                return MAX_SCORE - 2;
             case Types.TYPE_CHAR:
+                return MAX_SCORE - 1;
             case Types.TYPE_SHORT:
+                return MAX_SCORE - 2;
             case Types.TYPE_INTEGER:
+                return MAX_SCORE - 2;
             case Types.TYPE_LONG:
+                return MAX_SCORE - 2;
             case Types.TYPE_BIG_INTEGER:
+                return MAX_SCORE - 2;
             case Types.TYPE_FLOAT:
+                return MAX_SCORE - 2;
             case Types.TYPE_DOUBLE:
+                return MAX_SCORE - 2;
             case Types.TYPE_BIG_DECIMAL:
+                return MAX_SCORE - 2;
             case Types.TYPE_NUMBER:
+                return MAX_SCORE - 1;
             case Types.TYPE_STRING:
+                return MAX_SCORE - 2;
             case Types.TYPE_CHARSEQ:
+                return MAX_SCORE - 1;
             case Types.TYPE_REF:
+                return MAX_SCORE - inheritanceDepth(clazz);
             case Types.TYPE_OBJECT:
+                return MAX_SCORE - 1;
             case Types.TYPE_TERM:
-                return MAX_PRIMITIVE + (MAX_DEPTH - inheritanceDepth(clazz));
-            case Types.TYPE_INTERPRETER:
-            case Types.TYPE_CALLOUT:
-                return 0;
+                return MAX_SCORE - 2;
             default:
                 throw new IllegalArgumentException("illegal type");
         }
@@ -119,36 +131,36 @@ final class Score {
     static Object getTest(int typ, Class clazz) {
         switch (typ) {
             case Types.TYPE_PRIMBOOL:
-                return new SkelAtom("boolean");
+                return new SkelAtom("sys_boolean");
             case Types.TYPE_PRIMBYTE:
-                return new SkelAtom("integer8");
+                return new SkelAtom("sys_integer8");
             case Types.TYPE_PRIMCHAR:
-                return new SkelAtom("char16");
+                return new SkelAtom("sys_char16");
             case Types.TYPE_PRIMSHORT:
-                return new SkelAtom("integer16");
+                return new SkelAtom("sys_integer16");
             case Types.TYPE_PRIMINT:
-                return new SkelAtom("integer32");
+                return new SkelAtom("sys_integer32");
             case Types.TYPE_PRIMLONG:
-                return new SkelAtom("integer64");
+                return new SkelAtom("sys_integer64");
             case Types.TYPE_PRIMFLOAT:
-                return new SkelAtom("integer64_or_float32");
+                return new SkelAtom("sys_integer32_or_float32");
             case Types.TYPE_PRIMDOUBLE:
-                return new SkelAtom("integer64_or_float");
+                return new SkelAtom("sys_integer64_or_float");
 
             case Types.TYPE_BOOL:
-                return new SkelAtom("boolean");
+                return new SkelAtom("sys_boolean");
             case Types.TYPE_BYTE:
-                return new SkelAtom("integer8");
+                return new SkelAtom("sys_integer8");
             case Types.TYPE_CHAR:
-                return new SkelAtom("char16");
+                return new SkelAtom("sys_char16");
             case Types.TYPE_SHORT:
-                return new SkelAtom("integer16_and_not_integer8");
+                return new SkelAtom("sys_integer16_and_not_integer8");
             case Types.TYPE_INTEGER:
-                return new SkelAtom("integer32_and_not_integer16");
+                return new SkelAtom("sys_integer32_and_not_integer16");
             case Types.TYPE_LONG:
-                return new SkelAtom("integer64_and_not_integer32");
+                return new SkelAtom("sys_integer64_and_not_integer32");
             case Types.TYPE_BIG_INTEGER:
-                return new SkelAtom("integer_and_not_integer64");
+                return new SkelAtom("sys_integer_and_not_integer64");
             case Types.TYPE_FLOAT:
                 return new SkelAtom("float32");
             case Types.TYPE_DOUBLE:
@@ -161,9 +173,9 @@ final class Score {
             case Types.TYPE_STRING:
                 return new SkelAtom("atom");
             case Types.TYPE_CHARSEQ:
-                return new SkelCompound(new SkelAtom("atom_or_instance_of"), clazz);
+                return new SkelCompound(new SkelAtom("sys_atom_or_type_of"), clazz);
             case Types.TYPE_REF:
-                return new SkelCompound(new SkelAtom("instance_of"), clazz);
+                return new SkelCompound(new SkelAtom("sys_type_of"), clazz);
             case Types.TYPE_OBJECT:
             case Types.TYPE_TERM:
                 return null;

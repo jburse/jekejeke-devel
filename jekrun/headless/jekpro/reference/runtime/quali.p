@@ -1,43 +1,49 @@
 /**
  * For qualified names a notation based on the colon (:) operator can be
  * used when invoking predicates or evaluable functions. The module name
- * itself can be structured by means of the slash (/) operator. Under
- * the hood qualified names are flattened to atoms with the help of
- * the atom cache. The slash (/) operator is converted to the period
- * character (.) whereas the colon (:) operator is converted to the
- * percent character (%).
+ * itself can be structured by means of the slash (/)/2 operator and
+ * the set ({})/1 operator. This gives rise to a new primitive goal syntax
+ * which reads as follows:
  *
- * Example:
+ * goal         --> module ":" goal
+ *                | receiver "::" goal
+ *                | callable.
+ *
+ * receiver     --> package "/" callable
+ *                | reference
+ *                | callable.
+ *
+ * Under the hood qualified names are flattened to atoms with the help
+ * of an inline atom cache. Further the colon notation will also resolve
+ * module names based on the class loader of the call-site, the prefix
+ * list of the call-site and the prefix list of the system. A qualified
+ * predicate will be also searched in the re-export chain of the
+ * given module name.
+ *
+ * Examples:
  * ?- basic/lists:member(X, [1]).
  * X = 1
- * ?- 'jekpro.frequent.basic.lists%member'(X, [1]).
+ * ?- 'jekpro.frequent.basic.lists\bmember'(X, [1]).
  * X = 1
  *
- * Further the colon notation will also resolve module names based on
- * the class loader, the prefix list of the call-site and the prefix list
- * of the system. Finally there is also a colon colon notation based on
- * the (::)/2 operator that can be used to invoke reference types and
- * term objects, which are itself prepended to the callable before
- * invoking it.
+ * Finally there is also a double colon notation based on the (::)/2
+ * operator that can be used to invoke reference types and term objects.
+ * The reference type or term object itself is prepended Python style to
+ * the callable before invoking it. For auto loaded Java classes the
+ * re-export chain contains the super class and implemented interfaces.
  *
- * A qualified predicate will be searched in the re-export chain of the
- * given module name. For auto loaded Java classes this chain contains
- * recursively the super class and implemented interfaces, and hence
- * the "println" works. If an unqualified predicate with the same name
- * is defined, then this is the fall-back and hence the "write" and
- * "nl" work:
- *
- * Example:
+ * Examples:
  * ?- 'System':err(X), X::println('abc').
  * X = 0r47733fca
  * ?- current_error(X), X::write('abc'), X::nl.
  * abc
  * X = 0r398aef8b
  *
- * The predicates sys_callable/1, sys_var/1, sys_functor/3 and
- * sys_univ/2 are the adaptation to callable/1, var/1, functor/3 and
- * (=..)/2, in that these predicates respect the colon (:)/2 and
- * colon colon (::)/2 notation.
+ * If an unqualified predicate with the same name is defined, then this is
+ * the fall-back and hence the "write" and "nl" work. The predicates sys_callable/1,
+ * sys_var/1, sys_functor/3 and sys_univ/2 are the adaptation to callable/1,
+ * var/1, functor/3 and (=..)/2, in that these predicates respect the colon
+ * (:)/2 and double colon (::)/2 notation.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -92,7 +98,7 @@
 :- virtual : /2.
 :- set_predicate_property(: /2, (meta_predicate? :0)).
 :- sys_get_context(here, C),
-   set_predicate_property(: /2, sys_accessible_meta_predicate(C)).
+   set_predicate_property(: /2, sys_meta_predicate(C)).
 :- special(: /2, 'SpecialQuali', 3).
 :- set_predicate_property(: /2, sys_notrace).
 
@@ -107,7 +113,7 @@
 :- virtual :: /2.
 :- set_predicate_property(:: /2, (meta_predicate? :: ::(0))).
 :- sys_get_context(here, C),
-   set_predicate_property(:: /2, sys_accessible_meta_predicate(C)).
+   set_predicate_property(:: /2, sys_meta_predicate(C)).
 :- special(:: /2, 'SpecialQuali', 4).
 :- set_predicate_property(:: /2, sys_notrace).
 
@@ -122,8 +128,9 @@
 :- virtual : /3.
 :- set_predicate_property(: /3, (meta_predicate:(?,1,?))).
 :- sys_get_context(here, C),
-   set_predicate_property(: /3, sys_accessible_meta_predicate(C)).
+   set_predicate_property(: /3, sys_meta_predicate(C)).
 :- special(: /3, 'EvaluableQuali', 0).
+:- set_predicate_property(: /3, sys_notrace).
 
 /**
  * R::E:
@@ -136,12 +143,153 @@
 :- virtual :: /3.
 :- set_predicate_property(:: /3, (meta_predicate::(?,::(1),?))).
 :- sys_get_context(here, C),
-   set_predicate_property(:: /3, sys_accessible_meta_predicate(C)).
+   set_predicate_property(:: /3, sys_meta_predicate(C)).
 :- special(:: /3, 'EvaluableQuali', 1).
+:- set_predicate_property(:: /3, sys_notrace).
 
-/*******************************************************/
-/* External Univ Predicates                            */
-/*******************************************************/
+/******************************************************************/
+/* External Test Predicates                                       */
+/******************************************************************/
+
+/**
+ * sys_callable(T):
+ * Check whether T is a colon with zero place holders.
+ */
+% sys_callable(+Term)
+:- public sys_callable/1.
+sys_callable(P) :-
+   sys_type_goal(P, N),
+   N = 0.
+
+/**
+ * sys_var(T):
+ * Check whether T is a colon with non-zero place holders.
+ */
+% sys_var(+Goal)
+:- public sys_var/1.
+sys_var(P) :-
+   sys_type_goal(P, N),
+   N \= 0.
+
+/**
+ * sys_type_goal(T, N):
+ * Check whether T is a colon notation with N place holders.
+ */
+% sys_type_goal(+Term, -Integer)
+:- private sys_type_goal/2.
+sys_type_goal(S, 1) :-
+   var(S), !.
+sys_type_goal(S:T, O) :- !,
+   sys_type_module(S, M),
+   sys_type_goal(T, N),
+   O is M+N.
+sys_type_goal(S::T, O) :- !,
+   sys_type_receiver(S, M),
+   sys_type_goal(T, N),
+   O is M+N.
+sys_type_goal(S, 0) :-
+   callable(S).
+
+/**
+ * sys_type_receiver(T, N):
+ * Check whether T is a receiver with N place holders.
+ */
+% sys_type_receiver(+Term, -Integer)
+:- private sys_type_receiver/2.
+sys_type_receiver(S, 1) :-
+   var(S), !.
+sys_type_receiver(S, 0) :-
+   reference(S), !.
+sys_type_receiver(S/T, O) :- !,
+   sys_type_package(S, M),
+   sys_type_callable(T, N),
+   O is M+N.
+sys_type_receiver(S, 0) :-
+   callable(S).
+
+/******************************************************************/
+/* Internal Test Predicates                                       */
+/******************************************************************/
+
+/**
+ * sys_type_module(T, N):
+ * Check whether T is a module with N place holders.
+ * See pred.p for syntax.
+ */
+% sys_type_module(+Term, -Integer)
+:- private sys_type_module/2.
+sys_type_module(S, 1) :-
+   var(S), !.
+sys_type_module(S, 0) :-
+   reference(S), !.
+sys_type_module(S/T, O) :- !,
+   sys_type_package(S, M),
+   sys_type_atom(T, N),
+   O is M+N.
+sys_type_module({S}, O) :- !,
+   sys_type_array(S, O).
+sys_type_module(S, 0) :-
+   atom(S).
+
+/**
+ * sys_type_array(T, N):
+ * Check whether T is a package with N place holders.
+ * See pred.p for syntax.
+ */
+% sys_type_array(+Term, -Integer)
+:- private sys_type_array/2.
+sys_type_array(S, 1) :-
+   var(S), !.
+sys_type_array(S/T, O) :- !,
+   sys_type_package(S, M),
+   sys_type_atom(T, N),
+   O is M+N.
+sys_type_array({S}, O) :- !,
+   sys_type_array(S, O).
+sys_type_array(S, 0) :-
+   atom(S).
+
+/**
+ * sys_type_package(T, N):
+ * Check whether T is a package with N place holders.
+ * See pred.p for syntax.
+ */
+% sys_type_package(+Term, -Integer)
+:- private sys_type_package/2.
+sys_type_package(S, 1) :-
+   var(S), !.
+sys_type_package(S/T, O) :- !,
+   sys_type_package(S, M),
+   sys_type_atom(T, N),
+   O is M+N.
+sys_type_package(S, 0) :-
+   atom(S).
+
+/**
+ * sys_type_callable(T, N):
+ * Check whether T is a callable with N place holders.
+ */
+% sys_type_callable(+Term, -Integer)
+:- private sys_type_callable/2.
+sys_type_callable(S, 1) :-
+   var(S), !.
+sys_type_callable(S, 0) :-
+   callable(S).
+
+/**
+ * sys_type_atom(T, N):
+ * Check whether T is an atom with N place holders.
+ */
+% sys_type_atom(+Term, -Integer)
+:- private sys_type_atom/2.
+sys_type_atom(S, 1) :-
+   var(S), !.
+sys_type_atom(S, 0) :-
+   atom(S).
+
+/******************************************************************/
+/* Improved Functor                                               */
+/******************************************************************/
 
 /**
  * sys_functor(T, F, A):
@@ -177,6 +325,10 @@ sys_functor2(J, A, K) :-
    sys_replace_site(K, J, M:T).
 sys_functor2(F, A, T) :-
    functor(T, F, A).
+
+/******************************************************************/
+/* Improved Univ                                                  */
+/******************************************************************/
 
 /**
  * sys_univ(T, [F|L]):
@@ -214,121 +366,3 @@ sys_univ2([J|L], K) :-
    sys_replace_site(K, J, M::T).
 sys_univ2(U, T) :-
    T =.. U.
-
-/*******************************************************/
-/* External Test Predicates                            */
-/*******************************************************/
-
-/**
- * sys_callable(T):
- * Check whether T is a colon with zero place holders.
- */
-% sys_callable(+Term)
-:- public sys_callable/1.
-sys_callable(P) :-
-   sys_type_colon(P, N),
-   N = 0.
-
-/**
- * sys_var(T):
- * Check whether T is a colon with non-zero place holders.
- */
-% sys_var(+Goal)
-:- public sys_var/1.
-sys_var(P) :-
-   sys_type_colon(P, N),
-   N \= 0.
-
-/**
- * sys_type_colon(T, N):
- * Check whether T is a colon notation with N place holders.
- */
-% sys_type_colon(+Term, -Integer)
-:- private sys_type_colon/2.
-sys_type_colon(S, 1) :-
-   var(S), !.
-sys_type_colon(S:T, O) :- !,
-   sys_type_module(S, M),
-   sys_type_colon(T, N),
-   O is M+N.
-sys_type_colon(S::T, O) :- !,
-   sys_type_receiver(S, M),
-   sys_type_colon(T, N),
-   O is M+N.
-sys_type_colon(S, 0) :-
-   callable(S).
-
-/*******************************************************/
-/* Internal Test Predicates                            */
-/*******************************************************/
-
-/**
- * sys_type_module(T, N):
- * Check whether T is a module with N place holders.
- */
-% sys_type_module(+Term, -Integer)
-:- private sys_type_module/2.
-sys_type_module(S, 1) :-
-   var(S), !.
-sys_type_module(S, 0) :-
-   reference(S), !.
-sys_type_module(S/T, O) :- !,
-   sys_type_package(S, M),
-   sys_type_atom(T, N),
-   O is M+N.
-sys_type_module(S, 0) :-
-   atom(S).
-
-/**
- * sys_type_receiver(T, N):
- * Check whether T is a receiver with N place holders.
- */
-% sys_type_receiver(+Term, -Integer)
-:- private sys_type_receiver/2.
-sys_type_receiver(S, 1) :-
-   var(S), !.
-sys_type_receiver(S, 0) :-
-   reference(S), !.
-sys_type_receiver(S/T, O) :- !,
-   sys_type_package(S, M),
-   sys_type_callable(T, N),
-   O is M+N.
-sys_type_receiver(S, 0) :-
-   callable(S).
-
-/**
- * sys_type_package(T, N):
- * Check whether T is a package with N place holders.
- */
-% sys_type_package(+Term, -Integer)
-:- private sys_type_package/2.
-sys_type_package(S, 1) :-
-   var(S), !.
-sys_type_package(S/T, O) :- !,
-   sys_type_package(S, M),
-   sys_type_atom(T, N),
-   O is M+N.
-sys_type_package(S, 0) :-
-   atom(S).
-
-/**
- * sys_type_callable(T, N):
- * Check whether T is a callable with N place holders.
- */
-% sys_type_callable(+Term, -Integer)
-:- private sys_type_callable/2.
-sys_type_callable(S, 1) :-
-   var(S), !.
-sys_type_callable(S, 0) :-
-   callable(S).
-
-/**
- * sys_type_atom(T, N):
- * Check whether T is an atom with N place holders.
- */
-% sys_type_atom(+Term, -Integer)
-:- private sys_type_atom/2.
-sys_type_atom(S, 1) :-
-   var(S), !.
-sys_type_atom(S, 0) :-
-   atom(S).

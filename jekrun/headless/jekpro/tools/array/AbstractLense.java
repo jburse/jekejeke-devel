@@ -6,7 +6,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
@@ -296,21 +295,20 @@ public abstract class AbstractLense extends AbstractDelegate {
     /**
      * <p>Shrink this predicate from the store for a source.</p>
      *
-     * @param pick   The predicate.
-     * @param source The source.
-     * @param store  The store.
+     * @param pick  The predicate.
+     * @param scope The source.
      */
-    public final void shrinkPredicate(Predicate pick, AbstractSource source,
-                                      AbstractStore store) {
+    public final void shrinkPredicate(Predicate pick, AbstractSource scope) {
+        /* do noting */
     }
 
     /**
      * <p>Release this predicate from the store.</p>
      *
-     * @param pick  The predicate.
-     * @param store The store.
+     * @param pick The predicate.
      */
-    public final void releasePredicate(Predicate pick, AbstractStore store) {
+    public final void releasePredicate(Predicate pick) {
+        /* do noting */
     }
 
     /******************************************************************/

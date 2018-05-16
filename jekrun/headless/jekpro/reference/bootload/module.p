@@ -339,7 +339,7 @@ sys_public(I) :-
    set_predicate_property(I, visible(public)),
    sys_make_indicator(F, _, I),
    sys_get_context(F, C),
-   set_predicate_property(I, sys_accessible_public(C)).
+   set_predicate_property(I, sys_public(C)).
 :- set_predicate_property(sys_public/1, visible(private)).
 
 /**
@@ -387,10 +387,10 @@ sys_override(I) :-
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((public D), I) :-
    sys_declaration_indicator(D, I).
 sys_declaration_indicator((private D), I) :-

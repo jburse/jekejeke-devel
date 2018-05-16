@@ -115,22 +115,34 @@ prolog :- break.
 :- set_predicate_property(break/0, sys_notrace).
 
 /***********************************************************/
-/* Display Answer Constraints                              */
+/* Display Variable Instantiations & Constraints           */
 /***********************************************************/
 
 /**
  * sys_show_vars:
- * Will show all constraints related to the current query.
- * Called by the interpreter for each successful query.
+ * Will show all variable instantiations and constraints related to
+ * the current query or directive. Called by the interpreter for
+ * each successful query.
  */
 % sys_show_vars
 :- public sys_show_vars/0.
 sys_show_vars :-
-   sys_get_raw_variables(N),
-   sys_term_eq_list(N, L),
-   sys_filter_variable_names(N, L, R),
+   sys_get_name_or_eq_list(R),
    sys_show_name_or_eq_list(R).
 :- set_predicate_property(sys_show_vars/0, sys_notrace).
+
+/**
+ * sys_get_name_or_eq_list(R):
+ * Will retrieve all variable instantiations and constraints related
+ * to the current query or directive. Called by the interpreter for
+ * notebook queries.
+ */
+% sys_get_name_or_eq_list(-List)
+:- public sys_get_name_or_eq_list/1.
+sys_get_name_or_eq_list(R) :-
+   sys_get_raw_variables(N),
+   sys_term_eq_list(N, L),
+   sys_filter_variable_names(N, L, R).
 
 /**
  * sys_filter_variable_names(L, R, S):
@@ -157,7 +169,7 @@ sys_filter_variable_names([], L, L).
  * Shows the variable assignments and constraints from L on the tty.
  */
 % sys_show_name_or_eq_list(+List)
-:- private sys_show_name_or_eq_list/1.
+:- public sys_show_name_or_eq_list/1.
 sys_show_name_or_eq_list([]) :-
    sys_get_lang(runtime, P),
    get_property(P, 'query.yes', V),
@@ -168,6 +180,17 @@ sys_show_name_or_eq_list([X,Y|Z]) :- !,
    sys_show_name_or_eq_list([Y|Z]).
 sys_show_name_or_eq_list([X]) :-
    sys_show_name_or_eq(X).
+
+/**
+ * sys_show_no:
+ * Shows a no on the tty.
+ */
+% sys_show_no
+:- public sys_show_no/0.
+sys_show_no :-
+   sys_get_lang(runtime, P),
+   get_property(P, 'query.no', V),
+   ttywrite(V).
 
 /**
  * sys_show_name_or_eq(E):

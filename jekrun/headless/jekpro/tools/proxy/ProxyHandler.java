@@ -125,7 +125,7 @@ final class ProxyHandler implements InterfaceHandler {
      */
     private AbstractExecutor findExecutor(Method method) {
         AbstractExecutor exe;
-        synchronized (execs) {
+        synchronized (this) {
             exe = execs.get(method);
             if (exe != null)
                 return exe;

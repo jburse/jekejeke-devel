@@ -31,6 +31,13 @@
  * properties can be accessed and modified via the predicates oper_property/2,
  * set_oper_property/2 and reset_oper_property/2.
  *
+ * oper    --> "prefix(" name ")"
+ *           | "postfix(" name ")"
+ *           | "infix(" name ")".
+ *
+ * name    --> module ":" name
+ *           | atom.
+ *
  * A first set of operator properties deals with the visibility of the
  * operator. These are the properties system/0, full_name/1 and private/0.
  * Pretty printing is done by controlling the indentation of operators
@@ -216,10 +223,10 @@ oper_property(I, R) :-
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator(op(_,M,_), _) :-
    var(M),
    throw(error(instantiation_error,_)).

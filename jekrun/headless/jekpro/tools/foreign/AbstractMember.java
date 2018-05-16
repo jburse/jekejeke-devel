@@ -81,8 +81,16 @@ abstract class AbstractMember extends AbstractLense
         s = 0;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
             s += Score.getScore(encodeobj, getDeclaringClass());
-        for (int i = 0; i < encodeparas.length; i++)
-            s += Score.getScore(encodeparas[i], paras[i]);
+        for (int i = 0; i < encodeparas.length; i++) {
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_INTERPRETER) {
+                /* do nothing */
+            } else if (typ == Types.TYPE_CALLOUT) {
+                /* do nothing */
+            } else {
+                s += Score.getScore(typ, paras[i]);
+            }
+        }
         scores = s;
         return s;
     }

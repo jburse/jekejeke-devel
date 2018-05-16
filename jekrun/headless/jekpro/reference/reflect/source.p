@@ -69,19 +69,16 @@
  */
 % current_source(-+Pin)
 :- static current_source/1.
-:- set_predicate_property(current_source/1, sys_nostack).
 current_source(X) :-
    ground(X), !,
    sys_current_source_chk(X).
 current_source(X) :-
-   sys_parent_goal(G),
-   sys_current_source_site(L, G),
-   sys_member(H, L),
-   sys_replace_site(X, G, H).
+   sys_current_source(L),
+   sys_member(X, L).
 :- set_predicate_property(current_source/1, visible(public)).
 
-:- special(sys_current_source_site/2, 'SpecialSource', 0).
-:- set_predicate_property(sys_current_source_site/2, visible(public)).
+:- special(sys_current_source/1, 'SpecialSource', 0).
+:- set_predicate_property(sys_current_source/1, visible(private)).
 
 :- special(sys_current_source_chk/1, 'SpecialSource', 1).
 :- set_predicate_property(sys_current_source_chk/1, visible(private)).
@@ -132,13 +129,10 @@ source_property(I, R) :-
  * The predicate succeeds for the user absolute resource paths S.
  */
 % current_resource(-+Pin)
-:- static current_resource/1.
-:- set_predicate_property(current_resource/1, sys_nostack).
 current_resource(X) :-
-   sys_parent_goal(P),
-   sys_current_resource_site(L, P),
+   sys_current_resource(L),
    sys_member(X, L).
 :- set_predicate_property(current_resource/1, visible(public)).
 
-:- special(sys_current_resource_site/2, 'SpecialSource', 6).
-:- set_predicate_property(sys_current_resource_site/2, visible(private)).
+:- special(sys_current_resource/1, 'SpecialSource', 6).
+:- set_predicate_property(sys_current_resource/1, visible(private)).

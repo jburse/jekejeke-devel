@@ -85,14 +85,15 @@ public abstract class AbstractRuntime {
      * @return The class, or null.
      */
     public static Class stringToClass(String name, ClassLoader cl) {
-        if (name.endsWith(JAVA_ARRAY)) {
-            name = name.substring(0, name.length() - JAVA_ARRAY.length());
+        int k = name.length();
+        if (name.startsWith(JAVA_ARRAY, k - JAVA_ARRAY.length())) {
+            k -= JAVA_ARRAY.length();
             int count = 1;
-            while (name.endsWith(JAVA_ARRAY)) {
-                name = name.substring(0, name.length() - JAVA_ARRAY.length());
+            while (name.startsWith(JAVA_ARRAY, k - JAVA_ARRAY.length())) {
+                k -= JAVA_ARRAY.length();
                 count++;
             }
-            Class clazz = stringToClassNonArray(name, cl);
+            Class clazz = stringToClassNonArray(name.substring(0, k), cl);
             while (count > 0 && clazz != null) {
                 Object o;
                 try {
@@ -136,13 +137,19 @@ public abstract class AbstractRuntime {
      */
     public static String classToString(Class clazz) {
         if (clazz.isArray()) {
-            String res = JAVA_ARRAY;
+            int count = 1;
             clazz = clazz.getComponentType();
             while (clazz.isArray()) {
-                res = JAVA_ARRAY + res;
+                count++;
                 clazz = clazz.getComponentType();
             }
-            return clazz.getName() + res;
+            StringBuilder buf = new StringBuilder();
+            buf.append(clazz.getName());
+            while (count > 0) {
+                buf.append(JAVA_ARRAY);
+                count--;
+            }
+            return buf.toString();
         } else {
             return clazz.getName();
         }

@@ -9,39 +9,35 @@
  * indicator --> module ":" indicator.
  *             | atom "/" integer
  *
- * module    --> reference
- *             | package "/" atom
+ * module    --> package "/" atom
+ *             | "{" array "}"
+ *             | reference
+ *             | atom.
+ *
+ * array     --> package "/" atom.
+ *             | "{" array "}"
  *             | atom.
  *
  * package   --> package "/" atom.
  *             | atom.
  *
- * Example:
+ * The name of a predicate is qualified when it starts with a module name
+ * separated by the colon (:) operator. Unqualified predicate names are
+ * extended by the module name of the Prolog text if the Prolog text has
+ * been elevated to a module, or by the module names of the corresponding
+ * public or package local predicates found in dependent modules.
+ *
+ * Examples:
  * call/1		            % is a predicate indicator
  * (=)/2			        % is a predicate indicator
  * basic/lists:member/2	    % is a predicate indicator
  *
- * The name of a predicate is qualified when it starts with a module name
- * separated by the colon (:) operator. Unqualified predicate names are
- * extended by the module name of the Prolog text if the Prolog text has
- * been elevated to a module. Unqualified predicate names are also extended
- * by the module name of a corresponding public or package local predicate
- * found in a dependent Prolog text that has been elevated to a module.
+ * The context of a clause is determined from the predicate name atom of
+ * the clause head. Context and pretty printing information of an atom
+ * can be accessed and modified by the predicates atom_property/2,
+ * set_atom_property/3 and reset_atom_property/3. A predicate without
+ * clauses can be declared via the directive static/1.
  *
- * The context of a clause is determined from the functor of the head. When
- * accessing clauses the current query context is matched with the clause
- * context according to the below accessibility relation. Clauses that
- * are not accessible will be invisible to clause/2 and retract/1. Context
- * and pretty printing information of an atom can be accessed and modified
- * by the predicates atom_property/2, set_atom_property/3 and
- * reset_atom_property/3:
- *
- * Table 14: Accessibility Relation
- * Context\Clause    User   System
- * User              Yes    No
- * System            Yes    Yes
- *
- * A predicate without clauses can be declared via the directive static/1.
  * The predicate current_predicate/1 succeeds for a predicate that is
  * visible in the current context. The different visibility parameters are
  * documented in the module system section. Properties of a predicate can be
@@ -207,10 +203,10 @@ predicate_property(I, R) :-
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((static I), I).
 
 /**

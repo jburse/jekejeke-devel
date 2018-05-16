@@ -3,11 +3,7 @@ package jekpro.model.builtin;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.PrologReader;
-import jekpro.model.pretty.ReadOpts;
-import jekpro.model.pretty.Store;
-import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.LoadOpts;
+import jekpro.model.pretty.*;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
@@ -126,31 +122,31 @@ public final class Flag extends AbstractFlag {
     public Object getFlag(Engine en) {
         switch (id) {
             case FLAG_SYS_CHOICE_POINT:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NCHC) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NCHC) == 0);
             case FLAG_SYS_BODY_VARIABLE:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NBDY) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NLST) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NLST) == 0);
             case FLAG_SYS_HEAD_VARIABLE:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NHED) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NHED) == 0);
             case FLAG_SYS_BODY_CONVERT:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NBCV) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_CEXP) != 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) != 0);
             case FLAG_SYS_CLAUSE_INDEX:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NIDX) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0);
             case FLAG_BOUNDED:
-                return new SkelAtom(Store.OP_FALSE);
+                return new SkelAtom(AbstractFlag.OP_FALSE);
             case FLAG_INTEGER_ROUNDING_FUNCTION:
                 return new SkelAtom(Branch.OP_VALUE_TOWARD_ZERO);
             case FLAG_CHAR_CONVERSION:
-                return en.store.switchToAtom(false);
+                return AbstractFlag.switchToAtom(false);
             case FLAG_MAX_ARITY:
                 return Integer.valueOf(Integer.MAX_VALUE);
             case FLAG_DOUBLE_QUOTES:
-                return PrologReader.utilToAtom(en.store.getUtilDouble());
+                return PrologReader.utilToAtom(en.store.foyer.getUtilDouble());
             case FLAG_BACK_QUOTES:
-                return PrologReader.utilToAtom(en.store.getUtilBack());
+                return PrologReader.utilToAtom(en.store.foyer.getUtilBack());
             case FLAG_MAX_CODE:
                 return Integer.valueOf(Character.MAX_CODE_POINT);
             case FLAG_SYS_BREAK_LEVEL:
@@ -158,26 +154,26 @@ public final class Flag extends AbstractFlag {
             case FLAG_SYS_LAST_PRED:
                 StoreKey sk = en.visor.lastsk;
                 if (sk == null) {
-                    return new SkelAtom(Store.OP_NULL);
+                    return new SkelAtom(AbstractFlag.OP_NULL);
                 } else {
                     return StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity());
                 }
             case FLAG_SYS_ACT_STATUS:
-                return new SkelAtom(en.store.getError());
+                return new SkelAtom(en.store.foyer.getError());
             case FLAG_SINGLE_QUOTES:
-                return PrologReader.utilToAtom(en.store.getUtilSingle());
+                return PrologReader.utilToAtom(en.store.foyer.getUtilSingle());
             case FLAG_SYS_VARIABLES:
                 return Integer.valueOf(en.serno);
             case FLAG_SYS_CHOICES:
                 return Integer.valueOf(en.number);
             case FLAG_DIALECT:
-                AbstractBranch branch = en.store.getFactory().getBrandBranch();
-                Properties descr = branch.getDescriptionLang(en.store.getLocale());
+                AbstractBranch branch = en.store.foyer.getFactory().getBrandBranch();
+                Properties descr = branch.getDescriptionLang(en.store.foyer.locale);
                 String family = descr.getProperty("family");
                 return new SkelAtom(family);
             case FLAG_VERSION_DATA:
-                branch = en.store.getFactory().getBrandBranch();
-                descr = branch.getDescriptionLang(en.store.getLocale());
+                branch = en.store.foyer.getFactory().getBrandBranch();
+                descr = branch.getDescriptionLang(en.store.foyer.locale);
                 String release = descr.getProperty("release");
                 ListArray<Object> list = new ListArray<Object>();
                 int k1 = 0;
@@ -195,9 +191,9 @@ public final class Flag extends AbstractFlag {
                 family = descr.getProperty("family");
                 return new SkelCompound(new SkelAtom(family), args);
             case FLAG_SYS_RANDOM:
-                return en.store.random;
+                return en.store.foyer.random;
             case FLAG_SYS_TIMEOUT:
-                return TermAtomic.normBigInteger(en.store.timeout);
+                return TermAtomic.normBigInteger(en.store.foyer.timeout);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -215,52 +211,52 @@ public final class Flag extends AbstractFlag {
     public boolean setFlag(Object m, Display d, Engine en) throws EngineMessage {
         switch (id) {
             case FLAG_SYS_CHOICE_POINT:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NCHC);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NCHC);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NCHC);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NCHC);
                 }
                 return true;
             case FLAG_SYS_BODY_VARIABLE:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NBDY);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NBDY);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NBDY);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NBDY);
                 }
                 return true;
             case FLAG_SYS_STACK_FRAME:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NLST);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NLST);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NLST);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NLST);
                 }
                 return true;
             case FLAG_SYS_HEAD_VARIABLE:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NHED);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NHED);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NHED);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NHED);
                 }
                 return true;
             case FLAG_SYS_BODY_CONVERT:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NBCV);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NBCV);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NBCV);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NBCV);
                 }
                 return true;
             case FLAG_SYS_CLAUSE_EXPAND:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.setBit(Store.MASK_STORE_CEXP);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.setBit(Foyer.MASK_STORE_CEXP);
                 } else {
-                    en.store.resetBit(Store.MASK_STORE_CEXP);
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_CEXP);
                 }
                 return true;
             case FLAG_SYS_CLAUSE_INDEX:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NIDX);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NIDX);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NIDX);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NIDX);
                 }
                 return true;
             case FLAG_BOUNDED:
@@ -276,10 +272,10 @@ public final class Flag extends AbstractFlag {
                 /* can't modify */
                 return false;
             case FLAG_DOUBLE_QUOTES:
-                en.store.setUtilDouble(ReadOpts.atomToUtil(m, d, en));
+                en.store.foyer.setUtilDouble(ReadOpts.atomToUtil(m, d, en));
                 return true;
             case FLAG_BACK_QUOTES:
-                en.store.setUtilBack(ReadOpts.atomToUtil(m, d, en));
+                en.store.foyer.setUtilBack(ReadOpts.atomToUtil(m, d, en));
                 return true;
             case FLAG_MAX_CODE:
                 /* can't modify */
@@ -292,7 +288,7 @@ public final class Flag extends AbstractFlag {
                 en.display = d;
                 en.deref();
                 if (en.skel instanceof SkelAtom &&
-                        (Store.OP_NULL.equals(((SkelAtom) en.skel).fun))) {
+                        (AbstractFlag.OP_NULL.equals(((SkelAtom) en.skel).fun))) {
                     en.visor.lastsk = null;
                 } else {
                     en.visor.lastsk = StoreKey.propToStoreKey(m, d, en);
@@ -302,7 +298,7 @@ public final class Flag extends AbstractFlag {
                 /* can't modify */
                 return false;
             case FLAG_SINGLE_QUOTES:
-                en.store.setUtilSingle(ReadOpts.atomToUtil(m, d, en));
+                en.store.foyer.setUtilSingle(ReadOpts.atomToUtil(m, d, en));
                 return true;
             case FLAG_SYS_VARIABLES:
                 /* can't modify */
@@ -321,7 +317,7 @@ public final class Flag extends AbstractFlag {
                 en.display = d;
                 en.deref();
                 if (en.skel instanceof Random) {
-                    en.store.random = (Random) en.skel;
+                    en.store.foyer.random = (Random) en.skel;
                 } else {
                     EngineMessage.checkInstantiated(en.skel);
                     EngineMessage.checkRef(en.skel, en.display);
@@ -335,7 +331,7 @@ public final class Flag extends AbstractFlag {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
-                en.store.timeout = EngineMessage.castLongValue(num);
+                en.store.foyer.timeout = EngineMessage.castLongValue(num);
                 return true;
             default:
                 throw new IllegalArgumentException("illegal flag");

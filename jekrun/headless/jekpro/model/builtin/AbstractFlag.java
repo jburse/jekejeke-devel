@@ -1,8 +1,11 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelVar;
 
 /**
  * <p>Abstract class for toolkit and capability flags.</p>
@@ -31,6 +34,11 @@ import jekpro.model.molec.EngineMessage;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractFlag {
+    public final static String OP_ON = "on";
+    public final static String OP_OFF = "off";
+    public final static String OP_FALSE = "false";
+    public final static String OP_NULL = "null";
+
     protected final int id;
 
     /**
@@ -61,5 +69,52 @@ public abstract class AbstractFlag {
      */
     public abstract boolean setFlag(Object m, Display d, Engine en)
             throws EngineMessage;
+
+    /************************************************************/
+    /* On & Off Atom                                            */
+    /************************************************************/
+
+    /**
+     * <p>Convert an atom to a switch. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param m The switch skel.
+     * @param d The switch display.
+     * @return The switch value.
+     * @throws EngineMessage Shit happens.
+     */
+    public static boolean atomToSwitch(Object m, Display d)
+            throws EngineMessage {
+        BindVar b1;
+        while (m instanceof SkelVar &&
+                (b1 = d.bind[((SkelVar) m).id]).display != null) {
+            m = b1.skel;
+            d = b1.display;
+        }
+        EngineMessage.checkInstantiated(m);
+        String fun = EngineMessage.castString(m, d);
+        if (fun.equals(OP_ON)) {
+            return true;
+        } else if (fun.equals(OP_OFF)) {
+            return false;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+
+    /**
+     * <p>Convert a switch to an atom.</p>
+     * <p>A switch has the following syntax:</p>
+     * <pre>
+     *      switch = "on" | "off".
+     * </pre>
+     *
+     * @param s The switch value.
+     * @return The switch skel.
+     */
+    public static SkelAtom switchToAtom(boolean s) {
+        return new SkelAtom(s ? OP_ON : OP_OFF);
+    }
 
 }

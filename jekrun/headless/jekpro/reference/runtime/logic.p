@@ -47,8 +47,13 @@
 
 :- module(user, []).
 
-:- public prefix(?-).
-:- op(1200, fx, ?-).
+% already defined in special.p
+% :- public prefix(:-).
+% :- op(1200, fx, :-).
+
+% already defined in special.p
+% :- public infix(:-).
+% :- op(1200, xfy, :-).
 
 :- public infix('|').
 :- op(1105, xfy, '|').
@@ -62,6 +67,11 @@
 
 :- public infix(*->).
 :- op(1050, xfy, *->).
+
+% already defined in special.p
+% :- public infix(',').
+% :- op(1000, xfy, ',').
+% :- set_oper_property(infix(','), nspl).
 
 :- public prefix(\+).
 :- op(900, fy, \+).

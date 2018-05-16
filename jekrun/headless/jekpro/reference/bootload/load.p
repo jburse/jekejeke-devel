@@ -143,7 +143,9 @@ unload_file(Path) :-
  */
 % make
 make :-
-   sys_load_file(user, [condition(on)]).
+   sys_get_context(here, C),
+   reset_atom_property(user, sys_context(C), X),
+   sys_load_file(X, [condition(on)]).
 :- set_predicate_property(make/0, visible(public)).
 
 /**
@@ -152,7 +154,9 @@ make :-
  */
 % rebuild
 rebuild :-
-   sys_load_file(user, []).
+   sys_get_context(here, C),
+   reset_atom_property(user, sys_context(C), X),
+   sys_load_file(X, []).
 :- set_predicate_property(rebuild/0, visible(public)).
 
 /**
@@ -268,9 +272,9 @@ sys_multifile(I) :-
 sys_multifile(I) :-
    sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
+   set_predicate_property(I, multifile),
    sys_get_context(J, C),
-   set_predicate_property(I, sys_accessible_multifile(C)),
-   set_predicate_property(I, multifile).
+   set_predicate_property(I, sys_multifile(C)).
 :- set_predicate_property(sys_multifile/1, visible(private)).
 
 % first defined in special.p
@@ -278,10 +282,10 @@ sys_multifile(I) :-
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((discontiguous D), I) :-
    sys_declaration_indicator(D, I).
 sys_declaration_indicator((multifile D), I) :-
@@ -313,11 +317,13 @@ listing :-
 listing(I) :-
    ground(I),
    sys_listing_check(I, U),
+   sys_listing_user(U),
    sys_show_base(U),
    sys_listing_show(I, U), fail.
 listing(I) :-
    sys_not(ground(I)),
-   bagof(I, sys_listing_match(I, U), B),
+   bagof(I, (  sys_listing_match(I, U),
+               sys_listing_user(U)), B),
    sys_show_base(U),
    sys_member(I, B),
    sys_listing_show(I, U), fail.
@@ -325,29 +331,35 @@ listing(_).
 :- set_predicate_property(listing/1, visible(public)).
 :- set_predicate_property(listing/1, sys_notrace).
 
+% sys_listing_user(+Source)
+sys_listing_user(U) :-
+   source_property(U, sys_capability(_)), !, fail.
+sys_listing_user(_).
+:- set_predicate_property(sys_listing_user/1, visible(public)).
+
 % sys_listing_check(+Indicator, -Source)
 sys_listing_check(infix(I), U) :- !,
-   sys_syntax_property_chk(infix(I), sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_syntax_property_chk(infix(I), sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 sys_listing_check(prefix(I), U) :- !,
-   sys_syntax_property_chk(prefix(I), sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_syntax_property_chk(prefix(I), sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 sys_listing_check(postfix(I), U) :- !,
-   sys_syntax_property_chk(postfix(I), sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_syntax_property_chk(postfix(I), sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 sys_listing_check(I, U) :-
    sys_provable_property_chk(I, automatic/0, []),
-   sys_provable_property_chk(I, sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_provable_property_chk(I, sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 :- set_predicate_property(sys_listing_check/2, visible(private)).
 
 % sys_listing_show(+Indicator, +Source)
-sys_listing_show(infix(I), _) :- !,
-   sys_show_syntax(infix(I)).
-sys_listing_show(prefix(I), _) :- !,
-   sys_show_syntax(prefix(I)).
-sys_listing_show(postfix(I), _) :- !,
-   sys_show_syntax(postfix(I)).
+sys_listing_show(infix(I), U) :- !,
+   sys_show_syntax_source(infix(I), U).
+sys_listing_show(prefix(I), U) :- !,
+   sys_show_syntax_source(prefix(I), U).
+sys_listing_show(postfix(I), U) :- !,
+   sys_show_syntax_source(postfix(I), U).
 sys_listing_show(I, U) :-
    sys_show_provable_source(I, U).
 :- set_predicate_property(sys_listing_show/2, visible(private)).
@@ -356,33 +368,32 @@ sys_listing_show(I, U) :-
 sys_listing_match(infix(I), U) :-
    sys_current_syntax(L),
    sys_member(infix(I), L),
-   sys_syntax_property_chk(infix(I), sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_syntax_property_chk(infix(I), sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 sys_listing_match(prefix(I), U) :-
    sys_current_syntax(L),
    sys_member(prefix(I), L),
-   sys_syntax_property_chk(prefix(I), sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_syntax_property_chk(prefix(I), sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 sys_listing_match(postfix(I), U) :-
    sys_current_syntax(L),
    sys_member(postfix(I), L),
-   sys_syntax_property_chk(postfix(I), sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_syntax_property_chk(postfix(I), sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 sys_listing_match(I, U) :-
    sys_current_provable(L),
    sys_member(I, L),
    sys_provable_property_chk(I, automatic/0, []),
-   sys_provable_property_chk(I, sys_accessible_usage/1, R),
-   sys_member(sys_accessible_usage(U), R).
+   sys_provable_property_chk(I, sys_usage/1, R),
+   sys_member(sys_usage(U), R).
 :- set_predicate_property(sys_listing_match/2, visible(private)).
 
 % also used by automatic.p in debugger
 :- special(sys_show_provable_source/2, 'SpecialLoad', 3).
 :- set_predicate_property(sys_show_provable_source/2, visible(public)).
 
-% also used by automatic.p in debugger
-:- special(sys_show_syntax/1, 'SpecialLoad', 4).
-:- set_predicate_property(sys_show_syntax/1, visible(public)).
+:- special(sys_show_syntax_source/2, 'SpecialLoad', 4).
+:- set_predicate_property(sys_show_syntax_source/2, visible(public)).
 
 % also used by automatic.p in debugger
 :- special(sys_show_base/1, 'SpecialLoad', 5).

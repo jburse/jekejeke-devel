@@ -81,7 +81,7 @@
 :- public is/2.
 :- set_predicate_property(is/2, (meta_predicate?is#(1))).
 :- sys_get_context(here, C),
-   set_predicate_property(is/2, sys_accessible_meta_predicate(C)).
+   set_predicate_property(is/2, sys_meta_predicate(C)).
 :- special(is/2, 'SpecialEval', 0).
 
 /**
