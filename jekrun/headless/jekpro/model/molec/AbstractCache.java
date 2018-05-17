@@ -1,4 +1,4 @@
-package jekpro.tools.term;
+package jekpro.model.molec;
 
 /**
  * <p>The base class for the polymorphic cache.</p>

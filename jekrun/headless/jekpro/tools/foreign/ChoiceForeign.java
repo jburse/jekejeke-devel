@@ -45,7 +45,7 @@ final class ChoiceForeign extends CallOut {
     private MemberMethodNondet del;
     private Object obj;
     private Object[] args;
-    private Bind mark;
+    private AbstractBind mark;
 
     /**
      * <p>Creata choice foreign.</p>
@@ -88,7 +88,7 @@ final class ChoiceForeign extends CallOut {
      *
      * @param m The mark.
      */
-    public void setMark(Bind m) {
+    public void setMark(AbstractBind m) {
         mark = m;
     }
 

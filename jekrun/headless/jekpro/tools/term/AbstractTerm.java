@@ -4,8 +4,6 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.rope.Intermediate;
-import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
@@ -193,7 +191,7 @@ public abstract class AbstractTerm {
      * @param inter The interpreter.
      * @return The current bind.
      */
-    public static Bind markBind(Interpreter inter) {
+    public static AbstractBind markBind(Interpreter inter) {
         Engine en = (Engine) inter.getEngine();
         return en.bind;
     }
@@ -239,7 +237,7 @@ public abstract class AbstractTerm {
      * @param mark  The marked bind.
      * @throws InterpreterException Shit happens.
      */
-    public static void releaseBind(Interpreter inter, Bind mark)
+    public static void releaseBind(Interpreter inter, AbstractBind mark)
             throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);

@@ -18,13 +18,31 @@ import jekpro.tools.term.SkelVar;
 
 /**
  * <p>Provides built-in predicates for the module colon.</p>
- *
- * @author Copyright 2014-2018, XLOG Technologies GmbH, Switzerland
- * @version Jekejeke Prolog 0.9.2 (a fast and small prolog interpreter)
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialQuali extends AbstractSpecial {
-    public static final char OP_CHAR_SEG = '.';
-    public static final char OP_CHAR_SEP = '\b';
     public final static String OP_COLON = ":";
     public final static String OP_COLONCOLON = "::";
 
@@ -332,17 +350,17 @@ public final class SpecialQuali extends AbstractSpecial {
             throws EngineMessage {
         /* shorten module name */
         AbstractSource src = (scope != null ? scope : en.store.user);
-        fun = fun.replace(SpecialQuali.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+        fun = fun.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
         fun = Engine.unfindPrefix(fun, src, ForeignPath.MASK_MODL_AUTO);
-        fun = fun.replace(SourceLocal.OP_CHAR_OS, SpecialQuali.OP_CHAR_SEG);
+        fun = fun.replace(SourceLocal.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
 
-        if (SpecialQuali.isArray(fun)) {
-            Object t = packageToSlashSkel(sepComp(fun));
+        if (CachePackage.isArray(fun)) {
+            Object t = packageToSlashSkel(CachePackage.sepComp(fun));
             SkelAtom sa2 = new SkelAtom(PrologReader.OP_SET, src);
             return new SkelCompound(sa2, t);
-        } else if (SpecialQuali.isStruct(fun)) {
-            Object t = packageToSlashSkel(sepPack(fun));
-            SkelAtom s = new SkelAtom(sepBase(fun));
+        } else if (CachePackage.isStruct(fun)) {
+            Object t = packageToSlashSkel(CachePackage.sepPack(fun));
+            SkelAtom s = new SkelAtom(CachePackage.sepBase(fun));
             SkelAtom sa2 = new SkelAtom(Foyer.OP_SLASH, src);
             return new SkelCompound(sa2, t, s);
         } else {
@@ -357,13 +375,13 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The skeleton.
      */
     public static Object packageToSlashSkel(String fun) {
-        if (isArray(fun)) {
-            Object t = packageToSlashSkel(sepComp(fun));
+        if (CachePackage.isArray(fun)) {
+            Object t = packageToSlashSkel(CachePackage.sepComp(fun));
             SkelAtom sa2 = new SkelAtom(PrologReader.OP_SET);
             return new SkelCompound(sa2, t);
-        } else if (isStruct(fun)) {
-            Object t = packageToSlashSkel(sepPack(fun));
-            Object s = new SkelAtom(sepBase(fun));
+        } else if (CachePackage.isStruct(fun)) {
+            Object t = packageToSlashSkel(CachePackage.sepPack(fun));
+            Object s = new SkelAtom(CachePackage.sepBase(fun));
             SkelAtom sa2=new SkelAtom(Foyer.OP_SLASH);
             return new SkelCompound(sa2, t, s);
         } else {
@@ -501,10 +519,10 @@ public final class SpecialQuali extends AbstractSpecial {
         if (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
             SkelAtom sa = sc.sym;
-            if (SpecialQuali.isQuali(sa.fun)) {
-                t = moduleToSlashSkel(sepModule(sa.fun), sa.scope, en);
+            if (CacheFunctor.isQuali(sa.fun)) {
+                t = moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
                 Object s = new SkelCompound(
-                        new SkelAtom(sepName(sa.fun)),
+                        new SkelAtom(CacheFunctor.sepName(sa.fun)),
                         sc.args, sc.vars);
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
@@ -516,9 +534,9 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         } else if (t instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) t;
-            if (SpecialQuali.isQuali(sa.fun)) {
-                t = moduleToSlashSkel(sepModule(sa.fun), sa.scope, en);
-                Object s = new SkelAtom(sepName(sa.fun));
+            if (CacheFunctor.isQuali(sa.fun)) {
+                t = moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
+                Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
                 SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
@@ -550,10 +568,13 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The length.
      * @throws EngineMessage The indicator is not wellformed.
      */
-    public static Integer colonToIndicator(Engine en)
+    public static Integer colonToIndicator(Object t, Display d, Engine en)
             throws EngineMessage {
-        Object t = en.skel;
-        Display d = en.display;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        t = en.skel;
+        d = en.display;
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
@@ -571,11 +592,8 @@ public final class SpecialQuali extends AbstractSpecial {
             } else {
                 fun = ((SkelAtom) obj).fun;
             }
-            en.skel = temp.args[1];
-            en.display = d;
-            en.deref();
-            Integer arity = SpecialQuali.colonToIndicator(en);
-            SkelAtom sa = ((SkelAtom) en.skel);
+            Integer arity = SpecialQuali.colonToIndicator(temp.args[1], d, en);
+            SkelAtom sa = (SkelAtom) en.skel;
             en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
             return arity;
         } else if (t instanceof SkelCompound &&
@@ -615,14 +633,14 @@ public final class SpecialQuali extends AbstractSpecial {
                                               Engine en)
             throws EngineMessage {
         Object s;
-        if (isQuali(sa.fun)) {
-            s = moduleToSlashSkel(sepModule(sa.fun), sa.scope, en);
+        if (CacheFunctor.isQuali(sa.fun)) {
+            s = moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
             sa2.setPosition(sa.getPosition());
 
             Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
-                    new SkelAtom(sepName(sa.fun)),
+                    new SkelAtom(CacheFunctor.sepName(sa.fun)),
                     Integer.valueOf(arity));
             s = new SkelCompound(sa2, s, t);
         } else {
@@ -663,143 +681,8 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return True if representation is nest, otherwise false.
      */
     public static boolean isNest(String path) {
-        int k = path.lastIndexOf(OP_CHAR_SEG);
+        int k = path.lastIndexOf(CachePackage.OP_CHAR_SEG);
         return (path.indexOf(SourceLocal.OP_CHAR_SYN, k + 1) != -1);
-    }
-
-    /***************************************************************/
-    /* Structured Paths                                            */
-    /***************************************************************/
-
-    /**
-     * <p>Separate the package from the structured path.</p>
-     *
-     * @param path The structured path.
-     * @return The package.
-     */
-    public static String sepPack(String path) {
-        return path.substring(0, path.lastIndexOf(OP_CHAR_SEG));
-    }
-
-    /**
-     * <p>Separate the base from the structured path.</p>
-     *
-     * @param path The structured path.
-     * @return The base.
-     */
-    public static String sepBase(String path) {
-        return path.substring(path.lastIndexOf(OP_CHAR_SEG) + 1);
-    }
-
-    /**
-     * <p>Check whether a path is structured.</p>
-     *
-     * @param path The path.
-     * @return True if the path is structured, otherwise false.
-     */
-    public static boolean isStruct(String path) {
-        return (path.lastIndexOf(OP_CHAR_SEG) != -1);
-    }
-
-    /**
-     * <p>Compose a structured path from a package and a base.</p>
-     *
-     * @param pack The package.
-     * @param base The base.
-     * @return The structured path.
-     */
-    public static String composeStruct(String pack, String base) {
-        StringBuilder buf = new StringBuilder();
-        buf.append(pack);
-        buf.append(OP_CHAR_SEG);
-        buf.append(base);
-        return buf.toString();
-    }
-
-    /***************************************************************/
-    /* Array Paths                                                 */
-    /***************************************************************/
-
-    /**
-     * <p>Separate the component from the array path.</p>
-     *
-     * @param path The array path.
-     * @return The component.
-     */
-    public static String sepComp(String path) {
-        return path.substring(0, path.length() - Foyer.OP_NIL.length());
-    }
-
-    /**
-     * <p>Check whether a path is an array.</p>
-     *
-     * @param path The path.
-     * @return True if the path is an array, otherwise false.
-     */
-    public static boolean isArray(String path) {
-        return path.endsWith(Foyer.OP_NIL);
-    }
-
-    /**
-     * <p>Compose an array path from a component.</p>
-     *
-     * @param comp The component.
-     * @return The array path.
-     */
-    public static String composeArray(String comp) {
-        StringBuilder buf = new StringBuilder();
-        buf.append(comp);
-        buf.append(Foyer.OP_NIL);
-        return buf.toString();
-    }
-
-    /***************************************************************/
-    /* Qualified Names                                             */
-    /***************************************************************/
-
-    /**
-     * <p>Separate the module name from the qualified name.</p>
-     *
-     * @param fun The qualified name.
-     * @return The module name.
-     */
-    public static String sepModule(String fun) {
-        return fun.substring(0, fun.lastIndexOf(OP_CHAR_SEP));
-    }
-
-    /**
-     * <p>Separate the name from the qualified name.</p>
-     *
-     * @param fun The qualified name.
-     * @return The name.
-     */
-    public static String sepName(String fun) {
-        return fun.substring(fun.lastIndexOf(OP_CHAR_SEP) + 1);
-    }
-
-    /**
-     * <p>Check whether a name is qualified.</p>
-     *
-     * @param fun The name.
-     * @return True if the name is qualified, otherwise false.
-     */
-    public static boolean isQuali(String fun) {
-        return (fun.lastIndexOf(OP_CHAR_SEP) != -1);
-    }
-
-    /**
-     * <p>Compose a qualified name from a module name and a name.</p>
-     *
-     * @param mod The module name.
-     * @param fun The name.
-     * @return The qualified name.
-     */
-    public static String composeQuali(String mod, String fun) {
-        StringBuilder buf = new StringBuilder();
-        buf.append(mod);
-        buf.append(OP_CHAR_SEP);
-        buf.append(fun);
-        return buf.toString();
     }
 
     /***************************************************************/

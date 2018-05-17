@@ -2,7 +2,7 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Bind;
+import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -117,7 +117,7 @@ final class MemberMethodNondet extends AbstractMember {
         co.setGoalSkel((Goal) en.contskel);
         co.setGoalDisplay(en.contdisplay);
 
-        Bind mark = en.bind;
+        AbstractBind mark = en.bind;
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);

@@ -1,8 +1,8 @@
 package jekpro.tools.term;
 
+import jekpro.model.molec.AbstractCache;
 import jekpro.model.pretty.AbstractSource;
 
-import java.text.Collator;
 import java.util.Comparator;
 
 /**
