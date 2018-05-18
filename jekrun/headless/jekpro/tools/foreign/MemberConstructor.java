@@ -3,12 +3,9 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -118,7 +115,7 @@ final class MemberConstructor extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object[] args = convertArgs(temp, ref, en, null);
-        Object res = AutoClass.invokeNew(constructor, args, en);
+        Object res = AutoClass.invokeNew(constructor, args);
         res = Types.normJava(encoderet, res);
         if (res == null)
             return false;

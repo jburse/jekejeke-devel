@@ -218,12 +218,11 @@ public abstract class AbstractFactory extends AbstractFramework {
      *
      * @param con  The constructor.
      * @param args The constructor arguments.
-     * @param en   The interpreter.
      * @return The special.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public abstract Object newInstance(Constructor con, Object[] args, Engine en)
+    public abstract Object newInstance(Constructor con, Object[] args)
             throws EngineException, EngineMessage;
 
     /*******************************************************************/

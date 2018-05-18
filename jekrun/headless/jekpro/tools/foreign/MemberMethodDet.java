@@ -3,12 +3,9 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
@@ -119,7 +116,7 @@ final class MemberMethodDet extends AbstractMember {
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);
         Object[] args = convertArgs(temp, ref, en, null);
-        Object res = invokeMethod(method, obj, args, en);
+        Object res = invokeMethod(method, obj, args);
         res = Types.normJava(encoderet, res);
         if (res == null)
             return false;
@@ -168,8 +165,7 @@ final class MemberMethodDet extends AbstractMember {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN),
-                SpecialSpecial.classToName(method.getDeclaringClass(),
-                        source, en),
+                SpecialSpecial.classToName(method.getDeclaringClass(), source, en),
                 SpecialForeign.methodToCallable(method.getName(),
                         method.getParameterTypes(), source, en));
     }

@@ -218,12 +218,11 @@ abstract class AbstractMember extends AbstractLense
      *
      * @param obj  The receiver.
      * @param args The arguments array.
-     * @param en   The engine.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    static Object invokeMethod(Method method, Object obj, Object[] args, Engine en)
+    static Object invokeMethod(Method method, Object obj, Object[] args)
             throws EngineException, EngineMessage {
         try {
             return method.invoke(obj, args);
@@ -241,19 +240,19 @@ abstract class AbstractMember extends AbstractLense
                     EngineMessage.OP_PERMISSION_ACCESS,
                     AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
+                            method.getParameterTypes())));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
+                            method.getParameterTypes())));
         } catch (NullPointerException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_LOOKUP,
                     AbstractFactory.OP_PERMISSION_METHOD,
                     SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
+                            method.getParameterTypes())));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_LINK,

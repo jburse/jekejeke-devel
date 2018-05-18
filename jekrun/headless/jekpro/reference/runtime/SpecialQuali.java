@@ -46,8 +46,8 @@ public final class SpecialQuali extends AbstractSpecial {
     public final static String OP_COLON = ":";
     public final static String OP_COLONCOLON = "::";
 
-    private final static int SPECIAL_CALL_COLON = 3;
-    private final static int SPECIAL_CALL_COLONCOLON = 4;
+    private final static int SPECIAL_CALL_COLON = 0;
+    private final static int SPECIAL_CALL_COLONCOLON = 1;
 
     /**
      * <p>Create a colon special.</p>

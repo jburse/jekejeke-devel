@@ -167,6 +167,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_PERMISSION_COERCE = "coerce";
     public static final String OP_PERMISSION_PROCEDURE = "procedure";
     public final static String OP_PERMISSION_SOURCE_SINK = "source_sink";
+    public final static String OP_PERMISSION_PROXY = "proxy";
 
     public static final String OP_SYSTEM_ERROR = "system_error"; /* ISO */
     public static final String OP_SYSTEM_USER_ABORT = "user_abort";

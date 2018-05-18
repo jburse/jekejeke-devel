@@ -550,7 +550,7 @@ public final class AutoClass extends AbstractAuto {
             } else {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_EXCEPTION,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             }
         }
@@ -614,12 +614,11 @@ public final class AutoClass extends AbstractAuto {
      *
      * @param con  The constructor.
      * @param args The arguments array.
-     * @param en   The engine.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public static Object invokeNew(Constructor con, Object[] args, Engine en)
+    public static Object invokeNew(Constructor con, Object[] args)
             throws EngineException, EngineMessage {
         try {
             return con.newInstance(args);
@@ -637,18 +636,18 @@ public final class AutoClass extends AbstractAuto {
                     EngineMessage.OP_PERMISSION_ACCESS,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.constructorToCallable(
-                            con.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
+                            con.getParameterTypes())));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
                     SpecialSpecial.constructorToCallable(
-                            con.getParameterTypes(), en.store.foyer.SOURCE_SYSTEM, en)));
+                            con.getParameterTypes())));
         } catch (InstantiationException e) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_NEW,
                     EngineMessage.OP_PERMISSION_CLASS,
-                    SpecialSpecial.classToName(con.getDeclaringClass(), en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(con.getDeclaringClass())));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_LINK,

@@ -895,7 +895,7 @@ public final class SpecialLoad extends AbstractSpecial {
         int type = colonToOper(t, d, en);
         String fun = ((SkelAtom) en.skel).fun;
         if (!CacheFunctor.isQuali(fun)) {
-            return CacheOperator.getOperUser(type, fun, en.store);
+            return OperatorSearch.getOperUser(type, fun, en.store);
         } else {
             String s = CacheFunctor.sepModule(fun);
             AbstractSource base = AbstractSource.getModule(s, en.store);

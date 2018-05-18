@@ -128,7 +128,7 @@ final class MemberMethodNondet extends AbstractMember {
             co.setRetry(false);
             co.setSpecial(false);
             co.setCutter(false);
-            Object res = invokeMethod(method, obj, args, en);
+            Object res = invokeMethod(method, obj, args);
             res = Types.normJava(encoderet, res);
             if (res == null) {
                 return false;
