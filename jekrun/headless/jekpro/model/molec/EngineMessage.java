@@ -113,7 +113,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_UNKNOWN_PROXY = "unknown_proxy";
     public static final String OP_DOMAIN_CLASS = "class";
     public static final String OP_DOMAIN_MODULE = "module";
-    public static final String OP_DOMAIN_OBJECT = "object";
+    public static final String OP_DOMAIN_RECEIVER = "receiver";
 
     private static final String OP_REPRESENTATION_ERROR = "representation_error"; /* ISO */
     public static final String OP_REPRESENTATION_CHARACTER_CODE = "character_code";
@@ -189,6 +189,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_RELATIVE_PATH = "relative_path";
     public static final String OP_SYNTAX_MALFORMED_PATH = "malformed_path";
 
+    public static final String OP_SYNTAX_NOT_LOCALE = "not_locale";
     public static final String OP_SYNTAX_WRONG_PARENT = "wrong_parent";
     public static final String OP_SYNTAX_SUPERFLOUS_END = "superflous_end";
     public static final String OP_SYNTAX_END_MISSING = "end_missing";

@@ -5,12 +5,10 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.Clause;
-import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -275,10 +273,13 @@ public final class SpecialQuali extends AbstractSpecial {
         Object obj = slashToClassTest(t, d, comp, en);
         if (obj != null)
             return obj;
-        EngineMessage.checkInstantiated(t);
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        EngineMessage.checkInstantiated(en.skel);
         throw new EngineMessage(EngineMessage.domainError(
-                (comp ? EngineMessage.OP_DOMAIN_OBJECT :
-                        EngineMessage.OP_DOMAIN_MODULE), t), d);
+                (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
+                        EngineMessage.OP_DOMAIN_MODULE), en.skel), en.display);
     }
 
     /**
@@ -336,59 +337,6 @@ public final class SpecialQuali extends AbstractSpecial {
         }
     }
 
-    /**
-     * <p>Convert a module to a slash.</p>
-     *
-     * @param fun   The module.
-     * @param scope The scope.
-     * @param en    The engine.
-     * @return The skeleton.
-     */
-    public static Object moduleToSlashSkel(String fun,
-                                           AbstractSource scope,
-                                           Engine en)
-            throws EngineMessage {
-        /* shorten module name */
-        AbstractSource src = (scope != null ? scope : en.store.user);
-        fun = fun.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        fun = Engine.unfindPrefix(fun, src, ForeignPath.MASK_MODL_AUTO);
-        fun = fun.replace(SourceLocal.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
-
-        if (CachePackage.isArray(fun)) {
-            Object t = packageToSlashSkel(CachePackage.sepComp(fun));
-            SkelAtom sa2 = new SkelAtom(PrologReader.OP_SET, src);
-            return new SkelCompound(sa2, t);
-        } else if (CachePackage.isStruct(fun)) {
-            Object t = packageToSlashSkel(CachePackage.sepPack(fun));
-            SkelAtom s = new SkelAtom(CachePackage.sepBase(fun));
-            SkelAtom sa2 = new SkelAtom(Foyer.OP_SLASH, src);
-            return new SkelCompound(sa2, t, s);
-        } else {
-            return new SkelAtom(fun, src);
-        }
-    }
-
-    /**
-     * <p>Convert a package to a slash.</p>
-     *
-     * @param fun The package.
-     * @return The skeleton.
-     */
-    public static Object packageToSlashSkel(String fun) {
-        if (CachePackage.isArray(fun)) {
-            Object t = packageToSlashSkel(CachePackage.sepComp(fun));
-            SkelAtom sa2 = new SkelAtom(PrologReader.OP_SET);
-            return new SkelCompound(sa2, t);
-        } else if (CachePackage.isStruct(fun)) {
-            Object t = packageToSlashSkel(CachePackage.sepPack(fun));
-            Object s = new SkelAtom(CachePackage.sepBase(fun));
-            SkelAtom sa2=new SkelAtom(Foyer.OP_SLASH);
-            return new SkelCompound(sa2, t, s);
-        } else {
-            return new SkelAtom(fun);
-        }
-    }
-
     /************************************************************/
     /* Callable Colon                                           */
     /************************************************************/
@@ -398,7 +346,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * <p>A colon callable has the following syntax.</p>
      * <pre>
      *     colon --> module ":" colon
-     *             | object "::" colon
+     *             | receiver "::" colon
      *             | term.
      * </pre>
      * <p>The syntax is recursive.</p>
@@ -443,8 +391,7 @@ public final class SpecialQuali extends AbstractSpecial {
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_CALLABLE,
-                        en.skel), en.display);
+                        EngineMessage.OP_TYPE_CALLABLE, en.skel), en.display);
             }
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
@@ -494,59 +441,8 @@ public final class SpecialQuali extends AbstractSpecial {
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_CALLABLE,
-                        en.skel), en.display);
+                        EngineMessage.OP_TYPE_CALLABLE, en.skel), en.display);
             }
-        }
-    }
-
-    /**
-     * <p>Convert a callable to a colon.</p>
-     * <p>A colon callable has the following syntax.</p>
-     * <pre>
-     *     colon --> atom ":" callable
-     *             | term.
-     * </pre>
-     * <p>The syntax is not recursive.</p>
-     *
-     * @param t  The callable.
-     * @param en The engine.
-     * @return The colon callable.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object callableToColonSkel(Object t, Engine en)
-            throws EngineMessage {
-        if (t instanceof SkelCompound) {
-            SkelCompound sc = (SkelCompound) t;
-            SkelAtom sa = sc.sym;
-            if (CacheFunctor.isQuali(sa.fun)) {
-                t = moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
-                Object s = new SkelCompound(
-                        new SkelAtom(CacheFunctor.sepName(sa.fun)),
-                        sc.args, sc.vars);
-
-                int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
-                sa2.setPosition(sa.getPosition());
-                return new SkelCompound(sa2, t, s);
-            } else {
-                return t;
-            }
-        } else if (t instanceof SkelAtom) {
-            SkelAtom sa = (SkelAtom) t;
-            if (CacheFunctor.isQuali(sa.fun)) {
-                t = moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
-                Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
-
-                int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
-                sa2.setPosition(sa.getPosition());
-                return new SkelCompound(sa2, t, s);
-            } else {
-                return t;
-            }
-        } else {
-            return t;
         }
     }
 
@@ -634,7 +530,7 @@ public final class SpecialQuali extends AbstractSpecial {
             throws EngineMessage {
         Object s;
         if (CacheFunctor.isQuali(sa.fun)) {
-            s = moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
+            s = Clause.moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
             sa2.setPosition(sa.getPosition());

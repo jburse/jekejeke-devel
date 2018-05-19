@@ -142,19 +142,16 @@ atom_property(I, R) :-
  * The predicate succeeds for the visible predicates P.
  */
 % current_predicate(-Indicator)
-:- static current_predicate/1.
-:- set_predicate_property(current_predicate/1, sys_nostack).
 current_predicate(I) :-
-   ground(I), !,
-   sys_current_predicate_chk(I).
-current_predicate(I) :-
-   sys_parent_goal(P),
-   sys_current_predicate_site(L, P),
+   var(I), !,
+   sys_current_predicate(L),
    sys_member(I, L).
+current_predicate(I) :-
+   sys_current_predicate_chk(I).
 :- set_predicate_property(current_predicate/1, visible(public)).
 
-:- special(sys_current_predicate_site/2, 'SpecialPred', 5).
-:- set_predicate_property(sys_current_predicate_site/2, visible(private)).
+:- special(sys_current_predicate/1, 'SpecialPred', 5).
+:- set_predicate_property(sys_current_predicate/1, visible(private)).
 
 :- special(sys_current_predicate_chk/1, 'SpecialPred', 6).
 :- set_predicate_property(sys_current_predicate_chk/1, visible(private)).

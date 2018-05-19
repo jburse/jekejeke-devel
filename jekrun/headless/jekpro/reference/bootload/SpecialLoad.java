@@ -863,7 +863,7 @@ public final class SpecialLoad extends AbstractSpecial {
     public static Object indicatorToColonSkel(String fun, int arity) {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
-            s = SpecialQuali.packageToSlashSkel(CacheFunctor.sepModule(fun));
+            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun));
 
             Object t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
                     new SkelAtom(CacheFunctor.sepName(fun)),
@@ -977,7 +977,7 @@ public final class SpecialLoad extends AbstractSpecial {
     private static Object atomToColonSkel(String fun) {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
-            s = SpecialQuali.packageToSlashSkel(CacheFunctor.sepModule(fun));
+            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun));
 
             Object t = new SkelAtom(CacheFunctor.sepName(fun));
             s = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON), s, t);

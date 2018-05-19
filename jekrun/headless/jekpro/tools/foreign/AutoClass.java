@@ -539,10 +539,8 @@ public final class AutoClass extends AbstractAuto {
      * @param exces The exception types.
      * @param en    The engine.
      * @return True if the exeception types are ok, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean validateExceptionTypes(Class[] exces, Engine en)
-            throws EngineMessage {
+    public static boolean validateExceptionTypes(Class[] exces, Engine en) {
         for (int i = 0; i < exces.length; i++) {
             Class ret = exces[i];
             if (InterpreterException.class == ret) {

@@ -131,10 +131,6 @@ absolute_file_name(Slash, Pin) :-
    var(Slash), !,
    sys_get_context(Pin, C),
    sys_key_spec(Pin, C, [], Slash).
-absolute_file_name(Module:Slash, Pin) :- !,
-   sys_module_site(Module, Site),
-   absolute_file_name(Slash, Help),
-   sys_replace_site(Pin, Site, Help).
 absolute_file_name(Slash, Pin) :-
    sys_absolute_file_name(Slash, Pin), !.
 absolute_file_name(library(Slash), _) :-
@@ -154,10 +150,6 @@ absolute_file_name(Slash, Pin, Opt) :-
    var(Slash), !,
    sys_get_context(Pin, C),
    sys_key_spec(Pin, C, Opt, Slash).
-absolute_file_name(Module:Slash, Pin, Opt) :- !,
-   sys_module_site(Module, Site),
-   absolute_file_name(Slash, Help, Opt),
-   sys_replace_site(Pin, Site, Help).
 absolute_file_name(Slash, Pin, Opt) :-
    sys_absolute_file_name(Slash, Pin, Opt), !.
 absolute_file_name(library(Slash), _, _) :-
@@ -171,14 +163,6 @@ absolute_file_name(auto(Slash), _, _) :-
 absolute_file_name(Slash, _, _) :-
    throw(error(existence_error(source_sink,Slash),_)).
 :- set_predicate_property(absolute_file_name/3, visible(public)).
-
-% sys_module_site(+Slash, -Term)
-sys_module_site(N, J) :-
-   atom_property(here, sys_context(C)),
-   reset_atom_property(here, sys_context(C), H),
-   absolute_file_name(auto(N), S),
-   set_atom_property(H, sys_context(S), J).
-:- set_predicate_property(sys_module_site/2, visible(public)).
 
 :- foreign(sys_key_spec/4, 'ForeignPath',
       sysKeySpec('Interpreter','String','String','Object')).

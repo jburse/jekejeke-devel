@@ -135,16 +135,21 @@ sys_oper2(I, L, M) :-
  */
 % current_op(+Level, +Mode, -Pattern)
 current_op(L, M, C) :-
-   ground(M),
-   ground(C), !,
-   sys_make_oper(M, C, I),
-   oper_property(I, mode(M)),
-   oper_property(I, level(L)).
-current_op(L, M, C) :-
+   var(C), !,
    current_oper(I),
    oper_property(I, mode(M)),
    oper_property(I, level(L)),
    sys_make_oper(M, C, I).
+current_op(L, M, C) :-
+   var(M), !,
+   current_oper(I),
+   oper_property(I, mode(M)),
+   oper_property(I, level(L)),
+   sys_make_oper(M, C, I).
+current_op(L, M, C) :-
+   sys_make_oper(M, C, I),
+   oper_property(I, mode(M)),
+   oper_property(I, level(L)).
 :- set_predicate_property(current_op/3, visible(public)).
 
 % sys_make_oper(+Atom, +Atom, -Indicator)
@@ -162,19 +167,16 @@ sys_make_oper(yfx, N, infix(N)).
  * The predicate succeeds for each user operator I.
  */
 % current_oper(-Indicator)
-:- static current_oper/1.
-:- set_predicate_property(current_oper/1, sys_nostack).
 current_oper(I) :-
-   ground(I), !,
-   sys_current_oper_chk(I).
-current_oper(I) :-
-   sys_parent_goal(P),
-   sys_current_oper_site(L, P),
+   var(I), !,
+   sys_current_oper(L),
    sys_member(I, L).
+current_oper(I) :-
+   sys_current_oper_chk(I).
 :- set_predicate_property(current_oper/1, visible(public)).
 
-:- special(sys_current_oper_site/2, 'SpecialOper', 2).
-:- set_predicate_property(sys_current_oper_site/2, visible(private)).
+:- special(sys_current_oper/1, 'SpecialOper', 2).
+:- set_predicate_property(sys_current_oper/1, visible(private)).
 
 :- special(sys_current_oper_chk/1, 'SpecialOper', 3).
 :- set_predicate_property(sys_current_oper_chk/1, visible(private)).
