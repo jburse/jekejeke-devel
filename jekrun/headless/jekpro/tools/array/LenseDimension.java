@@ -3,12 +3,9 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -121,7 +118,7 @@ final class LenseDimension extends AbstractLense {
         Number num = EngineMessage.castInteger(en.skel, en.display);
         EngineMessage.checkNotLessThanZero(num);
         int size = EngineMessage.castIntValue(num);
-        Object val = newInstance(size, en);
+        Object val = newInstance(size);
         if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
             return false;
         return en.getNext();
@@ -131,11 +128,10 @@ final class LenseDimension extends AbstractLense {
      * <p>Create a new array instance.</p>
      *
      * @param s  The size.
-     * @param en The engine.
      * @return The new array.
      * @throws EngineMessage FFI error.
      */
-    private Object newInstance(int s, Engine en)
+    private Object newInstance(int s)
             throws EngineMessage {
         try {
             return Array.newInstance(clazz.getComponentType(), s);
@@ -143,7 +139,7 @@ final class LenseDimension extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         }
     }
 

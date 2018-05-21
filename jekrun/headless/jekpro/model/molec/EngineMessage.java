@@ -137,9 +137,9 @@ public final class EngineMessage extends Exception {
     public static final String OP_EXISTENCE_SYNTAX = "syntax";
     public static final String OP_EXISTENCE_PROVABLE = "provable";
     public static final String OP_EXISTENCE_CONSTRUCTOR = "constructor";
+    public static final String OP_EXISTENCE_PROXY = "proxy";
     public static final String OP_EXISTENCE_BODY = "body";
     public static final String OP_EXISTENCE_CODE = "code";
-    public static final String OP_EXISTENCE_FULLNAME = "fullname";
 
     private static final String OP_PERMISSION_ERROR = "permission_error"; /* ISO */
     public static final String OP_PERMISSION_ACCESS = "access"; /* ISO */
