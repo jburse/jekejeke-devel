@@ -435,7 +435,6 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(stream/char)).
 :- ensure_loaded(library(stream/term)).
 
-:- ensure_loaded(library(basic/proxy)).
 :- ensure_loaded(library(basic/array)).
 :- ensure_loaded(library(basic/utility)).
 

@@ -222,7 +222,7 @@ public final class ForeignLocale {
     public static Properties sysGetDescriptionProperties(Interpreter inter,
                                                          String locstr, String clazz)
             throws InterpreterMessage {
-        Capability capa = Knowledgebase.stringToCapability(clazz, inter);
+        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = XSelectFormat.stringToLocale(locstr);
         return capa.getDescriptionProperties(locale);
     }

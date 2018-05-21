@@ -1,12 +1,10 @@
 package jekpro.frequent.stream;
 
-import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -131,7 +129,7 @@ public final class ForeignTerm {
     public static AbstractTerm sysReadTerm(Interpreter inter,
                                            Reader para, Object opt)
             throws InterpreterMessage, InterpreterException {
-        return inter.parseTermWrapped(para, opt);
+        return inter.parseTerm(para, opt);
     }
 
 }

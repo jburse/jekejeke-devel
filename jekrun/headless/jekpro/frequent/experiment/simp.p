@@ -157,24 +157,10 @@ sys_rebuild_term(G, H) :-
    predicate_property(I, (meta_predicate M)),
    \+ predicate_property(I, sys_noexpand), !,
    M =.. [_|R],
-   sys_univ(G, [F|L]),
-   sys_rebuild_term_shift(R, F, U, V),
-   sys_rebuild_term_args(V, L, S),
-   sys_univ(H, [U|S]).
+   sys_univ(G, [_|L]),
+   sys_rebuild_term_args(R, L, S),
+   sys_univ(H, [J|S]).
 sys_rebuild_term(G, G).
-
-% sys_rebuild_term_shift(+Modes, +Funs, -Funs, -Modes)
-:- private sys_rebuild_term_shift/4.
-sys_rebuild_term_shift(M, A, B, N) :-
-   A = P:Q, !,
-   sys_rebuild_term_shift(M, Q, R, N),
-   sys_replace_site(B, A, P:R).
-sys_rebuild_term_shift([M|L], A, B, N) :-
-   A = P::Q, !,
-   sys_rebuild_term_arg(M, P, R),
-   sys_rebuild_term_shift(L, Q, S, N),
-   sys_replace_site(B, A, R::S).
-sys_rebuild_term_shift(M, P, P, M).
 
 % sys_rebuild_term_args(+Modes, +Args, -Args)
 :- private sys_rebuild_term_args/3.
@@ -212,24 +198,10 @@ sys_rebuild_goal(G, H) :-
    predicate_property(I, (meta_predicate M)),
    \+ predicate_property(I, sys_noexpand), !,
    M =.. [_|R],
-   sys_univ(G, [F|L]),
-   sys_rebuild_goal_shift(R, F, U, V),
-   sys_rebuild_goal_args(V, L, S),
-   sys_univ(H, [U|S]).
+   sys_univ(G, [_|L]),
+   sys_rebuild_goal_args(R, L, S),
+   sys_univ(H, [J|S]).
 sys_rebuild_goal(G, G).
-
-% sys_rebuild_goal_shift(+Modes, +Funs, -Funs, -Modes)
-:- private sys_rebuild_goal_shift/4.
-sys_rebuild_goal_shift(M, A, B, N) :-
-   A = P:Q, !,
-   sys_rebuild_goal_shift(M, Q, R, N),
-   sys_replace_site(B, A, P:R).
-sys_rebuild_goal_shift([M|L], A, B, N) :-
-   A = P::Q, !,
-   sys_rebuild_goal_arg(M, P, R),
-   sys_rebuild_goal_shift(L, Q, S, N),
-   sys_replace_site(B, A, R::S).
-sys_rebuild_goal_shift(M, P, P, M).
 
 % sys_rebuild_goal_args(+Modes, +Args, -Args)
 :- private sys_rebuild_goal_args/3.

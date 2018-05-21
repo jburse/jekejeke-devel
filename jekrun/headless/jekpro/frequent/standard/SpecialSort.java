@@ -3,7 +3,7 @@ package jekpro.frequent.standard;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.Foyer;
 import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -205,7 +205,7 @@ public final class SpecialSort extends AbstractSpecial {
         d = en.display;
         while (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 2 &&
-                ((SkelCompound) m).sym.fun.equals(Store.OP_CONS)) {
+                ((SkelCompound) m).sym.fun.equals(Foyer.OP_CONS)) {
             SkelCompound sc = (SkelCompound) m;
             en.skel = sc.args[0];
             en.display = d;
@@ -225,7 +225,7 @@ public final class SpecialSort extends AbstractSpecial {
             d = en.display;
         }
         if (m instanceof SkelAtom &&
-                ((SkelAtom) m).fun.equals(Store.OP_NIL)) {
+                ((SkelAtom) m).fun.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             EngineMessage.checkInstantiated(m);
@@ -241,7 +241,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @param en  The engine.
      */
     private static void createSet(AbstractSet<Object> set, Engine en) {
-        en.skel = en.store.ATOM_NIL;
+        en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         for (SetEntry<Object> entry = set.getLastEntry();
              entry != null; entry = set.predecessor(entry)) {
@@ -307,7 +307,7 @@ public final class SpecialSort extends AbstractSpecial {
         d = en.display;
         while (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 2 &&
-                ((SkelCompound) m).sym.fun.equals(Store.OP_CONS)) {
+                ((SkelCompound) m).sym.fun.equals(Foyer.OP_CONS)) {
             SkelCompound sc = (SkelCompound) m;
             en.skel = sc.args[0];
             en.display = d;
@@ -316,7 +316,7 @@ public final class SpecialSort extends AbstractSpecial {
             Display d2 = en.display;
             if (m2 instanceof SkelCompound &&
                     ((SkelCompound) m2).args.length == 2 &&
-                    ((SkelCompound) m2).sym.fun.equals(Store.OP_SUB)) {
+                    ((SkelCompound) m2).sym.fun.equals(Foyer.OP_SUB)) {
                 /* */
             } else {
                 EngineMessage.checkInstantiated(m2);
@@ -350,7 +350,7 @@ public final class SpecialSort extends AbstractSpecial {
             d = en.display;
         }
         if (m instanceof SkelAtom &&
-                ((SkelAtom) m).fun.equals(Store.OP_NIL)) {
+                ((SkelAtom) m).fun.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             EngineMessage.checkInstantiated(m);
@@ -367,7 +367,7 @@ public final class SpecialSort extends AbstractSpecial {
      */
     private static void createMap(AbstractMap<Object, ListArray<Object>> map,
                                   Engine en) {
-        en.skel = en.store.ATOM_NIL;
+        en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         for (MapEntry<Object, ListArray<Object>> entry = map.getLastEntry();
              entry != null; entry = map.predecessor(entry)) {
@@ -400,19 +400,19 @@ public final class SpecialSort extends AbstractSpecial {
      */
     private static void subValue(Object t2, Display d2, Object t, Display d, Engine en) {
         if (EngineCopy.isGroundSkel(t2)) {
-            en.skel = new SkelCompound(en.store.ATOM_SUB, t2, t);
+            en.skel = new SkelCompound(en.store.foyer.ATOM_SUB, t2, t);
             en.display = d;
             return;
         }
         if (EngineCopy.isGroundSkel(t)) {
-            en.skel = new SkelCompound(en.store.ATOM_SUB, t2, t);
+            en.skel = new SkelCompound(en.store.foyer.ATOM_SUB, t2, t);
             en.display = d2;
             return;
         }
         Display d3 = new Display(2);
         d3.bind[0].bindVar(t2, d2, en);
         d3.bind[1].bindVar(t, d, en);
-        en.skel = en.store.CELL_SUB;
+        en.skel = en.store.foyer.CELL_SUB;
         en.display = d3;
     }
 

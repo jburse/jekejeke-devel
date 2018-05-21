@@ -1,10 +1,9 @@
 package jekpro.frequent.standard;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.Store;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -173,7 +172,7 @@ public class EngineCopy {
                     continue;
                 }
                 t = getVar(v, d);
-                t = new SkelCompound(new SkelAtom(Store.OP_CALL), t);
+                t = new SkelCompound(new SkelAtom(Branch.OP_CALL), t);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -336,7 +335,7 @@ public class EngineCopy {
      * @return The meta spezifiers, or null.
      */
     public static Object[] metaPredicateBody(CachePredicate cp) {
-        if (cp == null || !cp.visible)
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
             return null;
         Predicate pick = cp.pick;
         if ((pick.getBits() & Predicate.MASK_PRED_BODY) == 0)
@@ -352,7 +351,7 @@ public class EngineCopy {
      * @return The meta spezifiers, or null.
      */
     public static Object[] metaPredicateRule(CachePredicate cp) {
-        if (cp == null || !cp.visible)
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
             return null;
         Predicate pick = cp.pick;
         if ((pick.getBits() & Predicate.MASK_PRED_RULE) == 0)

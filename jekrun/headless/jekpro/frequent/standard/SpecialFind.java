@@ -134,11 +134,11 @@ public final class SpecialFind extends AbstractSpecial {
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         ListArray<Object> temp = null;
-        Bind mark = en.bind;
+        AbstractBind mark = en.bind;
         int snap = en.number;
         try {
             en.wrapGoal();
-            Clause clause = en.store.CLAUSE_CALL;
+            Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref = new DisplayClause(clause.dispsize);
             ref.addArgument(en.skel, en.display, en);
             ref.setEngine(en);
@@ -181,7 +181,7 @@ public final class SpecialFind extends AbstractSpecial {
      */
     private static void createList(ListArray<Object> temp, Engine en) {
         en.display = Display.DISPLAY_CONST;
-        en.skel = en.store.ATOM_NIL;
+        en.skel = en.store.foyer.ATOM_NIL;
         if (temp == null)
             return;
         for (int i = temp.size() - 1; i >= 0; i--) {
@@ -204,19 +204,19 @@ public final class SpecialFind extends AbstractSpecial {
      */
     public static void consValue(Object t2, Display d2, Object t, Display d, Engine en) {
         if (EngineCopy.isGroundSkel(t2)) {
-            en.skel = new SkelCompound(en.store.ATOM_CONS, t2, t);
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t2, t);
             en.display = d;
             return;
         }
         if (EngineCopy.isGroundSkel(t)) {
-            en.skel = new SkelCompound(en.store.ATOM_CONS, t2, t);
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t2, t);
             en.display = d2;
             return;
         }
         Display d3 = new Display(2);
         d3.bind[0].bindVar(t2, d2, en);
         d3.bind[1].bindVar(t, d, en);
-        en.skel = en.store.CELL_CONS;
+        en.skel = en.store.foyer.CELL_CONS;
         en.display = d3;
     }
 

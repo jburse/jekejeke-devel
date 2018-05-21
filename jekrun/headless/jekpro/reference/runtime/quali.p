@@ -362,3 +362,39 @@ sys_univ2([J|L], K) :-
    sys_replace_site(K, J, M:T).
 sys_univ2(U, T) :-
    T =.. U.
+
+/**
+ * sys_get_module(O, M):
+ * The predicate succeeeds in M with the class reference
+ * or module name of O.
+ */
+% sys_get_module(+Term, -Term)
+:- public sys_get_module/2.
+sys_get_module(O, _) :-
+   var(O),
+   throw(error(instantiation_error,_)).
+sys_get_module(O, M) :-
+   sys_get_module_test(O, N), !,
+   M = N.
+sys_get_module(O, _) :-
+   throw(error(domain_error(receiver,O),_)).
+
+% sys_get_module_test(+Term, -Term)
+:- private sys_get_module_test/2.
+sys_get_module_test(O, _) :-
+   var(O), !, fail.
+sys_get_module_test(K, J) :-
+   K = R/O, !,
+   callable(O),
+   functor(O, M, _),
+   sys_replace_site(J, K, R/M).
+sys_get_module_test(O, M) :-
+   reference(O), !,
+   sys_get_class(O, M).
+sys_get_module_test(O, M) :-
+   callable(O),
+   functor(O, M, _).
+
+% sys_get_class(+Ref, -Ref)
+:- private sys_get_class/2.
+:- special(sys_get_class/2, 'SpecialQuali', 2).

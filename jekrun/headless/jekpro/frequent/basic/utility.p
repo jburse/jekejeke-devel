@@ -135,11 +135,11 @@ sys_split_line(L, H, T) :-
 :- private sys_match_apropos/2.
 sys_match_apropos(H, A) :-
    sys_apropos_value(A, pred, I),
-   sys_get_functor(I, F),
+   sys_indicator_fun(I, F),
    compiled_match(H, F).
 
-% sys_get_functor(+Indicator, -Functor)
-:- private sys_get_functor/2.
-sys_get_functor(F/_, F).
-sys_get_functor(_:F/_, F).
+% sys_indicator_fun(+Indicator, -Functor)
+:- private sys_indicator_fun/2.
+sys_indicator_fun(F/_, F).
+sys_indicator_fun(_:F/_, F).
 
