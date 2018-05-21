@@ -2,46 +2,45 @@
  * This module provides predicates to automatically turn a Prolog text
  * into a Java class. The Java class will be a Java proxy class generated
  * for a set of interfaces. The set of interfaces is collected from the
- * re-exported auto loaded Java classes of the current Prolog text. The Java
+ * reexported auto loaded Java classes of the given Prolog text. The Java
  * proxy class is generated when an instance of the Java proxy class is
- * requested by the predicates sys_new_instance/2:
+ * requested by the predicate sys_new_instance/2:
  *
- * Examples:
+ * Example:
  * :- module(mycomparator, []).
  * :- reexport(foreign(java/util/'Comparator')).
  *
  * :- public new/1.
- * new(X) :- sys_new_instance(X). % define the constructor
+ * new(X) :- sys_new_instance(mycomparator, X).  % define the constructor
  *
  * :- override compare/4.
  * :- public compare/4.
  * compare(_, X, Y, R) :- ... % define the method
- * :- new(X), ... % use the instance
  *
  * The predicate and evaluable functions of the Prolog text will be used
- * for the execution of the methods on the instance. Only methods that belong
- * to the set of interfaces can be invoked directly from Java on proxy
- * instances. If the set of interfaces contains the Slots interface proxy
- * instances should be created with the sys_new_instance/3 predicate.
+ * for the execution of the methods on the Java proxy instance. Only methods
+ * that belong to the set of interfaces can be invoked directly from Java
+ * on the Java proxy instances. If the set of interfaces contains the Java
+ * interface InterfaceSlots the proxy instances should be created with the
+ * predicate sys_new_instance/3 instead of the predicate sys_new_instance/2.
  *
- * Examples:
- * ?- current_error(X), X::getClass(Y).
- * X = 0r254e36fe,
- * Y = 0r2172deb1
+ * Example:
+ * ?- sys_subclass_of(mycomparator, java/util/'Comparator').
+ * Yes
  *
- * ?- current_error(X), sys_get_module(X, Y).
- * X = 0r254e36fe,
- * Y = 0r2172deb1
+ * ?- mycomparator:new(X), sys_instance_of(X, java/util/'Comparator').
+ * X = 0r709d5f9e
  *
- * ?- sys_get_module(point(1,2), X).
- * X = point
+ * ?- mycomparator:new(X), X::compare(7,7,Y).
+ * X = 0r43dd69,
+ * Y = 0
  *
- * The module and arity of a term object can be queried by the predicate
- * sys_term_object/3. The module of a term object or reference type can
- * be queried by the predicate sys_get_module/2. The module of an ordinary
- * object is the class name. The module of a proxy object is the originating
- * Prolog module. The predicates sys_subclass_of/2 and sys_instance_of/2
- * check for containment in the re-export chain.
+ * The re-export chain of Prolog modules and auto loaded Java classes
+ * defines a module taxonomy. The module taxonomy can be tested by the
+ * predicate sys_subclass_of/2, which checks whether one module is derived
+ * from another module. Further instances obtained by the predicates
+ * sys_new_instance/[2,3], instances directly created from within Java
+ * and Prolog terms can be tested with the predicate sys_instance_of/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -78,8 +77,8 @@
 
 /**
  * sys_new_instance(M, R):
- * The predicate succeeds for a stateless instance R for the
- * Java proxy class of the Prolog module M.
+ * The predicate succeeds for a stateless instance R of the
+ * Java proxy class for the Prolog module M.
  */
 % sys_new_instance(+Slash, -Ref)
 :- public sys_new_instance/2.
@@ -87,8 +86,8 @@
 
 /**
  * sys_new_instance(M, S, R):
- * The predicate succeeds for a statefull instance R of size S
- * for the Java proxy class of the Prolog module M.
+ * The predicate succeeds for a state-full instance R of size S
+ * of the Java proxy class for the Prolog module M.
  */
 % sys_new_instance(+Slash, +Integer, -Ref)
 :- public sys_new_instance/3.
