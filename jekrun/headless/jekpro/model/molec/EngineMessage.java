@@ -165,6 +165,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_PERMISSION_TOOLKIT_CAPA = "toolkit_capa";
     public static final String OP_PERMISSION_REDEFINE = "redefine";
     public static final String OP_PERMISSION_COERCE = "coerce";
+    public static final String OP_PERMISSION_VIRTUAL = "virtual";
     public static final String OP_PERMISSION_PROCEDURE = "procedure";
     public final static String OP_PERMISSION_SOURCE_SINK = "source_sink";
     public final static String OP_PERMISSION_PROXY = "proxy";

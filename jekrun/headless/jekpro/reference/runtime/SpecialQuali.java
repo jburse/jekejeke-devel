@@ -1,6 +1,5 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.basic.SpecialProxy;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -9,6 +8,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.Clause;
+import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -46,6 +46,7 @@ public final class SpecialQuali extends AbstractSpecial {
 
     private final static int SPECIAL_CALL_COLON = 0;
     private final static int SPECIAL_CALL_COLONCOLON = 1;
+    private final static int SPECIAL_SYS_GET_CLASS = 2;
 
     /**
      * <p>Create a colon special.</p>
@@ -54,7 +55,18 @@ public final class SpecialQuali extends AbstractSpecial {
      */
     public SpecialQuali(int i) {
         super(i);
-        subflags |= MASK_DELE_VIRT;
+        switch (i) {
+            case SPECIAL_CALL_COLON:
+                subflags |= MASK_DELE_VIRT;
+                break;
+            case SPECIAL_CALL_COLONCOLON:
+                subflags |= MASK_DELE_VIRT;
+                break;
+            case SPECIAL_SYS_GET_CLASS:
+                break;
+            default:
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
     }
 
     /**
@@ -79,7 +91,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
-                    fun = SpecialProxy.classOrProxyName(obj);
+                    fun = BranchAPI.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
@@ -116,11 +128,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
-                    obj = SpecialProxy.refClassOrProxy(obj);
+                    obj = BranchAPI.refClassOrProxy(obj);
                     if (obj == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), ref);
-                    fun = SpecialProxy.classOrProxyName(obj);
+                    fun = BranchAPI.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
@@ -166,6 +178,21 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
                 return true;
+            case SPECIAL_SYS_GET_CLASS:
+                temp = (SkelCompound) en.skel;
+                ref = en.display;
+                en.skel = temp.args[0];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkInstantiated(en.skel);
+                EngineMessage.checkRef(en.skel, en.display);
+                obj = BranchAPI.refClassOrProxy(en.skel);
+                if (obj == null)
+                    throw new EngineMessage(EngineMessage.domainError(
+                            EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, en.skel));
+                if (!en.unifyTerm(temp.args[1], ref, obj, Display.DISPLAY_CONST))
+                    return false;
+                return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -372,7 +399,7 @@ public final class SpecialQuali extends AbstractSpecial {
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
-                fun = SpecialProxy.classOrProxyName(obj);
+                fun = BranchAPI.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
@@ -402,11 +429,11 @@ public final class SpecialQuali extends AbstractSpecial {
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
-                obj = SpecialProxy.refClassOrProxy(obj);
+                obj = BranchAPI.refClassOrProxy(obj);
                 if (obj == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), d);
-                fun = SpecialProxy.classOrProxyName(obj);
+                fun = BranchAPI.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
@@ -480,7 +507,7 @@ public final class SpecialQuali extends AbstractSpecial {
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
-                fun = SpecialProxy.classOrProxyName(obj);
+                fun = BranchAPI.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);

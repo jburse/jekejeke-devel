@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.tools.call.*;
+import jekpro.tools.foreign.LookupResource;
 import matula.util.system.AbstractDecoder;
 import matula.util.system.AbstractRecognizer;
 import matula.util.system.ForeignUri;

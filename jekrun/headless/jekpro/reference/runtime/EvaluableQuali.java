@@ -1,9 +1,9 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
+import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -69,7 +69,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
-                    fun = SpecialProxy.classOrProxyName(obj);
+                    fun = BranchAPI.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
@@ -100,11 +100,11 @@ public final class EvaluableQuali extends AbstractSpecial {
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
-                    obj = SpecialProxy.refClassOrProxy(obj);
+                    obj = BranchAPI.refClassOrProxy(obj);
                     if (obj == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), ref);
-                    fun = SpecialProxy.classOrProxyName(obj);
+                    fun = BranchAPI.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);

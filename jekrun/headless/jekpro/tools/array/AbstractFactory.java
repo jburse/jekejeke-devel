@@ -274,16 +274,4 @@ public abstract class AbstractFactory extends AbstractFramework {
      */
     public abstract InterfaceHandler createHandler(AbstractSource src);
 
-    /**
-     * <p>Find a path suffix.</p>
-     *
-     * @param path  The path, in slash notation..
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
-     * @param store The store.
-     * @return The source key, or null.
-     */
-    public abstract String findSynthSuffix(String path, AbstractSource src,
-                                           int mask, AbstractStore store);
-
 }
