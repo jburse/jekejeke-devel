@@ -15,7 +15,6 @@ import java.net.SocketTimeoutException;
 
 /**
  * <p>Concerned with the lookup of binaries/text, escpecially files and URLs</p>
- * <p>Concerned with the lookup of inline local modules.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
