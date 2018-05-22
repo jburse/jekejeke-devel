@@ -9,7 +9,6 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.tools.proxy.InterfaceSlots;
@@ -50,7 +49,7 @@ import java.lang.reflect.InvocationHandler;
 public final class SpecialProxy extends AbstractSpecial {
     private final static int SPECIAL_SYS_PROXY_HANDLER = 0;
     private final static int SPECIAL_SYS_PROXY_STATE = 1;
-    private final static int SPECIAL_SYS_SUBCASS_OF = 2;
+    private final static int SPECIAL_SYS_ASSIGNABLE_FROM = 2;
 
     private final static Class[] SIG_INVOKE = new Class[]{InvocationHandler.class};
 
@@ -125,23 +124,10 @@ public final class SpecialProxy extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
-            case SPECIAL_SYS_SUBCASS_OF:
+            case SPECIAL_SYS_ASSIGNABLE_FROM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 obj = SpecialQuali.slashToClass(temp[0], ref, false, en);
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    /* reference */
-                    String fun = BranchAPI.classOrProxyName(obj);
-                    if (fun == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
-                    sa = new SkelAtom(fun);
-                } else {
-                    /* atom */
-                    sa = (SkelAtom) obj;
-                }
-                obj = SpecialQuali.slashToClass(temp[1], ref, false, en);
                 String fun;
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
@@ -149,10 +135,23 @@ public final class SpecialProxy extends AbstractSpecial {
                     fun = BranchAPI.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp[1]), ref);
+                                EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
                 } else {
                     /* atom */
                     fun = ((SkelAtom) obj).fun;
+                }
+                obj = SpecialQuali.slashToClass(temp[1], ref, false, en);
+                if (!(obj instanceof AbstractSkel) &&
+                        !(obj instanceof Number)) {
+                    /* reference */
+                    String fun2 = BranchAPI.classOrProxyName(obj);
+                    if (fun2 == null)
+                        throw new EngineMessage(EngineMessage.domainError(
+                                EngineMessage.OP_DOMAIN_CLASS, temp[1]), ref);
+                    sa = new SkelAtom(fun2);
+                } else {
+                    /* atom */
+                    sa = (SkelAtom) obj;
                 }
                 if (!CacheSubclass.getSubclass(sa, fun, en))
                     return false;

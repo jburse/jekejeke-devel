@@ -25,7 +25,7 @@
  * predicate sys_new_instance/3 instead of the predicate sys_new_instance/2.
  *
  * Example:
- * ?- sys_subclass_of(mycomparator, java/util/'Comparator').
+ * ?- sys_assignable_from(java/util/'Comparator', mycomparator).
  * Yes
  *
  * ?- mycomparator:new(X), sys_instance_of(X, java/util/'Comparator').
@@ -36,11 +36,11 @@
  * Y = 0
  *
  * The re-export chain of Prolog modules and auto loaded Java classes
- * defines a module taxonomy. The module taxonomy can be tested by the
- * predicate sys_subclass_of/2, which checks whether one module is derived
- * from another module. Further instances obtained by the predicates
- * sys_new_instance/[2,3], instances directly created from within Java
- * and Prolog terms can be tested with the predicate sys_instance_of/2.
+ * defines a module taxonomy. The module taxonomy can be tested by
+ * the predicate sys_assignable_from/2, which checks whether one module
+ * is derived from another module. Further Java Prolog proxy instances,
+ * instances directly created from within Java and Prolog callables can
+ * be tested with the predicate sys_instance_of/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -98,23 +98,23 @@
 /***************************************************************/
 
 /**
- * sys_subclass_of(M, N):
- * The predicate succeeds when M is a subclass of N, meaning
- * that N is found in the re-export chain of M.
+ * sys_assignable_from(N, M):
+ * The predicate succeeds when M is a subclass of N. N and M
+ * can be either class references or module names.
  */
-% sys_subclass_of(+Atom, +Atom)
-:- public sys_subclass_of/2.
-:- special(sys_subclass_of/2, 'SpecialProxy', 2).
+% sys_assignable_from(+Atom, +Atom)
+:- public sys_assignable_from/2.
+:- special(sys_assignable_from/2, 'SpecialProxy', 2).
 
 /**
  * sys_instance_of(O, N):
- * The predicate succeeds when O is an instance of N, meaning
- * that N is found in the re-export chain of the class reference
- * or module name of O.
+ * The predicate succeeds when O is an instance of N. O can be a
+ * reference or callable. N can be either a class reference
+ * or a module name.
  */
 % sys_instance_of(+Term, +Atom)
 :- public sys_instance_of/2.
 sys_instance_of(O, N) :-
    sys_get_module(O, M),
-   sys_subclass_of(M, N).
+   sys_assignable_from(N, M).
 
