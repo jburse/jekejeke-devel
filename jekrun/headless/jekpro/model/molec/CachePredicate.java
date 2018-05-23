@@ -340,27 +340,26 @@ public final class CachePredicate extends AbstractCache {
             if ((dep.value.intValue() & AbstractSource.MASK_IMPT_MODL) == 0)
                 continue;
             AbstractSource base = dep.key;
+
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 s = CacheFunctor.composeQuali(s, fun);
                 StoreKey sk = new StoreKey(s, arity);
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    Predicate pick = base.getRoutine(sk);
-                    if (pick != null && pick.visiblePred(src))
-                        return pick;
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                Predicate pick = base.getRoutine(sk);
+                if (pick != null && pick.visiblePred(src))
+                    return pick;
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             Predicate pick = performReexported(fun, arity, base, deps2, visited);
@@ -394,25 +393,23 @@ public final class CachePredicate extends AbstractCache {
             AbstractSource base = dep.key;
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 s = CacheFunctor.composeQuali(s, fun);
                 StoreKey sk = new StoreKey(s, arity);
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    Predicate pick = base.getRoutine(sk);
-                    if (pick != null && pick.visiblePred(src))
-                        return pick;
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                Predicate pick = base.getRoutine(sk);
+                if (pick != null && pick.visiblePred(src))
+                    return pick;
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             Predicate pick = performReexported(fun, arity, base, deps2, visited);
@@ -446,25 +443,23 @@ public final class CachePredicate extends AbstractCache {
             AbstractSource base = dep.key;
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 s = CacheFunctor.composeQuali(s, fun);
                 StoreKey sk = new StoreKey(s, arity);
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    Predicate pick = base.getRoutine(sk);
-                    if (pick != null && pick.visiblePred(src))
-                        return pick;
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                Predicate pick = base.getRoutine(sk);
+                if (pick != null && pick.visiblePred(src))
+                    return pick;
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             Predicate pick = performImported(fun, arity, base, deps2, visited);

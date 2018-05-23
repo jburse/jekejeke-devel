@@ -50,22 +50,20 @@ public final class CacheSubclass extends AbstractCache {
      */
     private static boolean lookupChain(String fun, AbstractSource base)
             throws InterruptedException, EngineMessage {
-        String s = base.getFullName();
         MapEntry<AbstractSource, Integer>[] deps2;
-        if (s == null) {
-            deps2 = base.snapshotDeps();
-        } else {
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            String s = base.getFullName();
+            if (s == null)
+                return false;
             if (fun.equals(s))
                 return true;
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
-                deps2 = base.snapshotDeps();
-            } finally {
-                base.getRead().release();
-            }
+            deps2 = base.snapshotDeps();
+        } finally {
+            base.getRead().release();
         }
         ListArray visited = new ListArray<AbstractCache>();
         visited.add(base);
@@ -77,7 +75,7 @@ public final class CacheSubclass extends AbstractCache {
     /**
      * <p>Find a source in the reexport chain of another source.</p>
      *
-     * @param fun     The full name to search.
+     * @param fun     The full name to search, not null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return True if the source was found, otherwise false.
@@ -95,22 +93,20 @@ public final class CacheSubclass extends AbstractCache {
             AbstractSource base = dep.key;
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 if (fun.equals(s))
                     return true;
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             if (lookupChain(fun, deps2, visited))
@@ -126,9 +122,9 @@ public final class CacheSubclass extends AbstractCache {
     /**
      * <p>Perform a sub class test.</p>
      *
-     * @param sa   The atom skeleton.
+     * @param sa  The atom skeleton.
      * @param fun The other atom.
-     * @param en   The engine.
+     * @param en  The engine.
      * @return The module name.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.

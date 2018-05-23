@@ -252,24 +252,22 @@ public final class OperatorSearch {
             AbstractSource base = dep.key;
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 s = CacheFunctor.composeQuali(s, key);
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    Operator oper = base.getOper(type, s);
-                    if (oper != null && oper.visibleOper(src))
-                        return oper;
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                Operator oper = base.getOper(type, s);
+                if (oper != null && oper.visibleOper(src))
+                    return oper;
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             Operator oper = performReexported(key, type, base, deps2, visited);
@@ -303,24 +301,22 @@ public final class OperatorSearch {
             AbstractSource base = dep.key;
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 s = CacheFunctor.composeQuali(s, fun);
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    Operator oper = base.getOper(type, s);
-                    if (oper != null && oper.visibleOper(src))
-                        return oper;
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                Operator oper = base.getOper(type, s);
+                if (oper != null && oper.visibleOper(src))
+                    return oper;
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             Operator oper = performReexported(fun, type, base, deps2, visited);
@@ -353,24 +349,22 @@ public final class OperatorSearch {
             AbstractSource base = dep.key;
             if (visited.contains(base))
                 continue;
-            String s = base.getFullName();
             MapEntry<AbstractSource, Integer>[] deps2;
-            if (s == null) {
-                deps2 = base.snapshotDeps();
-            } else {
+            /* wait for complete source */
+            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            try {
+                String s = base.getFullName();
+                if (s == null)
+                    continue;
                 s = CacheFunctor.composeQuali(s, key);
-                /* wait for complete source */
-                if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                    throw new EngineMessage(EngineMessage.systemError(
-                            EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-                try {
-                    Operator oper = base.getOper(type, s);
-                    if (oper != null && oper.visibleOper(src))
-                        return oper;
-                    deps2 = base.snapshotDeps();
-                } finally {
-                    base.getRead().release();
-                }
+                Operator oper = base.getOper(type, s);
+                if (oper != null && oper.visibleOper(src))
+                    return oper;
+                deps2 = base.snapshotDeps();
+            } finally {
+                base.getRead().release();
             }
             visited.add(base);
             Operator oper = performImported(key, type, base, deps2, visited);
