@@ -3,8 +3,6 @@ package jekpro.model.pretty;
 import jekpro.model.builtin.Branch;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.ForeignPath;
-import jekpro.tools.foreign.LookupBinary;
-import jekpro.tools.foreign.LookupResource;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenCheck;
@@ -42,7 +40,7 @@ import java.net.SocketTimeoutException;
 public final class LookupRead {
 
     /***************************************************************/
-    /* Find Suffix                                                 */
+    /* Find & Unfind Read                                          */
     /***************************************************************/
 
     /**
@@ -68,9 +66,10 @@ public final class LookupRead {
                 base = src.getPath();
             }
             path = ForeignUri.sysUriAbsolute(base, path);
+        } else {
+            /* make it canonical */
+            path = ForeignUri.sysCanonicalUri(path);
         }
-        /* make it canonical */
-        path = ForeignUri.sysCanonicalUri(path);
         boolean ok;
         try {
             ok = OpenCheck.DEFAULT_CHECK.checkHead(path);
@@ -88,6 +87,41 @@ public final class LookupRead {
     }
 
     /**
+     * <p>Determine the relative variant of a path.</p>
+     *
+     * @param path  The absolute path.
+     * @param src   The call-site, not null.
+     * @param store The store.
+     * @return The relative variant, or null.
+     * @throws IOException Shit happens.
+     */
+    public static String unfindRead(String path,
+                                    AbstractSource src,
+                                    AbstractStore store)
+            throws IOException {
+        String base;
+        if (Branch.OP_USER.equals(src.getPath())) {
+            base = store.foyer.base;
+            if (base == null)
+                throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
+        } else {
+            base = src.getPath();
+        }
+        int k = base.lastIndexOf('/');
+        if (k == -1)
+            return null;
+        if (path.regionMatches(0, base, 0, k + 1))
+            return path.substring(k + 1);
+
+        // failure
+        return null;
+    }
+
+    /***************************************************************/
+    /* Find & Unfind ReadSuffix                                    */
+    /***************************************************************/
+
+    /**
      * <p>Find a read path.</p>
      *
      * @param path  The path.
@@ -97,7 +131,7 @@ public final class LookupRead {
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    private static String findReadSuffix(String path, AbstractSource src,
+    public static String findReadSuffix(String path, AbstractSource src,
                                         int mask, AbstractStore store)
             throws IOException {
 
@@ -160,237 +194,6 @@ public final class LookupRead {
     }
 
     /**
-     * <p>Find a prefix according to the auto loader.</p>
-     *
-     * @param path  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
-     * @param store The store.
-     * @return The prefixed path or null.
-     * @throws IOException Shit happens.
-     */
-    public static String findPrefix(String path, AbstractSource src,
-                                    int mask, AbstractStore store)
-            throws IOException {
-
-        /* special case */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            if (Branch.OP_USER.equals(path))
-                return path;
-        }
-
-        src = AbstractSource.derefParent(src);
-
-        /* library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            String key = LookupResource.findResourceSuffix(path, src, mask, store);
-            if (key != null)
-                return path;
-        }
-
-        /* foreign .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            String key = LookupBinary.findBinarySuffix(path, src, mask, store);
-            if (key != null)
-                return path;
-        }
-
-        /* system library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
-                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
-                    String key = LookupResource.findResourceSuffix(path2, src, mask, store);
-                    if (key != null)
-                        return path2;
-                }
-            }
-        }
-
-        /* system imported .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
-                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
-                    String key = LookupBinary.findBinarySuffix(path2, src, mask, store);
-                    if (key != null)
-                        return path2;
-                }
-            }
-        }
-
-        /* source library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
-                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
-                    String key = LookupResource.findResourceSuffix(path2, src, mask, store);
-                    if (key != null)
-                        return path2;
-                }
-            }
-        }
-
-        /* source imported .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
-                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
-                    String key = LookupBinary.findBinarySuffix(path2, src, mask, store);
-                    if (key != null)
-                        return path2;
-                }
-            }
-        }
-
-        // failure
-        return null;
-    }
-
-    /**
-     * <p>Remove the prefix in the best way.</p>
-     *
-     * @param path  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
-     * @param store The store.
-     * @return The class.
-     * @throws IOException Shit happens.
-     */
-    public static String unfindPrefix(String path, AbstractSource src,
-                                      int mask, AbstractStore store)
-            throws IOException {
-
-        src = AbstractSource.derefParent(src);
-
-        /* source imported .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
-                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
-                        String path2 = path.substring(fix.key.length() + 1);
-                        if (path.equals(LookupRead.findPrefix(path2, src, mask, store)))
-                            return path2;
-                    }
-                }
-            }
-        }
-
-         /* source library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
-                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
-                        String path2 = path.substring(fix.key.length() + 1);
-                        if (path.equals(LookupRead.findPrefix(path2, src, mask, store)))
-                            return path2;
-                    }
-                }
-            }
-        }
-
-        /* system imported .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
-                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
-                        String path2 = path.substring(fix.key.length() + 1);
-                        if (path.equals(LookupRead.findPrefix(path2, src, mask, store)))
-                            return path2;
-                    }
-                }
-            }
-        }
-
-        /* system library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
-                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
-                        String path2 = path.substring(fix.key.length() + 1);
-                        if (path.equals(LookupRead.findPrefix(path2, src, mask, store)))
-                            return path2;
-                    }
-                }
-            }
-        }
-
-        // failure
-        return path;
-    }
-
-    /**
-     * <p>Find a key according to the auto loader.</p>
-     *
-     * @param path  The path.
-     * @param src   The source, not null.
-     * @param mask  The mask.
-     * @param store The store.
-     * @return The source key.
-     * @throws IOException Shit happens.
-     */
-    public static String findKey(String path,
-                                 AbstractSource src,
-                                 int mask, AbstractStore store)
-            throws IOException {
-
-        /* special case */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            if (Branch.OP_USER.equals(path))
-                return path;
-        }
-
-        src = AbstractSource.derefParent(src);
-
-        /* library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            String key = LookupResource.findResourceSuffix(path, src, mask, store);
-            if (key != null)
-                return key;
-        }
-
-        /* foreign .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            String key = LookupBinary.findBinarySuffix(path, src, mask, store);
-            if (key != null)
-                return key;
-        }
-
-        /* failure read */
-        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
-            String key = findReadSuffix(path, src, mask, store);
-            if (key != null)
-                return key;
-            key = findRead(path, src, store);
-            if (key != null)
-                return key;
-        }
-
-        // failure
-        return null;
-    }
-
-    /**
      * <p>Remove the suffix in the best way.</p>
      *
      * @param path  The path.
@@ -404,7 +207,13 @@ public final class LookupRead {
                                           int mask, AbstractStore store)
             throws IOException {
 
-        src = AbstractSource.derefParent(src);
+        /* special case */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            if (Branch.OP_USER.equals(path))
+                return path;
+        }
+
+        src = LookupChild.derefParent(src);
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&
@@ -469,40 +278,6 @@ public final class LookupRead {
         }
 
         return path;
-    }
-
-    /**
-     * <p>Determine the relative variant of a path.</p>
-     *
-     * @param path  The absolute path.
-     * @param src   The source.
-     * @param store The store.
-     * @return The relative variant, or null.
-     * @throws IOException Shit happens.
-     */
-    public static String unfindRead(String path,
-                                    AbstractSource src,
-                                    AbstractStore store)
-            throws IOException {
-        String base;
-        if (src == null ||
-                Branch.OP_USER.equals(src.getPath()) ||
-                Branch.OP_SYSTEM.equals(src.getPath())) {
-            base = store.foyer.base;
-            if (base == null)
-                throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
-        } else {
-            base = src.getPath();
-        }
-        int k = base.lastIndexOf('/');
-        if (k == -1)
-            return null;
-        base = base.substring(0, k + 1);
-        if (path.startsWith(base))
-            return path.substring(base.length());
-
-        // failure
-        return null;
     }
 
 }

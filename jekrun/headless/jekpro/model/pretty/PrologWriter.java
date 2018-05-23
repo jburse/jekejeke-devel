@@ -297,7 +297,8 @@ public class PrologWriter {
      * @param mod The module context, or null.
      * @param nsa The call-site, not null.
      * @return The predicate or null.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public CachePredicate offsetToPredicate(Object t,
                                             Object mod, SkelAtom nsa)
@@ -624,9 +625,9 @@ public class PrologWriter {
      * @param term The atom.
      * @param ref  The display.
      * @param mod  The module context, or null.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void writeAtom(SkelAtom term, Display ref,
                              Object mod, SkelAtom nsa)
@@ -764,13 +765,12 @@ public class PrologWriter {
      * @param cp         The predicate or null.
      * @param backspez   The spezification.
      * @param backoffset The offset.
-     * @throws EngineMessage Shit happens.
-     * @throws IOException   Shit happens.
+     * @throws IOException IO Error.
      */
     protected void writePrefix(Operator op, SkelAtom sa,
                                CachePredicate cp,
                                int backspez, int backoffset)
-            throws EngineMessage, IOException {
+            throws IOException {
         /**
          * - spacing.
          * - anti specification
@@ -801,14 +801,13 @@ public class PrologWriter {
      * @param decl       The declaration or null.
      * @param backspez   The spezification.
      * @param backoffset The offset.
-     * @throws EngineMessage Shit happens.
-     * @throws IOException   Shit happens.
+     * @throws IOException IO Error.
      */
     protected void writeInfix(Operator op, SkelAtom sa,
                               CachePredicate cp,
                               Object[] decl, int indent,
                               int backspez, int backoffset)
-            throws EngineMessage, IOException {
+            throws IOException {
         /**
          * - implication newln and indent.
          * - conjunction newln and indent.
@@ -876,15 +875,15 @@ public class PrologWriter {
      * @param backshift  The shift.
      * @param backspez   The spezification.
      * @param backoffset The offset.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void writePostfix(Operator op, SkelCompound sc, Display ref,
                                 CachePredicate cp, Object[] decl,
                                 int backshift, int backspez, int backoffset,
                                 Object mod, SkelAtom nsa)
-            throws EngineMessage, IOException, EngineException {
+            throws IOException, EngineMessage, EngineException {
         /**
          * - spacing
          */
@@ -902,7 +901,7 @@ public class PrologWriter {
     }
 
     /********************************************************/
-    /* Write AbstractTerm                                           */
+    /* Write AbstractTerm                                   */
     /********************************************************/
 
     /**
@@ -912,9 +911,9 @@ public class PrologWriter {
      * @param term The atomic or var.
      * @param ref  The display.
      * @param mod  The module context, or null.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void writeAtomicOrVar(Object term, Display ref,
                                     Object mod, SkelAtom nsa)
@@ -979,9 +978,9 @@ public class PrologWriter {
      * @param ref The display.
      * @param mod The module.
      * @param nsa The call-site.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void writeList(SkelCompound sc, Display ref,
                              Object mod, SkelAtom nsa)
@@ -1054,9 +1053,9 @@ public class PrologWriter {
      * @param sc  The term.
      * @param ref The display.
      * @param mod The module.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void writeCompound(SkelCompound sc, Display ref,
                                  Object mod, SkelAtom nsa)
@@ -1118,9 +1117,9 @@ public class PrologWriter {
      * @param sc  The term.
      * @param ref The display.
      * @param mod The module.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void writeIndex(SkelCompound sc, Display ref,
                               CachePredicate cp, Object[] decl,
@@ -1187,9 +1186,9 @@ public class PrologWriter {
      * @param ref   The term display.
      * @param level The level.
      * @param mod   The module context, or null.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public final void write(Object term, Display ref, int level,
                             Object mod, SkelAtom nsa)
@@ -1427,8 +1426,8 @@ public class PrologWriter {
      * @param ref  The argument display.
      * @param mod  The module context, or null.
      * @return True if the argument is a an oper and a simple, otherwise false.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     private Operator isOperSimple(Object term, Display ref,
                                   Object mod, SkelAtom nsa)
@@ -1510,7 +1509,7 @@ public class PrologWriter {
      * <p>Can be ovrerridden by sub classes.</p>
      *
      * @param sa The atom.
-     * @throws IOException Shit happens.
+     * @throws IOException IO Error.
      */
     protected void unparseEndOfFile(SkelAtom sa) throws IOException {
         /* */
@@ -1521,9 +1520,9 @@ public class PrologWriter {
      *
      * @param sa The atom.
      * @param t  The argument.
-     * @throws IOException     Shit happens.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected void unparsePeriod(SkelAtom sa, Object t, Display ref)
             throws IOException, EngineMessage, EngineException {
@@ -1538,8 +1537,8 @@ public class PrologWriter {
      *
      * @param t   The term.
      * @param ref The display of the term.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public void unparseStatement(Object t, Display ref)
             throws EngineMessage, EngineException {
@@ -1664,7 +1663,8 @@ public class PrologWriter {
      * @param wr    The writer.
      * @param flags The flags.
      * @param en    The engine, can be null.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public static void toString(Object t, Display ref, Writer wr, int flags,
                                 Engine en)

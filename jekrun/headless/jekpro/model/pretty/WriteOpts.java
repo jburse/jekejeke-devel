@@ -397,7 +397,7 @@ public final class WriteOpts {
      * @param anno The annotation mode.
      * @return The term.
      */
-     public static Object annoToTerm(int anno) {
+    public static Object annoToTerm(int anno) {
         ListArray<String> list = new ListArray<String>();
         if ((anno & ANNO_HINT) != 0)
             list.add(OP_ANNO_HINT);

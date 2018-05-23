@@ -212,6 +212,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextString() throws ScannerError, IOException {
         int quote = ch;
@@ -262,6 +263,7 @@ public final class ScannerToken {
      *
      * @param cont The continuation escape sequence flag.
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextChar(boolean cont) throws ScannerError, IOException {
         if (ch == CodeType.LINE_BACKSLASH) {
@@ -323,6 +325,7 @@ public final class ScannerToken {
      * is based on the Java Character.isDigit(int,int) method.</p>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextNumber() throws ScannerError, IOException {
         if (ch == CodeType.LINE_ZERO) {
@@ -430,6 +433,7 @@ public final class ScannerToken {
      * <p>For underscore and digit see class CodeType.</p>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextExponent() throws ScannerError, IOException {
         if ((ch == SCAN_EXPLOW || ch == SCAN_EXPCAP) &&
@@ -480,6 +484,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextLineComment() throws ScannerError, IOException {
         if ((flags & MASK_RTRN_LINE) != 0) {
@@ -513,6 +518,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextBlockComment() throws ScannerError, IOException {
         if ((flags & MASK_RTRN_BLCK) != 0) {
@@ -557,6 +563,7 @@ public final class ScannerToken {
      * <p>For whitespace and control see class CodeType.</p>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void nextFiller() throws ScannerError, IOException {
         if ((flags & MASK_RTRN_LAYT) != 0) {
@@ -586,6 +593,7 @@ public final class ScannerToken {
      * <p>Retrieve the first token.</p>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     public void firstToken() throws ScannerError, IOException {
         ch = getCode();
@@ -596,6 +604,7 @@ public final class ScannerToken {
      * <p>Advance to next token.</p>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     public void nextToken() throws ScannerError, IOException {
         buf.setLength(0);
@@ -691,6 +700,7 @@ public final class ScannerToken {
      *
      * @return True if we are at second of a terminal point, otherwise false.
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     public boolean isTerminalSuffix() throws ScannerError, IOException {
         if (ch == CodeType.LINE_EOF)
@@ -713,9 +723,9 @@ public final class ScannerToken {
      * </pre>
      * <p>For whitespace and control see class CodeType.</p>
      *
-     * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
-    private void nextSpaces() throws ScannerError, IOException {
+    private void nextSpaces() throws IOException {
         if ((flags & MASK_RTRN_LAYT) != 0) {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -741,6 +751,7 @@ public final class ScannerToken {
      * <p>Advance to next terminal suffix.</p>
      *
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     public void nextTerminalSuffix() throws ScannerError, IOException {
         buf.setLength(0);
@@ -795,9 +806,9 @@ public final class ScannerToken {
      * <p>Get a code from a text stream.</p>
      *
      * @return The read code point or -1.
-     * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
-    private int getCode() throws ScannerError, IOException {
+    private int getCode() throws IOException {
         int ch = reader.read();
         if (Character.isHighSurrogate((char) ch)) {
             reader.mark(1);
@@ -821,9 +832,9 @@ public final class ScannerToken {
      * <p>Peek a code from a text stream.</p>
      *
      * @return The peeked code point or -1.
-     * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
-    private int peekCode() throws ScannerError, IOException {
+    private int peekCode() throws IOException {
         reader.mark(2);
         int ch;
         try {
@@ -844,7 +855,7 @@ public final class ScannerToken {
     /**
      * <p>Push back the lock ahead character.</p>
      *
-     * @throws IOException Scanning problem.
+     * @throws IOException IO error.
      */
     public void pushBack() throws IOException {
         int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 0);
@@ -861,6 +872,7 @@ public final class ScannerToken {
      * @param s The string.
      * @return True if the stream starts with, otherwise false.
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private boolean startsWith(String s) throws ScannerError, IOException {
         if (s.length() == 1) {
@@ -877,6 +889,7 @@ public final class ScannerToken {
      *
      * @param s The string.
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void consumeStr(String s) throws ScannerError, IOException {
         if (s.length() == 1) {
@@ -897,6 +910,7 @@ public final class ScannerToken {
      *
      * @param s The string.
      * @throws ScannerError Scanning problem.
+     * @throws IOException IO error.
      */
     private void skipStr(String s) throws ScannerError, IOException {
         if (s.length() == 1) {

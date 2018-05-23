@@ -2,7 +2,10 @@ package jekpro.model.pretty;
 
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.OperatorSearch;
 import jekpro.model.rope.Named;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.EvaluableElem;
@@ -269,8 +272,8 @@ public class PrologReader {
      * @param level The term level to respect.
      * @return The term.
      * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public Object read(int level)
             throws ScannerError, EngineMessage, EngineException, IOException {
@@ -467,8 +470,8 @@ public class PrologReader {
      * @return The infix.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   IO Error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected Object readInfix(SkelAtom help, Object skel, Operator op)
             throws ScannerError, EngineMessage, EngineException, IOException {
@@ -486,8 +489,8 @@ public class PrologReader {
      * @return The postfix.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   IO Error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected Object readPostfix(SkelAtom help, Object skel)
             throws ScannerError, IOException, EngineException, EngineMessage {
@@ -513,13 +516,11 @@ public class PrologReader {
     /**
      * <p>Advance the operator.</p>
      *
-     * @throws ScannerError    Error and position.
-     * @throws EngineMessage   IO Error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws ScannerError Error and position.
+     * @throws IOException  IO Error.
      */
     protected final void nextOperator()
-            throws ScannerError, IOException, EngineMessage, EngineException {
+            throws ScannerError, IOException {
         if (st.getHint() == 0 && OP_LBRACE.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RBRACE.equals(st.getData())) {
@@ -544,8 +545,8 @@ public class PrologReader {
      * @return The list.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected Object readList()
             throws ScannerError, EngineMessage, EngineException, IOException {
@@ -593,8 +594,8 @@ public class PrologReader {
      * @return The compound.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected Object readCompound(SkelAtom help)
             throws ScannerError, EngineMessage, EngineException, IOException {
@@ -620,8 +621,8 @@ public class PrologReader {
      * @return The compound.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected Object readIndex(Object skel, String[] filler, SkelAtom help)
             throws ScannerError, EngineMessage, EngineException, IOException {
@@ -820,10 +821,10 @@ public class PrologReader {
     /**
      * <p>Fetch the first token.</p>
      *
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError Error and position.
      */
     public void firstToken() throws ScannerError, IOException {
-        Reader lr=st.getReader();
+        Reader lr = st.getReader();
         clausestart = OpenOpts.getLineNumber(lr);
         st.setFlags(0);
         st.firstToken();
@@ -833,7 +834,7 @@ public class PrologReader {
      * <p>Retrieve the molec token.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @throws ScannerError Shit happens
+     * @throws ScannerError Error and position
      */
     protected void nextToken() throws ScannerError, IOException {
         st.nextToken();
@@ -843,7 +844,7 @@ public class PrologReader {
      * <p>Retrieve the molec token.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @throws ScannerError Shit happens
+     * @throws ScannerError Error and position
      */
     protected void nextTerminalSuffix() throws ScannerError, IOException {
         st.nextTerminalSuffix();
@@ -860,14 +861,14 @@ public class PrologReader {
      *
      * @return The term skeleton.
      * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public final Object parseHeadStatement()
             throws ScannerError, EngineMessage, EngineException {
         try {
             firstToken();
-            Reader lr=st.getReader();
+            Reader lr = st.getReader();
             clausestart = OpenOpts.getLineNumber(lr);
             setVars(null);
             setAnon(null);
@@ -898,14 +899,14 @@ public class PrologReader {
      *
      * @return The term skeleton.
      * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public final Object parseHeadInternal()
             throws ScannerError, EngineMessage, EngineException {
         try {
             firstToken();
-            Reader lr=st.getReader();
+            Reader lr = st.getReader();
             clausestart = OpenOpts.getLineNumber(lr);
             setVars(null);
             setAnon(null);
@@ -956,8 +957,8 @@ public class PrologReader {
      * @return term wrapped in a period.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     protected Object parsePeriodIncomplete(String templ)
             throws ScannerError, EngineMessage, EngineException, IOException {
@@ -976,8 +977,8 @@ public class PrologReader {
      * @param templ The template.
      * @return The term.
      * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public final Object parseIncomplete(String templ)
             throws ScannerError, EngineException, EngineMessage, IOException {
@@ -1069,8 +1070,8 @@ public class PrologReader {
      * @param d2 The read term display.
      * @param en The engine.
      * @return True if the options could be unified.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
      */
     public boolean decodeReadOptions(Object t, Display d,
                                      Object t2, Display d2,
@@ -1146,7 +1147,7 @@ public class PrologReader {
         return true;
     }
 
-     /**
+    /**
      * <p>Make a list of the term variables.</p>
      *
      * @param val   The term.

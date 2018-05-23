@@ -1,9 +1,7 @@
 package jekpro.model.pretty;
 
-import jekpro.model.builtin.Branch;
 import jekpro.model.molec.CachePackage;
-
-import java.io.IOException;
+import matula.util.data.MapEntry;
 
 /**
  * <p>Concerned with the lookup of inline local modules.</p>
@@ -32,6 +30,7 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class LookupChild {
+    public static final String OP_THIS = "this";
 
     /***************************************************************/
     /* Child Lookup                                                */
@@ -40,24 +39,15 @@ public final class LookupChild {
     /**
      * <p>Find a prefix according to the child rule.</p>
      *
-     * @param path  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
-     * @param store The store.
+     * @param path The path.
+     * @param src  The call-site, not null.
      * @return The prefixed path or null.
-     * @throws IOException Shit happens.
      */
-    public static String findChildPrefix(String path, AbstractSource src,
-                                         int mask, AbstractStore store)
-            throws IOException {
-        String res = src.getHomeName();
-        res = (res != null ? res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS) : null);
-        res = LookupRead.findPrefix((res != null ? res : Branch.OP_USER), src, mask, store);
-        if (res == null)
-            // failure
-            return null;
-
-        String res2 = src.getRestName();
+    public static String findChildPrefix(String path, AbstractSource src) {
+        String res2 = LookupChild.getRestName(src);
+        src = LookupChild.derefParent(src);
+        String res = getHomeName(src);
+        res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
         if (res2 != null)
             res = SourceLocal.composeLocal(res, res2);
         path = path.replace(SourceLocal.OP_CHAR_OS, SourceLocal.OP_CHAR_SYN);
@@ -65,31 +55,21 @@ public final class LookupChild {
     }
 
     /**
-     * <p>Find a prefix according to the child rule.</p>
+     * <p>Remove the prefix according to the child rule.</p>
      *
-     * @param path  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
-     * @param store The store.
+     * @param path The path.
+     * @param src  The call-site, not null.
      * @return The prefixed path or null.
-     * @throws IOException Shit happens.
      */
-    public static String unfindChildPrefix(String path, AbstractSource src,
-                                           int mask, AbstractStore store)
-            throws IOException {
-        String res = src.getHomeName();
-        res = (res != null ? res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS) : null);
-        res = LookupRead.findPrefix((res != null ? res : Branch.OP_USER), src, mask, store);
-        if (res == null)
-            // failure
-            return null;
-
-        String res2 = src.getRestName();
+    public static String unfindChildPrefix(String path, AbstractSource src) {
+        String res2 = LookupChild.getRestName(src);
+        src = LookupChild.derefParent(src);
+        String res = getHomeName(src);
+        res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
         if (res2 != null)
             res = SourceLocal.composeLocal(res, res2);
-        res = res + SourceLocal.OP_STRING_SYN;
-        if (path.startsWith(res)) {
-            path = path.substring(res.length());
+        if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
+            path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
             path = path.replace(SourceLocal.OP_CHAR_SYN, SourceLocal.OP_CHAR_OS);
             return path;
         }
@@ -97,4 +77,151 @@ public final class LookupChild {
         // failure
         return null;
     }
+
+    /**
+     * <p>Find a key according to the child rule.</p>
+     *
+     * @param path The path.
+     * @param src  The call-site, not null.
+     * @return The source key.
+     */
+    public static String findChildKey(String path,
+                                      AbstractSource src) {
+        src = LookupChild.derefParent(src);
+        String res = getHomeName(src);
+        res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+        if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
+            path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+            path = SourceLocal.composeLocal(src.getPath(), path);
+            return path;
+        }
+
+        // failure
+        return null;
+    }
+
+    /**
+     * <p>Remove the suffix according to the child rule.</p>
+     *
+     * @param path The path.
+     * @param src  The call-site, not null.
+     * @return The path without suffix.
+     */
+    public static String unfindChildSuffix(String path, AbstractSource src) {
+        src = LookupChild.derefParent(src);
+        String res = src.getPath();
+        if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
+            path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+            res = getHomeName(src);
+            path = SourceLocal.composeLocal(res, path);
+            return path;
+        }
+
+        // failure
+        return null;
+    }
+
+    /*********************************************************/
+    /* Module Names                                          */
+    /*********************************************************/
+
+    /**
+     * <p>Retrieve the home name.</p>
+     *
+     * @param src The source.
+     * @return The home name.
+     */
+    public static String getHomeName(AbstractSource src) {
+        String temp = LookupChild.getPackName(src);
+        String res = src.getName();
+        if (temp != null) {
+            if (res != null) {
+                return CachePackage.composeStruct(temp, res);
+            } else {
+                return temp;
+            }
+        } else {
+            if (res != null) {
+                return res;
+            } else {
+                return OP_THIS;
+            }
+        }
+    }
+
+    /**
+     * <p>Retrieve the package name.</p>
+     *
+     * @param src The source.
+     * @return The package name.
+     */
+    private static String getPackName(AbstractSource src) {
+        MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+        for (int i = 0; i < fixes.length; i++) {
+            MapEntry<String, Integer> fix = fixes[i];
+            if ((fix.value.intValue() & AbstractSource.MASK_PCKG_AUTO) != 0) {
+                String temp = fix.key;
+                temp = temp.replace(SourceLocal.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+                return temp;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * <p>Retrieve the rest name.</p>
+     *
+     * @param src The source.
+     * @return The rest name.
+     */
+    public static String getRestName(AbstractSource src) {
+        String res = null;
+        AbstractSource src2 = LookupChild.getParent(src);
+        while (src2 != null) {
+            if (res == null) {
+                res = src.getName();
+            } else {
+                res = SourceLocal.composeLocal(src.getName(), res);
+            }
+            src = src2;
+            src2 = LookupChild.getParent(src);
+        }
+        return res;
+    }
+
+    /*********************************************************/
+    /* Nested Modules                                        */
+    /*********************************************************/
+
+
+    /**
+     * <p>Retrieve the primordial parent.</p>
+     *
+     * @param src The source.
+     * @return The primordial parent.
+     */
+    public static AbstractSource derefParent(AbstractSource src) {
+        AbstractSource src2 = LookupChild.getParent(src);
+        while (src2 != null) {
+            src = src2;
+            src2 = LookupChild.getParent(src);
+        }
+        return src;
+    }
+
+    /**
+     * <p>Retrieve the parent module.</p>
+     *
+     * @return The parent module.
+     */
+    public static AbstractSource getParent(AbstractSource src) {
+        MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
+        for (int i = 0; i < deps.length; i++) {
+            MapEntry<AbstractSource, Integer> dep = deps[i];
+            if ((dep.value.intValue() & AbstractSource.MASK_IMPT_PARM) != 0)
+                return dep.key;
+        }
+        return null;
+    }
+
 }

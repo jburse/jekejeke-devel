@@ -1,15 +1,10 @@
 package jekpro.model.molec;
 
-import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.LoadForce;
-import jekpro.model.rope.LoadOpts;
-import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
@@ -54,39 +49,6 @@ public final class CachePredicate extends AbstractCache {
     /************************************************************************/
     /* Lookup Utilities                                                     */
     /************************************************************************/
-
-    /**
-     * <p>Retrieve the lookup base.</p>
-     *
-     * @param mod   The module.
-     * @param scope The call-site, non-null.
-     * @param en    The engine.
-     * @return The lookup base, or null.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public static AbstractSource lookupBase(String mod,
-                                            AbstractSource scope,
-                                            Engine en)
-            throws EngineMessage, EngineException {
-        if (Branch.OP_USER.equals(mod))
-            return scope.getStore().user;
-
-        LoadOpts opts = new LoadOpts();
-        opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
-        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
-        en.enginecopy = null;
-        en.enginewrap = null;
-        mod = mod.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        String key = Engine.findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
-
-        if (key == null)
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_SOURCE_SINK,
-                    new SkelAtom(mod)));
-
-        return opts.makeLoad(scope, key, en);
-    }
 
     /**
      * <p>Check whether the found predicate is a stable one.</p>
@@ -496,7 +458,7 @@ public final class CachePredicate extends AbstractCache {
                 if (temp == null) {
                     /* cache miss, so lookup */
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? lookupBase(
+                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
                             CacheFunctor.sepModule(sa.fun), src, en) : src);
                     Object basevers = base.importvers;
                     Predicate pick = performLookup(sa.fun, arity, src, base);
@@ -531,7 +493,7 @@ public final class CachePredicate extends AbstractCache {
                         if (cp.basevers != cp.base.importvers) {
                             /* cache invalidated, so lookup */
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? lookupBase(
+                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
                                     CacheFunctor.sepModule(sa.fun), src, en) : src);
                             Object basevers = base.importvers;
                             pick = performLookup(sa.fun, arity, src, base);
@@ -588,7 +550,7 @@ public final class CachePredicate extends AbstractCache {
                 if (temp == null) {
                     /* cache miss, so lookup */
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? lookupBase(
+                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
                             CacheFunctor.sepModule(sa.fun), src, en) : src);
                     Object basevers = base.importvers;
                     Predicate pick = performLookupDefined(sa.fun, arity, src, base, create);
@@ -625,7 +587,7 @@ public final class CachePredicate extends AbstractCache {
                         if (cp.basevers != cp.base.importvers || (cp.flags & MASK_PRED_STBL) == 0) {
                             /* cache invalidated or instable, so lookup */
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? lookupBase(
+                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
                                     CacheFunctor.sepModule(sa.fun), src, en) : src);
                             Object basevers = base.importvers;
                             pick = performLookupDefined(sa.fun, arity, src, base, create);

@@ -1,11 +1,19 @@
 package jekpro.model.molec;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
-import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.*;
+import jekpro.model.rope.LoadForce;
+import jekpro.model.rope.LoadOpts;
+import jekpro.reference.bootload.ForeignPath;
+import jekpro.tools.foreign.LookupBinary;
+import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
+
+import java.io.IOException;
 
 /**
  * <p>The polymorphic cache for the subclass relation.</p>
@@ -38,6 +46,39 @@ public final class CacheSubclass extends AbstractCache {
     AbstractSource base;
     Object basevers;
     boolean res;
+
+    /**
+     * <p>Retrieve the lookup base.</p>
+     *
+     * @param mod   The module.
+     * @param scope The call-site, non-null.
+     * @param en    The engine.
+     * @return The lookup base, or null.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static AbstractSource lookupBase(String mod,
+                                            AbstractSource scope,
+                                            Engine en)
+            throws EngineMessage, EngineException {
+        if (Branch.OP_USER.equals(mod))
+            return scope.getStore().user;
+
+        LoadOpts opts = new LoadOpts();
+        opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
+        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
+        en.enginecopy = null;
+        en.enginewrap = null;
+        mod = mod.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+        String key = findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
+
+        if (key == null)
+            throw new EngineMessage(EngineMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_SOURCE_SINK,
+                    new SkelAtom(mod)));
+
+        return opts.makeLoad(scope, key, en);
+    }
 
     /**
      * <p>Find a source in the reexport chain of another source.</p>
@@ -138,7 +179,7 @@ public final class CacheSubclass extends AbstractCache {
             for (; ; ) {
                 if (temp == null) {
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = CachePredicate.lookupBase(sa.fun, src, en);
+                    AbstractSource base = lookupBase(sa.fun, src, en);
                     Object basevers = base.importvers;
                     boolean flag = lookupChain(fun, base);
 
@@ -160,7 +201,7 @@ public final class CacheSubclass extends AbstractCache {
                         boolean flag;
                         if (ca.basevers != ca.base.importvers) {
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = CachePredicate.lookupBase(sa.fun, src, en);
+                            AbstractSource base = lookupBase(sa.fun, src, en);
                             Object basevers = base.importvers;
                             flag = lookupChain(fun, base);
 
@@ -202,7 +243,7 @@ public final class CacheSubclass extends AbstractCache {
         for (; ; ) {
             if (temp == null) {
                 AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                AbstractSource base = CachePredicate.lookupBase(sa.fun, src, en);
+                AbstractSource base = lookupBase(sa.fun, src, en);
                 Object basevers = base.importvers;
 
                 CacheSubclass ca = new CacheSubclass();
@@ -223,7 +264,7 @@ public final class CacheSubclass extends AbstractCache {
                     AbstractSource base;
                     if (ca.basevers != ca.base.importvers) {
                         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                        base = CachePredicate.lookupBase(sa.fun, src, en);
+                        base = lookupBase(sa.fun, src, en);
                         Object basevers = base.importvers;
 
                         ca.fun = null;
@@ -239,6 +280,96 @@ public final class CacheSubclass extends AbstractCache {
             back = temp;
             temp = back.next;
         }
+    }
+
+    /*****************************************************************/
+    /* Find Key                                                      */
+    /*****************************************************************/
+
+    /**
+     * <p>Find a key according to the auto loader.</p>
+     *
+     * @param path  The path.
+     * @param scope The source, not null.
+     * @param mask  The mask.
+     * @return The source key, or null.
+     * @throws EngineMessage Shit happens.
+     */
+    public static String findKey(String path, AbstractSource scope, int mask)
+            throws EngineMessage {
+        AbstractStore chain = scope.getStore();
+        try {
+            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
+                String res = LookupChild.findChildKey(path, scope);
+                if (res != null)
+                    return res;
+            }
+
+            if (SourceLocal.isLocal(path)) {
+                String res = SourceLocal.sepHome(path);
+                res = findKey(res, scope, mask, chain);
+                if (res == null)
+                    return null;
+                path = SourceLocal.sepRest(path);
+                return SourceLocal.composeLocal(res, path);
+            } else {
+                return findKey(path, scope, mask, chain);
+            }
+
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>Find a key according in the best way.</p>
+     *
+     * @param path  The path.
+     * @param src   The source, not null.
+     * @param mask  The mask.
+     * @param store The store.
+     * @return The source key.
+     * @throws IOException Shit happens.
+     */
+    private static String findKey(String path,
+                                 AbstractSource src,
+                                 int mask, AbstractStore store)
+            throws IOException {
+
+        /* special case */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            if (Branch.OP_USER.equals(path))
+                return path;
+        }
+
+        src = LookupChild.derefParent(src);
+
+        /* library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            String key = LookupResource.findResourceSuffix(path, src, mask, store);
+            if (key != null)
+                return key;
+        }
+
+        /* foreign .class */
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
+            String key = LookupBinary.findBinarySuffix(path, src, mask, store);
+            if (key != null)
+                return key;
+        }
+
+        /* failure read */
+        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
+            String key = LookupRead.findReadSuffix(path, src, mask, store);
+            if (key != null)
+                return key;
+            key = LookupRead.findRead(path, src, store);
+            if (key != null)
+                return key;
+        }
+
+        // failure
+        return null;
     }
 
 }

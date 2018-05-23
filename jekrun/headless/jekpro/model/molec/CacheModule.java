@@ -1,10 +1,18 @@
 package jekpro.model.molec;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.LookupChild;
 import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
+import jekpro.tools.foreign.LookupBinary;
+import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
+import matula.util.data.MapEntry;
+
+import java.io.IOException;
 
 /**
  * <p>The polymorphic cache for structured module name.</p>
@@ -64,7 +72,7 @@ public final class CacheModule extends AbstractCache {
 
         /* lookup prefix from call-site */
         fun = fun.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        fun = Engine.findPrefix(fun, scope, ForeignPath.MASK_MODL_AUTO);
+        fun = findPrefix(fun, scope, ForeignPath.MASK_MODL_AUTO);
         fun = fun.replace(SourceLocal.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
 
         /* create with call-site */
@@ -133,6 +141,276 @@ public final class CacheModule extends AbstractCache {
             back = temp;
             temp = back.next;
         }
+    }
+
+    /*****************************************************************/
+    /* Find Prefix                                                   */
+    /*****************************************************************/
+
+    /**
+     * <p>Find a prefix according to the auto loader.</p>
+     * <p>Dollar separators are generated.</p>
+     *
+     * @param path The path.
+     * @param scope  The call-site, not null.
+     * @param mask The mask.
+     * @return The prefixed path.
+     * @throws EngineMessage Shit happens.
+     */
+    public static String findPrefix(String path, AbstractSource scope, int mask)
+            throws EngineMessage {
+        AbstractStore chain = scope.getStore();
+        try {
+            String res = findPrefix(path, scope, mask, chain);
+            if (res != null)
+                return res;
+
+            int k = path.lastIndexOf(SourceLocal.OP_CHAR_OS);
+            while (k != -1) {
+                res = path.substring(0, k);
+                res = findPrefix(res, scope, mask, chain);
+                if (res != null) {
+                    path = path.substring(k + 1);
+                    path = path.replace(SourceLocal.OP_CHAR_OS, SourceLocal.OP_CHAR_SYN);
+                    return SourceLocal.composeLocal(res, path);
+                }
+                k = path.lastIndexOf(SourceLocal.OP_CHAR_OS, k - 1);
+            }
+
+            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
+                res = LookupChild.findChildPrefix(path, scope);
+                if (res != null)
+                    return res;
+            }
+
+            return path;
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>Find a prefix in the best way.</p>
+     *
+     * @param path  The path.
+     * @param src   The call-site, not null.
+     * @param mask  The mask.
+     * @param store The store.
+     * @return The prefixed path or null.
+     * @throws IOException Shit happens.
+     */
+    public static String findPrefix(String path, AbstractSource src,
+                                    int mask, AbstractStore store)
+            throws IOException {
+
+        /* special case */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            if (Branch.OP_USER.equals(path))
+                return path;
+        }
+
+        src = LookupChild.derefParent(src);
+
+        /* library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            String key = LookupResource.findResourceSuffix(path, src, mask, store);
+            if (key != null)
+                return path;
+        }
+
+        /* foreign .class */
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
+            String key = LookupBinary.findBinarySuffix(path, src, mask, store);
+            if (key != null)
+                return path;
+        }
+
+        /* system library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
+                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
+                    String key = LookupResource.findResourceSuffix(path2, src, mask, store);
+                    if (key != null)
+                        return path2;
+                }
+            }
+        }
+
+        /* system imported .class */
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
+            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
+                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
+                    String key = LookupBinary.findBinarySuffix(path2, src, mask, store);
+                    if (key != null)
+                        return path2;
+                }
+            }
+        }
+
+        /* source library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0 &&
+                !src.equals(store.foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
+                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
+                    String key = LookupResource.findResourceSuffix(path2, src, mask, store);
+                    if (key != null)
+                        return path2;
+                }
+            }
+        }
+
+        /* source imported .class */
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
+                !src.equals(store.foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
+                    String path2 = fix.key + SourceLocal.OP_STRING_OS + path;
+                    String key = LookupBinary.findBinarySuffix(path2, src, mask, store);
+                    if (key != null)
+                        return path2;
+                }
+            }
+        }
+
+        // failure
+        return null;
+    }
+
+    /*****************************************************************/
+    /* Unfind Prefix                                                 */
+    /*****************************************************************/
+
+    /**
+     * <p>Remove the prefix in the best way.</p>
+     * <p>Dollar separators are preserved.</p>
+     *
+     * @param path The path.
+     * @param scope  The call-site, not null.
+     * @param mask The mask.
+     * @return The class.
+     * @throws EngineMessage Shit happens.
+     */
+    public static String unfindPrefix(String path, AbstractSource scope, int mask)
+            throws EngineMessage {
+        AbstractStore chain = scope.getStore();
+        try {
+            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
+                String res = LookupChild.unfindChildPrefix(path, scope);
+                if (res != null)
+                    return res;
+            }
+
+            if (SourceLocal.isLocal(path)) {
+                String res = SourceLocal.sepHome(path);
+                res = unfindPrefix(res, scope, mask, chain);
+                path = SourceLocal.sepRest(path);
+                path = path.replace(SourceLocal.OP_CHAR_SYN, SourceLocal.OP_CHAR_OS);
+                return SourceLocal.composeOs(res, path);
+            } else {
+                return unfindPrefix(path, scope, mask, chain);
+            }
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>Remove the prefix in the best way.</p>
+     *
+     * @param path  The path.
+     * @param src   The call-site, not null.
+     * @param mask  The mask.
+     * @param store The store.
+     * @return The class.
+     * @throws IOException Shit happens.
+     */
+    public static String unfindPrefix(String path, AbstractSource src,
+                                      int mask, AbstractStore store)
+            throws IOException {
+
+        /* special case */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            if (Branch.OP_USER.equals(path))
+                return path;
+        }
+
+        src = LookupChild.derefParent(src);
+
+        /* source imported .class */
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
+                !src.equals(store.foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
+                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
+                        String path2 = path.substring(fix.key.length() + 1);
+                        if (path.equals(findPrefix(path2, src, mask, store)))
+                            return path2;
+                    }
+                }
+            }
+        }
+
+        /* source library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0 &&
+                !src.equals(store.foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
+                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
+                        String path2 = path.substring(fix.key.length() + 1);
+                        if (path.equals(findPrefix(path2, src, mask, store)))
+                            return path2;
+                    }
+                }
+            }
+        }
+
+        /* system imported .class */
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
+            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_FRGN) != 0) {
+                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
+                        String path2 = path.substring(fix.key.length() + 1);
+                        if (path.equals(findPrefix(path2, src, mask, store)))
+                            return path2;
+                    }
+                }
+            }
+        }
+
+        /* system library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, Integer> fix = fixes[i];
+                if ((fix.value.intValue() & AbstractSource.MASK_PRFX_LIBR) != 0) {
+                    if (path.startsWith(fix.key) && path.startsWith(SourceLocal.OP_STRING_OS, fix.key.length())) {
+                        String path2 = path.substring(fix.key.length() + 1);
+                        if (path.equals(findPrefix(path2, src, mask, store)))
+                            return path2;
+                    }
+                }
+            }
+        }
+
+        // failure
+        return path;
     }
 
 }

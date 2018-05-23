@@ -476,7 +476,7 @@ public final class SpecialLoad extends AbstractSpecial {
     private static void performImport(AbstractSource scope, String key,
                                       Engine en, LoadOpts opts)
             throws EngineMessage, EngineException {
-        scope = AbstractSource.derefParent(scope);
+        scope = LookupChild.derefParent(scope);
         AbstractSource source = scope.getStore().getSourceDefined(key, false);
         Reader reader;
         if (!Branch.OP_USER.equals(source.getPath())) {
