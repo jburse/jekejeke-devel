@@ -239,15 +239,6 @@ public abstract class AbstractFactory extends AbstractFramework {
     public abstract AbstractSource createSynth(String key, AbstractStore store);
 
     /**
-     * <p>Check a foreign or verbatim key.</p>
-     *
-     * @param key The source key.
-     * @param store The store.
-     * @return True if key belongs to store, otherwise false.
-     */
-    public abstract boolean hasSynth(String key, AbstractStore store) throws EngineMessage;
-
-    /**
      * <p>Create a handler.</p>
      *
      * @param src The source.

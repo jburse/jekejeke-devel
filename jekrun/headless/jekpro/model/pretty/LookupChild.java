@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import matula.util.data.MapEntry;
@@ -33,7 +34,6 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class LookupChild {
-    public static final String OP_THIS = "this";
 
     /***************************************************************/
     /* Find & Unfind Prefix                                        */
@@ -43,16 +43,12 @@ public final class LookupChild {
      * <p>Find a prefix according to the child rule.</p>
      *
      * @param relpath The path.
-     * @param src  The call-site, not null.
+     * @param src     The call-site, not null.
      * @return The prefixed path or null.
      */
     public static String findChildPrefix(String relpath, AbstractSource src) {
-        String res2 = LookupChild.getRestName(src);
-        src = LookupChild.derefParent(src);
-        String res = getHomeName(src);
+        String res = LookupChild.lookupFullName(src);
         res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        if (res2 != null)
-            res = SourceLocal.composeLocal(res, res2);
         relpath = relpath.replace(SourceLocal.OP_CHAR_OS, SourceLocal.OP_CHAR_SYN);
         return SourceLocal.composeLocal(res, relpath);
     }
@@ -60,21 +56,17 @@ public final class LookupChild {
     /**
      * <p>Remove the prefix according to the child rule.</p>
      *
-     * @param relpath  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param relpath The path.
+     * @param src     The call-site, not null.
+     * @param mask    The mask.
      * @return The prefixed path or null.
      */
     public static String unfindChildPrefix(String relpath,
                                            AbstractSource src,
                                            int mask)
             throws IOException {
-        String res2 = LookupChild.getRestName(src);
-        src = LookupChild.derefParent(src);
-        String res = getHomeName(src);
+        String res = LookupChild.lookupFullName(src);
         res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        if (res2 != null)
-            res = SourceLocal.composeLocal(res, res2);
         if (relpath.startsWith(res) && relpath.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
             relpath = relpath.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
             if (CacheModule.findPrefixParent(relpath, src, mask) == null) {
@@ -94,19 +86,19 @@ public final class LookupChild {
     /**
      * <p>Find a key according to the child rule.</p>
      *
-     * @param path The path.
-     * @param src  The call-site, not null.
+     * @param relpath The path.
+     * @param src     The call-site, not null.
      * @return The source key.
      */
-    public static String findChildKey(String path,
+    public static String findChildKey(String relpath,
                                       AbstractSource src) {
-        src = LookupChild.derefParent(src);
-        String res = getHomeName(src);
+        AbstractSource src2 = LookupChild.derefParent(src);
+        String res = LookupChild.lookupFullName(src2);
         res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
-            path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
-            path = SourceLocal.composeLocal(src.getPath(), path);
-            return path;
+        if (relpath.startsWith(res) && relpath.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
+            relpath = relpath.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+            res = (src2.getName() != null ? src2.getPath() : Branch.OP_USER);
+            return SourceLocal.composeLocal(res, relpath);
         }
 
         // failure
@@ -121,46 +113,61 @@ public final class LookupChild {
      * @return The path without suffix.
      */
     public static String unfindChildSuffix(String path, AbstractSource src) {
-        src = LookupChild.derefParent(src);
-        String res = src.getPath();
+        AbstractSource src2 = LookupChild.derefParent(src);
+        String res = (src2.getName() != null ? src2.getPath() : Branch.OP_USER);
         if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
             path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
-            res = getHomeName(src);
-            path = SourceLocal.composeLocal(res, path);
-            return path;
+            res = LookupChild.lookupFullName(src2);
+            res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+            return SourceLocal.composeLocal(res, path);
         }
 
         // failure
         return null;
     }
 
-    /*********************************************************/
-    /* Module Names                                          */
-    /*********************************************************/
+    /*******************************************************************/
+    /* Module Names                                                    */
+    /*******************************************************************/
+
 
     /**
-     * <p>Retrieve the home name.</p>
+     * <p>Lookup full name.</p>
      *
-     * @param src The source.
-     * @return The home name.
+     * @return The full name.
      */
-    public static String getHomeName(AbstractSource src) {
-        String temp = LookupChild.getPackName(src);
-        String res = src.getName();
-        if (temp != null) {
-            if (res != null) {
-                return CachePackage.composeStruct(temp, res);
-            } else {
-                return temp;
-            }
+    public static String lookupFullName(AbstractSource src) {
+        String temp = getChainName(src);
+        src = LookupChild.derefParent(src);
+        String res = getPackName(src);
+        if (res != null) {
+            return CachePackage.composeStruct(res, temp);
         } else {
-            if (res != null) {
-                return res;
-            } else {
-                return OP_THIS;
-            }
+            return temp;
         }
     }
+
+    /**
+     * <p>Retrieve the rest name.</p>
+     *
+     * @param src The source.
+     * @return The rest name.
+     */
+    private static String getChainName(AbstractSource src) {
+        String res = src.getName();
+        if (res == null)
+            res = Branch.OP_USER;
+        src = LookupChild.getParent(src);
+        while (src != null) {
+            String res2 = src.getName();
+            if (res2 == null)
+                res2 = Branch.OP_USER;
+            res = SourceLocal.composeLocal(res2, res);
+            src = LookupChild.getParent(src);
+        }
+        return res;
+    }
+
 
     /**
      * <p>Retrieve the package name.</p>
@@ -181,31 +188,9 @@ public final class LookupChild {
         return null;
     }
 
-    /**
-     * <p>Retrieve the rest name.</p>
-     *
-     * @param src The source.
-     * @return The rest name.
-     */
-    public static String getRestName(AbstractSource src) {
-        String res = null;
-        AbstractSource src2 = LookupChild.getParent(src);
-        while (src2 != null) {
-            if (res == null) {
-                res = src.getName();
-            } else {
-                res = SourceLocal.composeLocal(src.getName(), res);
-            }
-            src = src2;
-            src2 = LookupChild.getParent(src);
-        }
-        return res;
-    }
-
-    /*********************************************************/
-    /* Nested Modules                                        */
-    /*********************************************************/
-
+    /*******************************************************************/
+    /* Nested Modules                                                  */
+    /*******************************************************************/
 
     /**
      * <p>Retrieve the primordial parent.</p>

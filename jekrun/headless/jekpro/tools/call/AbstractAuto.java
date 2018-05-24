@@ -12,8 +12,8 @@ import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.tools.term.SkelAtom;
-import matula.util.wire.AbstractLivestock;
 import matula.util.system.AbstractRuntime;
+import matula.util.wire.AbstractLivestock;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -69,10 +69,9 @@ public abstract class AbstractAuto extends AbstractSource {
         /* add package */
         if (SourceLocal.isOs(path)) {
             addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
-            setName(SourceLocal.sepFile(path));
-        } else {
-            setName(path);
+            path = SourceLocal.sepFile(path);
         }
+        setName(path);
         resetBit(MASK_SRC_VSPU);
     }
 
@@ -85,8 +84,9 @@ public abstract class AbstractAuto extends AbstractSource {
             throw new RuntimeException("illegal path");
 
         /* remove package */
-        if (SourceLocal.isOs(path))
+        if (SourceLocal.isOs(path)) {
             removeFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
+        }
         setName(null);
     }
 

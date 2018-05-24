@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -37,8 +38,6 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSyntax extends AbstractSpecial {
-    private static final String OP_EXISTENCE_SYNTAX = "syntax";
-
     private final static int SPECIAL_SYS_CURRENT_SYNTAX_CHK = 1;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY = 2;
 
@@ -71,66 +70,47 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Operator op = Operator.operToSyntax(temp[0], ref, en);
+                Operator op = SpecialLoad.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = Operator.operToSyntax(temp[0], ref, en);
-                SkelAtom sa = (SkelAtom) en.skel;
+                op = SpecialLoad.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
-                SpecialOper.operToProperties(op, sa, en);
+                SpecialOper.operToProperties(op, en);
                 if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = Operator.operToSyntax(temp[0], ref, en);
-                sa = (SkelAtom) en.skel;
-                SpecialSyntax.checkExistentSyntax(op, temp[0], ref);
+                op = SpecialLoad.operToSyntax(temp[0], ref, en);
+                Operator.checkExistentSyntax(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.addOperProp(en.skel, en.display, op, sa, en);
+                SpecialOper.addOperProp(en.skel, en.display, op, en);
                 return en.getNextRaw();
             case SPECIAL_RESET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = Operator.operToSyntax(temp[0], ref, en);
-                sa = (SkelAtom) en.skel;
-                SpecialSyntax.checkExistentSyntax(op, temp[0], ref);
+                op = SpecialLoad.operToSyntax(temp[0], ref, en);
+                Operator.checkExistentSyntax(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.removeOperProp(en.skel, en.display, op, sa, en);
+                SpecialOper.removeOperProp(en.skel, en.display, op, en);
                 return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
-    }
-
-
-    /**
-     * <p>Assure that the operator is existent.</p>
-     *
-     * @param op The operator.
-     * @param t  The skel.
-     * @param d  The display.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void checkExistentSyntax(Operator op, Object t, Display d)
-            throws EngineMessage {
-        if (op == null)
-            throw new EngineMessage(EngineMessage.existenceError(
-                    SpecialSyntax.OP_EXISTENCE_SYNTAX, t), d);
     }
 
 }

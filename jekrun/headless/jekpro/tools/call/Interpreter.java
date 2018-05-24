@@ -589,8 +589,8 @@ public final class Interpreter implements Comparator<Object> {
         }
         Display ref = (rd.getGensym() != 0 ? new Display(rd.getGensym()) : Display.DISPLAY_CONST);
         try {
-            if (!rd.decodeReadOptions(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), val, ref, en))
+            if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), val, ref, en, rd))
                 return null;
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);

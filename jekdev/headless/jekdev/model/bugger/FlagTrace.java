@@ -8,8 +8,8 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
-import jekpro.model.pretty.Store;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 
@@ -108,17 +108,17 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_SYS_VISIBLE:
                 return SpecialDefault.portsToList(en.store, en.visor.flags >> 24);
             case FLAG_SYS_CLAUSE_INSTRUMENT:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NIST) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NIST) == 0);
             case FLAG_SYS_HEAD_WAKEUP:
-                return en.store.switchToAtom((en.store.getBits() & Store.MASK_STORE_NHWK) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
                 Frame frame = ((SupervisorTrace) en.visor).getSkipFrame();
-                return (frame != null ? frame : en.store.ATOM_NULL);
+                return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_QUERY_FRAME:
                 frame = en.visor.ref;
-                return (frame != null ? frame : en.store.ATOM_NULL);
+                return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_CLOAK:
-                return en.store.switchToAtom((en.visor.flags & SupervisorTrace.MASK_VISOR_NOFLG) == 0);
+                return AbstractFlag.switchToAtom((en.visor.flags & SupervisorTrace.MASK_VISOR_NOFLG) == 0);
             case FLAG_SYS_MAX_STACK:
                 return Integer.valueOf(en.visor.getMaxStack());
             default:
@@ -150,17 +150,17 @@ public final class FlagTrace extends AbstractFlag {
                 ((SupervisorTrace) en.visor).setVisible(SpecialDefault.listToPorts(m, d) << 24);
                 return true;
             case FLAG_SYS_CLAUSE_INSTRUMENT:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NIST);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NIST);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NIST);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NIST);
                 }
                 return true;
             case FLAG_SYS_HEAD_WAKEUP:
-                if (Store.atomToSwitch(m, d)) {
-                    en.store.resetBit(Store.MASK_STORE_NHWK);
+                if (AbstractFlag.atomToSwitch(m, d)) {
+                    en.store.foyer.resetBit(Foyer.MASK_STORE_NHWK);
                 } else {
-                    en.store.setBit(Store.MASK_STORE_NHWK);
+                    en.store.foyer.setBit(Foyer.MASK_STORE_NHWK);
                 }
                 return true;
             case FLAG_SYS_SKIP_FRAME:
@@ -174,7 +174,7 @@ public final class FlagTrace extends AbstractFlag {
                 en.visor.ref = frame;
                 return true;
             case FLAG_SYS_CLOAK:
-                en.visor.setIgnore(Store.atomToSwitch(m, d));
+                en.visor.setIgnore(AbstractFlag.atomToSwitch(m, d));
                 return true;
             case FLAG_SYS_MAX_STACK:
                 en.skel = m;
