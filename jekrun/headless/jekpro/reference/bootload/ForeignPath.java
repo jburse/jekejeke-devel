@@ -135,7 +135,7 @@ public final class ForeignPath {
      * @param opt   The options list.
      * @return The spec.
      */
-    public static Object sysKeySpec(Interpreter inter,
+    public static Object sysKeyToSpec(Interpreter inter,
                                     String path, String key,
                                     Object opt)
             throws InterpreterMessage {

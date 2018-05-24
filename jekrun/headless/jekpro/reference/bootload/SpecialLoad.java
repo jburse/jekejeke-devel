@@ -476,7 +476,6 @@ public final class SpecialLoad extends AbstractSpecial {
     private static void performImport(AbstractSource scope, String key,
                                       Engine en, LoadOpts opts)
             throws EngineMessage, EngineException {
-        scope = LookupChild.derefParent(scope);
         AbstractSource source = scope.getStore().getSourceDefined(key, false);
         Reader reader;
         if (!Branch.OP_USER.equals(source.getPath())) {
@@ -863,7 +862,7 @@ public final class SpecialLoad extends AbstractSpecial {
     public static Object indicatorToColonSkel(String fun, int arity) {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
-            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun));
+            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun), null);
 
             Object t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
                     new SkelAtom(CacheFunctor.sepName(fun)),
@@ -977,7 +976,7 @@ public final class SpecialLoad extends AbstractSpecial {
     private static Object atomToColonSkel(String fun) {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
-            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun));
+            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun), null);
 
             Object t = new SkelAtom(CacheFunctor.sepName(fun));
             s = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON), s, t);

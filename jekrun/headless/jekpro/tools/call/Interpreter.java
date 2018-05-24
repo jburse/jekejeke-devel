@@ -2,11 +2,8 @@ package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
-import jekpro.model.rope.LoadForce;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.structure.SpecialLexical;
@@ -289,7 +286,7 @@ public final class Interpreter implements Comparator<Object> {
                     AbstractSource.keyToSource(key, engine.store) : null);
             AbstractSource src = (scope != null ?
                     scope : engine.store.user);
-            res = Engine.findPrefix(path, src, mask);
+            res = CacheModule.findPrefix(path, src, mask);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -313,7 +310,7 @@ public final class Interpreter implements Comparator<Object> {
                     AbstractSource.keyToSource(key, engine.store) : null);
             AbstractSource src = (scope != null ?
                     scope : engine.store.user);
-            res = Engine.findKey(path, src, mask);
+            res = CacheSubclass.findKey(path, src, mask);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -330,15 +327,14 @@ public final class Interpreter implements Comparator<Object> {
      */
     public Object keyToSpec(String path, String key, int mask)
             throws InterpreterMessage {
-        String fun = ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 ?
-                LoadForce.OP_LINK_SYS_LOAD_RESOURCE : "");
+        boolean rsc = (mask & ForeignPath.MASK_SUFX_RSCS) != 0;
         Object spec;
         try {
             AbstractSource scope = (!"".equals(key) ?
                     AbstractSource.keyToSource(key, engine.store) : null);
             AbstractSource src = (scope != null ?
                     scope : engine.store.user);
-            spec = AbstractSource.keyToSpec(path, fun, src);
+            spec = AbstractSource.keyToSpec(path, rsc, src);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }

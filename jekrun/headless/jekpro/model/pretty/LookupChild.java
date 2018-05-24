@@ -1,7 +1,10 @@
 package jekpro.model.pretty;
 
+import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import matula.util.data.MapEntry;
+
+import java.io.IOException;
 
 /**
  * <p>Concerned with the lookup of inline local modules.</p>
@@ -33,50 +36,60 @@ public final class LookupChild {
     public static final String OP_THIS = "this";
 
     /***************************************************************/
-    /* Child Lookup                                                */
+    /* Find & Unfind Prefix                                        */
     /***************************************************************/
 
     /**
      * <p>Find a prefix according to the child rule.</p>
      *
-     * @param path The path.
+     * @param relpath The path.
      * @param src  The call-site, not null.
      * @return The prefixed path or null.
      */
-    public static String findChildPrefix(String path, AbstractSource src) {
+    public static String findChildPrefix(String relpath, AbstractSource src) {
         String res2 = LookupChild.getRestName(src);
         src = LookupChild.derefParent(src);
         String res = getHomeName(src);
         res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
         if (res2 != null)
             res = SourceLocal.composeLocal(res, res2);
-        path = path.replace(SourceLocal.OP_CHAR_OS, SourceLocal.OP_CHAR_SYN);
-        return SourceLocal.composeLocal(res, path);
+        relpath = relpath.replace(SourceLocal.OP_CHAR_OS, SourceLocal.OP_CHAR_SYN);
+        return SourceLocal.composeLocal(res, relpath);
     }
 
     /**
      * <p>Remove the prefix according to the child rule.</p>
      *
-     * @param path The path.
-     * @param src  The call-site, not null.
+     * @param relpath  The path.
+     * @param src   The call-site, not null.
+     * @param mask  The mask.
      * @return The prefixed path or null.
      */
-    public static String unfindChildPrefix(String path, AbstractSource src) {
+    public static String unfindChildPrefix(String relpath,
+                                           AbstractSource src,
+                                           int mask)
+            throws IOException {
         String res2 = LookupChild.getRestName(src);
         src = LookupChild.derefParent(src);
         String res = getHomeName(src);
         res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
         if (res2 != null)
             res = SourceLocal.composeLocal(res, res2);
-        if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
-            path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
-            path = path.replace(SourceLocal.OP_CHAR_SYN, SourceLocal.OP_CHAR_OS);
-            return path;
+        if (relpath.startsWith(res) && relpath.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
+            relpath = relpath.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+            if (CacheModule.findPrefixParent(relpath, src, mask) == null) {
+                relpath = relpath.replace(SourceLocal.OP_CHAR_SYN, SourceLocal.OP_CHAR_OS);
+                return relpath;
+            }
         }
 
         // failure
         return null;
     }
+
+    /***************************************************************/
+    /* Child Lookup                                                */
+    /***************************************************************/
 
     /**
      * <p>Find a key according to the child rule.</p>

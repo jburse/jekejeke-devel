@@ -48,22 +48,22 @@ public final class LookupRead {
      *
      * @param path  The path, in slash notation.
      * @param src   The call-site, not null.
-     * @param store The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findRead(String path, AbstractSource src,
-                                  AbstractStore store)
+    public static String findRead(String path, AbstractSource src)
             throws IOException {
+
         /* make it absolute */
         if (ForeignUri.sysUriIsRelative(path)) {
+            AbstractSource src2 = LookupChild.derefParent(src);
             String base;
-            if (Branch.OP_USER.equals(src.getPath())) {
-                base = store.foyer.base;
+            if (Branch.OP_USER.equals(src2.getPath())) {
+                base = src2.getStore().foyer.base;
                 if (base == null)
                     throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
             } else {
-                base = src.getPath();
+                base = src2.getPath();
             }
             path = ForeignUri.sysUriAbsolute(base, path);
         } else {
@@ -91,21 +91,20 @@ public final class LookupRead {
      *
      * @param path  The absolute path.
      * @param src   The call-site, not null.
-     * @param store The store.
      * @return The relative variant, or null.
      * @throws IOException Shit happens.
      */
     public static String unfindRead(String path,
-                                    AbstractSource src,
-                                    AbstractStore store)
+                                    AbstractSource src)
             throws IOException {
+        AbstractSource src2 = LookupChild.derefParent(src);
         String base;
-        if (Branch.OP_USER.equals(src.getPath())) {
-            base = store.foyer.base;
+        if (Branch.OP_USER.equals(src2.getPath())) {
+            base = src2.getStore().foyer.base;
             if (base == null)
                 throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
         } else {
-            base = src.getPath();
+            base = src2.getPath();
         }
         int k = base.lastIndexOf('/');
         if (k == -1)
@@ -127,21 +126,23 @@ public final class LookupRead {
      * @param path  The path.
      * @param src   The call-site, not null.
      * @param mask  The mask.
-     * @param store The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findReadSuffix(String path, AbstractSource src,
-                                        int mask, AbstractStore store)
+    public static String findReadSuffix(String path,
+                                        AbstractSource src,
+                                        int mask)
             throws IOException {
+
+        AbstractSource src2 = LookupChild.derefParent(src);
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                    String key = findRead(path + fix.key, src, store);
+                    String key = findRead(path + fix.key, src);
                     if (key != null)
                         return key;
                 }
@@ -150,11 +151,11 @@ public final class LookupRead {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                    String key = findRead(path + fix.key, src, store);
+                    String key = findRead(path + fix.key, src);
                     if (key != null)
                         return key;
                 }
@@ -163,12 +164,12 @@ public final class LookupRead {
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                    String key = findRead(path + fix.key, src, store);
+                    String key = findRead(path + fix.key, src);
                     if (key != null)
                         return key;
                 }
@@ -177,12 +178,12 @@ public final class LookupRead {
 
         /* source resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                    String key = findRead(path + fix.key, src, store);
+                    String key = findRead(path + fix.key, src);
                     if (key != null)
                         return key;
                 }
@@ -199,32 +200,26 @@ public final class LookupRead {
      * @param path  The path.
      * @param src   The call-site, not null.
      * @param mask  The mask.
-     * @param store The store.
      * @return The path without suffix.
      * @throws IOException Shit happens.
      */
-    public static String unfindReadSuffix(String path, AbstractSource src,
-                                          int mask, AbstractStore store)
+    public static String unfindReadSuffix(String path,
+                                          AbstractSource src,
+                                          int mask)
             throws IOException {
 
-        /* special case */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            if (Branch.OP_USER.equals(path))
-                return path;
-        }
-
-        src = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParent(src);
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
                     if (path.endsWith(fix.key)) {
                         String path2 = path.substring(0, path.length() - fix.key.length());
-                        if (path.equals(findReadSuffix(path2, src, mask, store)))
+                        if (path.equals(findReadSuffix(path2, src, mask)))
                             return path2;
                     }
                 }
@@ -233,14 +228,14 @@ public final class LookupRead {
 
         /* source resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
                     if (path.endsWith(fix.key)) {
                         String path2 = path.substring(0, path.length() - fix.key.length());
-                        if (path.equals(findReadSuffix(path2, src, mask, store)))
+                        if (path.equals(findReadSuffix(path2, src, mask)))
                             return path2;
                     }
                 }
@@ -249,13 +244,13 @@ public final class LookupRead {
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
                     if (path.endsWith(fix.key)) {
                         String path2 = path.substring(0, path.length() - fix.key.length());
-                        if (path.equals(findReadSuffix(path2, src, mask, store)))
+                        if (path.equals(findReadSuffix(path2, src, mask)))
                             return path2;
                     }
                 }
@@ -264,20 +259,20 @@ public final class LookupRead {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
                     if (path.endsWith(fix.key)) {
                         String path2 = path.substring(0, path.length() - fix.key.length());
-                        if (path.equals(findReadSuffix(path2, src, mask, store)))
+                        if (path.equals(findReadSuffix(path2, src, mask)))
                             return path2;
                     }
                 }
             }
         }
 
-        return path;
+        return null;
     }
 
 }

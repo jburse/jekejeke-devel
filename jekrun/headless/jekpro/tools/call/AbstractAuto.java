@@ -5,7 +5,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.inter.Usage;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
@@ -165,7 +164,7 @@ public abstract class AbstractAuto extends AbstractSource {
      */
     public void loadModule(Reader lr, Engine en, boolean rec)
             throws EngineMessage, EngineException {
-        Class<?> clazz = en.store.foyer.getFactory().keyToClass(getPath(), en.store);
+        Class<?> clazz = LookupBinary.keyToClass(getPath(), en.store);
         if (clazz == null)
             throw new RuntimeException("class missing");
         setAuto(clazz);
@@ -268,7 +267,7 @@ public abstract class AbstractAuto extends AbstractSource {
                                   Engine en)
             throws EngineMessage, EngineException {
         String fun = pick.getFun();
-        AbstractSource base = (CacheFunctor.isQuali(fun) ? CachePredicate.lookupBase(
+        AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupBase(
                 CacheFunctor.sepModule(fun), this, en) : this);
         Predicate over;
         try {

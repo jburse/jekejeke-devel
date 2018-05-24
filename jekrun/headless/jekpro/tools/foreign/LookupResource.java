@@ -6,6 +6,7 @@ import jekpro.model.builtin.Tracking;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.LookupChild;
 import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractBundle;
@@ -52,22 +53,22 @@ public final class LookupResource {
     /**
      * <p>Find a path.</p>
      *
-     * @param path  The path, in slash notation.
+     * @param relpath  The path, in slash notation.
      * @param store The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findResource(String path, AbstractStore store)
+    public static String findResource(String relpath, AbstractStore store)
             throws IOException {
-        AbstractBranch branch = RelativeURIstoRoots(path, store);
+        AbstractBranch branch = RelativeURIstoRoots(relpath, store);
         if (branch != null) {
-            String res = (String)store.foyer.getCanonCache(path);
+            String res = (String)store.foyer.getCanonCache(relpath);
             if (res != null)
                 return ("".equals(res) ? null : res);
         }
 
         ClassLoader loader = store.getLoader();
-        URL url = loader.getResource(path);
+        URL url = loader.getResource(relpath);
         String res;
         if (url != null) {
             res = ForeignUri.sysCanonicalUri(url.toString());
@@ -76,31 +77,34 @@ public final class LookupResource {
         }
 
         if (branch != null)
-            store.foyer.setCanonCache(path, res);
+            store.foyer.setCanonCache(relpath, res);
         return ("".equals(res) ? null : res);
     }
 
     /**
      * <p>Find a path suffix.</p>
      *
-     * @param path  The path, in slash notation.
+     * @param relpath  The path, in slash notation.
      * @param src   The source, not null.
      * @param mask  The mask.
-     * @param store The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findResourceSuffix(String path, AbstractSource src,
-                                            int mask, AbstractStore store)
+    public static String findResourceSuffix(String relpath,
+                                            AbstractSource src,
+                                            int mask)
             throws IOException {
+
+        AbstractSource src2 = LookupChild.derefParent(src);
+
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                    String key = LookupResource.findResource(path + fix.key, store);
+                    String key = LookupResource.findResource(relpath + fix.key, src.getStore());
                     if (key != null)
                         return key;
                 }
@@ -109,12 +113,12 @@ public final class LookupResource {
 
         /* source resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 &&
-                !src.equals(store.foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src.snapshotFixes();
+                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                    String key = findResource(path + fix.key, store);
+                    String key = findResource(relpath + fix.key, src.getStore());
                     if (key != null)
                         return key;
                 }
@@ -123,11 +127,11 @@ public final class LookupResource {
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                    String key = findResource(path + fix.key, store);
+                    String key = findResource(relpath + fix.key, src.getStore());
                     if (key != null)
                         return key;
                 }
@@ -136,11 +140,11 @@ public final class LookupResource {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            MapEntry<String, Integer>[] fixes = store.foyer.SOURCE_SYSTEM.snapshotFixes();
+            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                    String key = findResource(path + fix.key, store);
+                    String key = findResource(relpath + fix.key, src.getStore());
                     if (key != null)
                         return key;
                 }
@@ -259,12 +263,12 @@ public final class LookupResource {
      * @return The relative variant or null.
      * @throws EngineMessage Shit happens.
      */
-    public static String unfindClassPaths(String path, AbstractStore store)
+    public static String unfindResourcePaths(String path, AbstractStore store)
             throws EngineMessage {
         // parent success
         AbstractStore parent = store.parent;
         if (parent != null) {
-            String res = unfindClassPaths(path, parent);
+            String res = unfindResourcePaths(path, parent);
             if (res != null)
                 return res;
         }

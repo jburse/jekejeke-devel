@@ -239,16 +239,6 @@ public abstract class AbstractFactory extends AbstractFramework {
     public abstract AbstractSource createSynth(String key, AbstractStore store);
 
     /**
-     * <p>Create a foreign or verbatim spec.</p>
-     *
-     * @param key The source key.
-     * @param scope The call-site, not null.
-     * @return The spec.
-     */
-    public abstract Object synthToSpec(String key, AbstractSource scope)
-            throws EngineMessage;
-
-    /**
      * <p>Check a foreign or verbatim key.</p>
      *
      * @param key The source key.
@@ -256,15 +246,6 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @return True if key belongs to store, otherwise false.
      */
     public abstract boolean hasSynth(String key, AbstractStore store) throws EngineMessage;
-
-    /**
-     * <p>Convert a key to a java class.</p>
-     *
-     * @param key   The key.
-     * @param store The store.
-     * @return The java class, or null.
-     */
-    public abstract Class keyToClass(String key, AbstractStore store);
 
     /**
      * <p>Create a handler.</p>

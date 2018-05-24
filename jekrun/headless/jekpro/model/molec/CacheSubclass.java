@@ -9,8 +9,10 @@ import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.system.ForeignUri;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
@@ -297,23 +299,24 @@ public final class CacheSubclass extends AbstractCache {
      */
     public static String findKey(String path, AbstractSource scope, int mask)
             throws EngineMessage {
-        AbstractStore chain = scope.getStore();
         try {
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = LookupChild.findChildKey(path, scope);
-                if (res != null)
-                    return res;
+                if (ForeignUri.sysUriIsRelative(path)) {
+                    String res = LookupChild.findChildKey(path, scope);
+                    if (res != null)
+                        return res;
+                }
             }
 
             if (SourceLocal.isLocal(path)) {
                 String res = SourceLocal.sepHome(path);
-                res = findKey(res, scope, mask, chain);
+                res = findKeyParent(res, scope, mask);
                 if (res == null)
                     return null;
                 path = SourceLocal.sepRest(path);
                 return SourceLocal.composeLocal(res, path);
             } else {
-                return findKey(path, scope, mask, chain);
+                return findKeyParent(path, scope, mask);
             }
 
         } catch (IOException x) {
@@ -327,13 +330,12 @@ public final class CacheSubclass extends AbstractCache {
      * @param path  The path.
      * @param src   The source, not null.
      * @param mask  The mask.
-     * @param store The store.
      * @return The source key.
      * @throws IOException Shit happens.
      */
-    private static String findKey(String path,
-                                 AbstractSource src,
-                                 int mask, AbstractStore store)
+    private static String findKeyParent(String path,
+                                        AbstractSource src,
+                                        int mask)
             throws IOException {
 
         /* special case */
@@ -342,34 +344,131 @@ public final class CacheSubclass extends AbstractCache {
                 return path;
         }
 
-        src = LookupChild.derefParent(src);
-
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            String key = LookupResource.findResourceSuffix(path, src, mask, store);
-            if (key != null)
-                return key;
+            if (ForeignUri.sysUriIsRelative(path)) {
+                String key = LookupResource.findResourceSuffix(path, src, mask);
+                if (key != null)
+                    return key;
+            }
         }
 
         /* foreign .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            String key = LookupBinary.findBinarySuffix(path, src, mask, store);
-            if (key != null)
-                return key;
+            if (ForeignUri.sysUriIsRelative(path)) {
+                String key = LookupBinary.findBinarySuffix(path, src, mask);
+                if (key != null)
+                    return key;
+            }
         }
 
         /* failure read */
         if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
-            String key = LookupRead.findReadSuffix(path, src, mask, store);
+            String key = LookupRead.findReadSuffix(path, src, mask);
             if (key != null)
                 return key;
-            key = LookupRead.findRead(path, src, store);
+            key = LookupRead.findRead(path, src);
             if (key != null)
                 return key;
         }
 
         // failure
         return null;
+    }
+
+    /*****************************************************************/
+    /* Unfind Key                                                    */
+    /*****************************************************************/
+
+    /**
+     * <p>Unfind a key in the best way.</p>
+     *
+     * @param path  The absolute or relative path.
+     * @param scope The call-site, not null.
+     * @param mask  The mask.
+     * @return The path without suffix.
+     */
+    public static Object unfindKey(String path, AbstractSource scope, int mask)
+            throws EngineMessage {
+        try {
+            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
+                String res = LookupChild.unfindChildSuffix(path, scope);
+                if (res != null)
+                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
+                            new SkelAtom(res));
+            }
+
+            if (SourceLocal.isLocal(path)) {
+                String res = SourceLocal.sepHome(path);
+                path = SourceLocal.sepRest(path);
+                Object temp = unfindKeyParent(res, scope, mask);
+                if (temp instanceof SkelAtom) {
+                    SkelAtom sa = (SkelAtom) temp;
+                    path = SourceLocal.composeLocal(sa.fun, path);
+                    return new SkelAtom(path);
+                } else {
+                    SkelCompound sc = (SkelCompound) temp;
+                    path = SourceLocal.composeLocal(((SkelAtom) sc.args[0]).fun, path);
+                    return new SkelCompound(sc.sym, new SkelAtom(path));
+                }
+            } else {
+                return unfindKeyParent(path, scope, mask);
+            }
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>Unfind a key in the best way.</p>
+     *
+     * @param path  The absolute or relative path.
+     * @param src   The call-site, not null.
+     * @param mask  The mask.
+     * @return The path without suffix.
+     * @throws IOException Shit happens.
+     */
+    public static Object unfindKeyParent(String path,
+                                         AbstractSource src,
+                                         int mask)
+            throws IOException, EngineMessage {
+
+        /* special case */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            if (Branch.OP_USER.equals(path))
+                return path;
+        }
+
+        /* foreign .class */
+        if (ForeignUri.sysUriIsRelative(path)) {
+            if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
+                String res = LookupBinary.unfindBinarySuffix(path, src, mask);
+                if (res != null)
+                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_FOREIGN),
+                            new SkelAtom(res));
+            }
+            return new SkelAtom(path);
+        }
+
+        String key = LookupRead.unfindReadSuffix(path, src, mask);
+        if (key != null)
+            path = key;
+
+        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
+            String res = LookupRead.unfindRead(path, src);
+            if (res != null)
+                return new SkelAtom(res);
+        }
+
+        /* library .p */
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+            String res = LookupResource.unfindResourcePaths(path, src.getStore());
+            if (res != null)
+                return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
+                        new SkelAtom(res));
+        }
+
+        return new SkelAtom(path);
     }
 
 }
