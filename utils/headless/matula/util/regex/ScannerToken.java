@@ -483,10 +483,11 @@ public final class ScannerToken {
      *     linecomment --> lcstart { char } eol.
      * </pre>
      *
-     * @throws ScannerError Scanning problem.
+     * @param stopeol The stop EOL flag.
      * @throws IOException IO error.
      */
-    private void nextLineComment() throws ScannerError, IOException {
+    private void nextLineComment(boolean stopeol)
+            throws IOException {
         if ((flags & MASK_RTRN_LINE) != 0) {
             String lc = remark.getLineComment();
             consumeStr(lc);
@@ -494,7 +495,7 @@ public final class ScannerToken {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
-            if (ch != CodeType.LINE_EOF) {
+            if (!stopeol && ch != CodeType.LINE_EOF) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
             }
@@ -505,7 +506,7 @@ public final class ScannerToken {
             skipStr(lc);
             while (ch != CodeType.LINE_EOF && ch != CodeType.LINE_EOL)
                 ch = getCode();
-            if (ch != CodeType.LINE_EOF)
+            if (!stopeol && ch != CodeType.LINE_EOF)
                 ch = getCode();
         }
     }
@@ -549,7 +550,8 @@ public final class ScannerToken {
         }
         hint = 0;
         data = buf.toString();
-        throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT, OpenOpts.getOffset(reader));
+        throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_BLOCK_COMMENT,
+                OpenOpts.getOffset(reader));
     }
 
     /**
@@ -562,14 +564,15 @@ public final class ScannerToken {
      * </pre>
      * <p>For whitespace and control see class CodeType.</p>
      *
-     * @throws ScannerError Scanning problem.
+     * @param stopeol The stop EOL flag.
      * @throws IOException IO error.
      */
-    private void nextFiller() throws ScannerError, IOException {
+    private void nextFiller(boolean stopeol) throws IOException {
         if ((flags & MASK_RTRN_LAYT) != 0) {
             buf.appendCodePoint(ch);
             ch = getCode();
             while (ch != CodeType.LINE_EOF &&
+                    (!stopeol || ch != CodeType.LINE_EOL) &&
                     delemiter.isLayout(ch)) {
                 buf.appendCodePoint(ch);
                 ch = getCode();
@@ -579,6 +582,7 @@ public final class ScannerToken {
         } else {
             ch = getCode();
             while (ch != CodeType.LINE_EOF &&
+                    (!stopeol || ch != CodeType.LINE_EOL) &&
                     delemiter.isLayout(ch)) {
                 ch = getCode();
             }
@@ -612,7 +616,7 @@ public final class ScannerToken {
             switch (delemiter.classOf(ch)) {
                 case CodeType.SUB_CLASS_WHITESPACE:
                 case CodeType.SUB_CLASS_CONTROL:
-                    nextFiller();
+                    nextFiller(false);
                     if ((flags & MASK_RTRN_LAYT) != 0)
                         return;
                     continue;
@@ -620,7 +624,7 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_SOLO:
                     String lc = remark.getLineComment();
                     if (lc != null && startsWith(lc)) {
-                        nextLineComment();
+                        nextLineComment(false);
                         if ((flags & MASK_RTRN_LINE) != 0)
                             return;
                         continue;
@@ -653,7 +657,7 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_GRAPHIC:
                     lc = remark.getLineComment();
                     if (lc != null && startsWith(lc)) {
-                        nextLineComment();
+                        nextLineComment(false);
                         if ((flags & MASK_RTRN_LINE) != 0)
                             return;
                         continue;
@@ -714,41 +718,9 @@ public final class ScannerToken {
     }
 
     /**
-     * <p>Read the spaces.</p>
-     * <p>The following spaces syntax is supported.</p>
-     * <pre>
-     *     spaces --> space { space }.
-     *     space  --> ~eol whitespace
-     *              | control.
-     * </pre>
-     * <p>For whitespace and control see class CodeType.</p>
-     *
-     * @throws IOException IO error.
-     */
-    private void nextSpaces() throws IOException {
-        if ((flags & MASK_RTRN_LAYT) != 0) {
-            buf.appendCodePoint(ch);
-            ch = getCode();
-            while (ch != CodeType.LINE_EOF &&
-                    ch != CodeType.LINE_EOL &&
-                    delemiter.isLayout(ch)) {
-                buf.appendCodePoint(ch);
-                ch = getCode();
-            }
-            hint = 0;
-            data = buf.toString();
-        } else {
-            ch = getCode();
-            while (ch != CodeType.LINE_EOF &&
-                    ch != CodeType.LINE_EOL &&
-                    delemiter.isLayout(ch)) {
-                ch = getCode();
-            }
-        }
-    }
-
-    /**
      * <p>Advance to next terminal suffix.</p>
+     * <p>Will consume or skip spaces.</p>
+     * <p>Will consume or skip line comments.</p>
      *
      * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
@@ -760,7 +732,7 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_WHITESPACE:
                 case CodeType.SUB_CLASS_CONTROL:
                     if (ch != CodeType.LINE_EOL) {
-                        nextSpaces();
+                        nextFiller(true);
                         if ((flags & MASK_RTRN_LAYT) != 0)
                             return;
                         continue;
@@ -773,7 +745,7 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_SOLO:
                     String lc = remark.getLineComment();
                     if (lc != null && startsWith(lc)) {
-                        nextLineComment();
+                        nextLineComment(true);
                         if ((flags & MASK_RTRN_LINE) != 0)
                             return;
                         continue;
@@ -888,10 +860,10 @@ public final class ScannerToken {
      * <p>Consume the stream started with a string.</p>
      *
      * @param s The string.
-     * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void consumeStr(String s) throws ScannerError, IOException {
+    private void consumeStr(String s)
+            throws IOException {
         if (s.length() == 1) {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -909,10 +881,10 @@ public final class ScannerToken {
      * <p>Skip the stream started with a strimng.</p>
      *
      * @param s The string.
-     * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void skipStr(String s) throws ScannerError, IOException {
+    private void skipStr(String s)
+            throws IOException {
         if (s.length() == 1) {
             ch = getCode();
         } else if (s.length() == 2) {
