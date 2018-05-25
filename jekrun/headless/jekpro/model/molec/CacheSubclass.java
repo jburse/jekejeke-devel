@@ -407,10 +407,12 @@ public final class CacheSubclass extends AbstractCache {
                     SkelAtom sa = (SkelAtom) temp;
                     path = SourceLocal.composeLocal(sa.fun, path);
                     return new SkelAtom(path);
-                } else {
+                } else if (temp instanceof SkelCompound) {
                     SkelCompound sc = (SkelCompound) temp;
                     path = SourceLocal.composeLocal(((SkelAtom) sc.args[0]).fun, path);
                     return new SkelCompound(sc.sym, new SkelAtom(path));
+                } else {
+                    throw new IllegalArgumentException("illegal key");
                 }
             } else {
                 return unfindKeyParent(path, scope, mask);
@@ -437,7 +439,7 @@ public final class CacheSubclass extends AbstractCache {
         /* special case */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (Branch.OP_USER.equals(path))
-                return path;
+                return new SkelAtom(path);
         }
 
         /* foreign .class */

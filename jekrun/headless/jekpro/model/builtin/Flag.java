@@ -144,9 +144,9 @@ public final class Flag extends AbstractFlag {
             case FLAG_MAX_ARITY:
                 return Integer.valueOf(Integer.MAX_VALUE);
             case FLAG_DOUBLE_QUOTES:
-                return PrologReader.utilToAtom(en.store.foyer.getUtilDouble());
+                return ReadOpts.utilToAtom(en.store.foyer.getUtilDouble());
             case FLAG_BACK_QUOTES:
-                return PrologReader.utilToAtom(en.store.foyer.getUtilBack());
+                return ReadOpts.utilToAtom(en.store.foyer.getUtilBack());
             case FLAG_MAX_CODE:
                 return Integer.valueOf(Character.MAX_CODE_POINT);
             case FLAG_SYS_BREAK_LEVEL:
@@ -161,7 +161,7 @@ public final class Flag extends AbstractFlag {
             case FLAG_SYS_ACT_STATUS:
                 return new SkelAtom(en.store.foyer.getError());
             case FLAG_SINGLE_QUOTES:
-                return PrologReader.utilToAtom(en.store.foyer.getUtilSingle());
+                return ReadOpts.utilToAtom(en.store.foyer.getUtilSingle());
             case FLAG_SYS_VARIABLES:
                 return Integer.valueOf(en.serno);
             case FLAG_SYS_CHOICES:

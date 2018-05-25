@@ -312,13 +312,13 @@ public final class CachePredicate extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s == null)
-                    continue;
-                s = CacheFunctor.composeQuali(s, fun);
-                StoreKey sk = new StoreKey(s, arity);
-                Predicate pick = base.getRoutine(sk);
-                if (pick != null && pick.visiblePred(src))
-                    return pick;
+                if (s != null) {
+                    s = CacheFunctor.composeQuali(s, fun);
+                    StoreKey sk = new StoreKey(s, arity);
+                    Predicate pick = base.getRoutine(sk);
+                    if (pick != null && pick.visiblePred(src))
+                        return pick;
+                }
                 deps2 = base.snapshotDeps();
             } finally {
                 base.getRead().release();
@@ -362,13 +362,13 @@ public final class CachePredicate extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s == null)
-                    continue;
-                s = CacheFunctor.composeQuali(s, fun);
-                StoreKey sk = new StoreKey(s, arity);
-                Predicate pick = base.getRoutine(sk);
-                if (pick != null && pick.visiblePred(src))
-                    return pick;
+                if (s != null) {
+                    s = CacheFunctor.composeQuali(s, fun);
+                    StoreKey sk = new StoreKey(s, arity);
+                    Predicate pick = base.getRoutine(sk);
+                    if (pick != null && pick.visiblePred(src))
+                        return pick;
+                }
                 deps2 = base.snapshotDeps();
             } finally {
                 base.getRead().release();
@@ -400,7 +400,7 @@ public final class CachePredicate extends AbstractCache {
             throws InterruptedException, EngineMessage {
         for (int i = 0; i < deps.length; i++) {
             MapEntry<AbstractSource, Integer> dep = deps[i];
-            if ((dep.value.intValue() & AbstractSource.MASK_IMPT_PARM) == 0)
+            if ((dep.value.intValue() & AbstractSource.MASK_IMPT_PAIM) == 0)
                 continue;
             AbstractSource base = dep.key;
             if (visited.contains(base))
@@ -412,13 +412,13 @@ public final class CachePredicate extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s == null)
-                    continue;
-                s = CacheFunctor.composeQuali(s, fun);
-                StoreKey sk = new StoreKey(s, arity);
-                Predicate pick = base.getRoutine(sk);
-                if (pick != null && pick.visiblePred(src))
-                    return pick;
+                if (s != null) {
+                    s = CacheFunctor.composeQuali(s, fun);
+                    StoreKey sk = new StoreKey(s, arity);
+                    Predicate pick = base.getRoutine(sk);
+                    if (pick != null && pick.visiblePred(src))
+                        return pick;
+                }
                 deps2 = base.snapshotDeps();
             } finally {
                 base.getRead().release();

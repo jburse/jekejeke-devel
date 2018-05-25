@@ -1,6 +1,8 @@
 package jekpro.tools.term;
 
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 
 /**
@@ -38,7 +40,13 @@ public abstract class AbstractSkel {
      * @return The string.
      */
     public String toString() {
-        return PrologWriter.toString(this, Display.DISPLAY_CONST, 0);
+        try {
+            return PrologWriter.toString(this, Display.DISPLAY_CONST, 0, null);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldn't happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
     }
 
 }

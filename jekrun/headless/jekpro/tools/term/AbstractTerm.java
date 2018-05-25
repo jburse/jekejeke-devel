@@ -2,7 +2,10 @@ package jekpro.tools.term;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.AbstractBind;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
@@ -15,26 +18,26 @@ import jekpro.tools.call.InterpreterMessage;
  * he might have Prolog atomics unwrapped. Only compounds and
  * variables need always be wrapped, since the API data type
  * aggregates a skeleton and display.
- *
+ * <p>
  * The external API roots the terms either in the Java Object
  * class or in the AbstractTerm class. In both cases the hashCode(), equals()
  * and unparseTerm() methods of the Java Object class can be used. The
  * realization is such that that even for non-ground Prolog terms
  * these methods correspond to the Prolog term_hash/2, ==/2
  * and write/1.
- *
+ * <p>
  * The method unifyTerm() attempts a unification. For performance
  * reasons a failed unification might leave variable bindings.
  * If the variable bindings need an undoing by the application
  * program it is bested to use unification in combination with
  * an empty interactor, see also the class Interpreter.
- *
+ * <p>
  * The method copyTerm() creates a copy of the given term. The
  * method will create new compounds for those sub branches of the
  * original term that either contain variables or that need to
  * dereference variables and don't lead to atomics. The method
  * variant copyTermWrapped() returns a wrapped result.
- *
+ * <p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -178,7 +181,29 @@ public abstract class AbstractTerm {
      * @return The string.
      */
     public String toString() {
-        return PrologWriter.toString(getSkel(this), getDisplay(this), 0);
+        try {
+            return PrologWriter.toString(getSkel(this), getDisplay(this), 0, null);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldn't happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
+    }
+
+    /**
+     * <p>Return a string of a skeleton.</p>
+     *
+     * @param flags The flags.
+     * @return The string.
+     */
+    public String toString(int flags) {
+        try {
+            return PrologWriter.toString(getSkel(this), getDisplay(this), flags, null);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldn't happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
     }
 
     /****************************************************************/

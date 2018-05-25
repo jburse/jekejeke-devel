@@ -41,51 +41,6 @@ public final class ForeignTerm {
     /****************************************************************/
 
     /**
-     * <p>Write a term to a stream.</p>
-     *
-     * @param inter   The interpreter.
-     * @param para    The stream.
-     * @param val     The term.
-     * @throws InterpreterMessage   Validation problem.
-     * @throws InterpreterException Shit happens.
-     */
-    public static void sysWrite(Interpreter inter,
-                                Writer para, Object val)
-            throws InterpreterMessage, InterpreterException {
-        inter.unparseTerm(para, Interpreter.FLAG_NUMBERVARS, val);
-    }
-
-    /**
-     * <p>Write a term quoted if necessary to a stream.</p>
-     *
-     * @param inter   The interpreter.
-     * @param para    The stream.
-     * @param val     The term.
-     * @throws InterpreterMessage Validation problem.
-     * @throws InterpreterMessage Shit happens.
-     */
-    public static void sysWriteq(Interpreter inter,
-                                 Writer para, Object val)
-            throws InterpreterMessage, InterpreterException {
-        inter.unparseTerm(para, Interpreter.FLAG_NUMBERVARS | Interpreter.FLAG_QUOTED, val);
-    }
-
-    /**
-     * <p>Write a term canonical to a stream.</p>
-     *
-     * @param inter   The interpreter.
-     * @param para    The stream.
-     * @param val     The term.
-      * @throws InterpreterMessage   Validation problem.
-     * @throws InterpreterException Shit happens.
-     */
-    public static void sysWriteCanonical(Interpreter inter,
-                                         Writer para, Object val)
-            throws InterpreterMessage, InterpreterException {
-        inter.unparseTerm(para, Interpreter.FLAG_QUOTED | Interpreter.FLAG_IGNORE_OPS, val);
-    }
-
-    /**
      * <p>Write a term respecting options to a stream.</p>
      *
      * @param inter   The interpreter.
@@ -99,21 +54,6 @@ public final class ForeignTerm {
                                     Writer para, AbstractTerm val, Object opt)
             throws InterpreterMessage, InterpreterException {
         inter.unparseTerm(para, opt, val);
-    }
-
-    /**
-     * <p>Read a term from a stream.</p>
-     *
-     * @param inter   The interpreter.
-     * @param para    The stream.
-     * @return The read term.
-     * @throws InterpreterMessage   Validation problem.
-     * @throws InterpreterException Validation problem.
-     */
-    public static Object sysRead(Interpreter inter,
-                                 Reader para)
-            throws InterpreterMessage, InterpreterException {
-        return inter.parseTerm(para);
     }
 
     /**

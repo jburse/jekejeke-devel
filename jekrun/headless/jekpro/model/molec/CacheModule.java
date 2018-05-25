@@ -208,7 +208,7 @@ public final class CacheModule extends AbstractCache {
                 return relpath;
         }
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
@@ -343,7 +343,7 @@ public final class CacheModule extends AbstractCache {
                 return relpath;
         }
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* source imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&

@@ -46,19 +46,29 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class WriteOpts {
-    public final static String OP_OPERAND_NONE = "none";
-    public final static String OP_OPERAND_LEFT = "left";
-    public final static String OP_OPERAND_LEFTASSOC = "leftassoc";
+    private final static String OP_QUOTED = "quoted";
+    private final static String OP_NUMBERVARS = "numbervars";
+    private final static String OP_IGNORE_OPS = "ignore_ops";
+    private final static String OP_IGNORE_MOD = "ignore_mod";
+    private final static String OP_PRIORITY = "priority";
+    private final static String OP_FORMAT = "format";
+    private final static String OP_CONTEXT = "context";
+    private final static String OP_OPERAND = "operand";
+    final static String OP_PART = "part";
 
-    public final static String OP_FORMAT_NEWL = "newline";
-    public final static String OP_FORMAT_NAVI = "navigation";
+    private final static String OP_ANNO_MKDT = "makedot";
+    private final static String OP_ANNO_FILL = "filler";
+    private final static String OP_ANNO_HINT = "hint";
 
-    public final static String OP_ANNO_MKDT = "makedot";
-    public final static String OP_ANNO_FILL = "filler";
-    public final static String OP_ANNO_HINT = "hint";
+    private final static String OP_FORMAT_NEWL = "newline";
+    private final static String OP_FORMAT_NAVI = "navigation";
 
-    public final static String OP_PART_CMMT = "comment";
-    public final static String OP_PART_STMT = "statement";
+    private final static String OP_OPERAND_NONE = "none";
+    private final static String OP_OPERAND_LEFT = "left";
+    private final static String OP_OPERAND_LEFTASSOC = "leftassoc";
+
+    private final static String OP_PART_CMMT = "comment";
+    private final static String OP_PART_STMT = "statement";
 
     public static final int FORMAT_NEWL = 1;
     public static final int FORMAT_NAVI = 2;
@@ -91,10 +101,10 @@ public final class WriteOpts {
      * @param en The engine.
      */
     public WriteOpts(Engine en) {
-        source = en.store.user;
         utildouble = (byte) en.store.foyer.getUtilDouble();
         utilback = (byte) en.store.foyer.getUtilBack();
         utilsingle = (byte) en.store.foyer.getUtilSingle();
+        source = en.store.user;
     }
 
     /**
@@ -120,7 +130,7 @@ public final class WriteOpts {
             en.deref();
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_QUOTED)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_QUOTED)) {
                 if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
                     flags |= PrologWriter.FLAG_QUOT;
                 } else {
@@ -128,7 +138,7 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_NUMBERVARS)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_NUMBERVARS)) {
                 if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
                     flags |= PrologWriter.FLAG_NUMV;
                 } else {
@@ -136,7 +146,7 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_IGNORE_OPS)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_OPS)) {
                 if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
                     flags |= PrologWriter.FLAG_IGNO;
                 } else {
@@ -144,7 +154,7 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_IGNORE_MOD)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_MOD)) {
                 if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
                     flags |= PrologWriter.FLAG_IGNM;
                 } else {
@@ -152,7 +162,7 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_PRIORITY)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
                 en.skel = ((SkelCompound) en.skel).args[0];
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
@@ -162,7 +172,7 @@ public final class WriteOpts {
                 SpecialOper.checkOperatorLevel(lev);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_FORMAT)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_FORMAT)) {
                 int form = atomToFormat(((SkelCompound) en.skel).args[0], en.display, en);
                 if ((form & FORMAT_NEWL) != 0) {
                     flags |= PrologWriter.FLAG_NEWL;
@@ -176,8 +186,8 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_PART)) {
-                int part = atomToPart(((SkelCompound) en.skel).args[0], en.display, en);
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_PART)) {
+                int part = atomToWritePart(((SkelCompound) en.skel).args[0], en.display, en);
                 if ((part & PART_CMMT) != 0) {
                     flags |= PrologWriter.FLAG_CMMT;
                 } else {
@@ -190,7 +200,7 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_CONTEXT)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_CONTEXT)) {
                 Object obj = Predicate.checkMetaSpezArg(
                         ((SkelCompound) en.skel).args[0], en.display, en);
                 if (spezToMeta(obj)) {
@@ -207,12 +217,12 @@ public final class WriteOpts {
                 shift = spezToShift(obj);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologWriter.OP_OPERAND)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_OPERAND)) {
                 int k = atomToOperand(((SkelCompound) en.skel).args[0], en.display, en);
                 spez = ((spez & ~PrologWriter.SPEZ_OPLE) & ~PrologWriter.SPEZ_LEFT) | k;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_VARIABLE_NAMES)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
                 printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -231,7 +241,7 @@ public final class WriteOpts {
                         en.display, en);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_ANNOTATION)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_ANNOTATION)) {
                 int anno = termToAnno(((SkelCompound) en.skel).args[0], en.display, en);
                 if ((anno & ANNO_MKDT) != 0) {
                     flags |= PrologWriter.FLAG_MKDT;
@@ -250,7 +260,7 @@ public final class WriteOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_SOURCE)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_SOURCE)) {
                 en.skel = ((SkelCompound) en.skel).args[0];
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
@@ -277,6 +287,24 @@ public final class WriteOpts {
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
         validatePrintMap();
+    }
+
+    /**
+     * <p>Set the write options.</p>
+     *
+     * @param pw The Prolog writer.
+     */
+    public void setWriteOpts(PrologWriter pw) {
+        pw.setFlags(flags);
+        pw.setUtilDouble(utildouble);
+        pw.setUtilBack(utilback);
+        pw.setUtilSingle(utilsingle);
+        pw.setSource(source);
+        pw.setLevel(lev);
+        pw.setSpez(spez);
+        pw.setOffset(offset);
+        pw.setShift(shift);
+        pw.setPrintMap(printmap);
     }
 
     /**
@@ -431,7 +459,8 @@ public final class WriteOpts {
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToPart(Object m, Display d, Engine en) throws EngineMessage {
+    public static int atomToWritePart(Object m, Display d, Engine en)
+            throws EngineMessage {
         en.skel = m;
         en.display = d;
         en.deref();

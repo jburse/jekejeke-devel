@@ -89,7 +89,7 @@ public final class LookupBinary {
                                           AbstractSource src,
                                           int mask) {
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
@@ -136,7 +136,7 @@ public final class LookupBinary {
                                             AbstractSource src,
                                             int mask) {
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* source binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0 &&

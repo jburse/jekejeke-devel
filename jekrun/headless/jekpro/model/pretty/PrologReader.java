@@ -55,13 +55,6 @@ public class PrologReader {
     public final static int REP_CHARS = 0;
     public final static int REP_CODES = 1;
 
-    public final static String OP_LINE_NO = "line_no";
-    public final static String OP_VARIABLES = "variables";
-    public final static String OP_VARIABLE_NAMES = "variable_names";
-    public final static String OP_SINGLETONS = "singletons";
-    public final static String OP_ANNOTATION = "annotation";
-    public final static String OP_SOURCE = "source";
-
     public final static String OP_ANON = "_";
     public final static String OP_EOF = "";
     public final static String OP_EOLN = "\n";
@@ -1033,37 +1026,6 @@ public class PrologReader {
             }
         }
     }
-
-    /*******************************************************************************/
-    /* Read Options                                                                */
-    /*******************************************************************************/
-
-    /**
-     * <p>Convert an util to an atom.</p>
-     *
-     * @param u The util.
-     * @return The atom.
-     */
-    public static SkelAtom utilToAtom(int u) {
-        switch (u) {
-            case ReadOpts.UTIL_ERROR:
-                return new SkelAtom(ReadOpts.OP_VALUE_ERROR);
-            case ReadOpts.UTIL_CODES:
-                return new SkelAtom(ReadOpts.OP_VALUE_CODES);
-            case ReadOpts.UTIL_CHARS:
-                return new SkelAtom(ReadOpts.OP_VALUE_CHARS);
-            case ReadOpts.UTIL_ATOM:
-                return new SkelAtom(ReadOpts.OP_VALUE_ATOM);
-            case ReadOpts.UTIL_VARIABLE:
-                return new SkelAtom(ReadOpts.OP_VALUE_VARIABLE);
-            default:
-                throw new IllegalArgumentException("illegal util");
-        }
-    }
-
-
-
-
 
     /********************************************************************/
     /* Style Checks                                                     */

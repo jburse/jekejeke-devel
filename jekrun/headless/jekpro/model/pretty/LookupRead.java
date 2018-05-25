@@ -56,7 +56,7 @@ public final class LookupRead {
 
         /* make it absolute */
         if (ForeignUri.sysUriIsRelative(path)) {
-            AbstractSource src2 = LookupChild.derefParent(src);
+            AbstractSource src2 = LookupChild.derefParentImport(src);
             String base;
             if (Branch.OP_USER.equals(src2.getPath())) {
                 base = src2.getStore().foyer.base;
@@ -97,7 +97,7 @@ public final class LookupRead {
     public static String unfindRead(String path,
                                     AbstractSource src)
             throws IOException {
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
         String base;
         if (Branch.OP_USER.equals(src2.getPath())) {
             base = src2.getStore().foyer.base;
@@ -134,7 +134,7 @@ public final class LookupRead {
                                         int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
@@ -208,7 +208,7 @@ public final class LookupRead {
                                           int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&

@@ -5,15 +5,16 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
+import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
 import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
@@ -106,11 +107,12 @@ public final class ForeignLocale {
      * @param locstr The locale.
      * @param format The format.
      * @param list   The list of terms.
-     * @throws InterpreterMessage Not a list.
+     * @throws InterpreterMessage   Not a list.
+     * @throws InterpreterException Not a list.
      */
     public static String sysAtomFormat(Interpreter inter, String locstr,
                                        String format, Object list)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Locale locale = XSelectFormat.stringToLocale(locstr);
         Object[] args = ForeignLocale.prepareArguments(inter, list);
         return String.format(locale, format, args);
@@ -122,20 +124,27 @@ public final class ForeignLocale {
      * @param inter The interpreter.
      * @param term  The list of arguments.
      * @return The array of Java objects.
-     * @throws InterpreterMessage Not a list.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     private static Object[] prepareArguments(Interpreter inter, Object term)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) inter.getEngine();
-        ArrayList<Object> vec = new ArrayList<Object>();
+        ListArray<Object> vec = new ListArray<Object>();
         while (term instanceof TermCompound &&
                 ((TermCompound) term).getArity() == 2 &&
                 ((TermCompound) term).getFunctor().equals(
                         Knowledgebase.OP_CONS)) {
             TermCompound tc = (TermCompound) term;
             Object arg = tc.getArgMolec(0);
-            vec.add(EngineMessage.prepareArgument(AbstractTerm.getSkel(arg),
-                    AbstractTerm.getDisplay(arg), en));
+            try {
+                vec.add(EngineMessage.prepareArgument(AbstractTerm.getSkel(arg),
+                        AbstractTerm.getDisplay(arg), en));
+            } catch (EngineMessage x) {
+                throw new InterpreterMessage(x);
+            } catch (EngineException x) {
+                throw new InterpreterException(x);
+            }
             term = tc.getArg(1);
         }
         if (term.equals(Knowledgebase.OP_NIL)) {
@@ -162,13 +171,22 @@ public final class ForeignLocale {
      * @param obj    The properties.
      * @param term   The message term.
      * @return The formatted term.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     public static String sysMessageMake(Interpreter inter, String locstr,
-                                        Properties obj, Object term) {
-        Locale locale = XSelectFormat.stringToLocale(locstr);
-        Engine en = (Engine) inter.getEngine();
-        return EngineMessage.messageMake(AbstractTerm.getSkel(term),
-                AbstractTerm.getDisplay(term), locale, obj, en);
+                                        Properties obj, Object term)
+            throws InterpreterMessage, InterpreterException {
+        try {
+            Locale locale = XSelectFormat.stringToLocale(locstr);
+            Engine en = (Engine) inter.getEngine();
+            return EngineMessage.messageMake(AbstractTerm.getSkel(term),
+                    AbstractTerm.getDisplay(term), locale, obj, en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
     }
 
     /****************************************************************/
@@ -183,13 +201,22 @@ public final class ForeignLocale {
      * @param obj    The properties.
      * @param term   The message term.
      * @return The formatted term.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     public static String sysErrorMake(Interpreter inter, String locstr,
-                                      Properties obj, Object term) {
-        Locale locale = XSelectFormat.stringToLocale(locstr);
-        Engine en = (Engine) inter.getEngine();
-        return EngineException.errorMake(AbstractTerm.getSkel(term),
-                AbstractTerm.getDisplay(term), locale, obj, en);
+                                      Properties obj, Object term)
+            throws InterpreterMessage, InterpreterException {
+        try {
+            Locale locale = XSelectFormat.stringToLocale(locstr);
+            Engine en = (Engine) inter.getEngine();
+            return EngineException.errorMake(AbstractTerm.getSkel(term),
+                    AbstractTerm.getDisplay(term), locale, obj, en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
     }
 
     /****************************************************************/

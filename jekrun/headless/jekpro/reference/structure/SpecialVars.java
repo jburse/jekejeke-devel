@@ -6,7 +6,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.*;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
@@ -40,6 +39,8 @@ import matula.util.data.SetHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialVars extends AbstractSpecial {
+    public final static String OP_DOLLAR_VAR = "$VAR";
+
     private final static int SPECIAL_TERM_VARIABLES = 0;
     private final static int SPECIAL_TERM_VARIABLES_DIFF = 1;
     private final static int SPECIAL_SYS_TERM_SINGELTONS = 2;
@@ -272,7 +273,7 @@ public final class SpecialVars extends AbstractSpecial {
                     m = b.skel;
                     d = b.display;
                 } else {
-                    Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
+                    Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
                     if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                         return null;
                     return Integer.valueOf(val.intValue() + 1);
@@ -288,7 +289,7 @@ public final class SpecialVars extends AbstractSpecial {
                             if (val == null)
                                 return null;
                         } else {
-                            Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
+                            Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
                             if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                                 return null;
                             val = Integer.valueOf(val.intValue() + 1);
@@ -300,7 +301,7 @@ public final class SpecialVars extends AbstractSpecial {
                         m = b.skel;
                         d = b.display;
                     } else {
-                        Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
+                        Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
                         if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                             return null;
                         return Integer.valueOf(val.intValue() + 1);

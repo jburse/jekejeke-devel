@@ -7,6 +7,7 @@ import jekpro.model.rope.NamedDistance;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.ForeignAtom;
+import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
@@ -38,17 +39,6 @@ public class PrologWriter {
 
     public final static int STANDALONE = 0;
     public final static int ENDLINE = 50;
-
-    public final static String OP_QUOTED = "quoted";
-    public final static String OP_NUMBERVARS = "numbervars";
-    public final static String OP_IGNORE_OPS = "ignore_ops";
-    public final static String OP_IGNORE_MOD = "ignore_mod";
-    public final static String OP_PRIORITY = "priority";
-    public final static String OP_FORMAT = "format";
-    public final static String OP_CONTEXT = "context";
-    public final static String OP_OPERAND = "operand";
-    public final static String OP_DOLLAR_VAR = "$VAR";
-    public final static String OP_PART = "part";
 
     public final static int FLAG_QUOT = 0x00000001;
     public final static int FLAG_NUMV = 0x00000002;
@@ -86,7 +76,7 @@ public class PrologWriter {
     private Writer wr;
     private int toff;
     private int lch = -1;
-    public int flags;
+    public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
     public int lev = Operator.LEVEL_HIGH;
     private MapHashLink<TermVar, NamedDistance> printmap;
     public int spez;
@@ -219,7 +209,7 @@ public class PrologWriter {
      *
      * @param u The double quotes utilization.
      */
-    private void setUtilDouble(int u) {
+    public void setUtilDouble(int u) {
         utildouble = (byte) u;
     }
 
@@ -228,7 +218,7 @@ public class PrologWriter {
      *
      * @param u The back quotes utilization.
      */
-    private void setUtilBack(int u) {
+    public void setUtilBack(int u) {
         utilback = (byte) u;
     }
 
@@ -237,7 +227,7 @@ public class PrologWriter {
      *
      * @param u The single quotes utilization.
      */
-    private void setUtilSingle(int u) {
+    public void setUtilSingle(int u) {
         utilsingle = (byte) u;
     }
 
@@ -269,21 +259,14 @@ public class PrologWriter {
     }
 
     /**
-     * <p>Set the write options.</p>
+     * <p>Set the util flags to the stor util flags.</p>
      *
-     * @param wo The write options.
+     * @param store The store.
      */
-    public void setWriteOpts(WriteOpts wo) {
-        flags = wo.flags;
-        lev = wo.lev;
-        spez = wo.spez;
-        offset = wo.offset;
-        shift = wo.shift;
-        utildouble = wo.utildouble;
-        utilback = wo.utilback;
-        utilsingle = wo.utilsingle;
-        source = wo.source;
-        printmap = wo.printmap;
+    public void setWriteUtil(AbstractStore store) {
+        utildouble = (byte) store.foyer.getUtilDouble();
+        utilback = (byte) store.foyer.getUtilBack();
+        utilsingle = (byte) store.foyer.getUtilSingle();
     }
 
     /***************************************************************/
@@ -1206,7 +1189,7 @@ public class PrologWriter {
         }
         SkelCompound sc = ((SkelCompound) term);
         if ((flags & FLAG_NUMV) != 0 && sc.args.length == 1 &&
-                sc.sym.fun.equals(OP_DOLLAR_VAR)) {
+                sc.sym.fun.equals(SpecialVars.OP_DOLLAR_VAR)) {
             Object help = sc.args[0];
             if (engine != null) {
                 engine.skel = help;
@@ -1599,59 +1582,16 @@ public class PrologWriter {
      * @param t     The term skeleton.
      * @param ref   The term display.
      * @param flags The flags.
-     * @return The string.
-     */
-    public static String toString(Object t, Display ref, int flags) {
-        PrologWriter pw = new PrologWriter();
-        pw.setFlags(flags);
-        return pw.toString(t, ref);
-    }
-
-    /**
-     * <p>Convert a term to a string.</p>
-     *
-     * @param t     The term skeleton.
-     * @param ref   The term display.
-     * @param flags The flags.
      * @param en    The engine, can be null.
      * @return The string.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public static String toString(Object t, Display ref, int flags,
-                                  Engine en) {
-        PrologWriter pw;
-        if (en != null) {
-            pw = Foyer.createWriter(Foyer.IO_TERM);
-            pw.setWriteOpts(new WriteOpts(en));
-            pw.setEngineRaw(en);
-        } else {
-            pw = new PrologWriter();
-        }
-        pw.setFlags(flags);
-        return pw.toString(t, ref);
-    }
-
-    /**
-     * <p>Method to unparse a term into a string.</p>
-     *
-     * @param t   The term.
-     * @param ref The display of the term.
-     * @return The string.
-     */
-    public String toString(Object t, Display ref) {
-        Writer back = getWriter();
-        StringWriter sw;
-        try {
-            sw = new StringWriter();
-            setWriter(sw);
-            unparseStatement(t, ref);
-        } catch (EngineMessage x) {
-            setWriter(back);
-            throw new RuntimeException("shouldn't happen", x);
-        } catch (EngineException x) {
-            setWriter(back);
-            throw new RuntimeException("shouldn't happen", x);
-        }
-        setWriter(back);
+                                  Engine en)
+            throws EngineException, EngineMessage {
+        StringWriter sw = new StringWriter();
+        toString(t, ref, sw, flags, en);
         return sw.toString();
     }
 
@@ -1669,19 +1609,16 @@ public class PrologWriter {
     public static void toString(Object t, Display ref, Writer wr, int flags,
                                 Engine en)
             throws EngineMessage, EngineException {
-        PrologWriter pw;
+        PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
         if (en != null) {
-            pw = Foyer.createWriter(Foyer.IO_TERM);
-            pw.setWriteOpts(new WriteOpts(en));
+            pw.setWriteUtil(en.store);
+            pw.setSource(en.store.user);
             pw.setEngineRaw(en);
-        } else {
-            pw = new PrologWriter();
         }
         pw.setFlags(flags);
         pw.setWriter(wr);
         pw.unparseStatement(t, ref);
     }
-
 
     /**
      * <p>Right or left align a string.</p>

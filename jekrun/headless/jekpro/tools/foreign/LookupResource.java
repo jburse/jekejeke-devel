@@ -95,7 +95,7 @@ public final class LookupResource {
                                             int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentImport(src);
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&

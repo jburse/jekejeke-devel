@@ -205,13 +205,16 @@ public final class Knowledgebase extends AbstractRecognizer {
      * <p>Fini the registered capabilities.</p>
      *
      * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     public void finiKnowledgebase()
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         try {
             store.finiStore(store);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
         }
     }
 

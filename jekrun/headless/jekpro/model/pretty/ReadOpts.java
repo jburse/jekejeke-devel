@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -38,11 +39,18 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ReadOpts {
+    public final static String OP_LINE_NO = "line_no";
+    public final static String OP_VARIABLES = "variables";
+    public final static String OP_VARIABLE_NAMES = "variable_names";
+    private final static String OP_SINGLETONS = "singletons";
+    final static String OP_SOURCE = "source";
+    final static String OP_ANNOTATION = "annotation";
+
     public final static String OP_VALUE_ERROR = "error";
-    public final static String OP_VALUE_CODES = "codes";
-    public final static String OP_VALUE_CHARS = "chars";
-    public final static String OP_VALUE_ATOM = "atom";
-    public final static String OP_VALUE_VARIABLE = "variable";
+    private final static String OP_VALUE_CODES = "codes";
+    private final static String OP_VALUE_CHARS = "chars";
+    private final static String OP_VALUE_ATOM = "atom";
+    private final static String OP_VALUE_VARIABLE = "variable";
 
     public final static int UTIL_CHARS = 2;
     public final static int UTIL_VARIABLE = 3;
@@ -50,15 +58,27 @@ public final class ReadOpts {
     public final static int UTIL_ERROR = 0;
     public final static int UTIL_ATOM = 4;
 
-    public int flags;
-    public byte utildouble = UTIL_CODES;
-    public byte utilback = UTIL_ERROR;
-    public byte utilsingle = UTIL_ATOM;
+    public int flags = PrologWriter.FLAG_STMT;
+    public byte utildouble;
+    public byte utilback;
+    public byte utilsingle;
     public AbstractSource source;
 
     /***************************************************************/
     /* Read Options                                                */
     /***************************************************************/
+
+    /**
+     * <p>Create some read options.</p>
+     *
+     * @param en The engine.
+     */
+    public ReadOpts(Engine en) {
+        utildouble = (byte) en.store.foyer.getUtilDouble();
+        utilback = (byte) en.store.foyer.getUtilBack();
+        utilsingle = (byte) en.store.foyer.getUtilSingle();
+        source = en.store.user;
+    }
 
     /**
      * <p>Decode the given read parameters.</p>
@@ -69,11 +89,6 @@ public final class ReadOpts {
      */
     public void decodeReadParameter(Object t, Display d, Engine en)
             throws EngineMessage {
-        source = en.store.user;
-        utildouble = (byte) en.store.foyer.getUtilDouble();
-        utilback = (byte) en.store.foyer.getUtilBack();
-        utilsingle = (byte) en.store.foyer.getUtilSingle();
-
         en.skel = t;
         en.display = d;
         en.deref();
@@ -87,15 +102,15 @@ public final class ReadOpts {
             en.deref();
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_VARIABLES)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLES)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_VARIABLE_NAMES)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLE_NAMES)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_SINGLETONS)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
                 /* do nothing */
                 flags |= PrologWriter.FLAG_SING;
             } else if (en.skel instanceof SkelCompound &&
@@ -112,7 +127,7 @@ public final class ReadOpts {
                 utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_ANNOTATION)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
                 int anno = WriteOpts.termToAnno(((SkelCompound) en.skel).args[0], en.display, en);
                 if ((anno & WriteOpts.ANNO_MKDT) != 0) {
                     flags |= PrologWriter.FLAG_MKDT;
@@ -131,7 +146,7 @@ public final class ReadOpts {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_SOURCE)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_SOURCE)) {
                 en.skel = ((SkelCompound) en.skel).args[0];
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
@@ -139,8 +154,17 @@ public final class ReadOpts {
                 source = (!"".equals(fun) ? AbstractSource.keyToSource(fun, en.store) : null);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_LINE_NO)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
                 /* do nothing */
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PART)) {
+                int part = atomToReadPart(((SkelCompound) en.skel).args[0], en.display, en);
+                if ((part & WriteOpts.PART_STMT) != 0) {
+                    flags |= PrologWriter.FLAG_STMT;
+                } else {
+                    flags &= ~PrologWriter.FLAG_STMT;
+                }
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(
@@ -163,7 +187,6 @@ public final class ReadOpts {
         }
     }
 
-
     /**
      * <p>Set the read options.</p>
      *
@@ -175,44 +198,6 @@ public final class ReadOpts {
         pr.setUtilBack(utilback);
         pr.setUtilSingle(utilsingle);
         pr.setSource(source);
-    }
-
-    /**
-     * <p>Convert an atom to an util value.</p>
-     * <p>The following values are accepted:</p>
-     * <ul>
-     * <li><b>atom:</b> UTIL_ATOM.</li>
-     * <li><b>codes:</b> UTIL_CODES.</li>
-     * <li><b>variable:</b> UTIL_VARIABLE.</li>
-     * </ul>
-     *
-     * @param m  The util value skel.
-     * @param d  The util value display.
-     * @param en The engine.
-     * @return The util value.
-     * @throws EngineMessage Shit happens.
-     */
-    public static int atomToUtil(Object m, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        String fun = EngineMessage.castString(en.skel, en.display);
-        if (fun.equals(OP_VALUE_ERROR)) {
-            return UTIL_ERROR;
-        } else if (fun.equals(OP_VALUE_CODES)) {
-            return UTIL_CODES;
-        } else if (fun.equals(OP_VALUE_CHARS)) {
-            return UTIL_CHARS;
-        } else if (fun.equals(OP_VALUE_ATOM)) {
-            return UTIL_ATOM;
-        } else if (fun.equals(OP_VALUE_VARIABLE)) {
-            return UTIL_VARIABLE;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
-        }
     }
 
     /**
@@ -244,19 +229,19 @@ public final class ReadOpts {
             en.deref();
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_VARIABLES)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLES)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
                         termToList(t2, en.store), d2))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_VARIABLE_NAMES)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLE_NAMES)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
                         makeAssoc(rd.getVars(), en.store), d2))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_SINGLETONS)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
                         makeAssoc(rd.getAnon(), en.store), d2))
                     return false;
@@ -274,18 +259,22 @@ public final class ReadOpts {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_ANNOTATION)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_SOURCE)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_SOURCE)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_LINE_NO)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
                         Integer.valueOf(rd.getClauseStart()), Display.DISPLAY_CONST))
                     return false;
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PART)) {
+                /* do nothing */
             } else {
                 throw new RuntimeException("internal error");
             }
@@ -340,6 +329,93 @@ public final class ReadOpts {
                 end = new SkelCompound(store.foyer.ATOM_CONS, vars[i], end);
         }
         return end;
+    }
+
+    /**
+     * <p>Convert an atom to an util value.</p>
+     * <p>The following values are accepted:</p>
+     * <ul>
+     * <li><b>atom:</b> UTIL_ATOM.</li>
+     * <li><b>codes:</b> UTIL_CODES.</li>
+     * <li><b>variable:</b> UTIL_VARIABLE.</li>
+     * </ul>
+     *
+     * @param m  The util value skel.
+     * @param d  The util value display.
+     * @param en The engine.
+     * @return The util value.
+     * @throws EngineMessage Shit happens.
+     */
+    public static int atomToUtil(Object m, Display d, Engine en)
+            throws EngineMessage {
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        EngineMessage.checkInstantiated(en.skel);
+        String fun = EngineMessage.castString(en.skel, en.display);
+        if (fun.equals(OP_VALUE_ERROR)) {
+            return UTIL_ERROR;
+        } else if (fun.equals(OP_VALUE_CODES)) {
+            return UTIL_CODES;
+        } else if (fun.equals(OP_VALUE_CHARS)) {
+            return UTIL_CHARS;
+        } else if (fun.equals(OP_VALUE_ATOM)) {
+            return UTIL_ATOM;
+        } else if (fun.equals(OP_VALUE_VARIABLE)) {
+            return UTIL_VARIABLE;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+        }
+    }
+
+    /**
+     * <p>Convert an util to an atom.</p>
+     *
+     * @param u The util.
+     * @return The atom.
+     */
+    public static SkelAtom utilToAtom(int u) {
+        switch (u) {
+            case UTIL_ERROR:
+                return new SkelAtom(OP_VALUE_ERROR);
+            case UTIL_CODES:
+                return new SkelAtom(OP_VALUE_CODES);
+            case UTIL_CHARS:
+                return new SkelAtom(OP_VALUE_CHARS);
+            case UTIL_ATOM:
+                return new SkelAtom(OP_VALUE_ATOM);
+            case UTIL_VARIABLE:
+                return new SkelAtom(OP_VALUE_VARIABLE);
+            default:
+                throw new IllegalArgumentException("illegal util");
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a write part.</p>
+     *
+     * @param m  The annotation mode skel.
+     * @param d  The annotation mode display.
+     * @param en The engine.
+     * @return The annotation mode.
+     * @throws EngineMessage Shit happens.
+     */
+    public static int atomToReadPart(Object m, Display d, Engine en)
+            throws EngineMessage {
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        EngineMessage.checkInstantiated(en.skel);
+        String fun = EngineMessage.castString(en.skel, en.display);
+        if (fun.equals(AbstractFlag.OP_FALSE)) {
+            return 0;
+        } else if (fun.equals(Foyer.OP_TRUE)) {
+            return WriteOpts.PART_STMT;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+        }
     }
 
 }

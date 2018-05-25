@@ -227,6 +227,7 @@ public final class EngineMessage extends Exception {
 
     public static final String ARGTYPE_PARASQ = "parasq";
     public static final String ARGTYPE_PARAQ = "paraq";
+    public static final String ARGTYPE_PARAM = "param";
     public static final String ARGTYPE_PARA = "para";
     public static final String ARGTYPE_ID = "id";
 
@@ -289,9 +290,15 @@ public final class EngineMessage extends Exception {
      * @return The messsage text.
      */
     public String toString() {
-        int size = Display.displaySize(template);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        return EngineMessage.messageMake(template, ref, Locale.getDefault(), null, null);
+        try {
+            int size = Display.displaySize(template);
+            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            return EngineMessage.messageMake(template, ref, Locale.getDefault(), null, null);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldnt happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldnt happen", x);
+        }
     }
 
     /**
@@ -308,6 +315,10 @@ public final class EngineMessage extends Exception {
             Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
             return EngineMessage.messageMake(template, ref, locale, error, null);
         } catch (IOException x) {
+            throw new RuntimeException("shouldnt happen", x);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldnt happen", x);
+        } catch (EngineException x) {
             throw new RuntimeException("shouldnt happen", x);
         }
     }
@@ -868,10 +879,13 @@ public final class EngineMessage extends Exception {
      * @param prop   The properties file.
      * @param en     The engine or null.
      * @return The formatted term.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
     public static String messageMake(Object term, Display ref,
                                      Locale locale, Properties prop,
-                                     Engine en) {
+                                     Engine en)
+            throws EngineMessage, EngineException {
         if (prop == null)
             return PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en);
         BindVar b;
@@ -888,7 +902,7 @@ public final class EngineMessage extends Exception {
             buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
             return buf.toString();
         }
-        String temp = EngineMessage.messageTemplate(term, ref, pat, prop);
+        String temp = EngineMessage.messageTemplate(term, ref, pat, prop, en);
         if (temp == null) {
             StringBuilder buf = new StringBuilder();
             buf.append(prop.getProperty("term.template"));
@@ -948,6 +962,8 @@ public final class EngineMessage extends Exception {
                 pat.add(ARGTYPE_PARASQ);
             } else if (argtype.equals(ARGTYPE_PARAQ)) {
                 pat.add(ARGTYPE_PARAQ);
+            } else if (argtype.equals(ARGTYPE_PARAM)) {
+                pat.add(ARGTYPE_PARAM);
             } else if (argtype.equals(ARGTYPE_PARA)) {
                 pat.add(ARGTYPE_PARA);
             } else if (argtype.equals(ARGTYPE_ID)) {
@@ -972,10 +988,16 @@ public final class EngineMessage extends Exception {
      * @param ref  The message display.
      * @param pat  The message pattern.
      * @param prop The properties file.
+     * @param en The engine.
      * @return The message template or null.
+     * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     private static String messageTemplate(Object term, Display ref,
-                                          ArrayList<String> pat, Properties prop) {
+                                          ArrayList<String> pat,
+                                          Properties prop,
+                                          Engine en)
+            throws EngineMessage, EngineException {
         String fun;
         if (term instanceof SkelAtom) {
             fun = ((SkelAtom) term).fun;
@@ -997,7 +1019,7 @@ public final class EngineMessage extends Exception {
                     d = b.display;
                 }
                 buf.append('.');
-                buf.append(PrologWriter.toString(t, d, 0, null));
+                buf.append(PrologWriter.toString(t, d, 0, en));
             }
         }
         return prop.getProperty(buf.toString());
@@ -1020,7 +1042,8 @@ public final class EngineMessage extends Exception {
      */
     private static Object[] messageParameters(Object term, Display ref,
                                               ArrayList<String> pat,
-                                              Engine en) {
+                                              Engine en)
+            throws EngineException, EngineMessage {
         ListArray<Object> paravec = new ListArray<Object>();
         for (int i = 0; i < pat.size(); i++) {
             String argtype = pat.get(i);
@@ -1036,9 +1059,11 @@ public final class EngineMessage extends Exception {
                 if (argtype.equals(ARGTYPE_PARASQ)) {
                     String path = ((SkelAtom) t).fun;
                     t = new SkelAtom(ForeignLocale.shortName(path));
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT));
+                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT, en));
                 } else if (argtype.equals(ARGTYPE_PARAQ)) {
                     paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT, en));
+                } else if (argtype.equals(ARGTYPE_PARAM)) {
+                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_IGNM, en));
                 } else {
                     paravec.add(EngineMessage.prepareArgument(t, d, en));
                 }
@@ -1056,9 +1081,12 @@ public final class EngineMessage extends Exception {
      * @param d  The term display.
      * @param en The engine.
      * @return The Java object.
+     * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     public static Object prepareArgument(Object t, Display d,
-                                         Engine en) {
+                                         Engine en)
+            throws EngineMessage, EngineException {
         if (t instanceof Float || t instanceof Double) {
             return t;
         } else if (t instanceof Long || t instanceof BigDecimal) {

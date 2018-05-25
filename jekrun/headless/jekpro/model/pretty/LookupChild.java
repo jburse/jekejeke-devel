@@ -92,7 +92,7 @@ public final class LookupChild {
      */
     public static String findChildKey(String relpath,
                                       AbstractSource src) {
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentName(src);
         String res = LookupChild.lookupFullName(src2);
         res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
         if (relpath.startsWith(res) && relpath.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
@@ -113,7 +113,7 @@ public final class LookupChild {
      * @return The path without suffix.
      */
     public static String unfindChildSuffix(String path, AbstractSource src) {
-        AbstractSource src2 = LookupChild.derefParent(src);
+        AbstractSource src2 = LookupChild.derefParentName(src);
         String res = (src2.getName() != null ? src2.getPath() : Branch.OP_USER);
         if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
             path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
@@ -138,7 +138,7 @@ public final class LookupChild {
      */
     public static String lookupFullName(AbstractSource src) {
         String temp = getChainName(src);
-        src = LookupChild.derefParent(src);
+        src = LookupChild.derefParentName(src);
         String res = getPackName(src);
         if (res != null) {
             return CachePackage.composeStruct(res, temp);
@@ -157,13 +157,13 @@ public final class LookupChild {
         String res = src.getName();
         if (res == null)
             res = Branch.OP_USER;
-        src = LookupChild.getParent(src);
+        src = LookupChild.getParentName(src);
         while (src != null) {
             String res2 = src.getName();
             if (res2 == null)
                 res2 = Branch.OP_USER;
             res = SourceLocal.composeLocal(res2, res);
-            src = LookupChild.getParent(src);
+            src = LookupChild.getParentName(src);
         }
         return res;
     }
@@ -189,7 +189,7 @@ public final class LookupChild {
     }
 
     /*******************************************************************/
-    /* Nested Modules                                                  */
+    /* Name Link                                                       */
     /*******************************************************************/
 
     /**
@@ -198,11 +198,11 @@ public final class LookupChild {
      * @param src The source.
      * @return The primordial parent.
      */
-    public static AbstractSource derefParent(AbstractSource src) {
-        AbstractSource src2 = LookupChild.getParent(src);
+    public static AbstractSource derefParentName(AbstractSource src) {
+        AbstractSource src2 = LookupChild.getParentName(src);
         while (src2 != null) {
             src = src2;
-            src2 = LookupChild.getParent(src);
+            src2 = LookupChild.getParentName(src);
         }
         return src;
     }
@@ -212,11 +212,45 @@ public final class LookupChild {
      *
      * @return The parent module.
      */
-    public static AbstractSource getParent(AbstractSource src) {
+    public static AbstractSource getParentName(AbstractSource src) {
         MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
         for (int i = 0; i < deps.length; i++) {
             MapEntry<AbstractSource, Integer> dep = deps[i];
-            if ((dep.value.intValue() & AbstractSource.MASK_IMPT_PARM) != 0)
+            if ((dep.value.intValue() & AbstractSource.MASK_IMPT_PANM) != 0)
+                return dep.key;
+        }
+        return null;
+    }
+
+    /*******************************************************************/
+    /* Import Link                                                     */
+    /*******************************************************************/
+
+    /**
+     * <p>Retrieve the primordial parent.</p>
+     *
+     * @param src The source.
+     * @return The primordial parent.
+     */
+    public static AbstractSource derefParentImport(AbstractSource src) {
+        AbstractSource src2 = LookupChild.getParentImport(src);
+        while (src2 != null) {
+            src = src2;
+            src2 = LookupChild.getParentImport(src);
+        }
+        return src;
+    }
+
+    /**
+     * <p>Retrieve the parent module.</p>
+     *
+     * @return The parent module.
+     */
+    public static AbstractSource getParentImport(AbstractSource src) {
+        MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
+        for (int i = 0; i < deps.length; i++) {
+            MapEntry<AbstractSource, Integer> dep = deps[i];
+            if ((dep.value.intValue() & AbstractSource.MASK_IMPT_PAIM) != 0)
                 return dep.key;
         }
         return null;

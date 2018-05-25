@@ -1,6 +1,7 @@
 package jekpro.tools.term;
 
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.call.Interpreter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -331,5 +332,20 @@ public final class TermAtomic extends AbstractTerm {
             return new BigDecimal(m.doubleValue());
         }
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        TermAtomic ta = new TermAtomic("abc");
+        System.out.println("ta=" + ta.toString(Interpreter.FLAG_QUOTED));
+
+        ta = new TermAtomic("Foo");
+        System.out.println("ta=" + ta.toString(Interpreter.FLAG_QUOTED));
+    }
+    */
 
 }

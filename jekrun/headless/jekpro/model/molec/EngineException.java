@@ -295,9 +295,15 @@ public final class EngineException extends Exception {
      * @return The detailed message.
      */
     public String getMessage() {
-        int size = Display.displaySize(template);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        return errorMake(template, ref, null, null, null);
+        try {
+            int size = Display.displaySize(template);
+            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            return errorMake(template, ref, null, null, null);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldn't happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
     }
 
     /**
@@ -307,9 +313,11 @@ public final class EngineException extends Exception {
      * @param en The engine.
      * @return The detailed message.
      * @throws IOException Shit happens.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public String getMessage(Engine en)
-            throws IOException {
+            throws IOException, EngineException, EngineMessage {
         Locale locale = en.store.foyer.locale;
         Properties lang = EngineMessage.getErrorLang(locale, en.store);
         int size = Display.displaySize(template);
@@ -381,10 +389,13 @@ public final class EngineException extends Exception {
      * @param prop   The properties.
      * @param en     The engine.
      * @return The exception message.
+     * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     public static String errorMake(Object term, Display ref,
                                     Locale locale, Properties prop,
-                                    Engine en) {
+                                    Engine en)
+            throws EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;
             while (term instanceof SkelVar &&

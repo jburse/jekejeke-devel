@@ -148,7 +148,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 FactoryAPI.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteOpts(new WriteOpts(en));
+                pw.setWriteUtil(en.store);
+                pw.setSource(en.store.user);
                 pw.setEngineRaw(en);
                 pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
@@ -176,7 +177,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 FactoryAPI.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteOpts(new WriteOpts(en));
+                pw.setWriteUtil(en.store);
+                pw.setSource(en.store.user);
                 pw.setEngineRaw(en);
                 pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
@@ -236,7 +238,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 FactoryAPI.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteOpts(new WriteOpts(en));
+                pw.setWriteUtil(en.store);
+                pw.setSource(en.store.user);
                 pw.setEngineRaw(en);
                 pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);

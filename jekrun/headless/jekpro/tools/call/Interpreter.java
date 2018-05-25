@@ -342,39 +342,6 @@ public final class Interpreter implements Comparator<Object> {
     }
 
     /****************************************************************/
-    /* Skeleton Writing                                             */
-    /****************************************************************/
-
-    /**
-     * <p>Unparse the given term to a string.</p>
-     */
-    public static String toString(int flags, Object t) {
-        return PrologWriter.toString(AbstractTerm.getSkel(t),
-                AbstractTerm.getDisplay(t), flags);
-    }
-
-    /**
-     * <p>Unparse the given term to a string.</p>
-     *
-     * @param wr    The writer.
-     * @param flags The flags.
-     * @param t     The object.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public static void toString(Writer wr, int flags, Object t)
-            throws InterpreterMessage, InterpreterException {
-        try {
-            PrologWriter.toString(AbstractTerm.getSkel(t),
-                    AbstractTerm.getDisplay(t), wr, flags, null);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-    }
-
-    /****************************************************************/
     /* AbstractTerm Writing                                         */
     /****************************************************************/
 
@@ -384,28 +351,15 @@ public final class Interpreter implements Comparator<Object> {
      * @param flags The flags.
      * @param t     The object.
      * @return The string.
-     */
-    public String unparseTerm(int flags, Object t) {
-        Engine en = (Engine) getEngine();
-        return PrologWriter.toString(AbstractTerm.getSkel(t),
-                AbstractTerm.getDisplay(t), flags, en);
-    }
-
-    /**
-     * <p>Unparse the given term to a string.</p>
-     *
-     * @param wr    The writer.
-     * @param flags The flags.
-     * @param t     The object.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public void unparseTerm(Writer wr, int flags, Object t)
+    public String unparseTerm(int flags, AbstractTerm t)
             throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) getEngine();
         try {
-            PrologWriter.toString(AbstractTerm.getSkel(t),
-                    AbstractTerm.getDisplay(t), wr, flags, en);
+            Engine en = (Engine) getEngine();
+            return PrologWriter.toString(AbstractTerm.getSkel(t),
+                    AbstractTerm.getDisplay(t), flags, en);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
@@ -436,7 +390,7 @@ public final class Interpreter implements Comparator<Object> {
                 pw = Foyer.createWriter(Foyer.IO_ANNO);
             }
             pw.setEngineRaw(en);
-            pw.setWriteOpts(wo);
+            wo.setWriteOpts(pw);
             pw.setWriter(wr);
             pw.unparseStatement(AbstractTerm.getSkel(t),
                     AbstractTerm.getDisplay(t));
@@ -498,48 +452,6 @@ public final class Interpreter implements Comparator<Object> {
 
     /**
      * <p>Create a term from a line number reader.</p>
-     *
-     * @param lr The line number reader.
-     * @return The term or null.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public Object parseTerm(Reader lr)
-            throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) getEngine();
-        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
-        rd.getScanner().setReader(lr);
-        rd.setReadUtil(en.store);
-        rd.setSource(en.store.user);
-        rd.setEngineRaw(en);
-        Object val;
-        try {
-            try {
-                val = rd.parseHeadStatement();
-            } catch (ScannerError y) {
-                String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                rd.parseTailError(PrologReader.OP_PERIOD, y);
-                EngineMessage x = new EngineMessage(
-                        EngineMessage.syntaxError(y.getError()));
-                PositionKey pos = (OpenOpts.getPath(lr) != null ?
-                        new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
-                throw new EngineException(x,
-                        EngineException.fetchPos(EngineException.fetchLoc(
-                                EngineException.fetchStack(en),
-                                pos, en), line, en));
-            }
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-        Display ref = (rd.getGensym() != 0 ?
-                new Display(rd.getGensym()) : Display.DISPLAY_CONST);
-        return AbstractTerm.createTerm(val, ref);
-    }
-
-    /**
-     * <p>Create a term from a line number reader.</p>
      * <p>Returns null when the output options don't unify.</p>
      *
      * @param lr  The line number reader.
@@ -551,7 +463,7 @@ public final class Interpreter implements Comparator<Object> {
     public AbstractTerm parseTerm(Reader lr, Object opt)
             throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) getEngine();
-        ReadOpts ro = new ReadOpts();
+        ReadOpts ro = new ReadOpts(en);
         try {
             ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
         } catch (EngineMessage x) {
@@ -569,14 +481,18 @@ public final class Interpreter implements Comparator<Object> {
         Object val;
         try {
             try {
-                val = rd.parseHeadStatement();
+                if ((ro.flags & PrologWriter.FLAG_STMT) != 0) {
+                    val = rd.parseHeadStatement();
+                } else {
+                    val = rd.parseHeadInternal();
+                }
             } catch (ScannerError y) {
                 String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
                 rd.parseTailError(PrologReader.OP_PERIOD, y);
                 EngineMessage x = new EngineMessage(
                         EngineMessage.syntaxError(y.getError()));
                 PositionKey pos = (OpenOpts.getPath(lr) != null ?
-                        new PositionKey(OpenOpts.getPath(lr), rd.getClauseStart()) : null);
+                        new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
                 throw new EngineException(x,
                         EngineException.fetchPos(EngineException.fetchLoc(
                                 EngineException.fetchStack(en),
@@ -587,7 +503,10 @@ public final class Interpreter implements Comparator<Object> {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        Display ref = (rd.getGensym() != 0 ? new Display(rd.getGensym()) : Display.DISPLAY_CONST);
+        if (val == null)
+            return null;
+        Display ref = (rd.getGensym() != 0 ?
+                new Display(rd.getGensym()) : Display.DISPLAY_CONST);
         try {
             if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), val, ref, en, rd))
