@@ -271,7 +271,8 @@ public final class ConnectionReader extends FilterReader {
      * @return The character read, or -1 if end of stream has been reached.
      * @throws IOException IO error.
      */
-    public int read() throws IOException {
+    public int read()
+            throws IOException {
         if (offset == line.length())
             nextLine();
         if (offset == line.length())
@@ -292,7 +293,8 @@ public final class ConnectionReader extends FilterReader {
      * @return The number of characters read, or -1 if at end of the stream.
      * @throws IOException IO error.
      */
-    public int read(char[] cbuf, int off, int len) throws IOException {
+    public int read(char[] cbuf, int off, int len)
+            throws IOException {
         if (offset == line.length())
             nextLine();
         if (offset == line.length())
@@ -311,7 +313,8 @@ public final class ConnectionReader extends FilterReader {
      * @return The number of characters actually skipped
      * @throws IOException If an I/O error occurs
      */
-    public long skip(long len) throws IOException {
+    public long skip(long len)
+            throws IOException {
         if (len < 0) {
             long k = Math.max(-offset, len);
             offset += k;
@@ -337,7 +340,8 @@ public final class ConnectionReader extends FilterReader {
      *
      * @return True if the stream is ready, otherwise false,
      */
-    public boolean ready() throws IOException {
+    public boolean ready()
+            throws IOException {
         if (offset == line.length())
             return in.ready();
         return true;
@@ -357,7 +361,7 @@ public final class ConnectionReader extends FilterReader {
      *
      * @param len The requested lookahead.
      */
-    public void mark(int len) throws IOException {
+    public void mark(int len) {
         if (mark != -1)
             throw new IllegalArgumentException("already marked");
         mark = offset;
@@ -366,7 +370,7 @@ public final class ConnectionReader extends FilterReader {
     /**
      * <p>Unmark the current position.</p>
      */
-    public void reset() throws IOException {
+    public void reset() {
         if (mark == -1)
             throw new IllegalArgumentException("already reset");
         offset = mark;

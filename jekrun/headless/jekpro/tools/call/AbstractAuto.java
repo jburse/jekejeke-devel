@@ -66,12 +66,14 @@ public abstract class AbstractAuto extends AbstractSource {
         if (path == null)
             throw new RuntimeException("illegal path");
 
-        /* add package */
+        /* add package and name */
         if (SourceLocal.isOs(path)) {
             addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
             path = SourceLocal.sepFile(path);
         }
         setName(path);
+
+        /* change default visibility */
         resetBit(MASK_SRC_VSPU);
     }
 
@@ -83,10 +85,8 @@ public abstract class AbstractAuto extends AbstractSource {
         if (path == null)
             throw new RuntimeException("illegal path");
 
-        /* remove package */
-        if (SourceLocal.isOs(path)) {
-            removeFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
-        }
+        /* remove package and name */
+        clearFixes(MASK_PCKG_FRGN);
         setName(null);
     }
 
@@ -194,7 +194,7 @@ public abstract class AbstractAuto extends AbstractSource {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_MODL);
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_REEX);
         String key = AbstractRuntime.classToString(superclazz);
-        key = key.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+        key = key.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
         key = LookupBinary.addClassExt(key);
         return (AutoClass) opts.makeLoad(this, key, en);
     }
@@ -219,7 +219,7 @@ public abstract class AbstractAuto extends AbstractSource {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_REEX);
         for (int i = 0; i < interfaces.length; i++) {
             String key = AbstractRuntime.classToString(interfaces[i]);
-            key = key.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+            key = key.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
             key = LookupBinary.addClassExt(key);
             res[i] = (AutoClass) opts.makeLoad(this, key, en);
         }

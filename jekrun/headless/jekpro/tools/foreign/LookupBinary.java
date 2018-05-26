@@ -2,10 +2,10 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.molec.CachePackage;
+import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.LookupChild;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractRuntime;
@@ -57,7 +57,7 @@ public final class LookupBinary {
         Object obj;
         String res = LookupBinary.removeClassExt(relpath);
         if (res != null) {
-            res = res.replace(SourceLocal.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+            res = res.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
             Class clazz = AbstractRuntime.stringToClass(res, store.getLoader());
             if (clazz != null) {
                 obj = clazz;
@@ -183,8 +183,8 @@ public final class LookupBinary {
      * @return The path without suffix.
      */
     public static String removeClassExt(String path) {
-        int k = path.lastIndexOf(SourceLocal.OP_CHAR_OS);
-        k = path.indexOf(SourceLocal.OP_CHAR_SYN, k + 1);
+        int k = path.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+        k = path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1);
         if (k != -1) {
             String res = path.substring(0, k);
             if (!res.endsWith(CLASS_EXTENSION))
@@ -205,8 +205,8 @@ public final class LookupBinary {
      * @return The extended Java path.
      */
     public static String addClassExt(String path) {
-        int k = path.lastIndexOf(SourceLocal.OP_CHAR_OS);
-        k = path.indexOf(SourceLocal.OP_CHAR_SYN, k + 1);
+        int k = path.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+        k = path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1);
         if (k != -1) {
             String res = path.substring(0, k);
             res = res + CLASS_EXTENSION;

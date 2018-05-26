@@ -6,7 +6,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.Clause;
 import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
@@ -584,7 +583,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The outer.
      */
     public static String sepOuter(String path) {
-        return path.substring(0, path.lastIndexOf(SourceLocal.OP_CHAR_SYN));
+        return path.substring(0, path.lastIndexOf(CacheSubclass.OP_CHAR_SYN));
     }
 
     /**
@@ -594,7 +593,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The inner.
      */
     public static String sepInner(String path) {
-        return path.substring(path.lastIndexOf(SourceLocal.OP_CHAR_SYN) + 1);
+        return path.substring(path.lastIndexOf(CacheSubclass.OP_CHAR_SYN) + 1);
     }
 
     /**
@@ -605,7 +604,7 @@ public final class SpecialQuali extends AbstractSpecial {
      */
     public static boolean isNest(String path) {
         int k = path.lastIndexOf(CachePackage.OP_CHAR_SEG);
-        return (path.indexOf(SourceLocal.OP_CHAR_SYN, k + 1) != -1);
+        return (path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1) != -1);
     }
 
     /***************************************************************/

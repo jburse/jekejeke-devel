@@ -197,7 +197,8 @@ public final class EvaluableElem extends AbstractSpecial {
      * @return The negated Prolog number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    public static Number neg(Number m) throws ArithmeticException {
+    public static Number neg(Number m)
+            throws ArithmeticException {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {

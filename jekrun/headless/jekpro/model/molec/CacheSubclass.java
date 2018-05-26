@@ -12,7 +12,6 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignUri;
 import matula.util.wire.AbstractLivestock;
 
@@ -45,10 +44,72 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CacheSubclass extends AbstractCache {
+    public final static char OP_CHAR_OS = '/';
+    public final static char OP_CHAR_SYN = '$';
+    public final static String OP_STRING_OS = "/";
+    public final static String OP_STRING_SYN = "$";
+
     String fun;
     AbstractSource base;
     Object basevers;
     boolean res;
+
+    /**************************************************************/
+    /* Home Module                                                */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether the path is locale.</p>
+     *
+     * @param path The path.
+     * @return True if path is locale, otherwise false.
+     */
+    public static boolean isLocal(String path) {
+        int k = path.lastIndexOf(OP_CHAR_OS);
+        k = path.indexOf(OP_CHAR_SYN, k + 1);
+        return (k != -1);
+    }
+
+    /**
+     * <p>Separate the home from the local path.</p>
+     *
+     * @param path The local path.
+     * @return The home.
+     */
+    public static String sepHome(String path) {
+        int k = path.lastIndexOf(OP_CHAR_OS);
+        return path.substring(0, path.indexOf(OP_CHAR_SYN, k + 1));
+    }
+
+    /**
+     * <p>Separate the rest from the local path.</p>
+     *
+     * @param path The local path.
+     * @return The rest.
+     */
+    public static String sepRest(String path) {
+        int k = path.lastIndexOf(OP_CHAR_OS);
+        return path.substring(path.indexOf(OP_CHAR_SYN, k + 1) + 1);
+    }
+
+    /**
+     * <p>Compose a local path from a parent and a child.</p>
+     *
+     * @param par   The parent.
+     * @param child The child.
+     * @return The local path.
+     */
+    public static String composeLocal(String par, String child) {
+        StringBuilder buf = new StringBuilder();
+        buf.append(par);
+        buf.append(OP_CHAR_SYN);
+        buf.append(child);
+        return buf.toString();
+    }
+
+    /**************************************************************/
+    /* Lookup Base                                                */
+    /**************************************************************/
 
     /**
      * <p>Retrieve the lookup base.</p>
@@ -72,7 +133,7 @@ public final class CacheSubclass extends AbstractCache {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
         en.enginecopy = null;
         en.enginewrap = null;
-        mod = mod.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
+        mod = mod.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
         String key = findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
 
         if (key == null)
@@ -309,13 +370,13 @@ public final class CacheSubclass extends AbstractCache {
                 }
             }
 
-            if (SourceLocal.isLocal(path)) {
-                String res = SourceLocal.sepHome(path);
+            if (isLocal(path)) {
+                String res = sepHome(path);
                 res = findKeyParent(res, scope, mask);
                 if (res == null)
                     return null;
-                path = SourceLocal.sepRest(path);
-                return SourceLocal.composeLocal(res, path);
+                path = sepRest(path);
+                return composeLocal(res, path);
             } else {
                 return findKeyParent(path, scope, mask);
             }
@@ -399,17 +460,17 @@ public final class CacheSubclass extends AbstractCache {
                             new SkelAtom(res));
             }
 
-            if (SourceLocal.isLocal(path)) {
-                String res = SourceLocal.sepHome(path);
-                path = SourceLocal.sepRest(path);
+            if (isLocal(path)) {
+                String res = sepHome(path);
+                path = sepRest(path);
                 Object temp = unfindKeyParent(res, scope, mask);
                 if (temp instanceof SkelAtom) {
                     SkelAtom sa = (SkelAtom) temp;
-                    path = SourceLocal.composeLocal(sa.fun, path);
+                    path = composeLocal(sa.fun, path);
                     return new SkelAtom(path);
                 } else if (temp instanceof SkelCompound) {
                     SkelCompound sc = (SkelCompound) temp;
-                    path = SourceLocal.composeLocal(((SkelAtom) sc.args[0]).fun, path);
+                    path = composeLocal(((SkelAtom) sc.args[0]).fun, path);
                     return new SkelCompound(sc.sym, new SkelAtom(path));
                 } else {
                     throw new IllegalArgumentException("illegal key");

@@ -15,10 +15,7 @@ import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
 import matula.util.regex.ScannerToken;
-import matula.util.system.ConnectionReader;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 

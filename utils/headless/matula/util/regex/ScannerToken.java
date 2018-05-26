@@ -214,7 +214,8 @@ public final class ScannerToken {
      * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void nextString() throws ScannerError, IOException {
+    private void nextString()
+            throws ScannerError, IOException {
         int quote = ch;
         ch = getCode();
         while (ch != CodeType.LINE_EOF) {
@@ -236,11 +237,14 @@ public final class ScannerToken {
         hint = quote;
         data = buf.toString();
         if (quote == CodeType.LINE_SINGLE) {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME, OpenOpts.getOffset(reader));
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_NAME,
+                    OpenOpts.getOffset(reader));
         } else if (quote == CodeType.LINE_DOUBLE) {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING, OpenOpts.getOffset(reader));
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_STRING,
+                    OpenOpts.getOffset(reader));
         } else {
-            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE, OpenOpts.getOffset(reader));
+            throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_VARIABLE,
+                    OpenOpts.getOffset(reader));
         }
     }
 
@@ -265,13 +269,15 @@ public final class ScannerToken {
      * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void nextChar(boolean cont) throws ScannerError, IOException {
+    private void nextChar(boolean cont)
+            throws ScannerError, IOException {
         if (ch == CodeType.LINE_BACKSLASH) {
             buf.appendCodePoint(ch);
             ch = getCode();
             if (ch != CodeType.LINE_EOF) {
                 if (!cont && ch == CodeType.LINE_EOL)
-                    throw new ScannerError(OP_SYNTAX_CONT_ESC_IN_CHARACTER, OpenOpts.getOffset(reader));
+                    throw new ScannerError(OP_SYNTAX_CONT_ESC_IN_CHARACTER,
+                            OpenOpts.getOffset(reader));
                 if (Character.digit(ch, 8) != -1
                         || ch == 'x') {
                     while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
@@ -289,9 +295,11 @@ public final class ScannerToken {
             }
         } else if (ch == CodeType.LINE_EOL) {
             if (cont) {
-                throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_STRING, OpenOpts.getOffset(reader));
+                throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_STRING,
+                        OpenOpts.getOffset(reader));
             } else {
-                throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_CHARACTER, OpenOpts.getOffset(reader));
+                throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_CHARACTER,
+                        OpenOpts.getOffset(reader));
             }
         } else {
             buf.appendCodePoint(ch);
@@ -327,7 +335,8 @@ public final class ScannerToken {
      * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void nextNumber() throws ScannerError, IOException {
+    private void nextNumber()
+            throws ScannerError, IOException {
         if (ch == CodeType.LINE_ZERO) {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -372,7 +381,8 @@ public final class ScannerToken {
                 } else {
                     hint = 0;
                     data = buf.toString();
-                    throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER, OpenOpts.getOffset(reader));
+                    throw new ScannerError(OP_SYNTAX_END_OF_FILE_IN_CHARACTER,
+                            OpenOpts.getOffset(reader));
                 }
                 hint = 0;
                 data = buf.toString();
@@ -432,10 +442,10 @@ public final class ScannerToken {
      * </pre>
      * <p>For underscore and digit see class CodeType.</p>
      *
-     * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void nextExponent() throws ScannerError, IOException {
+    private void nextExponent()
+            throws IOException {
         if ((ch == SCAN_EXPLOW || ch == SCAN_EXPCAP) &&
                 (Character.isDigit(peekCode()) ||
                         peekCode() == SCAN_NEG ||
@@ -521,7 +531,8 @@ public final class ScannerToken {
      * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private void nextBlockComment() throws ScannerError, IOException {
+    private void nextBlockComment()
+            throws ScannerError, IOException {
         if ((flags & MASK_RTRN_BLCK) != 0) {
             String bc = remark.getBlockCommentStart();
             consumeStr(bc);
@@ -567,7 +578,8 @@ public final class ScannerToken {
      * @param stopeol The stop EOL flag.
      * @throws IOException IO error.
      */
-    private void nextFiller(boolean stopeol) throws IOException {
+    private void nextFiller(boolean stopeol)
+            throws IOException {
         if ((flags & MASK_RTRN_LAYT) != 0) {
             buf.appendCodePoint(ch);
             ch = getCode();
@@ -703,10 +715,10 @@ public final class ScannerToken {
      * <p>Check whether we are at second of a terminal point.</p>
      *
      * @return True if we are at second of a terminal point, otherwise false.
-     * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    public boolean isTerminalSuffix() throws ScannerError, IOException {
+    public boolean isTerminalSuffix()
+            throws IOException {
         if (ch == CodeType.LINE_EOF)
             return true;
         if (delemiter.isLayout(ch))
@@ -722,10 +734,10 @@ public final class ScannerToken {
      * <p>Will consume or skip spaces.</p>
      * <p>Will consume or skip line comments.</p>
      *
-     * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    public void nextTerminalSuffix() throws ScannerError, IOException {
+    public void nextTerminalSuffix()
+            throws IOException {
         buf.setLength(0);
         while (ch != CodeType.LINE_EOF) {
             switch (delemiter.classOf(ch)) {
@@ -843,10 +855,10 @@ public final class ScannerToken {
      *
      * @param s The string.
      * @return True if the stream starts with, otherwise false.
-     * @throws ScannerError Scanning problem.
      * @throws IOException IO error.
      */
-    private boolean startsWith(String s) throws ScannerError, IOException {
+    private boolean startsWith(String s)
+            throws IOException {
         if (s.length() == 1) {
             return (ch == s.charAt(0));
         } else if (s.length() == 2) {

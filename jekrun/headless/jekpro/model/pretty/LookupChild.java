@@ -3,6 +3,7 @@ package jekpro.model.pretty;
 import jekpro.model.builtin.Branch;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
+import jekpro.model.molec.CacheSubclass;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
@@ -48,9 +49,9 @@ public final class LookupChild {
      */
     public static String findChildPrefix(String relpath, AbstractSource src) {
         String res = LookupChild.lookupFullName(src);
-        res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        relpath = relpath.replace(SourceLocal.OP_CHAR_OS, SourceLocal.OP_CHAR_SYN);
-        return SourceLocal.composeLocal(res, relpath);
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        relpath = relpath.replace(CacheSubclass.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
+        return CacheSubclass.composeLocal(res, relpath);
     }
 
     /**
@@ -66,11 +67,11 @@ public final class LookupChild {
                                            int mask)
             throws IOException {
         String res = LookupChild.lookupFullName(src);
-        res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        if (relpath.startsWith(res) && relpath.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
-            relpath = relpath.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
+            relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
             if (CacheModule.findPrefixParent(relpath, src, mask) == null) {
-                relpath = relpath.replace(SourceLocal.OP_CHAR_SYN, SourceLocal.OP_CHAR_OS);
+                relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, CacheSubclass.OP_CHAR_OS);
                 return relpath;
             }
         }
@@ -94,11 +95,11 @@ public final class LookupChild {
                                       AbstractSource src) {
         AbstractSource src2 = LookupChild.derefParentName(src);
         String res = LookupChild.lookupFullName(src2);
-        res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-        if (relpath.startsWith(res) && relpath.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
-            relpath = relpath.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
+            relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
             res = (src2.getName() != null ? src2.getPath() : Branch.OP_USER);
-            return SourceLocal.composeLocal(res, relpath);
+            return CacheSubclass.composeLocal(res, relpath);
         }
 
         // failure
@@ -115,11 +116,11 @@ public final class LookupChild {
     public static String unfindChildSuffix(String path, AbstractSource src) {
         AbstractSource src2 = LookupChild.derefParentName(src);
         String res = (src2.getName() != null ? src2.getPath() : Branch.OP_USER);
-        if (path.startsWith(res) && path.startsWith(SourceLocal.OP_STRING_SYN, res.length())) {
-            path = path.substring(res.length() + SourceLocal.OP_STRING_SYN.length());
+        if (path.startsWith(res) && path.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
+            path = path.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
             res = LookupChild.lookupFullName(src2);
-            res = res.replace(CachePackage.OP_CHAR_SEG, SourceLocal.OP_CHAR_OS);
-            return SourceLocal.composeLocal(res, path);
+            res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+            return CacheSubclass.composeLocal(res, path);
         }
 
         // failure
@@ -162,7 +163,7 @@ public final class LookupChild {
             String res2 = src.getName();
             if (res2 == null)
                 res2 = Branch.OP_USER;
-            res = SourceLocal.composeLocal(res2, res);
+            res = CacheSubclass.composeLocal(res2, res);
             src = LookupChild.getParentName(src);
         }
         return res;
@@ -181,7 +182,7 @@ public final class LookupChild {
             MapEntry<String, Integer> fix = fixes[i];
             if ((fix.value.intValue() & AbstractSource.MASK_PCKG_AUTO) != 0) {
                 String temp = fix.key;
-                temp = temp.replace(SourceLocal.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+                temp = temp.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
                 return temp;
             }
         }

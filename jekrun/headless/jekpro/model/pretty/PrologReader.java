@@ -814,6 +814,7 @@ public class PrologReader {
     /**
      * <p>Fetch the first token.</p>
      *
+     * @throws IOException IO Error.
      * @throws ScannerError Error and position.
      */
     public void firstToken() throws ScannerError, IOException {
@@ -827,6 +828,7 @@ public class PrologReader {
      * <p>Retrieve the molec token.</p>
      * <p>Can be overridden by sub classes.</p>
      *
+     * @throws IOException IO Error.
      * @throws ScannerError Error and position
      */
     protected void nextToken() throws ScannerError, IOException {
@@ -837,9 +839,10 @@ public class PrologReader {
      * <p>Retrieve the molec token.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @throws ScannerError Error and position
+     * @throws IOException IO Error.
      */
-    protected void nextTerminalSuffix() throws ScannerError, IOException {
+    protected void nextTerminalSuffix()
+            throws IOException {
         st.nextTerminalSuffix();
     }
 
