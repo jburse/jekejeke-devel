@@ -36,7 +36,6 @@
  *   library(<path>)           lookup resource <path> in class path.
  *   foreign(<path>)           lookup class <path> in class path.
  *   verbatim(<path>)          take as is.
- *   auto(<path>)              lookup <path> as the auto loader would do.
  *   <path>                    resolve <path> in scope or base.
  *
  * Write or append access resolution:
@@ -130,7 +129,7 @@ sys_current_path(Path) :-
 absolute_file_name(Slash, Pin) :-
    var(Slash), !,
    sys_get_context(Pin, C),
-   sys_key_spec(Pin, C, [], Slash).
+   sys_key_to_spec(Pin, C, [], Slash).
 absolute_file_name(Slash, Pin) :-
    sys_absolute_file_name(Slash, Pin), !.
 absolute_file_name(library(Slash), _) :-
@@ -139,8 +138,6 @@ absolute_file_name(foreign(Slash), _) :-
    throw(error(existence_error(class,Slash),_)).
 absolute_file_name(verbatim(Slash), _) :-
    throw(error(existence_error(verbatim,Slash),_)).
-absolute_file_name(auto(Slash), _) :-
-   throw(error(existence_error(auto,Slash),_)).
 absolute_file_name(Slash, _) :-
    throw(error(existence_error(source_sink,Slash),_)).
 :- set_predicate_property(absolute_file_name/2, visible(public)).
@@ -149,7 +146,7 @@ absolute_file_name(Slash, _) :-
 absolute_file_name(Slash, Pin, Opt) :-
    var(Slash), !,
    sys_get_context(Pin, C),
-   sys_key_spec(Pin, C, Opt, Slash).
+   sys_key_to_spec(Pin, C, Opt, Slash).
 absolute_file_name(Slash, Pin, Opt) :-
    sys_absolute_file_name(Slash, Pin, Opt), !.
 absolute_file_name(library(Slash), _, _) :-
@@ -158,15 +155,13 @@ absolute_file_name(foreign(Slash), _, _) :-
    throw(error(existence_error(class,Slash),_)).
 absolute_file_name(verbatim(Slash), _, _) :-
    throw(error(existence_error(verbatim,Slash),_)).
-absolute_file_name(auto(Slash), _, _) :-
-   throw(error(existence_error(auto,Slash),_)).
 absolute_file_name(Slash, _, _) :-
    throw(error(existence_error(source_sink,Slash),_)).
 :- set_predicate_property(absolute_file_name/3, visible(public)).
 
-:- foreign(sys_key_spec/4, 'ForeignPath',
-      sysKeySpec('Interpreter','String','String','Object')).
-:- set_predicate_property(sys_key_spec/4, visible(private)).
+:- foreign(sys_key_to_spec/4, 'ForeignPath',
+      sysKeyToSpec('Interpreter','String','String','Object')).
+:- set_predicate_property(sys_key_to_spec/4, visible(private)).
 
 /********************************************************/
 /* Resource Resolution                                  */
@@ -211,13 +206,6 @@ sys_absolute_file_name(foreign(Slash), Pin) :- !,
    sys_path_norm(Slash, Path),
    sys_find_prefix(Path, C, [package(foreign),file_extension(file)], J),
    sys_find_key(J, C, [package(foreign),file_extension(file)], H),
-   sys_replace_site(Pin, Slash, H).
-/* auto */
-sys_absolute_file_name(auto(Slash), Pin) :- !,
-   sys_get_context(Slash, C),
-   sys_path_norm(Slash, Path),
-   sys_find_prefix(Path, C, [package(both),file_extension(file),failure(child)], J),
-   sys_find_key(J, C, [package(both),file_extension(file),failure(child)], H),
    sys_replace_site(Pin, Slash, H).
 /* relative */
 sys_absolute_file_name(Slash, Pin) :-

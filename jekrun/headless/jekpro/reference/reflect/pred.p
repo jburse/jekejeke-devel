@@ -195,6 +195,25 @@ predicate_property(I, R) :-
 % :- special(reset_predicate_property/2, 'SpecialPred', 9).
 % :- set_predicate_property(reset_predicate_property/2, visible(public)).
 
+/**
+ * current_module(M):
+ * The predicate succeeds for the modules M.
+ */
+% current_module(-Name)
+current_module(M) :-
+   var(M), !,
+   sys_current_module(L),
+   sys_member(M, L).
+current_module(M) :-
+   sys_current_module_chk(M).
+:- set_predicate_property(current_module/1, visible(public)).
+
+:- special(sys_current_module/1, 'SpecialPred', 9).
+:- set_predicate_property(sys_current_module/1, visible(private)).
+
+:- special(sys_current_module_chk/1, 'SpecialPred', 10).
+:- set_predicate_property(sys_current_module_chk/1, visible(private)).
+
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).

@@ -177,15 +177,18 @@ module(N, L) :-
    set_source_property(C, sys_source_name(N)),
    (public L),
    sys_get_key(C, K),
-   sys_check_key(C, K).
+   sys_replace_site(J, N, K),
+   sys_check_key(J, C).
 :- set_predicate_property(module/2, visible(public)).
 
-sys_check_key(C, K) :-
+% sys_check_key(+Name, +Path)
+sys_check_key(K, C) :-
    absolute_file_name(library(K), C), !.
-sys_check_key(_, K) :-
+sys_check_key(K, _) :-
    throw(error(syntax_error(key_mismatch,K),_)).
 :- set_predicate_property(sys_check_key/2, visible(private)).
 
+% sys_get_key(+Path, -Name)
 sys_get_key(C, P/N) :-
    source_property(C, package(library(P))), !,
    source_property(C, sys_source_name(N)).

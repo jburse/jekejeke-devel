@@ -662,7 +662,8 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
 
 /**
  * term_atom(T, A):
- * The predicate succeeds when A is the serialization of the term T.
+ * The predicate succeeds when the atom A is the serialization
+ * of the term T.
  */
 % term_atom(+-Term, -+Atom)
 :- public term_atom/2.
@@ -678,4 +679,4 @@ term_atom(T, A) :-
 
 :- private sys_unparse_term/2.
 :- foreign(sys_unparse_term/2, 'ForeignAtom',
-      sysUnparseTerm('Interpreter','Object')).
+      sysUnparseTerm('Interpreter','AbstractTerm')).

@@ -14,7 +14,7 @@ import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
- * <p>Provides built-in predicates for the module colon.</p>
+ * <p>Provides built-in predicates for the module quali.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

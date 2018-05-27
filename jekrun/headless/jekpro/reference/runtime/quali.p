@@ -27,10 +27,11 @@
  * X = 1
  *
  * Finally there is also a double colon notation based on the (::)/2
- * operator that can be used to invoke reference types and term objects.
- * The reference type or term object itself is prepended Python style to
- * the callable before invoking it. For auto loaded Java classes the
- * re-export chain contains the super class and implemented interfaces.
+ * operator that can be used to send message to a receiver. The receiver
+ * itself is prepended Python style to the callable before invoking it.
+ * For auto loaded Java classes the reexport chain contains the super
+ * class and implemented interfaces. If an unqualified predicate with
+ * the same name is defined, then this fall-back is called.
  *
  * Examples:
  * ?- 'System':err(X), X::println('abc').
@@ -39,11 +40,12 @@
  * abc
  * X = 0r398aef8b
  *
- * If an unqualified predicate with the same name is defined, then this is
- * the fall-back and hence the "write" and "nl" work. The predicates sys_callable/1,
- * sys_var/1, sys_functor/3 and sys_univ/2 are the adaptation to callable/1,
- * var/1, functor/3 and (=..)/2, in that these predicates respect the colon
- * (:)/2 and double colon (::)/2 notation.
+ * The predicates sys_callable/1, sys_var/1, sys_functor/3 and sys_univ/2
+ * are the adaptations of callable/1, var/1, functor/3 and (=..)/2 in that
+ * these predicates respect the module colon (:)/2 and receiver double
+ * colon (::)/2 notation. A qualified functor  may only contains the colon
+ * (:)/2 notation. The predicate sys_get_module/2 can be used to retrieve
+ * the class reference or module name of a receiver.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -153,7 +155,7 @@
 
 /**
  * sys_callable(T):
- * Check whether T is a qualified goal with zero place holders.
+ * Check whether T is a fully qualified callable.
  */
 % sys_callable(+Term)
 :- public sys_callable/1.
@@ -163,7 +165,7 @@ sys_callable(G) :-
 
 /**
  * sys_var(T):
- * Check whether T is a qualified goal with non-zero place holders.
+ * Check whether T is a half qualified or not a qualified callable.
  */
 % sys_var(+Goal)
 :- public sys_var/1.
@@ -365,7 +367,7 @@ sys_univ2(U, T) :-
 
 /**
  * sys_get_module(O, M):
- * The predicate succeeeds in M with the class reference
+ * The predicate succeeds in M with the class reference
  * or module name of O.
  */
 % sys_get_module(+Term, -Term)
