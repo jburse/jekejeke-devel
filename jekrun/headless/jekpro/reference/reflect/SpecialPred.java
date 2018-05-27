@@ -202,7 +202,7 @@ public final class SpecialPred extends AbstractSpecial {
     /**
      * <p>Create a prolog list with the visible predicates.</p>
      *
-     * @param en    The engine.
+     * @param en The engine.
      * @return The prolog list of the visible predicates.
      * @throws EngineMessage Shit happens.
      */
@@ -232,7 +232,7 @@ public final class SpecialPred extends AbstractSpecial {
     /**
      * <p>Create a prolog list with the modules.</p>
      *
-     * @param en    The engine.
+     * @param en The engine.
      * @return The prolog list of the modules.
      * @throws EngineMessage Shit happens.
      */
@@ -244,8 +244,8 @@ public final class SpecialPred extends AbstractSpecial {
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int j = 0; j < sources.length; j++) {
                 AbstractSource base = sources[j].value;
-                String fullname=base.getFullName();
-                if (fullname==null)
+                String fullname = base.getFullName();
+                if (fullname == null)
                     continue;
                 Object val = Clause.moduleToSlashSkel(fullname, en.store.user, en);
                 res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
@@ -468,7 +468,7 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param prop The property.
-     * @param sa The atom, or null.
+     * @param sa   The atom, or null.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
