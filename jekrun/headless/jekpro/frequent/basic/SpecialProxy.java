@@ -79,7 +79,7 @@ public final class SpecialProxy extends AbstractSpecial {
             case SPECIAL_SYS_PROXY_HANDLER:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Object obj = SpecialQuali.slashToClass(temp[0], ref, false, en);
+                Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                 SkelAtom sa;
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
@@ -100,7 +100,7 @@ public final class SpecialProxy extends AbstractSpecial {
             case SPECIAL_SYS_PROXY_STATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                obj = SpecialQuali.slashToClass(temp[0], ref, false, en);
+                obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
                     /* reference */
@@ -127,7 +127,7 @@ public final class SpecialProxy extends AbstractSpecial {
             case SPECIAL_SYS_ASSIGNABLE_FROM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                obj = SpecialQuali.slashToClass(temp[0], ref, false, en);
+                obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                 String fun;
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
@@ -140,7 +140,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     /* atom */
                     fun = ((SkelAtom) obj).fun;
                 }
-                obj = SpecialQuali.slashToClass(temp[1], ref, false, en);
+                obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
                     /* reference */

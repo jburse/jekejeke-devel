@@ -9,7 +9,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.ForeignPath;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
@@ -239,7 +238,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 String modestr = EngineMessage.castString(en.skel, en.display);
                 int leftright = SpecialOper.atomToLeftRight(modestr);
                 int type = SpecialOper.atomToType(modestr);
-                SpecialQuali.colonToCallable(temp[2], ref, en);
+                SpecialQuali.colonToCallable(temp[2], ref, false, en);
                 EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 defineOperator(level, leftright, type, sa, en);
@@ -247,7 +246,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             case SPECIAL_SET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Operator op = Operator.operToOperator(temp[0], ref, en);
+                Operator op = SpecialOper.operToOperator(temp[0], ref, en);
                 Operator.checkExistentOperator(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
@@ -317,7 +316,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             case SPECIAL_SYS_CHECK_STYLE_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = Operator.operToOperator(temp[0], ref, en);
+                op = SpecialOper.operToOperator(temp[0], ref, en);
                 sa = (SkelAtom) en.skel;
                 Operator.checkExistentOperator(op, temp[0], ref);
                 Operator.checkOperDecl(op, sa, en);

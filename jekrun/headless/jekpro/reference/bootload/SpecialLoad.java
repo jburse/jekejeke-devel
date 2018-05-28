@@ -699,8 +699,10 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param en The engine.
      * @return The prolog list of the directly accessible syntax operators.
+     * @throws EngineMessage Shit happens.
      */
-    private static Object currentSyntax(Engine en) {
+    private static Object currentSyntax(Engine en)
+            throws EngineMessage {
         AbstractStore store = en.store;
         Object res = en.store.foyer.ATOM_NIL;
         while (store != null) {
@@ -710,13 +712,39 @@ public final class SpecialLoad extends AbstractSpecial {
                 MapEntry<String, Operator>[] opers = base.snapshotOper();
                 for (int i = opers.length - 1; i >= 0; i--) {
                     Operator oper = opers[i].value;
-                    Object val = operToColonSkel(oper.getType(), oper.getKey());
+                    SkelAtom sa = new SkelAtom(oper.getKey(), en.store.user);
+                    Object val = SpecialOper.operToColonSkel(oper.getType(), sa, en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
             store = store.parent;
         }
         return res;
+    }
+
+
+    /**
+     * <p>Lookup an operator from a compound.</p>
+     *
+     * @param t  The compound skeleton.
+     * @param d  The compound display.
+     * @param en The engine copy.
+     * @return The operator or null.
+     * @throws EngineMessage Shit happends.
+     */
+    public static Operator operToSyntax(Object t, Display d, Engine en)
+            throws EngineMessage {
+        int type = SpecialOper.colonToOper(t, d, en);
+        String fun = ((SkelAtom) en.skel).fun;
+        if (!CacheFunctor.isQuali(fun)) {
+            return OperatorSearch.getOperUser(type, fun, en.store);
+        } else {
+            String s = CacheFunctor.sepModule(fun);
+            AbstractSource base = AbstractSource.getModule(s, en.store);
+            if (base == null)
+                return null;
+            return base.getOper(type, fun);
+        }
     }
 
     /****************************************************************/
@@ -801,111 +829,6 @@ public final class SpecialLoad extends AbstractSpecial {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
-    }
-
-    /*******************************************************************/
-    /* Syntax Direct Access                                            */
-    /*******************************************************************/
-
-    /**
-     * <p>Lookup an operator from a compound.</p>
-     *
-     * @param t  The compound skeleton.
-     * @param d  The compound display.
-     * @param en The engine copy.
-     * @return The operator or null.
-     * @throws EngineMessage Shit happends.
-     */
-    public static Operator operToSyntax(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int type = colonToOper(t, d, en);
-        String fun = ((SkelAtom) en.skel).fun;
-        if (!CacheFunctor.isQuali(fun)) {
-            return OperatorSearch.getOperUser(type, fun, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(fun);
-            AbstractSource base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            return base.getOper(type, fun);
-        }
-    }
-
-    /**
-     * <p>Convert a colon oper to a type and key.</p>
-     *
-     * @param t  The slash skeleton.
-     * @param d  The slash display.
-     * @param en The engine.
-     * @return The length.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    private static int colonToOper(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int type = SpecialOper.opToType(t, d, en);
-        en.skel = colonToAtom(en.skel, en.display, en);
-        return type;
-    }
-
-    /**
-     * <p>Convert a colon atom to a string.</p>
-     *
-     * @param t  The slash skeleton.
-     * @param d  The slash display.
-     * @param en The engine.
-     * @return The string.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    private static SkelAtom colonToAtom(Object t, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
-            SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa2 = SpecialQuali.slashToPackage(temp.args[0], d, true, true, en);
-            SkelAtom sa = colonToAtom(temp.args[1], d, en);
-            return CacheFunctor.getFunctor(sa, sa2.fun, temp.sym, en);
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            return EngineMessage.castStringWrapped(en.skel, en.display);
-        }
-    }
-
-    /**
-     * <p>Convert a type and key to a colon oper.</p>
-     *
-     * @param type The type.
-     * @param key  The key.
-     * @return The compound.
-     */
-    public static Object operToColonSkel(int type, String key) {
-        Object s = atomToColonSkel(key);
-
-        return SpecialOper.typeToOpSkel(s, type);
-    }
-
-    /**
-     * <p>Convert a string to colon atom.</p>
-     *
-     * @param fun The string.
-     * @return The colon atom.
-     */
-    private static Object atomToColonSkel(String fun) {
-        Object s;
-        if (CacheFunctor.isQuali(fun)) {
-            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun), null);
-
-            Object t = new SkelAtom(CacheFunctor.sepName(fun));
-            s = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON), s, t);
-        } else {
-            s = new SkelAtom(fun);
-        }
-        return s;
     }
 
 }

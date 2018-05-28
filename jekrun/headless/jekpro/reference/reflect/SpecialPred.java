@@ -117,7 +117,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SET_ATOM_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, en);
+                SpecialQuali.colonToCallable(temp[0], ref, false, en);
                 EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 en.skel = temp[1];
@@ -132,7 +132,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_RESET_ATOM_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, en);
+                SpecialQuali.colonToCallable(temp[0], ref, false, en);
                 EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 en.skel = temp[1];

@@ -98,7 +98,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 } else {
                     fun = ((SkelAtom) obj).fun;
                 }
-                SpecialQuali.colonToCallable(temp.args[1], ref, en);
+                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
@@ -139,7 +139,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 } else {
                     fun = ((SkelAtom) obj).fun;
                 }
-                SpecialQuali.colonToCallable(temp.args[1], ref, en);
+                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     Display d3 = en.display;
@@ -383,14 +383,15 @@ public final class SpecialQuali extends AbstractSpecial {
      *             | receiver "::" colon
      *             | term.
      * </pre>
-     * <p>The syntax is recursive.</p>
-     * <p>The argument is passed in skel and display.</p>
-     * <p>The result is returned in skel and display.</p>
      *
+     * @param t    The slash skeleton.
+     * @param d    The slash display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void colonToCallable(Object t, Display d, Engine en)
+    public static void colonToCallable(Object t, Display d,
+                                       boolean comp,
+                                       Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -414,18 +415,19 @@ public final class SpecialQuali extends AbstractSpecial {
             } else {
                 fun = ((SkelAtom) obj).fun;
             }
-            SpecialQuali.colonToCallable(temp.args[1], d, en);
-            if (en.skel instanceof SkelCompound) {
+            SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
+            if (en.skel instanceof SkelAtom) {
+                SkelAtom sa = (SkelAtom) en.skel;
+                en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
+            } else if (comp && en.skel instanceof SkelCompound) {
                 SkelCompound sc2 = (SkelCompound) en.skel;
                 en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
                         temp.sym, en), sc2.args, sc2.vars);
-            } else if (en.skel instanceof SkelAtom) {
-                SkelAtom sa = (SkelAtom) en.skel;
-                en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
-            } else {
+            } else  {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_CALLABLE, en.skel), en.display);
+                        (comp ? EngineMessage.OP_TYPE_CALLABLE :
+                                EngineMessage.OP_TYPE_ATOM), en.skel), en.display);
             }
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
@@ -448,8 +450,18 @@ public final class SpecialQuali extends AbstractSpecial {
             } else {
                 fun = ((SkelAtom) obj).fun;
             }
-            SpecialQuali.colonToCallable(temp.args[1], d, en);
-            if (en.skel instanceof SkelCompound) {
+            SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
+            if (en.skel instanceof SkelAtom) {
+                SkelAtom sa = (SkelAtom) en.skel;
+                en.skel = temp.args[0];
+                en.display = d;
+                en.deref();
+                Object recv = en.skel;
+                Display d2 = en.display;
+                en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
+                        temp.sym, en), recv);
+                en.display = d2;
+            } else if (comp && en.skel instanceof SkelCompound) {
                 SkelCompound sc2 = (SkelCompound) en.skel;
                 Display d3 = en.display;
                 en.skel = temp.args[0];
@@ -462,20 +474,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
                         temp.sym, en), SpecialQuali.prependAlloc(recv, d2,
                         sc2.args, d3, multi, en));
-            } else if (en.skel instanceof SkelAtom) {
-                SkelAtom sa = (SkelAtom) en.skel;
-                en.skel = temp.args[0];
-                en.display = d;
-                en.deref();
-                Object recv = en.skel;
-                Display d2 = en.display;
-                en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
-                        temp.sym, en), recv);
-                en.display = d2;
-            } else {
+            } else  {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_CALLABLE, en.skel), en.display);
+                        (comp ? EngineMessage.OP_TYPE_CALLABLE :
+                                EngineMessage.OP_TYPE_ATOM), en.skel), en.display);
             }
         }
     }

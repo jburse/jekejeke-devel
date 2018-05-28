@@ -77,7 +77,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 } else {
                     fun = ((SkelAtom) obj).fun;
                 }
-                SpecialQuali.colonToCallable(temp.args[1], ref, en);
+                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
@@ -112,7 +112,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 } else {
                     fun = ((SkelAtom) obj).fun;
                 }
-                SpecialQuali.colonToCallable(temp.args[1], ref, en);
+                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     Display d3 = en.display;

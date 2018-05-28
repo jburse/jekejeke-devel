@@ -59,38 +59,6 @@ public abstract class AbstractAuto extends AbstractSource {
     /**************************************************************/
 
     /**
-     * <p>Compute default package, name and parent.</p>
-     */
-    public void initSource() {
-        String path = LookupBinary.removeClassExt(getPath());
-        if (path == null)
-            throw new RuntimeException("illegal path");
-
-        /* add package and name */
-        if (SourceLocal.isOs(path)) {
-            addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
-            path = SourceLocal.sepFile(path);
-        }
-        setName(path);
-
-        /* change default visibility */
-        resetBit(MASK_SRC_VSPU);
-    }
-
-    /**
-     * Remove default package, name and parent.
-     */
-    public void finiSource() {
-        String path = LookupBinary.removeClassExt(getPath());
-        if (path == null)
-            throw new RuntimeException("illegal path");
-
-        /* remove package and name */
-        clearFixes(MASK_PCKG_FRGN);
-        setName(null);
-    }
-
-    /**
      * <p>Retrieve the invocation handler.</p>
      *
      * @return The invocation handler.
@@ -110,6 +78,47 @@ public abstract class AbstractAuto extends AbstractSource {
      */
     public void setHandler(InterfaceHandler h) {
         /* do nothing */
+    }
+
+    /**************************************************************/
+    /* Init & Clear Module                                        */
+    /**************************************************************/
+
+    /**
+     * <p>Compute default package, name and parent.</p>
+     */
+    public void initSource() {
+        String path = LookupBinary.removeClassExt(getPath());
+        if (path == null)
+            throw new RuntimeException("illegal path");
+
+        /* add package and name */
+        if (SourceLocal.isOs(path)) {
+            addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
+            path = SourceLocal.sepFile(path);
+        }
+        setName(path);
+
+        /* change default visibility */
+        resetBit(MASK_SRC_VSPU);
+    }
+
+    /**
+     * <p>Unload the module before a reconsult or purge.</p>
+     *
+     * @throws EngineMessage Shit happens.
+     */
+    public void clearModule()
+            throws EngineMessage {
+        super.clearModule();
+        setAuto(null);
+
+        /* clear deps without notify */
+        clearDeps(-1);
+
+        /* clear fixes without notify */
+        setName(null);
+        clearFixes(-1);
     }
 
     /**************************************************************/
@@ -142,17 +151,6 @@ public abstract class AbstractAuto extends AbstractSource {
     /**************************************************************/
     /* Clear, Load & Check Module                                 */
     /**************************************************************/
-
-    /**
-     * <p>Unload the module before a reconsult or purge.</p>
-     *
-     * @throws EngineMessage Shit happens.
-     */
-    public void clearModule()
-            throws EngineMessage {
-        super.clearModule();
-        setAuto(null);
-    }
 
     /**
      * <p>Consult a verbatim module.</p>

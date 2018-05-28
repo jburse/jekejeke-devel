@@ -255,7 +255,7 @@ public final class AutoClass extends AbstractAuto {
                 Predicate over = makeOverride(pick, en);
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
-                    SpecialSpecial.definePredicate(pick, del);
+                    SpecialSpecial.definePredicate(pick, del, en);
                     Predicate.checkPredicateDecl(pick, sa, en);
                 } else {
                     for (int i = 0; i < dels.length; i++) {
@@ -289,7 +289,7 @@ public final class AutoClass extends AbstractAuto {
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
                         virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                         pick = makePrivate(sa, sk.getArity(), virt, en);
-                        SpecialSpecial.definePredicate(pick, del);
+                        SpecialSpecial.definePredicate(pick, del, en);
                         Predicate.checkPredicateDecl(pick, sa, en);
                     }
                 }

@@ -32,17 +32,17 @@
  * (=)/2			        % is a predicate indicator
  * basic/lists:member/2	    % is a predicate indicator
  *
- * The context of a clause is determined from the predicate name atom of
- * the clause head. Context and pretty printing information of an atom
- * can be accessed and modified by the predicates atom_property/2,
- * set_atom_property/3 and reset_atom_property/3. A predicate without
- * clauses can be declared via the directive static/1.
+ * A non-dynamic predicate without clauses can be declared via the directive
+ * static/1. The context of a clause is determined from the predicate
+ * name atom of the clause head. Context and pretty printing information
+ * of an atom can be accessed and modified by the predicates atom_property/2,
+ * set_atom_property/3 and reset_atom_property/3.
  *
- * The predicate current_predicate/1 succeeds for a predicate that is
- * visible in the current context. The different visibility parameters are
- * documented in the module system section. Properties of a predicate can be
- * accessed and modified by the predicates predicate_property/2,
- * set_predicate_property/2 and reset_predicate_property/3
+ * The predicate current_predicate/1 succeeds for a predicate that is visible
+ * in the current context. The different visibility parameters are documented
+ * in the module system section. Properties of a predicate can be accessed
+ * and modified by the predicates predicate_property/2, set_predicate_property/2
+ * and reset_predicate_property/3.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
