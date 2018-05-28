@@ -64,7 +64,7 @@ public final class EvaluableQuali extends AbstractSpecial {
             case EVALUABLE_COLON:
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
-                Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, en);
+                Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
                 String fun;
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
@@ -96,7 +96,7 @@ public final class EvaluableQuali extends AbstractSpecial {
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
-                obj = SpecialQuali.slashToClass(temp.args[0], ref, true, en);
+                obj = SpecialQuali.slashToClass(temp.args[0], ref, true, true, en);
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {

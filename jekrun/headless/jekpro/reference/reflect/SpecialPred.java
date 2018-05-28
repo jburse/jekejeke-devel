@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -13,6 +14,8 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.tools.proxy.BranchAPI;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -151,14 +154,14 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_PREDICATE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicate(temp[0], ref, en);
+                pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_PREDICATE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicate(temp[0], ref, en);
+                pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 predicateToProperties(pick, en);
@@ -168,7 +171,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicate(temp[0], ref, en);
+                pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 prop = StoreKey.propToStoreKey(temp[1], ref, en);
@@ -186,7 +189,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_MODULE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                AbstractSource base = Predicate.nameToModule(temp[0], ref, en);
+                AbstractSource base = nameToModule(temp[0], ref, en);
                 if (base == null)
                     return false;
                 return en.getNextRaw();
@@ -196,7 +199,7 @@ public final class SpecialPred extends AbstractSpecial {
     }
 
     /**************************************************************/
-    /* High-Level Predicate Enumeration                           */
+    /* Predicate Enumeration & Lookup                             */
     /**************************************************************/
 
     /**
@@ -230,6 +233,32 @@ public final class SpecialPred extends AbstractSpecial {
     }
 
     /**
+     * <p>Get a predicate by indicator.</p>
+     *
+     * @param t  The indicator skel.
+     * @param d  The indicator display.
+     * @param en The engine.
+     * @return The predicate, or null.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static Predicate indicatorToPredicate(Object t, Display d,
+                                                 Engine en)
+            throws EngineMessage, EngineException {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        CachePredicate cp = CachePredicate.getPredicate(sa, arity.intValue(), en);
+        en.skel = sa;
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return null;
+        return cp.pick;
+    }
+
+    /**************************************************************/
+    /* Module Enumeration & Lookup                                */
+    /**************************************************************/
+
+    /**
      * <p>Create a prolog list with the modules.</p>
      *
      * @param en The engine.
@@ -253,6 +282,34 @@ public final class SpecialPred extends AbstractSpecial {
             store = store.parent;
         }
         return res;
+    }
+
+    /**
+     * <p>Get module by name.</p>
+     *
+     * @param t The name skel.
+     * @param d The name display.
+     * @param en The engine.
+     * @return The module.
+     * @throws EngineMessage Shit happens.
+     */
+    public static AbstractSource nameToModule(Object t, Display d,
+                                              Engine en)
+            throws EngineMessage {
+        Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
+        String fun;
+        /* reference */
+        if (!(obj instanceof AbstractSkel) &&
+                !(obj instanceof Number)) {
+            fun = BranchAPI.classOrProxyName(obj);
+            if (fun == null)
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_CLASS, t), d);
+            /* atom */
+        } else {
+            fun = ((SkelAtom) obj).fun;
+        }
+        return AbstractSource.getModule(fun, en.store);
     }
 
     /**************************************************************/
@@ -572,13 +629,15 @@ public final class SpecialPred extends AbstractSpecial {
      */
     private static void defineStatic(Predicate pick, Engine en)
             throws EngineMessage {
-        Predicate.checkUnsealed(pick);
+        Predicate.checkUnsealed(pick, en);
         AbstractDefined.promoteStatic(pick, en.store);
-        if ((pick.del.subflags & AbstractDefined.MASK_DEFI_STAT) == 0)
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_COERCE,
-                    EngineMessage.OP_PERMISSION_PROCEDURE,
-                    SpecialLoad.indicatorToColonSkel(pick.getFun(), pick.getArity())));
+        if ((pick.del.subflags & AbstractDefined.MASK_DEFI_STAT) != 0)
+            return;
+        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
+        throw new EngineMessage(EngineMessage.permissionError(
+                EngineMessage.OP_PERMISSION_COERCE,
+                EngineMessage.OP_PERMISSION_PROCEDURE,
+                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
     }
 
 }

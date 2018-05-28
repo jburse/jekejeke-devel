@@ -1072,14 +1072,14 @@ public class PrologWriter {
             if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, false, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, false, false, engine) : null);
                 nsa2 = sc.sym;
             } else if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, true, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, true, false, engine) : null);
                 nsa2 = sc.sym;
             } else {
                 mod2 = null;
@@ -1130,14 +1130,14 @@ public class PrologWriter {
             if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, false, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, false, false, engine) : null);
                 nsa2 = sc.sym;
             } else if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, true, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, true, false, engine) : null);
                 nsa2 = sc.sym;
             } else {
                 mod2 = null;
@@ -1343,12 +1343,12 @@ public class PrologWriter {
                     Object mod2;
                     SkelAtom nsa2;
                     if ((sc.sym.fun.equals(SpecialQuali.OP_COLON))) {
-                        mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                                ref, false, engine) : null);
+                        mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                                ref, false, false, engine) : null);
                         nsa2 = sc.sym;
                     } else if ((sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON))) {
-                        mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                                ref, true, engine) : null);
+                        mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                                ref, true, false, engine) : null);
                         nsa2 = sc.sym;
                     } else {
                         mod2 = null;

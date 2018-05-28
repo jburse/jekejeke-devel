@@ -464,7 +464,7 @@ public final class CachePredicate extends AbstractCache {
                     Predicate pick = performLookup(sa.fun, arity, src, base);
                     /* cache if found */
                     CachePredicate cp;
-                    if (pick != null && (pick.getBits() & Predicate.MASK_PRED_RMOV) == 0) {
+                    if (pick != null) {
                         cp = new CachePredicate();
                         cp.pick = pick;
                         cp.base = base;
@@ -498,7 +498,7 @@ public final class CachePredicate extends AbstractCache {
                             Object basevers = base.importvers;
                             pick = performLookup(sa.fun, arity, src, base);
                             /* update if found, otherwise remove */
-                            if (pick != null && (pick.getBits() & Predicate.MASK_PRED_RMOV) == 0) {
+                            if (pick != null) {
                                 cp.pick = pick;
                                 cp.base = base;
                                 int flags = 0;
@@ -555,7 +555,7 @@ public final class CachePredicate extends AbstractCache {
                     Object basevers = base.importvers;
                     Predicate pick = performLookupDefined(sa.fun, arity, src, base, create);
                     CachePredicate cp;
-                    if (pick != null && (pick.getBits() & Predicate.MASK_PRED_RMOV) == 0) {
+                    if (pick != null) {
                         cp = new CachePredicate();
                         cp.pick = pick;
                         cp.base = base;
@@ -592,7 +592,7 @@ public final class CachePredicate extends AbstractCache {
                             Object basevers = base.importvers;
                             pick = performLookupDefined(sa.fun, arity, src, base, create);
                             /* update if found, otherwise remove */
-                            if (pick != null && (pick.getBits() & Predicate.MASK_PRED_RMOV) == 0) {
+                            if (pick != null) {
                                 cp.pick = pick;
                                 cp.base = base;
                                 int flags = MASK_PRED_STBL;

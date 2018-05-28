@@ -114,6 +114,8 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_CLASS = "class";
     public static final String OP_DOMAIN_MODULE = "module";
     public static final String OP_DOMAIN_RECEIVER = "receiver";
+    public static final String OP_DOMAIN_PACKAGE = "package";
+    public static final String OP_DOMAIN_ARRAY = "array";
 
     private static final String OP_REPRESENTATION_ERROR = "representation_error"; /* ISO */
     public static final String OP_REPRESENTATION_CHARACTER_CODE = "character_code";

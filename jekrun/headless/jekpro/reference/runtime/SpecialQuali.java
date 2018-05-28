@@ -85,7 +85,7 @@ public final class SpecialQuali extends AbstractSpecial {
             case SPECIAL_CALL_COLON:
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
-                Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, en);
+                Object obj = slashToClass(temp.args[0], ref, false, true, en);
                 String fun;
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
@@ -123,7 +123,7 @@ public final class SpecialQuali extends AbstractSpecial {
             case SPECIAL_CALL_COLONCOLON:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
-                obj = SpecialQuali.slashToClass(temp.args[0], ref, true, en);
+                obj = slashToClass(temp.args[0], ref, true, true, en);
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
@@ -218,13 +218,15 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param t    The slash skeleton.
      * @param d    The slash display.
      * @param comp The compound flag.
+     * @param err  The error flag.
      * @param en   The engine.
      * @return The module or class, or null.
      * @throws EngineMessage Shit happens.
      */
-    public static Object slashToClassTest(Object t, Display d,
-                                          boolean comp,
-                                          Engine en)
+    public static Object slashToClass(Object t, Display d,
+                                      boolean comp,
+                                      boolean err,
+                                      Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -235,7 +237,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageTest(temp.args[0], d, false, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d, false, err, en);
             if (sa == null)
                 return null;
             t = temp.args[1];
@@ -243,6 +245,7 @@ public final class SpecialQuali extends AbstractSpecial {
             en.display = d;
             en.deref();
             t = en.skel;
+            d = en.display;
             if (comp && (t instanceof SkelCompound)) {
                 SkelCompound sc2 = (SkelCompound) t;
                 t = CacheModule.getModule(sa, sc2.sym.fun, false,
@@ -252,13 +255,20 @@ public final class SpecialQuali extends AbstractSpecial {
                 t = CacheModule.getModule(sa, sa2.fun, false,
                         temp.sym.scope, en);
             } else {
-                return null;
+                if (err) {
+                    EngineMessage.checkInstantiated(t);
+                    throw new EngineMessage(EngineMessage.typeError(
+                            (comp ? EngineMessage.OP_TYPE_CALLABLE :
+                                    EngineMessage.OP_TYPE_ATOM), t), d);
+                } else {
+                    return null;
+                }
             }
         } else if (!comp && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageTest(temp.args[0], d, true, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d, true, err, en);
             if (sa == null)
                 return null;
             t = CacheModule.getModule(sa, null, false,
@@ -276,36 +286,17 @@ public final class SpecialQuali extends AbstractSpecial {
                 t = CacheModule.getModule(sa, null, true,
                         sa.scope, en);
             } else {
-                return null;
+                if (err) {
+                    EngineMessage.checkInstantiated(t);
+                    throw new EngineMessage(EngineMessage.domainError(
+                            (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
+                                    EngineMessage.OP_DOMAIN_MODULE), t), d);
+                } else {
+                    return null;
+                }
             }
         }
         return t;
-    }
-
-    /**
-     * <p>Convert a slash module or receiver to an object.</p>
-     *
-     * @param t    The slash skeleton.
-     * @param d    The slash display.
-     * @param comp The compound flag.
-     * @param en   The engine.
-     * @return The module or classl.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object slashToClass(Object t, Display d,
-                                      boolean comp,
-                                      Engine en)
-            throws EngineMessage {
-        Object obj = slashToClassTest(t, d, comp, en);
-        if (obj != null)
-            return obj;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        throw new EngineMessage(EngineMessage.domainError(
-                (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
-                        EngineMessage.OP_DOMAIN_MODULE), en.skel), en.display);
     }
 
     /**
@@ -323,12 +314,16 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param t   The slash skeleton.
      * @param d   The slash display.
      * @param set The set flag.
+     * @param err The error flag.
      * @param en  The engine.
      * @return The package, or null.
+     * @throws EngineMessage Shit happens.
      */
-    public static SkelAtom slashToPackageTest(Object t, Display d,
-                                              boolean set,
-                                              Engine en) {
+    public static SkelAtom slashToPackage(Object t, Display d,
+                                          boolean set,
+                                          boolean err,
+                                          Engine en)
+            throws EngineMessage {
         en.skel = t;
         en.display = d;
         en.deref();
@@ -338,28 +333,41 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageTest(temp.args[0], d, false, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d, false, err, en);
             if (sa == null)
                 return null;
             en.skel = temp.args[1];
             en.display = d;
             en.deref();
             t = en.skel;
-            if (!(t instanceof SkelAtom))
+            if (t instanceof SkelAtom)
+                return CachePackage.getPackage(sa, ((SkelAtom) t).fun);
+            if (err) {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.typeError(
+                       EngineMessage.OP_TYPE_ATOM, t), d);
+            } else {
                 return null;
-            return CachePackage.getPackage(sa, ((SkelAtom) t).fun);
+            }
         } else if (set && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageTest(temp.args[0], d, true, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d, true, err, en);
             if (sa == null)
                 return null;
             return CachePackage.getPackage(sa, null);
         } else {
-            if (!(t instanceof SkelAtom))
+            if (t instanceof SkelAtom)
+                return (SkelAtom) t;
+            if (err) {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.domainError(
+                        (set ? EngineMessage.OP_DOMAIN_ARRAY :
+                                EngineMessage.OP_DOMAIN_PACKAGE), t), d);
+            } else {
                 return null;
-            return (SkelAtom) t;
+            }
         }
     }
 
@@ -393,7 +401,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
-            Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, en);
+            Object obj = slashToClass(temp.args[0], d, false, true, en);
             String fun;
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
@@ -423,7 +431,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(OP_COLONCOLON)) {
             SkelCompound temp = (SkelCompound) t;
-            Object obj = SpecialQuali.slashToClass(temp.args[0], d, true, en);
+            Object obj = slashToClass(temp.args[0], d, true, true, en);
             String fun;
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
@@ -501,7 +509,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
-            Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, en);
+            Object obj = slashToClass(temp.args[0], d, false, true, en);
             String fun;
             /* reference */
             if (!(obj instanceof AbstractSkel) &&

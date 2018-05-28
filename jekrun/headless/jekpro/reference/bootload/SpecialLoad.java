@@ -191,7 +191,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        SpecialLoad.currentProvable(en), Display.DISPLAY_CONST))
+                        SpecialLoad.currentProvables(en), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
@@ -631,17 +631,19 @@ public final class SpecialLoad extends AbstractSpecial {
         return true;
     }
 
-    /****************************************************************/
-    /* Listing Members                                              */
-    /****************************************************************/
+    /**************************************************************/
+    /* Provable Enumeration & Lookup                              */
+    /**************************************************************/
 
     /**
      * <p>Create a prolog list with the directly accessible predicates.</p>
      *
      * @param en The engine.
      * @return The prolog list of the directly accessible predicates.
+     * @throws EngineMessage Shit happens.
      */
-    private static Object currentProvable(Engine en) {
+    private static Object currentProvables(Engine en)
+            throws EngineMessage {
         AbstractStore store = en.store;
         Object res = en.store.foyer.ATOM_NIL;
         while (store != null) {
@@ -651,7 +653,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 Predicate[] preds = base.snapshotRoutine();
                 for (int i = preds.length - 1; i >= 0; i--) {
                     Predicate pick = preds[i];
-                    Object val = indicatorToColonSkel(pick.getFun(), pick.getArity());
+                    SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
+                    Object val = SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
@@ -659,6 +662,37 @@ public final class SpecialLoad extends AbstractSpecial {
         }
         return res;
     }
+
+    /**
+     * <p>Get predicate by indicator.</p>
+     *
+     * @param t  The skel of the compound.
+     * @param d  The display of the compound.
+     * @param en The engine.
+     * @return The predicate.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
+            throws EngineMessage {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        AbstractSource base;
+        if (!CacheFunctor.isQuali(sa.fun)) {
+            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
+            return CachePredicate.getRoutineUser(sk, en.store);
+        } else {
+            String s = CacheFunctor.sepModule(sa.fun);
+            base = AbstractSource.getModule(s, en.store);
+            if (base == null)
+                return null;
+            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
+            return base.getRoutine(sk);
+        }
+    }
+
+    /**************************************************************/
+    /* Syntax Enumeration & Lookup                                */
+    /**************************************************************/
 
     /**
      * <p>Create a prolog list with the directly accessible syntax operators.</p>
@@ -770,116 +804,6 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /*******************************************************************/
-    /* Provable Direct Access                                          */
-    /*******************************************************************/
-
-    /**
-     * <p>Get predicate by indicator.</p>
-     *
-     * @param t  The skel of the compound.
-     * @param d  The display of the compound.
-     * @param en The engine.
-     * @return The predicate.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
-            throws EngineMessage {
-        Integer arity = SpecialLoad.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        AbstractSource base;
-        if (!CacheFunctor.isQuali(sa.fun)) {
-            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
-            return CachePredicate.getRoutineUser(sk, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(sa.fun);
-            base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
-            return base.getRoutine(sk);
-        }
-    }
-
-    /**
-     * <p>Convert a colon indicator to a store key.</p>
-     * <p>The converted name is returned in engine skel.</p>
-     *
-     * @param t  The slash skeleton.
-     * @param d  The slash display.
-     * @param en The engine.
-     * @return The length.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    private static Integer colonToIndicator(Object t, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
-            SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa2 = SpecialQuali.slashToPackageTest(temp.args[0], d, true, en);
-            if (sa2 == null) {
-                EngineMessage.checkInstantiated(temp.args[0]);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_MODULE, temp.args[0]), d);
-            }
-            Integer arity = colonToIndicator(temp.args[1], d, en);
-            SkelAtom sa = (SkelAtom) en.skel;
-            en.skel = CacheFunctor.getFunctor(sa, sa2.fun, temp.sym, en);
-            return arity;
-        } else if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
-            SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            Number num = EngineMessage.castInteger(en.skel, en.display);
-            EngineMessage.checkNotLessThanZero(num);
-            EngineMessage.castIntValue(num);
-            en.skel = sc.args[0];
-            en.display = d;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            EngineMessage.castStringWrapped(en.skel, en.display);
-            return (Integer) num;
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_PREDICATE_INDICATOR, t), d);
-        }
-    }
-
-    /**
-     * <p>Convert an store key to a colon.</p>
-     *
-     * @param fun   The name.
-     * @param arity The length.
-     * @return The colon
-     */
-    public static Object indicatorToColonSkel(String fun, int arity) {
-        Object s;
-        if (CacheFunctor.isQuali(fun)) {
-            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun), null);
-
-            Object t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                    new SkelAtom(CacheFunctor.sepName(fun)),
-                    Integer.valueOf(arity));
-            s = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON), s, t);
-        } else {
-            s = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                    new SkelAtom(fun),
-                    Integer.valueOf(arity));
-        }
-        return s;
-    }
-
-    /*******************************************************************/
     /* Syntax Direct Access                                            */
     /*******************************************************************/
 
@@ -943,12 +867,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa2 = SpecialQuali.slashToPackageTest(temp.args[0], d, true, en);
-            if (sa2 == null) {
-                EngineMessage.checkInstantiated(temp.args[0]);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_MODULE, temp.args[0]), d);
-            }
+            SkelAtom sa2 = SpecialQuali.slashToPackage(temp.args[0], d, true, true, en);
             SkelAtom sa = colonToAtom(temp.args[1], d, en);
             return CacheFunctor.getFunctor(sa, sa2.fun, temp.sym, en);
         } else {
