@@ -165,7 +165,7 @@ public final class SpecialOper extends AbstractSpecial {
                 MapEntry<String, Operator>[] opers = base.snapshotOper();
                 for (int i = opers.length - 1; i >= 0; i--) {
                     Operator oper = opers[i].value;
-                    if (!oper.visibleOper(en.store.user))
+                    if (!OperatorSearch.visibleOper(oper, en.store.user))
                         continue;
                     SkelAtom sa = new SkelAtom(oper.getKey(), en.store.user);
                     Object val = SpecialOper.operToColonSkel(oper.getType(), sa, en);

@@ -162,7 +162,7 @@ public final class CacheSubclass extends AbstractCache {
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
             String s = base.getFullName();
-            if (s == null)
+            if (Branch.OP_USER.equals(s))
                 return false;
             if (fun.equals(s))
                 return true;
@@ -205,7 +205,7 @@ public final class CacheSubclass extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s == null)
+                if (Branch.OP_USER.equals(s))
                     continue;
                 if (fun.equals(s))
                     return true;
@@ -454,7 +454,7 @@ public final class CacheSubclass extends AbstractCache {
             throws EngineMessage {
         try {
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = LookupChild.unfindChildSuffix(path, scope);
+                String res = LookupChild.unfindChildKey(path, scope);
                 if (res != null)
                     return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
                             new SkelAtom(res));

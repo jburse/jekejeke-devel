@@ -55,32 +55,6 @@ public abstract class AbstractAuto extends AbstractSource {
     }
 
     /**************************************************************/
-    /* Variation Points                                           */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve the invocation handler.</p>
-     *
-     * @return The invocation handler.
-     * @throws EngineMessage Shit happens.
-     */
-    public InterfaceHandler getHandler() throws EngineMessage {
-        throw new EngineMessage(EngineMessage.permissionError(
-                EngineMessage.OP_PERMISSION_CREATE,
-                EngineMessage.OP_PERMISSION_PROXY,
-                new SkelAtom(getPath())));
-    }
-
-    /**
-     * <p>Set the invocation handler.</p>
-     *
-     * @param h The invocation handler.
-     */
-    public void setHandler(InterfaceHandler h) {
-        /* do nothing */
-    }
-
-    /**************************************************************/
     /* Init & Clear Module                                        */
     /**************************************************************/
 
@@ -274,7 +248,7 @@ public abstract class AbstractAuto extends AbstractSource {
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
-        if (over == null || !over.visiblePred(this))
+        if (over == null || !CachePredicate.visiblePred(over, this))
             return null;
         Usage loc = pick.getUsage(this);
         if (loc != null)

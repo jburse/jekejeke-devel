@@ -8,6 +8,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.InterfaceProxyable;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.proxy.InterfaceHandler;
@@ -171,7 +172,7 @@ public final class SpecialProxy extends AbstractSpecial {
      */
     private static Object newProxyHandler(AbstractSource scope)
             throws EngineMessage, EngineException {
-        InterfaceHandler handler = scope.defineHandler();
+        InterfaceHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
         if (InterfaceSlots.class.isAssignableFrom(clazz))
             throw new EngineMessage(EngineMessage.existenceError(
@@ -192,7 +193,7 @@ public final class SpecialProxy extends AbstractSpecial {
      */
     private static Object newProxyState(AbstractSource scope, int size)
             throws EngineMessage, EngineException {
-        InterfaceHandler handler = scope.defineHandler();
+        InterfaceHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
         if (!InterfaceSlots.class.isAssignableFrom(clazz))
             throw new EngineMessage(EngineMessage.existenceError(
@@ -201,6 +202,33 @@ public final class SpecialProxy extends AbstractSpecial {
         Constructor constr = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INVOKE);
         InterfaceState state = handler.createState(size);
         return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{state});
+    }
+
+    /**
+     * <p>Define a handler.</p>
+     *
+     * @return The handler.
+     * @throws EngineMessage Shit happens.
+     */
+    public static InterfaceHandler defineHandler(AbstractSource scope)
+            throws EngineMessage {
+        if (!(scope instanceof InterfaceProxyable))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_CREATE,
+                    EngineMessage.OP_PERMISSION_PROXY,
+                    new SkelAtom(scope.getPath())));
+        InterfaceProxyable proxable = (InterfaceProxyable) scope;
+        InterfaceHandler handler = proxable.getHandler();
+        if (handler != null)
+            return handler;
+        synchronized (proxable) {
+            handler = proxable.getHandler();
+            if (handler != null)
+                return handler;
+            handler = scope.getStore().foyer.getFactory().createHandler(scope);
+            proxable.setHandler(handler);
+        }
+        return handler;
     }
 
 }

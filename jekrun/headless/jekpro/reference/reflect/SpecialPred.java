@@ -3,6 +3,7 @@ package jekpro.reference.reflect;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.*;
 import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
@@ -12,7 +13,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
@@ -220,7 +220,7 @@ public final class SpecialPred extends AbstractSpecial {
                 Predicate[] preds = base.snapshotRoutine();
                 for (int i = preds.length - 1; i >= 0; i--) {
                     Predicate pick = preds[i];
-                    if (!pick.visiblePred(en.store.user))
+                    if (!CachePredicate.visiblePred(pick, en.store.user))
                         continue;
                     SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
                     Object val = SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en);
@@ -273,10 +273,10 @@ public final class SpecialPred extends AbstractSpecial {
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int j = 0; j < sources.length; j++) {
                 AbstractSource base = sources[j].value;
-                String fullname = base.getFullName();
-                if (fullname == null)
+                String s = base.getFullName();
+                if (Branch.OP_USER.equals(s))
                     continue;
-                Object val = Clause.moduleToSlashSkel(fullname, en.store.user, en);
+                Object val = Clause.moduleToSlashSkel(s, en.store.user, en);
                 res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
             }
             store = store.parent;
@@ -287,8 +287,8 @@ public final class SpecialPred extends AbstractSpecial {
     /**
      * <p>Get module by name.</p>
      *
-     * @param t The name skel.
-     * @param d The name display.
+     * @param t  The name skel.
+     * @param d  The name display.
      * @param en The engine.
      * @return The module.
      * @throws EngineMessage Shit happens.

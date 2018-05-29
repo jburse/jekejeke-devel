@@ -48,7 +48,7 @@ public final class LookupChild {
      * @return The prefixed path or null.
      */
     public static String findChildPrefix(String relpath, AbstractSource src) {
-        String res = LookupChild.lookupFullName(src);
+        String res = src.getFullName();
         res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
         relpath = relpath.replace(CacheSubclass.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
         return CacheSubclass.composeLocal(res, relpath);
@@ -66,7 +66,7 @@ public final class LookupChild {
                                            AbstractSource src,
                                            int mask)
             throws IOException {
-        String res = LookupChild.lookupFullName(src);
+        String res = src.getFullName();
         res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
         if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
             relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
@@ -91,10 +91,9 @@ public final class LookupChild {
      * @param src     The call-site, not null.
      * @return The source key.
      */
-    public static String findChildKey(String relpath,
-                                      AbstractSource src) {
+    public static String findChildKey(String relpath, AbstractSource src) {
         AbstractSource src2 = LookupChild.derefParentName(src);
-        String res = LookupChild.lookupFullName(src2);
+        String res = src2.getFullName();
         res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
         if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
             relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
@@ -113,12 +112,12 @@ public final class LookupChild {
      * @param src  The call-site, not null.
      * @return The path without suffix.
      */
-    public static String unfindChildSuffix(String path, AbstractSource src) {
+    public static String unfindChildKey(String path, AbstractSource src) {
         AbstractSource src2 = LookupChild.derefParentName(src);
         String res = (src2.getName() != null ? src2.getPath() : Branch.OP_USER);
         if (path.startsWith(res) && path.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
             path = path.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
-            res = LookupChild.lookupFullName(src2);
+            res = src2.getFullName();
             res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
             return CacheSubclass.composeLocal(res, path);
         }
@@ -131,52 +130,13 @@ public final class LookupChild {
     /* Module Names                                                    */
     /*******************************************************************/
 
-
-    /**
-     * <p>Lookup full name.</p>
-     *
-     * @return The full name.
-     */
-    public static String lookupFullName(AbstractSource src) {
-        String temp = getChainName(src);
-        src = LookupChild.derefParentName(src);
-        String res = getPackName(src);
-        if (res != null) {
-            return CachePackage.composeStruct(res, temp);
-        } else {
-            return temp;
-        }
-    }
-
-    /**
-     * <p>Retrieve the rest name.</p>
-     *
-     * @param src The source.
-     * @return The rest name.
-     */
-    private static String getChainName(AbstractSource src) {
-        String res = src.getName();
-        if (res == null)
-            res = Branch.OP_USER;
-        src = LookupChild.getParentName(src);
-        while (src != null) {
-            String res2 = src.getName();
-            if (res2 == null)
-                res2 = Branch.OP_USER;
-            res = CacheSubclass.composeLocal(res2, res);
-            src = LookupChild.getParentName(src);
-        }
-        return res;
-    }
-
-
     /**
      * <p>Retrieve the package name.</p>
      *
      * @param src The source.
      * @return The package name.
      */
-    private static String getPackName(AbstractSource src) {
+    public static String getPackName(AbstractSource src) {
         MapEntry<String, Integer>[] fixes = src.snapshotFixes();
         for (int i = 0; i < fixes.length; i++) {
             MapEntry<String, Integer> fix = fixes[i];
@@ -187,6 +147,19 @@ public final class LookupChild {
             }
         }
         return null;
+    }
+
+    /**
+     * <p>Retrieve the store name.</p>
+     *
+     * @param src The source.
+     * @return The store name.
+     */
+    public static String getStoreName(AbstractSource src) {
+        String name = src.getName();
+        if (name != null)
+            return name;
+        return Branch.OP_USER;
     }
 
     /*******************************************************************/
@@ -201,10 +174,8 @@ public final class LookupChild {
      */
     public static AbstractSource derefParentName(AbstractSource src) {
         AbstractSource src2 = LookupChild.getParentName(src);
-        while (src2 != null) {
-            src = src2;
-            src2 = LookupChild.getParentName(src);
-        }
+        if (src2 != null)
+            return src2;
         return src;
     }
 

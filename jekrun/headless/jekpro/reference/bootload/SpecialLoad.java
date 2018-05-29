@@ -420,7 +420,7 @@ public final class SpecialLoad extends AbstractSpecial {
 
         if (src != null &&
                 (src.getBits() & AbstractSource.MASK_SRC_VSNP) == 0 &&
-                src.getFullName() == null) {
+                Branch.OP_USER.equals(src.getFullName())) {
             Object decl = new SkelCompound(new SkelAtom(OP_MODULE),
                     new SkelAtom(Branch.OP_USER),
                     new SkelAtom(Foyer.OP_NIL));
@@ -447,7 +447,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_HIDE) != 0)
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODL) != 0 &&
-                        src.getFullName() == null)
+                        Branch.OP_USER.equals(src.getFullName()))
                     continue;
                 Object[] vals = SpecialSource.getPropSrc(prop, src, en);
                 for (int j = 0; j < vals.length; j++) {

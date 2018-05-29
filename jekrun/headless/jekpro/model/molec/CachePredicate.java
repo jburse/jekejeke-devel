@@ -1,7 +1,9 @@
 package jekpro.model.molec;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.inter.Usage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
@@ -68,13 +70,13 @@ public final class CachePredicate extends AbstractCache {
             n = CacheFunctor.sepName(fun);
         }
         String s = base.getFullName();
-        if (s == null) {
+        if (!Branch.OP_USER.equals(s)) {
+            /* check name%pred */
+            s = CacheFunctor.composeQuali(s, n);
+            return pick.getFun().equals(s);
+        } else {
             /* check pred */
             return pick.getFun().equals(n);
-        } else {
-            s = CacheFunctor.composeQuali(s, n);
-            /* check name%pred */
-            return pick.getFun().equals(s);
         }
     }
 
@@ -104,44 +106,41 @@ public final class CachePredicate extends AbstractCache {
         } else {
             n = CacheFunctor.sepName(fun);
         }
-        String s = base.getFullName();
         StoreKey sk;
         MapEntry<AbstractSource, Integer>[] deps2;
-        if (s == null) {
-            sk = new StoreKey(n, arity);
-            /* find pred */
-            Predicate pick = (f ? getRoutineUser(sk, scope.getStore()) : null);
-            if (pick != null)
-                return pick;
-            deps2 = base.snapshotDeps();
-        } else {
-            s = CacheFunctor.composeQuali(s, n);
-            sk = new StoreKey(s, arity);
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
-                /* find name%pred */
+        String s;
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            /* find name%pred */
+            s = base.getFullName();
+            if (!Branch.OP_USER.equals(s)) {
+                String s1 = CacheFunctor.composeQuali(s, n);
+                sk = new StoreKey(s1, arity);
                 Predicate pick = base.getRoutine(sk);
                 if (pick != null)
                     return pick;
-                deps2 = base.snapshotDeps();
-            } finally {
-                base.getRead().release();
+            } else if (f) {
+                sk = new StoreKey(n, arity);
+                Predicate pick = getRoutineUser(sk, scope.getStore());
+                if (pick != null)
+                    return pick;
             }
+            deps2 = base.snapshotDeps();
+        } finally {
+            base.getRead().release();
         }
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
             return pick;
-        if (s == null) {
-            /* find pred */
-            return (!f ? getRoutineUser(sk, scope.getStore()) : null);
-        } else {
+        if (!Branch.OP_USER.equals(s) || !f) {
             /* find pred */
             sk = new StoreKey(n, arity);
             return getRoutineUser(sk, scope.getStore());
         }
+        return null;
     }
 
     /**
@@ -167,27 +166,28 @@ public final class CachePredicate extends AbstractCache {
         } else {
             n = CacheFunctor.sepName(fun);
         }
-        String s = base.getFullName();
-        if (s == null) {
-            StoreKey sk = new StoreKey(n, arity);
-            return (create ?
-                    defineRoutineUser(sk, scope, scope.getStore()) :
-                    getRoutineUser(sk, scope.getStore()));
-        } else {
-            s = CacheFunctor.composeQuali(s, n);
-            StoreKey sk = new StoreKey(s, arity);
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            String s = base.getFullName();
+            if (!Branch.OP_USER.equals(s)) {
                 /* create name%pred */
+                s = CacheFunctor.composeQuali(s, n);
+                StoreKey sk = new StoreKey(s, arity);
                 return (create ?
                         base.defineRoutine(sk, scope) :
                         base.getRoutine(sk));
-            } finally {
-                base.getRead().release();
+            } else {
+                /* create pred */
+                StoreKey sk = new StoreKey(n, arity);
+                return (create ?
+                        defineRoutineUser(sk, scope, scope.getStore()) :
+                        getRoutineUser(sk, scope.getStore()));
             }
+        } finally {
+            base.getRead().release();
         }
     }
 
@@ -213,33 +213,27 @@ public final class CachePredicate extends AbstractCache {
         } else {
             n = CacheFunctor.sepName(fun);
         }
-        String s = base.getFullName();
         MapEntry<AbstractSource, Integer>[] deps2;
-        if (s == null) {
-            /* find dependent pred */
+        String s;
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            s = base.getFullName();
             deps2 = base.snapshotDeps();
-        } else {
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
-                /* find dependent pred */
-                deps2 = base.snapshotDeps();
-            } finally {
-                base.getRead().release();
-            }
+        } finally {
+            base.getRead().release();
         }
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
             return pick;
-        if (s == null) {
-            return null;
-        } else {
+        if (!Branch.OP_USER.equals(s)) {
             /* find pred */
             StoreKey sk = new StoreKey(n, arity);
             return getRoutineUser(sk, scope.getStore());
         }
+        return null;
     }
 
     /*****************************************************/
@@ -285,7 +279,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param fun     The predicate name.
      * @param arity   The predicate length.
-     * @param src     The call-site.
+     * @param src     The call-site, not null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The resolved predicate or null.
@@ -312,11 +306,11 @@ public final class CachePredicate extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s != null) {
+                if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
                     StoreKey sk = new StoreKey(s, arity);
                     Predicate pick = base.getRoutine(sk);
-                    if (pick != null && pick.visiblePred(src))
+                    if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
                 deps2 = base.snapshotDeps();
@@ -336,7 +330,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param fun     The predicate name.
      * @param arity   The predicate length.
-     * @param src     The call-site.
+     * @param src     The call-site, not null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The resolved name.
@@ -362,11 +356,11 @@ public final class CachePredicate extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s != null) {
+                if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
                     StoreKey sk = new StoreKey(s, arity);
                     Predicate pick = base.getRoutine(sk);
-                    if (pick != null && pick.visiblePred(src))
+                    if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
                 deps2 = base.snapshotDeps();
@@ -386,7 +380,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param fun     The predicate name.
      * @param arity   The predicate length.
-     * @param src     The call-site.
+     * @param src     The call-site, not null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The resolved predicate or null.
@@ -412,11 +406,11 @@ public final class CachePredicate extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s != null) {
+                if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
                     StoreKey sk = new StoreKey(s, arity);
                     Predicate pick = base.getRoutine(sk);
-                    if (pick != null && pick.visiblePred(src))
+                    if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
                 deps2 = base.snapshotDeps();
@@ -469,7 +463,7 @@ public final class CachePredicate extends AbstractCache {
                         cp.pick = pick;
                         cp.base = base;
                         int flags = 0;
-                        if (pick.visiblePred(src))
+                        if (CachePredicate.visiblePred(pick, src))
                             flags |= MASK_PRED_VISI;
                         if (pick.getUsage(src) != null && isStable(sa.fun, base, pick))
                             flags |= MASK_PRED_STBL;
@@ -502,7 +496,7 @@ public final class CachePredicate extends AbstractCache {
                                 cp.pick = pick;
                                 cp.base = base;
                                 int flags = 0;
-                                if (pick.visiblePred(src))
+                                if (CachePredicate.visiblePred(pick, src))
                                     flags |= MASK_PRED_VISI;
                                 if (pick.getUsage(src) != null && isStable(sa.fun, base, pick))
                                     flags |= MASK_PRED_STBL;
@@ -560,7 +554,7 @@ public final class CachePredicate extends AbstractCache {
                         cp.pick = pick;
                         cp.base = base;
                         int flags = MASK_PRED_STBL;
-                        if (pick.visiblePred(src))
+                        if (CachePredicate.visiblePred(pick, src))
                             flags |= MASK_PRED_VISI;
                         cp.flags = flags;
                         cp.basevers = basevers;
@@ -596,7 +590,7 @@ public final class CachePredicate extends AbstractCache {
                                 cp.pick = pick;
                                 cp.base = base;
                                 int flags = MASK_PRED_STBL;
-                                if (pick.visiblePred(src))
+                                if (CachePredicate.visiblePred(pick, src))
                                     flags |= MASK_PRED_VISI;
                                 cp.flags = flags;
                                 cp.basevers = basevers;
@@ -664,6 +658,59 @@ public final class CachePredicate extends AbstractCache {
             pick = store.user.checkRoutine(sk, scope);
         pick.defineUsage(scope);
         return pick;
+    }
+
+    /*****************************************************************/
+    /* Predicate Visibility                                          */
+    /*****************************************************************/
+
+    /**
+     * <p>Check whether a predicate is visible.</p>
+     *
+     * @param pick The predicate.
+     * @param src  The call-site, not null.
+     * @return True if the predicate is visible, otherwise false.
+     */
+    public static boolean visiblePred(Predicate pick, AbstractSource src) {
+        if ((pick.getBits() & Predicate.MASK_PRED_VSPR) != 0) {
+            return hasHome(pick, src);
+        } else if ((pick.getBits() & Predicate.MASK_PRED_VSPU) == 0) {
+            return hasPackage(pick, src);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * <p>Check whether the predicate has a usage with the same home.</p>
+     *
+     * @param key The source key.
+     * @return True if the predicate has such a usage, otherwise false.
+     */
+    private static boolean hasHome(Predicate pick, AbstractSource key) {
+        MapEntry<AbstractSource, Usage>[] snapshot = pick.snapshotUses();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractSource, Usage> entry = snapshot[i];
+            if (OperatorSearch.sameHome(entry.key, key))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * <p>Check whether the predicate has a usage with the same package.</p>
+     *
+     * @param key The source key.
+     * @return True if the predicate has such a usage, otherwise false.
+     */
+    private static boolean hasPackage(Predicate pick, AbstractSource key) {
+        MapEntry<AbstractSource, Usage>[] snapshot = pick.snapshotUses();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractSource, Usage> entry = snapshot[i];
+            if (OperatorSearch.samePackage(entry.key, key))
+                return true;
+        }
+        return false;
     }
 
 }
