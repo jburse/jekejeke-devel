@@ -4,7 +4,6 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.Operator;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.tools.term.PositionKey;
@@ -504,12 +503,12 @@ public final class OperatorSearch {
      * @return True if the two sources share the same home, otherwise false.
      */
     public static boolean sameHome(AbstractSource fst, AbstractSource snd) {
-        String path1 = getAlternatePathOrPath(fst);
+        String path1 = fst.getPath();
         int k1 = path1.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
         int j = path1.indexOf(CacheSubclass.OP_CHAR_SYN, k1);
         k1 = (j == -1 ? path1.length() : j);
 
-        String path2 = getAlternatePathOrPath(snd);
+        String path2 = snd.getPath();
         int k2 = path2.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
         j = path2.indexOf(CacheSubclass.OP_CHAR_SYN, k2);
         k2 = (j == -1 ? path2.length() : j);
@@ -527,29 +526,14 @@ public final class OperatorSearch {
      * @return True if the two sources share the same package, otherwise false.
      */
     public static boolean samePackage(AbstractSource fst, AbstractSource snd) {
-        String path1 = getAlternatePathOrPath(fst);
+        String path1 = fst.getPath();
         int k1 = path1.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
 
-        String path2 = getAlternatePathOrPath(snd);
+        String path2 = snd.getPath();
         int k2 = path2.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
 
         return (k1 == k2 &&
                 (k1 == 0 || path1.regionMatches(0, path2, 0, k1)));
-    }
-
-    /**
-     * <p>Find the possible alternate path.</p>
-     *
-     * @param src The source, not null.
-     * @return The possible alternate path.
-     */
-    public static String getAlternatePathOrPath(AbstractSource src) {
-        if (src instanceof SourceLocal) {
-            String path = ((SourceLocal) src).getAlternatePath();
-            if (path != null)
-                return path;
-        }
-        return src.getPath();
     }
 
 }

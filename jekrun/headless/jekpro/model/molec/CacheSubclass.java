@@ -3,6 +3,7 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.*;
+import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
@@ -136,10 +137,13 @@ public final class CacheSubclass extends AbstractCache {
         mod = mod.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
         String key = findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
 
-        if (key == null)
+        if (key == null) {
             throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_SOURCE_SINK,
-                    new SkelAtom(mod)));
+                    (Branch.OP_USER.equals(scope.getFullName()) && !Branch.OP_USER.equals(scope.getPath()) ?
+                            EngineMessage.OP_EXISTENCE_VERBATIM :
+                            EngineMessage.OP_EXISTENCE_SOURCE_SINK),
+                    Clause.moduleToSlashSkel(mod, scope, en)));
+        }
 
         return opts.makeLoad(scope, key, en);
     }
@@ -518,18 +522,18 @@ public final class CacheSubclass extends AbstractCache {
         if (key != null)
             path = key;
 
-        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
-            String res = LookupRead.unfindRead(path, src);
-            if (res != null)
-                return new SkelAtom(res);
-        }
-
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             String res = LookupResource.unfindResourcePaths(path, src.getStore());
             if (res != null)
                 return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
                         new SkelAtom(res));
+        }
+
+        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
+            String res = LookupRead.unfindRead(path, src);
+            if (res != null)
+                return new SkelAtom(res);
         }
 
         return new SkelAtom(path);

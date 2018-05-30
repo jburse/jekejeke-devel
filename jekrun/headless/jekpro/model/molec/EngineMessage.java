@@ -128,6 +128,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_EXISTENCE_PROCEDURE = "procedure";
     public static final String OP_EXISTENCE_LIBRARY = "library";
     public static final String OP_EXISTENCE_SOURCE_SINK = "source_sink";
+    public static final String OP_EXISTENCE_VERBATIM = "verbatim";
     public static final String OP_EXISTENCE_HOST = "host";
     public static final String OP_EXISTENCE_PORT = "port";
     public static final String OP_EXISTENCE_ENCODING = "encoding";
@@ -142,6 +143,8 @@ public final class EngineMessage extends Exception {
     public static final String OP_EXISTENCE_PROXY = "proxy";
     public static final String OP_EXISTENCE_BODY = "body";
     public static final String OP_EXISTENCE_CODE = "code";
+    public static final String OP_EXISTENCE_CLASS_PATH = "class_path";
+    public static final String OP_EXISTENCE_EXTENSION = "extension";
 
     private static final String OP_PERMISSION_ERROR = "permission_error"; /* ISO */
     public static final String OP_PERMISSION_ACCESS = "access"; /* ISO */

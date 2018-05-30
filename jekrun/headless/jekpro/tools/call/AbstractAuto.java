@@ -10,7 +10,6 @@ import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
-import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.tools.term.SkelAtom;
 import matula.util.system.AbstractRuntime;
 import matula.util.wire.AbstractLivestock;
@@ -69,9 +68,14 @@ public abstract class AbstractAuto extends AbstractSource {
         /* add package and name */
         if (SourceLocal.isOs(path)) {
             addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
-            path = SourceLocal.sepFile(path);
+            setName(SourceLocal.sepFile(path));
+        } else {
+            setName(path);
         }
-        setName(path);
+
+        /* set the full name */
+        path = path.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+        setFullName(path);
 
         /* change default visibility */
         resetBit(MASK_SRC_VSPU);

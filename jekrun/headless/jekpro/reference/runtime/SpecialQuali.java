@@ -583,41 +583,6 @@ public final class SpecialQuali extends AbstractSpecial {
         return s;
     }
 
-    /*************************************************************/
-    /* Nested Paths                                              */
-    /*************************************************************/
-
-    /**
-     * <p>Separate the outer from the nested path.</p>
-     *
-     * @param path The nested path.
-     * @return The outer.
-     */
-    public static String sepOuter(String path) {
-        return path.substring(0, path.lastIndexOf(CacheSubclass.OP_CHAR_SYN));
-    }
-
-    /**
-     * <p>Separate the inner from the nested path.</p>
-     *
-     * @param path The nested path.
-     * @return The inner.
-     */
-    public static String sepInner(String path) {
-        return path.substring(path.lastIndexOf(CacheSubclass.OP_CHAR_SYN) + 1);
-    }
-
-    /**
-     * <p>Check whether representation is nest.</p>
-     *
-     * @param path The path.
-     * @return True if representation is nest, otherwise false.
-     */
-    public static boolean isNest(String path) {
-        int k = path.lastIndexOf(CachePackage.OP_CHAR_SEG);
-        return (path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1) != -1);
-    }
-
     /***************************************************************/
     /* Prepend Quali                                               */
     /***************************************************************/

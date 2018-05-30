@@ -5,7 +5,10 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.StoreChild;
+import jekpro.model.pretty.StoreElder;
 import jekpro.tools.call.*;
 import jekpro.tools.foreign.LookupResource;
 import matula.util.system.AbstractDecoder;
@@ -24,7 +27,7 @@ import java.util.Properties;
  * knowledgebase creates a child knowledge base. The parent knowledge
  * base can be accessed by the method getParent(). An interactor can
  * be obtained from a knowledge base via the method iterable().
- *
+ * <p>
  * After creation, the knowledge base will be uninitialized. To initialize
  * the knowledge base the methods initKnowledgebase() should be used.
  * For a root knowledge base this will initialize the capabilities
@@ -32,57 +35,57 @@ import java.util.Properties;
  * will in turn finish a knowledge base. For a root knowledgebase
  * this will finish the currently initialized capabilities of the
  * knowledge base and render the knowledge base unusable.
- *
+ * <p>
  * A knowledgebase provides a context for a base URL. The base URL is used
  * in resolving relative write paths. The GUI and the non-GUI console will
  * initialize the base URL to the current user directory. Otherwise the base
  * URL is left uninitialized. A knowledgebase also provides a context for
  * a locale. The GUI console will initialize the locale to the settings.
  * Otherwise the locale is set to the JVM locale.
- *
+ * <p>
  * A knowledge base also provides a context for a class path. The class
  * path is used in resolving path/1 and library/1 read paths. The class path
  * is also used to resolve class names. Classes can be loaded via the method
  * stringToClass(). The method respects short hands as defined in the foreign
  * function interface. The possibly shortened class name can be reconstructed
  * by the method classToString().
- *
+ * <p>
  * The current class loader can be retrieve via the method getLoader(). The
  * method addClassPath() allows adding further paths to the class loader. The
  * currently added paths can be queried with the method getClassPaths(). The
  * GUI console will automatically add the paths defined in the settings. The
  * GUI and the non-GUI console will also add the paths defined in the command line.
- *
+ * <p>
  * The method stringToCapability() allows retrieving a capability by name. The
  * capability need not already be defined in the toolkit. All that is need
  * is that the corresponding class is found in the added paths.
- *
+ * <p>
  * The getErrorProperties() allows retrieving the union of all error
  * properties that have been loaded and registered so far. The method might
  * return different properties for different locales. The method getCache()
  * gives the actual local cache for a given error property. To find a cache
  * the error property need not be registered but at least loaded.
- *
+ * <p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
  * regarding the provided information. XLOG Technologies GmbH assumes
  * no liability that any problems might be solved with the information
  * provided by XLOG Technologies GmbH.
- *
+ * <p>
  * Rights & License
  * All industrial property rights regarding the information - copyright
  * and patent rights in particular - are the sole property of XLOG
  * Technologies GmbH. If the company was not the originator of some
  * excerpts, XLOG Technologies GmbH has at least obtained the right to
  * reproduce, change and translate the information.
- *
+ * <p>
  * Reproduction is restricted to the whole unaltered document. Reproduction
  * of the information is only allowed for non-commercial uses. Selling,
  * giving away or letting of the execution of the library is prohibited.
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
- *
+ * <p>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -204,7 +207,7 @@ public final class Knowledgebase extends AbstractRecognizer {
     /**
      * <p>Fini the registered capabilities.</p>
      *
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public void finiKnowledgebase()
@@ -244,6 +247,16 @@ public final class Knowledgebase extends AbstractRecognizer {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
+    }
+
+    /**
+     * <p>Add a file extension.</p>
+     *
+     * @param ext  The file extension.
+     * @param type The type.
+     */
+    public void addFileExtension(String ext, int type) {
+        store.addFileExtension(ext, type);
     }
 
     /**
