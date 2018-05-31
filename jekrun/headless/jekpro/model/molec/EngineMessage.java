@@ -6,8 +6,8 @@ import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.FileResource;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.pretty.SourceFileResource;
 import jekpro.model.rope.Resource;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
@@ -1154,9 +1154,9 @@ public final class EngineMessage extends Exception {
      */
     public static HashMap<String, Properties> getCache(String key, AbstractStore store) {
         AbstractSource src = store.getSource(key);
-        if (!(src instanceof SourceFileResource))
+        if (!(src instanceof FileResource))
             return null;
-        return ((SourceFileResource) src).getCache();
+        return ((FileResource) src).getCache();
     }
 
 }

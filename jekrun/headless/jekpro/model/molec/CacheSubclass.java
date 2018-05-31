@@ -504,7 +504,8 @@ public final class CacheSubclass extends AbstractCache {
         /* special case */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (Branch.OP_USER.equals(path))
-                return new SkelAtom(path);
+                return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
+                    new SkelAtom(path));
         }
 
         /* foreign .class */
