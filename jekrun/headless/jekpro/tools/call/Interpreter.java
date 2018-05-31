@@ -16,6 +16,7 @@ import matula.util.system.OpenOpts;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -358,8 +359,10 @@ public final class Interpreter implements Comparator<Object> {
             throws InterpreterMessage, InterpreterException {
         try {
             Engine en = (Engine) getEngine();
-            return PrologWriter.toString(AbstractTerm.getSkel(t),
-                    AbstractTerm.getDisplay(t), flags, en);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(AbstractTerm.getSkel(t), AbstractTerm.getDisplay(t),
+                    sw, flags, en);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
@@ -380,17 +383,24 @@ public final class Interpreter implements Comparator<Object> {
             throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         try {
-            WriteOpts wo = new WriteOpts(en);
-            wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), en);
             PrologWriter pw;
-            if ((wo.flags & PrologWriter.FLAG_FILL) == 0 && (wo.flags & PrologWriter.FLAG_NAVI) == 0) {
-                pw = Foyer.createWriter(Foyer.IO_TERM);
+            if (!Knowledgebase.OP_NIL.equals(opt)) {
+                WriteOpts wo = new WriteOpts(en);
+                wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
+                        AbstractTerm.getDisplay(opt), en);
+                if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
+                        (wo.flags & PrologWriter.FLAG_NAVI) == 0) {
+                    pw = Foyer.createWriter(Foyer.IO_TERM);
+                } else {
+                    pw = Foyer.createWriter(Foyer.IO_ANNO);
+                }
+                wo.setWriteOpts(pw);
             } else {
-                pw = Foyer.createWriter(Foyer.IO_ANNO);
+                pw = Foyer.createWriter(Foyer.IO_TERM);
+                pw.setWriteUtil(en.store);
+                pw.setSource(en.store.user);
             }
             pw.setEngineRaw(en);
-            wo.setWriteOpts(pw);
             pw.setWriter(wr);
             pw.unparseStatement(AbstractTerm.getSkel(t),
                     AbstractTerm.getDisplay(t));
@@ -463,25 +473,30 @@ public final class Interpreter implements Comparator<Object> {
     public AbstractTerm parseTerm(Reader lr, Object opt)
             throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) getEngine();
-        ReadOpts ro = new ReadOpts(en);
-        try {
-            ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        PrologReader rd;
-        if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
-            rd = en.store.foyer.createReader(Foyer.IO_TERM);
-        } else {
-            rd = en.store.foyer.createReader(Foyer.IO_ANNO);
-        }
-        rd.getScanner().setReader(lr);
-        ro.setReadOpts(rd);
-        rd.setEngineRaw(en);
         Object val;
+        PrologReader rd;
         try {
+            boolean stmt;
+            if (!Knowledgebase.OP_NIL.equals(opt)) {
+                ReadOpts ro = new ReadOpts(en);
+                ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
+                if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
+                    rd = en.store.foyer.createReader(Foyer.IO_TERM);
+                } else {
+                    rd = en.store.foyer.createReader(Foyer.IO_ANNO);
+                }
+                ro.setReadOpts(rd);
+                stmt=((ro.flags & PrologWriter.FLAG_STMT) != 0);
+            } else {
+                rd = en.store.foyer.createReader(Foyer.IO_TERM);
+                rd.setReadUtil(en.store);
+                rd.setSource(en.store.user);
+                stmt=true;
+            }
+            rd.getScanner().setReader(lr);
+            rd.setEngineRaw(en);
             try {
-                if ((ro.flags & PrologWriter.FLAG_STMT) != 0) {
+                if (stmt) {
                     val = rd.parseHeadStatement();
                 } else {
                     val = rd.parseHeadInternal();

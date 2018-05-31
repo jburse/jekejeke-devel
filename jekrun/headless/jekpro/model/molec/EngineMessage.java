@@ -18,10 +18,7 @@ import matula.util.system.ForeignCache;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.PropertiesWithImport;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -891,8 +888,11 @@ public final class EngineMessage extends Exception {
                                      Locale locale, Properties prop,
                                      Engine en)
             throws EngineMessage, EngineException {
-        if (prop == null)
-            return PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en);
+        if (prop == null) {
+            StringWriter buf = new StringWriter();
+            PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
+            return buf.toString();
+        }
         BindVar b;
         while (term instanceof SkelVar &&
                 (b = ref.bind[((SkelVar) term).id]).display != null) {
@@ -901,18 +901,18 @@ public final class EngineMessage extends Exception {
         }
         ArrayList<String> pat = messagePattern(term, prop);
         if (pat == null) {
-            StringBuilder buf = new StringBuilder();
+            StringWriter buf = new StringWriter();
             buf.append(prop.getProperty("term.pattern"));
             buf.append(": ");
-            buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
+            PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
             return buf.toString();
         }
         String temp = EngineMessage.messageTemplate(term, ref, pat, prop, en);
         if (temp == null) {
-            StringBuilder buf = new StringBuilder();
+            StringWriter buf = new StringWriter();
             buf.append(prop.getProperty("term.template"));
             buf.append(": ");
-            buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
+            PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
             return buf.toString();
         }
         Object[] paras = EngineMessage.messageParameters(term, ref, pat, en);
@@ -1011,7 +1011,7 @@ public final class EngineMessage extends Exception {
         } else {
             fun = null;
         }
-        StringBuilder buf = new StringBuilder();
+        StringWriter buf = new StringWriter();
         buf.append(fun);
         for (int i = 0; i < pat.size(); i++) {
             if (ARGTYPE_ID.equals(pat.get(i))) {
@@ -1024,7 +1024,7 @@ public final class EngineMessage extends Exception {
                     d = b.display;
                 }
                 buf.append('.');
-                buf.append(PrologWriter.toString(t, d, 0, en));
+                PrologWriter.toString(t, d, buf, 0, en);
             }
         }
         return prop.getProperty(buf.toString());
@@ -1052,27 +1052,33 @@ public final class EngineMessage extends Exception {
         ListArray<Object> paravec = new ListArray<Object>();
         for (int i = 0; i < pat.size(); i++) {
             String argtype = pat.get(i);
-            if (!ARGTYPE_ID.equals(argtype)) {
-                Object t = ((SkelCompound) term).args[i];
-                Display d = ref;
-                BindVar b;
-                while (t instanceof SkelVar &&
-                        (b = d.bind[((SkelVar) t).id]).display != null) {
-                    t = b.skel;
-                    d = b.display;
-                }
-                if (argtype.equals(ARGTYPE_PARASQ)) {
-                    String path = ((SkelAtom) t).fun;
-                    t = new SkelAtom(ForeignLocale.shortName(path));
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT, en));
-                } else if (argtype.equals(ARGTYPE_PARAQ)) {
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT, en));
-                } else if (argtype.equals(ARGTYPE_PARAM)) {
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_IGNM, en));
-                } else {
-                    paravec.add(EngineMessage.prepareArgument(t, d, en));
-                }
+            if (ARGTYPE_ID.equals(argtype))
+                continue;
+            Object t = ((SkelCompound) term).args[i];
+            Display d = ref;
+            BindVar b;
+            while (t instanceof SkelVar &&
+                    (b = d.bind[((SkelVar) t).id]).display != null) {
+                t = b.skel;
+                d = b.display;
             }
+            StringWriter buf;
+            if (argtype.equals(ARGTYPE_PARASQ)) {
+                String path = ((SkelAtom) t).fun;
+                t = new SkelAtom(ForeignLocale.shortName(path));
+                buf = new StringWriter();
+                PrologWriter.toString(t, d, buf, PrologWriter.FLAG_QUOT, en);
+            } else if (argtype.equals(ARGTYPE_PARAQ)) {
+                buf = new StringWriter();
+                PrologWriter.toString(t, d, buf, PrologWriter.FLAG_QUOT, en);
+            } else if (argtype.equals(ARGTYPE_PARAM)) {
+                buf = new StringWriter();
+                PrologWriter.toString(t, d, buf, PrologWriter.FLAG_IGNM, en);
+            } else {
+                paravec.add(EngineMessage.prepareArgument(t, d, en));
+                continue;
+            }
+            paravec.add(buf.toString());
         }
         Object[] paras = new Object[paravec.size()];
         paravec.toArray(paras);
@@ -1103,7 +1109,9 @@ public final class EngineMessage extends Exception {
         } else if (!(t instanceof AbstractSkel)) {
             return t;
         } else {
-            return PrologWriter.toString(t, d, 0, en);
+            StringWriter buf = new StringWriter();
+            PrologWriter.toString(t, d, buf, 0, en);
+            return buf;
         }
     }
 

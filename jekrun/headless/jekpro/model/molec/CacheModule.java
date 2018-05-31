@@ -4,7 +4,6 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.LookupChild;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
@@ -40,6 +39,9 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CacheModule extends AbstractCache {
+    public final static char OP_CHAR_OS = '/';
+    public final static String OP_STRING_OS = "/";
+
     private static final int MASK_PRFX_FRGN = AbstractSource.MASK_PCKG_FRGN | AbstractSource.MASK_USES_FRGN;
     private static final int MASK_PRFX_LIBR = AbstractSource.MASK_PCKG_LIBR | AbstractSource.MASK_USES_LIBR;
 
@@ -73,9 +75,9 @@ public final class CacheModule extends AbstractCache {
         }
 
         /* lookup prefix from call-site */
-        fun = fun.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        fun = fun.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
         fun = findPrefix(fun, scope, ForeignPath.MASK_MODL_AUTO);
-        fun = fun.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+        fun = fun.replace(OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
 
         /* create with call-site */
         return new SkelAtom(fun, scope);
@@ -166,16 +168,16 @@ public final class CacheModule extends AbstractCache {
             if (res != null)
                 return res;
 
-            int k = relpath.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+            int k = relpath.lastIndexOf(OP_CHAR_OS);
             while (k != -1) {
                 res = relpath.substring(0, k);
                 res = findPrefixParent(res, scope, mask);
                 if (res != null) {
                     relpath = relpath.substring(k + 1);
-                    relpath = relpath.replace(CacheSubclass.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
+                    relpath = relpath.replace(OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
                     return CacheSubclass.composeLocal(res, relpath);
                 }
-                k = relpath.lastIndexOf(CacheSubclass.OP_CHAR_OS, k - 1);
+                k = relpath.lastIndexOf(OP_CHAR_OS, k - 1);
             }
 
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
@@ -232,7 +234,7 @@ public final class CacheModule extends AbstractCache {
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
-                    String path2 = fix.key + CacheSubclass.OP_STRING_OS + relpath;
+                    String path2 = fix.key + OP_STRING_OS + relpath;
                     String key = LookupResource.findResourceSuffix(path2, src, mask);
                     if (key != null)
                         return path2;
@@ -246,7 +248,7 @@ public final class CacheModule extends AbstractCache {
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
-                    String path2 = fix.key + CacheSubclass.OP_STRING_OS + relpath;
+                    String path2 = fix.key + OP_STRING_OS + relpath;
                     String key = LookupBinary.findBinarySuffix(path2, src, mask);
                     if (key != null)
                         return path2;
@@ -261,7 +263,7 @@ public final class CacheModule extends AbstractCache {
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
-                    String path2 = fix.key + CacheSubclass.OP_STRING_OS + relpath;
+                    String path2 = fix.key + OP_STRING_OS + relpath;
                     String key = LookupResource.findResourceSuffix(path2, src, mask);
                     if (key != null)
                         return path2;
@@ -276,7 +278,7 @@ public final class CacheModule extends AbstractCache {
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
-                    String path2 = fix.key + CacheSubclass.OP_STRING_OS + relpath;
+                    String path2 = fix.key + OP_STRING_OS + relpath;
                     String key = LookupBinary.findBinarySuffix(path2, src, mask);
                     if (key != null)
                         return path2;
@@ -315,8 +317,8 @@ public final class CacheModule extends AbstractCache {
                 String res = CacheSubclass.sepHome(relpath);
                 res = unfindPrefixParent(res, scope, mask);
                 relpath = CacheSubclass.sepRest(relpath);
-                relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, CacheSubclass.OP_CHAR_OS);
-                return SourceLocal.composeOs(res, relpath);
+                relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, OP_CHAR_OS);
+                return composeOs(res, relpath);
             } else {
                 return unfindPrefixParent(relpath, scope, mask);
             }
@@ -355,7 +357,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
                     if (relpath.startsWith(fix.key) &&
-                            relpath.startsWith(CacheSubclass.OP_STRING_OS, fix.key.length())) {
+                            relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                         String path2 = relpath.substring(fix.key.length() + 1);
                         if (relpath.equals(findPrefixParent(path2, src, mask)))
                             return path2;
@@ -372,7 +374,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
                     if (relpath.startsWith(fix.key) &&
-                            relpath.startsWith(CacheSubclass.OP_STRING_OS, fix.key.length())) {
+                            relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                         String path2 = relpath.substring(fix.key.length() + 1);
                         if (relpath.equals(findPrefixParent(path2, src, mask)))
                             return path2;
@@ -388,7 +390,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
                     if (relpath.startsWith(fix.key) &&
-                            relpath.startsWith(CacheSubclass.OP_STRING_OS, fix.key.length())) {
+                            relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                         String path2 = relpath.substring(fix.key.length() + 1);
                         if (relpath.equals(findPrefixParent(path2, src, mask)))
                             return path2;
@@ -404,7 +406,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer> fix = fixes[i];
                 if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
                     if (relpath.startsWith(fix.key) &&
-                            relpath.startsWith(CacheSubclass.OP_STRING_OS, fix.key.length())) {
+                            relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                         String path2 = relpath.substring(fix.key.length() + 1);
                         if (relpath.equals(findPrefixParent(path2, src, mask)))
                             return path2;
@@ -417,4 +419,52 @@ public final class CacheModule extends AbstractCache {
         return relpath;
     }
 
+    /***************************************************************/
+    /* Operating System Paths                                      */
+    /***************************************************************/
+
+    /**
+     * <p>Separate the directory from the OS path.</p>
+     *
+     * @param path The OS path.
+     * @return The directory.
+     */
+    public static String sepDirectory(String path) {
+        return path.substring(0, path.lastIndexOf(OP_CHAR_OS));
+    }
+
+    /**
+     * <p>Separate the file from the OS path.</p>
+     *
+     * @param path The OS path.
+     * @return The file.
+     */
+    public static String sepFile(String path) {
+        return path.substring(path.lastIndexOf(OP_CHAR_OS) + 1);
+    }
+
+    /**
+     * <p>Check whether a path is OS.</p>
+     *
+     * @param path The path.
+     * @return True if the path is OS, otherwise false.
+     */
+    public static boolean isOs(String path) {
+        return path.lastIndexOf(OP_CHAR_OS) != -1;
+    }
+
+    /**
+     * <p>Compose a structured path from a directory and a file.</p>
+     *
+     * @param dir  The directory.
+     * @param file The file.
+     * @return The structured path.
+     */
+    public static String composeOs(String dir, String file) {
+        StringBuilder buf = new StringBuilder();
+        buf.append(dir);
+        buf.append(OP_CHAR_OS);
+        buf.append(file);
+        return buf.toString();
+    }
 }

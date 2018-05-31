@@ -1,6 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
@@ -57,7 +58,7 @@ public final class LookupBinary {
         Object obj;
         String res = LookupBinary.removeClassExt(relpath);
         if (res != null) {
-            res = res.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+            res = res.replace(CacheModule.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
             Class clazz = AbstractRuntime.stringToClass(res, store.getLoader());
             if (clazz != null) {
                 obj = clazz;
@@ -183,7 +184,7 @@ public final class LookupBinary {
      * @return The path without suffix.
      */
     public static String removeClassExt(String path) {
-        int k = path.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         k = path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1);
         if (k != -1) {
             String res = path.substring(0, k);
@@ -205,7 +206,7 @@ public final class LookupBinary {
      * @return The extended Java path.
      */
     public static String addClassExt(String path) {
-        int k = path.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         k = path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1);
         if (k != -1) {
             String res = path.substring(0, k);

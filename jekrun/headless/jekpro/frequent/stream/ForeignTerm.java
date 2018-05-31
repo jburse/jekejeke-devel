@@ -44,14 +44,15 @@ public final class ForeignTerm {
      * <p>Write a term respecting options to a stream.</p>
      *
      * @param inter   The interpreter.
-     * @param para    The stream.
-     * @param val     The term.
-     * @param opt     The options.
+     * @param para    The write stream.
+     * @param val     The write term.
+     * @param opt     The write options.
      * @throws InterpreterMessage   Validation problem or option problem.
      * @throws InterpreterException Shit happens.
      */
     public static void sysWriteTerm(Interpreter inter,
-                                    Writer para, AbstractTerm val, Object opt)
+                                    Writer para, AbstractTerm val,
+                                    Object opt)
             throws InterpreterMessage, InterpreterException {
         inter.unparseTerm(para, opt, val);
     }
@@ -60,14 +61,15 @@ public final class ForeignTerm {
      * <p>Read a term and options from a stream.</p>
      *
      * @param inter   The interpreter.
-     * @param para    The stream.
-     * @param opt     The options.
+     * @param para    The read stream.
+     * @param opt     The read options.
      * @return The read term.
      * @throws InterpreterMessage   Validation problem or option problem.
      * @throws InterpreterException Validation problem or option problem.
      */
     public static AbstractTerm sysReadTerm(Interpreter inter,
-                                           Reader para, Object opt)
+                                           Reader para,
+                                           Object opt)
             throws InterpreterMessage, InterpreterException {
         return inter.parseTerm(para, opt);
     }

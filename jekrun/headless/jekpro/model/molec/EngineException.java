@@ -15,6 +15,7 @@ import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.Properties;
@@ -427,10 +428,10 @@ public final class EngineException extends Exception {
                 SkelCompound sc = (SkelCompound) term;
                 term = sc.args[EngineException.ARG_PRIMARY];
             } else {
-                StringBuilder buf = new StringBuilder();
+                StringWriter buf = new StringWriter();
                 buf.append(prop != null ? prop.getProperty("exception.unknown") : "Unknown exception");
                 buf.append(": ");
-                buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
+                PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
                 return buf.toString();
             }
         }

@@ -11,6 +11,8 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 
+import java.io.StringWriter;
+
 /**
  * This class provides writing, reading, unification and copying
  * of Prolog terms. The Java to Prolog API does provide specific
@@ -182,7 +184,9 @@ public abstract class AbstractTerm {
      */
     public String toString() {
         try {
-            return PrologWriter.toString(getSkel(this), getDisplay(this), 0, null);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(getSkel(this), getDisplay(this), sw, 0, null);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
         } catch (EngineException x) {
@@ -198,7 +202,9 @@ public abstract class AbstractTerm {
      */
     public String toString(int flags) {
         try {
-            return PrologWriter.toString(getSkel(this), getDisplay(this), flags, null);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(getSkel(this), getDisplay(this), sw, flags, null);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
         } catch (EngineException x) {

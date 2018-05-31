@@ -3,7 +3,7 @@ package jekpro.tools.foreign;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.Tracking;
-import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
@@ -277,7 +277,7 @@ public final class LookupResource {
         String[] cps = store.snapshotPaths();
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
-            if (cp.endsWith(CacheSubclass.OP_STRING_OS)) {
+            if (cp.endsWith(CacheModule.OP_STRING_OS)) {
                 if (!path.startsWith(cp))
                     continue;
                 return path.substring(cp.length());
@@ -310,7 +310,7 @@ public final class LookupResource {
         String[] cps = store.snapshotPaths();
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
-            if (cp.endsWith(CacheSubclass.OP_STRING_OS)) {
+            if (cp.endsWith(CacheModule.OP_STRING_OS)) {
                 if (!path.startsWith(cp))
                     continue;
                 return true;

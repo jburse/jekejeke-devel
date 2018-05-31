@@ -5,7 +5,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.inter.Usage;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.foreign.AutoClass;
@@ -66,15 +65,15 @@ public abstract class AbstractAuto extends AbstractSource {
             throw new RuntimeException("illegal path");
 
         /* add package and name */
-        if (SourceLocal.isOs(path)) {
-            addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
-            setName(SourceLocal.sepFile(path));
+        if (CacheModule.isOs(path)) {
+            addFix(CacheModule.sepDirectory(path), MASK_PCKG_FRGN);
+            setName(CacheModule.sepFile(path));
         } else {
             setName(path);
         }
 
         /* set the full name */
-        path = path.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+        path = path.replace(CacheModule.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
         setFullName(path);
 
         /* change default visibility */
@@ -170,7 +169,7 @@ public abstract class AbstractAuto extends AbstractSource {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_MODL);
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_REEX);
         String key = AbstractRuntime.classToString(superclazz);
-        key = key.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        key = key.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         key = LookupBinary.addClassExt(key);
         return (AutoClass) opts.makeLoad(this, key, en);
     }
@@ -195,7 +194,7 @@ public abstract class AbstractAuto extends AbstractSource {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_REEX);
         for (int i = 0; i < interfaces.length; i++) {
             String key = AbstractRuntime.classToString(interfaces[i]);
-            key = key.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+            key = key.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
             key = LookupBinary.addClassExt(key);
             res[i] = (AutoClass) opts.makeLoad(this, key, en);
         }

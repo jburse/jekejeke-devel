@@ -346,7 +346,7 @@ public final class SpecialSpecial extends AbstractSpecial {
         SkelAtom sa = EngineMessage.castStringWrapped(obj, Display.DISPLAY_CONST);
 
         /* find key */
-        String path = sa.fun.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        String path = sa.fun.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         String key = CacheSubclass.findKey(path, sa.scope, ForeignPath.MASK_MODL_FRGN);
         if (key == null) {
             throw new EngineMessage(EngineMessage.existenceError(

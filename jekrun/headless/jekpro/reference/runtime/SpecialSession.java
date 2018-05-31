@@ -311,7 +311,7 @@ public final class SpecialSession extends AbstractSpecial {
             if (!Branch.OP_USER.equals(s)) {
                 wr.write("(");
                 Object res = Clause.moduleToSlashSkel(s, en.store.user, en);
-                wr.write(PrologWriter.toString(res, Display.DISPLAY_CONST, 0, en));
+                PrologWriter.toString(res, Display.DISPLAY_CONST, wr, 0, en);
                 wr.write(") ");
             }
             wr.write("?- ");

@@ -504,12 +504,12 @@ public final class OperatorSearch {
      */
     public static boolean sameHome(AbstractSource fst, AbstractSource snd) {
         String path1 = fst.getPath();
-        int k1 = path1.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
+        int k1 = path1.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
         int j = path1.indexOf(CacheSubclass.OP_CHAR_SYN, k1);
         k1 = (j == -1 ? path1.length() : j);
 
         String path2 = snd.getPath();
-        int k2 = path2.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
+        int k2 = path2.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
         j = path2.indexOf(CacheSubclass.OP_CHAR_SYN, k2);
         k2 = (j == -1 ? path2.length() : j);
 
@@ -527,10 +527,10 @@ public final class OperatorSearch {
      */
     public static boolean samePackage(AbstractSource fst, AbstractSource snd) {
         String path1 = fst.getPath();
-        int k1 = path1.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
+        int k1 = path1.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
 
         String path2 = snd.getPath();
-        int k2 = path2.lastIndexOf(CacheSubclass.OP_CHAR_OS) + 1;
+        int k2 = path2.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
 
         return (k1 == k2 &&
                 (k1 == 0 || path1.regionMatches(0, path2, 0, k1)));

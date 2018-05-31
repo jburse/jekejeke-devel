@@ -2,8 +2,9 @@ package jekpro.model.molec;
 
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
-import jekpro.model.pretty.*;
-import jekpro.model.rope.Clause;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.LookupChild;
+import jekpro.model.pretty.LookupRead;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
@@ -45,9 +46,7 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CacheSubclass extends AbstractCache {
-    public final static char OP_CHAR_OS = '/';
     public final static char OP_CHAR_SYN = '$';
-    public final static String OP_STRING_OS = "/";
     public final static String OP_STRING_SYN = "$";
 
     String fun;
@@ -66,7 +65,7 @@ public final class CacheSubclass extends AbstractCache {
      * @return True if path is locale, otherwise false.
      */
     public static boolean isLocal(String path) {
-        int k = path.lastIndexOf(OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         k = path.indexOf(OP_CHAR_SYN, k + 1);
         return (k != -1);
     }
@@ -78,7 +77,7 @@ public final class CacheSubclass extends AbstractCache {
      * @return The home.
      */
     public static String sepHome(String path) {
-        int k = path.lastIndexOf(OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         return path.substring(0, path.indexOf(OP_CHAR_SYN, k + 1));
     }
 
@@ -89,7 +88,7 @@ public final class CacheSubclass extends AbstractCache {
      * @return The rest.
      */
     public static String sepRest(String path) {
-        int k = path.lastIndexOf(OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         return path.substring(path.indexOf(OP_CHAR_SYN, k + 1) + 1);
     }
 
@@ -134,16 +133,11 @@ public final class CacheSubclass extends AbstractCache {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
         en.enginecopy = null;
         en.enginewrap = null;
-        mod = mod.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
+        mod = mod.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         String key = findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
 
-        if (key == null) {
-            throw new EngineMessage(EngineMessage.existenceError(
-                    (Branch.OP_USER.equals(scope.getFullName()) && !Branch.OP_USER.equals(scope.getPath()) ?
-                            EngineMessage.OP_EXISTENCE_VERBATIM :
-                            EngineMessage.OP_EXISTENCE_SOURCE_SINK),
-                    Clause.moduleToSlashSkel(mod, scope, en)));
-        }
+        if (key == null)
+            throw new RuntimeException("shouldn't happen");
 
         return opts.makeLoad(scope, key, en);
     }
@@ -366,6 +360,17 @@ public final class CacheSubclass extends AbstractCache {
     public static String findKey(String path, AbstractSource scope, int mask)
             throws EngineMessage {
         try {
+            if (isLocal(path)) {
+                String res = sepHome(path);
+                res = findKeyParent(res, scope, mask);
+                if (res != null)
+                    return composeLocal(res, sepRest(path));
+            } else {
+                String res = findKeyParent(path, scope, mask);
+                if (res != null)
+                    return res;
+            }
+
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
                 if (ForeignUri.sysUriIsRelative(path)) {
                     String res = LookupChild.findChildKey(path, scope);
@@ -374,17 +379,7 @@ public final class CacheSubclass extends AbstractCache {
                 }
             }
 
-            if (isLocal(path)) {
-                String res = sepHome(path);
-                res = findKeyParent(res, scope, mask);
-                if (res == null)
-                    return null;
-                path = sepRest(path);
-                return composeLocal(res, path);
-            } else {
-                return findKeyParent(path, scope, mask);
-            }
-
+            return null;
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
@@ -393,15 +388,15 @@ public final class CacheSubclass extends AbstractCache {
     /**
      * <p>Find a key according in the best way.</p>
      *
-     * @param path  The path.
-     * @param src   The source, not null.
-     * @param mask  The mask.
+     * @param path The path.
+     * @param src  The source, not null.
+     * @param mask The mask.
      * @return The source key.
      * @throws IOException Shit happens.
      */
-    private static String findKeyParent(String path,
-                                        AbstractSource src,
-                                        int mask)
+    public static String findKeyParent(String path,
+                                       AbstractSource src,
+                                       int mask)
             throws IOException {
 
         /* special case */
@@ -458,7 +453,7 @@ public final class CacheSubclass extends AbstractCache {
             throws EngineMessage {
         try {
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = LookupChild.unfindChildKey(path, scope);
+                String res = LookupChild.unfindChildKey(path, scope, mask);
                 if (res != null)
                     return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
                             new SkelAtom(res));
@@ -490,9 +485,9 @@ public final class CacheSubclass extends AbstractCache {
     /**
      * <p>Unfind a key in the best way.</p>
      *
-     * @param path  The absolute or relative path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param path The absolute or relative path.
+     * @param src  The call-site, not null.
+     * @param mask The mask.
      * @return The path without suffix.
      * @throws IOException Shit happens.
      */
@@ -505,7 +500,7 @@ public final class CacheSubclass extends AbstractCache {
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (Branch.OP_USER.equals(path))
                 return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
-                    new SkelAtom(path));
+                        new SkelAtom(path));
         }
 
         /* foreign .class */

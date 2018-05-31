@@ -1577,25 +1577,6 @@ public class PrologWriter {
     /***********************************************************************/
 
     /**
-     * <p>Convert a term to a string.</p>
-     *
-     * @param t     The term skeleton.
-     * @param ref   The term display.
-     * @param flags The flags.
-     * @param en    The engine, can be null.
-     * @return The string.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
-     */
-    public static String toString(Object t, Display ref, int flags,
-                                  Engine en)
-            throws EngineException, EngineMessage {
-        StringWriter sw = new StringWriter();
-        toString(t, ref, sw, flags, en);
-        return sw.toString();
-    }
-
-    /**
      * <p>Writer a term to a stream.</p>
      *
      * @param t     The term skeleton.

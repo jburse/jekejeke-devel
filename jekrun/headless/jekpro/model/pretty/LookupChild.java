@@ -1,9 +1,9 @@
 package jekpro.model.pretty;
 
-import jekpro.model.builtin.Branch;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.EngineMessage;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
@@ -49,10 +49,8 @@ public final class LookupChild {
      */
     public static String findChildPrefix(String relpath, AbstractSource src) {
         String res = src.getFullName();
-        if (Branch.OP_USER.equals(res) && !Branch.OP_USER.equals(src.getPath()))
-            return null;
-        res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
-        relpath = relpath.replace(CacheSubclass.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+        relpath = relpath.replace(CacheModule.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
         return CacheSubclass.composeLocal(res, relpath);
     }
 
@@ -69,15 +67,13 @@ public final class LookupChild {
                                            int mask)
             throws IOException {
         String res = src.getFullName();
-        if (Branch.OP_USER.equals(res) && !Branch.OP_USER.equals(src.getPath()))
-            return null;
-        res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
             relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
-            if (CacheModule.findPrefixParent(relpath, src, mask) == null) {
-                relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, CacheSubclass.OP_CHAR_OS);
+            relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, CacheModule.OP_CHAR_OS);
+            /* uniqueness check */
+            if (CacheModule.findPrefixParent(relpath, src, mask) == null)
                 return relpath;
-            }
         }
 
         // failure
@@ -97,10 +93,8 @@ public final class LookupChild {
      */
     public static String findChildKey(String relpath, AbstractSource src) {
         String res = src.getFullName();
-        if (Branch.OP_USER.equals(res) && !Branch.OP_USER.equals(src.getPath()))
-            return null;
         res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
-        res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
             relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
             res = src.getPath();
@@ -117,19 +111,21 @@ public final class LookupChild {
      *
      * @param path The path.
      * @param src  The call-site, not null.
+     * @param mask The mask.
      * @return The path without suffix.
      */
-    public static String unfindChildKey(String path, AbstractSource src) {
+    public static String unfindChildKey(String path, AbstractSource src, int mask)
+            throws IOException {
         String res = src.getPath();
-        if (!Branch.OP_USER.equals(res) && Branch.OP_USER.equals(src.getFullName()))
-            return null;
         res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
         if (path.startsWith(res) && path.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
             path = path.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
             res = src.getFullName();
             res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
-            res = res.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
-            return CacheSubclass.composeLocal(res, path);
+            res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+            /* uniqueness check */
+            if (CacheSubclass.findKeyParent(res, src, mask) == null)
+                return CacheSubclass.composeLocal(res, path);
         }
 
         // failure

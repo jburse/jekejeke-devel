@@ -65,15 +65,6 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- set_source_property(system, use_file_extension(text('.px'))).
-:- set_source_property(system, use_file_extension(text('.p'))).
-:- set_source_property(system, use_file_extension(text('.pl'))).
-:- set_source_property(system, use_file_extension(text('.pro'))).
-:- set_source_property(system, use_file_extension(resource('.propertiesx'))).
-:- set_source_property(system, use_file_extension(resource('.properties'))).
-:- set_source_property(system, use_file_extension(resource('.txtx'))).
-:- set_source_property(system, use_file_extension(resource('.txt'))).
-
 :- set_source_property(system, use_package(library(jekpro/frequent))).
 :- set_source_property(system, use_package(library(jekpro/reference))).
 :- set_source_property(system, use_package(library(jekpro/platform))).
