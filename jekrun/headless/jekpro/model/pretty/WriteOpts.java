@@ -6,7 +6,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.NamedDistance;
 import jekpro.model.rope.Operator;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.runtime.SpecialQuali;
@@ -265,7 +264,7 @@ public final class WriteOpts {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
-                source = (!"".equals(fun) ? AbstractSource.keyToSource(fun, en.store) : null);
+                source = AbstractSource.keyToSource(fun, en.store);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(

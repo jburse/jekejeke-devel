@@ -80,58 +80,6 @@ public final class LookupChild {
         return null;
     }
 
-    /***************************************************************/
-    /* Child Lookup                                                */
-    /***************************************************************/
-
-    /**
-     * <p>Find a key according to the child rule.</p>
-     *
-     * @param relpath The path.
-     * @param src     The call-site, not null.
-     * @return The source key.
-     */
-    public static String findChildKey(String relpath, AbstractSource src) {
-        String res = src.getFullName();
-        res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
-        res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
-        if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
-            relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
-            res = src.getPath();
-            res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
-            return CacheSubclass.composeLocal(res, relpath);
-        }
-
-        // failure
-        return null;
-    }
-
-    /**
-     * <p>Remove the suffix according to the child rule.</p>
-     *
-     * @param path The path.
-     * @param src  The call-site, not null.
-     * @param mask The mask.
-     * @return The path without suffix.
-     */
-    public static String unfindChildKey(String path, AbstractSource src, int mask)
-            throws IOException {
-        String res = src.getPath();
-        res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
-        if (path.startsWith(res) && path.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
-            path = path.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
-            res = src.getFullName();
-            res = (CacheSubclass.isLocal(res) ? CacheSubclass.sepHome(res) : res);
-            res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
-            /* uniqueness check */
-            if (CacheSubclass.findKeyParent(res, src, mask) == null)
-                return CacheSubclass.composeLocal(res, path);
-        }
-
-        // failure
-        return null;
-    }
-
     /*******************************************************************/
     /* Import Link                                                     */
     /*******************************************************************/

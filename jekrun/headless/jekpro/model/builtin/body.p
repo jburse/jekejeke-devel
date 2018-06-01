@@ -98,10 +98,10 @@
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 
 sys_declaration_indicator(special(I,_,_), I).
 sys_declaration_indicator(set_predicate_property(I,_), I).

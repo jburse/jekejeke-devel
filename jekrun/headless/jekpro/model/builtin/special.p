@@ -99,8 +99,6 @@
 :- set_predicate_property((:-)/1, (meta_predicate (:- -1))).
 :- set_predicate_property((:-)/1, sys_rule).
 
-:- set_source_property(system, use_file_extension(binary('.class'))).
-
 /**
  * special(I, C, K):
  * Succeeds with registering the predicate indicator I as a special

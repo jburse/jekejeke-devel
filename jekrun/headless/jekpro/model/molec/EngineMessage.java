@@ -142,6 +142,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_EXISTENCE_CODE = "code";
     public static final String OP_EXISTENCE_CLASS_PATH = "class_path";
     public static final String OP_EXISTENCE_EXTENSION = "extension";
+    public static final String OP_EXISTENCE_CONTEXT = "context";
 
     private static final String OP_PERMISSION_ERROR = "permission_error"; /* ISO */
     public static final String OP_PERMISSION_ACCESS = "access"; /* ISO */

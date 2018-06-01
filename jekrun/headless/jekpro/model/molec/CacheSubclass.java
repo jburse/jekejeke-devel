@@ -134,7 +134,7 @@ public final class CacheSubclass extends AbstractCache {
         en.enginecopy = null;
         en.enginewrap = null;
         mod = mod.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
-        String key = findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
+        String key = findKey(mod, scope, ForeignPath.MASK_MODL_BASE);
 
         if (key == null)
             throw new RuntimeException("shouldn't happen");
@@ -370,15 +370,6 @@ public final class CacheSubclass extends AbstractCache {
                 if (res != null)
                     return res;
             }
-
-            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                if (ForeignUri.sysUriIsRelative(path)) {
-                    String res = LookupChild.findChildKey(path, scope);
-                    if (res != null)
-                        return res;
-                }
-            }
-
             return null;
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -452,13 +443,6 @@ public final class CacheSubclass extends AbstractCache {
     public static Object unfindKey(String path, AbstractSource scope, int mask)
             throws EngineMessage {
         try {
-            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = LookupChild.unfindChildKey(path, scope, mask);
-                if (res != null)
-                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
-                            new SkelAtom(res));
-            }
-
             if (isLocal(path)) {
                 String res = sepHome(path);
                 path = sepRest(path);
@@ -472,7 +456,7 @@ public final class CacheSubclass extends AbstractCache {
                     path = composeLocal(((SkelAtom) sc.args[0]).fun, path);
                     return new SkelCompound(sc.sym, new SkelAtom(path));
                 } else {
-                    throw new IllegalArgumentException("illegal key");
+                    throw new IllegalArgumentException("illegal spec");
                 }
             } else {
                 return unfindKeyParent(path, scope, mask);

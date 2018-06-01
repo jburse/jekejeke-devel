@@ -132,8 +132,8 @@ public final class SpecialSpecial extends AbstractSpecial {
      *
      * @param pick The predicate.
      * @param del  The delegate.
-     *             @param en The engine.
-     * @throws EngineMessage   Shit happens.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
      */
     public static void definePredicate(Predicate pick,
                                        AbstractDelegate del,
@@ -181,11 +181,12 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
+                EngineMessage.checkInstantiated(en.skel);
                 SkelAtom sa = Frame.callableToName(en.skel);
-                AbstractSource src = (sa != null ? sa.scope : null);
-                if (!en.unifyTerm(temp[1], ref,
-                        new SkelAtom(src != null ? src.getPath() : ""),
-                        Display.DISPLAY_CONST))
+                if (sa == null || sa.scope == null)
+                    return false;
+                sa = new SkelAtom(sa.scope.getPath());
+                if (!en.unifyTerm(temp[1], ref, sa, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SET_SOURCE_PROPERTY:
@@ -382,7 +383,7 @@ public final class SpecialSpecial extends AbstractSpecial {
     /**
      * <p>A class back to a structured path.</p>
      *
-     * @param clazz  The class.
+     * @param clazz The class.
      * @return The class.
      */
     public static Object classToName(Class clazz) {
@@ -443,7 +444,7 @@ public final class SpecialSpecial extends AbstractSpecial {
     /**
      * <p>Method to callable.</p>
      *
-     * @param paras  The parameter types.
+     * @param paras The parameter types.
      * @return The callable.
      */
     public static Object constructorToCallable(Class[] paras) {
