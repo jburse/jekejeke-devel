@@ -232,10 +232,12 @@ sys_discontiguous(D) :-
    sys_discontiguous(I),
    call(D).
 sys_discontiguous(I) :-
-   sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
-   sys_get_context(J, C),
+   sys_get_context(J, C), !,
+   sys_neutral_predicate(I),
    set_predicate_property(I, (discontiguous C)).
+sys_discontiguous(I) :-
+   throw(error(existence_error(context,I),_)).
 :- set_predicate_property(sys_discontiguous/1, visible(private)).
 
 /**
@@ -270,11 +272,13 @@ sys_multifile(I) :-
    sys_not(predicate_property(I,sys_multifile(D))),
    throw(error(permission_error(promote,multifile,I),_)).
 sys_multifile(I) :-
-   sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
+   sys_get_context(J, C), !,
+   sys_neutral_predicate(I),
    set_predicate_property(I, multifile),
-   sys_get_context(J, C),
    set_predicate_property(I, sys_multifile(C)).
+sys_multifile(I) :-
+   throw(error(existence_error(context,I),_)).
 :- set_predicate_property(sys_multifile/1, visible(private)).
 
 % first defined in special.p

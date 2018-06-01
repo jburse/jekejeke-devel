@@ -1,10 +1,11 @@
 package jekpro.reference.bootload;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.CacheModule;
+import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
@@ -59,9 +60,14 @@ public final class ForeignPath {
     /* combined prefix, suffix and failure flags */
     public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR | MASK_SUFX_TEXT;
     public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN | MASK_SUFX_BNRY;
-    public static final int MASK_MODL_AUTO = MASK_MODL_LIBR | MASK_MODL_FRGN | MASK_FAIL_CHLD;
     public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR | MASK_SUFX_RSCS;
+
+    /* find prefix */
+    public static final int MASK_MODL_AUTO = MASK_MODL_LIBR | MASK_MODL_FRGN | MASK_FAIL_CHLD;
     public static final int MASK_MODL_VERB = MASK_MODL_LIBR | MASK_FAIL_CHLD;
+
+    /* find key */
+    public static final int MASK_MODL_BASE = MASK_MODL_LIBR | MASK_MODL_FRGN;
 
     /**
      * <p>Find a write adr.</p>
@@ -102,9 +108,43 @@ public final class ForeignPath {
     public static String sysFindPrefix(Interpreter inter,
                                        String path, String key,
                                        Object opt)
-            throws InterpreterMessage, IOException {
+            throws InterpreterMessage {
         int mask = decodeFindOptions(opt);
-        return inter.findPrefix(path, key, mask);
+        String res;
+        Engine engine = (Engine) inter.getEngine();
+        try {
+            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
+            res = CacheModule.findPrefix(path, scope, mask);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Unfind a prefix according to the auto loader.</p>
+     *
+     * @param inter The interpreter.
+     * @param path  The path.
+     * @param key   The call-site.
+     * @param opt   The options list.
+     * @return The prefixed name, or null.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public static String sysUnfindPrefix(Interpreter inter,
+                                         String path, String key,
+                                         Object opt)
+            throws InterpreterMessage {
+        int mask = decodeFindOptions(opt);
+        String res;
+        Engine engine = (Engine) inter.getEngine();
+        try {
+            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
+            res = CacheModule.unfindPrefix(path, scope, mask);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
     }
 
     /**
@@ -122,25 +162,41 @@ public final class ForeignPath {
                                     Object opt)
             throws InterpreterMessage {
         int mask = decodeFindOptions(opt);
-        return inter.findKey(path, key, mask);
+        String res;
+        Engine engine = (Engine) inter.getEngine();
+        try {
+            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
+            res = CacheSubclass.findKey(path, scope, mask);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
     }
 
-
     /**
-     * <p>Revert a path back to a spec.</p>
+     * <p>Unfind a key according to the auto loader.</p>
      *
      * @param inter The interpreter.
-     * @param path  The path.
+     * @param path  The prefixed path.
      * @param key   The call-site.
      * @param opt   The options list.
-     * @return The spec.
+     * @return The source key.
+     * @throws InterpreterMessage Shit happens.
      */
-    public static Object sysKeyToSpec(Interpreter inter,
+    public static Object sysUnfindKey(Interpreter inter,
                                     String path, String key,
                                     Object opt)
             throws InterpreterMessage {
         int mask = decodeFindOptions(opt);
-        return inter.keyToSpec(path, key, mask);
+        Object res;
+        Engine engine = (Engine) inter.getEngine();
+        try {
+            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
+            res = CacheSubclass.unfindKey(path, scope, mask);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
     }
 
     /**
@@ -286,7 +342,7 @@ public final class ForeignPath {
         inter.setKnowledgebase(know);
         Knowledgebase.initKnowledgebase(inter);
 
-        Engine engine=(Engine)inter.getEngine();
+        Engine engine = (Engine) inter.getEngine();
         engine.visor.popStack();
         engine.visor.pushStack(engine.store.user);
     }

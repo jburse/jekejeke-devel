@@ -97,6 +97,7 @@ public final class SpecialPred extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
+                EngineMessage.checkInstantiated(en.skel);
                 SkelAtom sa = Frame.callableToName(en.skel);
                 atomToProperties(sa, en);
                 if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
@@ -108,6 +109,7 @@ public final class SpecialPred extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
+                EngineMessage.checkInstantiated(en.skel);
                 sa = Frame.callableToName(en.skel);
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
                 atomToProperty(prop, sa, en);

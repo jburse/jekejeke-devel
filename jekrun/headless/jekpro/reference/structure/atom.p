@@ -408,42 +408,6 @@ number_codes(Number, Codes) :-
       sysAtomWordPos('Interpreter','CallOut','String',int,int,int,'AbstractTerm')).
 
 /****************************************************************/
-/* SWI-Prolog Inspired                                          */
-/****************************************************************/
-
-/**
- * atom_list_concat(L, S, R):
- * If L is ground the predicate succeeds when R unifies with the
- * concatenation of each atom from the list L separated by the
- * atom S. Otherwise the predicate splits the atom R into a list L
- * of atoms that are separated by the atom S.
- */
-% atom_list_concat(+-List, +Atom, -+Atom)
-:- public atom_list_concat/3.
-atom_list_concat(L, S, R) :-
-   ground(L), !,
-   atom_list_concat1(L, S, R).
-atom_list_concat(L, S, R) :-
-   atom_list_concat2(R, S, L).
-
-% atom_list_concat1(+List, +Atom, -Atom)
-:- private atom_list_concat1/3.
-atom_list_concat1([X], _, X) :- !.
-atom_list_concat1([X,Y|Z], S, R) :-
-   atom_list_concat1([Y|Z], S, H),
-   atom_concat(S, H, J),
-   atom_concat(X, J, R).
-
-% atom_list_concat2(+Atom, +Atom, -List)
-:- private atom_list_concat2/3.
-atom_list_concat2(R, S, [X|L]) :-
-   sub_atom(R, Before, _, After, S), !,
-   sub_atom(R, 0, Before, _, X),
-   sub_atom(R, _, After, 0, H),
-   atom_list_concat2(H, S, L).
-atom_list_concat2(R, _, [R]).
-
-/****************************************************************/
 /* String Reverse Ops                                           */
 /****************************************************************/
 
@@ -655,6 +619,47 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
    Pos2 is Pos+Count1,
    sys_atom_word_len(Str, Count),
    sys_atom_word_count(Str, Pos2, Count, Off2).
+
+/****************************************************************/
+/* SWI-Prolog Inspired                                          */
+/****************************************************************/
+
+/**
+ * atom_list_concat(L, S, R):
+ * If R is a variable the predicate succeeds when R unifies with the
+ * concatenation of each atom from the non-empty list L separated by
+ * the atom S. Otherwise the predicate splits the atom R into a list L
+ * of atoms that are separated by the atom S.
+ */
+% atom_list_concat(+-List, +Atom, -+Atom)
+:- public atom_list_concat/3.
+atom_list_concat(List, Sep, Atom) :-
+   var(Atom), !,
+   atom_list_concat1(List, Sep, Atom).
+atom_list_concat(List, Sep, Atom) :-
+   atom_list_concat2(Atom, Sep, List).
+
+% atom_list_concat1(+List, +Atom, -Atom)
+:- private atom_list_concat1/3.
+atom_list_concat1(List, _, _) :-
+   var(List),
+   throw(error(instantiation_error,_)).
+atom_list_concat1([X], _, X) :- !.
+atom_list_concat1([X,Y|Z], Sep, R) :- !,
+   atom_list_concat1([Y|Z], Sep, H),
+   atom_concat(Sep, H, J),
+   atom_concat(X, J, R).
+atom_list_concat1(List, _, _) :-
+   throw(error(type_error(list,List),_)).
+
+% atom_list_concat2(+Atom, +Atom, -List)
+:- private atom_list_concat2/3.
+atom_list_concat2(Atom, Sep, [X|L]) :-
+   sub_atom(Atom, Before, _, After, Sep), !,
+   sub_atom(Atom, 0, Before, X),
+   last_sub_atom(Atom, After, 0, H),
+   atom_list_concat2(H, Sep, L).
+atom_list_concat2(Atom, _, [Atom]).
 
 /****************************************************************/
 /* Term Conversion                                              */

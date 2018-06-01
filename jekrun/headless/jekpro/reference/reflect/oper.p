@@ -171,6 +171,18 @@ current_oper(I) :-
    var(I), !,
    sys_current_oper(L),
    sys_member(I, L).
+current_oper(postfix(I)) :-
+   var(I), !,
+   sys_current_oper(L),
+   sys_member(postfix(I), L).
+current_oper(prefix(I)) :-
+   var(I), !,
+   sys_current_oper(L),
+   sys_member(prefix(I), L).
+current_oper(infix(I)) :-
+   var(I), !,
+   sys_current_oper(L),
+   sys_member(infix(I), L).
 current_oper(I) :-
    sys_current_oper_chk(I).
 :- set_predicate_property(current_oper/1, visible(public)).

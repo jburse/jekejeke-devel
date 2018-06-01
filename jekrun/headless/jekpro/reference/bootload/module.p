@@ -329,11 +329,13 @@ sys_public(I) :-
    sys_not(predicate_property(I,sys_public(D))),
    throw(error(permission_error(promote,public,I),_)).
 sys_public(I) :-
+   sys_make_indicator(F, _, I),
+   sys_get_context(F, C), !,
    sys_neutral_predicate(I),
    set_predicate_property(I, visible(public)),
-   sys_make_indicator(F, _, I),
-   sys_get_context(F, C),
    set_predicate_property(I, sys_public(C)).
+sys_public(I) :-
+   throw(error(existence_error(context,I),_)).
 :- set_predicate_property(sys_public/1, visible(private)).
 
 /**
@@ -370,10 +372,12 @@ sys_override(postfix(X)) :- !,
    sys_neutral_oper(postfix(X)),
    set_oper_property(postfix(X), override).
 sys_override(I) :-
-   sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
-   sys_get_context(J, C),
+   sys_get_context(J, C), !,
+   sys_neutral_predicate(I),
    set_predicate_property(I, (override C)).
+sys_override(I) :-
+   throw(error(existence_error(context,I),_)).
 :- set_predicate_property(sys_override/1, visible(private)).
 
 % first defined in special.p

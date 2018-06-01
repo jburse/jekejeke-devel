@@ -146,6 +146,10 @@ current_predicate(I) :-
    var(I), !,
    sys_current_predicate(L),
    sys_member(I, L).
+current_predicate(F/A) :-
+   var(F), !,
+   sys_current_predicate(L),
+   sys_member(F/A, L).
 current_predicate(I) :-
    sys_current_predicate_chk(I).
 :- set_predicate_property(current_predicate/1, visible(public)).
@@ -249,5 +253,9 @@ sys_make_indicator2(J, K, A) :-
    sys_eq(J, M:I), !,
    sys_make_indicator2(I, F, A),
    sys_replace_site(K, J, M:F).
-sys_make_indicator2(F/A, F, A).
+sys_make_indicator2(F/A, G, B) :- !,
+   sys_eq(F, G),
+   sys_eq(A, B).
+sys_make_indicator2(I, _, _) :-
+   throw(error(type_error(predicate_indicator,I),_)).
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).
