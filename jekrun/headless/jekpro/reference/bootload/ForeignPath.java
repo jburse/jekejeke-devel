@@ -131,12 +131,12 @@ public final class ForeignPath {
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
      */
-    public static String sysUnfindPrefix(Interpreter inter,
+    public static Object sysUnfindPrefix(Interpreter inter,
                                          String path, String key,
                                          Object opt)
             throws InterpreterMessage {
         int mask = decodeFindOptions(opt);
-        String res;
+        Object res;
         Engine engine = (Engine) inter.getEngine();
         try {
             AbstractSource scope = AbstractSource.keyToSource(key, engine.store);

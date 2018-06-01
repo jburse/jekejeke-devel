@@ -337,4 +337,20 @@ public final class CompLang {
         return str;
     }
 
+    /**
+     * <p>Some tests.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) throws ScannerError {
+        String foo = "abc\\adef";
+        String res = resolveEscape(foo, '\'', false, 0, CodeType.ISO_CODETYPE);
+        System.out.println("res=" + res);
+
+        String res2 = escapeControl(res, CodeType.ISO_CODETYPE);
+        System.out.println("res=" + res2);
+    }
+    */
+
 }

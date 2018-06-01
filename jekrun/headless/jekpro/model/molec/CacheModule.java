@@ -4,10 +4,12 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.SourceLocal;
+import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
@@ -304,13 +306,14 @@ public final class CacheModule extends AbstractCache {
      * @return The class.
      * @throws EngineMessage Shit happens.
      */
-    public static String unfindPrefix(String relpath, AbstractSource scope, int mask)
+    public static Object unfindPrefix(String relpath, AbstractSource scope, int mask)
             throws EngineMessage {
         try {
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
                 String res = unfindChildPrefix(relpath, scope, mask);
                 if (res != null)
-                    return res;
+                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
+                            new SkelAtom(res));
             }
 
             if (CacheSubclass.isLocal(relpath)) {
@@ -318,9 +321,9 @@ public final class CacheModule extends AbstractCache {
                 res = unfindPrefixParent(res, scope, mask);
                 relpath = CacheSubclass.sepRest(relpath);
                 relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, OP_CHAR_OS);
-                return composeOs(res, relpath);
+                return new SkelAtom(composeOs(res, relpath));
             } else {
-                return unfindPrefixParent(relpath, scope, mask);
+                return new SkelAtom(unfindPrefixParent(relpath, scope, mask));
             }
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);

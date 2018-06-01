@@ -40,6 +40,8 @@
 
 :- use_package(foreign(jekpro/frequent/basic)).
 
+:- use_package(library(jekpro/model)).
+
 :- module(user, []).
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
@@ -108,6 +110,7 @@ sys_apropos_value(row(_,_,M), path, M).
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
+sys_apropos_table(library(builtin/reference)).
 sys_apropos_table(library(bootload/reference)).
 sys_apropos_table(library(stream/frequent)).
 
@@ -150,28 +153,14 @@ sys_indicator_fun(_:Fun/Arity, Fun, Arity).
 % sys_apropos_compile(+Pattern, -Compiled)
 :- private sys_apropos_compile/2.
 sys_apropos_compile(Pattern/Arity, Compiled/Arity) :- !,
-   sys_apropos_compile2(Pattern, Compiled).
-sys_apropos_compile(Pattern, Compiled) :-
    pattern_compile(Pattern, [boundary(part)], Compiled).
-
-% sys_apropos_compile2(+Pattern, -Compiled)
-:- private sys_apropos_compile2/2.
-sys_apropos_compile2(Pattern, _) :-
-   var(Pattern), !.
-sys_apropos_compile2(Pattern, Compiled) :-
+sys_apropos_compile(Pattern, Compiled) :-
    pattern_compile(Pattern, [boundary(part)], Compiled).
 
 % sys_apropos_match(+Compiled, +Instance)
 :- private sys_apropos_match/2.
 sys_apropos_match(Compiled/Arity1, Fun/Arity2) :- !,
-   sys_apropos_match2(Compiled, Fun),
+   compiled_match(Compiled, Fun),
    Arity1 = Arity2.
 sys_apropos_match(Compiled, Fun/_) :- !,
-   compiled_match(Compiled, Fun).
-
-% sys_apropos_match2(+Compiled, +Instance)
-:- private sys_apropos_match2/2.
-sys_apropos_match2(Compiled, _) :-
-   var(Compiled), !.
-sys_apropos_match2(Compiled, Fun) :-
    compiled_match(Compiled, Fun).

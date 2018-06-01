@@ -251,16 +251,10 @@ sys_absolute_file_name2(Pin, Slash) :-
 :- set_predicate_property(sys_absolute_file_name2/2, visible(private)).
 
 % sys_absolute_file_name3(+Spec, +Pin, -Spec)
-sys_absolute_file_name3(library(Path), Pin, library(Slash)) :- !,
-   sys_get_context(Pin, C),
-   sys_unfind_prefix(Path, C, [package(library),file_extension(file)], J),
-   sys_path_to_atom(H, J),
-   sys_replace_site(Slash, Pin, H).
-sys_absolute_file_name3(verbatim(Path), Pin, verbatim(Slash)) :- !,
+sys_absolute_file_name3(library(Path), Pin, Slash) :- !,
    sys_get_context(Pin, C),
    sys_unfind_prefix(Path, C, [package(library),file_extension(file),failure(child)], J),
-   sys_path_to_atom(H, J),
-   sys_replace_site(Slash, Pin, H).
+   sys_absolute_file_name4(J, Pin, Slash).
 sys_absolute_file_name3(foreign(Path), Pin, foreign(Slash)) :- !,
    sys_get_context(Pin, C),
    sys_unfind_prefix(Path, C, [package(foreign),file_extension(file)], J),
@@ -273,6 +267,15 @@ sys_absolute_file_name3(Path, Pin, Slash) :-
 sys_absolute_file_name3(Path, Pin, Slash) :-
    sys_replace_site(Slash, Pin, Path).
 :- set_predicate_property(sys_absolute_file_name3/3, visible(private)).
+
+% sys_absolute_file_name4(+Spec, +Pin, -Spec)
+sys_absolute_file_name4(verbatim(Path), Pin, verbatim(Slash)) :- !,
+   sys_path_to_atom(H, Path),
+   sys_replace_site(Slash, Pin, H).
+sys_absolute_file_name4(Path, Pin, library(Slash)) :- !,
+   sys_path_to_atom(H, Path),
+   sys_replace_site(Slash, Pin, H).
+:- set_predicate_property(sys_absolute_file_name4/3, visible(private)).
 
 :- foreign(sys_is_relative_uri/1, 'ForeignUri',
       sysUriIsRelative('String')).
