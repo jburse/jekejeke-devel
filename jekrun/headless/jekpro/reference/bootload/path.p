@@ -77,10 +77,18 @@
 :- sys_get_context(here, C),
    set_source_property(C, use_package(foreign(jekpro/tools/call))).
 :- sys_get_context(here, C),
+   set_source_property(C, use_package(foreign(matula/util/system))).
+:- sys_get_context(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 :- sys_op(400, fx, ../).
 :- set_oper_property(prefix(../), visible(public)).
+
+:- sys_op(400, fx, ../../).
+:- set_oper_property(prefix(../../), visible(public)).
+
+:- sys_op(400, fx, ../../../).
+:- set_oper_property(prefix(../../../), visible(public)).
 
 /****************************************************************/
 /* Class Path Modification & Access                             */
@@ -259,9 +267,16 @@ sys_absolute_file_name3(foreign(Path), Pin, foreign(Slash)) :- !,
    sys_path_to_atom(H, J),
    sys_replace_site(Slash, Pin, H).
 sys_absolute_file_name3(Path, Pin, Slash) :-
+   sys_is_relative_uri(Path), !,
    sys_path_to_atom(H, Path),
    sys_replace_site(Slash, Pin, H).
+sys_absolute_file_name3(Path, Pin, Slash) :-
+   sys_replace_site(Slash, Pin, Path).
 :- set_predicate_property(sys_absolute_file_name3/3, visible(private)).
+
+:- foreign(sys_is_relative_uri/1, 'ForeignUri',
+      sysUriIsRelative('String')).
+:- set_predicate_property(sys_is_relative_uri/1, visible(private)).
 
 :- foreign(sys_unfind_key/4, 'ForeignPath',
       sysUnfindKey('Interpreter','String','String','Object')).
@@ -319,16 +334,19 @@ sys_path_to_atom(Slash, Atom) :-
 sys_path_to_atom1(Slash, _) :-
    var(Slash),
    throw(error(instantiation_error,_)).
-sys_path_to_atom1(../Name, Path) :- !,
-   sys_path_to_atom1(Name, Y),
-   sys_atom_concat(../, Y, Path).
+sys_path_to_atom1({Dir}, Path) :- !,
+   sys_path_to_atom1(Dir, Y),
+   sys_atom_concat(Y, [], Path).
 sys_path_to_atom1(Dir/Name, Path) :- !,
    sys_path_to_atom1(Dir, Y),
    sys_atom_concat(Y, /, H),
    sys_atom_concat(H, Name, Path).
-sys_path_to_atom1({Dir}, Path) :- !,
-   sys_path_to_atom1(Dir, Y),
-   sys_atom_concat(Y, [], Path).
+sys_path_to_atom1(../../../Name, Path) :- !,
+   sys_atom_concat(../../../, Name, Path).
+sys_path_to_atom1(../../Name, Path) :- !,
+   sys_atom_concat(../../, Name, Path).
+sys_path_to_atom1(../Name, Path) :- !,
+   sys_atom_concat(../, Name, Path).
 sys_path_to_atom1(X, Path) :-
    sys_atom(X), !,
    sys_eq(X, Path).
@@ -344,9 +362,17 @@ sys_path_to_atom2(Path, {Dir}) :-
 sys_path_to_atom2(Path, Dir/Name) :-
    last_sub_atom(Path, Before, _, After, /),
    sub_atom(Path, 0, Before, X),
-   sys_not(sys_eq(X,..)), !,
+   sys_not(sys_eq(X,..)),
+   sys_not(sys_eq(X,../..)),
+   sys_not(sys_eq(X,../../..)), !,
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
+sys_path_to_atom2(Path, ../../../Name) :-
+   sub_atom(Path, 0, _, After, ../../../), !,
+   last_sub_atom(Path, After, 0, Name).
+sys_path_to_atom2(Path, ../../Name) :-
+   sub_atom(Path, 0, _, After, ../../), !,
+   last_sub_atom(Path, After, 0, Name).
 sys_path_to_atom2(Path, ../Name) :-
    sub_atom(Path, 0, _, After, ../), !,
    last_sub_atom(Path, After, 0, Name).

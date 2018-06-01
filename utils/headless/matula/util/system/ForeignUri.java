@@ -70,7 +70,7 @@ public final class ForeignUri {
      */
     public static String sysQueryName(String query) {
         try {
-            if ("".equals(query))
+            if (ForeignFile.STRING_EMPTY.equals(query))
                 return null;
             int k = query.indexOf(CHAR_AMP);
             String pair;
@@ -97,7 +97,7 @@ public final class ForeignUri {
      */
     public static String sysQueryValue(String query) {
         try {
-            if ("".equals(query))
+            if (ForeignFile.STRING_EMPTY.equals(query))
                 return null;
             int k = query.indexOf(CHAR_AMP);
             String pair;
@@ -111,7 +111,7 @@ public final class ForeignUri {
             if (k != -1) {
                 value = pair.substring(k + 1);
             } else {
-                value = "";
+                value = ForeignFile.STRING_EMPTY;
             }
             return decode(value, ENCODING_UTF8);
         } catch (UnsupportedEncodingException x) {
@@ -126,13 +126,13 @@ public final class ForeignUri {
      * @return The query rest.
      */
     public static String sysQueryRest(String query) {
-        if ("".equals(query))
+        if (ForeignFile.STRING_EMPTY.equals(query))
             return null;
         int k = query.indexOf(CHAR_AMP);
         if (k != -1) {
             query = query.substring(k + 1);
         } else {
-            query = "";
+            query = ForeignFile.STRING_EMPTY;
         }
         return query;
     }
@@ -150,9 +150,9 @@ public final class ForeignUri {
                                       String rest) {
         try {
             name = encode(name, false, NEEDS_COMP, ENCODING_UTF8);
-            if (!"".equals(value))
+            if (!ForeignFile.STRING_EMPTY.equals(value))
                 name += "=" + encode(value, false, NEEDS_COMP, ENCODING_UTF8);
-            if (!"".equals(rest))
+            if (!ForeignFile.STRING_EMPTY.equals(rest))
                 name += "&" + rest;
             return name;
         } catch (UnsupportedEncodingException x) {
@@ -174,8 +174,8 @@ public final class ForeignUri {
     public static String sysSpecScheme(String spec) {
         int k = getSchemeLength(spec);
         if (k == SCHEME_DRIVE)
-            return "";
-        return (k != 0 ? spec.substring(0, k - 1) : "");
+            return ForeignFile.STRING_EMPTY;
+        return (k != 0 ? spec.substring(0, k - 1) : ForeignFile.STRING_EMPTY);
     }
 
     /**
@@ -188,9 +188,9 @@ public final class ForeignUri {
     public static String sysSpecAuthority(String spec) {
         int k = getSchemeLength(spec);
         if (k == SCHEME_DRIVE)
-            return "";
+            return ForeignFile.STRING_EMPTY;
         if (!spec.startsWith("//", k))
-            return "";
+            return ForeignFile.STRING_EMPTY;
         int j = spec.indexOf("/", k + 2);
         if (j == -1)
             return spec.substring(k + 2);
@@ -212,7 +212,7 @@ public final class ForeignUri {
             return spec.substring(k);
         int j = spec.indexOf("/", k + 2);
         if (j == -1)
-            return "";
+            return ForeignFile.STRING_EMPTY;
         return spec.substring(j);
     }
 
@@ -279,15 +279,15 @@ public final class ForeignUri {
                                      String authority,
                                      String path)
             throws MalformedURLException {
-        if (!"".equals(authority)) {
+        if (!ForeignFile.STRING_EMPTY.equals(authority)) {
             if (!ForeignUri.isAuthority(authority))
                 throw new MalformedURLException("illegal authority");
-            if (!"".equals(path) &&
+            if (!ForeignFile.STRING_EMPTY.equals(path) &&
                     ForeignFile.sysPathIsRelative(path))
                 throw new MalformedURLException("path relative");
             path = "//" + authority + path;
         }
-        if (!"".equals(scheme)) {
+        if (!ForeignFile.STRING_EMPTY.equals(scheme)) {
             if (!ForeignUri.isScheme(scheme))
                 throw new MalformedURLException("illegal scheme");
             path = scheme + ":" + path;
@@ -343,7 +343,7 @@ public final class ForeignUri {
             if (k != -1) {
                 hash = adr.substring(k + 1);
             } else {
-                hash = "";
+                hash = ForeignFile.STRING_EMPTY;
             }
             return decode(hash, ENCODING_UTF8);
         } catch (UnsupportedEncodingException x) {
@@ -366,7 +366,7 @@ public final class ForeignUri {
         if (k != -1) {
             query = adr.substring(k + 1);
         } else {
-            query = "";
+            query = ForeignFile.STRING_EMPTY;
         }
         return query;
     }
@@ -405,9 +405,9 @@ public final class ForeignUri {
                                     String hash) {
         try {
             spec = encode(spec, false, NEEDS_SPEC, ENCODING_UTF8);
-            if (!"".equals(query))
+            if (!ForeignFile.STRING_EMPTY.equals(query))
                 spec += "?" + query;
-            if (!"".equals(hash))
+            if (!ForeignFile.STRING_EMPTY.equals(hash))
                 spec += "#" + encode(hash, false, NEEDS_HASH, ENCODING_UTF8);
             return spec;
         } catch (UnsupportedEncodingException x) {
@@ -430,7 +430,8 @@ public final class ForeignUri {
         String scheme = ForeignUri.sysSpecScheme(spec);
         String authority = ForeignUri.sysSpecAuthority(spec);
 
-        if ("".equals(scheme) && "".equals(authority)) {
+        if (ForeignFile.STRING_EMPTY.equals(scheme) &&
+                ForeignFile.STRING_EMPTY.equals(authority)) {
             String path = ForeignUri.sysSpecPath(spec);
             return ForeignFile.sysPathIsRelative(path);
         } else {
@@ -456,7 +457,8 @@ public final class ForeignUri {
         String scheme2 = ForeignUri.sysSpecScheme(spec2);
         String authority2 = ForeignUri.sysSpecAuthority(spec2);
 
-        if ("".equals(scheme2) && "".equals(authority2)) {
+        if (ForeignFile.STRING_EMPTY.equals(scheme2) &&
+                ForeignFile.STRING_EMPTY.equals(authority2)) {
             String path1 = ForeignUri.sysSpecPath(spec1);
             String path2 = ForeignUri.sysSpecPath(spec2);
             path1 = ForeignFile.sysPathAbsolute(path1, path2);
@@ -490,7 +492,8 @@ public final class ForeignUri {
             String path1 = ForeignUri.sysSpecPath(spec1);
             String path2 = ForeignUri.sysSpecPath(spec2);
             path1 = ForeignFile.sysPathRelative(path1, path2);
-            spec1 = ForeignUri.sysSpecMake("", "", path1);
+            spec1 = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                    ForeignFile.STRING_EMPTY, path1);
             String query = ForeignUri.sysUriQuery(b);
             String hash = ForeignUri.sysUriHash(b);
             return ForeignUri.sysUriMake(spec1, query, hash);
@@ -518,7 +521,7 @@ public final class ForeignUri {
         if (SCHEME_FILE.equals(scheme)) {
             /* remove the query for file */
             String hash = ForeignUri.sysUriHash(adr);
-            adr = ForeignUri.sysUriMake(spec, "", hash);
+            adr = ForeignUri.sysUriMake(spec, ForeignFile.STRING_EMPTY, hash);
         } else {
             String query = ForeignUri.sysUriQuery(adr);
             query = ForeignUri.decodeQuery(query);
@@ -573,24 +576,27 @@ public final class ForeignUri {
         if (SCHEME_JAR.equals(scheme)) {
             int k = path.lastIndexOf("!/");
             if (k != -1) {
-                spec = sysSpecMake("", authority, path.substring(0, k));
+                spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path.substring(0, k));
                 spec = ForeignUri.sysCanonicalUri(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, ForeignFile.STRING_EMPTY,
+                        spec + path.substring(k));
             } else {
-                spec = sysSpecMake("", authority, path);
+                spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path);
                 spec = ForeignUri.sysCanonicalUri(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, ForeignFile.STRING_EMPTY, spec);
             }
         } else if (SCHEME_FILE.equals(scheme)) {
             /* remove the authority for file */
-            spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
-        } else if ("".equals(scheme) &&
-                "".equals(authority) &&
+            spec = ForeignUri.sysSpecMake(SCHEME_FILE, ForeignFile.STRING_EMPTY,
+                    ForeignFile.sysCanonicalPath(path));
+        } else if (ForeignFile.STRING_EMPTY.equals(scheme) &&
+                ForeignFile.STRING_EMPTY.equals(authority) &&
                 !ForeignFile.sysPathIsRelative(path)) {
             /* remove the authority for file */
-            spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
-        } else if ("".equals(scheme) &&
-                !"".equals(authority)) {
+            spec = ForeignUri.sysSpecMake(SCHEME_FILE, ForeignFile.STRING_EMPTY,
+                    ForeignFile.sysCanonicalPath(path));
+        } else if (ForeignFile.STRING_EMPTY.equals(scheme) &&
+                !ForeignFile.STRING_EMPTY.equals(authority)) {
             spec = ForeignUri.sysSpecMake(SCHEME_HTTP, authority, path);
         } else {
             /* */
@@ -646,8 +652,8 @@ public final class ForeignUri {
      */
     private static String decodeQuery(String s) {
         try {
-            if ("".equals(s))
-                return "";
+            if (ForeignFile.STRING_EMPTY.equals(s))
+                return ForeignFile.STRING_EMPTY;
             StringBuilder buf = new StringBuilder();
             int k1 = 0;
             int k = s.indexOf(CHAR_AMP, k1);
@@ -680,10 +686,10 @@ public final class ForeignUri {
             value = s.substring(k + 1);
             s = s.substring(0, k);
         } else {
-            value = "";
+            value = ForeignFile.STRING_EMPTY;
         }
         s = encode(decode(s, ENCODING_UTF8), false, NEEDS_COMP, ENCODING_UTF8);
-        if (!"".equals(value))
+        if (!ForeignFile.STRING_EMPTY.equals(value))
             s += "=" + encode(decode(value, ENCODING_UTF8), false, NEEDS_COMP, ENCODING_UTF8);
         return s;
     }

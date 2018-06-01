@@ -6,6 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.NamedDistance;
 import jekpro.model.rope.*;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;

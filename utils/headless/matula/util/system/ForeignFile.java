@@ -35,7 +35,7 @@ public final class ForeignFile {
     static final String STRING_SLASH = "/";
     static final char CHAR_PERIOD = '.';
     static final String STRING_PERIOD_PERIOD_SLASH = "../";
-    static final String STRING_EMPTY = "";
+    public static final String STRING_EMPTY = "";
 
     /************************************************************/
     /* Name Assembly                                            */
@@ -198,7 +198,13 @@ public final class ForeignFile {
         int j = ForeignFile.commonPrefix(a, b);
         if (j == 0)
             return b;
-        return ForeignFile.backNavigation(a.substring(j)) + b.substring(j);
+        StringBuilder buf = ForeignFile.backNavigation(a, j);
+        if (buf != null) {
+            buf.append(b, j, b.length());
+            return buf.toString();
+        } else {
+            return b.substring(j);
+        }
     }
 
     /**
@@ -215,7 +221,7 @@ public final class ForeignFile {
         while (k1 != -1 && k2 != -1) {
             if (k1 != k2)
                 return j;
-            if (!a.substring(j, k1).equals(b.substring(j, k2)))
+            if (!a.regionMatches(j, b, j, k1 - j))
                 return j;
             j = k1 + 1;
             k1 = a.indexOf(CHAR_SLASH, j);
@@ -228,11 +234,11 @@ public final class ForeignFile {
      * <p>Turn a path into a back navigation.</p>
      *
      * @param a The path.
+     * @param j The offset.
      * @return The back navigation.
      */
-    private static String backNavigation(String a) {
+    private static StringBuilder backNavigation(String a, int j) {
         StringBuilder buf = null;
-        int j = 0;
         int k = a.indexOf(CHAR_SLASH, j);
         while (k != -1) {
             if (buf == null)
@@ -241,9 +247,7 @@ public final class ForeignFile {
             j = k + 1;
             k = a.indexOf(CHAR_SLASH, j);
         }
-        if (buf == null)
-            return STRING_EMPTY;
-        return buf.toString();
+        return buf;
     }
 
     /************************************************************/
@@ -271,5 +275,18 @@ public final class ForeignFile {
             path = path + CHAR_SLASH;
         return path;
     }
+
+    /**
+     * <p>Some test cases.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        String base = "C:/Projects/Omonia/Prototyping/swing/librun/";
+        String path = "C:/Projects/Omonia/Prototyping/swing/guidev/guidev.iml";
+        System.out.println("relpath=" + sysPathRelative(base, path));
+    }
+    */
 
 }

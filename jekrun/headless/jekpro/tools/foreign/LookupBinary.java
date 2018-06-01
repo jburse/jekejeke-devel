@@ -6,7 +6,7 @@ import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.LookupChild;
+import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractRuntime;
@@ -90,7 +90,7 @@ public final class LookupBinary {
                                           AbstractSource src,
                                           int mask) {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
@@ -137,7 +137,7 @@ public final class LookupBinary {
                                             AbstractSource src,
                                             int mask) {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* source binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0 &&

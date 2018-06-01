@@ -3,7 +3,6 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.LookupChild;
 import jekpro.model.pretty.LookupRead;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;

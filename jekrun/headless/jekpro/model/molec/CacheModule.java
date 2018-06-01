@@ -3,7 +3,7 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.LookupChild;
+import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
@@ -181,7 +181,7 @@ public final class CacheModule extends AbstractCache {
             }
 
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                res = LookupChild.findChildPrefix(relpath, scope);
+                res = findChildPrefix(relpath, scope);
                 if (res != null)
                     return res;
             }
@@ -212,7 +212,7 @@ public final class CacheModule extends AbstractCache {
                 return relpath;
         }
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
@@ -308,7 +308,7 @@ public final class CacheModule extends AbstractCache {
             throws EngineMessage {
         try {
             if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = LookupChild.unfindChildPrefix(relpath, scope, mask);
+                String res = unfindChildPrefix(relpath, scope, mask);
                 if (res != null)
                     return res;
             }
@@ -347,7 +347,7 @@ public final class CacheModule extends AbstractCache {
                 return relpath;
         }
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* source imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
@@ -420,6 +420,50 @@ public final class CacheModule extends AbstractCache {
     }
 
     /***************************************************************/
+    /* Find & Unfind Child                                         */
+    /***************************************************************/
+
+    /**
+     * <p>Find a prefix according to the child rule.</p>
+     *
+     * @param relpath The path.
+     * @param src     The call-site, not null.
+     * @return The prefixed path or null.
+     */
+    public static String findChildPrefix(String relpath, AbstractSource src) {
+        String res = src.getFullName();
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+        relpath = relpath.replace(CacheModule.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
+        return CacheSubclass.composeLocal(res, relpath);
+    }
+
+    /**
+     * <p>Remove the prefix according to the child rule.</p>
+     *
+     * @param relpath The path.
+     * @param src     The call-site, not null.
+     * @param mask    The mask.
+     * @return The prefixed path or null.
+     */
+    public static String unfindChildPrefix(String relpath,
+                                           AbstractSource src,
+                                           int mask)
+            throws IOException {
+        String res = src.getFullName();
+        res = res.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+        if (relpath.startsWith(res) && relpath.startsWith(CacheSubclass.OP_STRING_SYN, res.length())) {
+            relpath = relpath.substring(res.length() + CacheSubclass.OP_STRING_SYN.length());
+            relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, CacheModule.OP_CHAR_OS);
+            /* uniqueness check */
+            if (CacheModule.findPrefixParent(relpath, src, mask) == null)
+                return relpath;
+        }
+
+        // failure
+        return null;
+    }
+
+    /***************************************************************/
     /* Operating System Paths                                      */
     /***************************************************************/
 
@@ -467,4 +511,5 @@ public final class CacheModule extends AbstractCache {
         buf.append(file);
         return buf.toString();
     }
+
 }

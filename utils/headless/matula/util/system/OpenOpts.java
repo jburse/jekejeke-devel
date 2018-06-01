@@ -621,10 +621,8 @@ public final class OpenOpts extends OpenCheck {
      *
      * @param con The connection.
      * @return The expiration date.
-     * @throws IOException IO error.
      */
-    private static long getExpiration(URLConnection con)
-            throws IOException {
+    private static long getExpiration(URLConnection con) {
         if (con instanceof JarURLConnection) {
             return 0;
         } else {
@@ -637,10 +635,8 @@ public final class OpenOpts extends OpenCheck {
      *
      * @param con The connection.
      * @return The ETag, or "".
-     * @throws IOException IO error.
      */
-    public static String getETag(URLConnection con)
-            throws IOException {
+    public static String getETag(URLConnection con) {
         String res = con.getHeaderField("ETag");
         return (res != null ? res : "");
     }
@@ -668,9 +664,8 @@ public final class OpenOpts extends OpenCheck {
      * @param l The line number.
      */
     public static void setLineNumber(Object o, int l) {
-        if (o instanceof ConnectionReader) {
+        if (o instanceof ConnectionReader)
             ((ConnectionReader) o).setLineNumber(l);
-        }
     }
 
     /**
@@ -720,7 +715,8 @@ public final class OpenOpts extends OpenCheck {
      * @return The encoding, or null.
      * @throws IOException IO error.
      */
-    public static String detectBom(InputStream in) throws IOException {
+    public static String detectBom(InputStream in)
+            throws IOException {
         String enc = null;
         int ch = in.read();
         if (ch == 0xFE) {

@@ -3,7 +3,7 @@ package jekpro.reference.structure;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.PrologReader;
-import jekpro.model.rope.NamedDistance;
+import jekpro.model.pretty.NamedDistance;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;

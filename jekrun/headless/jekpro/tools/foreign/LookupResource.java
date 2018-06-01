@@ -7,7 +7,7 @@ import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.LookupChild;
+import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -95,7 +95,7 @@ public final class LookupResource {
                                             int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&

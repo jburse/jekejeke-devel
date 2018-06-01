@@ -4,6 +4,7 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
+import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenCheck;
 
@@ -46,17 +47,19 @@ public final class LookupRead {
     /**
      * <p>Find a path.</p>
      *
-     * @param path  The path, in slash notation.
-     * @param src   The call-site, not null.
+     * @param path The path, in slash notation.
+     * @param src  The call-site, not null.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
     public static String findRead(String path, AbstractSource src)
             throws IOException {
+        if (ForeignFile.STRING_EMPTY.equals(path))
+            return null;
 
         /* make it absolute */
         if (ForeignUri.sysUriIsRelative(path)) {
-            AbstractSource src2 = LookupChild.derefParentImport(src);
+            AbstractSource src2 = SourceLocal.derefParentImport(src);
             String base;
             if (Branch.OP_USER.equals(src2.getPath())) {
                 base = src2.getStore().foyer.base;
@@ -89,15 +92,15 @@ public final class LookupRead {
     /**
      * <p>Determine the relative variant of a path.</p>
      *
-     * @param path  The absolute path.
-     * @param src   The call-site, not null.
+     * @param path The absolute path.
+     * @param src  The call-site, not null.
      * @return The relative variant, or null.
      * @throws IOException Shit happens.
      */
     public static String unfindRead(String path,
                                     AbstractSource src)
             throws IOException {
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
         String base;
         if (Branch.OP_USER.equals(src2.getPath())) {
             base = src2.getStore().foyer.base;
@@ -106,11 +109,9 @@ public final class LookupRead {
         } else {
             base = src2.getPath();
         }
-        int k = base.lastIndexOf('/');
-        if (k == -1)
-            return null;
-        if (path.regionMatches(0, base, 0, k + 1))
-            return path.substring(k + 1);
+        String path2 = ForeignUri.sysUriRelative(base, path);
+        if (!path.equals(path2) && !ForeignFile.STRING_EMPTY.equals(path2))
+            return path2;
 
         // failure
         return null;
@@ -123,9 +124,9 @@ public final class LookupRead {
     /**
      * <p>Find a read path.</p>
      *
-     * @param path  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param path The path.
+     * @param src  The call-site, not null.
+     * @param mask The mask.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
@@ -134,7 +135,7 @@ public final class LookupRead {
                                         int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
@@ -197,9 +198,9 @@ public final class LookupRead {
     /**
      * <p>Remove the suffix in the best way.</p>
      *
-     * @param path  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param path The path.
+     * @param src  The call-site, not null.
+     * @param mask The mask.
      * @return The path without suffix.
      * @throws IOException Shit happens.
      */
@@ -208,7 +209,7 @@ public final class LookupRead {
                                           int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* source text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&
