@@ -3,14 +3,8 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
-import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -86,38 +80,10 @@ final class LenseUpdate extends AbstractLense {
         Number num = EngineMessage.castInteger(en.skel, en.display);
         EngineMessage.checkNotLessThanZero(num);
         int idx = EngineMessage.castIntValue(num);
-        Object res = convertArg(temp, ref, en);
+        Object res = AbstractLense.convertArg(
+                ((SkelCompound) temp).args[2], ref, encodeparas[1]);
         set(obj, idx, res, en);
         return en.getNextRaw();
-    }
-
-    /**
-     * <p>Build the argument. The argument of the goal is
-     * checked and converted if necessary.</p>
-     *
-     * @param temp The skeleton.
-     * @param ref  The display.
-     * @param en   The engine.
-     * @return The argument.
-     * @throws EngineMessage FFI error.
-     */
-    private Object convertArg(Object temp, Display ref, Engine en)
-            throws EngineMessage {
-        try {
-            int typ = encodeparas[1];
-            en.skel = ((SkelCompound) temp).args[2];
-            en.display = ref;
-            en.deref();
-            Object res;
-            if (typ == Types.TYPE_TERM) {
-                res = AbstractTerm.createTermWrapped(en.skel, en.display);
-            } else {
-                res = AbstractTerm.createTerm(en.skel, en.display);
-            }
-            return Types.denormProlog(typ, res);
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
-        }
     }
 
     /**

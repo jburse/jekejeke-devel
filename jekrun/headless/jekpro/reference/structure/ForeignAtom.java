@@ -567,7 +567,7 @@ public final class ForeignAtom {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public static Object sysParseTerm(Interpreter inter, String s)
+    public static AbstractTerm sysParseTerm(Interpreter inter, String s)
             throws InterpreterMessage, InterpreterException {
         return inter.parseTerm(s);
     }

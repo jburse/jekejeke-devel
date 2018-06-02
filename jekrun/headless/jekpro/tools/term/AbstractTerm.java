@@ -177,6 +177,10 @@ public abstract class AbstractTerm {
         }
     }
 
+    /************************************************************/
+    /* String Generation                                        */
+    /************************************************************/
+
     /**
      * <p>Return a string of a skeleton.</p>
      *

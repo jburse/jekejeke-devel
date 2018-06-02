@@ -1,5 +1,12 @@
 package jekpro.model.pretty;
 
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindVar;
+import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.TermVar;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHashLink;
+
 /**
  * <p>This class registers the deref distance of a variable
  * name. This should give a little bit more natural printing
@@ -29,27 +36,18 @@ package jekpro.model.pretty;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class NamedDistance {
-    private int distance;
     private String name;
+    private int distance;
 
     /**
-     * <p></p>
+     * <p>Create a named distance</p>
      *
-     * @param d The distance.
      * @param n The name.
+     * @param d The distance.
      */
-    public NamedDistance(int d, String n) {
-        distance = d;
+    private NamedDistance(String n, int d) {
         name = n;
-    }
-
-    /**
-     * <p>Retrieve the distance.</p>
-     *
-     * @return The distance.
-     */
-    public int getDistance() {
-        return distance;
+        distance = d;
     }
 
     /**
@@ -59,6 +57,94 @@ public final class NamedDistance {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * <p>Set the name.</p>
+     *
+     * @param n The name.
+     */
+    public void setName(String n) {
+        name = n;
+    }
+
+    /**
+     * <p>Retrieve the distance.</p>
+     *
+     * @return The distance.
+     */
+    private int getDistance() {
+        return distance;
+    }
+
+    /**
+     * <p>Set the distance.</p>
+     *
+     * @param d The distance.
+     */
+    private void setDistance(int d) {
+        distance = d;
+    }
+
+    /**************************************************************/
+    /* Print Map Helpers                                          */
+    /**************************************************************/
+
+    /**
+     * <p>Dereference the term given by the current skeleton
+     * and display, return the result in the current skeleton
+     * and display.</p>
+     *
+     * @return The deref count.
+     */
+    public static int derefCount(Engine en) {
+        int count = 0;
+        BindVar b;
+        while (en.skel instanceof SkelVar &&
+                (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
+            en.skel = b.skel;
+            en.display = b.display;
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * <p>Add priorized to the map hash.</p>
+     *
+     * @param print The print map.
+     * @param pair The variable.
+     * @param name The variable name.
+     * @param distance The variable distance.
+     */
+    public static void addPriorized(MapHashLink<TermVar, NamedDistance> print,
+                                    TermVar pair,
+                                    String name, int distance) {
+        MapEntry<TermVar, NamedDistance> entry = print.getEntry(pair);
+        if (entry == null) {
+            NamedDistance nd = new NamedDistance(name, distance);
+            print.add(pair, nd);
+            return;
+        }
+        NamedDistance nd = entry.value;
+        if (distance >= nd.getDistance())
+            return;
+        nd.setName(name);
+        nd.setDistance(distance);
+    }
+
+    /**
+     * <p>Add an anonymous variable.</p>
+     *
+     * @param print The print map.
+     * @param pair The variable.
+     * @param name The variable name.
+     */
+    public static void addAnon(MapHashLink<TermVar, NamedDistance> print,
+                                    TermVar pair,
+                                    String name) {
+        NamedDistance nd = new NamedDistance(name, 0);
+        print.add(pair, nd);
     }
 
 }

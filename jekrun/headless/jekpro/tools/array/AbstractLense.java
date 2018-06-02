@@ -3,6 +3,7 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -12,6 +13,7 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -433,6 +435,37 @@ public abstract class AbstractLense extends AbstractDelegate {
             } else {
                 return null;
             }
+        } catch (InterpreterMessage x) {
+            throw (EngineMessage) x.getException();
+        }
+    }
+
+    /**
+     * <p>Build an argument.  The arguments of the goal
+     * is checked and converted if necessary.</p>
+     *
+     * @param temp The argument skeleton.
+     * @param ref  The argument display.
+     * @param typ  The type.
+     * @return The argument.
+     * @throws EngineMessage FFI error.
+     */
+    public static Object convertArg(Object temp, Display ref, int typ)
+            throws EngineMessage {
+        try {
+            BindVar b;
+            while (temp instanceof SkelVar &&
+                    (b = ref.bind[((SkelVar) temp).id]).display != null) {
+                temp = b.skel;
+                ref = b.display;
+            }
+            Object res;
+            if (typ == Types.TYPE_TERM) {
+                res = AbstractTerm.createTermWrapped(temp, ref);
+            } else {
+                res = AbstractTerm.createTerm(temp, ref);
+            }
+            return Types.denormProlog(typ, res);
         } catch (InterpreterMessage x) {
             throw (EngineMessage) x.getException();
         }

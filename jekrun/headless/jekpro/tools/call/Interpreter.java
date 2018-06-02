@@ -59,14 +59,10 @@ import java.util.Comparator;
  * <tr valign="baseline"><td>Binary Stream</td><td>OutputStream</td></tr>
  * </table>
  * <p>
- * The methods findKey(), findPrefix() and keyToSpec() do relative file
- * name translation. The translation corresponds to the Prolog predicates
- * absolute_file_name/[2,3].
- * <p>
- * The toString() methods convert a term to a string. The unparseTerm()
- * methods convert a term to a string or stream. The following flags are
- * recognized. The method with an option term recognizes all options from
- * the write_term/2 predicate. The following flags are available:
+ * The unparseTerm() methods convert a term to a string or stream. The
+ * following flags are recognized. The method with an option term
+ * recognizes all options from the write_term/2 predicate. The
+ * following flags are available:
  * <p>
  * <ul>
  * <li><b>FLAG_QUOTED:</b> Quote atoms when necessary.</li>
@@ -349,7 +345,7 @@ public final class Interpreter implements Comparator<Object> {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public Object parseTerm(String s)
+    public AbstractTerm parseTerm(String s)
             throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
@@ -381,7 +377,7 @@ public final class Interpreter implements Comparator<Object> {
             return null;
         Display ref = (rd.getGensym() != 0 ?
                 new Display(rd.getGensym()) : Display.DISPLAY_CONST);
-        return AbstractTerm.createTerm(val, ref);
+        return AbstractTerm.createTermWrapped(val, ref);
     }
 
     /**

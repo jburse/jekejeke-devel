@@ -3,13 +3,10 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.AbstractLense;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -118,8 +115,9 @@ final class MemberFieldSet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref, en);
-        Object[] args = convertArgs(temp, ref, en, null);
-        invokeSetter(obj, args);
+        Object arg = AbstractLense.convertArg(
+                ((SkelCompound) temp).args[1], ref, encodeparas[0]);
+        invokeSetter(obj, arg);
         return en.getNextRaw();
     }
 
@@ -127,13 +125,13 @@ final class MemberFieldSet extends AbstractMember {
      * <p>Invoke the method.</p>
      *
      * @param obj  The receiver.
-     * @param args The arguments array.
+     * @param arg The argument.
      * @throws EngineMessage FFI error.
      */
-    final void invokeSetter(Object obj, Object[] args)
+    final void invokeSetter(Object obj, Object arg)
             throws EngineMessage {
         try {
-            field.set(obj, args[0]);
+            field.set(obj, arg);
         } catch (IllegalAccessException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_ACCESS,

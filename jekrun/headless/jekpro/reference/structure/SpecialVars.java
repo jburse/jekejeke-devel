@@ -4,10 +4,14 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.NamedDistance;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Named;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -417,15 +421,8 @@ public final class SpecialVars extends AbstractSpecial {
             }
             Object[] mc2 = ((SkelCompound) en.skel).args;
             Display d2 = en.display;
-            int distance = 0;
             en.skel = mc2[1];
-            BindVar b;
-            while (en.skel instanceof SkelVar &&
-                    (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
-                distance++;
-                en.skel = b.skel;
-                en.display = b.display;
-            }
+            int distance = NamedDistance.derefCount(en);
             if (en.skel instanceof SkelVar) {
                 TermVar pair = new TermVar((SkelVar) en.skel, en.display);
                 en.skel = mc2[0];
@@ -433,16 +430,9 @@ public final class SpecialVars extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String name = EngineMessage.castString(en.skel, en.display);
-                NamedDistance nd = new NamedDistance(distance, name);
                 if (print == null)
                     print = new MapHashLink<TermVar, NamedDistance>();
-                NamedDistance nd2 = print.get(pair);
-                if (nd2 == null) {
-                    print.add(pair, nd);
-                } else if (nd.getDistance() < nd2.getDistance()) {
-                    print.remove(pair);
-                    print.add(pair, nd);
-                }
+                NamedDistance.addPriorized(print, pair, name, distance);
             }
             en.skel = mc[1];
             en.display = d;

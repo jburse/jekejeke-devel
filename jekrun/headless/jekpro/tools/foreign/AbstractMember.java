@@ -1,19 +1,19 @@
 package jekpro.tools.foreign;
 
-import jekpro.tools.array.*;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.AbstractLense;
+import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.proxy.RuntimeWrap;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -135,7 +135,7 @@ abstract class AbstractMember extends AbstractLense
      * @param ref  The display.
      * @param en   The engine.
      * @return The arguments array.
-     * @throws EngineMessage FFI error.
+     * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
     final Object[] computeAndConvertArgs(Object temp, Display ref,
@@ -168,45 +168,33 @@ abstract class AbstractMember extends AbstractLense
      * <p>Build the arguments array. The arguments of the goal
      * are checked and converted if necessary.</p>
      *
-     * @param temp The skeleton.
-     * @param ref  The display.
+     * @param temp The arguments skeleton.
+     * @param ref  The arguments display.
      * @param en   The engine.
-     *             @param co The call-out.
+     * @param co   The call-out.
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      */
     final Object[] convertArgs(Object temp, Display ref, Engine en, CallOut co)
             throws EngineMessage {
-        try {
-            Object[] args = (encodeparas.length != 0 ?
-                    new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
-            int k = 0;
-            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+        Object[] args = (encodeparas.length != 0 ?
+                new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
+        int k = 0;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+            k++;
+        for (int i = 0; i < encodeparas.length; i++) {
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_INTERPRETER) {
+                args[i] = en.proxy;
+            } else if (typ == Types.TYPE_CALLOUT) {
+                args[i] = co;
+            } else {
+                args[i] = AbstractLense.convertArg(
+                        ((SkelCompound) temp).args[k], ref, typ);
                 k++;
-            for (int i = 0; i < encodeparas.length; i++) {
-                int typ = encodeparas[i];
-                if (typ == Types.TYPE_INTERPRETER) {
-                    args[i] = en.proxy;
-                } else if (typ == Types.TYPE_CALLOUT) {
-                    args[i] = co;
-                } else {
-                    en.skel = ((SkelCompound) temp).args[k];
-                    en.display = ref;
-                    en.deref();
-                    k++;
-                    Object res;
-                    if (typ == Types.TYPE_TERM) {
-                        res = AbstractTerm.createTermWrapped(en.skel, en.display);
-                    } else {
-                        res = AbstractTerm.createTerm(en.skel, en.display);
-                    }
-                    args[i] = Types.denormProlog(typ, res);
-                }
             }
-            return args;
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
         }
+        return args;
     }
 
     /***********************************************************/

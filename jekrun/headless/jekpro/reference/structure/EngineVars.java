@@ -416,7 +416,7 @@ public final class EngineVars {
             TermVar key = entry.key;
             NamedDistance nd = entry.value;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.add(key, new NamedDistance(0, PrologReader.OP_ANON));
+                NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
             } else {
                 copy.add(key, nd);
             }
@@ -445,7 +445,7 @@ public final class EngineVars {
              entry != null; entry = mvs3.successor(entry)) {
             TermVar key = entry.key;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.add(key, new NamedDistance(0, PrologReader.OP_ANON));
+                NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
             } else {
                 for (; ; ) {
                     StringBuilder buf = new StringBuilder();
@@ -455,7 +455,7 @@ public final class EngineVars {
                     k++;
                     String name = buf.toString();
                     if (range == null || range.getKey(name) == null) {
-                        copy.add(key, new NamedDistance(0, name));
+                        NamedDistance.addAnon(copy, key, name);
                         break;
                     }
                 }
