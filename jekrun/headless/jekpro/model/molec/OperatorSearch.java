@@ -389,7 +389,7 @@ public final class OperatorSearch {
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                     CacheFunctor.sepModule(sa.fun), src, en) : src);
             Operator oper = performLookup(sa.fun, type, src, base);
             if (oper != null && OperatorSearch.visibleOper(oper, src))
@@ -414,7 +414,7 @@ public final class OperatorSearch {
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                     CacheFunctor.sepModule(sa.fun), src, en) : src);
             Operator oper = performLookupDefined(sa.fun, type, src,
                     sa.getPosition(), base, create);

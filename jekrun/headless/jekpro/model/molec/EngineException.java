@@ -1,6 +1,7 @@
 package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.pretty.Foyer;
@@ -198,8 +199,8 @@ public final class EngineException extends Exception {
             while (en.display != null && k < en.visor.getMaxStack()) {
                 r = (Intermediate) en.skel;
                 u = (DisplayClause) en.display;
-                Frame.callGoal(r, u, en);
-                SkelAtom sa = Frame.callableToName(en.skel);
+                SpecialBody.callGoal(r, u, en);
+                SkelAtom sa = SpecialBody.callableToName(en.skel);
                 Object val;
                 if (sa != null) {
                     int arity = Frame.callableToArity(en.skel);

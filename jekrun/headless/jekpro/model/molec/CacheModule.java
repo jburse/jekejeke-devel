@@ -3,6 +3,7 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
@@ -44,19 +45,25 @@ public final class CacheModule extends AbstractCache {
     public final static char OP_CHAR_OS = '/';
     public final static String OP_STRING_OS = "/";
 
-    private static final int MASK_PRFX_FRGN = AbstractSource.MASK_PCKG_FRGN | AbstractSource.MASK_USES_FRGN;
-    private static final int MASK_PRFX_LIBR = AbstractSource.MASK_PCKG_LIBR | AbstractSource.MASK_USES_LIBR;
+    private static final int MASK_PRFX_FRGN = AbstractSource.MASK_PCKG_FRGN |
+            AbstractSource.MASK_USES_FRGN;
+    private static final int MASK_PRFX_LIBR = AbstractSource.MASK_PCKG_LIBR |
+            AbstractSource.MASK_USES_LIBR;
 
     String fun;
     boolean sole;
     Object srcvers;
     SkelAtom res;
 
+    /*******************************************************************/
+    /* Lookup Module                                                   */
+    /*******************************************************************/
+
     /**
      * <p>Create a module name.</p>
      *
      * @param sa    The atom.
-     * @param fun  The package, or null.
+     * @param fun   The package, or null.
      * @param sole  The sole flag.
      * @param scope The call-site, not null.
      * @return The module name.
@@ -66,23 +73,27 @@ public final class CacheModule extends AbstractCache {
                                          String fun, boolean sole,
                                          AbstractSource scope)
             throws EngineMessage {
-        if (!sole) {
-            if (fun != null) {
-                fun = CachePackage.composeStruct(sa.fun, fun);
+        try {
+            if (!sole) {
+                if (fun != null) {
+                    fun = CachePackage.composeStruct(sa.fun, fun);
+                } else {
+                    fun = CachePackage.composeArray(sa.fun);
+                }
             } else {
-                fun = CachePackage.composeArray(sa.fun);
+                fun = sa.fun;
             }
-        } else {
-            fun = sa.fun;
+
+            /* lookup prefix from call-site */
+            fun = fun.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
+            fun = findPrefix(fun, scope, ForeignPath.MASK_MODL_AUTO);
+            fun = fun.replace(OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+
+            /* create with call-site */
+            return new SkelAtom(fun, scope);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
-
-        /* lookup prefix from call-site */
-        fun = fun.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
-        fun = findPrefix(fun, scope, ForeignPath.MASK_MODL_AUTO);
-        fun = fun.replace(OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
-
-        /* create with call-site */
-        return new SkelAtom(fun, scope);
     }
 
     /*******************************************************************/
@@ -93,7 +104,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Retrieve a module name.</p>
      *
      * @param sa    The atom skeleton.
-     * @param fun  The package, or null.
+     * @param fun   The package, or null.
      * @param sole  The sole flag.
      * @param scope The call-site, or null.
      * @param en    The engine.
@@ -158,48 +169,44 @@ public final class CacheModule extends AbstractCache {
      * <p>Dollar separators are generated.</p>
      *
      * @param relpath The path.
-     * @param scope  The call-site, not null.
-     * @param mask The mask.
+     * @param scope   The call-site, not null.
+     * @param mask    The mask.
      * @return The prefixed path.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException IO Error.
      */
     public static String findPrefix(String relpath, AbstractSource scope, int mask)
-            throws EngineMessage {
-        try {
-            String res = findPrefixParent(relpath, scope, mask);
+            throws IOException {
+        String res = findPrefixParent(relpath, scope, mask);
+        if (res != null)
+            return res;
+
+        int k = relpath.lastIndexOf(OP_CHAR_OS);
+        while (k != -1) {
+            res = relpath.substring(0, k);
+            res = findPrefixParent(res, scope, mask);
+            if (res != null) {
+                relpath = relpath.substring(k + 1);
+                relpath = relpath.replace(OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
+                return CacheSubclass.composeLocal(res, relpath);
+            }
+            k = relpath.lastIndexOf(OP_CHAR_OS, k - 1);
+        }
+
+        if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
+            res = findChildPrefix(relpath, scope);
             if (res != null)
                 return res;
-
-            int k = relpath.lastIndexOf(OP_CHAR_OS);
-            while (k != -1) {
-                res = relpath.substring(0, k);
-                res = findPrefixParent(res, scope, mask);
-                if (res != null) {
-                    relpath = relpath.substring(k + 1);
-                    relpath = relpath.replace(OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
-                    return CacheSubclass.composeLocal(res, relpath);
-                }
-                k = relpath.lastIndexOf(OP_CHAR_OS, k - 1);
-            }
-
-            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                res = findChildPrefix(relpath, scope);
-                if (res != null)
-                    return res;
-            }
-
-            return relpath;
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
         }
+
+        return relpath;
     }
 
     /**
      * <p>Find a prefix in the best way.</p>
      *
-     * @param relpath  The relative path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param relpath The relative path.
+     * @param src     The call-site, not null.
+     * @param mask    The mask.
      * @return The prefixed path or null.
      * @throws IOException Shit happens.
      */
@@ -232,35 +239,42 @@ public final class CacheModule extends AbstractCache {
 
         /* system library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
-                    String path2 = fix.key + OP_STRING_OS + relpath;
-                    String key = LookupResource.findResourceSuffix(path2, src, mask);
-                    if (key != null)
-                        return path2;
+            AbstractStore store = src2.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
+                        String path2 = fix.key + OP_STRING_OS + relpath;
+                        String key = LookupResource.findResourceSuffix(path2, src, mask);
+                        if (key != null)
+                            return path2;
+                    }
                 }
+                store = store.parent;
             }
         }
 
         /* system imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
-                    String path2 = fix.key + OP_STRING_OS + relpath;
-                    String key = LookupBinary.findBinarySuffix(path2, src, mask);
-                    if (key != null)
-                        return path2;
+            AbstractStore store = src2.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
+                        String path2 = fix.key + OP_STRING_OS + relpath;
+                        String key = LookupBinary.findBinarySuffix(path2, src, mask);
+                        if (key != null)
+                            return path2;
+                    }
                 }
+                store = store.parent;
             }
         }
 
         /* source library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
@@ -274,8 +288,7 @@ public final class CacheModule extends AbstractCache {
         }
 
         /* source imported .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
@@ -301,41 +314,38 @@ public final class CacheModule extends AbstractCache {
      * <p>Dollar separators are preserved.</p>
      *
      * @param relpath The path.
-     * @param scope  The call-site, not null.
-     * @param mask The mask.
+     * @param scope   The call-site, not null.
+     * @param mask    The mask.
      * @return The class.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException IO Error.
      */
     public static Object unfindPrefix(String relpath, AbstractSource scope, int mask)
-            throws EngineMessage {
-        try {
-            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = unfindChildPrefix(relpath, scope, mask);
-                if (res != null)
-                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
-                            new SkelAtom(res));
-            }
-
-            if (CacheSubclass.isLocal(relpath)) {
-                String res = CacheSubclass.sepHome(relpath);
-                res = unfindPrefixParent(res, scope, mask);
-                relpath = CacheSubclass.sepRest(relpath);
-                relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, OP_CHAR_OS);
-                return new SkelAtom(composeOs(res, relpath));
-            } else {
-                return new SkelAtom(unfindPrefixParent(relpath, scope, mask));
-            }
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
+            throws IOException {
+        if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
+            String res = unfindChildPrefix(relpath, scope, mask);
+            if (res != null)
+                return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
+                        new SkelAtom(res));
         }
+
+        if (CacheSubclass.isLocal(relpath)) {
+            String res = CacheSubclass.sepHome(relpath);
+            res = unfindPrefixParent(res, scope, mask);
+            relpath = CacheSubclass.sepRest(relpath);
+            relpath = relpath.replace(CacheSubclass.OP_CHAR_SYN, OP_CHAR_OS);
+            return new SkelAtom(composeOs(res, relpath));
+        } else {
+            return new SkelAtom(unfindPrefixParent(relpath, scope, mask));
+        }
+
     }
 
     /**
      * <p>Remove the prefix in the best way.</p>
      *
-     * @param relpath  The path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param relpath The path.
+     * @param src     The call-site, not null.
+     * @param mask    The mask.
      * @return The class.
      * @throws IOException Shit happens.
      */
@@ -353,8 +363,7 @@ public final class CacheModule extends AbstractCache {
         AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* source imported .class */
-        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+        if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
@@ -370,8 +379,7 @@ public final class CacheModule extends AbstractCache {
         }
 
         /* source library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
+        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
@@ -388,33 +396,41 @@ public final class CacheModule extends AbstractCache {
 
         /* system imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
-                    if (relpath.startsWith(fix.key) &&
-                            relpath.startsWith(OP_STRING_OS, fix.key.length())) {
-                        String path2 = relpath.substring(fix.key.length() + 1);
-                        if (relpath.equals(findPrefixParent(path2, src, mask)))
-                            return path2;
+            AbstractStore store = src2.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
+                        if (relpath.startsWith(fix.key) &&
+                                relpath.startsWith(OP_STRING_OS, fix.key.length())) {
+                            String path2 = relpath.substring(fix.key.length() + 1);
+                            if (relpath.equals(findPrefixParent(path2, src, mask)))
+                                return path2;
+                        }
                     }
                 }
+                store = store.parent;
             }
         }
 
         /* system library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
-                    if (relpath.startsWith(fix.key) &&
-                            relpath.startsWith(OP_STRING_OS, fix.key.length())) {
-                        String path2 = relpath.substring(fix.key.length() + 1);
-                        if (relpath.equals(findPrefixParent(path2, src, mask)))
-                            return path2;
+            AbstractStore store = src2.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
+                        if (relpath.startsWith(fix.key) &&
+                                relpath.startsWith(OP_STRING_OS, fix.key.length())) {
+                            String path2 = relpath.substring(fix.key.length() + 1);
+                            if (relpath.equals(findPrefixParent(path2, src, mask)))
+                                return path2;
+                        }
                     }
                 }
+                store = store.parent;
             }
         }
 

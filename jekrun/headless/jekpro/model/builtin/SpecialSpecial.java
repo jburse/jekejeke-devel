@@ -2,7 +2,6 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -15,10 +14,13 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.foreign.LookupBinary;
+import jekpro.tools.proxy.BranchAPI;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.system.AbstractRuntime;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 
 /**
@@ -54,7 +56,7 @@ public final class SpecialSpecial extends AbstractSpecial {
 
     public final static Class[] SIG_INT = new Class[]{Integer.TYPE};
 
-    private final static int SPECIAL_SYS_GET_CONTEXT = 0;
+    private final static int SPECIAL_SYS_CONTEXT_PROPERTY = 0;
     private final static int SPECIAL_SET_SOURCE_PROPERTY = 1;
     private final static int SPECIAL_RESET_SOURCE_PROPERTY = 2;
     private final static int SPECIAL_SYS_OP = 3;
@@ -64,8 +66,6 @@ public final class SpecialSpecial extends AbstractSpecial {
     private final static int SPECIAL_SYS_SPECIAL = 7;
     private final static int SPECIAL_SYS_CHECK_STYLE_PREDICATE = 8;
     private final static int SPECIAL_SYS_CHECK_STYLE_OPER = 9;
-
-    private final static String[] noModify = {",", "|"};
 
     /**
      * <p>Create a special special.</p>
@@ -85,8 +85,8 @@ public final class SpecialSpecial extends AbstractSpecial {
      */
     public static void registerSpecials(AbstractSource scope, Engine en)
             throws EngineMessage, EngineException {
-        SpecialSpecial.registerProvable(new SkelAtom("sys_get_context", scope), 2,
-                new SpecialSpecial(SPECIAL_SYS_GET_CONTEXT), en);
+        SpecialSpecial.registerProvable(new SkelAtom("sys_context_property", scope), 2,
+                new SpecialSpecial(SPECIAL_SYS_CONTEXT_PROPERTY), en);
         SpecialSpecial.registerProvable(new SkelAtom("set_source_property", scope), 2,
                 new SpecialSpecial(SPECIAL_SET_SOURCE_PROPERTY), en);
         SpecialSpecial.registerProvable(new SkelAtom("reset_source_property", scope), 2,
@@ -175,18 +175,17 @@ public final class SpecialSpecial extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         switch (id) {
-            case SPECIAL_SYS_GET_CONTEXT:
+            case SPECIAL_SYS_CONTEXT_PROPERTY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
-                SkelAtom sa = Frame.callableToName(en.skel);
-                if (sa == null || sa.scope == null)
-                    return false;
-                sa = new SkelAtom(sa.scope.getPath());
-                if (!en.unifyTerm(temp[1], ref, sa, Display.DISPLAY_CONST))
+                EngineMessage.checkCallable(en.skel, en.display);
+                SkelAtom sa = SpecialBody.callableToName(en.skel);
+                String fun=(sa.scope!=null?sa.scope.getPath():"");
+                if (!en.unifyTerm(temp[1], ref, new SkelAtom(fun), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SET_SOURCE_PROPERTY:
@@ -196,8 +195,10 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
-                String fun = EngineMessage.castString(en.skel, en.display);
-                AbstractSource source = AbstractSource.keyToSource(fun, en.store);
+                fun = EngineMessage.castString(en.skel, en.display);
+                AbstractSource source = en.store.getSource(fun);
+                AbstractSource.checkExistentSource(source, fun);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -213,7 +214,9 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 fun = EngineMessage.castString(en.skel, en.display);
-                source = AbstractSource.keyToSource(fun, en.store);
+                source = en.store.getSource(fun);
+                AbstractSource.checkExistentSource(source, fun);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -232,6 +235,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 EngineMessage.checkNotLessThanZero(num);
                 int level = EngineMessage.castIntValue(num);
                 SpecialOper.checkOperatorLevel(level);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -239,6 +243,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 String modestr = EngineMessage.castString(en.skel, en.display);
                 int leftright = SpecialOper.atomToLeftRight(modestr);
                 int type = SpecialOper.atomToType(modestr);
+
                 SpecialQuali.colonToCallable(temp[2], ref, false, en);
                 EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
@@ -249,6 +254,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 ref = en.display;
                 Operator op = SpecialOper.operToOperator(temp[0], ref, en);
                 Operator.checkExistentOperator(op, temp[0], ref);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -262,6 +268,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 Predicate pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                 Predicate.checkExistentPredicate(pick, temp[0], ref);
                 Predicate.checkUnsealed(pick, en);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -275,6 +282,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                 Predicate.checkExistentPredicate(pick, temp[0], ref);
                 Predicate.checkUnsealed(pick, en);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -286,6 +294,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Class clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
@@ -342,26 +351,43 @@ public final class SpecialSpecial extends AbstractSpecial {
      */
     public static Class nameToClass(Object t, Display d, Engine en)
             throws EngineMessage {
-        /* slash syntax */
-        Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
-        SkelAtom sa = EngineMessage.castStringWrapped(obj, Display.DISPLAY_CONST);
+        try {
+            /* slash syntax */
+            Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
+            SkelAtom sa;
+            if (!(obj instanceof AbstractSkel) &&
+                    !(obj instanceof Number)) {
+                /* reference */
+                String fun = BranchAPI.classOrProxyName(obj);
+                if (fun == null)
+                    throw new EngineMessage(EngineMessage.domainError(
+                            EngineMessage.OP_DOMAIN_CLASS, t), d);
+                sa = new SkelAtom(fun);
+            } else {
+                /* atom */
+                sa = (SkelAtom) obj;
+            }
 
-        /* find key */
-        String path = sa.fun.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
-        String key = CacheSubclass.findKey(path, sa.scope, ForeignPath.MASK_MODL_FRGN);
-        if (key == null) {
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_SOURCE_SINK, t), d);
+            /* find key */
+            AbstractSource scope = (sa.scope != null ? sa.scope : en.store.user);
+            String path = sa.fun.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+            String key = CacheSubclass.findKey(path, scope, ForeignPath.MASK_MODL_FRGN, null);
+            if (key == null) {
+                throw new EngineMessage(EngineMessage.existenceError(
+                        EngineMessage.OP_EXISTENCE_SOURCE_SINK, t), d);
+            }
+
+            /* key to class */
+            Class<?> clazz = LookupBinary.keyToClass(key, en.store);
+            if (clazz == null) {
+                throw new EngineMessage(EngineMessage.existenceError(
+                        EngineMessage.OP_EXISTENCE_CLASS, t), d);
+            }
+
+            return clazz;
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
-
-        /* key to class */
-        Class<?> clazz = LookupBinary.keyToClass(key, en.store);
-        if (clazz == null) {
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_CLASS, t), d);
-        }
-
-        return clazz;
     }
 
     /**

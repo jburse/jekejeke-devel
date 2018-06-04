@@ -452,7 +452,7 @@ public final class CachePredicate extends AbstractCache {
                 if (temp == null) {
                     /* cache miss, so lookup */
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                             CacheFunctor.sepModule(sa.fun), src, en) : src);
                     Object basevers = base.importvers;
                     Predicate pick = performLookup(sa.fun, arity, src, base);
@@ -487,7 +487,7 @@ public final class CachePredicate extends AbstractCache {
                         if (cp.basevers != cp.base.importvers) {
                             /* cache invalidated, so lookup */
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                                     CacheFunctor.sepModule(sa.fun), src, en) : src);
                             Object basevers = base.importvers;
                             pick = performLookup(sa.fun, arity, src, base);
@@ -544,7 +544,7 @@ public final class CachePredicate extends AbstractCache {
                 if (temp == null) {
                     /* cache miss, so lookup */
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                             CacheFunctor.sepModule(sa.fun), src, en) : src);
                     Object basevers = base.importvers;
                     Predicate pick = performLookupDefined(sa.fun, arity, src, base, create);
@@ -581,7 +581,7 @@ public final class CachePredicate extends AbstractCache {
                         if (cp.basevers != cp.base.importvers || (cp.flags & MASK_PRED_STBL) == 0) {
                             /* cache invalidated or instable, so lookup */
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                                     CacheFunctor.sepModule(sa.fun), src, en) : src);
                             Object basevers = base.importvers;
                             pick = performLookupDefined(sa.fun, arity, src, base, create);
