@@ -388,7 +388,7 @@ public final class SpecialOper extends AbstractSpecial {
             }
         } else if (KEY_SYS_USAGE.equals(prop)) {
             AbstractSource src = oper.getScope();
-            if (!AbstractSource.ancestorSource(src, en))
+            if (!Clause.ancestorSource(src, en))
                 return AbstractBranch.FALSE_PROPERTY;
             return new Object[]{new TermCompound(new SkelCompound(
                     new SkelAtom(SpecialOper.OP_SYS_USAGE),

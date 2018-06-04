@@ -500,8 +500,7 @@ public final class SpecialSession extends AbstractSpecial {
             Intermediate r = en.contskel;
             DisplayClause u = en.contdisplay;
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
-            SkelAtom sa = new SkelAtom("expand_goal",
-                    en.store.foyer.SOURCE_SYSTEM);
+            SkelAtom sa = new SkelAtom("expand_goal", en.store.system);
             Clause clause = en.store.foyer.createClause(AbstractDefined.MASK_DEFI_NBDY |
                     AbstractDefined.MASK_DEFI_NLST |
                     AbstractDefined.MASK_DEFI_STOP);

@@ -1,10 +1,7 @@
 package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
-import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.builtin.Branch;
-import jekpro.model.builtin.PropertyIndicator;
+import jekpro.model.builtin.*;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
@@ -358,7 +355,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = Frame.callableToName(clause.head);
+            SkelAtom sa = SpecialBody.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             if (modifiers != null) {
@@ -452,7 +449,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 Object[] vals = SpecialSource.getPropSrc(prop, src, en);
                 for (int j = 0; j < vals.length; j++) {
                     Object val = vals[j];
-                    Object decl = prop.srcDeclSkel(AbstractTerm.getSkel(val), src);
+                    Object decl = prop.srcDeclSkel(AbstractTerm.getSkel(val), src, en);
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, AbstractTerm.getDisplay(val));

@@ -95,9 +95,9 @@
 
 :- set_source_property(system, use_package(foreign(java/lang))).
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 /***************************************************************/
@@ -340,10 +340,10 @@ sys_atom_or_type_of(C, X) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator(foreign(I,_,_), I).
 sys_declaration_indicator(foreign_constructor(I,_,_), I).

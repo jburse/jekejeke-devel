@@ -69,7 +69,7 @@
 :- set_source_property(system, use_package(library(jekpro/reference))).
 :- set_source_property(system, use_package(library(jekpro/platform))).
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 :- op(1150, fy, private).
@@ -94,10 +94,10 @@ package(P) :-
    var(P),
    throw(error(instantiation_error,_)).
 package(library(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, package(library(P))).
 package(foreign(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, package(foreign(P))).
 package(P) :-
    throw(error(domain_error(fix_option,P),_)).
@@ -115,37 +115,14 @@ use_package(P) :-
    var(P),
    throw(error(instantiation_error,_)).
 use_package(library(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, use_package(library(P))).
 use_package(foreign(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, use_package(foreign(P))).
 use_package(P) :-
    throw(error(domain_error(fix_option,P),_)).
 :- set_predicate_property(use_package/1, visible(public)).
-
-/**
- * use_file_extension(E):
- * The predicate adds the suffix E to the list of suffixes of
- * the current source. Currently text/1, binary/1 and resources/1
- * suffixes are supported.
- */
-% use_file_extension(+Callable)
-use_file_extension(E) :-
-   var(E),
-   throw(error(instantiation_error,_)).
-use_file_extension(text(E)) :- !,
-   sys_get_context(E, C),
-   set_source_property(C, use_file_extension(text(E))).
-use_file_extension(binary(E)) :- !,
-   sys_get_context(E, C),
-   set_source_property(C, use_file_extension(binary(E))).
-use_file_extension(resource(E)) :- !,
-   sys_get_context(E, C),
-   set_source_property(C, use_file_extension(resource(E))).
-use_file_extension(E) :-
-   throw(error(domain_error(fix_option,E),_)).
-:- set_predicate_property(use_file_extension/1, visible(public)).
 
 /**
  * module(N, L):
@@ -159,16 +136,16 @@ module(N, _) :-
    throw(error(instantiation_error,_)).
 module(N, L) :-
    sys_eq(N, user), !,
-   sys_get_context(N, C),
+   sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    (public L).
 module(N, L) :-
-   sys_get_context(N, C),
+   sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    set_source_property(C, sys_source_name(N)),
    (public L),
    sys_get_key(C, K),
-   sys_replace_site(J, N, K),
+   sys_set_context_property(J, C, K),
    sys_check_key(J, C).
 :- set_predicate_property(module/2, visible(public)).
 
@@ -323,19 +300,17 @@ sys_public(postfix(X)) :- !,
    set_oper_property(postfix(X), visible(public)).
 sys_public(I) :-
    sys_make_indicator(F, _, I),
-   sys_get_context(F, C),
+   sys_context_property(F, C),
    sys_once(sys_and(predicate_property(I,sys_usage(D)),
                sys_not(sys_eq(C,D)))),
    sys_not(predicate_property(I,sys_public(D))),
    throw(error(permission_error(promote,public,I),_)).
 sys_public(I) :-
    sys_make_indicator(F, _, I),
-   sys_get_context(F, C), !,
+   sys_context_property(F, C),
    sys_neutral_predicate(I),
    set_predicate_property(I, visible(public)),
    set_predicate_property(I, sys_public(C)).
-sys_public(I) :-
-   throw(error(existence_error(context,I),_)).
 :- set_predicate_property(sys_public/1, visible(private)).
 
 /**
@@ -373,21 +348,19 @@ sys_override(postfix(X)) :- !,
    set_oper_property(postfix(X), override).
 sys_override(I) :-
    sys_make_indicator(J, _, I),
-   sys_get_context(J, C), !,
+   sys_context_property(J, C),
    sys_neutral_predicate(I),
    set_predicate_property(I, (override C)).
-sys_override(I) :-
-   throw(error(existence_error(context,I),_)).
 :- set_predicate_property(sys_override/1, visible(private)).
 
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((public D), I) :-
    sys_declaration_indicator(D, I).

@@ -34,9 +34,7 @@
  *
  * A non-dynamic predicate without clauses can be declared via the directive
  * static/1. The context of a clause is determined from the predicate
- * name atom of the clause head. Context and pretty printing information
- * of an atom can be accessed and modified by the predicates atom_property/2,
- * set_atom_property/3 and reset_atom_property/3.
+ * name atom of the clause head.
  *
  * The predicate current_predicate/1 succeeds for a predicate that is visible
  * in the current context. The different visibility parameters are documented
@@ -68,9 +66,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 :- sys_op(1150, fx, static).
@@ -99,43 +97,6 @@ sys_static(I) :-
 
 :- special(sys_ensure_shared_static/1, 'SpecialPred', 0).
 :- set_predicate_property(sys_ensure_shared_static/1, visible(private)).
-
-/**
- * atom_property(A, Q):
- * The predicate succeeds for the properties Q of the atom A.
- */
-% atom_property(+Atom, -Property)
-atom_property(I, R) :-
-   var(R), !,
-   sys_atom_property(I, P),
-   sys_member(R, P).
-atom_property(I, R) :-
-   functor(R, F, A),
-   sys_atom_property_chk(I, F/A, P),
-   sys_member(R, P).
-:- set_predicate_property(atom_property/2, visible(public)).
-
-:- special(sys_atom_property/2, 'SpecialPred', 1).
-:- set_predicate_property(sys_atom_property/2, visible(private)).
-
-:- special(sys_atom_property_chk/3, 'SpecialPred', 2).
-:- set_predicate_property(sys_atom_property_chk/3, visible(private)).
-
-/**
- * set_atom_property(A, Q, B):
- * The predicate succeeds for a new atom B which is a clone of the atom A
- * except for the property Q which is now set.
- */
-:- special(set_atom_property/3, 'SpecialPred', 3).
-:- set_predicate_property(set_atom_property/3, visible(public)).
-
-/**
- * reset_atom_property(A, Q, B):
- * The predicate succeeds for a new atom B which is a clone of the atom A
- * except for the property Q which is now reset.
- */
-:- special(reset_atom_property/3, 'SpecialPred', 4).
-:- set_predicate_property(reset_atom_property/3, visible(public)).
 
 /**
  * current_predicate(P): [ISO 8.8.2]
@@ -222,10 +183,10 @@ current_module(M) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((static I), I).
 

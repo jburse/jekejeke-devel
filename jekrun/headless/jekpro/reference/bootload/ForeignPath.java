@@ -5,17 +5,16 @@ import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.LookupBase;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
-import matula.util.system.ForeignUri;
+import matula.util.data.MapEntry;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.charset.CharacterCodingException;
 
 /**
  * <p>The foreign predicates for the module path.</p>
@@ -58,41 +57,36 @@ public final class ForeignPath {
     public static final int MASK_FAIL_CHLD = 0x00000200;
 
     /* combined prefix, suffix and failure flags */
-    public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR | MASK_SUFX_TEXT;
-    public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN | MASK_SUFX_BNRY;
-    public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR | MASK_SUFX_RSCS;
+    public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR |
+            MASK_SUFX_TEXT;
+    public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN |
+            MASK_SUFX_BNRY;
+    public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR |
+            MASK_SUFX_RSCS;
 
     /* find prefix */
-    public static final int MASK_MODL_AUTO = MASK_MODL_LIBR | MASK_MODL_FRGN | MASK_FAIL_CHLD;
-    public static final int MASK_MODL_VERB = MASK_MODL_LIBR | MASK_FAIL_CHLD;
+    public static final int MASK_MODL_AUTO = MASK_MODL_LIBR |
+            MASK_MODL_FRGN | MASK_FAIL_CHLD;
+    public static final int MASK_MODL_VERB = MASK_MODL_LIBR |
+            MASK_FAIL_CHLD;
 
     /* find key */
-    public static final int MASK_MODL_BASE = MASK_MODL_LIBR | MASK_MODL_FRGN;
+    public static final int MASK_MODL_BASE = MASK_MODL_LIBR |
+            MASK_MODL_FRGN;
 
     /**
-     * <p>Find a write adr.</p>
-     * <p>Resolve the given adr against the base url.</p>
-     * <p>Always canonize the adr before returning the result.</p>
+     * <p>Find a write key according to the auto loader.</p>
      *
      * @param inter The interpreter.
-     * @param adr   The path.
-     * @return The write path.
-     * @throws InterpreterMessage       Validation error.
-     * @throws CharacterCodingException File canonization problem.
-     * @throws MalformedURLException    URL assembling problem.
+     * @param path  The prefixed path.
+     * @return The source key.
+     * @throws IOException IO Error.
      */
-    public static String sysFindWrite(Interpreter inter, String adr)
-            throws IOException, InterpreterMessage {
-        /* make it absolute */
-        if (ForeignUri.sysUriIsRelative(adr)) {
-            String base = (String) inter.getProperty("base_url");
-            if ("".equals(base))
-                throw new InterpreterMessage(
-                        InterpreterMessage.resourceError("baseurl_missing"));
-            adr = ForeignUri.sysUriAbsolute(base, adr);
-        }
-        /* make it canonical */
-        return ForeignUri.sysCanonicalUri(adr);
+    public static String sysFindWrite(Interpreter inter,
+                                      String path)
+            throws IOException {
+        Engine engine = (Engine) inter.getEngine();
+        return LookupBase.findWrite(path, engine);
     }
 
     /**
@@ -104,21 +98,26 @@ public final class ForeignPath {
      * @param opt   The options list.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
+     * @throws IOException IO Error.
      */
     public static String sysFindPrefix(Interpreter inter,
                                        String path, String key,
                                        Object opt)
-            throws InterpreterMessage {
+            throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        String res;
         Engine engine = (Engine) inter.getEngine();
+        AbstractSource scope;
         try {
-            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
-            res = CacheModule.findPrefix(path, scope, mask);
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope=engine.store.user;
+            }
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return res;
+        return CacheModule.findPrefix(path, scope, mask);
     }
 
     /**
@@ -130,16 +129,23 @@ public final class ForeignPath {
      * @param opt   The options list.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
+     * @throws IOException IO Error.
      */
     public static Object sysUnfindPrefix(Interpreter inter,
                                          String path, String key,
                                          Object opt)
-            throws InterpreterMessage {
+            throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Object res;
         Engine engine = (Engine) inter.getEngine();
         try {
-            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
+            AbstractSource scope;
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope=engine.store.user;
+            }
             res = CacheModule.unfindPrefix(path, scope, mask);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -148,7 +154,7 @@ public final class ForeignPath {
     }
 
     /**
-     * <p>Find a key according to the auto loader.</p>
+     * <p>Find a read key according to the auto loader.</p>
      *
      * @param inter The interpreter.
      * @param path  The prefixed path.
@@ -160,17 +166,21 @@ public final class ForeignPath {
     public static String sysFindKey(Interpreter inter,
                                     String path, String key,
                                     Object opt)
-            throws InterpreterMessage {
+            throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        String res;
         Engine engine = (Engine) inter.getEngine();
+        AbstractSource scope;
         try {
-            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
-            res = CacheSubclass.findKey(path, scope, mask);
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope=engine.store.user;
+            }
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return res;
+        return CacheSubclass.findKey(path, scope, mask, engine);
     }
 
     /**
@@ -184,15 +194,21 @@ public final class ForeignPath {
      * @throws InterpreterMessage Shit happens.
      */
     public static Object sysUnfindKey(Interpreter inter,
-                                    String path, String key,
-                                    Object opt)
-            throws InterpreterMessage {
+                                      String path, String key,
+                                      Object opt)
+            throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Object res;
         Engine engine = (Engine) inter.getEngine();
         try {
-            AbstractSource scope = AbstractSource.keyToSource(key, engine.store);
-            res = CacheSubclass.unfindKey(path, scope, mask);
+            AbstractSource scope;
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope = engine.store.user;
+            }
+            res = CacheSubclass.unfindKey(path, scope, mask, engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -310,7 +326,7 @@ public final class ForeignPath {
     }
 
     /**
-     * <p>Retrieve the class paths.</p>
+     * <p>Retrieve the class paths along the class paths.</p>
      *
      * @param inter The interpreter.
      * @return The list of class paths.
@@ -327,6 +343,43 @@ public final class ForeignPath {
         }
         return end;
     }
+
+    /**
+     * <p>Add a file extension.</p>
+     *
+     * @param inter The interpreter.
+     * @param ext   The file extension.
+     * @param type  The type.
+     */
+    public static void sysAddFileExtenstion(Interpreter inter,
+                                            String ext, int type) {
+        inter.getKnowledgebase().addFileExtension(ext, type);
+    }
+
+    /**
+     * <p>Retrieve the file extensions along the knowledge bases.</p>
+     *
+     * @param inter The interpreter.
+     * @return The list of class paths.
+     */
+    public static Object sysGetFileExtenstions(Interpreter inter) {
+        Knowledgebase know = inter.getKnowledgebase();
+        Object end = Knowledgebase.OP_NIL;
+        while (know != null) {
+            MapEntry<String, Integer>[] exts = know.getFileExtensions();
+            for (int i = exts.length - 1; i >= 0; i--) {
+                MapEntry<String, Integer> ext = exts[i];
+                Object val = new TermCompound(Knowledgebase.OP_SUB, ext.key, ext.value);
+                end = new TermCompound(Knowledgebase.OP_CONS, val, end);
+            }
+            know = know.getParent();
+        }
+        return end;
+    }
+
+    /**************************************************************/
+    /* Experimental Hierarchical Knowledgebases                   */
+    /**************************************************************/
 
     /**
      * <p>Push a new knowledge base.</p>

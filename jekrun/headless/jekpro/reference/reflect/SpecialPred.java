@@ -51,10 +51,6 @@ import matula.util.data.MapEntry;
  */
 public final class SpecialPred extends AbstractSpecial {
     private final static int SPECIAL_SYS_ENSURE_SHARED_STATIC = 0;
-    private final static int SPECIAL_SYS_ATOM_PROPERTY = 1;
-    private final static int SPECIAL_SYS_ATOM_PROPERTY_CHK = 2;
-    private final static int SPECIAL_SET_ATOM_PROPERTY = 3;
-    private final static int SPECIAL_RESET_ATOM_PROPERTY = 4;
     private final static int SPECIAL_SYS_CURRENT_PREDICATE = 5;
     private final static int SPECIAL_SYS_CURRENT_PREDICATE_CHK = 6;
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY = 7;
@@ -91,61 +87,6 @@ public final class SpecialPred extends AbstractSpecial {
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialPred.defineStatic(pick, en);
                 return en.getNextRaw();
-            case SPECIAL_SYS_ATOM_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                SkelAtom sa = Frame.callableToName(en.skel);
-                atomToProperties(sa, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_ATOM_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = Frame.callableToName(en.skel);
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                atomToProperty(prop, sa, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SET_ATOM_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, false, en);
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkCallable(en.skel, en.display);
-                sa = SpecialPred.addAtomProp(en.skel, en.display, sa, en);
-                if (!en.unifyTerm(temp[2], ref, sa, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_RESET_ATOM_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, false, en);
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkCallable(en.skel, en.display);
-                sa = SpecialPred.removeAtomProp(en.skel, en.display, sa, en);
-                if (!en.unifyTerm(temp[2], ref, sa, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
             case SPECIAL_SYS_CURRENT_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -176,7 +117,7 @@ public final class SpecialPred extends AbstractSpecial {
                 pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
                 predicateToProperty(pick, prop, en);
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                     return false;
@@ -464,158 +405,6 @@ public final class SpecialPred extends AbstractSpecial {
         Object[] vals = getPropPred(pred, prop, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
         setPropPred(prop, pred, vals, en);
-    }
-
-    /****************************************************************************/
-    /* High-Level Atom Property Access                                          */
-    /****************************************************************************/
-
-    /**
-     * <p>Create a prolog list for the properties of the given atom.</p>
-     * <p>Result is returned in skeleton and display.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param sa The atom, or null.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void atomToProperties(SkelAtom sa, Engine en)
-            throws EngineMessage {
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            StoreKey[] props = branch.listAtomProp();
-            for (int j = props.length - 1; j >= 0; j--) {
-                StoreKey prop = props[j];
-                Object t = en.skel;
-                Display d = en.display;
-                Object[] vals = getPropAtom(prop, sa, en);
-                en.skel = t;
-                en.display = d;
-                AbstractProperty.consArray(vals, en);
-            }
-        }
-    }
-
-    /**
-     * <p>Create a prolog list for the property of the given atom.</p>
-     * <p>Result is returned in skeleton and display.</p>
-     *
-     * @param prop The property.
-     * @param sa   The atom, or null.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void atomToProperty(StoreKey prop, SkelAtom sa,
-                                       Engine en)
-            throws EngineMessage {
-        Object[] vals = getPropAtom(prop, sa, en);
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        AbstractProperty.consArray(vals, en);
-    }
-
-    /**
-     * <p>Retrieve an atom property.</p>
-     * <p>Throws a domain error for undefined atom properties.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param prop The property.
-     * @param sa   The atom, or null.
-     * @param en   The engine.
-     * @return The value.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object[] getPropAtom(StoreKey prop, SkelAtom sa,
-                                        Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            Object[] vals = branch.getAtomProp(prop, sa, en);
-            if (vals != null)
-                return vals;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-    }
-
-    /**
-     * <p>Set an atom property.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param prop The property.
-     * @param skel The atom.
-     * @param vals The values.
-     * @param en   The engine.
-     * @return The new atom.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SkelAtom setPropAtom(StoreKey prop, SkelAtom skel,
-                                        Object[] vals, Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            if (branch.setAtomProp(prop, skel, vals, en))
-                return (SkelAtom) en.skel;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-    }
-
-    /**
-     * <p>Set a predicate property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param sa The atom.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SkelAtom addAtomProp(Object t, Display d,
-                                        SkelAtom sa, Engine en)
-            throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
-        Object[] vals = getPropAtom(prop, sa, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
-        return setPropAtom(prop, sa, vals, en);
-    }
-
-    /**
-     * <p>Reset a predicate property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param sa The atom.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SkelAtom removeAtomProp(Object t, Display d,
-                                           SkelAtom sa, Engine en)
-            throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
-        Object[] vals = getPropAtom(prop, sa, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
-        return setPropAtom(prop, sa, vals, en);
     }
 
     /*************************************************************/
