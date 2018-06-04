@@ -264,8 +264,9 @@ public final class WriteOpts {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
-                AbstractSource source = en.store.getSource(fun);
-                AbstractSource.checkExistentSource(source, fun);
+                AbstractSource src = en.store.getSource(fun);
+                AbstractSource.checkExistentSource(src, fun);
+                source = src;
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(

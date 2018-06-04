@@ -6,13 +6,13 @@
  *
  * Example:
  * ?- apropos(time).
- * Indicator               Module
- * get_time/1              system/shell
- * get_time/2              system/shell
- * get_time_file/2         system/file
- * set_time_file/2         system/file
- * time_out/2              misc/time
- * time/1                  swing/stats
+ * Indicator               Evalu   Module
+ * get_time/1              no      system/shell
+ * get_time/2              no      system/shell
+ * get_time_file/2         no      system/file
+ * set_time_file/2         no      system/file
+ * time_out/2              no      misc/time
+ * time/1                  no      swing/stats
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

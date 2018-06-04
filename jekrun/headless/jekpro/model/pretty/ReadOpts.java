@@ -151,8 +151,9 @@ public final class ReadOpts {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
-                source = en.store.getSource(fun);
-                AbstractSource.checkExistentSource(source, fun);
+                AbstractSource src = en.store.getSource(fun);
+                AbstractSource.checkExistentSource(src, fun);
+                source = src;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
