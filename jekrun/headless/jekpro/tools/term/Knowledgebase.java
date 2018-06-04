@@ -11,6 +11,7 @@ import jekpro.model.pretty.StoreChild;
 import jekpro.model.pretty.StoreElder;
 import jekpro.tools.call.*;
 import jekpro.tools.foreign.LookupResource;
+import matula.util.data.MapEntry;
 import matula.util.system.AbstractDecoder;
 import matula.util.system.AbstractRecognizer;
 import matula.util.system.ForeignUri;
@@ -250,6 +251,22 @@ public final class Knowledgebase extends AbstractRecognizer {
     }
 
     /**
+     * <p>Retrieve the paths.</p>
+     * <p>Returns a copy which should be treated immutable.</p>
+     *
+     * @return The paths.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public String[] getClassPaths()
+            throws InterpreterMessage {
+        try {
+            return store.snapshotClassPaths();
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
      * <p>Add a file extension.</p>
      *
      * @param ext  The file extension.
@@ -260,19 +277,13 @@ public final class Knowledgebase extends AbstractRecognizer {
     }
 
     /**
-     * <p>Retrieve the paths.</p>
-     * <p>Returns a copy.</p>
+     * <p>Retrieve the file extensions.</p>
+     * <p>Returns a copy which should be treated immutable.</p>
      *
-     * @return The paths.
-     * @throws InterpreterMessage Shit happens.
+     * @return The file extensions and their type.
      */
-    public String[] getClassPaths()
-            throws InterpreterMessage {
-        try {
-            return store.snapshotPaths();
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
+    public MapEntry<String, Integer>[] getFileExtensions() {
+        return store.snapshotFileExtensions();
     }
 
     /*******************************************************/

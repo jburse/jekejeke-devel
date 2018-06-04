@@ -173,7 +173,7 @@ public final class AutoArray extends AbstractAuto {
         if (!c.isArray()) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_ARRAY,
-                    SpecialSpecial.classToName(c, en.store.foyer.SOURCE_SYSTEM, en));
+                    SpecialSpecial.classToName(c));
             return false;
         }
         AbstractLense del;

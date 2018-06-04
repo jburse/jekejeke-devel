@@ -242,7 +242,7 @@ public abstract class AbstractAuto extends AbstractSource {
                                   Engine en)
             throws EngineMessage, EngineException {
         String fun = pick.getFun();
-        AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupBase(
+        AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupKey(
                 CacheFunctor.sepModule(fun), this, en) : this);
         Predicate over;
         try {

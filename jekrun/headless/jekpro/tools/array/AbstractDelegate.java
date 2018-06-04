@@ -1,8 +1,8 @@
 package jekpro.tools.array;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -172,7 +172,7 @@ public abstract class AbstractDelegate {
         Display ref = en.display;
 
         Object[] args = computeArgs(temp, ref, en);
-        SkelAtom sa = Frame.callableToName(temp);
+        SkelAtom sa = SpecialBody.callableToName(temp);
         ref = bridgeCount(args);
         temp = bridgeAlloc(args, ref, en);
 

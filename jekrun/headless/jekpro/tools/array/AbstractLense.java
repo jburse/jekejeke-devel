@@ -104,7 +104,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_INTERPRETER) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeobj = encode.intValue();
@@ -120,7 +120,7 @@ public abstract class AbstractLense extends AbstractDelegate {
             if (encode == null) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
@@ -133,7 +133,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                 encode.intValue() == Types.TYPE_INTERPRETER) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                    SpecialSpecial.classToName(ret));
             return false;
         } else {
             encoderet = encode.intValue();
@@ -205,7 +205,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_UNSUPPORTED) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeobj = encode.intValue();
@@ -223,7 +223,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                     encode.intValue() == Types.TYPE_UNSUPPORTED) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
@@ -239,7 +239,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                 encode.intValue() == Types.TYPE_UNSUPPORTED) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                    SpecialSpecial.classToName(ret));
             return false;
         } else {
             encoderet = encode.intValue();

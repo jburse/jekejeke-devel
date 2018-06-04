@@ -1,8 +1,8 @@
 package jekpro.tools.foreign;
 
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.Types;
@@ -117,7 +117,7 @@ final class ChoiceForeign extends CallOut {
                 throw (EngineException) en.skel;
         }
 
-        Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
+        SpecialBody.callGoal(getGoalSkel(), getGoalDisplay(), en);
         Object term = en.skel;
         Display ref = en.display;
         for (; ; ) {
@@ -181,7 +181,7 @@ final class ChoiceForeign extends CallOut {
         } else {
             setException(null);
         }
-        Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
+        SpecialBody.callGoal(getGoalSkel(), getGoalDisplay(), en);
         try {
             setFirst(false);
             setCleanup(true);

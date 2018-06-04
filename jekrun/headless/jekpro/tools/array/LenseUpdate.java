@@ -82,7 +82,7 @@ final class LenseUpdate extends AbstractLense {
         int idx = EngineMessage.castIntValue(num);
         Object res = AbstractLense.convertArg(
                 ((SkelCompound) temp).args[2], ref, encodeparas[1]);
-        set(obj, idx, res, en);
+        set(obj, idx, res);
         return en.getNextRaw();
     }
 
@@ -92,10 +92,9 @@ final class LenseUpdate extends AbstractLense {
      * @param o  The array.
      * @param i  The index.
      * @param v  The element.
-     * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    private void set(Object o, int i, Object v, Engine en)
+    private void set(Object o, int i, Object v)
             throws EngineMessage {
         try {
             Array.set(o, i, v);
@@ -103,12 +102,12 @@ final class LenseUpdate extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_SETTER,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_INDEX,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         }
     }
 

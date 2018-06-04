@@ -133,7 +133,7 @@ public final class FlagAPI extends AbstractFlag {
                 Object val = en.visor.attachedto;
                 return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
             case FLAG_BASE_URL:
-                String path = en.store.foyer.base;
+                String path = en.store.getBase();
                 return new SkelAtom(path != null ? path : "");
             case FLAG_SYS_LOCALE:
                 return new SkelAtom(en.store.foyer.locale.toString());
@@ -251,7 +251,7 @@ public final class FlagAPI extends AbstractFlag {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
-                en.store.foyer.setBase(!"".equals(fun) ? fun : null);
+                en.store.setBase(!"".equals(fun) ? fun : null);
                 return true;
             case FLAG_SYS_LOCALE:
                 en.skel = m;
