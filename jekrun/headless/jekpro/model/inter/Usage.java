@@ -29,35 +29,20 @@ import jekpro.tools.term.PositionKey;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Usage {
-    public static final int MASK_USE_STYL = 0x00000001;
-    public static final int MASK_USE_DISC = 0x00000002;
+    public static final int MASK_TRCK_STYL = 0x00000001;
+    public static final int MASK_TRCK_DISC = 0x00000002;
 
-    public static final int MASK_USE_OVRD = 0x00000100;
-    public static final int MASK_USE_MULT = 0x00000200;
-    public static final int MASK_USE_VSPR = 0x00000400;
-    public static final int MASK_USE_VSPU = 0x00000800;
+    public static final int MASK_TRCK_OVRD = 0x00000010;
+    public static final int MASK_TRCK_MULT = 0x00000020;
+    public static final int MASK_TRCK_VSPR = 0x00000040;
+    public static final int MASK_TRCK_VSPU = 0x00000080;
 
-    public static final int MASK_USE_PRED = 0x00010000;
-    public static final int MASK_USE_FUNC = 0x00020000;
-
-    public static final int MASK_USE_DYNA = 0x00100000;
-    public static final int MASK_USE_TRLC = 0x00200000;
-    public static final int MASK_USE_GPLC = 0x00400000;
+    public static final int MASK_TRCK_PRED = 0x00000100;
+    public static final int MASK_TRCK_FUNC = 0x00000200;
+    public static final int MASK_TRCK_DYNA = 0x00000400;
+    public static final int MASK_TRCK_TRLC = 0x00080800;
 
     private int flags;
-
-    /**
-     * <p>Retrieve the position.</p>
-     *
-     * @return The position.
-     */
-    public PositionKey getPosition() {
-        return null;
-    }
-
-    /*******************************************************/
-    /* Flags                                               */
-    /*******************************************************/
 
     /**
      * <p>Retrieve the flags.</p>
