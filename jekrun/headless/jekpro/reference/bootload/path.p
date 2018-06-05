@@ -1,10 +1,10 @@
 /**
- * A path that is not wrapped into a compound is resolved against the
- * current base when the call-site is system, user or orphan. The current
- * base is the Prolog flag “base_url”. Otherwise if the call-site is
- * not system, user or orphan it is resolved against the path of the
- * call-site itself. In both cases the suffixes of the use_file_extension/1
- * command are used, the prefixes of the use_package/1 command are not used:
+ * A relative path that is not wrapped into a compound is resolved
+ * against the current base in write or append mode. The current base
+ * is the Prolog flag “base_url”. Otherwise in read mode, if the call-site
+ * is not user it is resolved against the path of the call-site itself.
+ * In both cases the suffixes of the sys_add_file_extension/1
+ * command are used:
  *
  * Example:
  * ?- absolute_file_name('my folder/my file', X).
@@ -14,39 +14,38 @@
  * ?- set_prolog_flag(base_url, '/C:/Users/Jan Burse/Desktop/').
  * Yes
  *
- * ?- use_file_extension(text('.txt')).
+ * ?- sys_add_file_extension(text('.dcg')).
  * Yes
  *
  * ?- absolute_file_name('my folder/my file', X).
- * X = 'file:/C:/Users/Jan Burse/Desktop/my folder/my file.txt'
+ * X = 'file:/C:/Users/Jan Burse/Desktop/my folder/my file.dcg'
  *
- * Paths should not use a system specific directory separator but always
- * use the forward slash (/). For convenience paths have an automatic
- * prefixing of a schema. Paths starting with a double slash (//) are
- * prefixed by the “http” schema. Paths starting with a single slash (/)
- * are prefixed by the “file” schema.
+ * Paths should not use a system specific directory separator but always use
+ * the forward slash (/). For convenience paths have an automatic prefixing
+ * of a schema. Paths starting with a double slash (//) are prefixed by the
+ * “http” schema. Paths starting with a single slash (/) are prefixed by
+ * the “file” schema. Drive letters are not considered schema.
  *
- * If the path is wrapped into a compound and if the functor of the
- * compound is either library/1 or foreign/1 then the path is looked
- * up in the class loader. The class path can be updated and queried
- * by the predicates sys_add_path/1 and sys_current_path/1. The prefixes
- * of the system and of the call-site are first tried.
- *
- * Read access resolution:
- *   library(<path>)           lookup resource <path> in class path.
- *   foreign(<path>)           lookup class <path> in class path.
- *   verbatim(<path>)          take as is.
- *   <path>                    resolve <path> in scope or base.
+ * If the path is wrapped into a compound and if the functor of the compound
+ * is either library/1, foreign/1 or verbatim/1 then the path is looked up
+ * in the class path. The class path can be updated and queried by the
+ * predicates sys_add_path/1 and sys_current_path/1. In these cases the
+ * prefixes of the package/1 and use_package/1 command are also used.
  *
  * Write or append access resolution:
  *   &lt;path&gt;              resolve &lt;path&gt; in base.
  *
- * If the path is wrapped into a compound and if the functor of the
- * compound is either library/1 or foreign/1 then the path is looked up
- * in the class path. The class path can be updated and queried by the
- * predicates sys_add_path/1 and sys_current_path/1. In both cases
- * the suffixes of the use_file_extension/1 command and the prefixes
- * of the use_package/1 command are used.
+ * Read access resolution:
+ *   library(<path>)           lookup resource <path> in class path.
+ *   foreign(<path>)           lookup class <path> in class path.
+ *   verbatim(<path>)          like library(<path>) or take as is.
+ *   <path>                    resolve <path> in scope or base.
+ *
+ * The predicates absolute_file_name/[2,3] and absolute_resource_name/1
+ * provide file name resolving. The predicate absolute_file_name/2 works
+ * bi-directionally. For a given already resolved path it will make a best
+ * effort attempt to reconstruct either a compound form foreign/1, library/1
+ * or verbatim/1 or a relative path.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -457,11 +456,3 @@ sys_path_to_atom2(Path, ../Name) :-
    last_sub_atom(Path, After, 0, Name).
 sys_path_to_atom2(Atom, Atom).
 :- set_predicate_property(sys_path_to_atom2/2, visible(private)).
-
-/***********************************************************/
-/* Some Testing                                            */
-/**********************************************************/
-
-:- foreign(sys_push_kb/0, 'ForeignPath',
-      sysPushKB('Interpreter')).
-:- set_predicate_property(sys_push_kb/0, visible(public)).

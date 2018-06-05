@@ -3,12 +3,12 @@ package jekpro.reference.runtime;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.Branch;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
-import jekpro.model.pretty.PrologWriter;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.proxy.FactoryAPI;
@@ -59,6 +59,7 @@ public final class SpecialSession extends AbstractSpecial {
     private final static int SPECIAL_VERSION = 0;
     private final static int SPECIAL_BREAK = 1;
     private final static int SPECIAL_SYS_WRITE_VAR = 2;
+    private final static int SPECIAL_KBS = 3;
 
     /**
      * <p>Create a session special.</p>
@@ -134,6 +135,9 @@ public final class SpecialSession extends AbstractSpecial {
                 EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
                 showVariable(wr, fun, en);
+                return en.getNextRaw();
+            case SPECIAL_KBS:
+                showKnowledgebaseStack(en);
                 return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -759,6 +763,35 @@ public final class SpecialSession extends AbstractSpecial {
         en.display = (rd.getGensym() != 0 ?
                 new Display(rd.getGensym()) : Display.DISPLAY_CONST);
         return true;
+    }
+
+    /***********************************************************/
+    /* Hierarchical Knowledgebases                             */
+    /***********************************************************/
+
+    /**
+     * <p>Show the knowledge base stack.</p>
+     *
+     * @param en The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void showKnowledgebaseStack(Engine en)
+            throws EngineMessage {
+        Object obj = en.visor.dispoutput;
+        FactoryAPI.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        try {
+            AbstractStore store = en.store;
+            while (store != null) {
+                wr.write("store ");
+                wr.write(store.toString());
+                wr.write('\n');
+                wr.flush();
+                store = store.parent;
+            }
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
     }
 
 }

@@ -377,27 +377,4 @@ public final class ForeignPath {
         return end;
     }
 
-    /**************************************************************/
-    /* Experimental Hierarchical Knowledgebases                   */
-    /**************************************************************/
-
-    /**
-     * <p>Push a new knowledge base.</p>
-     *
-     * @param inter The interpreter.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public static void sysPushKB(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        Knowledgebase know = inter.getKnowledgebase();
-        know = new Knowledgebase(know);
-        inter.setKnowledgebase(know);
-        Knowledgebase.initKnowledgebase(inter);
-
-        Engine engine = (Engine) inter.getEngine();
-        engine.visor.popStack();
-        engine.visor.pushStack(engine.store.user);
-    }
-
 }

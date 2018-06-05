@@ -220,3 +220,15 @@ sys_show_name_or_eq(T) :-
 % sys_write_var(+Atom)
 :- private sys_write_var/1.
 :- special(sys_write_var/1, 'SpecialSession', 2).
+
+/***********************************************************/
+/* Hierarchical Knowledgebases                             */
+/***********************************************************/
+
+/**
+ * kbs:
+ * The predicate shows the knowledgebase stack.
+ */
+:- public kbs/0.
+:- special(kbs/0, 'SpecialSession', 3).
+:- set_predicate_property(kbs/0, sys_notrace).
