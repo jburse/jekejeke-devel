@@ -192,8 +192,7 @@ final class DefinedThreadLocal extends AbstractDefined {
             privs.add(null);
         LocalLockfree ep = privs.get(seqid);
         if (ep == null) {
-            ep = new LocalLockfree();
-            ep.cr = Bouquet.newBouquet();
+            ep = new LocalLockfree(this);
             ep.del = this;
             privs.set(seqid, ep);
         } else if (ep.del != this) {

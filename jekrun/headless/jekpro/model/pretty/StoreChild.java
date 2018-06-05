@@ -1,9 +1,9 @@
-package jekpro.model.inter;
+package jekpro.model.pretty;
 
-import jekpro.model.rope.Bouquet;
+import jekpro.model.molec.EngineMessage;
 
 /**
- * <p>An entry for a thread local predicate.</p>
+ * <p>An child store specialization of abstract stores.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -28,17 +28,42 @@ import jekpro.model.rope.Bouquet;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class LocalLockfree {
-    Bouquet cr = Bouquet.newBouquet();
-    DefinedThreadLocal del;
+public final class StoreChild extends AbstractStore {
 
     /**
-     * <p>Create a new local lockfree.</p>
+     * <p>Create a new store.</p>
      *
-     * @param d The delegate.
+     * @param p The parent.
      */
-    LocalLockfree(DefinedThreadLocal d) {
-        del = d;
+    public StoreChild(AbstractStore p) {
+        super(p.foyer, p);
+        loader = p.getLoader();
+    }
+
+
+    /**
+     * <p>Add a path.</p>
+     *
+     * @param path The path.
+     * @throws EngineMessage Shit happens.
+     */
+    public void addClassPath(String path)
+            throws EngineMessage {
+        super.addClassPath(path);
+
+        foyer.notifyFixvers(this);
+    }
+
+    /**
+     * <p>Add a file extension.</p>
+     *
+     * @param ext  The file extension.
+     * @param type The type.
+     */
+    public void addFileExtension(String ext, int type) {
+        super.addFileExtension(ext, type);
+
+        foyer.notifyFixvers(this);
     }
 
 }

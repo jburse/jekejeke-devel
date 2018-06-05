@@ -254,9 +254,7 @@ public class DefinedGroupLocal extends AbstractDefined {
                 privs.add(null);
             ep = privs.get(seqid);
             if (ep == null) {
-                ep = new LocalBlocking();
-                ep.cr = Bouquet.newBouquet();
-                ep.del = this;
+                ep = new LocalBlocking(this);
                 privs.set(seqid, ep);
             } else if (ep.del != this) {
                 ep.cr = Bouquet.newBouquet();
