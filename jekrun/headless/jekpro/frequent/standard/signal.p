@@ -83,7 +83,7 @@ call_cleanup(G, C) :-
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
-   (  X == Y, !; true).
+   (  X =:= Y, !; true).
 
 /**
  * sys_atomic(A):
@@ -115,4 +115,4 @@ setup_call_cleanup(A, G, C) :-
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
-   (  X == Y, !; true).
+   (  X =:= Y, !; true).

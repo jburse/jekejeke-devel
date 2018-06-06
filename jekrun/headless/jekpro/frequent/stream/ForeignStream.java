@@ -1,7 +1,9 @@
 package jekpro.frequent.stream;
 
 import derek.util.protect.LicenseError;
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
@@ -51,10 +53,6 @@ public final class ForeignStream {
     /* type values */
     private final static String OP_BINARY = "binary";
     private final static String OP_TEXT = "text";
-
-    /* boolean values */
-    public final static String OP_TRUE = "true";
-    private final static String OP_FALSE = "false";
 
     /* open options */
     public final static String OP_BOM = "bom";
@@ -115,7 +113,7 @@ public final class ForeignStream {
             throw new InterpreterMessage(InterpreterMessage.permissionError(
                     ForeignStream.OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK,
                     new TermCompound(ForeignStream.OP_REPOSITION,
-                            ForeignStream.OP_TRUE)));
+                            Foyer.OP_TRUE)));
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
                     x.getError()));
@@ -203,7 +201,8 @@ public final class ForeignStream {
         RandomAccessFile raf = ForeignStream.getRaf(str);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_REPOSITION,
-                        (raf != null ? OP_TRUE : OP_FALSE)), res);
+                        (raf != null ? Foyer.OP_TRUE :
+                                AbstractFlag.OP_FALSE)), res);
         if (raf != null) {
             res = new TermCompound(Knowledgebase.OP_CONS,
                     new TermCompound("position",
@@ -352,7 +351,8 @@ public final class ForeignStream {
                 new TermCompound(OP_ENCODING,
                         encoding), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BOM, (bom ? OP_TRUE : OP_FALSE)), res);
+                new TermCompound(OP_BOM, (bom ? Foyer.OP_TRUE :
+                        AbstractFlag.OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_LAST_MODIFIED,
                         TermAtomic.normBigInteger(lastmodified)), res);
@@ -396,7 +396,8 @@ public final class ForeignStream {
                         encoding), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BOM,
-                        (bom ? OP_TRUE : OP_FALSE)), res);
+                        (bom ? Foyer.OP_TRUE :
+                                AbstractFlag.OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(buffer)), res);
@@ -466,9 +467,9 @@ public final class ForeignStream {
     public static boolean atomToBool(Object t) throws InterpreterMessage {
         InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_TRUE)) {
+        if (val.equals(Foyer.OP_TRUE)) {
             return true;
-        } else if (val.equals(OP_FALSE)) {
+        } else if (val.equals(AbstractFlag.OP_FALSE)) {
             return false;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(

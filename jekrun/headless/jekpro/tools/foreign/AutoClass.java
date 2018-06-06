@@ -1,19 +1,25 @@
 package jekpro.tools.foreign;
 
+import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.SpecialSpecial;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.inter.Usage;
 import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
+import jekpro.model.rope.LoadForce;
+import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
+import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -92,6 +98,7 @@ public final class AutoClass extends AbstractAuto {
 
         AutoClass superjava = reexportSuperclass(en);
         AutoClass[] interfacesjava = reexportInterfaces(en);
+        usemoduleScore(en);
 
         meths = new MapHash<StoreKey, ListArray<AbstractMember>>();
         collectConstructors(en);
@@ -104,6 +111,26 @@ public final class AutoClass extends AbstractAuto {
             inheritMeths(interfacesjava[i]);
 
         defineMeths(en, rec);
+    }
+
+    /**
+     * <p>Reexport the super class of a class.</p>
+     *
+     * @param en The interpreter.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private void usemoduleScore(Engine en)
+            throws EngineException, EngineMessage {
+        LoadOpts opts = new LoadOpts();
+        opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
+        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
+        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_MODL);
+
+        String key = "jekpro/frequent/basic/score.p";
+        key = AbstractBranch.findPathLibrary(key, en);
+
+        opts.makeLoad(this, key, en);
     }
 
     /*******************************************************************/
@@ -337,21 +364,24 @@ public final class AutoClass extends AbstractAuto {
     }
 
     /**
-     * <p>Create a test.</p>
+     * <p>Create a test and change scope.</p>
      *
      * @param closure The closure.
      * @param arg     The argument.
      */
     private SkelCompound makeTest(Object closure, Object arg) {
         if (closure instanceof SkelAtom) {
-            SkelAtom sa = (SkelAtom) closure;
-            return new SkelCompound(sa, arg);
+            String fun = ((SkelAtom) closure).fun;
+            return new SkelCompound(new SkelAtom(fun, this), arg);
         } else if (closure instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) closure;
+
             Object[] args = new Object[sc.args.length + 1];
             System.arraycopy(sc.args, 0, args, 0, sc.args.length);
             args[sc.args.length] = arg;
-            return new SkelCompound(sc.sym, args);
+
+            String fun = sc.sym.fun;
+            return new SkelCompound(new SkelAtom(fun, this), args);
         } else {
             throw new IllegalArgumentException("illegal closure");
         }
@@ -376,7 +406,7 @@ public final class AutoClass extends AbstractAuto {
         pick.setBit(Predicate.MASK_PRED_VSPR);
         Usage loc = pick.getUsage(this);
         if (loc != null)
-            loc.setBit(Usage.MASK_USE_VSPR);
+            loc.setBit(Usage.MASK_TRCK_VSPR);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);

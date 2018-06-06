@@ -72,9 +72,6 @@
 :- public prefix(thread_local).
 :- op(1150, fx, thread_local).
 
-:- public prefix(group_local).
-:- op(1150, fx, group_local).
-
 /***************************************************************/
 /* Predicate Types                                             */
 /***************************************************************/

@@ -406,8 +406,6 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(stream/char)).
 :- ensure_loaded(library(stream/term)).
 
-:- ensure_loaded(library(basic/array)).
 :- ensure_loaded(library(basic/utility)).
-:- ensure_loaded(library(basic/score)).
 
 :- set_prolog_flag(sys_clause_expand, on).

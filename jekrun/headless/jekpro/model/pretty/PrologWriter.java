@@ -521,8 +521,8 @@ public class PrologWriter {
         if (!CodeType.ISO_CODETYPE.wordBreak1(lch, ch) &&
                 !CodeType.ISO_CODETYPE.wordBreak2(lch, ch)) {
             append(' ');
-        } else if (CodeType.ISO_CODETYPE.getQuotes().indexOf(lch) != -1 &&
-                lch == ch) {
+        } else if (lch == ch &&
+                CodeType.ISO_CODETYPE.getQuotes().indexOf(lch) != -1) {
             append(' ');
         }
     }

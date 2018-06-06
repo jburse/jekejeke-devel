@@ -216,7 +216,6 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_SINGLETON_VAR = "singleton_var";
 
     public static final String OP_SYNTAX_DIRECTIVE_FAILED = "directive_failed";
-    public final static String OP_SYNTAX_SITE_MISSING = "site_missing";
 
     public final static String OP_EVALUATION_ERROR = "evaluation_error";
     public final static String OP_EVALUATION_ZERO_DIVISOR = "zero_divisor"; /* arithmetic */

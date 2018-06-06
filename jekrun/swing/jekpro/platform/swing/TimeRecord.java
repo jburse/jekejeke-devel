@@ -1,10 +1,14 @@
 package jekpro.platform.swing;
 
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
+import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
 
@@ -112,7 +116,8 @@ public final class TimeRecord {
      * @return The value, or null.
      * @throws InterpreterMessage Shit happens.
      */
-    public Object getStat(String name) throws InterpreterMessage {
+    public Object getStat(String name)
+            throws InterpreterMessage {
         if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
             return uptime;
         } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
