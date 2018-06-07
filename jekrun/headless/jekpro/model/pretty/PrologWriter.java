@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
@@ -7,7 +8,6 @@ import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.ForeignAtom;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
@@ -320,7 +320,7 @@ public class PrologWriter {
             if (nsa.fun.equals(SpecialQuali.OP_COLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
-                    String fun = BranchAPI.classOrProxyName(mod);
+                    String fun = SpecialProxy.classOrProxyName(mod);
                     if (fun != null)
                         sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
                 } else if (mod instanceof SkelAtom) {
@@ -330,9 +330,9 @@ public class PrologWriter {
             } else if (nsa.fun.equals(SpecialQuali.OP_COLONCOLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
-                    mod = BranchAPI.refClassOrProxy(mod);
+                    mod = SpecialProxy.refClassOrProxy(mod);
                     if (mod != null) {
-                        String fun = BranchAPI.classOrProxyName(mod);
+                        String fun = SpecialProxy.classOrProxyName(mod);
                         if (fun != null) {
                             sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
                             k++;

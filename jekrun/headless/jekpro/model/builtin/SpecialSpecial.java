@@ -1,5 +1,6 @@
 package jekpro.model.builtin;
 
+import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -14,7 +15,6 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.foreign.LookupBinary;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -358,7 +358,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
                 /* reference */
-                String fun = BranchAPI.classOrProxyName(obj);
+                String fun = SpecialProxy.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, t), d);

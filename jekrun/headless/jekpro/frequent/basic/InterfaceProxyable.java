@@ -1,4 +1,4 @@
-package jekpro.model.pretty;
+package jekpro.frequent.basic;
 
 import jekpro.tools.proxy.InterfaceHandler;
 
@@ -35,13 +35,13 @@ public interface InterfaceProxyable {
      *
      * @return The invocation handler, or null.
      */
-    public abstract InterfaceHandler getHandler();
+    InterfaceHandler getHandler();
 
     /**
      * <p>Set the invocation handler.</p>
      *
      * @param h The invocation handler.
      */
-    public abstract void setHandler(InterfaceHandler h);
+    void setHandler(InterfaceHandler h);
 
 }

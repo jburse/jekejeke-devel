@@ -8,18 +8,18 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.InterfaceProxyable;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.tools.proxy.InterfaceSlots;
 import jekpro.tools.proxy.InterfaceState;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.system.AbstractRuntime;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 
 /**
  * <p>Provides built-in predicates for the module proxy.</p>
@@ -85,7 +85,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
                     /* reference */
-                    String fun = BranchAPI.classOrProxyName(obj);
+                    String fun = classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
@@ -105,7 +105,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
                     /* reference */
-                    String fun = BranchAPI.classOrProxyName(obj);
+                    String fun = classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
@@ -133,7 +133,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
                     /* reference */
-                    fun = BranchAPI.classOrProxyName(obj);
+                    fun = classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
@@ -145,7 +145,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
                     /* reference */
-                    String fun2 = BranchAPI.classOrProxyName(obj);
+                    String fun2 = classOrProxyName(obj);
                     if (fun2 == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp[1]), ref);
@@ -161,6 +161,10 @@ public final class SpecialProxy extends AbstractSpecial {
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
+
+    /****************************************************************/
+    /* Proxy Creation                                               */
+    /****************************************************************/
 
     /**
      * <p>Instantiate the Java proxy class of the given Prolog text.</p>
@@ -229,6 +233,44 @@ public final class SpecialProxy extends AbstractSpecial {
             proxable.setHandler(handler);
         }
         return handler;
+    }
+
+    /****************************************************************/
+    /* Proxy Name                                                   */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the class or proxy of a reference.</p>
+     * <p>Only proxies based on our sources are recognized.</p>
+     *
+     * @param obj The reference.
+     * @return The class or proxy.
+     */
+    public static Object refClassOrProxy(Object obj) {
+        Class clazz = obj.getClass();
+        if (!Proxy.isProxyClass(clazz))
+            return clazz;
+        Object iv = Proxy.getInvocationHandler(obj);
+        if (iv instanceof InterfaceState)
+            return ((InterfaceState) iv).getHandler().getSource();
+        if (iv instanceof InterfaceHandler)
+            return ((InterfaceHandler) iv).getSource();
+        return null;
+    }
+
+    /**
+     * <p>Retrieve the name of a class or proxy.</p>
+     * <p>Only proxies based on our sources are recognized.</p>
+     *
+     * @param obj The class or proxy.
+     * @return The name.
+     */
+    public static String classOrProxyName(Object obj) {
+        if (obj instanceof Class)
+            return AbstractRuntime.classToString((Class) obj);
+        if (obj instanceof AbstractSource)
+            return ((AbstractSource) obj).getFullName();
+        return null;
     }
 
 }

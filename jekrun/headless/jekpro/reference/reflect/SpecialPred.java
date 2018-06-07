@@ -1,6 +1,7 @@
 package jekpro.reference.reflect;
 
 import derek.util.protect.LicenseError;
+import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
@@ -14,7 +15,6 @@ import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -244,7 +244,7 @@ public final class SpecialPred extends AbstractSpecial {
         /* reference */
         if (!(obj instanceof AbstractSkel) &&
                 !(obj instanceof Number)) {
-            fun = BranchAPI.classOrProxyName(obj);
+            fun = SpecialProxy.classOrProxyName(obj);
             if (fun == null)
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_CLASS, t), d);

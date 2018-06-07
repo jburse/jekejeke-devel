@@ -1,5 +1,6 @@
 package jekpro.reference.runtime;
 
+import jekpro.frequent.basic.SpecialProxy;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -7,7 +8,6 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.rope.Clause;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -90,7 +90,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
-                    fun = BranchAPI.classOrProxyName(obj);
+                    fun = SpecialProxy.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
@@ -127,11 +127,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
-                    obj = BranchAPI.refClassOrProxy(obj);
+                    obj = SpecialProxy.refClassOrProxy(obj);
                     if (obj == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), ref);
-                    fun = BranchAPI.classOrProxyName(obj);
+                    fun = SpecialProxy.classOrProxyName(obj);
                     if (fun == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
@@ -185,7 +185,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
-                obj = BranchAPI.refClassOrProxy(en.skel);
+                obj = SpecialProxy.refClassOrProxy(en.skel);
                 if (obj == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, en.skel));
@@ -407,7 +407,7 @@ public final class SpecialQuali extends AbstractSpecial {
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
-                fun = BranchAPI.classOrProxyName(obj);
+                fun = SpecialProxy.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
@@ -438,11 +438,11 @@ public final class SpecialQuali extends AbstractSpecial {
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
-                obj = BranchAPI.refClassOrProxy(obj);
+                obj = SpecialProxy.refClassOrProxy(obj);
                 if (obj == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), d);
-                fun = BranchAPI.classOrProxyName(obj);
+                fun = SpecialProxy.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
@@ -517,7 +517,7 @@ public final class SpecialQuali extends AbstractSpecial {
             /* reference */
             if (!(obj instanceof AbstractSkel) &&
                     !(obj instanceof Number)) {
-                fun = BranchAPI.classOrProxyName(obj);
+                fun = SpecialProxy.classOrProxyName(obj);
                 if (fun == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
