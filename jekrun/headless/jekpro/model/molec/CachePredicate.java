@@ -713,4 +713,72 @@ public final class CachePredicate extends AbstractCache {
         return false;
     }
 
+    /**************************************************************/
+    /* Notify Importvers                                          */
+    /**************************************************************/
+
+    /**
+     * <p>Notify the dependencies.</p>
+     *
+     * @param src The source that changed.
+     * @param f   The importvers changes.
+     */
+    public static void notifyImportvers(AbstractSource src, int f) {
+        if ((f & AbstractSource.MASK_IMPT_PAIM) != 0)
+            CacheModule.notifyFixvers(src, ~AbstractSource.MASK_PCKG_LIBR);
+        if ((f & AbstractSource.MASK_IMPT_VISI) != 0) {
+            Object o = new Object();
+            ListArray<AbstractSource> visited = new ListArray<AbstractSource>();
+            if ((f & AbstractSource.MASK_IMPT_REEX) != 0)
+                notifyInterface(src, o, visited);
+            if ((f & AbstractSource.MASK_IMPT_INVM) != 0) {
+                notifyImportversLocale(src, o);
+                src.importvers = o;
+            }
+        }
+    }
+
+    /**
+     * <p>Notify that interface has changed.</p>
+     *
+     * @param src     The source that changed.
+     * @param o       The new importvers object.
+     * @param visited The already visited sources.
+     */
+    private static void notifyInterface(AbstractSource src, Object o,
+                                        ListArray<AbstractSource> visited) {
+        visited.add(src);
+        MapEntry<AbstractSource, Integer>[] depsinv = src.snapshotDepsInv();
+        for (int i = 0; i < depsinv.length; i++) {
+            MapEntry<AbstractSource, Integer> depinv = depsinv[i];
+            if (visited.contains(depinv.key))
+                continue;
+            if ((depinv.value.intValue() & AbstractSource.MASK_IMPT_REEX) != 0)
+                notifyInterface(depinv.key, o, visited);
+            if ((depinv.value.intValue() & AbstractSource.MASK_IMPT_MODL) != 0) {
+                AbstractSource src2 = depinv.key;
+                notifyImportversLocale(src2, o);
+                src2.importvers = o;
+            }
+        }
+    }
+
+    /**
+     * <p>Notify that interface has changed.</p>
+     *
+     * @param src The source that changed.
+     * @param o   The new importvers object.
+     */
+    private static void notifyImportversLocale(AbstractSource src, Object o) {
+        MapEntry<AbstractSource, Integer>[] depsinv = src.snapshotDepsInv();
+        for (int i = 0; i < depsinv.length; i++) {
+            MapEntry<AbstractSource, Integer> depinv = depsinv[i];
+            if ((depinv.value.intValue() & AbstractSource.MASK_IMPT_PAIM) != 0) {
+                AbstractSource src2 = depinv.key;
+                notifyImportversLocale(src2, o);
+                src2.importvers = o;
+            }
+        }
+    }
+
 }

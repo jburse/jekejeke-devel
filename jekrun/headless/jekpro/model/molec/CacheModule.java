@@ -531,4 +531,47 @@ public final class CacheModule extends AbstractCache {
         return buf.toString();
     }
 
+    /**************************************************************/
+    /* Notify Fixvers                                             */
+    /**************************************************************/
+
+    /**
+     * <p>Notify a new fix version.</p>
+     *
+     * @param src The source that changed.
+     * @param f   The fixvers changes.
+     */
+    public static void notifyFixvers(AbstractSource src, int f) {
+        if (f != 0) {
+            if (Branch.OP_SYSTEM.equals(src.getPath())) {
+                AbstractStore store = src.getStore();
+                store.foyer.notifyFixvers(store);
+            } else {
+                Object o = new Object();
+                src.fixvers = o;
+                notifyFixversLocale(src, o);
+            }
+        }
+        if ((f & AbstractSource.MASK_PCKG_LIBR) != 0)
+            CachePredicate.notifyImportvers(src, ~AbstractSource.MASK_IMPT_PAIM);
+    }
+
+    /**
+     * <p>Notify the children of a new fix version.</p>
+     *
+     * @param src The source that changed.
+     * @param o   The new fixvers object.
+     */
+    private static void notifyFixversLocale(AbstractSource src, Object o) {
+        MapEntry<AbstractSource, Integer>[] depsinv = src.snapshotDepsInv();
+        for (int i = 0; i < depsinv.length; i++) {
+            MapEntry<AbstractSource, Integer> depinv = depsinv[i];
+            if ((depinv.value.intValue() & AbstractSource.MASK_IMPT_PAIM) != 0) {
+                AbstractSource src2 = depinv.key;
+                notifyFixversLocale(src2, o);
+                src2.fixvers = o;
+            }
+        }
+    }
+
 }
