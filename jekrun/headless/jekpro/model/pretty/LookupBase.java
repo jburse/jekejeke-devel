@@ -90,14 +90,13 @@ public final class LookupBase {
             return null;
 
         if (ForeignUri.sysUriIsRelative(path)) {
-            AbstractSource src2 = SourceLocal.derefParentImport(src);
             String base;
-            if (Branch.OP_USER.equals(src2.getPath())) {
+            if (ForeignUri.sysUriIsRelative(src.getPath())) {
                 base = en.store.getBase();
                 if (base == null)
                     throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
             } else {
-                base = src2.getPath();
+                base = src.getPath();
             }
             /* make it absolute */
             path = ForeignUri.sysUriAbsolute(base, path);
@@ -134,14 +133,13 @@ public final class LookupBase {
                                     AbstractSource src,
                                     Engine en)
             throws IOException {
-        AbstractSource src2 = SourceLocal.derefParentImport(src);
         String base;
-        if (Branch.OP_USER.equals(src2.getPath())) {
+        if (ForeignUri.sysUriIsRelative(src.getPath())) {
             base = en.store.getBase();
             if (base == null)
                 throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
         } else {
-            base = src2.getPath();
+            base = src.getPath();
         }
         String path2 = ForeignUri.sysUriRelative(base, path);
         if (!path.equals(path2) && !ForeignFile.STRING_EMPTY.equals(path2))
@@ -171,11 +169,9 @@ public final class LookupBase {
                                         Engine en)
             throws IOException {
 
-        AbstractSource src2 = SourceLocal.derefParentImport(src);
-
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -192,7 +188,7 @@ public final class LookupBase {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -227,11 +223,9 @@ public final class LookupBase {
                                           Engine en)
             throws IOException {
 
-        AbstractSource src2 = SourceLocal.derefParentImport(src);
-
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -250,7 +244,7 @@ public final class LookupBase {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {

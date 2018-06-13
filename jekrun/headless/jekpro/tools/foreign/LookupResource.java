@@ -94,6 +94,7 @@ public final class LookupResource {
                                             AbstractSource src,
                                             int mask)
             throws IOException {
+
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
             AbstractStore store = src.getStore();

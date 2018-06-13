@@ -9,9 +9,9 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.tools.proxy.InterfaceSlots;
-import jekpro.tools.proxy.InterfaceState;
+import jekpro.tools.proxy.ProxyHandler;
+import jekpro.tools.proxy.ProxyState;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -176,7 +176,7 @@ public final class SpecialProxy extends AbstractSpecial {
      */
     private static Object newProxyHandler(AbstractSource scope)
             throws EngineMessage, EngineException {
-        InterfaceHandler handler = defineHandler(scope);
+        ProxyHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
         if (InterfaceSlots.class.isAssignableFrom(clazz))
             throw new EngineMessage(EngineMessage.existenceError(
@@ -197,14 +197,14 @@ public final class SpecialProxy extends AbstractSpecial {
      */
     private static Object newProxyState(AbstractSource scope, int size)
             throws EngineMessage, EngineException {
-        InterfaceHandler handler = defineHandler(scope);
+        ProxyHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
         if (!InterfaceSlots.class.isAssignableFrom(clazz))
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROXY,
                     SpecialSpecial.constructorToCallable(new Class[]{Integer.TYPE})));
         Constructor constr = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INVOKE);
-        InterfaceState state = handler.createState(size);
+        ProxyState state = handler.createState(size);
         return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{state});
     }
 
@@ -214,7 +214,7 @@ public final class SpecialProxy extends AbstractSpecial {
      * @return The handler.
      * @throws EngineMessage Shit happens.
      */
-    public static InterfaceHandler defineHandler(AbstractSource scope)
+    public static ProxyHandler defineHandler(AbstractSource scope)
             throws EngineMessage {
         if (!(scope instanceof InterfaceProxyable))
             throw new EngineMessage(EngineMessage.permissionError(
@@ -222,14 +222,14 @@ public final class SpecialProxy extends AbstractSpecial {
                     EngineMessage.OP_PERMISSION_PROXY,
                     new SkelAtom(scope.getPath())));
         InterfaceProxyable proxable = (InterfaceProxyable) scope;
-        InterfaceHandler handler = proxable.getHandler();
+        ProxyHandler handler = proxable.getHandler();
         if (handler != null)
             return handler;
         synchronized (proxable) {
             handler = proxable.getHandler();
             if (handler != null)
                 return handler;
-            handler = scope.getStore().foyer.getFactory().createHandler(scope);
+            handler = new ProxyHandler(scope);
             proxable.setHandler(handler);
         }
         return handler;
@@ -247,14 +247,13 @@ public final class SpecialProxy extends AbstractSpecial {
      * @return The class or proxy.
      */
     public static Object refClassOrProxy(Object obj) {
-        Class clazz = obj.getClass();
-        if (!Proxy.isProxyClass(clazz))
-            return clazz;
-        Object iv = Proxy.getInvocationHandler(obj);
-        if (iv instanceof InterfaceState)
-            return ((InterfaceState) iv).getHandler().getSource();
-        if (iv instanceof InterfaceHandler)
-            return ((InterfaceHandler) iv).getSource();
+        if (!(obj instanceof Proxy))
+            return obj.getClass();
+        InvocationHandler iv = Proxy.getInvocationHandler(obj);
+        if (iv instanceof ProxyState)
+            return ((ProxyState) iv).getHandler().getSource();
+        if (iv instanceof ProxyHandler)
+            return ((ProxyHandler) iv).getSource();
         return null;
     }
 

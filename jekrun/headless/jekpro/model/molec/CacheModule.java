@@ -221,8 +221,6 @@ public final class CacheModule extends AbstractCache {
                 return relpath;
         }
 
-        AbstractSource src2 = SourceLocal.derefParentImport(src);
-
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             String key = LookupResource.findResourceSuffix(relpath, src, mask);
@@ -239,7 +237,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -257,7 +255,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -272,6 +270,8 @@ public final class CacheModule extends AbstractCache {
                 store = store.parent;
             }
         }
+
+        AbstractSource src2 = SourceLocal.derefParentImport(src);
 
         /* source library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
@@ -396,7 +396,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -416,7 +416,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            AbstractStore store = src2.getStore();
+            AbstractStore store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {

@@ -1,6 +1,6 @@
 package jekpro.frequent.basic;
 
-import jekpro.tools.proxy.InterfaceHandler;
+import jekpro.tools.proxy.ProxyHandler;
 
 /**
  * <p>This interface indicates that a source is proxyable.</p>
@@ -35,13 +35,13 @@ public interface InterfaceProxyable {
      *
      * @return The invocation handler, or null.
      */
-    InterfaceHandler getHandler();
+    ProxyHandler getHandler();
 
     /**
      * <p>Set the invocation handler.</p>
      *
      * @param h The invocation handler.
      */
-    void setHandler(InterfaceHandler h);
+    void setHandler(ProxyHandler h);
 
 }
