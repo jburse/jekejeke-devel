@@ -314,9 +314,9 @@ public final class EngineException extends Exception {
      *
      * @param en The engine.
      * @return The detailed message.
-     * @throws IOException Shit happens.
+     * @throws IOException     Shit happens.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     public String getMessage(Engine en)
             throws IOException, EngineException, EngineMessage {
@@ -391,12 +391,12 @@ public final class EngineException extends Exception {
      * @param prop   The properties.
      * @param en     The engine.
      * @return The exception message.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static String errorMake(Object term, Display ref,
-                                    Locale locale, Properties prop,
-                                    Engine en)
+                                   Locale locale, Properties prop,
+                                   Engine en)
             throws EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;
@@ -458,8 +458,8 @@ public final class EngineException extends Exception {
      * @throws EngineMessage Not a number.
      */
     public static void printStackTrace(Writer wr, Object term, Display ref,
-                                        Locale locale, Properties prop,
-                                        Engine en)
+                                       Locale locale, Properties prop,
+                                       Engine en)
             throws IOException, EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;

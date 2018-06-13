@@ -112,9 +112,9 @@ public final class NamedDistance {
     /**
      * <p>Add priorized to the map hash.</p>
      *
-     * @param print The print map.
-     * @param pair The variable.
-     * @param name The variable name.
+     * @param print    The print map.
+     * @param pair     The variable.
+     * @param name     The variable name.
      * @param distance The variable distance.
      */
     public static void addPriorized(MapHashLink<TermVar, NamedDistance> print,
@@ -137,12 +137,12 @@ public final class NamedDistance {
      * <p>Add an anonymous variable.</p>
      *
      * @param print The print map.
-     * @param pair The variable.
-     * @param name The variable name.
+     * @param pair  The variable.
+     * @param name  The variable name.
      */
     public static void addAnon(MapHashLink<TermVar, NamedDistance> print,
-                                    TermVar pair,
-                                    String name) {
+                               TermVar pair,
+                               String name) {
         NamedDistance nd = new NamedDistance(name, 0);
         print.add(pair, nd);
     }

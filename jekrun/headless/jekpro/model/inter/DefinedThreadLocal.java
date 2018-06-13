@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>The delegate class for thread local predicates.</p>
+ * <p>The delegate class for thread local delegate.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

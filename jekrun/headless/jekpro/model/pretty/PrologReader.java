@@ -1,8 +1,6 @@
 package jekpro.model.pretty;
 
-import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.OperatorSearch;
@@ -15,7 +13,6 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
-import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.regex.*;
 import matula.util.system.OpenOpts;
@@ -814,7 +811,7 @@ public class PrologReader {
     /**
      * <p>Fetch the first token.</p>
      *
-     * @throws IOException IO Error.
+     * @throws IOException  IO Error.
      * @throws ScannerError Error and position.
      */
     public void firstToken() throws ScannerError, IOException {
@@ -828,7 +825,7 @@ public class PrologReader {
      * <p>Retrieve the molec token.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @throws IOException IO Error.
+     * @throws IOException  IO Error.
      * @throws ScannerError Error and position
      */
     protected void nextToken() throws ScannerError, IOException {

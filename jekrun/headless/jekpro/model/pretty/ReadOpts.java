@@ -214,10 +214,10 @@ public final class ReadOpts {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public static boolean  decodeReadOptions(Object t, Display d,
-                                     Object t2, Display d2,
-                                     Engine en,
-                                     PrologReader rd)
+    public static boolean decodeReadOptions(Object t, Display d,
+                                            Object t2, Display d2,
+                                            Engine en,
+                                            PrologReader rd)
             throws EngineMessage, EngineException {
         en.skel = t;
         en.display = d;

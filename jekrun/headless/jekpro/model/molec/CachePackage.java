@@ -1,11 +1,7 @@
 package jekpro.model.molec;
 
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
 
 /**
  * <p>The polymorphic cache for structured package name.</p>

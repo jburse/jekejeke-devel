@@ -5,8 +5,9 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.*;
-import jekpro.tools.proxy.InterfaceHandler;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Foyer;
 import matula.comp.sharik.AbstractFramework;
 import matula.util.data.MapHash;
 
@@ -188,8 +189,8 @@ public abstract class AbstractFactory extends AbstractFramework {
     /**
      * <p>Find a branch.</p>
      *
-     * @param name The name.
-     * @param store   The store.
+     * @param name  The name.
+     * @param store The store.
      * @throws EngineMessage Shit happens.
      */
     public abstract AbstractBranch stringToBranch(String name, AbstractStore store)
@@ -237,13 +238,5 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @return The foreign source.
      */
     public abstract AbstractSource createSynth(String key, AbstractStore store);
-
-    /**
-     * <p>Create a handler.</p>
-     *
-     * @param src The source.
-     * @return The invocation handler.
-     */
-    public abstract InterfaceHandler createHandler(AbstractSource src);
 
 }

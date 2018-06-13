@@ -1,5 +1,6 @@
 package jekpro.tools.proxy;
 
+import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
@@ -33,11 +34,11 @@ import jekpro.tools.call.InterpreterMessage;
 abstract class AbstractExecutor {
 
     /**
-     * <p>Set the handler.</p>
+     * <p>Set the source.</p>
      *
-     * @param h The handler.
+     * @param src The source.
      */
-    abstract void setHandler(InterfaceHandler h);
+    abstract void setSource(AbstractSource src);
 
     /**
      * <p>Run the executor.</p>

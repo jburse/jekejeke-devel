@@ -2,17 +2,14 @@ package jekpro.tools.proxy;
 
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallIn;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
-import jekpro.tools.term.TermVar;
+import jekpro.tools.term.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -74,12 +71,12 @@ final class ExecutorMethod extends AbstractExecutor {
     }
 
     /**
-     * <p>Set the handler.</p>
+     * <p>Set the source.</p>
      *
-     * @param h The handler.
+     * @param src The source.
      */
-    void setHandler(InterfaceHandler h) {
-        SkelAtom val = new SkelAtom(method.getName(), h.getSource());
+    void setSource(AbstractSource src) {
+        SkelAtom val = new SkelAtom(method.getName(), src);
         functor = (TermAtomic) AbstractTerm.createTermWrapped(val, Display.DISPLAY_CONST);
     }
 

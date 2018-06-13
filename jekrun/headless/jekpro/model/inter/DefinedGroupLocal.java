@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>The delegate class for dynamic predicates.</p>
+ * <p>The delegate class for group local delegate.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,7 +40,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class DefinedGroupLocal extends AbstractDefined {
+public final class DefinedGroupLocal extends AbstractDefined {
     private final int seqid;
 
     /**

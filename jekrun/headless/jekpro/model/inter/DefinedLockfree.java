@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>The delegate class for a static predicate.</p>
+ * <p>The delegate class for a lockfree delegate.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -44,7 +44,7 @@ final class DefinedLockfree extends AbstractDefined {
     private Bouquet cr = Bouquet.newBouquet();
 
     /**
-     * <p>Create a static delegate.</p>
+     * <p>Create a lockfree delegate.</p>
      *
      * @param flags The store flags.
      */

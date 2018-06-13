@@ -1,7 +1,5 @@
 package jekpro.model.inter;
 
-import jekpro.tools.term.PositionKey;
-
 /**
  * <p>This data structure records the usage of a predicate.</p>
  * <p/>

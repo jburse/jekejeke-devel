@@ -60,7 +60,6 @@ public final class SpecialBody extends AbstractSpecial {
     }
 
 
-
     /**
      * <p>Logically evaluate a goal in a list of goals for the first time.</p>
      * <p>The goal is passed via the skel and display of the engine.</p>

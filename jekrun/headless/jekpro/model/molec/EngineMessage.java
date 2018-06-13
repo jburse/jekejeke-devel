@@ -993,9 +993,9 @@ public final class EngineMessage extends Exception {
      * @param ref  The message display.
      * @param pat  The message pattern.
      * @param prop The properties file.
-     * @param en The engine.
+     * @param en   The engine.
      * @return The message template or null.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private static String messageTemplate(Object term, Display ref,
@@ -1092,7 +1092,7 @@ public final class EngineMessage extends Exception {
      * @param d  The term display.
      * @param en The engine.
      * @return The Java object.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static Object prepareArgument(Object t, Display d,

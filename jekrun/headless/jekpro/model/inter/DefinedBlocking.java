@@ -1,15 +1,12 @@
 package jekpro.model.inter;
 
 import jekpro.model.builtin.SpecialBody;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.rope.Bouquet;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.InterfaceClauses;
+import jekpro.model.rope.*;
 import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 import matula.util.misc.AbstractLock;
 import matula.util.misc.Nonescalable;
 import matula.util.wire.AbstractLivestock;
@@ -18,7 +15,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>The delegate class for a multifile predicate.</p>
+ * <p>The delegate class for a blocking delegate.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,12 +40,12 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DefinedBlocking extends AbstractDefined {
+final class DefinedBlocking extends AbstractDefinedMultifile {
     private Bouquet cr = Bouquet.newBouquet();
     private final Nonescalable lock = new Nonescalable();
 
     /**
-     * <p>Create a dynamic delegate.</p>
+     * <p>Create a blocking delegate.</p>
      *
      * @param flags The store flags.
      */

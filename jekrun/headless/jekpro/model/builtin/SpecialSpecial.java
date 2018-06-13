@@ -184,7 +184,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SkelAtom sa = SpecialBody.callableToName(en.skel);
-                String fun=(sa.scope!=null?sa.scope.getPath():"");
+                String fun = (sa.scope != null ? sa.scope.getPath() : "");
                 if (!en.unifyTerm(temp[1], ref, new SkelAtom(fun), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
