@@ -44,7 +44,7 @@ public final class SpecialUniv extends AbstractSpecial {
     private final static int SPECIAL_NOT_UNIFY = 5;
 
     /**
-     * <p>Create a meta special.</p>
+     * <p>Create a univ special.</p>
      *
      * @param i The id.
      */
@@ -124,6 +124,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 nth = EngineMessage.castIntValue(num);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -133,9 +134,18 @@ public final class SpecialUniv extends AbstractSpecial {
                         return false;
                     if (nth < 1)
                         return false;
+                    Display d = en.display;
+                    nth--;
+
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    Object t2 = en.skel;
                     Display d2 = en.display;
-                    boolean multi = setCount(cmp.args, d2, temp[2], ref, nth - 1, en);
-                    en.skel = new SkelCompound(cmp.sym, setAlloc(cmp.args, d2, temp[2], ref, nth - 1, multi, en));
+
+                    boolean multi = SpecialUniv.setCount(cmp.args, d, t2, d2, nth, en);
+                    en.skel = new SkelCompound(cmp.sym,
+                            SpecialUniv.setAlloc(cmp.args, d, t2, d2, nth, multi, en));
                     if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
                         return false;
                     return en.getNext();
@@ -145,7 +155,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     EngineMessage.checkInstantiated(en.skel);
                     throw new EngineMessage(
                             EngineMessage.typeError(EngineMessage.OP_TYPE_CALLABLE,
-                            en.skel), en.display);
+                                    en.skel), en.display);
                 }
             case SPECIAL_UNIFY:
                 temp = ((SkelCompound) en.skel).args;
@@ -191,18 +201,21 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en     The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean setCount(Object[] t2args, Display d2,
-                                    Object t, Display d, int k,
-                                    Engine en) {
+    public static boolean setCount(Object[] t2args, Display d2,
+                                   Object t, Display d, int k,
+                                   Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         for (int i = 0; i < t2args.length; i++) {
-            if (i == k)
-                continue;
-            en.skel = t2args[i];
-            en.display = d2;
-            en.deref();
+            if (i != k) {
+                en.skel = t2args[i];
+                en.display = d2;
+                en.deref();
+            } else {
+                en.skel = t;
+                en.display = d;
+            }
             if (!EngineCopy.isGroundSkel(en.skel)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
@@ -210,17 +223,6 @@ public final class SpecialUniv extends AbstractSpecial {
                 } else if (last != en.display) {
                     multi = true;
                 }
-            }
-        }
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        if (!EngineCopy.isGroundSkel(en.skel)) {
-            countvar++;
-            if (last == Display.DISPLAY_CONST) {
-                last = en.display;
-            } else if (last != en.display) {
-                multi = true;
             }
         }
         if (multi)
@@ -243,35 +245,30 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en     The engine.
      * @return The copied arguments.
      */
-    private static Object[] setAlloc(Object[] t2args, Display d2,
-                                     Object t, Display d, int k,
-                                     boolean multi, Engine en) {
+    public static Object[] setAlloc(Object[] t2args, Display d2,
+                                    Object t, Display d, int k,
+                                    boolean multi, Engine en) {
         Display d4 = en.display;
         Object[] args = new Object[t2args.length];
         int countvar = 0;
         for (int i = 0; i < t2args.length; i++) {
-            if (i == k)
-                continue;
-            en.skel = t2args[i];
-            en.display = d2;
-            en.deref();
+            if (i != k) {
+                en.skel = t2args[i];
+                en.display = d2;
+                en.deref();
+            } else {
+                en.skel = t;
+                en.display = d;
+            }
             if (multi && !EngineCopy.isGroundSkel(en.skel)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);
-                en.skel = sv;
+                args[i] = sv;
+            } else {
+                args[i] = en.skel;
             }
-            args[i] = en.skel;
         }
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        if (multi && !EngineCopy.isGroundSkel(en.skel)) {
-            SkelVar sv = SkelVar.valueOf(countvar);
-            d4.bind[sv.id].bindVar(en.skel, en.display, en);
-            en.skel = sv;
-        }
-        args[k] = en.skel;
         en.display = d4;
         return args;
     }
@@ -345,8 +342,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.skel = t2;
         } else {
             SkelAtom sa = EngineMessage.castStringWrapped(t2, d2);
-            Object[] args = univAlloc(t, d, multi, length, en);
-            en.skel = new SkelCompound(sa, args);
+            en.skel = new SkelCompound(sa, univAlloc(t, d, multi, length, en));
         }
     }
 

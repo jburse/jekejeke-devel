@@ -24,6 +24,7 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/frequent/advanced)).
 
 :- module(dict, []).
 
@@ -33,16 +34,7 @@
  */
 % dict_get(+Dict, +Key, -Value)
 :- public dict_get/3.
-dict_get(M, K, V) :-
-   M =.. [_|L],
-   dict_get2(L, K, W),
-   V = W.
-
-% dict_get2(+List, +Key, -Value)
-:- private dict_get2/3.
-dict_get2([K,V|_], K, V) :- !.
-dict_get2([_,_|L], K, V) :-
-   dict_get2(L, K, V).
+:- special(dict_get/3, 'SpecialDict', 0).
 
 /**
  * dict_put(D, K, V, E):
@@ -51,34 +43,4 @@ dict_get2([_,_|L], K, V) :-
  */
 % dict_put(+Dict, +Key, +Value, -Dict)
 :- public dict_put/4.
-dict_put(M, K, V, N) :-
-   M =.. [F|L],
-   dict_put2(L, K, V, R),
-   N =.. [F|R].
-
-% dict_put2(+List, +Key, +Value, -List)
-:- private dict_put2/4.
-dict_put2([K,_|L], K, V, [K,V|L]) :- !.
-dict_put2([J,W|L], K, V, [J,W|R]) :-
-   dict_put2(L, K, V, R).
-dict_put2([], K, V, [K,V]).
-
-/**
- * dict_del(D, K, E):
- * The predicate succeeds in E with a new dict, where the first value
- * of key K in dict D is removed.
- */
-% dict_del(+Dict, +Key, -Dict)
-:- public dict_del/3.
-dict_del(M, K, N) :-
-   M =.. [F|L],
-   dict_del2(L, K, R),
-   N =.. [F|R].
-
-% dict_del(+List, +Key, -List)
-:- private dict_del2/3.
-dict_del2([K,_|L], K, L) :- !.
-dict_del2([J,W|L], K, [J,W|R]) :-
-   dict_del2(L, K, R).
-dict_del2([], _, []).
-
+:- special(dict_put/4, 'SpecialDict', 1).
