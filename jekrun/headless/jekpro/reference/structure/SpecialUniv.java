@@ -144,8 +144,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     Display d2 = en.display;
 
                     boolean multi = SpecialUniv.setCount(cmp.args, d, t2, d2, nth, en);
-                    en.skel = new SkelCompound(cmp.sym,
-                            SpecialUniv.setAlloc(cmp.args, d, t2, d2, nth, multi, en));
+                    en.skel = new SkelCompound(cmp.sym, SpecialUniv.setAlloc(cmp.args, d, t2, d2, nth, multi, en));
                     if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
                         return false;
                     return en.getNext();
@@ -336,13 +335,11 @@ public final class SpecialUniv extends AbstractSpecial {
         t = en.skel;
         d = en.display;
         int mullen = univCount(t, d, en);
-        boolean multi = (mullen < 0);
-        int length = (multi ? -mullen - 1 : mullen);
-        if (!(t2 instanceof SkelCompound) && length == 0) {
+        if (!(t2 instanceof SkelCompound) && mullen == 0) {
             en.skel = t2;
         } else {
             SkelAtom sa = EngineMessage.castStringWrapped(t2, d2);
-            en.skel = new SkelCompound(sa, univAlloc(t, d, multi, length, en));
+            en.skel = new SkelCompound(sa, univAlloc(t, d, mullen, en));
         }
     }
 
@@ -405,13 +402,14 @@ public final class SpecialUniv extends AbstractSpecial {
      *
      * @param t      The term skeleton.
      * @param d      The term display.
-     * @param multi  The multi flag.
-     * @param length The length.
+     * @param mullen  The multi flag and the length.
      * @param en     The engine.
      * @return The arguments.
      */
     private static Object[] univAlloc(Object t, Display d,
-                                      boolean multi, int length, Engine en) {
+                                      int mullen, Engine en) {
+        boolean multi = (mullen < 0);
+        int length = (multi ? -mullen - 1 : mullen);
         Display d2 = en.display;
         Object[] args = new Object[length];
         int pos = 0;

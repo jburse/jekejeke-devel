@@ -81,7 +81,7 @@ public abstract class AbstractTerm {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
-            return new TermCompound((SkelCompound) m, d);
+            return new TermCompound(d, (SkelCompound) m);
         } else if (m instanceof SkelAtom) {
             return ((SkelAtom) m).fun;
         } else if (m != null) {
@@ -105,7 +105,7 @@ public abstract class AbstractTerm {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
-            return new TermCompound((SkelCompound) m, d);
+            return new TermCompound(d, (SkelCompound) m);
         } else if (m != null) {
             return new TermAtomic(m, false);
         } else {
@@ -129,7 +129,7 @@ public abstract class AbstractTerm {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
-            return new TermCompound((SkelCompound) m, d);
+            return new TermCompound(d, (SkelCompound) m);
         } else {
             return m;
         }

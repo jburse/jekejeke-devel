@@ -143,23 +143,27 @@ public final class SpecialQuali extends AbstractSpecial {
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     Display d3 = en.display;
+
                     en.skel = temp.args[0];
                     en.display = ref;
                     en.deref();
                     Object recv = en.skel;
                     Display d2 = en.display;
-                    boolean multi = prependCount(recv, d2,
+
+                    boolean multi = SpecialQuali.prependCount(recv, d2,
                             sc2.args, d3, en);
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
-                            temp.sym, en), prependAlloc(recv, d2,
+                            temp.sym, en), SpecialQuali.prependAlloc(recv, d2,
                             sc2.args, d3, multi, en));
                 } else if (en.skel instanceof SkelAtom) {
                     SkelAtom sa = (SkelAtom) en.skel;
+
                     en.skel = temp.args[0];
                     en.display = ref;
                     en.deref();
                     Object recv = en.skel;
                     Display d2 = en.display;
+
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
                             temp.sym, en), recv);
                     en.display = d2;
@@ -345,7 +349,7 @@ public final class SpecialQuali extends AbstractSpecial {
             if (err) {
                 EngineMessage.checkInstantiated(t);
                 throw new EngineMessage(EngineMessage.typeError(
-                       EngineMessage.OP_TYPE_ATOM, t), d);
+                        EngineMessage.OP_TYPE_ATOM, t), d);
             } else {
                 return null;
             }
@@ -384,8 +388,8 @@ public final class SpecialQuali extends AbstractSpecial {
      *             | term.
      * </pre>
      *
-     * @param t    The slash skeleton.
-     * @param d    The slash display.
+     * @param t  The slash skeleton.
+     * @param d  The slash display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
@@ -423,7 +427,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 SkelCompound sc2 = (SkelCompound) en.skel;
                 en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
                         temp.sym, en), sc2.args, sc2.vars);
-            } else  {
+            } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
                         (comp ? EngineMessage.OP_TYPE_CALLABLE :
@@ -474,7 +478,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
                         temp.sym, en), SpecialQuali.prependAlloc(recv, d2,
                         sc2.args, d3, multi, en));
-            } else  {
+            } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
                         (comp ? EngineMessage.OP_TYPE_CALLABLE :
@@ -604,21 +608,15 @@ public final class SpecialQuali extends AbstractSpecial {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        if (!EngineCopy.isGroundSkel(en.skel)) {
-            countvar++;
-            if (last == Display.DISPLAY_CONST) {
-                last = en.display;
-            } else if (last != en.display) {
-                multi = true;
+        for (int i = -1; i < t2args.length; i++) {
+            if (i != -1) {
+                en.skel = t2args[i];
+                en.display = d2;
+                en.deref();
+            } else {
+                en.skel = t;
+                en.display = d;
             }
-        }
-        for (int i = 0; i < t2args.length; i++) {
-            en.skel = t2args[i];
-            en.display = d2;
-            en.deref();
             if (!EngineCopy.isGroundSkel(en.skel)) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
@@ -653,27 +651,23 @@ public final class SpecialQuali extends AbstractSpecial {
         Display d4 = en.display;
         Object[] args = new Object[t2args.length + 1];
         int countvar = 0;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        if (multi && !EngineCopy.isGroundSkel(en.skel)) {
-            SkelVar sv = SkelVar.valueOf(countvar);
-            countvar++;
-            d4.bind[sv.id].bindVar(en.skel, en.display, en);
-            en.skel = sv;
-        }
-        args[0] = en.skel;
-        for (int i = 0; i < t2args.length; i++) {
-            en.skel = t2args[i];
-            en.display = d2;
-            en.deref();
+        for (int i = -1; i < t2args.length; i++) {
+            if (i != -1) {
+                en.skel = t2args[i];
+                en.display = d2;
+                en.deref();
+            } else {
+                en.skel = t;
+                en.display = d;
+            }
             if (multi && !EngineCopy.isGroundSkel(en.skel)) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);
-                en.skel = sv;
+                args[i + 1] = sv;
+            } else {
+                args[i + 1] = en.skel;
             }
-            args[i + 1] = en.skel;
         }
         en.display = d4;
         return args;

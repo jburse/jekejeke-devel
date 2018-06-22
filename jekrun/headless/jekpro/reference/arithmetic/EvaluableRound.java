@@ -210,14 +210,14 @@ public final class EvaluableRound extends AbstractSpecial {
         } else if (m instanceof Float) {
             float f = m.floatValue();
             if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
-                return TermAtomic.guardFloat(Float.valueOf((int) f));
+                return TermAtomic.makeFloat((int) f);
             } else {
                 return m;
             }
         } else if (m instanceof Double) {
             double d = m.doubleValue();
             if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
-                return TermAtomic.guardDouble(Double.valueOf((long) d));
+                return TermAtomic.makeDouble((long) d);
             } else {
                 return m;
             }
@@ -245,10 +245,10 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf((float) Math.floor(f)));
+            return TermAtomic.makeFloat((float) Math.floor(f));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(Math.floor(d)));
+            return TermAtomic.makeDouble(Math.floor(d));
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -275,10 +275,10 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf((float) Math.ceil(f)));
+            return TermAtomic.makeFloat((float) Math.ceil(f));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(Math.ceil(d)));
+            return TermAtomic.makeDouble(Math.ceil(d));
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -305,12 +305,12 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf(
-                    (f < 0 ? -Math.round(-f) : Math.round(f))));
+            return TermAtomic.makeFloat(
+                    (f < 0 ? -Math.round(-f) : Math.round(f)));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(
-                    (d < 0 ? -Math.round(-d) : Math.round(d))));
+            return TermAtomic.makeDouble(
+                    (d < 0 ? -Math.round(-d) : Math.round(d)));
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -360,7 +360,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).divide(p));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (!TermAtomic.guardFloat(f))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
@@ -371,7 +371,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (!TermAtomic.guardDouble(d))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
@@ -437,7 +437,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (!TermAtomic.guardFloat(f))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
@@ -449,7 +449,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (!TermAtomic.guardDouble(d))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
@@ -500,18 +500,18 @@ public final class EvaluableRound extends AbstractSpecial {
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(p));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (!TermAtomic.guardFloat(f))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
-                return TermAtomic.guardFloat(Float.valueOf(g % f));
+                return TermAtomic.makeFloat(g % f);
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (!TermAtomic.guardDouble(d))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
-                return TermAtomic.guardDouble(Double.valueOf(e % d));
+                return TermAtomic.makeDouble(e % d);
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
@@ -574,35 +574,35 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (!TermAtomic.guardFloat(f))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
                 if ((g < 0) != (f < 0)) {
                     float res = g % f;
                     if (res != 0) {
-                        return TermAtomic.guardFloat(Float.valueOf(res + f));
+                        return TermAtomic.makeFloat(res + f);
                     } else {
                         return Float.valueOf(0);
                     }
                 } else {
-                    return TermAtomic.guardFloat(Float.valueOf(g % f));
+                    return TermAtomic.makeFloat(g % f);
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (!TermAtomic.guardDouble(d))
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
                 if ((e < 0) != (d < 0)) {
                     double res = e % d;
                     if (res != 0) {
-                        return TermAtomic.guardDouble(Double.valueOf(res + d));
+                        return TermAtomic.makeDouble(res + d);
                     } else {
                         return Float.valueOf(0);
                     }
                 } else {
-                    return TermAtomic.guardDouble(Double.valueOf(e % d));
+                    return TermAtomic.makeDouble(e % d);
                 }
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:

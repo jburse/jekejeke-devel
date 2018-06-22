@@ -1,10 +1,11 @@
 package jekpro.tools.term;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.frequent.standard.SpecialSort;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -59,9 +60,9 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      * @param d The compound display.
      */
-    public TermCompound(SkelCompound s, Display d) {
-        skel = s;
+    TermCompound(Display d, SkelCompound s) {
         display = d;
+        skel = s;
     }
 
     /**
@@ -70,8 +71,7 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      */
     public TermCompound(SkelCompound s) {
-        skel = s;
-        display = Display.DISPLAY_CONST;
+        this(Display.DISPLAY_CONST, s);
     }
 
     /**
@@ -82,8 +82,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(String sym, Object... args) {
-        this(new SkelCompound(new SkelAtom(sym), makeArgs(args)),
-                TermCompound.createCount(args));
+        this(TermCompound.createCount(args, null),
+                new SkelCompound(new SkelAtom(sym),
+                        TermCompound.createAlloc(args, null)));
     }
 
     /**
@@ -94,8 +95,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(TermAtomic sym, Object... args) {
-        this(new SkelCompound(getFun(sym), makeArgs(args)),
-                TermCompound.createCount(args));
+        this(TermCompound.createCount(args, null),
+                new SkelCompound(getFun(sym),
+                        TermCompound.createAlloc(args, null)));
     }
 
     /**
@@ -106,9 +108,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, String sym, Object... args) {
-        this(new SkelCompound(new SkelAtom(sym),
-                        makeArgs((Engine) inter.getEngine(), args)),
-                ((Engine) inter.getEngine()).display);
+        this(TermCompound.createCount(args, (Engine) inter.getEngine()),
+                new SkelCompound(new SkelAtom(sym),
+                        TermCompound.createAlloc(args, (Engine) inter.getEngine())));
     }
 
     /**
@@ -119,9 +121,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, TermAtomic sym, Object... args) {
-        this(new SkelCompound(getFun(sym),
-                        makeArgs((Engine) inter.getEngine(), args)),
-                ((Engine) inter.getEngine()).display);
+        this(TermCompound.createCount(args, (Engine) inter.getEngine()),
+                new SkelCompound(getFun(sym),
+                        TermCompound.createAlloc(args, (Engine) inter.getEngine())));
     }
 
     /**
@@ -251,73 +253,14 @@ public final class TermCompound extends AbstractTerm {
     }
 
     /**
-     * <p>Create the arguments for a compound.</p>
-     * <p>The arguments must have single display.</p>
-     *
-     * @param args The term arguments.
-     * @return The object arguments.
-     */
-    private static Object[] makeArgs(Object[] args) {
-        boolean multi = TermCompound.isMulti(args);
-        if (multi)
-            throw new IllegalArgumentException("multi display");
-        return TermCompound.createAlloc(args, false, null);
-    }
-
-    /**
-     * <p>Create the arguments for a compound.</p>
-     *
-     * @param engine The engine.
-     * @param args   The term arguments.
-     * @return The object arguments.
-     */
-    private static Object[] makeArgs(Engine engine, Object[] args) {
-        boolean multi = TermCompound.isMulti(args);
-        engine.display = TermCompound.createCount(args);
-        return TermCompound.createAlloc(args, multi, engine);
-    }
-
-    /**
-     * <p>Check whether the arguments have multiple displays.</p>
-     *
-     * @param args The term array.
-     * @return True if arguments have multiple displays, otherwise false.
-     */
-    private static boolean isMulti(Object[] args) {
-        Display last = Display.DISPLAY_CONST;
-        for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
-            /* fast lane */
-            if (arg instanceof String)
-                continue;
-            /* common lane */
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
-            BindVar b;
-            while (t instanceof SkelVar &&
-                    (b = d.bind[((SkelVar) t).id]).display != null) {
-                t = b.skel;
-                d = b.display;
-            }
-            if (!EngineCopy.isGroundSkel(t)) {
-                if (last == Display.DISPLAY_CONST) {
-                    last = d;
-                } else if (last != d) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * <p>Count the needed variable place holders.</p>
      * <p>New display is only created if multi.</p>
      *
      * @param args The arguments.
+     * @param en   The engine.
      * @return The new or reused display.
      */
-    private static Display createCount(Object[] args) {
+    private static Display createCount(Object[] args, Engine en) {
         int countvar = 0;
         boolean multi = false;
         Display last = Display.DISPLAY_CONST;
@@ -344,21 +287,34 @@ public final class TermCompound extends AbstractTerm {
                 }
             }
         }
-        if (multi)
-            last = new Display(countvar);
-        return last;
+        if (en == null) {
+            if (multi)
+                throw new IllegalArgumentException("needs display");
+            return last;
+        } else {
+            if (multi)
+                last = new Display(countvar);
+            en.skel = Boolean.valueOf(multi);
+            en.display = last;
+            return last;
+        }
     }
 
     /**
      * <p>Allocate the array and bind the place holders where necessary.</p>
      * <p>The display is passed via the engine.</p>
      *
-     * @param args  The arguments.
-     * @param multi The multi flag.
-     * @param en    The engine copy.
+     * @param args The arguments.
+     * @param en   The engine copy.
      * @return The arguments.
      */
-    private static Object[] createAlloc(Object[] args, boolean multi, Engine en) {
+    private static Object[] createAlloc(Object[] args, Engine en) {
+        boolean multi;
+        if (en == null) {
+            multi = false;
+        } else {
+            multi = (en.skel == Boolean.TRUE);
+        }
         Object[] newargs = new Object[args.length];
         int pos = 0;
         int countvar = 0;

@@ -125,14 +125,22 @@ public final class Types {
                 case Types.TYPE_PRIMFLOAT:
                 case Types.TYPE_FLOAT:
                     if (res != null) {
-                        return TermAtomic.guardFloat((Float) res);
+                        if (TermAtomic.guardFloat(((Float) res).floatValue())) {
+                            return res;
+                        } else {
+                            return TermAtomic.ZERO_FLOAT;
+                        }
                     } else {
                         return null;
                     }
                 case Types.TYPE_PRIMDOUBLE:
                 case Types.TYPE_DOUBLE:
                     if (res != null) {
-                        return TermAtomic.guardDouble((Double) res);
+                        if (TermAtomic.guardDouble(((Double) res).doubleValue())) {
+                            return res;
+                        } else {
+                            return TermAtomic.ZERO_DOUBLE;
+                        }
                     } else {
                         return null;
                     }
@@ -262,7 +270,7 @@ public final class Types {
                         InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castNumber(res);
                         return (num instanceof Float ? num :
-                                TermAtomic.guardFloat(Float.valueOf(num.floatValue())));
+                                TermAtomic.makeFloat(num.floatValue()));
                     } else {
                         return null;
                     }
@@ -272,7 +280,7 @@ public final class Types {
                         InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castNumber(res);
                         return (num instanceof Double ? num :
-                                TermAtomic.guardDouble(Double.valueOf(num.doubleValue())));
+                                TermAtomic.makeDouble(num.doubleValue()));
                     } else {
                         return null;
                     }

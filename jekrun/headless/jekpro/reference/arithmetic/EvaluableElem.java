@@ -112,7 +112,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = (alfa instanceof Double ? alfa :
-                            TermAtomic.guardDouble(Double.valueOf(alfa.doubleValue())));
+                            TermAtomic.makeDouble(alfa.doubleValue()));
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_DECIMAL:
@@ -129,7 +129,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     en.computeExpr(temp[0], ref);
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.skel = (alfa instanceof Float ? alfa :
-                            TermAtomic.guardFloat(Float.valueOf(alfa.floatValue())));
+                            TermAtomic.makeFloat(alfa.floatValue()));
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_ADD:
@@ -209,9 +209,9 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigInteger(((BigInteger) m).negate());
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(-m.floatValue()));
+            return TermAtomic.makeFloat(-m.floatValue());
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(-m.doubleValue()));
+            return TermAtomic.makeDouble(-m.doubleValue());
         } else if (m instanceof Long) {
             long y = m.longValue();
             if (y != Long.MIN_VALUE) {
@@ -245,9 +245,9 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigInteger(((BigInteger) m).abs());
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(Math.abs(m.floatValue())));
+            return TermAtomic.makeFloat(Math.abs(m.floatValue()));
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(Math.abs(m.doubleValue())));
+            return TermAtomic.makeDouble(Math.abs(m.doubleValue()));
         } else if (m instanceof Long) {
             long y = m.longValue();
             if (y != Long.MIN_VALUE) {
@@ -275,9 +275,9 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigInteger) {
             return Integer.valueOf(((BigInteger) m).signum());
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(Math.signum(m.floatValue())));
+            return TermAtomic.makeFloat(Math.signum(m.floatValue()));
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(Math.signum(m.doubleValue())));
+            return TermAtomic.makeDouble(Math.signum(m.doubleValue()));
         } else if (m instanceof Long) {
             long y = m.longValue();
             return Long.valueOf(Long.signum(y));
@@ -316,7 +316,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @return The sum of the two numbers.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number add(Number m, Number n) throws ArithmeticException {
+    public static Number add(Number m, Number n) throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
@@ -325,11 +325,11 @@ public final class EvaluableElem extends AbstractSpecial {
                         TermAtomic.widenBigInteger(m).add(
                                 TermAtomic.widenBigInteger(n)));
             case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() +
-                        n.floatValue()));
+                return TermAtomic.makeFloat(m.floatValue() +
+                        n.floatValue());
             case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() +
-                        n.doubleValue()));
+                return TermAtomic.makeDouble(m.doubleValue() +
+                        n.doubleValue());
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
@@ -357,11 +357,11 @@ public final class EvaluableElem extends AbstractSpecial {
                         TermAtomic.widenBigInteger(m).subtract(
                                 TermAtomic.widenBigInteger(n)));
             case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() -
-                        n.floatValue()));
+                return TermAtomic.makeFloat(m.floatValue() -
+                        n.floatValue());
             case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() -
-                        n.doubleValue()));
+                return TermAtomic.makeDouble(m.doubleValue() -
+                        n.doubleValue());
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
@@ -389,11 +389,11 @@ public final class EvaluableElem extends AbstractSpecial {
                         TermAtomic.widenBigInteger(m).multiply(
                                 TermAtomic.widenBigInteger(n)));
             case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() *
-                        n.floatValue()));
+                return TermAtomic.makeFloat(m.floatValue() *
+                        n.floatValue());
             case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() *
-                        n.doubleValue()));
+                return TermAtomic.makeDouble(m.doubleValue() *
+                        n.doubleValue());
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
@@ -414,10 +414,10 @@ public final class EvaluableElem extends AbstractSpecial {
      */
     private static Number slash(Number m, Number n) throws ArithmeticException {
         double b = n.doubleValue();
-        if (b == 0)
+        if (!TermAtomic.guardDouble(b))
             throw new ArithmeticException(
                     EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-        return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() / b));
+        return TermAtomic.makeDouble(m.doubleValue() / b);
     }
 
     /**
@@ -448,11 +448,11 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigInteger(((BigInteger) m).pow(x));
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(
-                    (float) Math.pow(m.floatValue(), x)));
+            return TermAtomic.makeFloat(
+                    (float) Math.pow(m.floatValue(), x));
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(
-                    Math.pow(m.doubleValue(), x)));
+            return TermAtomic.makeDouble(
+                    Math.pow(m.doubleValue(), x));
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(
                     TermAtomic.widenBigDecimal(m).pow(x));

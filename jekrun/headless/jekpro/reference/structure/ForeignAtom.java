@@ -358,7 +358,7 @@ public final class ForeignAtom {
                     case ScannerToken.PREFIX_FLOAT32:
                         k += Character.charCount(ch);
                         val = prepareParts(k, str, offset, mask);
-                        return TermAtomic.guardFloat(Float.valueOf(val));
+                        return TermAtomic.makeFloat(Float.parseFloat(val));
                     default:
                         break;
                 }
@@ -368,7 +368,7 @@ public final class ForeignAtom {
                 j += Character.charCount(ScannerToken.SCAN_PERIOD);
                 if (j < str.length() && Character.isDigit(str.codePointAt(j))) {
                     String val = prepareParts(0, str, offset, mask);
-                    return TermAtomic.guardDouble(Double.valueOf(val));
+                    return TermAtomic.makeDouble(Double.parseDouble(val));
                 }
             }
             String val = prepareUnderscore(0, str, offset, mask);

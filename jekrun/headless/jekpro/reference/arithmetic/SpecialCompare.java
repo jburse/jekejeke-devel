@@ -149,7 +149,7 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param n The second Prolog number.
      * @return <0 m < n,  0 m == m, >0 m > n.
      */
-    static int computeCmp(Number m, Number n) {
+    public static int computeCmp(Number m, Number n) {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
             case SpecialCompare.CATEGORY_BIG_INTEGER:

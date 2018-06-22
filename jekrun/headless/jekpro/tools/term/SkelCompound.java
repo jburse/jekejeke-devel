@@ -70,7 +70,8 @@ public final class SkelCompound extends AbstractSkel {
      * @param a The arguments.
      * @return The vars.
      */
-    public static ListArray<SkelVar> prepareList(Object[] a, ListArray<SkelVar> vec) {
+    public static ListArray<SkelVar> prepareList(Object[] a,
+                                                 ListArray<SkelVar> vec) {
         for (int i = a.length - 1; i >= 0; i--)
             vec = collectVars(a[i], vec);
         return vec;

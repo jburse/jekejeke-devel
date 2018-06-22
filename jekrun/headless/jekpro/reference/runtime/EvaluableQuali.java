@@ -116,11 +116,13 @@ public final class EvaluableQuali extends AbstractSpecial {
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     Display d3 = en.display;
+
                     en.skel = temp.args[0];
                     en.display = ref;
                     en.deref();
                     Object recv = en.skel;
                     Display d2 = en.display;
+
                     boolean multi = SpecialQuali.prependCount(recv, d2,
                             sc2.args, d3, en);
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
@@ -128,11 +130,13 @@ public final class EvaluableQuali extends AbstractSpecial {
                             sc2.args, d3, multi, en));
                 } else if (en.skel instanceof SkelAtom) {
                     SkelAtom sa = (SkelAtom) en.skel;
+
                     en.skel = temp.args[0];
                     en.display = ref;
                     en.deref();
                     Object recv = en.skel;
                     Display d2 = en.display;
+
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
                             temp.sym, en), recv);
                     en.display = d2;
