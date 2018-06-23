@@ -111,7 +111,8 @@ public final class EvaluableBits extends AbstractSpecial {
                 alfa = EngineMessage.castInteger(en.skel, en.display);
                 en.computeExpr(temp[1], ref);
                 beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = shiftLeft(alfa, beta);
+                int x = EngineMessage.castIntValue(beta);
+                en.skel = shiftLeft(alfa, x);
                 en.display = Display.DISPLAY_CONST;
                 return;
             case EVALUABLE_SHIFT_RIGHT:
@@ -121,7 +122,8 @@ public final class EvaluableBits extends AbstractSpecial {
                 alfa = EngineMessage.castInteger(en.skel, en.display);
                 en.computeExpr(temp[1], ref);
                 beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = shiftRight(alfa, beta);
+                x = EngineMessage.castIntValue(beta);
+                en.skel = shiftRight(alfa, x);
                 en.display = Display.DISPLAY_CONST;
                 return;
             default:
@@ -201,13 +203,11 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>If b<0 then same as a div (2**(-b)).</p>
      * <p/>
      *
-     * @param m The Prolog integer.
-     * @param n The offset.
+     * @param m The first operand.
+     * @param x The second operand.
      * @return The shift left.
-     * @throws EngineMessage Not a Prolog integer or max length.
      */
-    public static Number shiftLeft(Number m, Number n) throws EngineMessage {
-        int x = EngineMessage.castIntValue(n);
+    public static Number shiftLeft(Number m, int x) {
         if (m instanceof Integer) {
             if (x == 0) {
                 return m;
@@ -231,14 +231,12 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>If b<0 then same as a * (2**(-b)).</p>
      * <p/>
      *
-     * @param m The Prolog integer.
-     * @param n The offset.
+     * @param m The first operand.
+     * @param x The second operand.
      * @return The shift left.
-     * @throws EngineMessage Not a Prolog integer or max length.
      */
-    public static Number shiftRight(Number m, Number n) throws EngineMessage {
-        int x = EngineMessage.castIntValue(n);
-        if (m instanceof Integer && -31 <= x && x <= 31) {
+    public static Number shiftRight(Number m, int x) {
+        if (m instanceof Integer) {
             if (x == 0) {
                 return m;
             } else if (x > 0 && x <= 31) {

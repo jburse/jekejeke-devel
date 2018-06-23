@@ -2,9 +2,13 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.rope.Goal;
+import jekpro.reference.arithmetic.EvaluableElem;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -38,6 +42,7 @@ import jekpro.tools.term.SkelCompound;
 public final class SpecialDict extends AbstractSpecial {
     private final static int SPECIAL_DICT_GET = 0;
     private final static int SPECIAL_DICT_PUT = 1;
+    private final static int SPECIAL_BETWEEN = 2;
 
     /**
      * <p>Create a dict special.</p>
@@ -79,7 +84,7 @@ public final class SpecialDict extends AbstractSpecial {
                 EngineMessage.checkInstantiated(en.skel);
                 SkelAtom k = EngineMessage.castStringWrapped(en.skel, en.display);
 
-                if (!(t instanceof SkelCompound) || !dictGet((SkelCompound)t, d, k, en))
+                if (!(t instanceof SkelCompound) || !dictGet((SkelCompound) t, d, k, en))
                     return false;
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                     return false;
@@ -101,11 +106,51 @@ public final class SpecialDict extends AbstractSpecial {
                 EngineMessage.checkInstantiated(en.skel);
                 k = EngineMessage.castStringWrapped(en.skel, en.display);
 
-                if (!(t instanceof SkelCompound) || !dictPut((SkelCompound)t, d, k, temp[2], ref, en))
+                en.skel = temp[2];
+                en.display = ref;
+                en.deref();
+                Object t2 = en.skel;
+                Display d2 = en.display;
+
+                if (!(t instanceof SkelCompound) || !dictPut((SkelCompound) t, d, k, t2, d2, en))
                     return false;
                 if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
+            case SPECIAL_BETWEEN:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkInstantiated(en.skel);
+                Number num1=EngineMessage.castInteger(en.skel,en.display);
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkInstantiated(en.skel);
+                Number num2=EngineMessage.castInteger(en.skel,en.display);
+
+                AbstractBind mark = en.bind;
+                while (SpecialCompare.computeCmp(num1, num2)<0) {
+                    if (en.unifyTerm(temp[2],ref,num1,Display.DISPLAY_CONST)) {
+                        /* create choice point */
+                        en.choices = new ChoiceBetween(en.choices, num1,
+                                (Goal) en.contskel, en.contdisplay, mark);
+                        en.number++;
+                        return en.getNext();
+                    }
+
+                    /* undo bindings */
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+
+                    num1= EvaluableElem.add(num1, Integer.valueOf(1));
+                }
+                return false;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -150,15 +195,8 @@ public final class SpecialDict extends AbstractSpecial {
             return false;
         i++;
 
-        en.skel = t2;
-        en.display = d2;
-        en.deref();
-        t2 = en.skel;
-        d2 = en.display;
-
         boolean multi = SpecialUniv.setCount(t.args, d, t2, d2, i, en);
-        en.skel = new SkelCompound(t.sym,
-                SpecialUniv.setAlloc(t.args, d, t2, d2, i, multi, en));
+        en.skel = new SkelCompound(t.sym, SpecialUniv.setAlloc(t.args, d, t2, d2, i, multi, en));
         return true;
     }
 

@@ -111,9 +111,9 @@ public final class SupplementElem extends AbstractSpecial {
         if (m instanceof Integer || m instanceof BigInteger) {
             return Integer.valueOf(1);
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(Math.ulp(m.floatValue())));
+            return TermAtomic.makeFloat(Math.ulp(m.floatValue()));
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(Math.ulp(m.doubleValue())));
+            return TermAtomic.makeDouble(Math.ulp(m.doubleValue()));
         } else if (m instanceof Long) {
             return Long.valueOf(1);
         } else {

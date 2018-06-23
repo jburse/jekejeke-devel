@@ -169,7 +169,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = slash(alfa, beta);
+                    en.skel = TermAtomic.makeDouble(slash(alfa, beta));
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_INT_POW:
@@ -179,7 +179,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     alfa = EngineMessage.castNumber(en.skel, en.display);
                     en.computeExpr(temp[1], ref);
                     beta = EngineMessage.castInteger(en.skel, en.display);
-                    en.skel = intPow(alfa, beta);
+                    EngineMessage.checkNotLessThanZero(beta);
+                    int x = EngineMessage.castIntValue(beta);
+                    en.skel = intPow(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
@@ -308,6 +310,14 @@ public final class EvaluableElem extends AbstractSpecial {
         }
     }
 
+    /********************************************************************/
+    /* Basic Arithmetical Operations:                                   */
+    /*      +/2: add()                                                  */
+    /*      -/2: sub()                                                  */
+    /*      * /2: mul()                                                 */
+    /*      //2: slash()                                                */
+    /********************************************************************/
+
     /**
      * <p>Add the two Prolog numbers.</p>
      *
@@ -412,25 +422,27 @@ public final class EvaluableElem extends AbstractSpecial {
      * @return The first number slashed by the second number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number slash(Number m, Number n) throws ArithmeticException {
+    private static double slash(Number m, Number n) throws ArithmeticException {
         double b = n.doubleValue();
         if (!TermAtomic.guardDouble(b))
             throw new ArithmeticException(
                     EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-        return TermAtomic.makeDouble(m.doubleValue() / b);
+        return m.doubleValue() / b;
     }
+
+    /********************************************************************/
+    /* New Arithmetical Operations:                                     */
+    /*      ^/2: intPow()                                               */
+    /********************************************************************/
 
     /**
      * <p>Power the two Prolog number.</p>
      *
-     * @param m The Prolog number.
-     * @param n The Prolog integer.
+     * @param m The first operand.
+     * @param x The second operand.
      * @return The first integer raised to the power of the second integer.
-     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number intPow(Number m, Number n) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(n);
-        int x = EngineMessage.castIntValue(n);
+    private static Number intPow(Number m, int x) {
         if (m instanceof Integer) {
             int y = m.intValue();
             if (y == 0) {
@@ -438,8 +450,7 @@ public final class EvaluableElem extends AbstractSpecial {
             } else {
                 int k = bitlength(y);
                 if (k == 0 || 62 / k >= x) {
-                    return TermAtomic.normBigInteger(
-                            pow((long) y, x));
+                    return TermAtomic.normBigInteger(pow((long) y, x));
                 } else {
                     return TermAtomic.normBigInteger(
                             BigInteger.valueOf(m.intValue()).pow(x));

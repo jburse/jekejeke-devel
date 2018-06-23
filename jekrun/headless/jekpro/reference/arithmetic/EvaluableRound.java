@@ -360,7 +360,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).divide(p));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (!TermAtomic.guardFloat(f))
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
@@ -371,7 +371,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (!TermAtomic.guardDouble(d))
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
@@ -437,7 +437,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (!TermAtomic.guardFloat(f))
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
@@ -449,7 +449,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (!TermAtomic.guardDouble(d))
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
@@ -500,14 +500,14 @@ public final class EvaluableRound extends AbstractSpecial {
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(p));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (!TermAtomic.guardFloat(f))
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
                 return TermAtomic.makeFloat(g % f);
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (!TermAtomic.guardDouble(d))
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
@@ -574,7 +574,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (!TermAtomic.guardFloat(f))
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
@@ -583,14 +583,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     if (res != 0) {
                         return TermAtomic.makeFloat(res + f);
                     } else {
-                        return Float.valueOf(0);
+                        return TermAtomic.ZERO_FLOAT;
                     }
                 } else {
                     return TermAtomic.makeFloat(g % f);
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (!TermAtomic.guardDouble(d))
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
@@ -599,7 +599,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     if (res != 0) {
                         return TermAtomic.makeDouble(res + d);
                     } else {
-                        return Float.valueOf(0);
+                        return TermAtomic.ZERO_DOUBLE;
                     }
                 } else {
                     return TermAtomic.makeDouble(e % d);

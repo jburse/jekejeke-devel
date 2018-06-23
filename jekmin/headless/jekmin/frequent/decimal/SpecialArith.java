@@ -288,11 +288,11 @@ public class SpecialArith extends AbstractSpecial {
                         TermAtomic.widenBigInteger(m).add(
                                 TermAtomic.widenBigInteger(n)));
             case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() +
-                        n.floatValue()));
+                return TermAtomic.makeFloat(m.floatValue() +
+                        n.floatValue());
             case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() +
-                        n.doubleValue()));
+                return TermAtomic.makeDouble(m.doubleValue() +
+                        n.doubleValue());
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
@@ -321,11 +321,9 @@ public class SpecialArith extends AbstractSpecial {
                         TermAtomic.widenBigInteger(m).subtract(
                                 TermAtomic.widenBigInteger(n)));
             case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() -
-                        n.floatValue()));
+                return TermAtomic.makeFloat(m.floatValue() - n.floatValue());
             case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() -
-                        n.doubleValue()));
+                return TermAtomic.makeDouble(m.doubleValue() - n.doubleValue());
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
@@ -354,11 +352,9 @@ public class SpecialArith extends AbstractSpecial {
                         TermAtomic.widenBigInteger(m).multiply(
                                 TermAtomic.widenBigInteger(n)));
             case SpecialCompare.CATEGORY_FLOAT:
-                return TermAtomic.guardFloat(Float.valueOf(m.floatValue() *
-                        n.floatValue()));
+                return TermAtomic.makeFloat(m.floatValue() * n.floatValue());
             case SpecialCompare.CATEGORY_DOUBLE:
-                return TermAtomic.guardDouble(Double.valueOf(m.doubleValue() *
-                        n.doubleValue()));
+                return TermAtomic.makeDouble(m.doubleValue() * n.doubleValue());
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
@@ -403,11 +399,9 @@ public class SpecialArith extends AbstractSpecial {
             return TermAtomic.normBigInteger(
                     TermAtomic.widenBigInteger(m).pow(x));
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(
-                    (float) Math.pow(m.floatValue(), x)));
+            return TermAtomic.makeFloat( (float) Math.pow(m.floatValue(), x));
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(
-                    Math.pow(m.doubleValue(), x)));
+            return TermAtomic.makeDouble( Math.pow(m.doubleValue(), x));
         } else if (m instanceof Long || m instanceof BigDecimal) {
             BigDecimal b = SupplementScale.widenBigDecimal(m, mc);
             if (x < 0 && b.signum() == 0)
