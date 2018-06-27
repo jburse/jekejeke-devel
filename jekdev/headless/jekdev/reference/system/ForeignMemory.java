@@ -61,8 +61,8 @@ public class ForeignMemory {
             options.setBytes(castBytes(help));
         } else {
             InterpreterMessage.checkInstantiated(data);
-            throw new InterpreterMessage(
-                    InterpreterMessage.domainError(ForeignStream.OP_OPEN_OPTION, data));
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    ForeignStream.OP_OPEN_OPTION, data));
         }
         return options.openRead();
     }
@@ -167,7 +167,6 @@ public class ForeignMemory {
                 ((TermCompound) help).getFunctor().equals(
                         Knowledgebase.OP_CONS)) {
             Object temp = ((TermCompound) help).getArg(0);
-            InterpreterMessage.checkInstantiated(temp);
             Number num = InterpreterMessage.castInteger(temp);
             int n = InterpreterMessage.castIntValue(num);
             InterpreterMessage.checkByte(n);

@@ -61,7 +61,7 @@ public final class SpecialNotation extends AbstractSpecial {
                         return false;
                     return en.getNext();
                 }
-                Object obj = SpecialQuali.slashToClass(temp[1], ref, false, en);
+                Object obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
                 if (!en.unifyTerm(temp[0], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
@@ -78,7 +78,7 @@ public final class SpecialNotation extends AbstractSpecial {
                         return false;
                     return en.getNext();
                 }
-                SpecialQuali.colonToCallable(temp[1], ref, en);
+                SpecialQuali.colonToCallable(temp[1], ref, true, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
                 return en.getNext();

@@ -180,7 +180,8 @@ public class SpecialArith extends AbstractSpecial {
                     en.display = ref;
                     en.deref();
                     mc = castContext(en.skel, en.display);
-                    if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, beta, mc),
+                    int x = EngineMessage.castIntValue(beta);
+                    if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, x, mc),
                             Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
@@ -205,7 +206,6 @@ public class SpecialArith extends AbstractSpecial {
         if (m instanceof MathContext) {
             return (MathContext) m;
         } else {
-            EngineMessage.checkInstantiated(m);
             EngineMessage.checkRef(m, d);
             throw new EngineMessage(EngineMessage.domainError(
                     "math_context", m));
@@ -386,15 +386,12 @@ public class SpecialArith extends AbstractSpecial {
     /**
      * <p>Raise a decimal to an integer power with some precision.</p>
      *
-     * @param m  The Prolog decimal.
-     * @param n  The Prolog integer.
+     * @param m  The first operand.
+     * @param x  The second operand.
      * @param mc The math context.
      * @return The result.
-     * @throws EngineMessage Not an integer.
      */
-    private static Number mpIntPow(Number m, Number n,
-                                   MathContext mc) throws EngineMessage {
-        int x = EngineMessage.castIntValue(n);
+    private static Number mpIntPow(Number m, int x,  MathContext mc) {
         if (m instanceof Integer || m instanceof BigInteger) {
             return TermAtomic.normBigInteger(
                     TermAtomic.widenBigInteger(m).pow(x));

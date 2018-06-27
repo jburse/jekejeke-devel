@@ -5,7 +5,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.reference.arithmetic.EvaluableBits;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -43,13 +42,6 @@ public final class SupplementBits extends AbstractSpecial {
     private final static int EVALUABLE_LOWESTSETBIT = 2;
     private final static int EVALUABLE_SETBIT = 3;
     private final static int EVALUABLE_CLEARBIT = 4;
-    private final static int EVALUABLE_GET_EXPONENT = 5;
-    private final static int EVALUABLE_GET_MANTISSA = 6;
-    private final static int EVALUABLE_MAKE_FLOAT = 7;
-    private final static int EVALUABLE_SLASH = 8;
-
-    private static final int SIGNIFICAND_WIDTH = 53;
-    private static final int EXP_BIAS = 1023;
 
     /**
      * <p>Create a special arithmetic.</p>
@@ -72,94 +64,61 @@ public final class SupplementBits extends AbstractSpecial {
      */
     public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case EVALUABLE_BITCOUNT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref);
-                Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(bitCount(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_BITLENGTH:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(bitLength(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_LOWESTSETBIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(lowestSetBit(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_SETBIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                Number beta = EngineMessage.castInteger(en.skel, en.display);
-                EngineMessage.checkNotLessThanZero(alfa);
-                int x = EngineMessage.castIntValue(alfa);
-                en.skel = setBit(x, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_CLEARBIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                EngineMessage.checkNotLessThanZero(alfa);
-                x = EngineMessage.castIntValue(alfa);
-                en.skel = clearBit(x, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_GET_EXPONENT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(getExponent(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_GET_MANTISSA:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = getMantissa(alfa);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_MAKE_FLOAT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                x = EngineMessage.castIntValue(alfa);
-                en.skel = TermAtomic.makeDouble(makeFloat(x, beta));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_SLASH:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = TermAtomic.makeDouble(slash2(alfa, beta));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case EVALUABLE_BITCOUNT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    Number alfa = EngineMessage.castInteger(en.skel, en.display);
+                    en.skel = Integer.valueOf(bitCount(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_BITLENGTH:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    en.skel = Integer.valueOf(bitLength(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_LOWESTSETBIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    en.skel = Integer.valueOf(lowestSetBit(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_SETBIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    en.computeExpr(temp[1], ref);
+                    Number beta = EngineMessage.castInteger(en.skel, en.display);
+                    EngineMessage.checkNotLessThanZero(alfa);
+                    int x = EngineMessage.castIntValue(alfa);
+                    en.skel = setBit(x, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_CLEARBIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    en.computeExpr(temp[1], ref);
+                    beta = EngineMessage.castInteger(en.skel, en.display);
+                    EngineMessage.checkNotLessThanZero(alfa);
+                    x = EngineMessage.castIntValue(alfa);
+                    en.skel = clearBit(x, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ArithmeticException x) {
+            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
         }
     }
 
@@ -287,67 +246,6 @@ public final class SupplementBits extends AbstractSpecial {
             return TermAtomic.normBigInteger(
                     ((BigInteger) n).clearBit(x));
         }
-    }
-
-    /********************************************************************/
-    /* Experimentation for new div operator:                            */
-    /*      get_exponent/1: getExponent()                               */
-    /*      get_mantissa/1: getMantissa()                               */
-    /*      make_float/2: makeFloat()                                   */
-    /*      slash2/2: slash2()                                          */
-    /********************************************************************/
-
-    /**
-     * <p>Retrieve the exponent.</p>
-     *
-     * @param m The first operand.
-     * @return The result.
-     */
-    private static int getExponent(Number m) {
-        return SupplementBits.bitLength(m) - 2;
-    }
-
-    /**
-     * <p>Retrieve the mantissa.</p>
-     *
-     * @param m The first operand.
-     * @return The result.
-     */
-    private static Number getMantissa(Number m) {
-        int shift = SupplementBits.bitLength(m) - SIGNIFICAND_WIDTH;
-        return EvaluableBits.shiftRight(m, shift);
-    }
-
-    /**
-     * <p>Make a float.</p>
-     *
-     * @param x The first operand.
-     * @param n The second operand.
-     * @return The result.
-     */
-    private static double makeFloat(int x, Number n) {
-        long bits = ((long)x + EXP_BIAS) << (SIGNIFICAND_WIDTH - 1);
-        bits += n.longValue();
-        return Double.longBitsToDouble(bits);
-    }
-
-    /**
-     * <p>Slash the two Prolog numbers.</p>
-     *
-     * @param m The first Prolog number.
-     * @param n The second Prolog number.
-     * @return The first number slashed by the second number.
-     * @throws ArithmeticException Not a Prolog number.
-     */
-    private static double slash2(Number m, Number n) throws ArithmeticException {
-        int e1 = getExponent(n);
-        int e2 = getExponent(m);
-        int e = Math.min(e1, e2);
-        double b = makeFloat(e1 - e, getMantissa(n));
-        if (!TermAtomic.guardDouble(b))
-            throw new ArithmeticException(
-                    EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-        return makeFloat(e2 - e, getMantissa(m)) / b;
     }
 
 }

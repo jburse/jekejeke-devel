@@ -151,8 +151,8 @@ final class MemoryOpts {
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(ForeignStream.OP_OPEN_OPTION, temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        ForeignStream.OP_OPEN_OPTION, temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }

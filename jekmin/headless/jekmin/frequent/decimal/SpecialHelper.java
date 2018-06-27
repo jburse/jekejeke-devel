@@ -3,7 +3,6 @@ package jekmin.frequent.decimal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineMessage;
 
 /**
  * <p>Provides some constants.</p>

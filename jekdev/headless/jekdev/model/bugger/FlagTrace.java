@@ -180,7 +180,6 @@ public final class FlagTrace extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 int n = EngineMessage.castIntValue(num);

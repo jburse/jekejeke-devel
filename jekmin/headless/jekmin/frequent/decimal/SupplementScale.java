@@ -95,7 +95,8 @@ public class SupplementScale extends AbstractSpecial {
                 alfa = EngineMessage.castInteger(en.skel, en.display);
                 en.computeExpr(temp[1], ref);
                 Number beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = newDecimal(alfa, beta);
+                int x = EngineMessage.castIntValue(beta);
+                en.skel = newDecimal(alfa, x);
                 en.display = Display.DISPLAY_CONST;
                 return;
             case EVALUABLE_PRECISION:
@@ -119,7 +120,9 @@ public class SupplementScale extends AbstractSpecial {
                 ref = en.display;
                 en.computeExpr(temp[0], ref);
                 alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = newContext(alfa);
+                EngineMessage.checkNotLessThanZero(alfa);
+                x = EngineMessage.castIntValue(alfa);
+                en.skel = newContext(x);
                 en.display = Display.DISPLAY_CONST;
                 return;
             default:
@@ -135,43 +138,23 @@ public class SupplementScale extends AbstractSpecial {
     /**
      * <p>Create a new context.</p>
      *
-     * @param m The first operand.
+     * @param x The first operand.
      * @return The result.
-     * @throws EngineMessage Shit happens.
      */
-    private static MathContext newContext(Number m)
-            throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(m);
-        int k = EngineMessage.castIntValue(m);
-        return new MathContext(k, RoundingMode.HALF_EVEN);
-    }
-
-    /********************************************************************/
-    /* Additional Binary Decimal Built-in:                              */
-    /*      new_decimal/3: newDecimal()                                 */
-    /********************************************************************/
-
-    /**
-     * <p>Create a new decimal.</p>
-     *
-     * @param m The first operand.
-     * @param n The second operand.
-     * @return The result.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Number newDecimal(Number m, Number n)
-            throws EngineMessage {
-        int k = EngineMessage.castIntValue(n);
-        if (m instanceof Integer) {
-            return TermAtomic.normBigDecimal(m.intValue(), k);
-        } else {
-            return TermAtomic.normBigDecimal((BigInteger) m, k);
+    private static MathContext newContext(int x) {
+        switch (x) {
+            case 0:
+                return MathContext.UNLIMITED;
+            case 7:
+                return MathContext.DECIMAL32;
+            case 16:
+                return MathContext.DECIMAL64;
+            case 34:
+                return MathContext.DECIMAL128;
+            default:
+                return new MathContext(x, RoundingMode.HALF_EVEN);
         }
     }
-
-    /********************************************************************/
-    /* Decimal Accessors                                                */
-    /********************************************************************/
 
     /**
      * <p>Retrieve the precision.</p>
@@ -184,6 +167,26 @@ public class SupplementScale extends AbstractSpecial {
             return log10(n.longValue());
         } else {
             return ((BigDecimal) n).precision();
+        }
+    }
+
+    /********************************************************************/
+    /* Additional Binary Decimal Built-in:                              */
+    /*      new_decimal/3: newDecimal()                                 */
+    /********************************************************************/
+
+    /**
+     * <p>Create a new decimal.</p>
+     *
+     * @param m The first operand.
+     * @param x The second operand.
+     * @return The result.
+     */
+    private static Number newDecimal(Number m, int x) {
+        if (m instanceof Integer) {
+            return TermAtomic.normBigDecimal(m.intValue(), x);
+        } else {
+            return TermAtomic.normBigDecimal((BigInteger) m, x);
         }
     }
 
