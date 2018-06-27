@@ -76,7 +76,6 @@ final class LenseUpdate extends AbstractLense {
         en.skel = ((SkelCompound) temp).args[1];
         en.display = ref;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         Number num = EngineMessage.castInteger(en.skel, en.display);
         EngineMessage.checkNotLessThanZero(num);
         int idx = EngineMessage.castIntValue(num);

@@ -152,7 +152,6 @@ public final class SpecialRef extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialRef.addRefProp(en.skel, en.display, ptr, en);
                 return en.getNextRaw();
@@ -163,7 +162,6 @@ public final class SpecialRef extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialRef.removeRefProp(en.skel, en.display, ptr, en);
                 return en.getNextRaw();
@@ -399,7 +397,6 @@ public final class SpecialRef extends AbstractSpecial {
         if (m instanceof InterfaceReference) {
             return (InterfaceReference) m;
         } else {
-            EngineMessage.checkInstantiated(m);
             EngineMessage.checkRef(m, d);
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_REF, m));

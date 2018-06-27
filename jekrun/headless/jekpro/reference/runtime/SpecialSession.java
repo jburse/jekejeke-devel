@@ -132,7 +132,6 @@ public final class SpecialSession extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
                 showVariable(wr, fun, en);
                 return en.getNextRaw();

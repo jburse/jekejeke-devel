@@ -126,7 +126,6 @@ public final class SpecialForeign extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 name = EngineMessage.castString(en.skel, en.display);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_PRED))
@@ -148,7 +147,6 @@ public final class SpecialForeign extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 name = EngineMessage.castString(en.skel, en.display);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_SET))
@@ -189,7 +187,6 @@ public final class SpecialForeign extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 name = EngineMessage.castString(en.skel, en.display);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_EVAL))

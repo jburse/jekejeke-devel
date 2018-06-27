@@ -101,7 +101,6 @@ public final class ForeignEngine {
      * @throws InterpreterMessage Illegal exit code.
      */
     public static void sysHalt(Object val) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(val);
         Number num = InterpreterMessage.castInteger(val);
         InterpreterMessage.checkNotLessThanZero(num);
         if (num instanceof BigInteger || ((Integer) num).compareTo(MAX_UNSIGNED_BYTE) > 0) {

@@ -180,7 +180,6 @@ public final class Types {
                     return null;
                 case Types.TYPE_STRING:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         return InterpreterMessage.castString(res);
                     } else {
                         return null;
@@ -190,7 +189,6 @@ public final class Types {
                         if (res instanceof String) {
                             return res;
                         } else {
-                            InterpreterMessage.checkInstantiated(res);
                             InterpreterMessage.checkRef(res);
                             return res;
                         }
@@ -200,7 +198,6 @@ public final class Types {
                 case Types.TYPE_PRIMBOOL:
                 case Types.TYPE_BOOL:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         String fun = InterpreterMessage.castString(res);
                         return Boolean.valueOf(fun);
                     } else {
@@ -209,7 +206,6 @@ public final class Types {
                 case Types.TYPE_PRIMBYTE:
                 case Types.TYPE_BYTE:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castInteger(res);
                         byte val = InterpreterMessage.castByteValue(num);
                         return Byte.valueOf(val);
@@ -219,7 +215,6 @@ public final class Types {
                 case Types.TYPE_PRIMCHAR:
                 case Types.TYPE_CHAR:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         String str = InterpreterMessage.castString(res);
                         char val = InterpreterMessage.castCharValue(str);
                         return Character.valueOf(val);
@@ -229,7 +224,6 @@ public final class Types {
                 case Types.TYPE_PRIMSHORT:
                 case Types.TYPE_SHORT:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castInteger(res);
                         short val = InterpreterMessage.castShortValue(num);
                         return Short.valueOf(val);
@@ -239,7 +233,6 @@ public final class Types {
                 case Types.TYPE_PRIMINT:
                 case Types.TYPE_INTEGER:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castInteger(res);
                         InterpreterMessage.castIntValue(num);
                         return num;
@@ -249,7 +242,6 @@ public final class Types {
                 case Types.TYPE_PRIMLONG:
                 case Types.TYPE_LONG:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castInteger(res);
                         long val = InterpreterMessage.castLongValue(num);
                         return Long.valueOf(val);
@@ -258,7 +250,6 @@ public final class Types {
                     }
                 case Types.TYPE_BIG_INTEGER:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castInteger(res);
                         return TermAtomic.widenBigInteger(num);
                     } else {
@@ -267,7 +258,6 @@ public final class Types {
                 case Types.TYPE_PRIMFLOAT:
                 case Types.TYPE_FLOAT:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castNumber(res);
                         return (num instanceof Float ? num :
                                 TermAtomic.makeFloat(num.floatValue()));
@@ -277,7 +267,6 @@ public final class Types {
                 case Types.TYPE_PRIMDOUBLE:
                 case Types.TYPE_DOUBLE:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castNumber(res);
                         return (num instanceof Double ? num :
                                 TermAtomic.makeDouble(num.doubleValue()));
@@ -286,7 +275,6 @@ public final class Types {
                     }
                 case Types.TYPE_BIG_DECIMAL:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         Number num = InterpreterMessage.castNumber(res);
                         return TermAtomic.widenBigDecimal(num);
                     } else {
@@ -294,14 +282,12 @@ public final class Types {
                     }
                 case Types.TYPE_NUMBER:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         return InterpreterMessage.castNumber(res);
                     } else {
                         return null;
                     }
                 case Types.TYPE_REF:
                     if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
                         InterpreterMessage.checkRef(res);
                         return res;
                     } else {

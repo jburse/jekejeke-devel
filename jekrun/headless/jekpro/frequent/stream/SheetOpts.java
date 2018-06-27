@@ -86,7 +86,6 @@ class SheetOpts extends DomOpts {
                     ((TermCompound) temp).getArity() == 2 &&
                     ((TermCompound) temp).getFunctor().equals(DomOpts.OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String key = InterpreterMessage.castString(help);
                 help = ((TermCompound) temp).getArg(1);
                 Integer type = Integer.valueOf(atomToType(help));
@@ -105,7 +104,6 @@ class SheetOpts extends DomOpts {
                     ((TermCompound) temp).getArity() == 2 &&
                     ((TermCompound) temp).getFunctor().equals(OP_VARIABLE)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String key = InterpreterMessage.castString(help);
                 help = ((TermCompound) temp).getArg(1);
                 Object val;
@@ -129,8 +127,8 @@ class SheetOpts extends DomOpts {
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(OP_SHEET_OPTION, temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        OP_SHEET_OPTION, temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }

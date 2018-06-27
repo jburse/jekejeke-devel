@@ -81,7 +81,7 @@ public abstract class AbstractDelegate {
     /**
      * <p>Shrink this predicate from the store for a source.</p>
      *
-     * @param pick   The predicate.
+     * @param pick  The predicate.
      * @param scope The source.
      * @throws EngineMessage Shit happens.
      */
@@ -90,8 +90,8 @@ public abstract class AbstractDelegate {
 
     /**
      * <p>Release this predicate from the store.</p>
-     *  @param pick  The predicate.
      *
+     * @param pick The predicate.
      */
     public abstract void releasePredicate(Predicate pick);
 
@@ -115,7 +115,7 @@ public abstract class AbstractDelegate {
         SkelCompound temp = (SkelCompound) en.skel;
         Display ref = en.display;
 
-        Object expr = checkArgs(temp, ref, en);
+        Object expr = tunnelArgs(temp);
         en.computeExpr(expr, ref);
 
         if (!en.unifyTerm(temp.args[temp.args.length - 1], ref,
@@ -128,28 +128,17 @@ public abstract class AbstractDelegate {
      * <p>Check and shrink the arguments.</p>
      *
      * @param temp The goal skeleton.
-     * @param ref  The goal display.
-     * @param en   The engine.
      * @return The arguments.
      */
-    private Object checkArgs(SkelCompound temp, Display ref, Engine en)
-            throws EngineMessage {
+    private Object tunnelArgs(SkelCompound temp) {
         int n = temp.args.length - 1;
-        Object[] args = (n > 0 ? new Object[n] : null);
-        int i = 0;
-        if ((subflags & MASK_DELE_VIRT) != 0) {
-            args[i] = temp.args[i];
-            i++;
+        if (n > 0) {
+            Object[] args = new Object[n];
+            System.arraycopy(temp.args, 0, args, 0, n);
+            return new SkelCompound(temp.sym, args, temp.vars);
+        } else {
+            return temp.sym;
         }
-        for (; i < n; i++) {
-            en.skel = temp.args[i];
-            en.display = ref;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            EngineMessage.checkValue(en.skel, en.display);
-            args[i] = en.skel;
-        }
-        return (n > 0 ? new SkelCompound(temp.sym, args) : temp.sym);
     }
 
     /********************************************************************/
@@ -184,8 +173,6 @@ public abstract class AbstractDelegate {
         en.skel = temp;
         en.display = ref;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        EngineMessage.checkValue(en.skel, en.display);
     }
 
     /**
@@ -203,18 +190,18 @@ public abstract class AbstractDelegate {
             throws EngineException, EngineMessage {
         if (!(temp instanceof SkelCompound))
             return new Object[1];
-        SkelCompound sc = (SkelCompound) temp;
-        Object[] args = new Object[sc.args.length + 1];
+        Object[] help = ((SkelCompound) temp).args;
+        Object[] args = new Object[help.length + 1];
         int i = 0;
         if ((subflags & MASK_DELE_VIRT) != 0) {
-            en.skel = sc.args[0];
+            en.skel = help[0];
             en.display = ref;
             en.deref();
             args[i] = AbstractTerm.createMolec(en.skel, en.display);
             i++;
         }
-        for (; i < sc.args.length; i++) {
-            en.computeExpr(sc.args[i], ref);
+        for (; i < help.length; i++) {
+            en.computeExpr(help[i], ref);
             args[i] = AbstractTerm.createMolec(en.skel, en.display);
         }
         return args;

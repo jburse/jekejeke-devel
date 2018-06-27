@@ -96,7 +96,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 SkelAtom sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
                 opts.makeLoad(source, sa.fun, en);
@@ -109,7 +108,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 opts.makeUnload(sa.scope, sa.fun, en);
                 return en.getNextRaw();
@@ -121,7 +119,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 SpecialLoad.performImport(source, sa.fun, en, opts);
@@ -134,7 +131,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
@@ -163,7 +159,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
@@ -226,7 +221,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
@@ -251,7 +245,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return en.getNextRaw();
@@ -263,7 +256,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 opts2.makeForce(source, sa.fun, en);

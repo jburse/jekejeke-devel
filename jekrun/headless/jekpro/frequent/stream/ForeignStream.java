@@ -444,7 +444,6 @@ public final class ForeignStream {
      * @throws InterpreterMessage Validation error.
      */
     public static boolean atomToType(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_BINARY)) {
             return true;
@@ -465,7 +464,6 @@ public final class ForeignStream {
      * @throws InterpreterMessage Validation error.
      */
     public static boolean atomToBool(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
         if (val.equals(Foyer.OP_TRUE)) {
             return true;
@@ -522,7 +520,6 @@ public final class ForeignStream {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_ENCODING)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 res.setEncoding(fun);
             } else if (temp instanceof TermCompound &&
@@ -531,7 +528,6 @@ public final class ForeignStream {
                 switch (mode) {
                     case MODE_READ:
                         Object help = ((TermCompound) temp).getArg(0);
-                        InterpreterMessage.checkInstantiated(help);
                         Number num = InterpreterMessage.castInteger(help);
                         long time = InterpreterMessage.castLongValue(num);
                         res.setIfModifiedSince(time);
@@ -549,7 +545,6 @@ public final class ForeignStream {
                 switch (mode) {
                     case MODE_READ:
                         Object help = ((TermCompound) temp).getArg(0);
-                        InterpreterMessage.checkInstantiated(help);
                         String etag = InterpreterMessage.castString(help);
                         res.setIfNoneMatch(etag);
                         break;
@@ -602,7 +597,6 @@ public final class ForeignStream {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 Number num = InterpreterMessage.castInteger(help);
                 InterpreterMessage.checkNotLessThanZero(num);
                 int size = InterpreterMessage.castIntValue(num);
@@ -617,7 +611,6 @@ public final class ForeignStream {
                     case MODE_WRITE:
                     case MODE_APPEND:
                         Object help = ((TermCompound)temp).getArg(0);
-                        InterpreterMessage.checkInstantiated(help);
                         String newline = InterpreterMessage.castString(help);
                         res.setNewLine(newline);
                         break;
@@ -626,8 +619,8 @@ public final class ForeignStream {
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(OP_OPEN_OPTION, temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        OP_OPEN_OPTION, temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }

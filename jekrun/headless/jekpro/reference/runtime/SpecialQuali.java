@@ -59,7 +59,6 @@ public final class SpecialQuali extends AbstractSpecial {
                 subflags |= MASK_DELE_VIRT;
                 break;
             case SPECIAL_CALL_COLONCOLON:
-                subflags |= MASK_DELE_VIRT;
                 break;
             case SPECIAL_SYS_GET_CLASS:
                 break;
@@ -85,7 +84,7 @@ public final class SpecialQuali extends AbstractSpecial {
             case SPECIAL_CALL_COLON:
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
-                Object obj = slashToClass(temp.args[0], ref, false, true, en);
+                Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
                 String fun;
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
@@ -123,7 +122,14 @@ public final class SpecialQuali extends AbstractSpecial {
             case SPECIAL_CALL_COLONCOLON:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
-                obj = slashToClass(temp.args[0], ref, true, true, en);
+
+                en.skel = temp.args[0];
+                en.display = ref;
+                en.deref();
+                Object recv = en.skel;
+                Display d2 = en.display;
+
+                obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
@@ -144,12 +150,6 @@ public final class SpecialQuali extends AbstractSpecial {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     Display d3 = en.display;
 
-                    en.skel = temp.args[0];
-                    en.display = ref;
-                    en.deref();
-                    Object recv = en.skel;
-                    Display d2 = en.display;
-
                     boolean multi = SpecialQuali.prependCount(recv, d2,
                             sc2.args, d3, en);
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
@@ -157,12 +157,6 @@ public final class SpecialQuali extends AbstractSpecial {
                             sc2.args, d3, multi, en));
                 } else if (en.skel instanceof SkelAtom) {
                     SkelAtom sa = (SkelAtom) en.skel;
-
-                    en.skel = temp.args[0];
-                    en.display = ref;
-                    en.deref();
-                    Object recv = en.skel;
-                    Display d2 = en.display;
 
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
                             temp.sym, en), recv);
@@ -187,7 +181,6 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.skel = temp.args[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 obj = SpecialProxy.refClassOrProxy(en.skel);
                 if (obj == null)
@@ -540,14 +533,12 @@ public final class SpecialQuali extends AbstractSpecial {
             en.skel = sc.args[1];
             en.display = d;
             en.deref();
-            EngineMessage.checkInstantiated(en.skel);
             Number num = EngineMessage.castInteger(en.skel, en.display);
             EngineMessage.checkNotLessThanZero(num);
             EngineMessage.castIntValue(num);
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            EngineMessage.checkInstantiated(en.skel);
             EngineMessage.castStringWrapped(en.skel, en.display);
             return (Integer) num;
         } else {

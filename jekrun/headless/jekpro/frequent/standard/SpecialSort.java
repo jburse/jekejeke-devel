@@ -114,7 +114,6 @@ public final class SpecialSort extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 val = EngineMessage.castInteger(en.skel, en.display);
                 if (!termGround(temp[0], ref, EngineMessage.castIntValue(val)))
                     return false;
@@ -125,7 +124,6 @@ public final class SpecialSort extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 val = EngineMessage.castInteger(en.skel, en.display);
                 val = Integer.valueOf(termHash(temp[0], ref,
                         EngineMessage.castIntValue(val), 0));
@@ -320,7 +318,8 @@ public final class SpecialSort extends AbstractSpecial {
                 /* */
             } else {
                 EngineMessage.checkInstantiated(m2);
-                throw new EngineMessage(EngineMessage.typeError(EngineMessage.OP_TYPE_PAIR, m2), d2);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_PAIR, m2), d2);
             }
             SkelCompound sc2 = (SkelCompound) m2;
             en.skel = sc2.args[0];

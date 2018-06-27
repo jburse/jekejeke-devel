@@ -153,8 +153,7 @@ public final class TermAtomic extends AbstractTerm {
      * @return The normalized result.
      */
     public static Number normBigInteger(BigInteger i) {
-        if (MIN_INTEGER.compareTo(i) <= 0 &&
-                i.compareTo(MAX_INTEGER) <= 0) {
+        if (MIN_INTEGER.compareTo(i) <= 0 && i.compareTo(MAX_INTEGER) <= 0) {
             return Integer.valueOf(i.intValue());
         } else {
             return i;
@@ -356,20 +355,5 @@ public final class TermAtomic extends AbstractTerm {
             return new BigDecimal(m.doubleValue());
         }
     }
-
-    /**
-     * <p>Some testing.</p>
-     *
-     * @param args Not used.
-     */
-    /*
-    public static void main(String[] args) {
-        TermAtomic ta = new TermAtomic("abc");
-        System.out.println("ta=" + ta.toString(Interpreter.FLAG_QUOTED));
-
-        ta = new TermAtomic("Foo");
-        System.out.println("ta=" + ta.toString(Interpreter.FLAG_QUOTED));
-    }
-    */
 
 }

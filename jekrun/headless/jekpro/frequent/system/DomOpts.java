@@ -137,7 +137,6 @@ public class DomOpts {
                     ((TermCompound) temp).getArity() == 2 &&
                     ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String key = InterpreterMessage.castString(help);
                 help = ((TermCompound) temp).getArg(1);
                 Integer type = Integer.valueOf(atomToType(help));
@@ -156,13 +155,12 @@ public class DomOpts {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_CONTEXT)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String context = InterpreterMessage.castString(help);
                 res.setContext(context);
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(OP_DOM_OPTION, temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        OP_DOM_OPTION, temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }
@@ -185,7 +183,6 @@ public class DomOpts {
      * @throws InterpreterMessage Validation error.
      */
     public static int atomToMask(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_TREE)) {
             return 0;
@@ -210,7 +207,6 @@ public class DomOpts {
      * @throws InterpreterMessage Validation error.
      */
     public static int atomToType(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_NONE)) {
             return AbstractDom.TYPE_NONE;

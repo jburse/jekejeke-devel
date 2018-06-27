@@ -114,7 +114,6 @@ final class LenseDimension extends AbstractLense {
         en.skel = temp[0];
         en.display = ref;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         Number num = EngineMessage.castInteger(en.skel, en.display);
         EngineMessage.checkNotLessThanZero(num);
         int size = EngineMessage.castIntValue(num);

@@ -64,8 +64,8 @@ final class InitOpts {
                 res.setPrompt(atomToBool(help));
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(OP_INIT_OPTION, temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        OP_INIT_OPTION, temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }
@@ -73,8 +73,8 @@ final class InitOpts {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(
-                    InterpreterMessage.typeError(OP_LIST, opt));
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    OP_LIST, opt));
         }
         return res;
     }
@@ -87,8 +87,8 @@ final class InitOpts {
      * @return The bool value.
      * @throws InterpreterMessage Validation error.
      */
-    private static boolean atomToBool(Object t) throws InterpreterMessage {
-        InterpreterMessage.checkInstantiated(t);
+    private static boolean atomToBool(Object t)
+            throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_TRUE)) {
             return true;

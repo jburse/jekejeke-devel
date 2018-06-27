@@ -137,7 +137,6 @@ public final class SpecialVars extends AbstractSpecial {
                 en.skel = t[1];
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 EngineMessage.castIntValue(num);
@@ -428,7 +427,6 @@ public final class SpecialVars extends AbstractSpecial {
                 en.skel = mc2[0];
                 en.display = d2;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String name = EngineMessage.castString(en.skel, en.display);
                 if (print == null)
                     print = new MapHashLink<TermVar, NamedDistance>();

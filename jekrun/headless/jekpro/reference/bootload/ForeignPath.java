@@ -233,7 +233,6 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals("package")) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_PRFX_LIBR;
@@ -255,7 +254,6 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals("file_extension")) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_SUFX_TEXT;
@@ -277,7 +275,6 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals("failure")) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_FAIL_READ;
@@ -289,13 +286,13 @@ public final class ForeignPath {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_CHLD;
                 } else {
-                    throw new InterpreterMessage(
-                            InterpreterMessage.domainError("fix_option", help));
+                    throw new InterpreterMessage(InterpreterMessage.domainError(
+                            "fix_option", help));
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError("fix_option", temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        "fix_option", temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }

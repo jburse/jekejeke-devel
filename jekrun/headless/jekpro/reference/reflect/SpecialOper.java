@@ -134,7 +134,6 @@ public final class SpecialOper extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 removeOperProp(en.skel, en.display, op, en);
                 return en.getNextRaw();
@@ -436,7 +435,6 @@ public final class SpecialOper extends AbstractSpecial {
                 en.skel = sc.args[0];
                 en.display = AbstractTerm.getDisplay(molec);
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 level = EngineMessage.castIntValue(num);
@@ -460,7 +458,6 @@ public final class SpecialOper extends AbstractSpecial {
                 en.skel = sc.args[0];
                 en.display = AbstractTerm.getDisplay(molec);
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
                 leftright = SpecialOper.atomToLeftRight(fun);
                 if (vals.length > 1)
@@ -483,7 +480,6 @@ public final class SpecialOper extends AbstractSpecial {
                 en.skel = sc.args[0];
                 en.display = AbstractTerm.getDisplay(molec);
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 fun = EngineMessage.castString(en.skel, en.display);
                 if (vals.length > 1)
                     throw new EngineMessage(EngineMessage.permissionError(
@@ -670,7 +666,6 @@ public final class SpecialOper extends AbstractSpecial {
         int type = opToType(t, d, en);
 
         SpecialQuali.colonToCallable(en.skel, en.display, false, en);
-        EngineMessage.checkInstantiated(en.skel);
         EngineMessage.castStringWrapped(en.skel, en.display);
         return type;
     }

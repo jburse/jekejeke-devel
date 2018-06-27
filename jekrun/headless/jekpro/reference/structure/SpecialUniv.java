@@ -90,7 +90,6 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 int nth = EngineMessage.castIntValue(num);
@@ -120,7 +119,6 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 nth = EngineMessage.castIntValue(num);
@@ -152,8 +150,8 @@ public final class SpecialUniv extends AbstractSpecial {
                     return false;
                 } else {
                     EngineMessage.checkInstantiated(en.skel);
-                    throw new EngineMessage(
-                            EngineMessage.typeError(EngineMessage.OP_TYPE_CALLABLE,
+                    throw new EngineMessage(EngineMessage.typeError(
+                            EngineMessage.OP_TYPE_CALLABLE,
                                     en.skel), en.display);
                 }
             case SPECIAL_UNIFY:

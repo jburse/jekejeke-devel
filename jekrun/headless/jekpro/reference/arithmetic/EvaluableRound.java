@@ -618,4 +618,33 @@ public final class EvaluableRound extends AbstractSpecial {
         }
     }
 
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        double x=19.0; double y=12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+        x=19.0; y=-12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+        x=-19.0; y=12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+        x=-19.0; y=-12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+
+        System.out.println();
+
+        x=19.0; y=12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+        x=19.0; y=-12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+        x=-19.0; y=12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+        x=-19.0; y=-12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+    }
+    */
+
 }

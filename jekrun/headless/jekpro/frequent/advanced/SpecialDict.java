@@ -73,20 +73,22 @@ public final class SpecialDict extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
-                Object t = en.skel;
+                if (!(en.skel instanceof SkelCompound))
+                    return false;
+                SkelCompound sc = (SkelCompound)en.skel;
                 Display d = en.display;
 
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 SkelAtom k = EngineMessage.castStringWrapped(en.skel, en.display);
 
-                if (!(t instanceof SkelCompound) || !dictGet((SkelCompound) t, d, k, en))
+                int i = dictIndex(sc.args, d, k, en);
+                if (i < 0)
                     return false;
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                i++;
+                if (!en.unifyTerm(temp[2], ref, sc.args[i], d))
                     return false;
                 return en.getNext();
             case SPECIAL_DICT_PUT:
@@ -95,15 +97,15 @@ public final class SpecialDict extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
-                t = en.skel;
+                if (!(en.skel instanceof SkelCompound))
+                    return false;
+                sc = (SkelCompound)en.skel;
                 d = en.display;
 
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 k = EngineMessage.castStringWrapped(en.skel, en.display);
 
                 en.skel = temp[2];
@@ -112,10 +114,18 @@ public final class SpecialDict extends AbstractSpecial {
                 Object t2 = en.skel;
                 Display d2 = en.display;
 
-                if (!(t instanceof SkelCompound) || !dictPut((SkelCompound) t, d, k, t2, d2, en))
+                i = dictIndex(sc.args, d, k, en);
+                if (i < 0)
                     return false;
+                i++;
+
+                boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, i, en);
+                en.skel = new SkelCompound(sc.sym, SpecialUniv.setAlloc(sc.args, d, t2, d2, i, multi, en));
+                d = en.display;
                 if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_BETWEEN:
                 temp = ((SkelCompound) en.skel).args;
@@ -123,18 +133,16 @@ public final class SpecialDict extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                Number num1=EngineMessage.castInteger(en.skel,en.display);
+                Number num1 = EngineMessage.castInteger(en.skel, en.display);
 
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                Number num2=EngineMessage.castInteger(en.skel,en.display);
+                Number num2 = EngineMessage.castInteger(en.skel, en.display);
 
                 AbstractBind mark = en.bind;
-                while (SpecialCompare.computeCmp(num1, num2)<0) {
-                    if (en.unifyTerm(temp[2],ref,num1,Display.DISPLAY_CONST)) {
+                while (SpecialCompare.computeCmp(num1, num2) < 0) {
+                    if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {
                         /* create choice point */
                         en.choices = new ChoiceBetween(en.choices, num1,
                                 (Goal) en.contskel, en.contdisplay, mark);
@@ -148,56 +156,12 @@ public final class SpecialDict extends AbstractSpecial {
                     if (en.skel != null)
                         throw (EngineException) en.skel;
 
-                    num1= EvaluableElem.add(num1, Integer.valueOf(1));
+                    num1 = EvaluableElem.add(num1, Integer.valueOf(1));
                 }
                 return false;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
-    }
-
-    /**
-     * <p>Retrieve a dict value.</p>
-     * <p>The dict value is returned in engine skel and display.</p>
-     *
-     * @param t The dict skeleton.
-     * @param d The dict display.
-     * @param k The key atom.
-     * @return True if a dict value was found, otherwise false.
-     */
-    private static boolean dictGet(SkelCompound t, Display d,
-                                   SkelAtom k, Engine en) {
-        int i = dictIndex(t.args, d, k, en);
-        if (i < 0)
-            return false;
-        i++;
-
-        en.skel = t.args[i];
-        en.display = d;
-        return true;
-    }
-
-    /**
-     * <p>Set a dict value.</p>
-     * <p>The new dict is returned in engine skel and display.</p>
-     *
-     * @param t  The dict skeleton.
-     * @param d  The dict display.
-     * @param k  The key atom.
-     * @param t2 The value skeleton.
-     * @param d2 The value display.
-     * @return True if a dict value was found, otherwise false.
-     */
-    private static boolean dictPut(SkelCompound t, Display d, SkelAtom k,
-                                   Object t2, Display d2, Engine en) {
-        int i = dictIndex(t.args, d, k, en);
-        if (i < 0)
-            return false;
-        i++;
-
-        boolean multi = SpecialUniv.setCount(t.args, d, t2, d2, i, en);
-        en.skel = new SkelCompound(t.sym, SpecialUniv.setAlloc(t.args, d, t2, d2, i, multi, en));
-        return true;
     }
 
     /**

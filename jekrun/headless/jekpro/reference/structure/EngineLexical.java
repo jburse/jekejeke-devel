@@ -153,7 +153,6 @@ public final class EngineLexical implements Comparator<Object> {
         en.skel = t;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if ("IGNORE_CASE".equals(fun)) {
             return IgnoreCase.DEFAULT;

@@ -107,7 +107,6 @@ public final class ForeignAtom {
                         Knowledgebase.OP_CONS)) {
             TermCompound tc = (TermCompound) list;
             Object elem = tc.getArg(0);
-            InterpreterMessage.checkInstantiated(elem);
             switch (rep) {
                 case REP_CHARS:
                     String fun = InterpreterMessage.castString(elem);

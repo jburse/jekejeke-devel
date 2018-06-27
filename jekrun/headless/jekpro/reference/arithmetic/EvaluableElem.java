@@ -236,7 +236,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @return The absed Prolog number.
      * @throws ArithmeticException Not a Prolog number.
      */
-    private static Number abs(Number m) throws ArithmeticException {
+    public static Number abs(Number m) throws ArithmeticException {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
@@ -281,8 +281,7 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof Double) {
             return TermAtomic.makeDouble(Math.signum(m.doubleValue()));
         } else if (m instanceof Long) {
-            long y = m.longValue();
-            return Long.valueOf(Long.signum(y));
+            return Long.valueOf(Long.signum(m.longValue()));
         } else if (m instanceof BigDecimal) {
             return Long.valueOf(((BigDecimal) m).signum());
         } else {
@@ -448,7 +447,7 @@ public final class EvaluableElem extends AbstractSpecial {
             if (y == 0) {
                 return Integer.valueOf(x == 0 ? 1 : 0);
             } else {
-                int k = bitlength(y);
+                int k = absBitlength(y);
                 if (k == 0 || 62 / k >= x) {
                     return TermAtomic.normBigInteger(pow((long) y, x));
                 } else {
@@ -478,9 +477,9 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The base, positive or negative.
      * @return The bitlength.
      */
-    private static int bitlength(int m) {
+    private static int absBitlength(int m) {
         if (m != Integer.MIN_VALUE) {
-            return 32 - Integer.numberOfLeadingZeros(Math.abs(m) - 1);
+            return 32 - Integer.numberOfLeadingZeros(Math.abs(m));
         } else {
             return 31;
         }

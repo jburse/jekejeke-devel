@@ -64,7 +64,6 @@ public final class SpecialScore extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 if (!(en.skel instanceof Class))
                     throw new EngineMessage(EngineMessage.domainError(

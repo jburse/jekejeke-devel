@@ -192,7 +192,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 checkRead(en.skel);
                 en.visor.dispinput = en.skel;
@@ -201,7 +200,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 checkWrite(en.skel);
                 en.visor.dispoutput = en.skel;
@@ -210,7 +208,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 checkWrite(en.skel);
                 en.visor.disperror = en.skel;
@@ -219,7 +216,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 checkRead(en.skel);
                 en.visor.curinput = en.skel;
@@ -228,7 +224,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 checkWrite(en.skel);
                 en.visor.curoutput = en.skel;
@@ -237,7 +232,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkRef(en.skel, en.display);
                 checkWrite(en.skel);
                 en.visor.curerror = en.skel;
@@ -249,7 +243,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
                 en.store.setBase(!"".equals(fun) ? fun : null);
                 return true;
@@ -257,7 +250,6 @@ public final class FlagAPI extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 fun = EngineMessage.castString(en.skel, en.display);
                 en.store.foyer.locale = XSelectFormat.stringToLocale(fun);
                 return true;
@@ -332,7 +324,6 @@ public final class FlagAPI extends AbstractFlag {
                 ((SkelAtom) en.skel).fun.equals(AbstractFlag.OP_NULL)) {
             return null;
         } else {
-            EngineMessage.checkInstantiated(en.skel);
             EngineMessage.checkRef(en.skel, en.display);
             return en.skel;
         }

@@ -45,8 +45,17 @@ public final class EvaluableQuali extends AbstractSpecial {
      */
     public EvaluableQuali(int i) {
         super(i);
-        subflags |= MASK_DELE_VIRT;
-        subflags |= MASK_DELE_ARIT;
+        switch (i) {
+            case EVALUABLE_COLON:
+                subflags |= MASK_DELE_VIRT;
+                subflags |= MASK_DELE_ARIT;
+                break;
+            case EVALUABLE_COLONCOLON:
+                subflags |= MASK_DELE_ARIT;
+                break;
+            default:
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
     }
 
     /**
@@ -96,7 +105,14 @@ public final class EvaluableQuali extends AbstractSpecial {
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
-                obj = SpecialQuali.slashToClass(temp.args[0], ref, true, true, en);
+
+                en.skel = temp.args[0];
+                en.display = ref;
+                en.computeExpr(en.skel, en.display);
+                Object recv = en.skel;
+                Display d2 = en.display;
+
+                obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 /* reference */
                 if (!(obj instanceof AbstractSkel) &&
                         !(obj instanceof Number)) {
@@ -117,12 +133,6 @@ public final class EvaluableQuali extends AbstractSpecial {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     Display d3 = en.display;
 
-                    en.skel = temp.args[0];
-                    en.display = ref;
-                    en.deref();
-                    Object recv = en.skel;
-                    Display d2 = en.display;
-
                     boolean multi = SpecialQuali.prependCount(recv, d2,
                             sc2.args, d3, en);
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
@@ -130,12 +140,6 @@ public final class EvaluableQuali extends AbstractSpecial {
                             sc2.args, d3, multi, en));
                 } else if (en.skel instanceof SkelAtom) {
                     SkelAtom sa = (SkelAtom) en.skel;
-
-                    en.skel = temp.args[0];
-                    en.display = ref;
-                    en.deref();
-                    Object recv = en.skel;
-                    Display d2 = en.display;
 
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
                             temp.sym, en), recv);
