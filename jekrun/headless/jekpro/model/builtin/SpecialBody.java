@@ -90,7 +90,6 @@ public final class SpecialBody extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 Object t = en.skel;
                 Display d = en.display;
@@ -98,7 +97,6 @@ public final class SpecialBody extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String key = EngineMessage.castString(en.skel, en.display);
                 AbstractSource scope;
                 if (!"".equals(key)) {
@@ -118,7 +116,6 @@ public final class SpecialBody extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 t = en.skel;
                 d = en.display;
@@ -126,7 +123,6 @@ public final class SpecialBody extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SkelAtom sa = callableToName(en.skel);
 

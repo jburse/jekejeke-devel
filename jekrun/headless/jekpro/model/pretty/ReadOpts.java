@@ -149,7 +149,6 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SOURCE)) {
                 en.skel = ((SkelCompound) en.skel).args[0];
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
                 AbstractSource src = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(src, fun);
@@ -353,7 +352,6 @@ public final class ReadOpts {
         en.skel = m;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if (fun.equals(OP_VALUE_ERROR)) {
             return UTIL_ERROR;
@@ -408,7 +406,6 @@ public final class ReadOpts {
         en.skel = m;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;

@@ -501,7 +501,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whetehr the given term is a callable.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The term display.
@@ -513,6 +512,7 @@ public final class EngineMessage extends Exception {
         } else if (t instanceof SkelAtom) {
             /* */
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_CALLABLE, t), d);
         }
@@ -520,7 +520,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whether the given term is a reference.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The display skel.
@@ -531,26 +530,9 @@ public final class EngineMessage extends Exception {
         if (!(t instanceof AbstractSkel) && !(t instanceof Number)) {
             /* */
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_REF, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a number or a reference.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @throws EngineMessage Not a number or a reference.
-     */
-    public static void checkValue(Object t, Display d)
-            throws EngineMessage {
-        if (!(t instanceof AbstractSkel)) {
-            /* */
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_VALUE, t), d);
         }
     }
 
@@ -603,7 +585,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whether the given term is an atom.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The display skel.
@@ -615,6 +596,7 @@ public final class EngineMessage extends Exception {
         if (t instanceof SkelAtom) {
             return ((SkelAtom) t).fun;
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_ATOM, t), d);
         }
@@ -622,7 +604,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whether the given term is an atom.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The display skel.
@@ -634,6 +615,7 @@ public final class EngineMessage extends Exception {
         if (t instanceof SkelAtom) {
             return (SkelAtom) t;
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_ATOM, t), d);
         }
@@ -641,7 +623,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whether the given term is a Prolog number.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The display skel.
@@ -653,6 +634,7 @@ public final class EngineMessage extends Exception {
         if (t instanceof Number) {
             return (Number) t;
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_NUMBER, t), d);
         }
@@ -660,7 +642,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whether the given term is a Prolog integer.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The display skel.
@@ -674,6 +655,7 @@ public final class EngineMessage extends Exception {
         } else if (t instanceof BigInteger) {
             return (BigInteger) t;
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_INTEGER, t), d);
         }
@@ -681,7 +663,6 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whether the given term is a Prolog decimal.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The display skel.
@@ -695,6 +676,7 @@ public final class EngineMessage extends Exception {
         } else if (t instanceof BigDecimal) {
             return (BigDecimal) t;
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_DECIMAL, t), d);
         }

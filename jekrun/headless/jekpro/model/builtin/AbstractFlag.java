@@ -91,7 +91,6 @@ public abstract class AbstractFlag {
             m = b1.skel;
             d = b1.display;
         }
-        EngineMessage.checkInstantiated(m);
         String fun = EngineMessage.castString(m, d);
         if (fun.equals(OP_ON)) {
             return true;

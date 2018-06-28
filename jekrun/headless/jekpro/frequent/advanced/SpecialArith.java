@@ -9,12 +9,10 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialCompare;
-import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
- * <p>Provides built-in predicates for the module dict.</p>
+ * <p>Provides built-in predicates for the module arith.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,17 +37,16 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialDict extends AbstractSpecial {
-    private final static int SPECIAL_DICT_GET = 0;
-    private final static int SPECIAL_DICT_PUT = 1;
-    private final static int SPECIAL_BETWEEN = 2;
+public final class SpecialArith extends AbstractSpecial {
+    final static int SPECIAL_BETWEEN = 0;
+    final static int SPECIAL_ABOVE = 1;
 
     /**
      * <p>Create a dict special.</p>
      *
      * @param i The id.
      */
-    public SpecialDict(int i) {
+    public SpecialArith(int i) {
         super(i);
     }
 
@@ -67,90 +64,73 @@ public final class SpecialDict extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_DICT_GET:
+            case SPECIAL_BETWEEN:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
+
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                if (!(en.skel instanceof SkelCompound))
-                    return false;
-                SkelCompound sc = (SkelCompound)en.skel;
-                Display d = en.display;
+                Number num1 = EngineMessage.castInteger(en.skel, en.display);
 
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                SkelAtom k = EngineMessage.castStringWrapped(en.skel, en.display);
+                Number num2 = EngineMessage.castInteger(en.skel, en.display);
 
-                int i = dictIndex(sc.args, d, k, en);
-                if (i < 0)
-                    return false;
-                i++;
-                if (!en.unifyTerm(temp[2], ref, sc.args[i], d))
-                    return false;
-                return en.getNext();
-            case SPECIAL_DICT_PUT:
+                AbstractBind mark = en.bind;
+                int res = SpecialCompare.computeCmp(num1, num2);
+                while (res <= 0) {
+                    if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {
+                        if (res != 0) {
+                            /* create choice point */
+                            en.choices = new ChoiceArith(en.choices, num1,
+                                    (Goal) en.contskel, en.contdisplay, mark, id);
+                            en.number++;
+                        }
+                        return en.getNext();
+                    }
+
+                    /* undo bindings */
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+
+                    num1 = EvaluableElem.add(num1, Integer.valueOf(1));
+                    res = SpecialCompare.computeCmp(num1, num2);
+                }
+                return false;
+            case SPECIAL_ABOVE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
+
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                if (!(en.skel instanceof SkelCompound))
-                    return false;
-                sc = (SkelCompound)en.skel;
-                d = en.display;
+                num1 = EngineMessage.castInteger(en.skel, en.display);
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                k = EngineMessage.castStringWrapped(en.skel, en.display);
+                mark = en.bind;
+                while (true) {
+                    if (en.unifyTerm(temp[1], ref, num1, Display.DISPLAY_CONST)) {
+                        /* create choice point */
+                        en.choices = new ChoiceArith(en.choices, num1,
+                                (Goal) en.contskel, en.contdisplay, mark, id);
+                        en.number++;
+                        return en.getNext();
+                    }
 
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                Object t2 = en.skel;
-                Display d2 = en.display;
+                    /* undo bindings */
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
 
-                i = dictIndex(sc.args, d, k, en);
-                if (i < 0)
-                    return false;
-                i++;
-
-                boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, i, en);
-                en.skel = new SkelCompound(sc.sym, SpecialUniv.setAlloc(sc.args, d, t2, d2, i, multi, en));
-                d = en.display;
-                if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
+                    num1 = EvaluableElem.add(num1, Integer.valueOf(1));
+                }
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
-    }
-
-    /**
-     * <p>Find a key position.</p>
-     *
-     * @param t  The args skeleton array.
-     * @param d  The args display.
-     * @param k  The key atom.
-     * @param en The engine.
-     * @return The key position or -1.
-     */
-    private static int dictIndex(Object[] t, Display d,
-                                 SkelAtom k, Engine en) {
-        for (int i = 0; i < t.length; i += 2) {
-            en.skel = t[i];
-            en.display = d;
-            en.deref();
-            if (k.equals(en.skel))
-                return i;
-        }
-        return -1;
     }
 
 }

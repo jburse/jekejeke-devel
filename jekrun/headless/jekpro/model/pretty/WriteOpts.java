@@ -164,7 +164,6 @@ public final class WriteOpts {
                     ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
                 en.skel = ((SkelCompound) en.skel).args[0];
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 lev = EngineMessage.castIntValue(num);
@@ -262,7 +261,6 @@ public final class WriteOpts {
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_SOURCE)) {
                 en.skel = ((SkelCompound) en.skel).args[0];
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String fun = EngineMessage.castString(en.skel, en.display);
                 AbstractSource src = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(src, fun);
@@ -322,18 +320,19 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean atomToBool(Object m, Display d, Engine en) throws EngineMessage {
+    public static boolean atomToBool(Object m, Display d, Engine en)
+            throws EngineMessage {
         en.skel = m;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if (fun.equals(Foyer.OP_TRUE)) {
             return true;
         } else if (fun.equals(AbstractFlag.OP_FALSE)) {
             return false;
         } else {
-            throw new EngineMessage(EngineMessage.domainError(EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
         }
     }
 
@@ -352,11 +351,11 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToFormat(Object m, Display d, Engine en) throws EngineMessage {
+    private static int atomToFormat(Object m, Display d, Engine en)
+            throws EngineMessage {
         en.skel = m;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;
@@ -401,7 +400,6 @@ public final class WriteOpts {
             int val2 = termToAnno(sc.args[1], d, en);
             return val1 | val2;
         } else {
-            EngineMessage.checkInstantiated(en.skel);
             String fun = EngineMessage.castString(en.skel, en.display);
             if (fun.equals(AbstractFlag.OP_FALSE)) {
                 return 0;
@@ -465,7 +463,6 @@ public final class WriteOpts {
         en.skel = m;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;
@@ -496,11 +493,11 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToOperand(Object m, Display d, Engine en) throws EngineMessage {
+    private static int atomToOperand(Object m, Display d, Engine en)
+            throws EngineMessage {
         en.skel = m;
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         String fun = EngineMessage.castString(en.skel, en.display);
         if (fun.equals(OP_OPERAND_NONE)) {
             return 0;
@@ -509,8 +506,8 @@ public final class WriteOpts {
         } else if (fun.equals(OP_OPERAND_LEFTASSOC)) {
             return PrologWriter.SPEZ_OPLE + PrologWriter.SPEZ_LEFT;
         } else {
-            throw new EngineMessage(EngineMessage.domainError(EngineMessage.OP_DOMAIN_FLAG_VALUE,
-                    en.skel));
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
         }
     }
 

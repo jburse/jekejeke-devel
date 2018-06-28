@@ -448,7 +448,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
         /* check predicate modify/access */
         CachePredicate cp = Frame.callableToPredicate(head, en);
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
-            EngineMessage.checkInstantiated(head);
             EngineMessage.checkCallable(head, refhead);
             return false;
         }

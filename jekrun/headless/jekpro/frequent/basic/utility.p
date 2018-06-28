@@ -116,15 +116,14 @@ sys_apropos_table(library(stream/frequent)).
 
 % sys_enum_apropos(+Atom, -Row)
 :- private sys_enum_apropos/2.
-sys_enum_apropos(N, row(I,E,M)) :-
+sys_enum_apropos(N, row(I,E,T)) :-
    setup_call_cleanup(
       open_resource(N, S),
       (  repeat,
          (  read_line(S, L)
          -> atom_list_concat(U, '\t', L),
             sys_split_line(U, H, E, T),
-            term_atom(I, H),
-            term_atom(M, T); !, fail)),
+            sys_split_indicator(H, I); !, fail)),
       close(S)).
 
 % sys_split_line(+List, -Atom, -Atom)
@@ -134,17 +133,19 @@ sys_split_line([H,T], H, undef, T).
 % new apropos format
 sys_split_line([H,E,T], H, E, T).
 
-% sys_match_row(+Compiled, +Row)
-:- private sys_match_row/2.
-sys_match_row(Compiled, Row) :-
-   sys_apropos_value(Row, pred, Indicator),
-   sys_indicator_fun(Indicator, Fun, Arity),
-   sys_apropos_match(Compiled, Fun/Arity).
-
-% sys_indicator_fun(+Indicator, -Atom, -Integer)
-:- private sys_indicator_fun/3.
-sys_indicator_fun(Fun/Arity, Fun, Arity).
-sys_indicator_fun(_:Fun/Arity, Fun, Arity).
+% sys_split_indicator(+Atom, -Indicator)
+:- private sys_split_indicator/2.
+sys_split_indicator(Indicator, Module:Fun/Arity) :-
+   sub_atom(Indicator, Before, _, After, :),
+   Before > 1, !,
+   sub_atom(Indicator, 0, Before, Module),
+   last_sub_atom(Indicator, After, 0, Str),
+   sys_split_indicator(Str, Fun/Arity).
+sys_split_indicator(Indicator, Fun/Arity) :-
+   last_sub_atom(Indicator, Before, _, After, /), !,
+   sub_atom(Indicator, 0, Before, Fun),
+   last_sub_atom(Indicator, After, 0, Str),
+   term_atom(Arity, Str).
 
 /***********************************************************/
 /* Compile and Match                                       */
@@ -156,6 +157,15 @@ sys_apropos_compile(Pattern/Arity, Compiled/Arity) :- !,
    pattern_compile(Pattern, [boundary(part)], Compiled).
 sys_apropos_compile(Pattern, Compiled) :-
    pattern_compile(Pattern, [boundary(part)], Compiled).
+
+% sys_match_row(+Compiled, +Row)
+:- private sys_match_row/2.
+sys_match_row(Compiled, Row) :-
+   sys_apropos_value(Row, pred, _:Indicator), !,
+   sys_apropos_match(Compiled, Indicator).
+sys_match_row(Compiled, Row) :-
+   sys_apropos_value(Row, pred, Indicator),
+   sys_apropos_match(Compiled, Indicator).
 
 % sys_apropos_match(+Compiled, +Instance)
 :- private sys_apropos_match/2.

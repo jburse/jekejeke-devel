@@ -321,7 +321,6 @@ public final class Flag extends AbstractFlag {
                 if (en.skel instanceof Random) {
                     en.store.foyer.random = (Random) en.skel;
                 } else {
-                    EngineMessage.checkInstantiated(en.skel);
                     EngineMessage.checkRef(en.skel, en.display);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
@@ -331,7 +330,6 @@ public final class Flag extends AbstractFlag {
                 en.skel = m;
                 en.display = d;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 en.store.foyer.timeout = EngineMessage.castLongValue(num);
                 return true;

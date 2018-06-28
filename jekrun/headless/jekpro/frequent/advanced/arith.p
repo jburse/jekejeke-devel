@@ -36,6 +36,7 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/frequent/advanced)).
 
 :- module(arith, []).
 
@@ -45,37 +46,15 @@
  */
 % between(+Integer, +Integer, -Integer)
 :- public between/3.
-between(L, _, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-between(L, _, _) :-
-   \+ integer(L),
-   throw(error(type_error(integer,L),_)).
-between(_, H, _) :-
-   var(H),
-   throw(error(instantiation_error,_)).
-between(_, H, _) :-
-   \+ integer(H),
-   throw(error(type_error(integer,H),_)).
 between(L, H, X) :-
    var(X), !,
-   L =< H,
-   between2(L, H, X).
+   sys_between(L, H, X).
 between(L, H, X) :-
-   integer(X), !,
    L =< X,
    X =< H.
-between(_, _, X) :-
-   throw(error(type_error(integer,X),_)).
 
-% between2(+Integer, +Integer, -Integer)
-:- private between2/3.
-between2(L, H, X) :-
-   (  L = H -> !; true),
-   X = L.
-between2(L, H, X) :-
-   Y is L+1,
-   between2(Y, H, X).
+:- private sys_between/3.
+:- special(sys_between/3, 'SpecialArith', 0).
 
 /**
  * above(L, X):
@@ -83,27 +62,14 @@ between2(L, H, X) :-
  */
 % above(+Integer, -Integer)
 :- public above/2.
-above(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-above(L, _) :-
-   \+ integer(L),
-   throw(error(type_error(integer,L),_)).
 above(L, X) :-
    var(X), !,
-   above2(L, X).
+   sys_above(L, X).
 above(L, X) :-
-   integer(X), !,
    L =< X.
-above(_, X) :-
-   throw(error(type_error(integer,X),_)).
 
-:- private above2/2.
-above2(L, X) :-
-   X = L.
-above2(L, X) :-
-   Y is L+1,
-   above2(Y, X).
+:- private sys_above/2.
+:- special(sys_above/2, 'SpecialArith', 1).
 
 /**
  * plus(A, B, C):

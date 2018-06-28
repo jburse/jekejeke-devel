@@ -181,7 +181,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SkelAtom sa = SpecialBody.callableToName(en.skel);
                 String fun = (sa.scope != null ? sa.scope.getPath() : "");
@@ -194,7 +193,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 fun = EngineMessage.castString(en.skel, en.display);
                 AbstractSource source = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(source, fun);
@@ -202,7 +200,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialSource.addSrcProp(en.skel, en.display, source, en);
                 return en.getNextRaw();
@@ -212,7 +209,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 fun = EngineMessage.castString(en.skel, en.display);
                 source = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(source, fun);
@@ -220,7 +216,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialSource.removeSrcProp(en.skel, en.display, source, en);
                 return en.getNextRaw();
@@ -230,7 +225,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 int level = EngineMessage.castIntValue(num);
@@ -239,13 +233,11 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 String modestr = EngineMessage.castString(en.skel, en.display);
                 int leftright = SpecialOper.atomToLeftRight(modestr);
                 int type = SpecialOper.atomToType(modestr);
 
                 SpecialQuali.colonToCallable(temp[2], ref, false, en);
-                EngineMessage.checkInstantiated(en.skel);
                 sa = EngineMessage.castStringWrapped(en.skel, en.display);
                 defineOperator(level, leftright, type, sa, en);
                 return en.getNextRaw();
@@ -258,7 +250,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialOper.addOperProp(en.skel, en.display, op, en);
                 return en.getNextRaw();
@@ -272,7 +263,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialPred.addPredProp(en.skel, en.display, pick, en);
                 return en.getNextRaw();
@@ -286,7 +276,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialPred.removePredProp(en.skel, en.display, pick, en);
                 return en.getNextRaw();
@@ -298,7 +287,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 EngineMessage.castIntValue(num);
