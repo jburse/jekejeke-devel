@@ -1,13 +1,9 @@
 package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 
 import java.math.BigInteger;
@@ -39,10 +35,10 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialBits extends AbstractSpecial {
-    private final static int SPECIAL_SYS_TEST_BIT = 0;
+    private final static int SPECIAL_TESTBIT = 0;
 
     /**
-     * <p>Create a additional bitwise operations special.</p>
+     * <p>Create a additional bitwise predicates.</p>
      *
      * @param i The id.
      */
@@ -63,13 +59,15 @@ public final class SpecialBits extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
         switch (id) {
-            case SPECIAL_SYS_TEST_BIT:
+            case SPECIAL_TESTBIT:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
+
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
                 Number alfa = EngineMessage.castInteger(en.skel, en.display);
+
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();

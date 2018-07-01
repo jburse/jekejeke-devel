@@ -1,14 +1,16 @@
 /**
  * We provide a couple of additional bitwise operations. The evaluable
  * functions bitcount/1, bitlength/1 and lowestsetbit/1 deal with the
- * determination of certain bits of the given integer.
+ * determination of certain bits of the given integer. The implementation
+ * is more efficient than would be possible with existing logical,
+ * shift and test operations.
  *
  * Examples:
  * bitlength(333)               --> 9
  *
  * The evaluable functions setbit/2 and clearbit/2 update the given
  * integer in a more efficient way than would be possible with existing
- * logical and shift operations. The predicate sys_test_bit/2 tests a
+ * logical and shift operations. The predicate testbit/2 tests a
  * particular bit in a given integer, again the implementation is more
  * efficient than would be possible with existing logical, shift and
  * test operations.
@@ -78,8 +80,9 @@
 :- special(clearbit/3, 'SupplementBits', 4).
 
 /**
- * sys_test_bit(X, Y):
+ * testbit(X, Y):
  * The predicate succeeds when Y /\ (1 << X) =\= 0.
  */
-:- public sys_test_bit/2.
-:- special(sys_test_bit/2, 'SpecialBits', 0).
+:- public testbit/2.
+:- special(testbit/2, 'SpecialBits', 0).
+

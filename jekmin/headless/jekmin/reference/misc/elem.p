@@ -116,3 +116,11 @@ sys_bisect(S, _, Hi, M, X, Y) :-
    S < X, !,
    sys_bisect(M, Hi, X, Y).
 sys_bisect(_, _, _, Y, _, Y).
+
+/**
+ * divmod(X, Y, Z, T):
+ * The predicate succeeds in Z with the division of X by Y,
+ * and in T with the modulo of X by Y.
+ */
+:- public divmod/4.
+:- special(divmod/4, 'SpecialElem', 0).

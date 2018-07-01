@@ -146,7 +146,6 @@ sto(T) :-
  */
 % sys_assume_hooks(+Set)
 :- private sys_assume_hooks/1.
-:- meta_predicate sys_assume_hooks(?,2).
 sys_assume_hooks([X|Y]) :-
    sys_ensure_hook(X, sys_hook_sto),
    sys_assume_hooks(Y).
