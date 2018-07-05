@@ -1,7 +1,9 @@
 /**
- * This module provides additional integer predicates. The predicates
- * between/3 and above/2 allow enumerating integers. The predicate
- * plus/3 provides a multi-directional addition.
+ * This module provides additional number predicates. The predicates
+ * between/3 and above/2 allow enumerating numbers in a given range
+ * by the unit step. For both predicates the type of the result is
+ * the type of the lower bound. The predicate above/2 doesn't have
+ * an upper bound and will return numbers forever.
  *
  * Examples:
  * ?- between(1, 3, X).
@@ -10,6 +12,12 @@
  * X = 3
  * ?- between(1, 3, 4).
  * No
+ *
+ * The predicates plus/3 and succ/2 allow solving primitive numberic
+ * addition equations. These predicates will not enumerate solutions,
+ * but they will work in different modes. The predicate plus/3
+ * requires at least two instantiated arguments and the predicate
+ * succ/2 requires at least one instantiated argument.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -42,7 +50,8 @@
 
 /**
  * between(L, H, X):
- * The predicate succeeds for every integer X between the two integers L and H.
+ * The predicate succeeds for every number X between
+ * the two numbers L and H in unit steps.
  */
 % between(+Integer, +Integer, -Integer)
 :- public between/3.
@@ -58,7 +67,8 @@ between(L, H, X) :-
 
 /**
  * above(L, X):
- * The predicate succeeds for every integer X above the integer L.
+ * The predicate succeeds for every number X above
+ * the number L in unit steps..
  */
 % above(+Integer, -Integer)
 :- public above/2.
@@ -73,7 +83,7 @@ above(L, X) :-
 
 /**
  * plus(A, B, C):
- * The predicate succeeds for numbers A, B and C such that A+B equals C.
+ * The predicate succeeds for numbers A, B and C such that A+B =:= C.
  * At least two arguments have to be instantiated.
  */
 % plus(+Number, +Number, -Number)
@@ -85,4 +95,23 @@ plus(A, B, C) :-
    var(A), !,
    A is C-B.
 plus(A, B, C) :-
+   var(B), !,
    B is C-A.
+plus(A, B, C) :-
+   A+B =:= C.
+
+/**
+ * succ(A, B):
+ * The predicates succeeds for numbers A, B such that A+1 =:= B.
+ * At least one arguments has to be instantiated.
+ */
+% succ(+Number, -Number)
+:- public succ/2.
+succ(A, B) :-
+   var(B), !,
+   B is A+1.
+succ(A, B) :-
+   var(A), !,
+   A is B-1.
+succ(A, B) :-
+   A+1 =:= B.

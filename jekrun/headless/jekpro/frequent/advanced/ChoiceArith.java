@@ -104,7 +104,7 @@ final class ChoiceArith extends AbstractChoice {
                 en.skel = temp[1];
                 en.display = d;
                 en.deref();
-                Number num2 = EngineMessage.castInteger(en.skel, en.display);
+                Number num2 = EngineMessage.castNumber(en.skel, en.display);
 
                 cur = EvaluableElem.add(cur, Integer.valueOf(1));
 

@@ -24,6 +24,10 @@
  * gcd(36,24)      --> 12
  * isqrt(7)        --> 8
  *
+ * The predicate divmod/4 returns bot the quotient and remainder
+ * of a division. This is faster than invoking the ISO core standard
+ * evaluable functions (//)/2 and (rem)/2 separately.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties

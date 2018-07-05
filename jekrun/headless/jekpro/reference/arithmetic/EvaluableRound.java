@@ -339,12 +339,13 @@ public final class EvaluableRound extends AbstractSpecial {
      *       X // Y = integer(X / Y).
      * </pre>
      *
-     * @param a The first number.
-     * @param b The second number.
-     * @return The first number divided by the second number.
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The first operand divided by the second operand.
      * @throws ArithmeticException Shit happens.
      */
-    private static Number slashSlash(Number a, Number b) throws ArithmeticException {
+    private static Number slashSlash(Number a, Number b)
+            throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 int u = b.intValue();
@@ -400,9 +401,9 @@ public final class EvaluableRound extends AbstractSpecial {
      *       X div Y = integer(floor(X / Y)).
      * </pre>
      *
-     * @param a The first number.
-     * @param b The second number.
-     * @return The first number divided by the second number.
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The first operand divided by the second operand.
      * @throws ArithmeticException Shit happens.
      */
     private static Number div(Number a, Number b) {
@@ -479,9 +480,9 @@ public final class EvaluableRound extends AbstractSpecial {
      *      X rem Y = X - (X // Y) * Y.
      * </pre>
      *
-     * @param a The first number.
-     * @param b The second number.
-     * @return The remainder of the first number by the second number.
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The remainder of the first operand by the second operand.
      * @throws ArithmeticException Shit happens.
      */
     private static Number rem(Number a, Number b) throws ArithmeticException {
@@ -503,15 +504,13 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                float g = a.floatValue();
-                return TermAtomic.makeFloat(g % f);
+                return TermAtomic.makeFloat(a.floatValue() % f);
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                double e = a.doubleValue();
-                return TermAtomic.makeDouble(e % d);
+                return TermAtomic.makeDouble(a.doubleValue() % d);
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);

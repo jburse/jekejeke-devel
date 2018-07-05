@@ -71,12 +71,12 @@ public final class SpecialArith extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                Number num1 = EngineMessage.castInteger(en.skel, en.display);
+                Number num1 = EngineMessage.castNumber(en.skel, en.display);
 
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                Number num2 = EngineMessage.castInteger(en.skel, en.display);
+                Number num2 = EngineMessage.castNumber(en.skel, en.display);
 
                 AbstractBind mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
@@ -108,7 +108,7 @@ public final class SpecialArith extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                num1 = EngineMessage.castInteger(en.skel, en.display);
+                num1 = EngineMessage.castNumber(en.skel, en.display);
 
                 mark = en.bind;
                 while (true) {
