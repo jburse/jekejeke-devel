@@ -37,6 +37,7 @@
 :- package(library(jekpro/frequent/basic)).
 
 :- module(lists, []).
+:- use_module(library(advanced/arith)).
 
 /**
  * append(L1, L2, L3):
@@ -146,7 +147,7 @@ length(_, N) :-
 length2([], 0).
 length2([_|Y], N) :-
    length2(Y, M),
-   N is M+1.
+   succ(M, N).
 
 % length3(+Integer, -List)
 :- private length3/2.
@@ -178,7 +179,7 @@ nth0(N, _, _) :-
 nth02(_, X, X, 0).
 nth02([X|Y], _, Z, N) :-
    nth02(Y, X, Z, M),
-   N is M+1.
+   succ(M, N).
 
 % nth03(+Integer, -List, -Elem)
 :- private nth03/3.
@@ -211,7 +212,7 @@ nth0(N, _, _, _) :-
 nth02(Y, X, X, 0, Y).
 nth02([X|Y], H, Z, N, [H|T]) :-
    nth02(Y, X, Z, M, T),
-   N is M+1.
+   succ(M, N).
 
 % nth03(+Integer, -List, -Elem, -List)
 :- private nth03/4.
@@ -243,7 +244,7 @@ nth1(N, _, _) :-
 nth12(_, X, X, 1).
 nth12([X|Y], _, Z, N) :-
    nth12(Y, X, Z, M),
-   N is M+1.
+   succ(M, N).
 
 % nth13(+Integer, -List, -Elem)
 :- private nth13/3.
@@ -276,7 +277,7 @@ nth1(N, _, _, _) :-
 nth12(Y, X, X, 1, Y).
 nth12([X|Y], H, Z, N, [H|T]) :-
    nth12(Y, X, Z, M, T),
-   N is M+1.
+   succ(M, N).
 
 % nth13(+Integer, -List, -Elem, -List)
 :- private nth13/4.

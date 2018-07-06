@@ -13,7 +13,7 @@
  * ?- between(1, 3, 4).
  * No
  *
- * The predicates plus/3 and succ/2 allow solving primitive numberic
+ * The predicates plus/3 and succ/2 allow solving primitive numeric
  * addition equations. These predicates will not enumerate solutions,
  * but they will work in different modes. The predicate plus/3
  * requires at least two instantiated arguments and the predicate
@@ -50,8 +50,8 @@
 
 /**
  * between(L, H, X):
- * The predicate succeeds for every number X between
- * the two numbers L and H in unit steps.
+ * The predicate succeeds in unit steps for every
+ * number X between the two numbers L and H.
  */
 % between(+Integer, +Integer, -Integer)
 :- public between/3.
@@ -67,8 +67,8 @@ between(L, H, X) :-
 
 /**
  * above(L, X):
- * The predicate succeeds for every number X above
- * the number L in unit steps..
+ * The predicate succeeds in unit steps for every
+ * number X above the number L.
  */
 % above(+Integer, -Integer)
 :- public above/2.
@@ -83,8 +83,8 @@ above(L, X) :-
 
 /**
  * plus(A, B, C):
- * The predicate succeeds for numbers A, B and C such that A+B =:= C.
- * At least two arguments have to be instantiated.
+ * The predicate succeeds for numbers A, B and C such that
+ * A+B equals C. At least two arguments have to be instantiated.
  */
 % plus(+Number, +Number, -Number)
 :- public plus/3.
@@ -95,15 +95,12 @@ plus(A, B, C) :-
    var(A), !,
    A is C-B.
 plus(A, B, C) :-
-   var(B), !,
    B is C-A.
-plus(A, B, C) :-
-   A+B =:= C.
 
 /**
  * succ(A, B):
- * The predicates succeeds for numbers A, B such that A+1 =:= B.
- * At least one arguments has to be instantiated.
+ * The predicate succeeds for numbers A and B such that
+ * A+1 equals B. At least one arguments has to be instantiated.
  */
 % succ(+Number, -Number)
 :- public succ/2.
@@ -111,7 +108,4 @@ succ(A, B) :-
    var(B), !,
    B is A+1.
 succ(A, B) :-
-   var(A), !,
    A is B-1.
-succ(A, B) :-
-   A+1 =:= B.
