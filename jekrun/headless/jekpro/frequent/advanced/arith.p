@@ -89,13 +89,13 @@ above(L, X) :-
 % plus(+Number, +Number, -Number)
 :- public plus/3.
 plus(A, B, C) :-
-   var(C), !,
-   C is A+B.
-plus(A, B, C) :-
    var(A), !,
    A is C-B.
 plus(A, B, C) :-
+   var(B), !,
    B is C-A.
+plus(A, B, C) :-
+   C is A+B.
 
 /**
  * succ(A, B):
@@ -105,7 +105,7 @@ plus(A, B, C) :-
 % succ(+Number, -Number)
 :- public succ/2.
 succ(A, B) :-
-   var(B), !,
-   B is A+1.
-succ(A, B) :-
+   var(A), !,
    A is B-1.
+succ(A, B) :-
+   B is A+1.
