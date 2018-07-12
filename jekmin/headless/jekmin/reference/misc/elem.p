@@ -7,9 +7,9 @@
  *
  * ulp: integer -> integer             isqrt: integer -> integer
  * ulp: float -> float                 sqrtrem: integer -> integer^2
- * ulp: decimal -> decimal             divmod : number^2 -> number^2
- * gcd: integer^2 -> integer
- * lcm: integer^2 -> integer
+ * ulp: decimal -> decimal             iroot: integer^2 -> integer
+ * gcd: integer^2 -> integer           rootrem: integer^2 -> integer^2
+ * lcm: integer^2 -> integer           divmod : number^2 -> number^2
  *
  * The ulp operation makes use of the ulp() function of the Java Math
  * library. The gcd operation implements a binary gcd algorithm for
@@ -19,15 +19,15 @@
  * Examples:
  * ulp(0)          --> 1               isqrt(7)        --> 2
  * ulp(0.0)        --> 4.9E-324        sqrtrem(7)      --> (2,3)
- * ulp(0d0.00)     --> 0d0.01          divmod(12,-7)   --> (-1,5)
- * gcd(36,24)      --> 12
- * lcm(36,24)      --> 72
+ * ulp(0d0.00)     --> 0d0.01          iroot(77,5)     --> 2
+ * gcd(36,24)      --> 12              rootrem(77,5)   --> (2, 45)
+ * lcm(36,24)      --> 72              divmod(12,-7)   --> (-1,5)
  *
- * The evaluable function isqrt/1 and the predicate sqrtrem/3 use
- * the fast Zimmerman method of finding an integer root. The predicate
- * divmod/4 returns both the quotient and remainder of a division.
- * This is faster than invoking the ISO core standard evaluable
- * functions (//)/2 and (rem)/2 separately.
+ * The evaluable functions isqrt/1 and iroot/2 as well as the predicates
+ * sqrtrem/3 and rootrem/4 use the fast Hacker method of finding an
+ * integer root. The predicate divmod/4 returns both the quotient
+ * and remainder of a division. This is faster than invoking the ISO
+ * core standard eval-uable functions (//)/2 and (rem)/2 separately.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -98,11 +98,11 @@ isqrt(X, _) :-
    X < 0,
    throw(error(evaluation_error(undefined),_)).
 isqrt(X, Y) :-
-   zimmerman(X, Y, _).
+   hacker(X, Y, _).
 
 /**
  * sqrtrem(X, Y, Z):
- * The predicte suceeds in Y with integer square root of X
+ * The predicate succeeds in Y with integer square root of X
  * and in Z with the corresponding remainder.
  */
 % sqrtrem(+Integer, -Integer, -Integer)
@@ -111,48 +111,35 @@ sqrtrem(X, _, _) :-
    X < 0,
    throw(error(evaluation_error(undefined),_)).
 sqrtrem(X, Y, Z) :-
-   zimmerman(X, Y, Z).
+   hacker(X, Y, Z).
 
-:- private zimmerman/3.
-zimmerman(0, X, Y) :- !,
+% hacker(+Integer, -Integer, -Integer)
+:- private hacker/3.
+hacker(0, X, Y) :- !,
    X = 0,
    Y = 0.
-zimmerman(1, X, Y) :- !,
-   X = 1,
-   Y = 0.
-zimmerman(2, X, Y) :- !,
-   X = 1,
-   Y = 1.
-zimmerman(3, X, Y) :- !,
-   X = 1,
-   Y = 2.
-zimmerman(N, X, Y) :-
-   K is (bitlength(N)+1)//4,
-   N1 is N>>(2*K),
-   N2 is N/\(1<<(2*K)-1),
-   zimmerman(N1, X2, Y2),
-   X3 is X2<<K,
-   Y3 is Y2<<(2*K)+N2,
-   newton(X3, Y3, X, Y).
+hacker(N, X2, Y2) :-
+   J is bitlength(N)//2,
+   I is max(J-52,0),
+   U is N>>(2*I),
+   V is integer(sqrt(U)),
+   X is V<<I,
+   Y is N-V^2<<(2*I),
+   newton(X, Y, X2, Y2).
 
+% newton(+Integer, +Integer, -Integer, -Integer)
 :- private newton/4.
 newton(X, Y, X3, Y3) :-
-   Q is Y//X>>1,
+   Q is Y//(2*X),
    Q =\= 0, !,
    X2 is X+Q,
-   Y2 is Y-2*X*Q-Q^2,
+   Y2 is Y-(2*X+Q)*Q,
    newton(X2, Y2, X3, Y3).
-newton(X, Y, X3, Y3) :-
-   schoolboy(X, Y, X3, Y3).
-
-:- private schoolboy/4.
-schoolboy(X3, Y3, X, Y) :-
-   Y3 >= 0, !,
-   X = X3,
-   Y = Y3.
-schoolboy(X3, Y3, X, Y) :-
-   X is X3-1,
-   Y is Y3+2*X3-1.
+newton(X, Y, X2, Y2) :-
+   Y < 0, !,
+   X2 is X-1,
+   Y2 is Y+2*X-1.
+newton(X, Y, X, Y).
 
 /**
  * iroot(X, Y, Z):
@@ -166,33 +153,63 @@ iroot(X, _, _) :-
 iroot(_, Y, _) :-
    Y =< 0,
    throw(error(evaluation_error(undefined),_)).
-iroot(0, _, Z) :- !,
-   Z = 0.
 iroot(X, 1, Z) :- !,
    Z = X.
+iroot(X, 2, Z) :- !,
+   hacker(X, Z, _).
 iroot(X, Y, Z) :-
-   Lo is 1<<((bitlength(X)-1)//Y),
-   Hi is Lo*2,
-   iroot(Lo, Hi, X, Y, Z).
+   hacker(X, Y, Z, _).
 
-% iroot(+Integer, +Integer, +Integer, +Integer, -Integer)
-:- private iroot/5.
-iroot(Lo, Hi, X, Y, Z) :-
-   Lo+1 < Hi, !,
-   M is (Lo+Hi)//2,
-   S is M^Y,
-   iroot(S, Lo, Hi, M, X, Y, Z).
-iroot(Lo, _, _, _, Lo).
+/**
+ * rootrem(X, Y, Z, T):
+ * The predicate succeeds in Z with the Y-th root of X
+ * and in T with the corresponding remainder.
+ */
+:- public rootrem/4.
+rootrem(X, _, _, _) :-
+   X < 0,
+   throw(error(evaluation_error(undefined),_)).
+rootrem(_, Y, _, _) :-
+   Y =< 0,
+   throw(error(evaluation_error(undefined),_)).
+rootrem(X, 1, Z, T) :- !,
+   Z = X,
+   T = 0.
+rootrem(X, 2, Z, T) :- !,
+   hacker(X, Z, T).
+rootrem(X, Y, Z, T) :-
+   hacker(X, Y, Z, T).
 
-% iroot(+Integer, +Integer, +Integer, +Integer, +Integer, +Integer, -Integer)
-:- private iroot/7.
-iroot(S, Lo, _, M, X, Y, Z) :-
-   S > X, !,
-   iroot(Lo, M, X, Y, Z).
-iroot(S, _, Hi, M, X, Y, Z) :-
-   S < X, !,
-   iroot(M, Hi, X, Y, Z).
-iroot(_, _, _, Z, _, _, Z).
+% hacker(+Integer, +Integer, -Integer, -Integer)
+:- private hacker/4.
+hacker(0, _, X, Y) :- !,
+   X = 0,
+   Y = 0.
+hacker(N, M, X2, Y2) :-
+   J is (bitlength(N)-1+M//2)//M,
+   I is max(J-52,0),
+   U is N>>(M*I),
+   V is integer(U**(1/M)),
+   X is V<<I,
+   F is V^M<<(M*I),
+   Y is N-F,
+   newton(X, Y, F, M, X2, Y2).
+
+% newton(+Integer, +Integer, +Integer, +Integer, -Integer, -Integer)
+:- private newton/6.
+newton(X, Y, F, M, X3, Y3) :-
+   Q is X*Y//(M*F),
+   Q =\= 0, !,
+   X2 is X+Q,
+   F2 is X2^M,
+   Y2 is Y+(F-F2),
+   newton(X2, Y2, F2, M, X3, Y3).
+newton(X, Y, F, M, X2, Y2) :-
+   Y < 0, !,
+   X2 is X-1,
+   F2 is X2^M,
+   Y2 is Y+(F-F2).
+newton(X, Y, _, _, X, Y).
 
 /**
  * divmod(X, Y, Z, T):
