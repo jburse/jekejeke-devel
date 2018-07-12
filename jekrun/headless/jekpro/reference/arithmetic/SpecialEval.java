@@ -33,7 +33,6 @@ import jekpro.tools.term.SkelCompound;
  */
 public final class SpecialEval extends AbstractSpecial {
     private final static int SPECIAL_IS = 0;
-    public final static double EPSILON = Math.ulp(1.0);
 
     /**
      * <p>Create an arithmetic special.</p>

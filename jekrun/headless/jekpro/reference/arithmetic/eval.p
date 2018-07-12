@@ -147,10 +147,3 @@ X [Y, Z, T, U, V, W, S, R] :-
    L [V, M],
    M [W, N],
    N [S, R].
-
-/**
- * epsilon: [N208 9.7.3]
- * Returns the ulp of one.
- */
-:- public epsilon/1.
-:- foreign_const(epsilon/1, 'SpecialEval', 'EPSILON').
