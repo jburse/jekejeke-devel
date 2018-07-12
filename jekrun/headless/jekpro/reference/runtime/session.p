@@ -5,6 +5,27 @@
  * The query answer loop can be terminated by issuing an end of file.
  * The query answer loop runs in its own input/output stream pair.
  *
+ * Since recently we have introduce hierarchical knowledge bases.
+ * These are already used in the Swing GUI, but not in the Android GUI.
+ * Every Swing console window runs in its own sub knowledge base which
+ * provides a separate class loader and thread group for all its threads.
+ * The knowledge base stack can be queried by the kbs/0 command:
+ *
+ * Example, in Swing GUI:
+ * Jekejeke Prolog 2, Runtime Library 1.2.7
+ * (c) 1985-2018, XLOG Technologies GmbH, Switzerland
+ * ?- kbs.
+ * store jekpro.model.pretty.StoreChild@101ceba
+ * store jekpro.model.pretty.StoreElder@4e95fbaf
+ * Yes
+ *
+ * Example, in Android GUI:
+ * Jekejeke Prolog 2, Runtime Library 1.2.7
+ * (c) 1985-2018, XLOG Technologies GmbH, Switzerland
+ * ?- kbs.
+ * store jekpro.model.pretty.StoreElder@1d3e528
+ * Yes
+ *
  * The system predicates abort/1, exit/1 and close/1 throw some well-known
  * system errors. The system predicate exit/1 allows terminating the query
  * answer loop similarly like issuing an end of file. The system predicate

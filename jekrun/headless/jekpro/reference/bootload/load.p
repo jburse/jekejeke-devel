@@ -93,8 +93,8 @@ ensure_loaded(Path) :-
 consult(Path) :-
    var(Path),
    throw(error(instantiation_error,_)).
-consult(userX) :- !,
-   atom_codes(U, "user"),
+consult(user) :- !,
+   sys_set_context_property(U, '', user),
    sys_import_file(U, []).
 consult(Path) :-
    absolute_file_name(Path, Pin),
@@ -143,7 +143,7 @@ unload_file(Path) :-
  */
 % make
 make :-
-   atom_codes(U, "user"),
+   sys_set_context_property(U, '', user),
    sys_load_file(U, [condition(on)]).
 :- set_predicate_property(make/0, visible(public)).
 
@@ -153,7 +153,7 @@ make :-
  */
 % rebuild
 rebuild :-
-   atom_codes(U, "user"),
+   sys_set_context_property(U, '', user),
    sys_load_file(U, []).
 :- set_predicate_property(rebuild/0, visible(public)).
 

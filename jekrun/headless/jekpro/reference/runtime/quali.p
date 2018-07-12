@@ -112,7 +112,6 @@
  */
 % +Slash :: +Compound:
 :- public :: /2.
-:- virtual :: /2.
 :- set_predicate_property(:: /2, (meta_predicate? :: ::(0))).
 :- sys_context_property(here, C),
    set_predicate_property(:: /2, sys_meta_predicate(C)).
@@ -142,7 +141,6 @@
  */
 % +Slash :: +Compound:
 :- public :: /3.
-:- virtual :: /3.
 :- set_predicate_property(:: /3, (meta_predicate::(?,::(1),?))).
 :- sys_context_property(here, C),
    set_predicate_property(:: /3, sys_meta_predicate(C)).

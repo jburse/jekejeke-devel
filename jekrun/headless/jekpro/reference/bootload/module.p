@@ -8,7 +8,7 @@
  * default visibility for a member is package local inside Prolog
  * texts elevated to modules and public for ordinary Prolog texts.
  *
- * Example:
+ * Examples:
  * ?- member(X,[1,2,3]).
  * X = 1 ;
  * X = 2 ;
@@ -24,22 +24,21 @@
  * be used. The later predicate will make the corresponding imported
  * members visible to qualified invocations and client imports.
  *
- * Example:
- * ?- source_property(system, use_package(X)).
- * X = foreign(java/lang) ;
- * Etc..
+ * Examples:
+ * ?- absolute_file_name(library(basic/lists), Y),
+ *    source_property(Y, package(X)).
+ * X = library(jekpro/frequent/basic)
  *
- * ?- source_property(system, use_file_extension(X)).
- * X = binary('.class') ;
- * X = text('.p') ;
- * Etc..
+ * ?- absolute_file_name(library(basic/lists), Y),
+ *    source_property(Y, sys_source_name(X)).
+ * X = lists
  *
- * The path resolution uses prefixes and suffixes from the current
- * source and the system source. The prefixes for the current source
- * can be set via the predicate use_package/1 and the suffixes for
- * the current source can be set via the predicate use_file_extension/1.
- * The prefixes and suffixes can be queried via the usual source_property/2
- * predicate.
+ * The path resolution uses prefixes from the current source and
+ * the system sources along the knowledge bases. The prefixes for
+ * the current source can be set via the predicates package/1 and
+ * use_package/1. The prefixes for the system sources can be set
+ * via the predicate set_source_property/2. The prefixes can be
+ * queried via the source_property/2 predicate.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

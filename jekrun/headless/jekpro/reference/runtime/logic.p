@@ -219,6 +219,8 @@ A -> B :-
 A *-> B :-
    sys_safe(A), B.                                % Proto
 
+:- set_prolog_flag(sys_body_convert, on).
+
 /**
  * once(A): [ISO 8.15.2]
  * The predicate succeeds once if A succeeds.
@@ -226,8 +228,7 @@ A *-> B :-
 % once(+Goal)
 :- public once/1.
 :- meta_predicate once(0).
-once(A) :-
-   call(A), !.
+once(A) :- A, !.
 
 /**
  * \+ A: [ISO 8.15.1]
@@ -236,8 +237,16 @@ once(A) :-
  */
 :- public (\+)/1.
 :- meta_predicate \+0.
-\+ A :-
-   call(A), !, fail.
+\+ A :- A, !, fail.
 \+ _.
 
-:- set_prolog_flag(sys_body_convert, on).
+/**
+ * forall(A,B): [N208 8.10.4]
+ * The predicate succeeds when there is no succeess of A
+ * such that B fails. Otherwise the predicate fails.
+ */
+:- public forall/2.
+:- meta_predicate forall(0,0).
+forall(A, B) :-
+   \+ (  A,
+         \+ B).
