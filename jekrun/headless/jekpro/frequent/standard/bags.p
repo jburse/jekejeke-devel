@@ -5,21 +5,32 @@
  * of T^G where T is the template and G is the goal.
  *
  * Examples:
- * ?- [user].
- * p(a,y).
- * p(a,x).
- * p(b,x).
+ * p(a,y). p(a,x). p(b,x).
  *
- * Yes
  * ?- bagof(X,p(X,Y),L).
  * Y = y, L = [a] ;
  * Y = x, L = [a, b]
  * ?- bagof(X,Y^p(X,Y),L).
  * L = [a, a, b]
  *
- * The predicate bagof/3 will neither do a sorting of the witnesses nor
- * of the resulting lists. The variation setof/3 will sort the resulting
- * lists and the variation sys_heapof/3 will sort the witnesses.
+ * The predicate bagof/3 will do a sorting of the witnesses but not of
+ * the resulting lists. The var-iation setof/3 will sort the witnesses
+ * and the resulting lists. Finally the variation sys_heapof/3 will
+ * neither sort the witnesses nor the resulting lists.
+ *
+ * Examples:
+ * p(a). p(b).
+ * q(a). q(b). q(c).
+ *
+ * ?- forall(p(X), q(X)).
+ * Yes
+ * ?- forall(q(X), p(X)).
+ * No
+ *
+ * The predicate copy_term/2 can be used to copy a term. The predicate
+ * findall/3 can be used to collect a resulting list without any
+ * grouping. The elements will be copied. The forall/2 performs generate
+ * and test and can be used for a bounded universal quantification.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -48,17 +59,6 @@
 :- use_package(foreign(jekpro/frequent/standard)).
 
 :- module(user, []).
-
-/**
- * findall(T, G, L): [ISO 8.10.1]
- * The predicate first finds all the solutions to the goal G, whereby
- * collecting copies of the template T in a list. The predicate then
- * succeeds when L unifies with the list.
- */
-% findall(+Goal, +Template, -List)
-:- public findall/3.
-:- meta_predicate findall(?,0,?).
-:- special(findall/3, 'SpecialFind', 0).
 
 /**********************************************************/
 /* Bagof Predicates                                       */
@@ -151,6 +151,31 @@ sys_run_values_rest([K-V|P], J, [V|L], Q) :-
    sys_run_values_rest(P, J, L, Q).
 sys_run_values_rest(P, _, [], P).
 
+/**********************************************************/
+/* All Solztions                                          */
+/**********************************************************/
+
+/**
+ * findall(T, G, L): [ISO 8.10.1]
+ * The predicate first finds all the solutions to the goal G, whereby
+ * collecting copies of the template T in a list. The predicate then
+ * succeeds when L unifies with the list.
+ */
+% findall(+Goal, +Template, -List)
+:- public findall/3.
+:- meta_predicate findall(?,0,?).
+:- special(findall/3, 'SpecialFind', 0).
+
+/**
+ * forall(A,B): [N208 8.10.4]
+ * The predicate succeeds when there is no success of A
+ * such that B fails. Otherwise the predicate fails.
+ */
+:- public forall/2.
+:- meta_predicate forall(0,0).
+forall(A, B) :-
+   \+ (  A,
+         \+ B).
 
 /**********************************************************/
 /* Copy Term                                              */
