@@ -88,6 +88,9 @@ lcm(0, _, R) :- !,
 lcm(X, Y, R) :-
    R is X//gcd(X,Y)*Y.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sqrt Root
+
 /**
  * isqrt(X, Y):
  * The predicate succeeds in Y with the integer square root of X.
@@ -98,7 +101,7 @@ isqrt(X, _) :-
    X < 0,
    throw(error(evaluation_error(undefined),_)).
 isqrt(X, Y) :-
-   hacker(X, Y, _).
+   zimmerman(X, Y, _).
 
 /**
  * sqrtrem(X, Y, Z):
@@ -111,35 +114,46 @@ sqrtrem(X, _, _) :-
    X < 0,
    throw(error(evaluation_error(undefined),_)).
 sqrtrem(X, Y, Z) :-
-   hacker(X, Y, Z).
+   zimmerman(X, Y, Z).
 
-% hacker(+Integer, -Integer, -Integer)
-:- private hacker/3.
-hacker(0, X, Y) :- !,
-   X = 0,
-   Y = 0.
-hacker(N, X2, Y2) :-
-   J is bitlength(N)//2,
-   I is max(J-52,0),
-   U is N>>(2*I),
-   V is integer(sqrt(U)),
+% zimmerman(+Integer, -Integer, -Integer)
+:- private zimmerman/3.
+zimmerman(N, X, Y) :-
+   bitlength(N) =< 208, !,
+   newton(N, X, Y).
+zimmerman(N, X2, Y2) :-
+   I is (bitlength(N)+1)//4,
+   U is shiftup(N,2*I),
+   zimmerman(U, P, Q),
+   remup(P, Q, V),
    X is V<<I,
    Y is N-V^2<<(2*I),
-   newton(X, Y, X2, Y2).
+   newton2(X, Y, X2, Y2).
 
-% newton(+Integer, +Integer, -Integer, -Integer)
-:- private newton/4.
-newton(X, Y, X3, Y3) :-
-   Q is Y//(2*X),
-   Q =\= 0, !,
-   X2 is X+Q,
-   Y2 is Y-(2*X+Q)*Q,
-   newton(X2, Y2, X3, Y3).
-newton(X, Y, X2, Y2) :-
+% newton(+Integer, -Integer, -Integer)
+:- private newton/3.
+newton(0, X, Y) :- !,
+   X = 0,
+   Y = 0.
+newton(N, X2, Y2) :-
+   J is (bitlength(N)+1)//2,
+   X is 1<<J,
+   Y is N-1<<(2*J),
+   newton2(X, Y, X2, Y2).
+
+% newton2(+Integer, +Integer, -Integer, -Integer)
+:- private newton2/4.
+newton2(X, Y, X3, Y3) :-
    Y < 0, !,
-   X2 is X-1,
-   Y2 is Y+2*X-1.
-newton(X, Y, X, Y).
+   H is X<<1,
+   Q is Y div H,
+   X2 is X+Q,
+   Y2 is Y-(H+Q)*Q,
+   newton2(X2, Y2, X3, Y3).
+newton2(X, Y, X, Y).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% N-th Root
 
 /**
  * iroot(X, Y, Z):
@@ -156,9 +170,9 @@ iroot(_, Y, _) :-
 iroot(X, 1, Z) :- !,
    Z = X.
 iroot(X, 2, Z) :- !,
-   hacker(X, Z, _).
+   zimmerman(X, Z, _).
 iroot(X, Y, Z) :-
-   hacker(X, Y, Z, _).
+   zimmerman(X, Y, Z, _).
 
 /**
  * rootrem(X, Y, Z, T):
@@ -176,40 +190,65 @@ rootrem(X, 1, Z, T) :- !,
    Z = X,
    T = 0.
 rootrem(X, 2, Z, T) :- !,
-   hacker(X, Z, T).
+   zimmerman(X, Z, T).
 rootrem(X, Y, Z, T) :-
-   hacker(X, Y, Z, T).
+   zimmerman(X, Y, Z, T).
 
-% hacker(+Integer, +Integer, -Integer, -Integer)
-:- private hacker/4.
-hacker(0, _, X, Y) :- !,
-   X = 0,
-   Y = 0.
-hacker(N, M, X2, Y2) :-
-   J is (bitlength(N)-1+M//2)//M,
-   I is max(J-52,0),
-   U is N>>(M*I),
-   V is integer(U**(1/M)),
+% zimmerman(+Integer, +Integer, -Integer, -Integer)
+:- private zimmerman/4.
+zimmerman(N, M, X, Y) :-
+   bitlength(N) =< 2*M*52, !,
+   newton(N, M, X, Y).
+zimmerman(N, M, X2, Y2) :-
+   I is (bitlength(N)-1+M)//(2*M),
+   U is shiftup(N,M*I),
+   zimmerman(U, M, P, Q),
+   remup(P, Q, V),
    X is V<<I,
    F is V^M<<(M*I),
    Y is N-F,
-   newton(X, Y, F, M, X2, Y2).
+   newton2(X, Y, F, M, X2, Y2).
 
-% newton(+Integer, +Integer, +Integer, +Integer, -Integer, -Integer)
-:- private newton/6.
-newton(X, Y, F, M, X3, Y3) :-
-   Q is X*Y//(M*F),
-   Q =\= 0, !,
+% newton(+Integer, +Integer, -Integer, -Integer)
+:- private newton/4.
+newton(0, _, X, Y) :- !,
+   X = 0,
+   Y = 0.
+newton(N, M, X2, Y2) :-
+   J is (bitlength(N)+M-1)//M,
+   X is 1<<J,
+   F is 1<<(M*J),
+   Y is N-F,
+   newton2(X, Y, F, M, X2, Y2).
+
+% newton2(+Integer, +Integer, +Integer, +Integer, -Integer, -Integer)
+:- private newton2/6.
+newton2(X, Y, F, M, X3, Y3) :-
+   Y < 0, !,
+   Q is X*Y div(M*F),
    X2 is X+Q,
    F2 is X2^M,
    Y2 is Y+(F-F2),
-   newton(X2, Y2, F2, M, X3, Y3).
-newton(X, Y, F, M, X2, Y2) :-
-   Y < 0, !,
-   X2 is X-1,
-   F2 is X2^M,
-   Y2 is Y+(F-F2).
-newton(X, Y, _, _, X, Y).
+   newton2(X2, Y2, F2, M, X3, Y3).
+newton2(X, Y, _, _, X, Y).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helper
+
+% shiftup(+Integer, +Integer, -Integer)
+:- private shiftup/3.
+shiftup(X, N, Y) :-
+   lowestsetbit(X) < N,
+   Y is X>>N+1.
+shiftup(X, N, Y) :-
+   Y is X>>N.
+
+% remup(+Integer, +Integer, -Integer)
+:- private remup/3.
+remup(P, 0, V) :- !,
+   V = P.
+remup(P, _, V) :-
+   V is P+1.
 
 /**
  * divmod(X, Y, Z, T):
