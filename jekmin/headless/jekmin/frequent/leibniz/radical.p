@@ -243,9 +243,8 @@ sqrt(X, R) :-
 :- public make_radical/2.
 make_radical(X, R) :-
    integer(X),
-   elem:isqrt(X, H),
-   user: *(H, H, J),
-   user:(X =:= J), !,
+   elem:sqrtrem(X, H, J),
+   user:(J =:= 0), !,
    R = H.
 make_radical(rational(A,B), R) :-
    make_radical(A, H),

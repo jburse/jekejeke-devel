@@ -123,11 +123,12 @@ zimmerman(N, X, Y) :-
    newton(N, X, Y).
 zimmerman(N, X2, Y2) :-
    I is (bitlength(N)+1)//4,
-   U is shiftup(N,2*I),
+   K is 2*I,
+   shiftup(N, K, U),
    zimmerman(U, P, Q),
    remup(P, Q, V),
    X is V<<I,
-   Y is N-V^2<<(2*I),
+   Y is N-V^2<<K,
    newton2(X, Y, X2, Y2).
 
 % newton(+Integer, -Integer, -Integer)
@@ -201,11 +202,12 @@ zimmerman(N, M, X, Y) :-
    newton(N, M, X, Y).
 zimmerman(N, M, X2, Y2) :-
    I is (bitlength(N)-1+M)//(2*M),
-   U is shiftup(N,M*I),
+   K is M*I,
+   shiftup(N, K, U),
    zimmerman(U, M, P, Q),
    remup(P, Q, V),
    X is V<<I,
-   F is V^M<<(M*I),
+   F is V^M<<K,
    Y is N-F,
    newton2(X, Y, F, M, X2, Y2).
 
@@ -238,7 +240,7 @@ newton2(X, Y, _, _, X, Y).
 % shiftup(+Integer, +Integer, -Integer)
 :- private shiftup/3.
 shiftup(X, N, Y) :-
-   lowestsetbit(X) < N,
+   lowestsetbit(X) < N, !,
    Y is X>>N+1.
 shiftup(X, N, Y) :-
    Y is X>>N.
