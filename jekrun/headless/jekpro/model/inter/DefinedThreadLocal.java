@@ -100,11 +100,12 @@ final class DefinedThreadLocal extends AbstractDefined {
      */
     final Clause[] definedClauses(Object m, Display d, Engine en) {
         LocalLockfree ep = defineLocalLockfree(en);
-        InterfaceClauses set = ep.cr.set;
-        if ((set == null || set.size() == 1) ||
-                (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) != 0)
-            return ep.cr.getClauses();
-        return Bouquet.definedClauses(ep.cr, m, d, en);
+        Bouquet temp = ep.cr;
+        InterfaceClauses set = temp.set;
+        if (set != null && set.size() != 1 &&
+                (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
+            temp = Bouquet.definedClauses(temp, m, d, en);
+        return temp.getClauses();
     }
 
     /**
@@ -196,7 +197,7 @@ final class DefinedThreadLocal extends AbstractDefined {
             ep.del = this;
             privs.set(seqid, ep);
         } else if (ep.del != this) {
-            ep.cr = Bouquet.newBouquet();
+            ep.cr = new Bouquet();
             ep.del = this;
         }
         return ep;

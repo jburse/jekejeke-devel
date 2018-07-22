@@ -2,15 +2,13 @@ package jekpro.reference.structure;
 
 import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.*;
 import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
@@ -64,12 +62,15 @@ public final class ForeignAtom {
     /**
      * <p>Convert a string either to a char or code list.</p>
      *
-     * @param str The string.
-     * @param rep The representation.
+     * @param inter The interpreter.
+     * @param str   The string.
+     * @param rep   The representation.
      * @return The list.
      */
-    public static Object sysAtomToList(String str, int rep) {
-        Object res = Knowledgebase.OP_NIL;
+    public static Object sysAtomToList(Interpreter inter,
+                                       String str, int rep) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Object res = lobby.ATOM_NIL;
         int i = str.length();
         while (i > 0) {
             int ch = str.codePointBefore(i);
@@ -85,7 +86,7 @@ public final class ForeignAtom {
                     throw new IllegalArgumentException("illegal rep");
             }
             i -= Character.charCount(ch);
-            res = new TermCompound(Knowledgebase.OP_CONS, val, res);
+            res = new TermCompound(lobby.ATOM_CONS, val, res);
         }
         return res;
     }
@@ -107,23 +108,23 @@ public final class ForeignAtom {
                         Knowledgebase.OP_CONS)) {
             TermCompound tc = (TermCompound) list;
             Object elem = tc.getArg(0);
+            int n;
             switch (rep) {
                 case REP_CHARS:
                     String fun = InterpreterMessage.castString(elem);
-                    int n = InterpreterMessage.castCharacter(fun);
-                    buf.appendCodePoint(n);
+                    n = InterpreterMessage.castCharacter(fun);
                     break;
                 case REP_CODES:
                     Number num = InterpreterMessage.castInteger(elem);
-                    InterpreterMessage.checkCharacterCode(num.intValue());
-                    buf.appendCodePoint(num.intValue());
+                    n = InterpreterMessage.castCodePoint(num);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal rep");
             }
+            buf.appendCodePoint(n);
             list = tc.getArg(1);
         }
-        if (list.equals(Knowledgebase.OP_NIL)) {
+        if (list.equals(Foyer.OP_NIL)) {
             /* do nothing */
         } else {
             InterpreterMessage.checkInstantiated(list);
@@ -152,10 +153,10 @@ public final class ForeignAtom {
      * @return The char.
      * @throws InterpreterMessage Validation error.
      */
-    public static String sysCodeToChar(int val)
+    public static String sysCodeToChar(Integer val)
             throws InterpreterMessage {
-        InterpreterMessage.checkCharacterCode(val);
-        return new String(Character.toChars(val));
+        int n = InterpreterMessage.castCodePoint(val);
+        return new String(Character.toChars(n));
     }
 
     /****************************************************************/

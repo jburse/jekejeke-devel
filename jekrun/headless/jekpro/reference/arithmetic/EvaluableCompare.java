@@ -4,6 +4,9 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.TermAtomic;
+
+import java.math.BigDecimal;
 
 /**
  * <p>Provides the compare evaluables.</p>
@@ -85,30 +88,98 @@ public final class EvaluableCompare extends AbstractSpecial {
     /**
      * <p>Min the two number.</p>
      *
-     * @param a The first number.
-     * @param b The second number.
+     * @param m The first number.
+     * @param n The second number.
      * @return The minimum of the two numbers.
      */
-    private static Number min(Number a, Number b) {
-        if (SpecialCompare.computeCmp(a, b) < 0) {
-            return a;
-        } else {
-            return b;
+    private static Number min(Number m, Number n) {
+        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
+            case SpecialCompare.CATEGORY_INTEGER:
+            case SpecialCompare.CATEGORY_BIG_INTEGER:
+                if (SpecialCompare.compareIntegerArithmetical(m, n) > 0) {
+                    return n;
+                } else {
+                    return m;
+                }
+            case SpecialCompare.CATEGORY_FLOAT:
+                float x = m.floatValue();
+                float y = n.floatValue();
+                if (x > y) {
+                    m = n;
+                    x = y;
+                }
+                return (m instanceof Float ? m :
+                        TermAtomic.makeFloat(x));
+            case SpecialCompare.CATEGORY_DOUBLE:
+                double a = m.doubleValue();
+                double b = n.doubleValue();
+                if (a > b) {
+                    m = n;
+                    a = b;
+                }
+                return (m instanceof Double ? m :
+                        TermAtomic.makeDouble(a));
+            case SpecialCompare.CATEGORY_LONG:
+            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+                BigDecimal u = TermAtomic.widenBigDecimal(m);
+                BigDecimal v = TermAtomic.widenBigDecimal(n);
+                if (u.compareTo(v) > 0) {
+                    m = n;
+                    u = v;
+                }
+                return ((m instanceof Long || m instanceof BigDecimal) ? m :
+                            TermAtomic.normBigDecimal(u));
+            default:
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
     /**
      * <p>Max the two number.</p>
      *
-     * @param a The first number.
-     * @param b The second number.
+     * @param m The first number.
+     * @param n The second number.
      * @return The minimum of the two numbers.
      */
-    private static Number max(Number a, Number b) {
-        if (SpecialCompare.computeCmp(a, b) > 0) {
-            return a;
-        } else {
-            return b;
+    private static Number max(Number m, Number n) {
+        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
+            case SpecialCompare.CATEGORY_INTEGER:
+            case SpecialCompare.CATEGORY_BIG_INTEGER:
+                if (SpecialCompare.compareIntegerArithmetical(m, n) < 0) {
+                    return n;
+                } else {
+                    return m;
+                }
+            case SpecialCompare.CATEGORY_FLOAT:
+                float x = m.floatValue();
+                float y = n.floatValue();
+                if (x < y) {
+                    m = n;
+                    x = y;
+                }
+                return (m instanceof Float ? m :
+                        TermAtomic.makeFloat(x));
+            case SpecialCompare.CATEGORY_DOUBLE:
+                double a = m.doubleValue();
+                double b = n.doubleValue();
+                if (a < b) {
+                    m = n;
+                    a = b;
+                }
+                return (m instanceof Double ? m :
+                        TermAtomic.makeDouble(a));
+            case SpecialCompare.CATEGORY_LONG:
+            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+                BigDecimal u = TermAtomic.widenBigDecimal(m);
+                BigDecimal v = TermAtomic.widenBigDecimal(n);
+                if (u.compareTo(v) < 0) {
+                    m = n;
+                    u = v;
+                }
+                return ((m instanceof Long || m instanceof BigDecimal) ? m :
+                        TermAtomic.normBigDecimal(u));
+            default:
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 

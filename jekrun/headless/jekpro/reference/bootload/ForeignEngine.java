@@ -10,6 +10,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermCompound;
 import matula.comp.sharik.AbstractTracking;
@@ -56,10 +57,11 @@ public final class ForeignEngine {
      * @return The list of flags.
      */
     public static Object sysListFlags(Interpreter inter) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         ArrayList<String> flags = inter.getProperties();
-        Object res = Knowledgebase.OP_NIL;
+        Object res = lobby.ATOM_NIL;
         for (int i = flags.size() - 1; i >= 0; i--)
-            res = new TermCompound(Knowledgebase.OP_CONS,
+            res = new TermCompound(lobby.ATOM_CONS,
                     flags.get(i), res);
         return res;
     }

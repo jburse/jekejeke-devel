@@ -1,12 +1,15 @@
 package jekpro.model.inter;
 
 import jekpro.model.builtin.SpecialBody;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Bouquet;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.InterfaceClauses;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
 import matula.util.misc.AbstractLock;
 import matula.util.misc.Nonescalable;
 import matula.util.wire.AbstractLivestock;
@@ -41,7 +44,7 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DefinedBlocking extends AbstractDefinedMultifile {
-    private Bouquet cr = Bouquet.newBouquet();
+    private Bouquet cr = new Bouquet();
     private final Nonescalable lock = new Nonescalable();
 
     /**
@@ -143,11 +146,12 @@ final class DefinedBlocking extends AbstractDefinedMultifile {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
         try {
-            InterfaceClauses set = cr.set;
-            if ((set == null || set.size() == 1) ||
-                    (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) != 0)
-                return cr.getClauses();
-            return Bouquet.definedClauses(cr, m, d, en);
+            Bouquet temp = cr;
+            InterfaceClauses set = temp.set;
+            if (set != null && set.size() != 1 &&
+                    (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
+                temp = Bouquet.definedClauses(temp, m, d, en);
+            return temp.getClauses();
         } finally {
             getRead().release();
         }

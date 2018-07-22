@@ -41,18 +41,18 @@ public class EngineCopy {
     public MapHash<TermVar, SkelVar> vars;
 
     /**
-     * <p>Check whether the term needs is ground.</p>
+     * <p>Retrieve the variable or variable array.</p>
      *
      * @param t The term.
-     * @return True if the term needs a display.
+     * @return The variable or variable array.
      */
-    public static boolean isGroundSkel(Object t) {
+    public static Object getVar(Object t) {
         if (t instanceof SkelVar) {
-            return false;
+            return t;
         } else if (t instanceof SkelCompound) {
-            return ((SkelCompound) t).vars == null;
+            return ((SkelCompound) t).var;
         } else {
-            return true;
+            return null;
         }
     }
 
@@ -106,7 +106,7 @@ public class EngineCopy {
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                if (sc.vars != null) {
+                if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++)
                         args[i] = copyTerm(sc.args[i], d);
@@ -122,13 +122,14 @@ public class EngineCopy {
         }
         if (back == null)
             return t;
-        ListArray<SkelVar> vec = SkelCompound.collectVars(t, null);
-        SkelVar[] vars = null;
+        Object var = EngineCopy.getVar(t);
+        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareListButOne(back.args, vec);
-            back.vars = (vars = SkelCompound.listToArray(vec, vars));
+            vec = SkelCompound.prepareVars(back.args, vec);
+            var = SkelCompound.listToArray(vec, var);
+            back.var = var;
             t = back;
             back = jack;
         } while (back != null);
@@ -202,7 +203,7 @@ public class EngineCopy {
                         t = new SkelCompound(sc.sym, args);
                         break;
                     }
-                } else if (sc.vars != null) {
+                } else if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length; i++)
                         args[i] = copyTerm(sc.args[i], d);
@@ -220,13 +221,14 @@ public class EngineCopy {
         }
         if (back == null)
             return t;
-        ListArray<SkelVar> vec = SkelCompound.collectVars(t, null);
-        SkelVar[] vars = null;
+        Object var = EngineCopy.getVar(t);
+        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareListButOne(back.args, vec);
-            back.vars = (vars = SkelCompound.listToArray(vec, vars));
+            vec = SkelCompound.prepareVars(back.args, vec);
+            var = SkelCompound.listToArray(vec, var);
+            back.var = var;
             t = back;
             back = help;
         } while (back != null);
@@ -296,7 +298,7 @@ public class EngineCopy {
                         t = new SkelCompound(sc.sym, args);
                         break;
                     }
-                } else if (sc.vars != null) {
+                } else if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length; i++)
                         args[i] = copyTerm(sc.args[i], d);
@@ -311,13 +313,14 @@ public class EngineCopy {
         }
         if (back == null)
             return t;
-        ListArray<SkelVar> vec = SkelCompound.collectVars(t, null);
-        SkelVar[] vars = null;
+        Object var = EngineCopy.getVar(t);
+        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareListButOne(back.args, vec);
-            back.vars = (vars = SkelCompound.listToArray(vec, vars));
+            vec = SkelCompound.prepareVars(back.args, vec);
+            var = SkelCompound.listToArray(vec, var);
+            back.var = var;
             t = back;
             back = help;
         } while (back != null);

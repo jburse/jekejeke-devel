@@ -257,7 +257,7 @@ public final class SpecialBody extends AbstractSpecial {
     public static Object callableFromName(Object t2, SkelAtom sa) {
         if (t2 instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t2;
-            return new SkelCompound(sa, sc.args, sc.vars);
+            return new SkelCompound(sa, sc.args, sc.var);
         } else if (t2 instanceof SkelAtom) {
             return sa;
         } else {

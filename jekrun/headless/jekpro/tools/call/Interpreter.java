@@ -5,7 +5,6 @@ import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
-import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
@@ -304,7 +303,7 @@ public final class Interpreter implements Comparator<Object> {
         Engine en = (Engine) getEngine();
         try {
             PrologWriter pw;
-            if (!Knowledgebase.OP_NIL.equals(opt)) {
+            if (!opt.equals(Foyer.OP_NIL)) {
                 WriteOpts wo = new WriteOpts(en);
                 wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
                         AbstractTerm.getDisplay(opt), en);
@@ -397,7 +396,7 @@ public final class Interpreter implements Comparator<Object> {
         PrologReader rd;
         try {
             boolean stmt;
-            if (!Knowledgebase.OP_NIL.equals(opt)) {
+            if (!opt.equals(Foyer.OP_NIL)) {
                 ReadOpts ro = new ReadOpts(en);
                 ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
                 if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {

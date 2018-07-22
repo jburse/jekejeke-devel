@@ -41,7 +41,7 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DefinedLockfree extends AbstractDefined {
-    private Bouquet cr = Bouquet.newBouquet();
+    private Bouquet cr = new Bouquet();
 
     /**
      * <p>Create a lockfree delegate.</p>
@@ -103,13 +103,13 @@ final class DefinedLockfree extends AbstractDefined {
      * @param en The engine.
      */
     final Clause[] definedClauses(Object m, Display d, Engine en) {
-        InterfaceClauses set = cr.set;
-        if ((set == null || set.size() == 1) ||
-                (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) != 0)
-            return cr.getClauses();
-        return Bouquet.definedClauses(cr, m, d, en);
+        Bouquet temp = cr;
+        InterfaceClauses set = temp.set;
+        if (set != null && set.size() != 1 &&
+                (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
+            temp = Bouquet.definedClauses(temp, m, d, en);
+        return temp.getClauses();
     }
-
 
     /**
      * <p>Retrieve the length of the clause list.</p>

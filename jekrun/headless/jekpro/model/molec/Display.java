@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -96,13 +97,13 @@ public class Display {
      * @return The display size.
      */
     public static int displaySize(Object m) {
-        if (m instanceof SkelVar) {
-            return 1;
-        } else if (m instanceof SkelCompound) {
-            SkelVar[] vars = ((SkelCompound) m).vars;
-            return (vars != null ? vars.length : 0);
-        } else {
+        Object var= EngineCopy.getVar(m);
+        if (var == null)
             return 0;
+        if (var instanceof SkelVar) {
+            return 1;
+        } else {
+            return ((SkelVar[]) var).length;
         }
     }
 

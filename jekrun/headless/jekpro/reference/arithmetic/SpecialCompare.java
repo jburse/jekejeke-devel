@@ -3,7 +3,6 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -155,7 +154,7 @@ public final class SpecialCompare extends AbstractSpecial {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
             case SpecialCompare.CATEGORY_BIG_INTEGER:
-                return SpecialLexical.compareInteger(m, n);
+                return compareIntegerArithmetical(m, n);
             case SpecialCompare.CATEGORY_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();
@@ -198,6 +197,30 @@ public final class SpecialCompare extends AbstractSpecial {
             return SpecialCompare.CATEGORY_BIG_DECIMAL;
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+
+    /**
+     * <p>Compare two Prolog integers lexically.</p>
+     *
+     * @param alfa The first Prolog integer.
+     * @param beta The second Prolog integer.
+     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     */
+    public static int compareIntegerArithmetical(Object alfa, Object beta) {
+        if (alfa instanceof Integer) {
+            if (beta instanceof Integer) {
+                return ((Integer) alfa).compareTo((Integer) beta);
+            } else {
+                return -((BigInteger) beta).signum();
+            }
+        } else {
+            if (beta instanceof Integer) {
+                return ((BigInteger) alfa).signum();
+            } else {
+                return ((BigInteger) alfa).compareTo((BigInteger) beta);
+            }
         }
     }
 

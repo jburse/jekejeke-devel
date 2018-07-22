@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -270,51 +271,40 @@ public final class SpecialVars extends AbstractSpecial {
                                       Engine en)
             throws EngineException, EngineMessage {
         for (; ; ) {
-            if (m instanceof SkelVar) {
-                SkelVar v = (SkelVar) m;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    m = b.skel;
-                    d = b.display;
-                } else {
-                    Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
-                    if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
-                        return null;
-                    return Integer.valueOf(val.intValue() + 1);
-                }
-            } else if (m instanceof SkelCompound) {
-                SkelCompound tc = (SkelCompound) m;
-                if (tc.vars != null) {
-                    for (int j = 0; j < tc.vars.length - 1; j++) {
-                        SkelVar v = tc.vars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            val = numberVars(b.skel, b.display, val, en);
-                            if (val == null)
-                                return null;
-                        } else {
-                            Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
-                            if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
-                                return null;
-                            val = Integer.valueOf(val.intValue() + 1);
-                        }
-                    }
-                    SkelVar v = tc.vars[tc.vars.length - 1];
+            Object var = EngineCopy.getVar(m);
+            if (var == null)
+                return val;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        m = b.skel;
-                        d = b.display;
+                        val = numberVars(b.skel, b.display, val, en);
+                        if (val == null)
+                            return null;
                     } else {
                         Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
                         if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                             return null;
-                        return Integer.valueOf(val.intValue() + 1);
+                        val = Integer.valueOf(val.intValue() + 1);
                     }
-                } else {
-                    return val;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                m = b.skel;
+                d = b.display;
             } else {
-                return val;
+                Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
+                if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
+                    return null;
+                return Integer.valueOf(val.intValue() + 1);
             }
         }
     }

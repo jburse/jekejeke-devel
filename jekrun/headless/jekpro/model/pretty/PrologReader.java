@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -563,13 +564,14 @@ public class PrologReader {
                 break;
             }
         }
-        ListArray<SkelVar> vec = SkelCompound.collectVars(t, null);
-        SkelVar[] vars = null;
+        Object var = EngineCopy.getVar(t);
+        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareListButOne(back.args, vec);
-            back.vars = (vars = SkelCompound.listToArray(vec, vars));
+            vec = SkelCompound.prepareVars(back.args, vec);
+            var = SkelCompound.listToArray(vec, var);
+            back.var = var;
             t = back;
             back = jack;
         } while (back != null);

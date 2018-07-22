@@ -120,11 +120,12 @@ public final class DefinedGroupLocal extends AbstractDefined {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
         try {
-            InterfaceClauses set = ep.cr.set;
-            if ((set == null || set.size() == 1) ||
-                    (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) != 0)
-                return ep.cr.getClauses();
-            return Bouquet.definedClauses(ep.cr, m, d, en);
+            Bouquet temp = ep.cr;
+            InterfaceClauses set = temp.set;
+            if (set != null && set.size() != 1 &&
+                    (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
+                temp = Bouquet.definedClauses(temp, m, d, en);
+            return temp.getClauses();
         } finally {
             ep.getRead().release();
         }
@@ -257,7 +258,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
                 ep = new LocalBlocking(this);
                 privs.set(seqid, ep);
             } else if (ep.del != this) {
-                ep.cr = Bouquet.newBouquet();
+                ep.cr = new Bouquet();
                 ep.del = this;
             }
         }

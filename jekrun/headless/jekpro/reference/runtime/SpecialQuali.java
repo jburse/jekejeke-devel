@@ -101,7 +101,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 if (en.skel instanceof SkelCompound) {
                     SkelCompound sc2 = (SkelCompound) en.skel;
                     en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
-                            temp.sym, en), sc2.args, sc2.vars);
+                            temp.sym, en), sc2.args, sc2.var);
                 } else if (en.skel instanceof SkelAtom) {
                     SkelAtom sa = (SkelAtom) en.skel;
                     en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
@@ -419,7 +419,7 @@ public final class SpecialQuali extends AbstractSpecial {
             } else if (comp && en.skel instanceof SkelCompound) {
                 SkelCompound sc2 = (SkelCompound) en.skel;
                 en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
-                        temp.sym, en), sc2.args, sc2.vars);
+                        temp.sym, en), sc2.args, sc2.var);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.typeError(
@@ -608,7 +608,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.skel = t;
                 en.display = d;
             }
-            if (!EngineCopy.isGroundSkel(en.skel)) {
+            if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -651,7 +651,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.skel = t;
                 en.display = d;
             }
-            if (multi && !EngineCopy.isGroundSkel(en.skel)) {
+            if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);

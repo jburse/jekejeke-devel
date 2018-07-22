@@ -135,7 +135,7 @@ public abstract class AbstractDelegate {
         if (n > 0) {
             Object[] args = new Object[n];
             System.arraycopy(temp.args, 0, args, 0, n);
-            return new SkelCompound(temp.sym, args, temp.vars);
+            return new SkelCompound(temp.sym, args, temp.var);
         } else {
             return temp.sym;
         }
@@ -218,7 +218,7 @@ public abstract class AbstractDelegate {
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
             Object temp = AbstractTerm.getSkel(args[i]);
-            if (!EngineCopy.isGroundSkel(temp))
+            if (EngineCopy.getVar(temp) != null)
                 k++;
         }
         return new Display(k + 1);
@@ -238,7 +238,7 @@ public abstract class AbstractDelegate {
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
             Object temp = AbstractTerm.getSkel(args[i]);
-            if (!EngineCopy.isGroundSkel(temp)) {
+            if (EngineCopy.getVar(temp) != null) {
                 Display ref2 = AbstractTerm.getDisplay(args[i]);
                 SkelVar sv = SkelVar.valueOf(k);
                 k++;

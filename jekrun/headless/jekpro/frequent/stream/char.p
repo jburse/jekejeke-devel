@@ -118,7 +118,7 @@ put_code(Stream, Code) :-
 
 :- private sys_put_code/2.
 :- foreign(sys_put_code/2, 'ForeignChar',
-      sysPutCode('Writer',int)).
+      sysPutCode('Writer','Integer')).
 
 /**
  * get_char(C): [ISO 8.12.1]

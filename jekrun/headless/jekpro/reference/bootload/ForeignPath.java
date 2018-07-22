@@ -5,12 +5,13 @@ import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.LookupBase;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.MapEntry;
 
@@ -296,7 +297,7 @@ public final class ForeignPath {
             }
             opt = ((TermCompound) opt).getArg(1);
         }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
@@ -330,12 +331,13 @@ public final class ForeignPath {
      */
     public static Object sysGetClassPaths(Interpreter inter)
             throws InterpreterMessage {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         Knowledgebase know = inter.getKnowledgebase();
-        Object end = Knowledgebase.OP_NIL;
+        Object end = lobby.ATOM_NIL;
         while (know != null) {
             String[] paths = know.getClassPaths();
             for (int i = paths.length - 1; i >= 0; i--)
-                end = new TermCompound(Knowledgebase.OP_CONS, paths[i], end);
+                end = new TermCompound(lobby.ATOM_CONS, paths[i], end);
             know = know.getParent();
         }
         return end;
@@ -360,14 +362,15 @@ public final class ForeignPath {
      * @return The list of class paths.
      */
     public static Object sysGetFileExtenstions(Interpreter inter) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         Knowledgebase know = inter.getKnowledgebase();
-        Object end = Knowledgebase.OP_NIL;
+        Object end = lobby.ATOM_NIL;
         while (know != null) {
             MapEntry<String, Integer>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {
                 MapEntry<String, Integer> ext = exts[i];
                 Object val = new TermCompound(Knowledgebase.OP_SUB, ext.key, ext.value);
-                end = new TermCompound(Knowledgebase.OP_CONS, val, end);
+                end = new TermCompound(lobby.ATOM_CONS, val, end);
             }
             know = know.getParent();
         }

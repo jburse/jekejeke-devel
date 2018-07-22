@@ -82,9 +82,8 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(String sym, Object... args) {
-        this(TermCompound.createCount(args, null),
-                new SkelCompound(new SkelAtom(sym),
-                        TermCompound.createAlloc(args, null)));
+        this(TermCompound.makeDeref(args),
+                new SkelCompound(new SkelAtom(sym), args));
     }
 
     /**
@@ -95,9 +94,8 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(TermAtomic sym, Object... args) {
-        this(TermCompound.createCount(args, null),
-                new SkelCompound(getFun(sym),
-                        TermCompound.createAlloc(args, null)));
+        this(TermCompound.makeDeref(args),
+                new SkelCompound(getFun(sym), args));
     }
 
     /**
@@ -252,12 +250,51 @@ public final class TermCompound extends AbstractTerm {
         throw new IllegalArgumentException("illegal fun");
     }
 
+    /******************************************************************/
+    /* Homogenous Case: One Pass                                      */
+    /******************************************************************/
+
+    /**
+     * <p>Determine the homogenous display.</p>
+     * <p>Repopulate array with deref.</p>
+     *
+     * @param args The arguments.
+     * @return The reused display.
+     */
+    private static Display makeDeref(Object[] args) {
+        Display last = Display.DISPLAY_CONST;
+        for (int i = 0; i < args.length; i++) {
+            Object arg = args[i];
+            Object t = AbstractTerm.getSkel(arg);
+            Display d = AbstractTerm.getDisplay(arg);
+            BindVar b;
+            while (t instanceof SkelVar &&
+                    (b = d.bind[((SkelVar) t).id]).display != null) {
+                t = b.skel;
+                d = b.display;
+            }
+            if (EngineCopy.getVar(t) != null) {
+                if (last == Display.DISPLAY_CONST) {
+                    last = d;
+                } else if (last != d) {
+                    throw new IllegalArgumentException("needs display");
+                }
+            }
+            args[i] = t;
+        }
+        return last;
+    }
+
+    /******************************************************************/
+    /* Inhomogenous Case: Two Pass                                    */
+    /******************************************************************/
+
     /**
      * <p>Count the needed variable place holders.</p>
      * <p>New display is only created if multi.</p>
      *
      * @param args The arguments.
-     * @param en   The engine.
+     * @param en   The engine, not null.
      * @return The new or reused display.
      */
     private static Display createCount(Object[] args, Engine en) {
@@ -278,7 +315,7 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (!EngineCopy.isGroundSkel(t)) {
+            if (EngineCopy.getVar(t) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
@@ -287,36 +324,23 @@ public final class TermCompound extends AbstractTerm {
                 }
             }
         }
-        if (en == null) {
-            if (multi)
-                throw new IllegalArgumentException("needs display");
-            return last;
-        } else {
-            if (multi)
-                last = new Display(countvar);
-            en.skel = Boolean.valueOf(multi);
-            en.display = last;
-            return last;
-        }
+        if (multi)
+            last = new Display(countvar);
+        en.skel = Boolean.valueOf(multi);
+        en.display = last;
+        return last;
     }
 
     /**
-     * <p>Allocate the array and bind the place holders where necessary.</p>
+     * <p>Repopulate array with deref or variable.</p>
      * <p>The display is passed via the engine.</p>
      *
      * @param args The arguments.
-     * @param en   The engine copy.
+     * @param en   The engine, not null.
      * @return The arguments.
      */
     private static Object[] createAlloc(Object[] args, Engine en) {
-        boolean multi;
-        if (en == null) {
-            multi = false;
-        } else {
-            multi = (en.skel == Boolean.TRUE);
-        }
-        Object[] newargs = new Object[args.length];
-        int pos = 0;
+        boolean multi = (en.skel == Boolean.TRUE);
         int countvar = 0;
         for (int i = 0; i < args.length; i++) {
             Object arg = args[i];
@@ -328,17 +352,16 @@ public final class TermCompound extends AbstractTerm {
                 t = b.skel;
                 d = b.display;
             }
-            if (multi && !EngineCopy.isGroundSkel(t)) {
+            if (multi && EngineCopy.getVar(t) != null) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 en.display.bind[sv.id].bindVar(t, d, en);
-                newargs[pos] = sv;
+                args[i] = sv;
             } else {
-                newargs[pos] = t;
+                args[i] = t;
             }
-            pos++;
         }
-        return newargs;
+        return args;
     }
 
 }

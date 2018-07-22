@@ -398,12 +398,12 @@ public final class SpecialSort extends AbstractSpecial {
      * @param en The engine.
      */
     private static void subValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineCopy.isGroundSkel(t2)) {
+        if (EngineCopy.getVar(t2) == null) {
             en.skel = new SkelCompound(en.store.foyer.ATOM_SUB, t2, t);
             en.display = d;
             return;
         }
-        if (EngineCopy.isGroundSkel(t)) {
+        if (EngineCopy.getVar(t) == null) {
             en.skel = new SkelCompound(en.store.foyer.ATOM_SUB, t2, t);
             en.display = d2;
             return;

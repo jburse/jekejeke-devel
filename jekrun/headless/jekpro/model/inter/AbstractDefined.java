@@ -223,7 +223,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             }
             if (clause.intargs == null)
                 break;
-            if (AbstractDefined.unifyHead(((SkelCompound) t).args, d,
+            if (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                     ((SkelCompound) clause.head).args, ref,
                     clause.intargs, en))
                 break;
@@ -245,7 +245,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         ref.goaldisplay = u;
         if ((clause.flags & Clause.MASK_CLAUSE_NCUT) != 0 &&
                 (!en.hasCont() || (clause.flags & Intermediate.MASK_INTER_MUTE) != 0) &&
-                !clause.isDebug(en)) {
+                !en.visor.isDebug()) {
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref;
             return true;
@@ -254,8 +254,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at != list.length ||
                 (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
             /* create choice point */
-            en.choices = new ChoiceDefined(en.choices, at, list,
-                    ref, mark);
+            en.choices = new ChoiceDefined(en.choices, at, list, ref, mark);
             en.number++;
             ref.flags |= DisplayClause.MASK_DISP_MORE;
         }
@@ -264,10 +263,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         return en.getNext();
     }
 
-
     /**
      * <p>Unify the head of the clause with the given goal.</p>
-     * <p>Deferred variables are not unified.</p>
      *
      * @param t1   The goal skeleton arguments.
      * @param ref  The goal display.
@@ -279,10 +276,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    static boolean unifyHead(Object[] t1, Display ref,
-                             Object[] t2, DisplayClause ref2,
-                             int[] arr,
-                             Engine en)
+    static boolean unifyDefined(Object[] t1, Display ref,
+                                Object[] t2, DisplayClause ref2,
+                                int[] arr,
+                                Engine en)
             throws EngineException, EngineMessage {
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
@@ -317,7 +314,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en The engine.
      * @return The clauses list or null.
      */
-    public abstract Clause[] listClauses(Engine en) throws EngineMessage;
+    public abstract Clause[] listClauses(Engine en)
+            throws EngineMessage;
 
     /**
      * <p>Retrieve a clause list for the given goal.</p>
@@ -327,7 +325,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en The engine.
      * @return The clauses, or null.
      */
-    abstract Clause[] definedClauses(Object m, Display d, Engine en) throws EngineMessage;
+    abstract Clause[] definedClauses(Object m, Display d, Engine en)
+            throws EngineMessage;
 
     /**
      * <p>Retrieve the length of the clause list.</p>

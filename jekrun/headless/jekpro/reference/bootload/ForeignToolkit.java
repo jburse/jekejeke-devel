@@ -2,6 +2,7 @@ package jekpro.reference.bootload;
 
 import jekpro.tools.call.*;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 
 import java.util.ArrayList;
@@ -135,11 +136,12 @@ public final class ForeignToolkit {
      * @return The list of capabilities.
      */
     public static Object sysGetCapabilities(Interpreter inter) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         Toolkit toolkit = inter.getKnowledgebase().getLobby().getToolkit();
         Capability[] objs = inter.getKnowledgebase().getLobby().getCapabilities();
-        Object end = Knowledgebase.OP_NIL;
+        Object end = lobby.ATOM_NIL;
         for (int i = objs.length - 1; i >= 0; i--) {
-            end = new TermCompound(Knowledgebase.OP_CONS,
+            end = new TermCompound(lobby.ATOM_CONS,
                     toolkit.capabilityToString(objs[i]), end);
         }
         return end;
@@ -156,14 +158,15 @@ public final class ForeignToolkit {
     public static Object sysGetCapabilityProperties(Interpreter inter,
                                                     String clazz)
             throws InterpreterMessage {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        Object res = Knowledgebase.OP_NIL;
+        Object res = lobby.ATOM_NIL;
         String[] props = Capability.getProperties();
         for (int i = 0; i < props.length; i++) {
             String prop = props[i];
             Object val = capa.getProperty(prop, inter.getKnowledgebase().getLobby());
             val = new TermCompound(prop, val);
-            res = new TermCompound(Knowledgebase.OP_CONS, val, res);
+            res = new TermCompound(lobby.ATOM_CONS, val, res);
         }
         return res;
     }

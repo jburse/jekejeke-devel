@@ -94,8 +94,8 @@ public final class SkelVar extends AbstractSkel implements Comparable<SkelVar> {
     /**
      * <p>Retrieve the serial number of a variable.</p>
      *
-     *  @param ref The display.
-     * @param en The engine, or null.
+     * @param ref The display.
+     * @param en  The engine, or null.
      * @return The serial number.
      */
     public int getValue(Display ref, Engine en) {

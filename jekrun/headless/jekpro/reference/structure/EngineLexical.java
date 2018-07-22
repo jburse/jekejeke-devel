@@ -1,8 +1,11 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindSerno;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -47,7 +50,7 @@ public final class EngineLexical implements Comparator<Object> {
     /**
      * <p>Create a engine lexical.</p>
      *
-     * @param c The comparator.
+     * @param c  The comparator.
      * @param en The engine.
      */
     public EngineLexical(Comparator c, Engine en) {
@@ -107,11 +110,11 @@ public final class EngineLexical implements Comparator<Object> {
                     if (k != 0) return k;
                     return ((SkelVar) alfa).compareTo((SkelVar) beta);
                 case SpecialLexical.CMP_TYPE_DECIMAL:
-                    return SpecialLexical.compareDecimal(alfa, beta);
+                    return SpecialLexical.compareDecimalLexical(alfa, beta);
                 case SpecialLexical.CMP_TYPE_FLOAT:
-                    return SpecialLexical.compareFloat(alfa, beta);
+                    return SpecialLexical.compareFloatLexical(alfa, beta);
                 case SpecialLexical.CMP_TYPE_INTEGER:
-                    return SpecialLexical.compareInteger(alfa, beta);
+                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
                 case SpecialLexical.CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);

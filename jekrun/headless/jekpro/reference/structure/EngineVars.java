@@ -1,9 +1,10 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
-import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.NamedDistance;
+import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
@@ -53,42 +54,33 @@ public final class EngineVars {
      */
     public static boolean isGround(Object t, Display d) {
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    return false;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] vars = ((SkelCompound) t).vars;
-                if (vars != null) {
-                    int j = 0;
-                    for (; j < vars.length - 1; j++) {
-                        SkelVar v = vars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            if (!isGround(b.skel, b.display))
-                                return false;
-                        } else {
-                            return false;
-                        }
-                    }
-                    SkelVar v = vars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                return true;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        t = b.skel;
-                        d = b.display;
+                        if (!isGround(b.skel, b.display))
+                            return false;
                     } else {
                         return false;
                     }
-                } else {
-                    return true;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
             } else {
-                return true;
+                return false;
             }
         }
     }
@@ -104,48 +96,20 @@ public final class EngineVars {
      */
     public void varInclude(Object t, Display d) {
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    TermVar key = new TermVar(v, d);
-                    if (vars == null) {
-                        vars = new SetHashLink<TermVar>();
-                        vars.add(key);
-                    } else {
-                        if (vars.getKey(key) == null)
-                            vars.add(key);
-                    }
-                    break;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] scvars = ((SkelCompound) t).vars;
-                if (scvars != null) {
-                    int j = 0;
-                    for (; j < scvars.length - 1; j++) {
-                        SkelVar v = scvars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            varInclude(b.skel, b.display);
-                        } else {
-                            TermVar key = new TermVar(v, d);
-                            if (vars == null) {
-                                vars = new SetHashLink<TermVar>();
-                                vars.add(key);
-                            } else {
-                                if (vars.getKey(key) == null)
-                                    vars.add(key);
-                            }
-                        }
-                    }
-                    SkelVar v = scvars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        t = b.skel;
-                        d = b.display;
+                        varInclude(b.skel, b.display);
                     } else {
                         TermVar key = new TermVar(v, d);
                         if (vars == null) {
@@ -155,12 +119,23 @@ public final class EngineVars {
                             if (vars.getKey(key) == null)
                                 vars.add(key);
                         }
-                        break;
                     }
-                } else {
-                    break;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
             } else {
+                TermVar key = new TermVar(v, d);
+                if (vars == null) {
+                    vars = new SetHashLink<TermVar>();
+                    vars.add(key);
+                } else {
+                    if (vars.getKey(key) == null)
+                        vars.add(key);
+                }
                 break;
             }
         }
@@ -177,44 +152,20 @@ public final class EngineVars {
      */
     public void varExclude(Object t, Display d) {
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    TermVar key = new TermVar(v, d);
-                    if (vars != null) {
-                        vars.remove(key);
-                        if (vars.size == 0)
-                            vars = null;
-                    }
-                    break;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] scvars = ((SkelCompound) t).vars;
-                if (scvars != null) {
-                    int j = 0;
-                    for (; j < scvars.length - 1; j++) {
-                        SkelVar v = scvars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            varExclude(b.skel, b.display);
-                        } else {
-                            TermVar key = new TermVar(v, d);
-                            if (vars != null) {
-                                vars.remove(key);
-                                if (vars.size == 0)
-                                    vars = null;
-                            }
-                        }
-                    }
-                    SkelVar v = scvars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        t = b.skel;
-                        d = b.display;
+                        varExclude(b.skel, b.display);
                     } else {
                         TermVar key = new TermVar(v, d);
                         if (vars != null) {
@@ -222,12 +173,21 @@ public final class EngineVars {
                             if (vars.size == 0)
                                 vars = null;
                         }
-                        break;
                     }
-                } else {
-                    break;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
             } else {
+                TermVar key = new TermVar(v, d);
+                if (vars != null) {
+                    vars.remove(key);
+                    if (vars.size == 0)
+                        vars = null;
+                }
                 break;
             }
         }
@@ -271,14 +231,12 @@ public final class EngineVars {
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                if (sc.vars != null) {
-                    int i = 0;
-                    for (; i < sc.args.length - 1; i++)
-                        singsOf(sc.args[i], d);
-                    t = sc.args[i];
-                } else {
+                if (sc.var == null)
                     break;
-                }
+                int i = 0;
+                for (; i < sc.args.length - 1; i++)
+                    singsOf(sc.args[i], d);
+                t = sc.args[i];
             } else {
                 break;
             }
@@ -296,52 +254,17 @@ public final class EngineVars {
     public boolean isAcyclic(Object t, Display d) {
         int undo = 0;
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    TermVar key = new TermVar(v, d);
-                    if (vars == null) {
-                        vars = new SetHashLink<TermVar>();
-                        vars.add(key);
-                    } else {
-                        if (vars.getKey(key) == null) {
-                            vars.add(key);
-                        } else {
-                            return false;
-                        }
-                    }
-                    undo++;
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    break;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] scvars = ((SkelCompound) t).vars;
-                if (scvars != null) {
-                    int j = 0;
-                    for (; j < scvars.length - 1; j++) {
-                        SkelVar v = scvars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            TermVar key = new TermVar(v, d);
-                            if (vars == null) {
-                                vars = new SetHashLink<TermVar>();
-                                vars.add(key);
-                            } else {
-                                if (vars.getKey(key) == null) {
-                                    vars.add(key);
-                                } else {
-                                    return false;
-                                }
-                            }
-                            if (!isAcyclic(b.skel, b.display))
-                                return false;
-                            vars.remove(key);
-                        }
-                    }
-                    SkelVar v = scvars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
                         TermVar key = new TermVar(v, d);
@@ -355,15 +278,29 @@ public final class EngineVars {
                                 return false;
                             }
                         }
-                        undo++;
-                        t = b.skel;
-                        d = b.display;
-                    } else {
-                        break;
+                        if (!isAcyclic(b.skel, b.display))
+                            return false;
+                        vars.remove(key);
                     }
-                } else {
-                    break;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                TermVar key = new TermVar(v, d);
+                if (vars == null) {
+                    vars = new SetHashLink<TermVar>();
+                    vars.add(key);
+                } else {
+                    if (vars.getKey(key) == null) {
+                        vars.add(key);
+                    } else {
+                        return false;
+                    }
+                }
+                undo++;
+                t = b.skel;
+                d = b.display;
             } else {
                 break;
             }
@@ -382,6 +319,7 @@ public final class EngineVars {
 
     /**
      * <p>Complement the variable names.</p>
+     *
      * @param mvs3  The var set.
      * @param mvs   The anon set, can be null.
      * @param vars  The old variable names.

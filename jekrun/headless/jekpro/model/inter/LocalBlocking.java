@@ -31,7 +31,7 @@ import matula.util.misc.Nonescalable;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class LocalBlocking {
-    Bouquet cr = Bouquet.newBouquet();
+    Bouquet cr = new Bouquet();
     DefinedGroupLocal del;
     private final Nonescalable lock = new Nonescalable();
 

@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
@@ -320,14 +321,15 @@ public final class ReadOpts {
      */
     private static Object termToList(Object val, AbstractStore store) {
         Object end = store.foyer.ATOM_NIL;
-        if (val instanceof SkelVar) {
-            end = new SkelCompound(store.foyer.ATOM_CONS, val, end);
-        } else if (val instanceof SkelCompound) {
-            SkelVar[] vars = ((SkelCompound) val).vars;
-            if (vars == null)
-                return end;
-            for (int i = 0; i < vars.length; i++)
-                end = new SkelCompound(store.foyer.ATOM_CONS, vars[i], end);
+        Object var= EngineCopy.getVar(val);
+        if (var == null)
+            return end;
+        if (var instanceof SkelVar) {
+            end = new SkelCompound(store.foyer.ATOM_CONS, var, end);
+        } else {
+            SkelVar[] temp=(SkelVar[])var;
+            for (int i = 0; i < temp.length; i++)
+                end = new SkelCompound(store.foyer.ATOM_CONS, temp[i], end);
         }
         return end;
     }

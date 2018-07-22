@@ -71,10 +71,10 @@ public final class ForeignChar {
      * @throws InterpreterMessage Validation error.
      * @throws IOException        IO error.
      */
-    public static void sysPutCode(Writer para, int val)
+    public static void sysPutCode(Writer para, Integer val)
             throws InterpreterMessage, IOException {
-        InterpreterMessage.checkCharacterCode(val);
-        para.write(Character.toChars(val));
+        int n = InterpreterMessage.castCodePoint(val);
+        para.write(Character.toChars(n));
     }
 
     /**

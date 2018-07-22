@@ -85,7 +85,7 @@ public final class EngineException extends Exception {
      * @param m The exception skeleton.
      */
     public EngineException(Object m) {
-        if (!EngineCopy.isGroundSkel(m))
+        if (EngineCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -117,7 +117,7 @@ public final class EngineException extends Exception {
      * @param ctx The back trace.
      */
     public EngineException(EngineMessage msg, Object ctx) {
-        if (!EngineCopy.isGroundSkel(ctx))
+        if (EngineCopy.getVar(ctx) != null)
             throw new IllegalArgumentException("needs display");
         template = new SkelCompound(new SkelAtom(OP_ERROR), msg.getTemplate(), ctx);
         initCause(msg);
@@ -131,7 +131,7 @@ public final class EngineException extends Exception {
      * @param type The type functor.
      */
     public EngineException(EngineMessage msg, Object ctx, String type) {
-        if (!EngineCopy.isGroundSkel(ctx))
+        if (EngineCopy.getVar(ctx) != null)
             throw new IllegalArgumentException("needs display");
         template = new SkelCompound(new SkelAtom(type), msg.getTemplate(), ctx);
         initCause(msg);

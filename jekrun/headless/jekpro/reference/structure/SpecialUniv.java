@@ -152,7 +152,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     EngineMessage.checkInstantiated(en.skel);
                     throw new EngineMessage(EngineMessage.typeError(
                             EngineMessage.OP_TYPE_CALLABLE,
-                                    en.skel), en.display);
+                            en.skel), en.display);
                 }
             case SPECIAL_UNIFY:
                 temp = ((SkelCompound) en.skel).args;
@@ -213,7 +213,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = t;
                 en.display = d;
             }
-            if (!EngineCopy.isGroundSkel(en.skel)) {
+            if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -257,7 +257,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = t;
                 en.display = d;
             }
-            if (multi && !EngineCopy.isGroundSkel(en.skel)) {
+            if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);
@@ -364,7 +364,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (!EngineCopy.isGroundSkel(en.skel)) {
+            if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -400,7 +400,7 @@ public final class SpecialUniv extends AbstractSpecial {
      *
      * @param t      The term skeleton.
      * @param d      The term display.
-     * @param mullen  The multi flag and the length.
+     * @param mullen The multi flag and the length.
      * @param en     The engine.
      * @return The arguments.
      */
@@ -417,7 +417,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (multi && !EngineCopy.isGroundSkel(en.skel)) {
+            if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
                 d2.bind[sv.id].bindVar(en.skel, en.display, en);
@@ -511,50 +511,42 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>Uses the vars speed up structure of skel compouned.</p>
      * <p>Tail recursive implementation.</p>
      *
-     * @param m   The term.
-     * @param d   The display of the term.
-     * @param var The variable.
-     * @param d2  The display of the variable.
+     * @param m  The term.
+     * @param d  The display of the term.
+     * @param t  The variable.
+     * @param d2 The display of the variable.
      * @return True when the variable occurs in the term, false otherwise.
      */
-    private static boolean hasVar(Object m, Display d, SkelVar var, Display d2) {
+    private static boolean hasVar(Object m, Display d, SkelVar t, Display d2) {
         for (; ; ) {
-            if (m instanceof SkelVar) {
-                SkelVar v = (SkelVar) m;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    m = b.skel;
-                    d = b.display;
-                } else {
-                    return (v == var && d == d2);
-                }
-            } else if (m instanceof SkelCompound) {
-                SkelCompound tc = (SkelCompound) m;
-                if (tc.vars != null) {
-                    for (int i = 0; i < tc.vars.length - 1; i++) {
-                        SkelVar v = tc.vars[i];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            if (hasVar(b.skel, b.display, var, d2))
-                                return true;
-                        } else {
-                            if (v == var && d == d2)
-                                return true;
-                        }
-                    }
-                    SkelVar v = tc.vars[tc.vars.length - 1];
+            Object var = EngineCopy.getVar(m);
+            if (var == null)
+                return false;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int i = 0;
+                for (; i < temp.length - 1; i++) {
+                    v = temp[i];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        m = b.skel;
-                        d = b.display;
+                        if (hasVar(b.skel, b.display, t, d2))
+                            return true;
                     } else {
-                        return (v == var && d == d2);
+                        if (v == t && d == d2)
+                            return true;
                     }
-                } else {
-                    return false;
                 }
+                v = temp[i];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                m = b.skel;
+                d = b.display;
             } else {
-                return false;
+                return (v == t && d == d2);
             }
         }
     }

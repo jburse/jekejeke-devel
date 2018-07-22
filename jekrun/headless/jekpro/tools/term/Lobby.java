@@ -69,6 +69,8 @@ import static jekpro.tools.term.Knowledgebase.OP_TRUE;
  */
 public final class Lobby {
     private final Foyer foyer;
+    public final TermAtomic ATOM_CONS;
+    public final TermAtomic ATOM_NIL;
 
     public final TermAtomic GOAL_TRUE = new TermAtomic(OP_TRUE);
 
@@ -82,6 +84,8 @@ public final class Lobby {
 
         foyer = factory.createFoyer();
         foyer.proxy = this;
+        ATOM_CONS = new TermAtomic(foyer.ATOM_CONS);
+        ATOM_NIL = new TermAtomic(foyer.ATOM_NIL);
     }
 
     /**

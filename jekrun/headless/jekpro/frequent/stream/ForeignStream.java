@@ -134,7 +134,7 @@ public final class ForeignStream {
      */
     public static void sysClose(Object str, Object opt)
             throws InterpreterMessage, IOException {
-        if (opt.equals(Knowledgebase.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
@@ -624,7 +624,7 @@ public final class ForeignStream {
             }
             opt = ((TermCompound) opt).getArg(1);
         }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);

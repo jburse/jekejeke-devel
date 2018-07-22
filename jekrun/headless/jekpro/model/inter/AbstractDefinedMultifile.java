@@ -86,7 +86,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             }
             if (clause.intargs == null)
                 break;
-            if (AbstractDefined.unifyHead(((SkelCompound) t).args, d,
+            if (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                     ((SkelCompound) clause.head).args, ref,
                     clause.intargs, en))
                 break;
@@ -113,7 +113,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         ref.goaldisplay = u;
         if ((clause.flags & Clause.MASK_CLAUSE_NCUT) != 0 &&
                 (!en.hasCont() || (clause.flags & Intermediate.MASK_INTER_MUTE) != 0) &&
-                !clause.isDebug(en)) {
+                !en.visor.isDebug()) {
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref;
             return true;
@@ -129,8 +129,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         if (nextat != list.length ||
                 (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
             /* create choice point */
-            en.choices = new ChoiceDefinedMultfile(en.choices, at, list,
-                    ref, mark, nextat);
+            en.choices = new ChoiceDefinedMultfile(en.choices, at, list, ref, mark, nextat);
             en.number++;
             ref.flags |= DisplayClause.MASK_DISP_MORE;
         }

@@ -274,37 +274,37 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
 
 /**
  * atom_chars(X, Y): [ISO 8.16.4]
- * If Y is ground and Y is a character list then the predicate
- * succeeds when X unifies with the corresponding atom. If Y is
- * not ground and X is a atom then the predicate succeeds when Y
- * unifies with the corresponding character list.
+ * If X is a variable and Y is a character list then the predicate
+ * succeeds when X unifies with the corresponding atom. Otherwise if
+ * X is an atom then the predicate succeeds when Y unifies with the
+ * corresponding character list.
  */
 % atom_chars(+-Atom, -+Chars)
 :- public atom_chars/2.
 atom_chars(Atom, Chars) :-
-   ground(Chars), !,
+   var(Atom), !,
    sys_list_to_atom(Chars, 0, Atom).
 atom_chars(Atom, Chars) :-
    sys_atom_to_list(Atom, 0, Chars).
 
 /**
  * atom_codes(X, Y): [ISO 8.16.5]
- * If Y is ground and Y is a code list then the predicate succeeds
- * when X unifies with the corresponding atom. If Y is not ground
- * and X is a atom then the predicate succeeds when Y unifies with
- * the corresponding code list.
+ * If X is a variable and Y is a code list then the predicate succeeds
+ * when X unifies with the corresponding atom. Otherwise if X is
+ * an atom then the predicate succeeds when Y unifies with the
+ * corresponding code list.
  */
 % atom_codes(+-Atom, -+Codes)
 :- public atom_codes/2.
 atom_codes(Atom, Codes) :-
-   ground(Codes), !,
+   var(Atom), !,
    sys_list_to_atom(Codes, 1, Atom).
 atom_codes(Atom, Codes) :-
    sys_atom_to_list(Atom, 1, Codes).
 
 :- private sys_atom_to_list/3.
 :- foreign(sys_atom_to_list/3, 'ForeignAtom',
-      sysAtomToList('String',int)).
+      sysAtomToList('Interpreter','String',int)).
 
 :- private sys_list_to_atom/3.
 :- foreign(sys_list_to_atom/3, 'ForeignAtom',
@@ -312,7 +312,7 @@ atom_codes(Atom, Codes) :-
 
 /**
  * char_code(X, Y): [ISO 8.16.6]
- * If Y is ground and if Y is a code then the predicate succeeds
+ * If X is a variable and if Y is a code then the predicate succeeds
  * when X unifies with the corresponding character. Otherwise if X
  * is a character then the predicate succeeds when Y unifies with
  * the corresponding code.
@@ -331,19 +331,19 @@ char_code(Char, Code) :-
 
 :- private sys_code_to_char/2.
 :- foreign(sys_code_to_char/2, 'ForeignAtom',
-      sysCodeToChar(int)).
+      sysCodeToChar('Integer')).
 
 /**
  * number_chars(X, Y): [ISO 8.16.7]
- * If Y is ground and Y is a character list then the predicate
- * succeeds when X unifies with the corresponding number. If Y
- * is not ground and X is a number then the predicate succeeds
- * when Y unifies with the corresponding character list.
+ * If X is a variable and Y is a character list then the predicate
+ * succeeds when X unifies with the corresponding number. Otherwise
+ * if X is a number then the predicate succeeds when Y unifies with
+ * the corresponding character list.
  */
 % number_chars(+-Number, -+Chars)
 :- public number_chars/2.
 number_chars(Number, Chars) :-
-   ground(Chars), !,
+   var(Number), !,
    sys_list_to_atom(Chars, 0, Atom),
    sys_atom_to_number(Atom, Number).
 number_chars(Number, Chars) :-
@@ -352,15 +352,15 @@ number_chars(Number, Chars) :-
 
 /**
  * number_codes(X, Y): [ISO 8.16.8]
- * If Y is ground and Y is a code list then the predicate succeeds
- * when X unifies with the corresponding number. If Y is not ground
- * and X is a number then the predicate suc-ceeds when Y unifies
+ * If X is a variable and Y is a code list then the predicate
+ * succeeds when X unifies with the corresponding number. Otherwise
+ * if X is a number then the predicate suceeds when Y unifies
  * with the corresponding code list.
  */
 % number_codes(+-Number, -+Codes)
 :- public number_codes/2.
 number_codes(Number, Codes) :-
-   ground(Codes), !,
+   var(Number), !,
    sys_list_to_atom(Codes, 1, Atom),
    sys_atom_to_number(Atom, Number).
 number_codes(Number, Codes) :-

@@ -40,6 +40,7 @@
 :- package(library(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/frequent/system)).
 :- use_package(foreign(java/util)).
+:- use_package(foreign(jekpro/tools/call)).
 
 :- module(shell, []).
 :- use_module(library(basic/lists)).
@@ -67,7 +68,7 @@ getenv(Name, Value) :-
 :- foreign(sys_get_env/2, 'System', getenv('String')).
 
 :- private sys_list_env/1.
-:- foreign(sys_list_env/1, 'ForeignShell', sysListEnv).
+:- foreign(sys_list_env/1, 'ForeignShell', sysListEnv('Interpreter')).
 
 /*****************************************************************/
 /* System Date & Time                                            */

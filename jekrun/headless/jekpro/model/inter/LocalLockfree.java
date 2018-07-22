@@ -29,7 +29,7 @@ import jekpro.model.rope.Bouquet;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class LocalLockfree {
-    Bouquet cr = Bouquet.newBouquet();
+    Bouquet cr = new Bouquet();
     DefinedThreadLocal del;
 
     /**

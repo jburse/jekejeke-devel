@@ -251,7 +251,7 @@ public final class EngineMessage extends Exception {
      * @param m The message skeleton.
      */
     public EngineMessage(Object m) {
-        if (!EngineCopy.isGroundSkel(m))
+        if (EngineCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -556,18 +556,6 @@ public final class EngineMessage extends Exception {
     }
 
     /**
-     * <p>Check whether the given int is a character code.</p>
-     *
-     * @param n The primitive int.
-     * @throws EngineMessage Not a character code.
-     */
-    public static void checkCharacterCode(int n) throws EngineMessage {
-        if (n < 0 || n > Character.MAX_CODE_POINT)
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_CHARACTER_CODE));
-    }
-
-    /**
      * <p>Check whether the given int is a byte.</p>
      *
      * @param n The primitive int.
@@ -692,14 +680,36 @@ public final class EngineMessage extends Exception {
      */
     public static byte castByteValue(Number t)
             throws EngineMessage {
-        if (t instanceof Integer &&
-                Byte.MIN_VALUE <= t.intValue() &&
-                t.intValue() <= Byte.MAX_VALUE) {
-            return (byte) t.intValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_BYTE));
+        if (t instanceof Integer) {
+            int n = t.intValue();
+            if (Byte.MIN_VALUE <= n &&
+                    n <= Byte.MAX_VALUE) {
+                return (byte) n;
+            }
         }
+        throw new EngineMessage(EngineMessage.representationError(
+                EngineMessage.OP_REPRESENTATION_BYTE));
+    }
+
+    /**
+     * <p>Check whether the given value is a code point.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param t The number, either Integer or BigInteger.
+     * @return The primitive byte value.
+     * @throws EngineMessage Not a byte value.
+     */
+    public static int castCodePoint(Number t)
+            throws EngineMessage {
+        if (t instanceof Integer) {
+            int n = t.intValue();
+            if (0 <= n &&
+                    n <= Character.MAX_CODE_POINT) {
+                return n;
+            }
+        }
+        throw new EngineMessage(EngineMessage.representationError(
+                EngineMessage.OP_REPRESENTATION_CHARACTER_CODE));
     }
 
     /**

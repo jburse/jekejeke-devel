@@ -1,6 +1,8 @@
 package jekpro.frequent.system;
 
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 
 import java.util.Iterator;
@@ -42,11 +44,12 @@ public final class ForeignShell {
      *
      * @return The environment variable names.
      */
-    public static Object sysListEnv() {
+    public static Object sysListEnv(Interpreter inter) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         Iterator<String> iter = System.getenv().keySet().iterator();
-        Object res = Knowledgebase.OP_NIL;
+        Object res = lobby.ATOM_NIL;
         while (iter.hasNext()) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
+            res = new TermCompound(lobby.ATOM_CONS,
                     iter.next(), res);
         }
         return res;

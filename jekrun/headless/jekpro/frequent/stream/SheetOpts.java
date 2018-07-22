@@ -1,6 +1,7 @@
 package jekpro.frequent.stream;
 
 import jekpro.frequent.system.DomOpts;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
@@ -132,7 +133,7 @@ class SheetOpts extends DomOpts {
             }
             opt = ((TermCompound) opt).getArg(1);
         }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
