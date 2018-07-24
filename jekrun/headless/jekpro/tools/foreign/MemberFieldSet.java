@@ -114,7 +114,7 @@ final class MemberFieldSet extends AbstractMember {
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj = convertObj(temp, ref);
         Object arg = AbstractLense.convertArg(
                 ((SkelCompound) temp).args[1], ref, encodeparas[0]);
         invokeSetter(obj, arg);

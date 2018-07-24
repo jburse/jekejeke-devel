@@ -38,7 +38,7 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class EngineCopy {
-    public MapHash<TermVar, SkelVar> vars;
+    public MapHash<BindCount, SkelVar> vars;
 
     /**
      * <p>Retrieve the variable or variable array.</p>
@@ -68,9 +68,9 @@ public class EngineCopy {
      * @return The new variable.
      */
     public SkelVar getVar(SkelVar v, Display d) {
-        TermVar key = new TermVar(v, d);
+        BindCount key=d.bind[v.id];
         if (vars == null) {
-            vars = new MapHash<TermVar, SkelVar>();
+            vars = new MapHash<BindCount, SkelVar>();
             v = null;
         } else {
             v = vars.get(key);
@@ -91,7 +91,7 @@ public class EngineCopy {
      * @param d The term display.
      * @return A copy of the term.
      */
-    public Object copyTerm(Object t, Display d) {
+    public final Object copyTerm(Object t, Display d) {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
@@ -122,14 +122,10 @@ public class EngineCopy {
         }
         if (back == null)
             return t;
-        Object var = EngineCopy.getVar(t);
-        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareVars(back.args, vec);
-            var = SkelCompound.listToArray(vec, var);
-            back.var = var;
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         } while (back != null);
@@ -159,7 +155,7 @@ public class EngineCopy {
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
-    public Object copyGoalAndWrap(Object t, Display d,
+    public final Object copyGoalAndWrap(Object t, Display d,
                                   Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -221,14 +217,10 @@ public class EngineCopy {
         }
         if (back == null)
             return t;
-        Object var = EngineCopy.getVar(t);
-        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareVars(back.args, vec);
-            var = SkelCompound.listToArray(vec, var);
-            back.var = var;
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = help;
         } while (back != null);
@@ -255,7 +247,7 @@ public class EngineCopy {
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
-    public Object copyTermAndWrap(Object t, Display d,
+    public final Object copyTermAndWrap(Object t, Display d,
                                   Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -313,14 +305,10 @@ public class EngineCopy {
         }
         if (back == null)
             return t;
-        Object var = EngineCopy.getVar(t);
-        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareVars(back.args, vec);
-            var = SkelCompound.listToArray(vec, var);
-            back.var = var;
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = help;
         } while (back != null);

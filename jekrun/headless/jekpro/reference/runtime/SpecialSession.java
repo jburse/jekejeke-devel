@@ -613,7 +613,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @return The named copy.
      */
     public static Named[] copyVars(MapHashLink<String, SkelVar> vars, Display d,
-                                   Engine en, MapHash<TermVar, SkelVar> map) {
+                                   Engine en, MapHash<BindCount, SkelVar> map) {
         if (vars == null)
             return null;
         ListArray<Named> copy = null;
@@ -625,7 +625,7 @@ public final class SpecialSession extends AbstractSpecial {
             if (!(en.skel instanceof SkelVar))
                 continue;
             SkelVar sv = (SkelVar) en.skel;
-            TermVar key = new TermVar(sv, en.display);
+            BindCount key = en.display.bind[sv.id];
             sv = (map != null ? map.get(key) : null);
             if (sv == null)
                 continue;

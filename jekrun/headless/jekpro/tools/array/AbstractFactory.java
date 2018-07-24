@@ -141,8 +141,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public abstract boolean createMethod(Method m, Engine en, boolean k)
-            throws EngineMessage;
+    public abstract boolean createMethod(Method m, Engine en, boolean k);
 
     /**
      * <p>Create a foreign constructor delegate.</p>
@@ -151,10 +150,8 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param c  The constructor.
      * @param en The engine.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
      */
-    public abstract boolean createConstructor(Constructor c, Engine en)
-            throws EngineMessage;
+    public abstract boolean createConstructor(Constructor c, Engine en);
 
     /**
      * <p>Create a foreign getter or setter delegate.</p>
@@ -164,10 +161,8 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
      */
-    public abstract boolean createField(Field f, Engine en, int k)
-            throws EngineMessage;
+    public abstract boolean createField(Field f, Engine en, int k);
 
     /**
      * <p>Create a foreign array delegate.</p>
@@ -177,10 +172,8 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
      */
-    public abstract boolean createArray(Class c, Engine en, int k)
-            throws EngineMessage;
+    public abstract boolean createArray(Class c, Engine en, int k);
 
     /***********************************************************************/
     /* Foreign Functions                                                   */

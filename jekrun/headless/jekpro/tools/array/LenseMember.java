@@ -113,7 +113,7 @@ final class LenseMember extends AbstractLense {
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj = convertObj(temp, ref);
         en.skel = ((SkelCompound) temp).args[1];
         en.display = ref;
         en.deref();

@@ -111,17 +111,19 @@ public class Display {
      * <p>Same as engine remtab for univ builtins.</p>
      */
     public void remTab(Engine en) {
-        int n = bind.length;
+        int n = (bind != null ? bind.length : 0);
         int k = 0;
-        do {
-            BindCount bc = bind[k];
-            if ((--bc.refs) == 0) {
-                bind[k] = null;
-                if (bc.display != null)
-                    BindVar.unbind(bc, en);
-            }
-            k++;
-        } while (k < n);
+        if (k < n) {
+            do {
+                BindCount bc = bind[k];
+                if ((--bc.refs) == 0) {
+                    bind[k] = null;
+                    if (bc.display != null)
+                        BindVar.unbind(bc, en);
+                }
+                k++;
+            } while (k < n);
+        }
     }
 
 }

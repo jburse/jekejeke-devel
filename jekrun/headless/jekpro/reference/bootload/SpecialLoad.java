@@ -362,14 +362,9 @@ public final class SpecialLoad extends AbstractSpecial {
             }
             Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
             EngineSkel ek = new EngineSkel();
-            ek.vars = new SetHash<SkelVar>();
-            ek.anon = new SetHash<SkelVar>();
             ek.singsOfSkel(t);
             Named[] vars = EngineSkel.numberVariablesSkel(ek.vars, ek.anon, clause.vars);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
-//                pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_NAVI
-//                        | PrologWriter.FLAG_MKDT);
-//                pw.setSource(source);
             AbstractSource.showClause(pw, t, vars, en);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
         }

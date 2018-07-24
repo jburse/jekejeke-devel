@@ -1,14 +1,18 @@
 package jekpro.tools.array;
 
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.TermAtomic;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 /**
  * <p>Provides mapping between Java data types and the external
@@ -67,7 +71,66 @@ public final class Types {
     public static final int TYPE_TERM = 24;
     public static final int TYPE_INTERPRETER = 25;
     public static final int TYPE_CALLOUT = 26;
-    public static final int TYPE_UNSUPPORTED = 27;
+
+    /******************************************************************/
+    /* Evaluable Types                                                */
+    /******************************************************************/
+
+    public final static HashMap<Class, Integer> typeeval = new HashMap<Class, Integer>();
+
+    static {
+        Types.typeeval.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
+        Types.typeeval.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
+        Types.typeeval.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
+        Types.typeeval.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
+        Types.typeeval.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
+        Types.typeeval.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
+        Types.typeeval.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
+        Types.typeeval.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
+        Types.typeeval.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
+        Types.typeeval.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
+        Types.typeeval.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
+        Types.typeeval.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
+        Types.typeeval.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
+        Types.typeeval.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
+        Types.typeeval.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
+        Types.typeeval.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
+    }
+
+    /******************************************************************/
+    /* Predicate Types                                                */
+    /******************************************************************/
+
+    public final static HashMap<Class, Integer> typepred = new HashMap<Class, Integer>();
+
+    static {
+        Types.typepred.put(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));
+        Types.typepred.put(String.class, Integer.valueOf(Types.TYPE_STRING));
+        Types.typepred.put(CharSequence.class, Integer.valueOf(Types.TYPE_CHARSEQ));
+        Types.typepred.put(Boolean.TYPE, Integer.valueOf(Types.TYPE_PRIMBOOL));
+        Types.typepred.put(Boolean.class, Integer.valueOf(Types.TYPE_BOOL));
+        Types.typepred.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
+        Types.typepred.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
+        Types.typepred.put(Character.TYPE, Integer.valueOf(Types.TYPE_PRIMCHAR));
+        Types.typepred.put(Character.class, Integer.valueOf(Types.TYPE_CHAR));
+        Types.typepred.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
+        Types.typepred.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
+        Types.typepred.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
+        Types.typepred.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
+        Types.typepred.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
+        Types.typepred.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
+        Types.typepred.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
+        Types.typepred.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
+        Types.typepred.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
+        Types.typepred.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
+        Types.typepred.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
+        Types.typepred.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
+        Types.typepred.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
+        Types.typepred.put(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
+        Types.typepred.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
+        Types.typepred.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
+        Types.typepred.put(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
+    }
 
     /******************************************************************/
     /* Type Mappings                                                  */

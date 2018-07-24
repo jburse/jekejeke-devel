@@ -3,12 +3,9 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
@@ -117,7 +114,7 @@ final class MemberFieldGet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj = convertObj(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
         res = Types.normJava(encoderet, res);
         if (res == null)

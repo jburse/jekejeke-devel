@@ -116,7 +116,7 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Reexport the super class of a class.</p>
      *
-     * @param en The interpreter.
+     * @param en The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
@@ -140,11 +140,9 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Collect the constructors.</p>
      *
-     * @param en The interpreter.
-     * @throws EngineMessage FFI error.
+     * @param en The engine.
      */
-    private void collectConstructors(Engine en)
-            throws EngineMessage {
+    private void collectConstructors(Engine en) {
         Constructor[] constructors = getAuto().getDeclaredConstructors();
         for (int i = 0; i < constructors.length; i++) {
             Constructor constructor = constructors[i];
@@ -160,11 +158,9 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Collect the methods.</p>
      *
-     * @param en The interpreter.
-     * @throws EngineMessage FFI error.
+     * @param en The engine.
      */
-    private void collectMethods(Engine en)
-            throws EngineMessage {
+    private void collectMethods(Engine en) {
         Method[] methods = getAuto().getDeclaredMethods();
         for (int i = 0; i < methods.length; i++) {
             Method method = methods[i];
@@ -183,11 +179,9 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Collect the fields.</p>
      *
-     * @param en The interpreter.
-     * @throws EngineMessage FFI error.
+     * @param en The engine.
      */
-    private void collectFields(Engine en)
-            throws EngineMessage {
+    private void collectFields(Engine en) {
         Field[] fields = getAuto().getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
@@ -262,8 +256,7 @@ public final class AutoClass extends AbstractAuto {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Engine en,
-                             boolean rec)
+    private void defineMeths(Engine en, boolean rec)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, ListArray<AbstractMember>> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {
@@ -474,10 +467,8 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createMethod(Method m, Engine en, boolean k)
-            throws EngineMessage {
+    public static boolean createMethod(Method m, Engine en, boolean k) {
         AbstractMember del;
         if (k) {
             if (!validateExceptionTypes(m.getExceptionTypes(), en))
@@ -507,10 +498,8 @@ public final class AutoClass extends AbstractAuto {
      * @param c  The constructor.
      * @param en The engine.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createConstructor(Constructor c, Engine en)
-            throws EngineMessage {
+    public static boolean createConstructor(Constructor c, Engine en) {
         if (!validateExceptionTypes(c.getExceptionTypes(), en))
             return false;
         AbstractMember del = new MemberConstructor(c);
@@ -528,10 +517,8 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createField(Field f, Engine en, int k)
-            throws EngineMessage {
+    public static boolean createField(Field f, Engine en, int k) {
         AbstractMember del;
         switch (k) {
             case AbstractFactory.FIELD_GET_PRED:

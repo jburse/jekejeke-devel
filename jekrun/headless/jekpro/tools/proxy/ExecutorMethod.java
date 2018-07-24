@@ -80,39 +80,6 @@ final class ExecutorMethod extends AbstractExecutor {
         functor = (TermAtomic) AbstractTerm.createTermWrapped(val, Display.DISPLAY_CONST);
     }
 
-    /******************************************************************/
-    /* Type Encoding                                                  */
-    /******************************************************************/
-
-    private final static HashMap<Class, Integer> typemap = new HashMap<Class, Integer>();
-
-    static {
-        typemap.put(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));
-        typemap.put(String.class, Integer.valueOf(Types.TYPE_STRING));
-        typemap.put(CharSequence.class, Integer.valueOf(Types.TYPE_CHARSEQ));
-        typemap.put(Boolean.TYPE, Integer.valueOf(Types.TYPE_PRIMBOOL));
-        typemap.put(Boolean.class, Integer.valueOf(Types.TYPE_BOOL));
-        typemap.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
-        typemap.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
-        typemap.put(Character.TYPE, Integer.valueOf(Types.TYPE_PRIMCHAR));
-        typemap.put(Character.class, Integer.valueOf(Types.TYPE_CHAR));
-        typemap.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
-        typemap.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
-        typemap.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
-        typemap.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
-        typemap.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
-        typemap.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
-        typemap.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
-        typemap.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
-        typemap.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
-        typemap.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
-        typemap.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
-        typemap.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
-        typemap.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
-        typemap.put(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
-        typemap.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
-    }
-
     /**
      * <p>Encode the signature of a foreign method.</p>
      * <p>The culprit is returned in the engine skel.</p>
@@ -120,29 +87,31 @@ final class ExecutorMethod extends AbstractExecutor {
      * @return True if the signature is ok, otherwise false.
      */
     public boolean encodeSignature() {
+        Class ret = method.getReturnType();
+        Integer encode = Types.typepred.get(ret);
+        if (encode == null) {
+            encoderet = Types.TYPE_REF;
+        } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
+                encode.intValue() == Types.TYPE_CALLOUT) {
+            return false;
+        } else {
+            encoderet = encode.intValue();
+        }
+
         Class[] paras = method.getParameterTypes();
         encodeparas = (paras.length != 0 ? new int[paras.length] : ExecutorMethod.VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
-            Class ret = paras[i];
-            Integer encode = ExecutorMethod.typemap.get(ret);
+            ret = paras[i];
+            encode = Types.typepred.get(ret);
             if (encode == null) {
                 encodeparas[i] = Types.TYPE_REF;
             } else if (encode.intValue() == Types.TYPE_VOID ||
-                    encode.intValue() == Types.TYPE_UNSUPPORTED) {
+                    encode.intValue() == Types.TYPE_INTERPRETER ||
+                    encode.intValue() == Types.TYPE_CALLOUT) {
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
             }
-        }
-
-        Class ret = method.getReturnType();
-        Integer encode = ExecutorMethod.typemap.get(ret);
-        if (encode == null) {
-            encoderet = Types.TYPE_REF;
-        } else if (encode.intValue() == Types.TYPE_UNSUPPORTED) {
-            return false;
-        } else {
-            encoderet = encode.intValue();
         }
 
         if (!Modifier.isStatic(method.getModifiers()))

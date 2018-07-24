@@ -80,9 +80,12 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                SpecialUniv.listToTerm(en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                boolean multi = SpecialUniv.listToTerm(en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_ARG:
                 temp = ((SkelCompound) en.skel).args;
@@ -127,13 +130,11 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 if (en.skel instanceof SkelCompound) {
-                    SkelCompound cmp = (SkelCompound) en.skel;
-                    if (cmp.args.length < nth)
+                    SkelCompound sc = (SkelCompound) en.skel;
+                    if (1 > nth || nth > sc.args.length)
                         return false;
-                    if (nth < 1)
-                        return false;
-                    Display d = en.display;
                     nth--;
+                    d = en.display;
 
                     en.skel = temp[2];
                     en.display = ref;
@@ -141,10 +142,14 @@ public final class SpecialUniv extends AbstractSpecial {
                     Object t2 = en.skel;
                     Display d2 = en.display;
 
-                    boolean multi = SpecialUniv.setCount(cmp.args, d, t2, d2, nth, en);
-                    en.skel = new SkelCompound(cmp.sym, SpecialUniv.setAlloc(cmp.args, d, t2, d2, nth, multi, en));
-                    if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
+                    multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
+                    sc = new SkelCompound(sc.sym,
+                            SpecialUniv.setAlloc(sc.args, d, t2, d2, nth, multi, en));
+                    d = en.display;
+                    if (!en.unifyTerm(temp[3], ref, sc, d))
                         return false;
+                    if (multi)
+                        d.remTab(en);
                     return en.getNext();
                 } else if (en.skel instanceof SkelAtom) {
                     return false;
@@ -309,7 +314,7 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en The interpreter.
      * @throws EngineMessage Shit happens.
      */
-    private static void listToTerm(Engine en) throws EngineMessage {
+    private static boolean listToTerm(Engine en) throws EngineMessage {
         Object t = en.skel;
         Display d = en.display;
         if ((t instanceof SkelCompound) &&
@@ -324,21 +329,25 @@ public final class SpecialUniv extends AbstractSpecial {
         en.skel = sc.args[0];
         en.display = d;
         en.deref();
-        EngineMessage.checkInstantiated(en.skel);
         Object t2 = en.skel;
         Display d2 = en.display;
+
         en.skel = sc.args[1];
         en.display = d;
         en.deref();
         t = en.skel;
         d = en.display;
+
         int mullen = univCount(t, d, en);
         if (!(t2 instanceof SkelCompound) && mullen == 0) {
+            EngineMessage.checkInstantiated(en.skel);
             en.skel = t2;
         } else {
             SkelAtom sa = EngineMessage.castStringWrapped(t2, d2);
             en.skel = new SkelCompound(sa, univAlloc(t, d, mullen, en));
         }
+
+        return (mullen < 0);
     }
 
     /**

@@ -196,10 +196,8 @@ public final class AutoArray extends AbstractAuto {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createArray(Class c, Engine en, int k)
-            throws EngineMessage {
+    public static boolean createArray(Class c, Engine en, int k) {
         if (!c.isArray()) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_ARRAY,

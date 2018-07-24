@@ -114,7 +114,7 @@ final class MemberMethodDet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj = convertObj(temp, ref);
         Object[] args = convertArgs(temp, ref, en, null);
         Object res = invokeMethod(method, obj, args);
         res = Types.normJava(encoderet, res);

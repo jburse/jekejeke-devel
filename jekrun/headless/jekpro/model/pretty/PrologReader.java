@@ -564,14 +564,10 @@ public class PrologReader {
                 break;
             }
         }
-        Object var = EngineCopy.getVar(t);
-        ListArray<SkelVar> vec = SkelCompound.collectVar(var, null);
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            vec = SkelCompound.prepareVars(back.args, vec);
-            var = SkelCompound.listToArray(vec, var);
-            back.var = var;
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         } while (back != null);

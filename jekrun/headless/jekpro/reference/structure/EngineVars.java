@@ -226,7 +226,11 @@ public final class EngineVars {
                         anon = new SetHashLink<TermVar>();
                     anon.add(key);
                 } else {
-                    anon.remove(key);
+                    if (anon != null) {
+                        anon.remove(key);
+                        if (anon.size() == 0)
+                            anon = null;
+                    }
                 }
                 break;
             } else if (t instanceof SkelCompound) {
@@ -320,17 +324,18 @@ public final class EngineVars {
     /**
      * <p>Complement the variable names.</p>
      *
-     * @param mvs3  The var set.
-     * @param mvs   The anon set, can be null.
-     * @param vars  The old variable names.
-     * @param print The new variable names.
+     * @param mvs3 The var set, can be null.
+     * @param mvs  The anon set, can be null.
+     * @param vars The old variable names, can be null.
+     * @return The new variable names, can be null.
      */
-    public static void numberVariables(SetHashLink<TermVar> mvs3,
-                                       SetHashLink<TermVar> mvs,
-                                       MapHashLink<TermVar, NamedDistance> vars,
-                                       MapHashLink<TermVar, NamedDistance> print) {
-        SetHash<String> range = namedToCopy(mvs3, mvs, vars, print);
-        restToCopy(mvs3, mvs, range, print);
+    public static MapHashLink<TermVar, NamedDistance> numberVariables(SetHashLink<TermVar> mvs3,
+                                                                      SetHashLink<TermVar> mvs,
+                                                                      MapHashLink<TermVar, NamedDistance> vars) {
+        MapHashLink<TermVar, NamedDistance> copy = new MapHashLink<TermVar, NamedDistance>();
+        SetHash<String> range = namedToCopy(mvs3, mvs, vars, copy);
+        restToCopy(mvs3, mvs, range, copy);
+        return copy;
     }
 
     /**
@@ -358,7 +363,8 @@ public final class EngineVars {
             } else {
                 copy.add(key, nd);
             }
-            mvs3.remove(key);
+            if (mvs3 != null)
+                mvs3.remove(key);
             if (range == null)
                 range = new SetHash<String>();
             range.add(nd.getName());
@@ -379,7 +385,7 @@ public final class EngineVars {
                                    SetHash<String> range,
                                    MapHashLink<TermVar, NamedDistance> copy) {
         int k = 0;
-        for (SetEntry<TermVar> entry = mvs3.getFirstEntry();
+        for (SetEntry<TermVar> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
              entry != null; entry = mvs3.successor(entry)) {
             TermVar key = entry.key;
             if (mvs != null && mvs.getKey(key) != null) {

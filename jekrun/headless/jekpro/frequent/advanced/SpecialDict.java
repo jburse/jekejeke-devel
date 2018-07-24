@@ -42,7 +42,6 @@ import jekpro.tools.term.SkelCompound;
 public final class SpecialDict extends AbstractSpecial {
     private final static int SPECIAL_DICT_GET = 0;
     private final static int SPECIAL_DICT_PUT = 1;
-    private final static int SPECIAL_BETWEEN = 2;
 
     /**
      * <p>Create a dict special.</p>
@@ -88,6 +87,7 @@ public final class SpecialDict extends AbstractSpecial {
                 if (i < 0)
                     return false;
                 i++;
+
                 if (!en.unifyTerm(temp[2], ref, sc.args[i], d))
                     return false;
                 return en.getNext();
@@ -108,21 +108,22 @@ public final class SpecialDict extends AbstractSpecial {
                 en.deref();
                 k = EngineMessage.castStringWrapped(en.skel, en.display);
 
+                i = dictIndex(sc.args, d, k, en);
+                if (i < 0)
+                    return false;
+                i++;
+
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
                 Object t2 = en.skel;
                 Display d2 = en.display;
 
-                i = dictIndex(sc.args, d, k, en);
-                if (i < 0)
-                    return false;
-                i++;
-
                 boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, i, en);
-                en.skel = new SkelCompound(sc.sym, SpecialUniv.setAlloc(sc.args, d, t2, d2, i, multi, en));
+                sc = new SkelCompound(sc.sym,
+                        SpecialUniv.setAlloc(sc.args, d, t2, d2, i, multi, en));
                 d = en.display;
-                if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
+                if (!en.unifyTerm(temp[3], ref, sc, d))
                     return false;
                 if (multi)
                     d.remTab(en);

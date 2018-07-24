@@ -60,68 +60,97 @@ public final class SkelCompound extends AbstractSkel {
      * @param a The arguments.
      */
     public SkelCompound(SkelAtom f, Object... a) {
-        this(f, a, prepareArray(a));
+        this(f, a, makeExtra(a));
     }
 
+
     /**
-     * <p>Prepare the variable or variable array.</p>
+     * <p>Add new variables from all the spines of the
+     * arguments but one in a list.</p>
      *
      * @param a The arguments.
-     * @return The variable or variable array.
+     * @return The list or null.
      */
-    private static Object prepareArray(Object[] a) {
+    public static Object makeExtra(Object[] a) {
         Object var = EngineCopy.getVar(a[a.length - 1]);
-        ListArray<SkelVar> vec = collectVar(var, null);
-        vec = prepareVars(a, vec);
-        return listToArray(vec, var);
-    }
-
-    /**
-     * <p>Compute the vars for the arguments except the last.</p>
-     *
-     * @param a The arguments.
-     * @return The vars.
-     */
-    public static ListArray<SkelVar> prepareVars(Object[] a,
-                                                 ListArray<SkelVar> vec) {
+        ListArray<SkelVar> vec = null;
         for (int i = a.length - 2; i >= 0; i--) {
-            Object var = EngineCopy.getVar(a[i]);
-            vec = collectVar(var, vec);
+            Object newvar = EngineCopy.getVar(a[i]);
+            if (newvar != null)
+                vec = addExtra(newvar, vec, var);
         }
-        return vec;
+        if (vec != null)
+            var = concatExtra(vec, var);
+        return var;
+    }
+
+
+    /*****************************************************************/
+    /* Spine Handling                                                */
+    /******************************************************************/
+
+    /**
+     * <p>Concat the list to the spine.</p>
+     *
+     * @param vec The list, not null.
+     * @param var The spine.
+     * @return The new spine.
+     */
+    private static Object concatExtra(ListArray<SkelVar> vec, Object var) {
+        SkelVar[] res;
+        int n = vec.size();
+        if (var != null) {
+            if (var instanceof SkelVar) {
+                res = new SkelVar[n + 1];
+                res[n] = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                res = new SkelVar[n + temp.length];
+                System.arraycopy(temp, 0, res, n, temp.length);
+            }
+        } else {
+            if (n == 1)
+                return vec.get(0);
+            res = new SkelVar[n];
+        }
+        for (int i = 0; i < n; i++)
+            res[n - 1 - i] = vec.get(i);
+        return res;
     }
 
     /**
-     * <p>Compute the vars for the given argument.</p>
-     * <p>The variables are added in reverse order.</p>
+     * <p>Add new variables from a spine in a list,
+     * not already appearing in another spine.</p>
      *
-     * @param var The variable or variable array.
-     * @param vec The variables or null.
-     * @return The variables or null.
+     * @param newvar The spine, not null.
+     * @param vec    The list or null.
+     * @param var    The other spine.
+     * @return The new list or null.
      */
-    public static ListArray<SkelVar> collectVar(Object var,
-                                                ListArray<SkelVar> vec) {
-        if (var == null)
-            return vec;
-        if (var instanceof SkelVar) {
+    private static ListArray<SkelVar> addExtra(Object newvar,
+                                               ListArray<SkelVar> vec,
+                                               Object var) {
+        if (newvar instanceof SkelVar) {
+            SkelVar mv = (SkelVar) newvar;
+            if (var != null && indexOf(var, mv) != -1)
+                return vec;
             if (vec == null) {
                 vec = new ListArray<SkelVar>();
-                vec.add((SkelVar) var);
+                vec.add(mv);
             } else {
-                SkelVar mv = (SkelVar) var;
                 if (vec.indexOf(mv) == -1)
                     vec.add(mv);
             }
         } else {
-            if (vec == null) {
-                vec = new ListArray<SkelVar>();
-                SkelVar[] temp = (SkelVar[]) var;
-                for (int j = temp.length - 1; j >= 0; j--)
-                    vec.add(temp[j]);
-            } else {
-                SkelVar[] temp = (SkelVar[]) var;
-                for (int j = temp.length - 1; j >= 0; j--) {
-                    SkelVar mv = temp[j];
+            SkelVar[] temp = (SkelVar[]) newvar;
+            for (int i = temp.length - 1; i >= 0; i--) {
+                SkelVar mv = temp[i];
+                if (var != null && indexOf(var, mv) != -1)
+                    continue;
+                if (vec == null) {
+                    vec = new ListArray<SkelVar>();
+                    vec.add(mv);
+                } else {
                     if (vec.indexOf(mv) == -1)
                         vec.add(mv);
                 }
@@ -130,28 +159,23 @@ public final class SkelCompound extends AbstractSkel {
         return vec;
     }
 
-
     /**
-     * <p>Create the array from the list.</p>
-     * <p>The variables are created in reverse order.</p>
+     * <p>Check whether we have already a spine for the variable.</p>
      *
-     * @param vec The list.
-     * @param var The variables for reuse.
-     * @return The array.
+     * @param var The spine, not null.
+     * @param mv  The variable.
+     * @return Return index of the variable or -1.
      */
-    public static Object listToArray(ListArray<SkelVar> vec,
-                                     Object var) {
-        if (vec == null)
-            return null;
-        int n = vec.size();
-        if (n == 1)
-            return vec.get(0);
-        if (var instanceof SkelVar[] && ((SkelVar[]) var).length == n)
-            return var;
-        SkelVar[] res = new SkelVar[n];
-        for (int i = 0; i < n; i++)
-            res[n - 1 - i] = vec.get(i);
-        return res;
+    private static int indexOf(Object var, SkelVar mv) {
+        if (var instanceof SkelVar) {
+            return (var.equals(mv) ? 0 : -1);
+        } else {
+            SkelVar[] temp = (SkelVar[]) var;
+            for (int i = 0; i < temp.length; i++)
+                if (temp[i].equals(mv))
+                    return i;
+            return -1;
+        }
     }
 
 }

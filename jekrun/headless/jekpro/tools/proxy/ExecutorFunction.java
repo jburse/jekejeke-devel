@@ -82,30 +82,6 @@ final class ExecutorFunction extends AbstractExecutor {
         is = (TermAtomic) AbstractTerm.createTermWrapped(val, Display.DISPLAY_CONST);
     }
 
-    /******************************************************************/
-    /* Type Encoding                                                  */
-    /******************************************************************/
-
-    private final static HashMap<Class, Integer> typemap = new HashMap<Class, Integer>();
-
-    static {
-        typemap.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
-        typemap.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
-        typemap.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
-        typemap.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
-        typemap.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
-        typemap.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
-        typemap.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
-        typemap.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
-        typemap.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
-        typemap.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
-        typemap.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
-        typemap.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
-        typemap.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
-        typemap.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
-        typemap.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
-    }
-
     /**
      * <p>Encode the signature of a foreign method.</p>
      * <p>The culprit is returned in the engine skel.</p>
@@ -114,8 +90,8 @@ final class ExecutorFunction extends AbstractExecutor {
      */
     public boolean encodeSignature() {
         Class ret = method.getReturnType();
-        Integer encode = ExecutorFunction.typemap.get(ret);
-        if (encode == null) {
+        Integer encode = Types.typeeval.get(ret);
+        if (encode == null || encode.intValue() == Types.TYPE_INTERPRETER) {
             return false;
         } else {
             encoderet = encode.intValue();
@@ -126,8 +102,8 @@ final class ExecutorFunction extends AbstractExecutor {
                 ExecutorFunction.VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
             ret = paras[i];
-            encode = ExecutorFunction.typemap.get(ret);
-            if (encode == null) {
+            encode = Types.typeeval.get(ret);
+            if (encode == null || encode.intValue() == Types.TYPE_INTERPRETER) {
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();

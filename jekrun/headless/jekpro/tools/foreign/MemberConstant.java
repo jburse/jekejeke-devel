@@ -3,10 +3,8 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
@@ -115,7 +113,7 @@ final class MemberConstant extends AbstractMember {
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj = convertObj(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
         res = Types.normJava(encoderet, res);
         if (res == null)

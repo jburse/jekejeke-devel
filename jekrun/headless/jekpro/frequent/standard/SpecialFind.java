@@ -83,6 +83,8 @@ public final class SpecialFind extends AbstractSpecial {
                 Display ref2 = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
                 if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                     return false;
+                if (size != 0)
+                    ref2.remTab(en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -202,22 +204,29 @@ public final class SpecialFind extends AbstractSpecial {
      * @param d  The term display.
      * @param en The engine.
      */
-    public static void consValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineCopy.getVar(t2) == null) {
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t2, t);
+    public static void consValue(Object t2, Display d2,
+                                 Object t, Display d, Engine en) {
+        Object v2 = EngineCopy.getVar(t2);
+        Object v = EngineCopy.getVar(t);
+        if (v2 == null) {
+            Object[] args = new Object[2];
+            args[0] = t2;
+            args[1] = t;
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, args, v);
             en.display = d;
-            return;
-        }
-        if (EngineCopy.getVar(t) == null) {
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t2, t);
+        } else if (v == null) {
+            Object[] args = new Object[2];
+            args[0] = t2;
+            args[1] = t;
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, args, v2);
             en.display = d2;
-            return;
+        } else {
+            Display d3 = new Display(2);
+            d3.bind[0].bindVar(t2, d2, en);
+            d3.bind[1].bindVar(t, d, en);
+            en.skel = en.store.foyer.CELL_CONS;
+            en.display = d3;
         }
-        Display d3 = new Display(2);
-        d3.bind[0].bindVar(t2, d2, en);
-        d3.bind[1].bindVar(t, d, en);
-        en.skel = en.store.foyer.CELL_CONS;
-        en.display = d3;
     }
 
 }
