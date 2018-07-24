@@ -243,3 +243,51 @@ call(P, A, B, C, D, E, F, G) :-
 
 :- public sys_modext_args/9.
 :- special(sys_modext_args/9, 'SpecialApply', 0).
+
+/**
+ * maplist(C, L):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L.
+ */
+:- public maplist/2.
+:- meta_predicate maplist(1,?).
+maplist(_, []).
+maplist(C, [X|L]) :-
+   call(C, X),
+   maplist(C, L).
+
+/**
+ * maplist(C, L, R):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L and R.
+ */
+:- public maplist/3.
+:- meta_predicate maplist(2,?,?).
+maplist(_, [], []).
+maplist(C, [X|L], [Y|R]) :-
+   call(C, X, Y),
+   maplist(C, L, R).
+
+/**
+ * maplist(C, L, R, S):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L, R and S.
+ */
+:- public maplist/4.
+:- meta_predicate maplist(3,?,?,?).
+maplist(_, [], [], []).
+maplist(C, [X|L], [Y|R], [Z|S]) :-
+   call(C, X, Y, Z),
+   maplist(C, L, R, S).
+
+/**
+ * maplist(C, L, R, S, T):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L, R, S and T.
+ */
+:- public maplist/5.
+:- meta_predicate maplist(4,?,?,?,?).
+maplist(_, [], [], [], []).
+maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
+   call(C, X, Y, Z, U),
+   maplist(C, L, R, S, T).
