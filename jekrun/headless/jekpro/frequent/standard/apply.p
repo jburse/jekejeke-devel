@@ -155,73 +155,12 @@
    throw(error(existence_error(body,:: /9),_)).
 
 /**
- * call(P, Y1, .., Yn): [TC2 8.15.4]
- * The predicate is defined for 1 ≤ n ≤ 7. The goal call(p(X1, .., Xm), Y1, .., Yn)
- * succeeds whenever the goal p(X1, .., Xm, Y1, .., Yn) succeeds.
- */
-% call(+Goal, +Term, ..)
-:- public call/2.
-:- virtual call/2.
-:- meta_predicate call(1,?).
-:- set_predicate_property(call/2, sys_notrace).
-call(P, A) :-
-   sys_modext_args(P, A, Q),
-   call(Q).
-
-:- public call/3.
-:- virtual call/3.
-:- meta_predicate call(2,?,?).
-:- set_predicate_property(call/3, sys_notrace).
-call(P, A, B) :-
-   sys_modext_args(P, A, B, Q),
-   call(Q).
-
-:- public call/4.
-:- virtual call/4.
-:- meta_predicate call(3,?,?,?).
-:- set_predicate_property(call/4, sys_notrace).
-call(P, A, B, C) :-
-   sys_modext_args(P, A, B, C, Q),
-   call(Q).
-
-:- public call/5.
-:- virtual call/5.
-:- meta_predicate call(4,?,?,?,?).
-:- set_predicate_property(call/5, sys_notrace).
-call(P, A, B, C, D) :-
-   sys_modext_args(P, A, B, C, D, Q),
-   call(Q).
-
-:- public call/6.
-:- virtual call/6.
-:- meta_predicate call(5,?,?,?,?,?).
-:- set_predicate_property(call/6, sys_notrace).
-call(P, A, B, C, D, E) :-
-   sys_modext_args(P, A, B, C, D, E, Q),
-   call(Q).
-
-:- public call/7.
-:- virtual call/7.
-:- meta_predicate call(6,?,?,?,?,?,?).
-:- set_predicate_property(call/7, sys_notrace).
-call(P, A, B, C, D, E, F) :-
-   sys_modext_args(P, A, B, C, D, E, F, Q),
-   call(Q).
-
-:- public call/8.
-:- virtual call/8.
-:- meta_predicate call(7,?,?,?,?,?,?,?).
-:- set_predicate_property(call/8, sys_notrace).
-call(P, A, B, C, D, E, F, G) :-
-   sys_modext_args(P, A, B, C, D, E, F, G, Q),
-   call(Q).
-
-/**
  * sys_modext_args(P, Y1, .., Yn, Q):
- * The predicate adds the arguments Y1, .., Yn for 1≤n≤7 to the
+ * The predicate adds the arguments Y1, .., Yn to the
  * callable P and unifies the result with Q. The result Q will have
- * the same call-site information and the same colon notation as
- * the callable P.
+ * the same call-site information and the same colon and double
+ * colon notation as the callable P. The predicate is currently
+ * defined for 1 ≤ n ≤ 7.
  */
 :- public sys_modext_args/3.
 :- special(sys_modext_args/3, 'SpecialApply', 0).
@@ -245,9 +184,66 @@ call(P, A, B, C, D, E, F, G) :-
 :- special(sys_modext_args/9, 'SpecialApply', 0).
 
 /**
- * maplist(C, L):
+ * call(P, Y1, .., Yn): [TC2 8.15.4]
+ * The goal call(p(X1, .., Xm), Y1, .., Yn) succeeds whenever
+ * the goal p(X1, .., Xm, Y1, .., Yn) succeeds. The predicate is
+ * currently defined for 1 ≤ n ≤ 7.
+ */
+% call(+Goal, +Term, ..)
+:- public call/2.
+:- virtual call/2.
+:- meta_predicate call(1,?).
+:- set_predicate_property(call/2, sys_notrace).
+:- special(call/2, 'SpecialApply', 1).
+% call(P, A) :- sys_modext_args(P, A, Q), call(Q).
+
+:- public call/3.
+:- virtual call/3.
+:- meta_predicate call(2,?,?).
+:- set_predicate_property(call/3, sys_notrace).
+:- special(call/3, 'SpecialApply', 1).
+% call(P, A, B) :- sys_modext_args(P, A, B, Q), call(Q).
+
+:- public call/4.
+:- virtual call/4.
+:- meta_predicate call(3,?,?,?).
+:- set_predicate_property(call/4, sys_notrace).
+:- special(call/4, 'SpecialApply', 1).
+% call(P, A, B, C) :- sys_modext_args(P, A, B, C, Q), call(Q).
+
+:- public call/5.
+:- virtual call/5.
+:- meta_predicate call(4,?,?,?,?).
+:- set_predicate_property(call/5, sys_notrace).
+:- special(call/5, 'SpecialApply', 1).
+% call(P, A, B, C, D) :- sys_modext_args(P, A, B, C, D, Q), call(Q).
+
+:- public call/6.
+:- virtual call/6.
+:- meta_predicate call(5,?,?,?,?,?).
+:- set_predicate_property(call/6, sys_notrace).
+:- special(call/6, 'SpecialApply', 1).
+% call(P, A, B, C, D, E) :- sys_modext_args(P, A, B, C, D, E, Q), call(Q).
+
+:- public call/7.
+:- virtual call/7.
+:- meta_predicate call(6,?,?,?,?,?,?).
+:- set_predicate_property(call/7, sys_notrace).
+:- special(call/7, 'SpecialApply', 1).
+% call(P, A, B, C, D, E, F) :- sys_modext_args(P, A, B, C, D, E, F, Q), call(Q).
+
+:- public call/8.
+:- virtual call/8.
+:- meta_predicate call(7,?,?,?,?,?,?,?).
+:- set_predicate_property(call/8, sys_notrace).
+:- special(call/8, 'SpecialApply', 1).
+% call(P, A, B, C, D, E, F, G) :- sys_modext_args(P, A, B, C, D, E, F, G, Q), call(Q).
+
+/**
+ * maplist(C, L1, ..., Ln):
  * The predicate succeeds in applying the closure C to the
- * elements of L.
+ * elements of L1, ..., Ln. The predicate is currently
+ * defined for 1 ≤ n ≤ 4.
  */
 :- public maplist/2.
 :- meta_predicate maplist(1,?).
@@ -256,11 +252,6 @@ maplist(C, [X|L]) :-
    call(C, X),
    maplist(C, L).
 
-/**
- * maplist(C, L, R):
- * The predicate succeeds in applying the closure C to the
- * elements of L and R.
- */
 :- public maplist/3.
 :- meta_predicate maplist(2,?,?).
 maplist(_, [], []).
@@ -268,11 +259,6 @@ maplist(C, [X|L], [Y|R]) :-
    call(C, X, Y),
    maplist(C, L, R).
 
-/**
- * maplist(C, L, R, S):
- * The predicate succeeds in applying the closure C to the
- * elements of L, R and S.
- */
 :- public maplist/4.
 :- meta_predicate maplist(3,?,?,?).
 maplist(_, [], [], []).
@@ -280,11 +266,6 @@ maplist(C, [X|L], [Y|R], [Z|S]) :-
    call(C, X, Y, Z),
    maplist(C, L, R, S).
 
-/**
- * maplist(C, L, R, S, T):
- * The predicate succeeds in applying the closure C to the
- * elements of L, R, S and T.
- */
 :- public maplist/5.
 :- meta_predicate maplist(4,?,?,?,?).
 maplist(_, [], [], [], []).

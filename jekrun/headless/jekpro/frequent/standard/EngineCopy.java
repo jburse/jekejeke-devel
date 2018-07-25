@@ -7,8 +7,6 @@ import jekpro.model.molec.*;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import jekpro.tools.term.TermVar;
-import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
 /**
@@ -68,7 +66,7 @@ public class EngineCopy {
      * @return The new variable.
      */
     public SkelVar getVar(SkelVar v, Display d) {
-        BindCount key=d.bind[v.id];
+        BindCount key = d.bind[v.id];
         if (vars == null) {
             vars = new MapHash<BindCount, SkelVar>();
             v = null;
@@ -156,7 +154,7 @@ public class EngineCopy {
      * @throws EngineException Some non callable encountered.
      */
     public final Object copyGoalAndWrap(Object t, Display d,
-                                  Engine en)
+                                        Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
         for (; ; ) {
@@ -248,7 +246,7 @@ public class EngineCopy {
      * @throws EngineException Some non callable encountered.
      */
     public final Object copyTermAndWrap(Object t, Display d,
-                                  Engine en)
+                                        Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
         for (; ; ) {

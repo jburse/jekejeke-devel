@@ -1,7 +1,6 @@
 package jekpro.model.pretty;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
@@ -135,30 +134,6 @@ public final class NamedDistance {
     }
 
     /**
-     * <p>Add priorized to the map hash.</p>
-     *
-     * @param print    The print map.
-     * @param pair     The variable.
-     * @param name     The variable name.
-     * @param distance The variable distance.
-     */
-    public static void addPriorized2(MapHashLink<BindCount, NamedDistance> print,
-                                     BindCount pair,
-                                    String name, int distance) {
-        MapEntry<BindCount, NamedDistance> entry = print.getEntry(pair);
-        if (entry == null) {
-            NamedDistance nd = new NamedDistance(name, distance);
-            print.add(pair, nd);
-            return;
-        }
-        NamedDistance nd = entry.value;
-        if (distance >= nd.getDistance())
-            return;
-        nd.setName(name);
-        nd.setDistance(distance);
-    }
-
-    /**
      * <p>Add an anonymous variable.</p>
      *
      * @param print The print map.
@@ -167,20 +142,6 @@ public final class NamedDistance {
      */
     public static void addAnon(MapHashLink<TermVar, NamedDistance> print,
                                TermVar pair,
-                               String name) {
-        NamedDistance nd = new NamedDistance(name, 0);
-        print.add(pair, nd);
-    }
-
-    /**
-     * <p>Add an anonymous variable.</p>
-     *
-     * @param print The print map.
-     * @param pair  The variable.
-     * @param name  The variable name.
-     */
-    public static void addAnon2(MapHashLink<BindCount, NamedDistance> print,
-                                BindCount pair,
                                String name) {
         NamedDistance nd = new NamedDistance(name, 0);
         print.add(pair, nd);

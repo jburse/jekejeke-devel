@@ -2,7 +2,10 @@ package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.*;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
@@ -10,13 +13,14 @@ import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.EngineVars;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.SetHash;
+import matula.util.data.MapHashLink;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -62,6 +66,9 @@ public final class SpecialLoad extends AbstractSpecial {
     private final static int SPECIAL_SYS_REGISTER_FILE = 10;
     private final static int SPECIAL_SYS_MODULE_ACTION = 11;
     private final static int SPECIAL_SYS_PEEK_STACK = 12;
+
+    public static final int MASK_SHOW_NANO = 0x00000001;
+    public static final int MASK_SHOW_NRBD = 0x00000002;
 
     public final static String OP_MODULE = "module";
 
@@ -335,7 +342,7 @@ public final class SpecialLoad extends AbstractSpecial {
                         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                         pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                        AbstractSource.flushWriter(pw.getWriter());
+                        SpecialLoad.flushWriter(pw.getWriter());
                     }
                 }
             }
@@ -358,14 +365,11 @@ public final class SpecialLoad extends AbstractSpecial {
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                 decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                 pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                AbstractSource.flushWriter(pw.getWriter());
+                SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
-            EngineSkel ek = new EngineSkel();
-            ek.singsOfSkel(t);
-            Named[] vars = EngineSkel.numberVariablesSkel(ek.vars, ek.anon, clause.vars);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
-            AbstractSource.showClause(pw, t, vars, en);
+            SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
         }
     }
@@ -383,7 +387,7 @@ public final class SpecialLoad extends AbstractSpecial {
         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
         pw.unparseStatement(decl, Display.DISPLAY_CONST);
-        AbstractSource.flushWriter(pw.getWriter());
+        SpecialLoad.flushWriter(pw.getWriter());
     }
 
     /**
@@ -411,7 +415,7 @@ public final class SpecialLoad extends AbstractSpecial {
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, Display.DISPLAY_CONST);
-            AbstractSource.flushWriter(pw.getWriter());
+            SpecialLoad.flushWriter(pw.getWriter());
         }
 
         if (src == null)
@@ -440,7 +444,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
-                    AbstractSource.flushWriter(pw.getWriter());
+                    SpecialLoad.flushWriter(pw.getWriter());
                 }
             }
         }
@@ -809,6 +813,126 @@ public final class SpecialLoad extends AbstractSpecial {
             throws EngineMessage {
         try {
             wr.write('\n');
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /***************************************************************/
+    /* Show Close                                                  */
+    /***************************************************************/
+
+    /**
+     * <p>List a clause.</p>
+     *
+     * @param pw    The prolog writer.
+     * @param t     The term.
+     * @param vars  The variable names.
+     * @param en    The engine.
+     * @param flags The show flags.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    public static Display showClause(PrologWriter pw, Object t, Named[] vars,
+                                  Engine en, int flags)
+            throws EngineException, EngineMessage {
+        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
+                ((flags & MASK_SHOW_NRBD) != 0)) {
+            int size = Display.displaySize(t);
+            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            EngineVars ev = new EngineVars();
+            if ((flags & MASK_SHOW_NANO) != 0) {
+                ev.varInclude(t, ref);
+            } else {
+                ev.singsOf(t, ref);
+            }
+            MapHashLink<TermVar, NamedDistance> print = Named.namedToMap(vars, ref, en);
+            print = EngineVars.numberVariables(ev.vars, ev.anon, print);
+            pw.setPrintMap(print);
+            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
+            pw.unparseStatement(t, ref);
+            SpecialLoad.flushWriter(pw.getWriter());
+            return ref;
+        }
+        AbstractBind mark = en.bind;
+        int snap = en.number;
+        int size = Display.displaySize(t);
+        SkelVar var = SkelVar.valueOf(size);
+        Display dc = new Display(size + 1);
+        t = new SkelCompound(new SkelAtom("sys_rebuild_term"), t, var);
+        t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
+                new SkelAtom("experiment/simp"), t);
+        Intermediate r = en.contskel;
+        DisplayClause u = en.contdisplay;
+        try {
+            Clause clause = en.store.foyer.CLAUSE_CALL;
+            DisplayClause ref = new DisplayClause(clause.dispsize);
+            ref.addArgument(t, dc, en);
+            ref.setEngine(en);
+            en.contskel = clause.getNextRaw(en);
+            en.contdisplay = ref;
+            if (!en.runFirst(snap))
+                throw new EngineMessage(
+                        EngineMessage.syntaxError(EngineMessage.OP_SYNTAX_REBUILD_FAILED));
+        } catch (EngineMessage x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.skel = new EngineException(x, EngineException.fetchStack(en));
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.skel = x;
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        }
+        en.contskel = r;
+        en.contdisplay = u;
+        en.skel = null;
+        en.display = null;
+        en.cutChoices(snap);
+        try {
+            if (en.skel != null)
+                throw (EngineException) en.skel;
+            EngineVars ev = new EngineVars();
+            if ((flags & MASK_SHOW_NANO) != 0) {
+                ev.varInclude(var, dc);
+            } else {
+                ev.singsOf(var, dc);
+            }
+            MapHashLink<TermVar, NamedDistance> print = Named.namedToMap(vars, dc, en);
+            print = EngineVars.numberVariables(ev.vars, ev.anon, print);
+            pw.setPrintMap(print);
+            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), var);
+            pw.unparseStatement(t, dc);
+            SpecialLoad.flushWriter(pw.getWriter());
+        } catch (EngineMessage y) {
+            en.skel = new EngineException(y, EngineException.fetchStack(en));
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        } catch (EngineException x) {
+            en.skel = x;
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        }
+        en.skel = null;
+        en.releaseBind(mark);
+        if (en.skel != null)
+            throw (EngineException) en.skel;
+        return dc;
+    }
+
+    /**
+     * <p>Flush the writer.</p>
+     *
+     * @param wr The writer.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void flushWriter(Writer wr)
+            throws EngineMessage {
+        try {
             wr.flush();
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);

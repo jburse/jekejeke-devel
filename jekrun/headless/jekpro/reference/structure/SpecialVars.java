@@ -5,7 +5,10 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.NamedDistance;
 import jekpro.model.rope.Clause;
@@ -329,15 +332,15 @@ public final class SpecialVars extends AbstractSpecial {
      * <p>Create variable set from variables.</p>
      * <p>Non variable associations are skipped.</p>
      *
-     * @param t   The variable list skel.
-     * @param d   The variable list display.
-     * @param en  The engine.
+     * @param t  The variable list skel.
+     * @param d  The variable list display.
+     * @param en The engine.
      * @return The variable list.
      * @throws EngineMessage Shit happens.
      */
     private static SetHashLink<TermVar> arrayToSet(Object t, Display d, Engine en)
             throws EngineMessage {
-        SetHashLink<TermVar> set=null;
+        SetHashLink<TermVar> set = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -350,8 +353,8 @@ public final class SpecialVars extends AbstractSpecial {
             en.deref();
             if (en.skel instanceof SkelVar) {
                 TermVar pair = new TermVar((SkelVar) en.skel, en.display);
-                if (set==null) {
-                    set=new  SetHashLink<TermVar>();
+                if (set == null) {
+                    set = new SetHashLink<TermVar>();
                     set.add(pair);
                 } else {
                     if (set.getKey(pair) == null)
@@ -421,70 +424,6 @@ public final class SpecialVars extends AbstractSpecial {
                 if (print == null)
                     print = new MapHashLink<TermVar, NamedDistance>();
                 NamedDistance.addPriorized(print, pair, name, distance);
-            }
-            en.skel = mc[1];
-            en.display = d;
-            en.deref();
-        }
-        if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST,
-                    en.skel), en.display);
-        }
-        return print;
-    }
-
-    /**
-     * <p>Create variable map from variable names.</p>
-     * <p>Non variable associations are skipped.</p>
-     *
-     * @param t  The variable names skel.
-     * @param d  The variable names display.
-     * @param en The engine.
-     * @return The print map.
-     * @throws EngineMessage Shit happens.
-     */
-    public static MapHashLink<BindCount, NamedDistance> assocToMap2(Object t, Display d,
-                                                                    Engine en)
-            throws EngineMessage {
-        MapHashLink<BindCount, NamedDistance> print = null;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        while (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
-            Object[] mc = ((SkelCompound) en.skel).args;
-            d = en.display;
-            en.skel = mc[0];
-            en.deref();
-            if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 2 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
-                /* */
-            } else {
-                EngineMessage.checkInstantiated(en.skel);
-                throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_ASSOC,
-                        en.skel), en.display);
-            }
-            Object[] mc2 = ((SkelCompound) en.skel).args;
-            Display d2 = en.display;
-            en.skel = mc2[1];
-            int distance = NamedDistance.derefCount(en);
-            if (en.skel instanceof SkelVar) {
-                BindCount pair = en.display.bind[((SkelVar)en.skel).id];
-                en.skel = mc2[0];
-                en.display = d2;
-                en.deref();
-                String name = EngineMessage.castString(en.skel, en.display);
-                if (print == null)
-                    print = new MapHashLink<BindCount, NamedDistance>();
-                NamedDistance.addPriorized2(print, pair, name, distance);
             }
             en.skel = mc[1];
             en.display = d;

@@ -4,7 +4,6 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
@@ -89,7 +88,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<BindCount, NamedDistance> printmap;
+    public MapHashLink<TermVar, NamedDistance> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -222,7 +221,7 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                printmap = SpecialVars.assocToMap2(((SkelCompound) en.skel).args[0], en.display, en);
+                printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
@@ -522,7 +521,7 @@ public final class WriteOpts {
             return;
         if (printmap == null)
             return;
-        for (MapEntry<BindCount, NamedDistance> entry = printmap.getLastEntry();
+        for (MapEntry<TermVar, NamedDistance> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
             if (PrologWriter.variableNeedsQuotes(entry.value.getName()))
                 throw new EngineMessage(EngineMessage.domainError(

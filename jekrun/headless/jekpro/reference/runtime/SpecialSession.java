@@ -13,9 +13,6 @@ import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
-import matula.util.data.ListArray;
-import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
@@ -596,52 +593,9 @@ public final class SpecialSession extends AbstractSpecial {
         }
         pre.molec = new SkelCompound(new SkelAtom(
                 PreClause.OP_TURNSTILE), t);
-        pre.vars = copyVars(assoc, d2, en, an.vars);
-        pre.anon = copyVars(assoc, d2, en, an.anon);
+        pre.vars = FileText.copyVars(assoc, d2, en, an.vars);
+        pre.anon = FileText.copyVars(assoc, d2, en, an.anon);
         return pre;
-    }
-
-    /**
-     * <p>Make a copy of the given variable names.</p>
-     * <p>Only copy terms that are bound to a variable.</p>
-     * <p>Only copy variables that already exist in rule.</p>
-     *
-     * @param vars The variable names molecs, can be null.
-     * @param d    The variable names display.
-     * @param en   The engine.
-     * @param map  The variable map.
-     * @return The named copy.
-     */
-    public static Named[] copyVars(MapHashLink<String, SkelVar> vars, Display d,
-                                   Engine en, MapHash<BindCount, SkelVar> map) {
-        if (vars == null)
-            return null;
-        ListArray<Named> copy = null;
-        for (MapEntry<String, SkelVar> entry = vars.getLastEntry();
-             entry != null; entry = vars.predecessor(entry)) {
-            en.skel = entry.value;
-            en.display = d;
-            en.deref();
-            if (!(en.skel instanceof SkelVar))
-                continue;
-            SkelVar sv = (SkelVar) en.skel;
-            BindCount key = en.display.bind[sv.id];
-            sv = (map != null ? map.get(key) : null);
-            if (sv == null)
-                continue;
-            if (copy == null)
-                copy = new ListArray<Named>();
-            copy.add(new Named(entry.key, sv));
-        }
-        if (copy == null)
-            return null;
-        Named[] res = new Named[copy.size()];
-        int k = 0;
-        for (int i = copy.size() - 1; i >= 0; i--) {
-            res[k] = copy.get(i);
-            k++;
-        }
-        return res;
     }
 
     /**********************************************************/

@@ -333,22 +333,20 @@ public final class EngineVars {
                                                                       SetHashLink<TermVar> mvs,
                                                                       MapHashLink<TermVar, NamedDistance> vars) {
         MapHashLink<TermVar, NamedDistance> copy = new MapHashLink<TermVar, NamedDistance>();
-        SetHash<String> range = namedToCopy(mvs3, mvs, vars, copy);
-        restToCopy(mvs3, mvs, range, copy);
+        SetHash<String> range = namedToCopy(mvs, vars, copy);
+        restToCopy(range, mvs3, mvs, vars, copy);
         return copy;
     }
 
     /**
      * <p>Copy the variable names, anonymous get underscore ("_").</p>
      *
-     * @param mvs3 The var set.
      * @param mvs  The anon set, can be null.
      * @param vars The variable names, can be null.
      * @param copy The new variable names.
      * @return The name range.
      */
-    private static SetHash<String> namedToCopy(SetHashLink<TermVar> mvs3,
-                                               SetHashLink<TermVar> mvs,
+    private static SetHash<String> namedToCopy(SetHashLink<TermVar> mvs,
                                                MapHashLink<TermVar, NamedDistance> vars,
                                                MapHashLink<TermVar, NamedDistance> copy) {
         if (vars == null)
@@ -363,8 +361,6 @@ public final class EngineVars {
             } else {
                 copy.add(key, nd);
             }
-            if (mvs3 != null)
-                mvs3.remove(key);
             if (range == null)
                 range = new SetHash<String>();
             range.add(nd.getName());
@@ -380,14 +376,17 @@ public final class EngineVars {
      * @param range The name range.
      * @param copy  The new variable names.
      */
-    private static void restToCopy(SetHashLink<TermVar> mvs3,
+    private static void restToCopy(SetHash<String> range,
+                                   SetHashLink<TermVar> mvs3,
                                    SetHashLink<TermVar> mvs,
-                                   SetHash<String> range,
+                                   MapHashLink<TermVar, NamedDistance> vars,
                                    MapHashLink<TermVar, NamedDistance> copy) {
         int k = 0;
         for (SetEntry<TermVar> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
              entry != null; entry = mvs3.successor(entry)) {
             TermVar key = entry.key;
+            if (vars != null && vars.get(key) != null)
+                continue;
             if (mvs != null && mvs.getKey(key) != null) {
                 NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
             } else {
