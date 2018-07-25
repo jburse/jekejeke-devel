@@ -335,7 +335,7 @@ char_code(Char, Code) :-
 
 /**
  * number_chars(X, Y): [ISO 8.16.7]
- * If X is a variable and Y is a character list then the predicate
+ * If Y is ground and Y is a character list then the predicate
  * succeeds when X unifies with the corresponding number. Otherwise
  * if X is a number then the predicate succeeds when Y unifies with
  * the corresponding character list.
@@ -343,7 +343,7 @@ char_code(Char, Code) :-
 % number_chars(+-Number, -+Chars)
 :- public number_chars/2.
 number_chars(Number, Chars) :-
-   var(Number), !,
+   ground(Chars), !,
    sys_list_to_atom(Chars, 0, Atom),
    sys_atom_to_number(Atom, Number).
 number_chars(Number, Chars) :-
@@ -352,7 +352,7 @@ number_chars(Number, Chars) :-
 
 /**
  * number_codes(X, Y): [ISO 8.16.8]
- * If X is a variable and Y is a code list then the predicate
+ * If Y is ground and Y is a code list then the predicate
  * succeeds when X unifies with the corresponding number. Otherwise
  * if X is a number then the predicate suceeds when Y unifies
  * with the corresponding code list.
@@ -360,7 +360,7 @@ number_chars(Number, Chars) :-
 % number_codes(+-Number, -+Codes)
 :- public number_codes/2.
 number_codes(Number, Codes) :-
-   var(Number), !,
+   ground(Codes), !,
    sys_list_to_atom(Codes, 1, Atom),
    sys_atom_to_number(Atom, Number).
 number_codes(Number, Codes) :-
