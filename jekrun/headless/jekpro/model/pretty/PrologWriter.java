@@ -72,9 +72,6 @@ public class PrologWriter {
     public final static int FLAG_CMMT = 0x00000400;
     public final static int FLAG_STMT = 0x00000800;
 
-    /* only read opts */
-    public final static int FLAG_SING = 0x00001000;
-
     public final static int SPEZ_OPLE = 0x00000001;
     public final static int SPEZ_LEFT = 0x00000002;
     public final static int SPEZ_META = 0x00000004;

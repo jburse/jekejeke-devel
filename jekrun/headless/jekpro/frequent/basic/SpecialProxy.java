@@ -12,7 +12,6 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.proxy.InterfaceSlots;
 import jekpro.tools.proxy.ProxyHandler;
 import jekpro.tools.proxy.ProxyState;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.system.AbstractRuntime;
@@ -81,19 +80,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                SkelAtom sa;
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    /* reference */
-                    String fun = classOrProxyName(obj);
-                    if (fun == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
-                    sa = new SkelAtom(fun);
-                } else {
-                    /* atom */
-                    sa = (SkelAtom) obj;
-                }
+                SkelAtom sa = SpecialQuali.objToAtom(obj, temp[0], ref);
                 obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
@@ -102,18 +89,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    /* reference */
-                    String fun = classOrProxyName(obj);
-                    if (fun == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
-                    sa = new SkelAtom(fun);
-                } else {
-                    /* atom */
-                    sa = (SkelAtom) obj;
-                }
+                sa = SpecialQuali.objToAtom(obj, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -128,31 +104,9 @@ public final class SpecialProxy extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                String fun;
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    /* reference */
-                    fun = classOrProxyName(obj);
-                    if (fun == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp[0]), ref);
-                } else {
-                    /* atom */
-                    fun = ((SkelAtom) obj).fun;
-                }
+                String fun = SpecialQuali.objToString(obj, temp[0], ref, false);
                 obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    /* reference */
-                    String fun2 = classOrProxyName(obj);
-                    if (fun2 == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp[1]), ref);
-                    sa = new SkelAtom(fun2);
-                } else {
-                    /* atom */
-                    sa = (SkelAtom) obj;
-                }
+                sa = SpecialQuali.objToAtom(obj, temp[1], ref);
                 if (!CacheSubclass.getSubclass(sa, fun, en))
                     return false;
                 return en.getNextRaw();

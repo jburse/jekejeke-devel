@@ -1,10 +1,8 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -74,32 +72,9 @@ public final class EvaluableQuali extends AbstractSpecial {
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
-                String fun;
-                /* reference */
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    fun = SpecialProxy.classOrProxyName(obj);
-                    if (fun == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
-                /* atom */
-                } else {
-                    fun = ((SkelAtom) obj).fun;
-                }
+                String fun = SpecialQuali.objToString(obj, temp.args[0], ref, false);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                if (en.skel instanceof SkelCompound) {
-                    SkelCompound sc2 = (SkelCompound) en.skel;
-                    en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
-                            temp.sym, en), sc2.args, sc2.var);
-                } else if (en.skel instanceof SkelAtom) {
-                    SkelAtom sa = (SkelAtom) en.skel;
-                    en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
-                } else {
-                    EngineMessage.checkInstantiated(en.skel);
-                    throw new EngineMessage(EngineMessage.typeError(
-                            EngineMessage.OP_TYPE_CALLABLE,
-                            en.skel), en.display);
-                }
+                SpecialQuali.colonToRoutine(fun, temp.sym, true, en);
                 en.computeExpr(en.skel, en.display);
                 return;
             case EVALUABLE_COLONCOLON:
@@ -113,43 +88,9 @@ public final class EvaluableQuali extends AbstractSpecial {
                 Display d2 = en.display;
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
-                /* reference */
-                if (!(obj instanceof AbstractSkel) &&
-                        !(obj instanceof Number)) {
-                    obj = SpecialProxy.refClassOrProxy(obj);
-                    if (obj == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), ref);
-                    fun = SpecialProxy.classOrProxyName(obj);
-                    if (fun == null)
-                        throw new EngineMessage(EngineMessage.domainError(
-                                EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), ref);
-                /* atom */
-                } else {
-                    fun = ((SkelAtom) obj).fun;
-                }
-                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                if (en.skel instanceof SkelCompound) {
-                    SkelCompound sc2 = (SkelCompound) en.skel;
-                    Display d3 = en.display;
-
-                    boolean multi = SpecialQuali.prependCount(recv, d2,
-                            sc2.args, d3, en);
-                    en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
-                            temp.sym, en), SpecialQuali.prependAlloc(recv, d2,
-                            sc2.args, d3, multi, en));
-                } else if (en.skel instanceof SkelAtom) {
-                    SkelAtom sa = (SkelAtom) en.skel;
-
-                    en.skel = new SkelCompound(CacheFunctor.getFunctor(sa, fun,
-                            temp.sym, en), recv);
-                    en.display = d2;
-                } else {
-                    EngineMessage.checkInstantiated(en.skel);
-                    throw new EngineMessage(EngineMessage.typeError(
-                            EngineMessage.OP_TYPE_CALLABLE,
-                            en.skel), en.display);
-                }
+                fun = SpecialQuali.objToString(obj, recv, d2, true);
+                boolean ext=SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
+                SpecialQuali.colonToMethod(fun, temp.sym, recv, d2, true, ext, en);
                 en.computeExpr(en.skel, en.display);
                 return;
             default:

@@ -120,8 +120,7 @@ public final class SpecialDict extends AbstractSpecial {
                 Display d2 = en.display;
 
                 boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, i, en);
-                sc = new SkelCompound(sc.sym,
-                        SpecialUniv.setAlloc(sc.args, d, t2, d2, i, multi, en));
+                sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, i, multi, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[3], ref, sc, d))
                     return false;

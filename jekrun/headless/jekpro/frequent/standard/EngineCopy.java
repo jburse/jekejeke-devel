@@ -35,8 +35,12 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class EngineCopy {
+public final class EngineCopy {
+    public final static int MASK_COPY_SINGL = 0x00000001;
+
     public MapHash<BindCount, SkelVar> vars;
+    public MapHash<BindCount, SkelVar> anon;
+    public int flags;
 
     /**
      * <p>Retrieve the variable or variable array.</p>
@@ -55,30 +59,8 @@ public class EngineCopy {
     }
 
     /*******************************************************/
-    /* Variable Allocation                                 */
+    /* Ordinary Copy                                       */
     /*******************************************************/
-
-    /**
-     * <p>Get a new variable for an old variable.</p>
-     *
-     * @param v The old variable skeleton.
-     * @param d The old variable display.
-     * @return The new variable.
-     */
-    public SkelVar getVar(SkelVar v, Display d) {
-        BindCount key = d.bind[v.id];
-        if (vars == null) {
-            vars = new MapHash<BindCount, SkelVar>();
-            v = null;
-        } else {
-            v = vars.get(key);
-        }
-        if (v == null) {
-            v = new SkelVar(vars.size);
-            vars.add(key, v);
-        }
-        return v;
-    }
 
     /**
      * <p>Copy the given term.</p>
@@ -100,7 +82,7 @@ public class EngineCopy {
                     d = b.display;
                     continue;
                 }
-                t = getVar(v, d);
+                t = getVarValue(v, d);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -128,6 +110,28 @@ public class EngineCopy {
             back = jack;
         } while (back != null);
         return t;
+    }
+
+    /**
+     * <p>Get a new variable for an old variable.</p>
+     *
+     * @param v The old variable skeleton.
+     * @param d The old variable display.
+     * @return The new variable.
+     */
+    private SkelVar getVarValue(SkelVar v, Display d) {
+        BindCount key = d.bind[v.id];
+        if (vars == null) {
+            vars = new MapHash<BindCount, SkelVar>();
+            v = null;
+        } else {
+            v = vars.get(key);
+        }
+        if (v == null) {
+            v = SkelVar.valueOf(vars.size);
+            vars.add(key, v);
+        }
+        return v;
     }
 
     /**************************************************************************/
@@ -166,7 +170,7 @@ public class EngineCopy {
                     d = b.display;
                     continue;
                 }
-                t = getVar(v, d);
+                t = getVarNew(v,d);
                 t = new SkelCompound(new SkelAtom(Branch.OP_CALL), t);
                 break;
             } else if (t instanceof SkelCompound) {
@@ -181,7 +185,7 @@ public class EngineCopy {
                         } else if (EngineCopy.argMinusOne(decl, i)) {
                             args[i] = copyTermAndWrap(sc.args[i], d, en);
                         } else {
-                            args[i] = copyTerm(sc.args[i], d);
+                            args[i] = copyRest(sc.args[i], d);
                         }
                     }
                     if (EngineCopy.argZero(decl, sc.args.length - 1)) {
@@ -193,14 +197,14 @@ public class EngineCopy {
                         t = new SkelCompound(sc.sym, args);
                         break;
                     } else {
-                        args[sc.args.length - 1] = copyTerm(sc.args[sc.args.length - 1], d);
+                        args[sc.args.length - 1] = copyRest(sc.args[sc.args.length - 1], d);
                         t = new SkelCompound(sc.sym, args);
                         break;
                     }
                 } else if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length; i++)
-                        args[i] = copyTerm(sc.args[i], d);
+                        args[i] = copyRest(sc.args[i], d);
                     t = new SkelCompound(sc.sym, args);
                     break;
                 } else {
@@ -258,7 +262,7 @@ public class EngineCopy {
                     d = b.display;
                     continue;
                 }
-                t = getVar(v, d);
+                t = getVarNew(v,d);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -272,7 +276,7 @@ public class EngineCopy {
                         } else if (EngineCopy.argMinusOne(decl, i)) {
                             args[i] = copyGoalAndWrap(sc.args[i], d, en);
                         } else {
-                            args[i] = copyTerm(sc.args[i], d);
+                            args[i] = copyRest(sc.args[i], d);
                         }
                     }
                     if (EngineCopy.argZero(decl, sc.args.length - 1)) {
@@ -284,14 +288,14 @@ public class EngineCopy {
                         t = new SkelCompound(sc.sym, args);
                         break;
                     } else {
-                        args[sc.args.length - 1] = copyTerm(sc.args[sc.args.length - 1], d);
+                        args[sc.args.length - 1] = copyRest(sc.args[sc.args.length - 1], d);
                         t = new SkelCompound(sc.sym, args);
                         break;
                     }
                 } else if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length; i++)
-                        args[i] = copyTerm(sc.args[i], d);
+                        args[i] = copyRest(sc.args[i], d);
                     t = new SkelCompound(sc.sym, args);
                     break;
                 } else {
@@ -311,6 +315,95 @@ public class EngineCopy {
             back = help;
         } while (back != null);
         return t;
+    }
+
+    /*******************************************************/
+    /* Rest Copy                                           */
+    /*******************************************************/
+
+    /**
+     * <p>Copy the given term.</p>
+     * <p>Will change vars as a side effect.</p>
+     * <p>Tail recursive solution.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return A copy of the term.
+     */
+    public final Object copyRest(Object t, Display d) {
+        SkelCompound back = null;
+        for (; ; ) {
+            if (t instanceof SkelVar) {
+                SkelVar v = (SkelVar) t;
+                BindVar b;
+                if ((b = d.bind[v.id]).display != null) {
+                    t = b.skel;
+                    d = b.display;
+                    continue;
+                }
+                t = getVarNew(v,d);
+                break;
+            } else if (t instanceof SkelCompound) {
+                SkelCompound sc = (SkelCompound) t;
+                if (sc.var != null) {
+                    Object[] args = new Object[sc.args.length];
+                    for (int i = 0; i < sc.args.length - 1; i++)
+                        args[i] = copyRest(sc.args[i], d);
+                    args[sc.args.length - 1] = back;
+                    back = new SkelCompound(sc.sym, args, null);
+                    t = sc.args[sc.args.length - 1];
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        if (back == null)
+            return t;
+        do {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        } while (back != null);
+        return t;
+    }
+
+    /**
+     * <p>Get a new variable for an old variable.</p>
+     *
+     * @param v The old variable skeleton.
+     * @param d The old variable display.
+     * @return The new variable.
+     */
+    private SkelVar getVarNew(SkelVar v, Display d) {
+        BindCount key = d.bind[v.id];
+        if (vars == null) {
+            vars = new MapHash<BindCount, SkelVar>();
+            v = null;
+        } else {
+            v = vars.get(key);
+        }
+        if (v == null) {
+            v = new SkelVar(vars.size);
+            vars.add(key, v);
+            if ((flags & MASK_COPY_SINGL)!=0) {
+                if (anon == null)
+                    anon = new MapHash<BindCount, SkelVar>();
+                anon.add(key, v);
+            }
+        } else {
+            if ((flags & MASK_COPY_SINGL)!=0) {
+                if (anon != null) {
+                    anon.remove(key);
+                    if (anon.size == 0)
+                        anon = null;
+                }
+            }
+        }
+        return v;
     }
 
     /*******************************************************/

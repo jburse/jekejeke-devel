@@ -1,7 +1,6 @@
 package jekpro.reference.reflect;
 
 import derek.util.protect.LicenseError;
-import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
@@ -15,7 +14,6 @@ import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -240,18 +238,7 @@ public final class SpecialPred extends AbstractSpecial {
                                               Engine en)
             throws EngineMessage {
         Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
-        String fun;
-        /* reference */
-        if (!(obj instanceof AbstractSkel) &&
-                !(obj instanceof Number)) {
-            fun = SpecialProxy.classOrProxyName(obj);
-            if (fun == null)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_CLASS, t), d);
-            /* atom */
-        } else {
-            fun = ((SkelAtom) obj).fun;
-        }
+        String fun = SpecialQuali.objToString(obj, t, d, false);
         return AbstractSource.getModule(fun, en.store);
     }
 

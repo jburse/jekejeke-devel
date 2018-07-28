@@ -1,5 +1,6 @@
 package jekpro.reference.runtime;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.Branch;
@@ -12,7 +13,10 @@ import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.proxy.FactoryAPI;
-import jekpro.tools.term.*;
+import jekpro.tools.term.PositionKey;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHashLink;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
@@ -342,12 +346,11 @@ public final class SpecialSession extends AbstractSpecial {
             try {
                 AbstractSource src = en.visor.peekStack();
                 SpecialSession.promptQuery(src, en);
+                int flags = 0;
                 if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
-                        (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
-                    rd.setFlags(PrologWriter.FLAG_SING);
-                } else {
-                    rd.setFlags(0);
-                }
+                        (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0)
+                    flags |= PrologReader.FLAG_NEWV;
+                rd.setFlags(flags);
                 rd.setReadUtil(en.store);
                 rd.setSource(src);
                 Object val;
@@ -375,7 +378,6 @@ public final class SpecialSession extends AbstractSpecial {
                         AbstractDefined.MASK_DEFI_NLST |
                         AbstractDefined.MASK_DEFI_STOP);
                 clause.vars = pre.vars;
-                clause.anon = pre.anon;
                 clause.analyzeBody(pre.molec, en);
 
                 Intermediate r = en.contskel;
@@ -397,7 +399,7 @@ public final class SpecialSession extends AbstractSpecial {
                         en.display = Display.DISPLAY_CONST;
                         en.contskel = r;
                         en.contdisplay = u;
-                        en.unfoldCheckedIgnore();
+                        en.invokeIgnoreChecked();
                         if (en.number != snap) {
                             String action = askSessionAction(en);
                             if (action == null) {
@@ -414,7 +416,7 @@ public final class SpecialSession extends AbstractSpecial {
                                     if (parseAction(action, src, en)) {
                                         en.contskel = r;
                                         en.contdisplay = u;
-                                        en.unfoldCheckedIgnore();
+                                        en.invokeIgnoreChecked();
                                     } else {
                                         found = false;
                                     }
@@ -486,7 +488,6 @@ public final class SpecialSession extends AbstractSpecial {
             pre.molec = new SkelCompound(new SkelAtom(
                     PreClause.OP_TURNSTILE), t);
             pre.vars = Named.makeNamed(rd.getVars());
-            pre.anon = Named.makeNamed(rd.getAnon());
             return pre;
         }
 
@@ -585,16 +586,22 @@ public final class SpecialSession extends AbstractSpecial {
                                                  Engine en)
             throws EngineMessage, EngineException {
         PreClause pre = new PreClause();
-        EngineAnon an = new EngineAnon();
+        EngineCopy ec = en.enginecopy;
+        if (ec == null) {
+            ec = new EngineCopy();
+            en.enginecopy = ec;
+        }
+        ec.vars = null;
+        ec.flags = 0;
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
-            t = an.copyTerm(t, d);
+            t = ec.copyRest(t, d);
         } else {
-            t = an.copyGoalAndWrap(t, d, en);
+            t = ec.copyGoalAndWrap(t, d, en);
         }
         pre.molec = new SkelCompound(new SkelAtom(
                 PreClause.OP_TURNSTILE), t);
-        pre.vars = FileText.copyVars(assoc, d2, en, an.vars);
-        pre.anon = FileText.copyVars(assoc, d2, en, an.anon);
+        pre.vars = FileText.copyVars(assoc, d2, en, ec.vars);
+        ec.vars = null;
         return pre;
     }
 

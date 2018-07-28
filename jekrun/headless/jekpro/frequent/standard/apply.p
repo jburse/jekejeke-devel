@@ -272,3 +272,37 @@ maplist(_, [], [], [], []).
 maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
    call(C, X, Y, Z, U),
    maplist(C, L, R, S, T).
+
+/**
+ * foldl(C, L1, ..., Ln, I, O):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L1, ..., Ln and accumulating the result among
+ * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
+ */
+:- public foldl/4.
+:- meta_predicate foldl(3,?,?,?).
+foldl(_, []) --> [].
+foldl(C, [X|L]) -->
+   call(C, X),
+   foldl(C, L).
+
+:- public foldl/5.
+:- meta_predicate foldl(4,?,?,?,?).
+foldl(_, [], []) --> [].
+foldl(C, [X|L], [Y|R]) -->
+   call(C, X, Y),
+   foldl(C, L, R).
+
+:- public foldl/6.
+:- meta_predicate foldl(5,?,?,?,?,?).
+foldl(_, [], [], []) --> [].
+foldl(C, [X|L], [Y|R], [Z|S]) -->
+   call(C, X, Y, Z),
+   foldl(C, L, R, S).
+
+:- public foldl/7.
+:- meta_predicate foldl(6,?,?,?,?,?,?).
+foldl(_, [], [], [], []) --> [].
+foldl(C, [X|L], [Y|R], [Z|S], [U|T]) -->
+   call(C, X, Y, Z, U),
+   foldl(C, L, R, S, T).

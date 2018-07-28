@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
@@ -71,26 +72,26 @@ public final class CacheSubclass extends AbstractCache {
                                            AbstractSource scope,
                                            Engine en)
             throws EngineMessage, EngineException {
+
+        if (Branch.OP_USER.equals(mod))
+            return scope.getStore().user;
+
+        LoadOpts opts = new LoadOpts();
+        opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
+        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
+        en.enginecopy = null;
+        en.enginewrap = null;
+        mod = mod.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+        String key;
         try {
-            if (Branch.OP_USER.equals(mod))
-                return scope.getStore().user;
-
-            LoadOpts opts = new LoadOpts();
-            opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
-            opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
-            en.enginecopy = null;
-            en.enginewrap = null;
-            mod = mod.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
-            String key = findKey(mod, scope, ForeignPath.MASK_MODL_BASE, null);
-
-            if (key == null)
-                throw new EngineMessage(EngineMessage.existenceError(
-                        EngineMessage.OP_EXISTENCE_VERBATIM, new SkelAtom(mod)));
-
-            return opts.makeLoad(scope, key, en);
+            key = findKey(mod, scope, ForeignPath.MASK_MODL_BASE, null);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
+        if (key == null)
+            throw new EngineMessage(EngineMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_VERBATIM, new SkelAtom(mod)));
+        return opts.makeLoad(scope, key, en);
     }
 
     /**

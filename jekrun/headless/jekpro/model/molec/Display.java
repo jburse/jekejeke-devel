@@ -2,7 +2,6 @@ package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
@@ -54,9 +53,11 @@ public class Display {
             return;
 
         BindCount[] b = new BindCount[s];
-        for (int i = 0; i < s; i++)
-            b[i] = new BindCount();
         bind = b;
+        for (int i = 0; i < s; i++) {
+            BindCount b2 = new BindCount();
+            b[i] = b2;
+        }
     }
 
     /**
@@ -80,9 +81,13 @@ public class Display {
             }
             bind = b;
         }
-        for (int i = 0; i < s; i++)
-            if (b[i] == null)
-                b[i] = new BindCount();
+        for (int i = 0; i < s; i++) {
+            BindCount b2 = b[i];
+            if (b2 == null) {
+                b2 = new BindCount();
+                b[i] = b2;
+            }
+        }
     }
 
     /*********************************************************************/
@@ -97,7 +102,7 @@ public class Display {
      * @return The display size.
      */
     public static int displaySize(Object m) {
-        Object var= EngineCopy.getVar(m);
+        Object var = EngineCopy.getVar(m);
         if (var == null)
             return 0;
         if (var instanceof SkelVar) {

@@ -1,6 +1,5 @@
 package jekpro.model.builtin;
 
-import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -15,7 +14,6 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.foreign.LookupBinary;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.system.AbstractRuntime;
@@ -342,19 +340,7 @@ public final class SpecialSpecial extends AbstractSpecial {
         try {
             /* slash syntax */
             Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
-            SkelAtom sa;
-            if (!(obj instanceof AbstractSkel) &&
-                    !(obj instanceof Number)) {
-                /* reference */
-                String fun = SpecialProxy.classOrProxyName(obj);
-                if (fun == null)
-                    throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_CLASS, t), d);
-                sa = new SkelAtom(fun);
-            } else {
-                /* atom */
-                sa = (SkelAtom) obj;
-            }
+            SkelAtom sa = SpecialQuali.objToAtom(obj, t, d);
 
             /* find key */
             AbstractSource scope = (sa.scope != null ? sa.scope : en.store.user);

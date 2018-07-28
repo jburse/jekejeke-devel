@@ -143,8 +143,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     Display d2 = en.display;
 
                     multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
-                    sc = new SkelCompound(sc.sym,
-                            SpecialUniv.setAlloc(sc.args, d, t2, d2, nth, multi, en));
+                    sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[3], ref, sc, d))
                         return false;
@@ -195,23 +194,23 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>Count the needed variable place holders.</p>
      * <p>The reused or new display is returned in the engine display.</p>
      *
-     * @param t2args The compound arguments.
-     * @param d2     The compound display.
-     * @param t      The set skel.
-     * @param d      The set display.
-     * @param k      The set position.
-     * @param en     The engine.
+     * @param t2 The compound arguments.
+     * @param d2 The compound display.
+     * @param t  The set skel.
+     * @param d  The set display.
+     * @param k  The set position.
+     * @param en The engine.
      * @return True if new display is returned, otherwise false.
      */
-    public static boolean setCount(Object[] t2args, Display d2,
+    public static boolean setCount(Object[] t2, Display d2,
                                    Object t, Display d, int k,
                                    Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        for (int i = 0; i < t2args.length; i++) {
+        for (int i = 0; i < t2.length; i++) {
             if (i != k) {
-                en.skel = t2args[i];
+                en.skel = t2[i];
                 en.display = d2;
                 en.deref();
             } else {
@@ -238,24 +237,31 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>The reused or new display is passed via the engine display</p>
      * <p>The reused or new display is returned in the engine display.</p>
      *
-     * @param t2args The compound arguments.
-     * @param d2     The compound display.
-     * @param t      The set skel.
-     * @param d      The set display.
-     * @param k      The set position.
-     * @param multi  The multi flag.
-     * @param en     The engine.
-     * @return The copied arguments.
+     * @param sa    The symbol.
+     * @param t2    The compound arguments.
+     * @param d2    The compound display.
+     * @param t     The set skel.
+     * @param d     The set display.
+     * @param k     The set position.
+     * @param multi The multi flag.
+     * @param en    The engine.
+     * @return The new compound.
      */
-    public static Object[] setAlloc(Object[] t2args, Display d2,
-                                    Object t, Display d, int k,
-                                    boolean multi, Engine en) {
+    public static SkelCompound setAlloc(SkelAtom sa, Object[] t2, Display d2,
+                                        Object t, Display d, int k,
+                                        boolean multi, Engine en) {
         Display d4 = en.display;
-        Object[] args = new Object[t2args.length];
+        SkelVar[] vars;
+        if (multi) {
+            vars = SkelVar.valueOfArray(d4.bind.length);
+        } else {
+            vars = null;
+        }
+        Object[] args = new Object[t2.length];
         int countvar = 0;
-        for (int i = 0; i < t2args.length; i++) {
+        for (int i = 0; i < t2.length; i++) {
             if (i != k) {
-                en.skel = t2args[i];
+                en.skel = t2[i];
                 en.display = d2;
                 en.deref();
             } else {
@@ -263,7 +269,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.display = d;
             }
             if (multi && EngineCopy.getVar(en.skel) != null) {
-                SkelVar sv = SkelVar.valueOf(countvar);
+                SkelVar sv = vars[countvar];
                 countvar++;
                 d4.bind[sv.id].bindVar(en.skel, en.display, en);
                 args[i] = sv;
@@ -272,7 +278,11 @@ public final class SpecialUniv extends AbstractSpecial {
             }
         }
         en.display = d4;
-        return args;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
+        } else {
+            return new SkelCompound(sa, args);
+        }
     }
 
     /******************************************************************/
@@ -314,7 +324,8 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en The interpreter.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean listToTerm(Engine en) throws EngineMessage {
+    private static boolean listToTerm(Engine en)
+            throws EngineMessage {
         Object t = en.skel;
         Display d = en.display;
         if ((t instanceof SkelCompound) &&
@@ -323,7 +334,8 @@ public final class SpecialUniv extends AbstractSpecial {
             /* */
         } else {
             EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(EngineMessage.OP_TYPE_LIST, t), d);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST, t), d);
         }
         SkelCompound sc = (SkelCompound) t;
         en.skel = sc.args[0];
@@ -338,16 +350,24 @@ public final class SpecialUniv extends AbstractSpecial {
         t = en.skel;
         d = en.display;
 
-        int mullen = univCount(t, d, en);
-        if (!(t2 instanceof SkelCompound) && mullen == 0) {
-            EngineMessage.checkInstantiated(en.skel);
+        if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
+            if (!(t2 instanceof SkelCompound)) {
+                /* */
+            } else {
+                EngineMessage.checkInstantiated(t2);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_ATOMIC, t2), d2);
+            }
             en.skel = t2;
+            en.display = d2;
+            return false;
         } else {
             SkelAtom sa = EngineMessage.castStringWrapped(t2, d2);
-            en.skel = new SkelCompound(sa, univAlloc(t, d, mullen, en));
+            int mullen = univCount(t, d, en);
+            en.skel = univAlloc(sa, t, d, mullen, en);
+            return (mullen < 0);
         }
-
-        return (mullen < 0);
     }
 
     /**
@@ -407,17 +427,24 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>The reused or new display is passed via the engine display</p>
      * <p>The reused or new display is returned in the engine display.</p>
      *
+     * @param sa     The symbol.
      * @param t      The term skeleton.
      * @param d      The term display.
      * @param mullen The multi flag and the length.
      * @param en     The engine.
-     * @return The arguments.
+     * @return The new compound.
      */
-    private static Object[] univAlloc(Object t, Display d,
-                                      int mullen, Engine en) {
-        boolean multi = (mullen < 0);
-        int length = (multi ? -mullen - 1 : mullen);
+    private static SkelCompound univAlloc(SkelAtom sa, Object t, Display d,
+                                          int mullen, Engine en) {
         Display d2 = en.display;
+        boolean multi = (mullen < 0);
+        SkelVar[] vars;
+        if (multi) {
+            vars = SkelVar.valueOfArray(d2.bind.length);
+        } else {
+            vars = null;
+        }
+        int length = (multi ? -mullen - 1 : mullen);
         Object[] args = new Object[length];
         int pos = 0;
         int countvar = 0;
@@ -427,7 +454,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.display = d;
             en.deref();
             if (multi && EngineCopy.getVar(en.skel) != null) {
-                SkelVar sv = SkelVar.valueOf(countvar);
+                SkelVar sv = vars[countvar];
                 countvar++;
                 d2.bind[sv.id].bindVar(en.skel, en.display, en);
                 args[pos] = sv;
@@ -442,7 +469,11 @@ public final class SpecialUniv extends AbstractSpecial {
             d = en.display;
         }
         en.display = d2;
-        return args;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
+        } else {
+            return new SkelCompound(sa, args);
+        }
     }
 
     /*****************************************************************/

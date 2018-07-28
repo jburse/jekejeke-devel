@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -65,6 +64,10 @@ public class PrologReader {
     public final static String OP_RBRACE = "}";
 
     public final static String OP_SET = "{}";
+
+    /* only read opts */
+    public final static int FLAG_SING = 0x00001000;
+    public final static int FLAG_NEWV = 0x00002000;
 
     protected final static String OP_LBRACK = "[";
     protected final static String OP_RBRACK = "]";
@@ -766,26 +769,26 @@ public class PrologReader {
         } else {
             mv = vars.get(key);
         }
-        if ((flags & PrologWriter.FLAG_SING) != 0) {
-            if (mv == null) {
+        if (mv == null) {
+            if ((flags & PrologReader.FLAG_NEWV) != 0) {
                 mv = new SkelVar(gensym);
-                gensym++;
-                vars.add(key, mv);
+            } else {
+                mv = SkelVar.valueOf(gensym);
+            }
+            gensym++;
+            vars.add(key, mv);
+            if ((flags & FLAG_SING) != 0) {
                 if (anon == null)
                     anon = new MapHashLink<String, SkelVar>();
                 anon.add(key, mv);
-            } else {
+            }
+        } else {
+            if ((flags & FLAG_SING) != 0) {
                 if (anon != null) {
                     anon.remove(key);
                     if (anon.size == 0)
                         anon = null;
                 }
-            }
-        } else {
-            if (mv == null) {
-                mv = new SkelVar(gensym);
-                gensym++;
-                vars.add(key, mv);
             }
         }
         return mv;

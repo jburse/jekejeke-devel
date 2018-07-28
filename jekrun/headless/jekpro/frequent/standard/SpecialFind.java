@@ -127,11 +127,7 @@ public final class SpecialFind extends AbstractSpecial {
     private static ListArray<Object> iterFindAll(Object t2, Display d2,
                                                  Engine en)
             throws EngineException {
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+
 
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
@@ -148,6 +144,11 @@ public final class SpecialFind extends AbstractSpecial {
             en.contdisplay = ref;
             boolean found = en.runFirst(snap);
             while (found) {
+                EngineCopy ec = en.enginecopy;
+                if (ec == null) {
+                    ec = new EngineCopy();
+                    en.enginecopy = ec;
+                }
                 ec.vars = null;
                 Object val = ec.copyTerm(t2, d2);
                 ec.vars = null;

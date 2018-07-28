@@ -391,12 +391,8 @@ public final class EngineVars {
                 NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
             } else {
                 for (; ; ) {
-                    StringBuilder buf = new StringBuilder();
-                    buf.appendCodePoint(k % 26 + 'A');
-                    if (k > 26)
-                        buf.append(k / 26);
+                    String name = SkelVar.sernoToString(k, false);
                     k++;
-                    String name = buf.toString();
                     if (range == null || range.getKey(name) == null) {
                         NamedDistance.addAnon(copy, key, name);
                         break;

@@ -204,6 +204,7 @@ public final class SpecialRef extends AbstractSpecial {
             en.enginecopy = ec;
         }
         ec.vars = null;
+        ec.flags = 0;
         Object molec = ec.copyTermAndWrap(en.skel, en.display, en);
         Named[] vars = null;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0)

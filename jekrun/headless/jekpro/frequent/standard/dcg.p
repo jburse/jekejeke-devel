@@ -43,15 +43,6 @@
  * or into the body goals of the grammar rule. This gives better performance
  * but renders the grammar mechanism not anymore customizable via ‘C’/3.
  *
- * The DCG grammar mechanism is extensible. The invocation part can be
- * extended by simultaneously adding custom clauses to the multi-file
- * predicates phrase/3 and sys_phrase_delay/1. The expansion part can be
- * extended by simultaneously adding custom clauses to the multi-file
- * predicates phrase_expansion/4, phrase_abnormal/1 and
- * sys_phrase_expansion/4. The module tecto is an example where this
- * mechanism is used to define additional grammar constructs that are
- * not strictly non-terminals.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -76,14 +67,10 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-/**
- * Implementation note: This module defines 3 multifile predicates
- * parse/3, sys_phrase_delay/1, phrase_expansion/4, phrase_abnormal/4
- * and sys_phrase_expansion/4 so that the expansion and execution of dcgs
- * can be extended. This is for exmple used by the module tecto.
- */
-
 :- module(user, []).
+
+:- public infix(-->).
+:- op(1200, xfx, -->).
 
 /**********************************************************/
 /* Goal Execution                                         */
@@ -97,34 +84,10 @@
  */
 % phrase(+Goal, +List, -List)
 :- public phrase/3.
-:- multifile phrase/3.
 :- meta_predicate phrase(2,?,?).
-phrase(P, _, _) :-
-   sys_var(P),
-   throw(error(instantiation_error,_)).
 phrase(P, I, O) :-
-   \+ sys_phrase_delay(P), !,
    expand_goal(phrase(P, I, O), Q),
    call(Q).
-
-:- public sys_phrase/3.
-:- meta_predicate sys_phrase(2,?,?).
-sys_phrase(_, _, _) :-
-   throw(error(existence_error(body,sys_phrase/3),_)).
-
-/**
- * sys_phrase_delay(A):
- * Succeeds for those phrases A that are extended in
- * phrase/3.
- */
-% sys_phrase_delay(+Goal)
-:- public sys_phrase_delay/1.
-:- multifile sys_phrase_delay/1.
-:- static sys_phrase_delay/1.
-
-/**********************************************************/
-/* Goal Rewriting Steadfast                               */
-/**********************************************************/
 
 % goal_expansion(+Goal, -Goal)
 :- discontiguous goal_expansion/2.
@@ -140,23 +103,26 @@ sys_phrase(_, _, _) :-
 % phrase(+Goal, +List)
 :- public phrase/2.
 :- meta_predicate phrase(2,?).
-phrase(_, _) :-
-   throw(error(existence_error(body,phrase/2),_)).
+phrase(P, I) :-
+   expand_goal(phrase(P, I), Q),
+   call(Q).
 
 goal_expansion(phrase(P, I), phrase(P, I, [])).
 
-goal_expansion(phrase(P, _, _), _) :-
-   sys_var(P), !, fail.
+/**********************************************************/
+/* Goal Rewriting Steadfast                               */
+/**********************************************************/
 
 /**
  * P (grammar):
  * The grammar non-terminal P succeeds whenever the callable P extended
  * by the current input and output succeeds.
  */
+goal_expansion(phrase(P, I, O), call(P, I, O)) :-
+   sys_var(P).
 goal_expansion(phrase(P, I, O), Q) :-
    \+ phrase_abnormal(P), !,
    sys_modext_args(P, I, O, Q).
-
 goal_expansion(phrase(P, I, O), R) :-
    phrase_expansion(P, I, O, R).
 
@@ -166,8 +132,7 @@ goal_expansion(phrase(P, I, O), R) :-
  * output O results in the steadfast goal G.
  */
 % phrase_expansion(+Grammar, +List, -List, -Goal)
-:- multifile phrase_expansion/4.
-:- public phrase_expansion/4.
+:- private phrase_expansion/4.
 :- meta_predicate phrase_expansion(2,?,?,0).
 :- discontiguous phrase_expansion/4.
 :- set_predicate_property(phrase_expansion/4, sys_noexpand).
@@ -179,8 +144,9 @@ goal_expansion(phrase(P, I, O), R) :-
  */
 :- public ','/4.
 :- meta_predicate ','(2,2,?,?).
-','(_, _, _, _) :-
-   throw(error(existence_error(body,','/4),_)).
+','(A, B, I, O) :-
+   expand_goal(phrase((  A, B), I, O), Q),
+   call(Q).
 
 phrase_expansion((  A, B), I, O, (  phrase(A, I, H),
                                     sys_phrase(B, H, O))) :-
@@ -214,8 +180,9 @@ phrase_expansion((  A, B), I, O, (  phrase(A, I, H),
  */
 :- public ;/4.
 :- meta_predicate ;(2,2,?,?).
-;(_, _, _, _) :-
-   throw(error(existence_error(body,;/4),_)).
+;(A, B, I, O) :-
+   expand_goal(phrase((  A; B), I, O), Q),
+   call(Q).
 
 phrase_expansion((  A; B), I, O, (  phrase(A, I, O)
                                  ;  phrase(B, I, O))).
@@ -228,8 +195,9 @@ phrase_expansion((  A; B), I, O, (  phrase(A, I, O)
  */
 :- public -> /4.
 :- meta_predicate ->(2,2,?,?).
-->(_, _, _, _) :-
-   throw(error(existence_error(body,-> /4),_)).
+->(A, B, I, O) :-
+   expand_goal(phrase((  A -> B), I, O), Q),
+   call(Q).
 
 phrase_expansion((  A -> B), I, O, (  phrase(A, I, H)
                                    -> phrase(B, H, O))).
@@ -242,8 +210,9 @@ phrase_expansion((  A -> B), I, O, (  phrase(A, I, H)
  */
 :- public *-> /4.
 :- meta_predicate *->(2,2,?,?).
-*->(_, _, _, _) :-
-   throw(error(existence_error(body,*-> /4),_)).
+*->(A, B, I, O) :-
+   expand_goal(phrase((  A *-> B), I, O), Q),
+   call(Q).
 
 phrase_expansion((  A *-> B), I, O, (  phrase(A, I, H)
                                     *->phrase(B, H, O))).
@@ -259,8 +228,9 @@ phrase_expansion(call(P), I, O, phrase(P, I, O)).
  * The grammar connective fails.
  */
 :- public fail/2.
-fail(_, _) :-
-   throw(error(existence_error(body,fail/2),_)).
+fail(I, O) :-
+   expand_goal(phrase(fail, I, O), Q),
+   call(Q).
 
 phrase_expansion(P, _, _, P) :-
    P = fail.
@@ -272,15 +242,18 @@ phrase_expansion(P, _, _, P) :-
  */
 :- public {}/3.
 :- meta_predicate {}(0,?,?).
-{}(_, _, _) :-
-   throw(error(existence_error(body,{}/3),_)).
+{}(A, I, O) :-
+   expand_goal(phrase({A}, I, O), Q),
+   call(Q).
 
 phrase_expansion(U, I, O, (  P, Q)) :-
    sys_phrase_barrier(U, I, P),
    sys_replace_site(Q, U, I=O).
 
 :- private sys_phrase_barrier/3.
+:- meta_predicate sys_phrase_barrier(2,?,0).
 :- discontiguous sys_phrase_barrier/3.
+:- set_predicate_property(sys_phrase_barrier/3, sys_noexpand).
 sys_phrase_barrier(U, _, A) :-
    U = {A}.
 
@@ -292,8 +265,9 @@ sys_phrase_barrier(U, _, A) :-
  */
 :- public (\+)/3.
 :- meta_predicate \+(2,?,?).
-\+(_, _, _) :-
-   throw(error(existence_error(body,(\+)/3),_)).
+\+(A, I, O) :-
+   expand_goal(phrase(\+ A, I, O), Q),
+   call(Q).
 
 sys_phrase_barrier(U, I, P) :-
    U = (\+A),
@@ -304,8 +278,9 @@ sys_phrase_barrier(U, I, P) :-
  * The grammar connective removes pending choice and then succeeds once.
  */
 :- public !/2.
-!(_, _) :-
-   throw(error(existence_error(body,!/2),_)).
+!(I, O) :-
+   expand_goal(phrase(!, I, O), Q),
+   call(Q).
 
 sys_phrase_barrier(U, _, U) :-
    U = !.
@@ -315,8 +290,9 @@ sys_phrase_barrier(U, _, U) :-
  * The grammar connective succeeds when the terminals A1, …, An can be consumed.
  */
 :- public []/2.
-_ [_] :-
-   throw(error(existence_error(body,[]/2),_)).
+I [O] :-
+   expand_goal(phrase([], I, O), Q),
+   call(Q).
 
 phrase_expansion(U, I, O, Q) :-
    U = [],
@@ -324,8 +300,9 @@ phrase_expansion(U, I, O, Q) :-
 
 :- public '.'/4.
 :- meta_predicate '.'(2,2,?,?).
-'.'(_, _, _, _) :-
-   throw(error(existence_error(body,'.'/4),_)).
+'.'(A, B, I, O) :-
+   expand_goal(phrase([A|B], I, O), Q),
+   call(Q).
 
 phrase_expansion(U, H, O, (  Q,
                              sys_phrase(B, I, O))) :-
@@ -338,8 +315,7 @@ phrase_expansion(U, H, O, (  Q,
  * phrase_expansion/4 and sys_phrase_expansion/4.
  */
 % phrase_abnormal(+Grammar)
-:- multifile phrase_abnormal/1.
-:- public phrase_abnormal/1.
+:- private phrase_abnormal/1.
 phrase_abnormal((_,_)).
 phrase_abnormal((_;_)).
 phrase_abnormal((_->_)).
@@ -356,7 +332,12 @@ phrase_abnormal([_|_]).
 /* Goal Rewriting Non-Steadfast                           */
 /**********************************************************/
 
-goal_expansion(sys_phrase(P, I, O), phrase(P, I, O)) :-
+:- private sys_phrase/3.
+:- meta_predicate sys_phrase(2,?,?).
+sys_phrase(_, _, _) :-
+   throw(error(existence_error(body,sys_phrase/3),_)).
+
+goal_expansion(sys_phrase(P, I, O), call(P, I, O)) :-
    sys_var(P).
 goal_expansion(sys_phrase(P, I, O), Q) :-
    \+ phrase_abnormal(P), !,
@@ -370,11 +351,9 @@ goal_expansion(sys_phrase(P, I, O), R) :-
  * output O results in the not-necessarily steadfast goal G.
  */
 % sys_phrase_expansion(+Grammar, +List, -List, -Goal)
-:- multifile sys_phrase_expansion/4.
-:- public sys_phrase_expansion/4.
+:- private sys_phrase_expansion/4.
 :- meta_predicate sys_phrase_expansion(2,?,?,0).
 :- set_predicate_property(sys_phrase_expansion/4, sys_noexpand).
-
 sys_phrase_expansion((  A, B), I, O, (  sys_phrase(A, I, H),
                                         sys_phrase(B, H, O))) :-
    sys_var(A).
@@ -429,8 +408,13 @@ term_expansion(phrase(P, I, O), Q) :-
  * The construct defines a grammar rule with grammar head H and
  * grammar body B.
  */
-:- public infix(-->).
-:- op(1200, xfx, -->).
+
+/**
+ * H, P --> B:
+ * The construct defines a push back with grammar head H and,
+ * push back P and grammar body B.
+ */
+
 :- public --> /2.
 :- meta_predicate (2--> -3).
 (_ --> _) :-
@@ -439,12 +423,6 @@ term_expansion(phrase(P, I, O), Q) :-
 term_expansion((P --> _), _) :-
    sys_var(P),
    throw(error(instantiation_error,_)).
-
-/**
- * H, P --> B:
- * The construct defines a push back with grammar head H and,
- * push back P and grammar body B.
- */
 term_expansion((P, B --> C),
    (phrase(P, I, O) :-
       sys_phrase(C, I, H),

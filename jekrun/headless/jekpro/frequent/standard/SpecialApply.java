@@ -145,7 +145,7 @@ public final class SpecialApply extends AbstractSpecial {
             t = en.skel;
             d = en.display;
             boolean multi = pairCount(t, d, t4, d2, en);
-            en.skel = new SkelCompound(sc.sym, pairAlloc(t, d, t4, d2, multi, en));
+            en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
             if (multi && ext)
                 d2.remTab(en);
             return (multi || ext);
@@ -165,7 +165,7 @@ public final class SpecialApply extends AbstractSpecial {
             t = en.skel;
             d = en.display;
             boolean multi = pairCount(t, d, t4, d2, en);
-            en.skel = new SkelCompound(sc.sym, pairAlloc(t, d, t4, d2, multi, en));
+            en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
             if (multi && ext)
                 d2.remTab(en);
             return (multi || ext);
@@ -181,8 +181,101 @@ public final class SpecialApply extends AbstractSpecial {
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
             boolean multi = extendCount(t, d, t2, d2, slice, en);
-            en.skel = new SkelCompound(sa, extendAlloc(t, d, t2, d2, slice, multi, en));
+            en.skel = extendAlloc(sa, t, d, t2, d2, slice, multi, en);
             return multi;
+        }
+    }
+
+    /***************************************************************/
+    /* Pair Univ                                                   */
+    /***************************************************************/
+
+    /**
+     * <p>Count the needed variable place holders.</p>
+     * <p>The reused or new display is returned in the engine copy display.</p>
+     *
+     * @param t  The goal skel.
+     * @param d  The goal display.
+     * @param t2 The extend skel.
+     * @param d2 The extend display.
+     * @param en The engine.
+     * @return True if new display is returned, otherwise false.
+     */
+    private static boolean pairCount(Object t, Display d, Object t2,
+                                     Display d2, Engine en) {
+        int countvar = 0;
+        Display last = Display.DISPLAY_CONST;
+        boolean multi = false;
+        if (EngineCopy.getVar(t) != null) {
+            countvar++;
+            if (last == Display.DISPLAY_CONST) {
+                last = d;
+            } else if (last != d) {
+                multi = true;
+            }
+        }
+        if (EngineCopy.getVar(t2) != null) {
+            countvar++;
+            if (last == Display.DISPLAY_CONST) {
+                last = d2;
+            } else if (last != d2) {
+                multi = true;
+            }
+        }
+        if (multi)
+            last = new Display(countvar);
+        en.display = last;
+        return multi;
+    }
+
+    /**
+     * <p>Copy the arguments.</p>
+     * <p>The reused or new display is passed via the engine display</p>
+     * <p>The reused or new display is returned in the engine display.</p>
+     *
+     * @param sa    The symbol.
+     * @param t     The goal skel.
+     * @param d     The goal display.
+     * @param t2    The extend skel.
+     * @param d2    The extend display.
+     * @param multi The multi flag.
+     * @param en    The engine copy.
+     * @return The new compound.
+     */
+    private static SkelCompound pairAlloc(SkelAtom sa,
+                                          Object t, Display d,
+                                          Object t2, Display d2,
+                                          boolean multi, Engine en) {
+        Display d3 = en.display;
+        SkelVar[] vars;
+        if (multi) {
+            vars = SkelVar.valueOfArray(d3.bind.length);
+        } else {
+            vars = null;
+        }
+        Object[] args = new Object[2];
+        int countvar = 0;
+        if (multi && EngineCopy.getVar(t) != null) {
+            SkelVar sv = vars[countvar];
+            countvar++;
+            d3.bind[sv.id].bindVar(t, d, en);
+            args[0] = sv;
+        } else {
+            args[0] = t;
+        }
+        if (multi && EngineCopy.getVar(t2) != null) {
+            SkelVar sv = vars[countvar];
+            // countvar++;
+            d3.bind[sv.id].bindVar(t2, d2, en);
+            args[1] = sv;
+        } else {
+            args[1] = t2;
+        }
+        en.display = d3;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
+        } else {
+            return new SkelCompound(sa, args);
         }
     }
 
@@ -248,6 +341,7 @@ public final class SpecialApply extends AbstractSpecial {
      * <p>The reused or new display is passed via the engine display</p>
      * <p>The reused or new display is returned in the engine display.</p>
      *
+     * @param sa    The symbol.
      * @param t     The goal skel.
      * @param d     The goal display.
      * @param t2    The extend arguments.
@@ -255,12 +349,19 @@ public final class SpecialApply extends AbstractSpecial {
      * @param slice The slice length.
      * @param multi The multi flag.
      * @param en    The engine.
-     * @return The copied arguments.
+     * @return The new compound.
      */
-    private static Object[] extendAlloc(Object t, Display d,
-                                        Object[] t2, Display d2,
-                                        int slice,
-                                        boolean multi, Engine en) {
+    private static SkelCompound extendAlloc(SkelAtom sa, Object t, Display d,
+                                            Object[] t2, Display d2,
+                                            int slice,
+                                            boolean multi, Engine en) {
+        Display d3 = en.display;
+        SkelVar[] vars;
+        if (multi) {
+            vars = SkelVar.valueOfArray(d3.bind.length);
+        } else {
+            vars = null;
+        }
         int len;
         if (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
@@ -268,7 +369,6 @@ public final class SpecialApply extends AbstractSpecial {
         } else {
             len = -1;
         }
-        Display d3 = en.display;
         Object[] args = new Object[len + slice];
         int countvar = 0;
         if (t instanceof SkelCompound) {
@@ -278,7 +378,7 @@ public final class SpecialApply extends AbstractSpecial {
                 en.display = d;
                 en.deref();
                 if (multi && EngineCopy.getVar(en.skel) != null) {
-                    SkelVar sv = SkelVar.valueOf(countvar);
+                    SkelVar sv = vars[countvar];
                     countvar++;
                     d3.bind[sv.id].bindVar(en.skel, en.display, en);
                     args[i] = sv;
@@ -292,7 +392,7 @@ public final class SpecialApply extends AbstractSpecial {
             en.display = d2;
             en.deref();
             if (multi && EngineCopy.getVar(en.skel) != null) {
-                SkelVar sv = SkelVar.valueOf(countvar);
+                SkelVar sv = vars[countvar];
                 countvar++;
                 d3.bind[sv.id].bindVar(en.skel, en.display, en);
                 args[len + i] = sv;
@@ -301,88 +401,11 @@ public final class SpecialApply extends AbstractSpecial {
             }
         }
         en.display = d3;
-        return args;
-    }
-
-    /***************************************************************/
-    /* Pair Univ                                                   */
-    /***************************************************************/
-
-    /**
-     * <p>Count the needed variable place holders.</p>
-     * <p>The reused or new display is returned in the engine copy display.</p>
-     *
-     * @param t  The goal skel.
-     * @param d  The goal display.
-     * @param t2 The extend skel.
-     * @param d2 The extend display.
-     * @param en The engine.
-     * @return True if new display is returned, otherwise false.
-     */
-    private static boolean pairCount(Object t, Display d, Object t2,
-                                     Display d2, Engine en) {
-        int countvar = 0;
-        Display last = Display.DISPLAY_CONST;
-        boolean multi = false;
-        if (EngineCopy.getVar(t) != null) {
-            countvar++;
-            if (last == Display.DISPLAY_CONST) {
-                last = d;
-            } else if (last != d) {
-                multi = true;
-            }
-        }
-        if (EngineCopy.getVar(t2) != null) {
-            countvar++;
-            if (last == Display.DISPLAY_CONST) {
-                last = d2;
-            } else if (last != d2) {
-                multi = true;
-            }
-        }
-        if (multi)
-            last = new Display(countvar);
-        en.display = last;
-        return multi;
-    }
-
-    /**
-     * <p>Copy the arguments.</p>
-     * <p>The reused or new display is passed via the engine display</p>
-     * <p>The reused or new display is returned in the engine display.</p>
-     *
-     * @param t     The goal skel.
-     * @param d     The goal display.
-     * @param t2    The extend skel.
-     * @param d2    The extend display.
-     * @param multi The multi flag.
-     * @param en    The engine copy.
-     * @return The arguments.
-     */
-    private static Object[] pairAlloc(Object t, Display d,
-                                      Object t2, Display d2,
-                                      boolean multi, Engine en) {
-        Display d3 = en.display;
-        Object[] args = new Object[2];
-        int countvar = 0;
-        if (multi && EngineCopy.getVar(t) != null) {
-            SkelVar sv = SkelVar.valueOf(countvar);
-            countvar++;
-            d3.bind[sv.id].bindVar(t, d, en);
-            args[0] = sv;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
         } else {
-            args[0] = t;
+            return new SkelCompound(sa, args);
         }
-        if (multi && EngineCopy.getVar(t2) != null) {
-            SkelVar sv = SkelVar.valueOf(countvar);
-            // countvar++;
-            d3.bind[sv.id].bindVar(t2, d2, en);
-            args[1] = sv;
-        } else {
-            args[1] = t2;
-        }
-        en.display = d3;
-        return args;
     }
 
 }

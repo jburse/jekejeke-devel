@@ -113,7 +113,7 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
                 /* do nothing */
-                flags |= PrologWriter.FLAG_SING;
+                flags |= PrologReader.FLAG_SING;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {

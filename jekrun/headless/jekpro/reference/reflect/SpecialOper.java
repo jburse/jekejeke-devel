@@ -664,7 +664,6 @@ public final class SpecialOper extends AbstractSpecial {
     public static int colonToOper(Object t, Display d, Engine en)
             throws EngineMessage {
         int type = opToType(t, d, en);
-
         SpecialQuali.colonToCallable(en.skel, en.display, false, en);
         EngineMessage.castStringWrapped(en.skel, en.display);
         return type;

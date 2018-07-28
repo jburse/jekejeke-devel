@@ -291,8 +291,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 int j = ref2.lastalloc;
                 if (j < n) {
                     do {
-                        if (ref2.bind[j] == null)
-                            ref2.bind[j] = new BindCount();
+                        BindCount b = ref2.bind[j];
+                        if (b == null) {
+                            b = new BindCount();
+                            ref2.bind[j] = b;
+                        }
                         j++;
                     } while (j < n);
                     ref2.lastalloc = j;
@@ -403,6 +406,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             en.enginecopy = ec;
         }
         ec.vars = null;
+        ec.flags = 0;
         Object molec = ec.copyTermAndWrap(en.skel, en.display, en);
         Named[] vars = null;
         if ((flags & OPT_ARGS_ASOP) != 0)
