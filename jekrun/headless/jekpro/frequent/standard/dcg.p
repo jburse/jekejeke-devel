@@ -86,8 +86,7 @@
 :- public phrase/3.
 :- meta_predicate phrase(2,?,?).
 phrase(P, I, O) :-
-   expand_goal(phrase(P, I, O), Q),
-   call(Q).
+   call(P, I, O).
 
 % goal_expansion(+Goal, -Goal)
 :- discontiguous goal_expansion/2.
@@ -104,8 +103,7 @@ phrase(P, I, O) :-
 :- public phrase/2.
 :- meta_predicate phrase(2,?).
 phrase(P, I) :-
-   expand_goal(phrase(P, I), Q),
-   call(Q).
+   call(P, I, []).
 
 goal_expansion(phrase(P, I), phrase(P, I, [])).
 
@@ -191,7 +189,8 @@ phrase_expansion((  A; B), I, O, (  phrase(A, I, O)
  * A -> B (grammar):
  * The grammar connective succeeds when A succeeds and then
  * whenever B succeeds. The goal argument B is cut transparent.
- * The output of A is conjoined with the input of B.
+ * The output of A is conjoined with the input of B. When used
+ * inside (;)/2 it is interpreted as if-then-else.
  */
 :- public -> /4.
 :- meta_predicate ->(2,2,?,?).
@@ -206,7 +205,8 @@ phrase_expansion((  A -> B), I, O, (  phrase(A, I, H)
  * A *-> B (grammar):
  * The grammar connective succeeds whenever A succeeds and then
  * whenever B succeeds. The goal argument B is cut transparent.
- * The output of A is conjoined with the input of B.
+ * The output of A is conjoined with the input of B. When used
+ * inside (;)/2 it is interpreted as if-then-else.
  */
 :- public *-> /4.
 :- meta_predicate *->(2,2,?,?).

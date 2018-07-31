@@ -202,7 +202,7 @@ public final class SpecialApply extends AbstractSpecial {
      * @return True if new display is returned, otherwise false.
      */
     private static boolean pairCount(Object t, Display d, Object t2,
-                                     Display d2, Engine en) {
+                                    Display d2, Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
@@ -243,9 +243,9 @@ public final class SpecialApply extends AbstractSpecial {
      * @return The new compound.
      */
     private static SkelCompound pairAlloc(SkelAtom sa,
-                                          Object t, Display d,
-                                          Object t2, Display d2,
-                                          boolean multi, Engine en) {
+                                         Object t, Display d,
+                                         Object t2, Display d2,
+                                         boolean multi, Engine en) {
         Display d3 = en.display;
         SkelVar[] vars;
         if (multi) {

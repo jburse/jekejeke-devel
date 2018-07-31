@@ -242,7 +242,6 @@ public final class SpecialRef extends AbstractSpecial {
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-
             AbstractBranch branch = (AbstractBranch) entry.key;
             StoreKey[] props = branch.listRefProp(ptr, en);
             for (int j = props.length - 1; j >= 0; j--) {

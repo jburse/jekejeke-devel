@@ -1,7 +1,7 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
@@ -82,105 +82,112 @@ public final class SpecialVars extends AbstractSpecial {
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_TERM_VARIABLES:
-                Object[] t = ((SkelCompound) en.skel).args;
-                Display d = en.display;
+                Object[] temp = ((SkelCompound) en.skel).args;
+                Display ref = en.display;
                 EngineVars ev = new EngineVars();
-                ev.varInclude(t[0], d);
-                en.skel = en.store.foyer.ATOM_NIL;
-                en.display = Display.DISPLAY_CONST;
-                AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
+                ev.varInclude(temp[0], ref);
+                boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                        Display.DISPLAY_CONST, ev.vars, en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_TERM_VARIABLES_DIFF:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 ev = new EngineVars();
-                ev.varInclude(t[0], d);
-                en.skel = t[2];
-                en.display = d;
-                AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
+                ev.varInclude(temp[0], ref);
+                multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SYS_TERM_SINGELTONS:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 ev = new EngineVars();
-                ev.singsOf(t[0], d);
-                en.skel = en.store.foyer.ATOM_NIL;
-                en.display = Display.DISPLAY_CONST;
-                AbstractProperty.consSet(ev.anon, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
+                ev.singsOf(temp[0], ref);
+                multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                        Display.DISPLAY_CONST, ev.anon, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SYS_GOAL_KERNEL:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                SpecialVars.goalKernel(t[0], d, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                SpecialVars.goalKernel(temp[0], ref, en);
+                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_GOAL_GLOBALS:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 ev = new EngineVars();
-                SpecialVars.goalGlobals(t[0], d, ev);
-                en.skel = en.store.foyer.ATOM_NIL;
-                en.display = Display.DISPLAY_CONST;
-                AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
+                SpecialVars.goalGlobals(temp[0], ref, ev);
+                multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                        Display.DISPLAY_CONST, ev.vars, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_NUMBERVARS:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                en.skel = t[1];
-                en.display = d;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[1];
+                en.display = ref;
                 en.deref();
                 Number num = EngineMessage.castInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 EngineMessage.castIntValue(num);
-                num = SpecialVars.numberVars(t[0], d, (Integer) en.skel, en);
+                num = SpecialVars.numberVars(temp[0], ref, (Integer) en.skel, en);
                 if (num == null)
                     return false;
-                if (!en.unifyTerm(t[2], d, num, Display.DISPLAY_CONST))
+                if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_NUMBER_VARIABLES:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                SpecialVars.numberVariables(t, d, en);
-                if (!en.unifyTerm(t[3], d, en.skel, en.display))
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                SpecialVars.numberVariables(temp, ref, en);
+                if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_GET_VARIABLE_NAMES:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 Frame frame = en.visor.ref;
-                Display ref = (frame != null ? frame.getDisplay() : null);
+                Display ref2 = (frame != null ? frame.getDisplay() : null);
                 Clause def = (frame != null ? frame.getClause() : null);
                 MapHashLink<TermVar, NamedDistance> print =
-                        Named.namedToMap((def != null ? def.vars : null), ref, en);
+                        Named.namedToMap((def != null ? def.vars : null), ref2, en);
                 mapToAssoc(print, en);
-                if (!en.unifyTerm(t[0], d, en.skel, en.display))
+                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
             case SPECIAL_ACYCLIC_TERM:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 ev = new EngineVars();
-                if (!ev.isAcyclic(t[0], d))
+                if (!ev.isAcyclic(temp[0], ref))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_GET_RAW_VARIABLES:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 frame = en.visor.ref;
-                ref = (frame != null ? frame.getDisplay() : null);
+                ref2 = (frame != null ? frame.getDisplay() : null);
                 def = (frame != null ? frame.getClause() : null);
-                en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref, en.store);
-                if (!en.unifyTerm(t[0], d, en.skel, ref))
+                en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref2, en.store);
+                if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
                 return en.getNext();
             default:
