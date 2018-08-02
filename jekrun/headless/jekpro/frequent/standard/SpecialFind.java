@@ -109,6 +109,7 @@ public final class SpecialFind extends AbstractSpecial {
      * @param temp The goal skel.
      * @param ref  The goal display.
      * @param en   The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineException Shit happens.
      */
     private static boolean findAll(Object[] temp, Display ref,
@@ -189,6 +190,7 @@ public final class SpecialFind extends AbstractSpecial {
      *
      * @param temp The list of solutions.
      * @param en   The engine.
+     * @return True if new display is returned, otherwise false.
      */
     private static boolean createList(ListArray<Object> temp, Engine en) {
         en.skel = en.store.foyer.ATOM_NIL;
@@ -222,6 +224,7 @@ public final class SpecialFind extends AbstractSpecial {
      * @param t  The term skeleton.
      * @param d  The term display.
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      */
     public static boolean pairValue(SkelCompound sc,
                                     Object t2, Display d2,

@@ -8,6 +8,8 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.rope.Clause;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -130,14 +132,11 @@ public final class SpecialQuali extends AbstractSpecial {
             case SPECIAL_SYS_GET_CLASS:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
-                en.skel = temp.args[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkRef(en.skel, en.display);
-                obj = SpecialProxy.refClassOrProxy(en.skel);
+                Object m = SpecialUniv.derefAndCastRef(temp.args[0], ref);
+                obj = SpecialProxy.refClassOrProxy(m);
                 if (obj == null)
                     throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, en.skel));
+                            EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, m));
                 if (!en.unifyTerm(temp.args[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
@@ -417,10 +416,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            Number num = EngineMessage.castInteger(en.skel, en.display);
+            Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
             EngineMessage.checkNotLessThanZero(num);
             EngineMessage.castIntValue(num);
             en.skel = sc.args[0];

@@ -14,7 +14,9 @@ import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -432,10 +434,7 @@ public final class SpecialOper extends AbstractSpecial {
             if (vals.length != 0) {
                 Object molec = vals[vals.length - 1];
                 SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                en.skel = sc.args[0];
-                en.display = AbstractTerm.getDisplay(molec);
-                en.deref();
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(sc.args[0], AbstractTerm.getDisplay(molec));
                 EngineMessage.checkNotLessThanZero(num);
                 level = EngineMessage.castIntValue(num);
                 SpecialOper.checkOperatorLevel(level);
@@ -455,10 +454,7 @@ public final class SpecialOper extends AbstractSpecial {
             if (vals.length != 0) {
                 Object molec = vals[vals.length - 1];
                 SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                en.skel = sc.args[0];
-                en.display = AbstractTerm.getDisplay(molec);
-                en.deref();
-                String fun = EngineMessage.castString(en.skel, en.display);
+                String fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
                 leftright = SpecialOper.atomToLeftRight(fun);
                 if (vals.length > 1)
                     throw new EngineMessage(EngineMessage.permissionError(
@@ -477,10 +473,7 @@ public final class SpecialOper extends AbstractSpecial {
             if (vals.length != 0) {
                 Object molec = vals[vals.length - 1];
                 SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                en.skel = sc.args[0];
-                en.display = AbstractTerm.getDisplay(molec);
-                en.deref();
-                fun = EngineMessage.castString(en.skel, en.display);
+                fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
                 if (vals.length > 1)
                     throw new EngineMessage(EngineMessage.permissionError(
                             EngineMessage.OP_PERMISSION_ADD,

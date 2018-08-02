@@ -2,7 +2,9 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -75,35 +77,101 @@ public final class SpecialCompare extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.computeExpr(temp[0], ref);
-        Number val = EngineMessage.castNumber(en.skel, en.display);
-        en.computeExpr(temp[1], ref);
-        Number val2 = EngineMessage.castNumber(en.skel, en.display);
         switch (id) {
             case SPECIAL_COMPARE_EQ:
-                if (!SpecialCompare.testEq(val, val2))
+                Object[] temp = ((SkelCompound) en.skel).args;
+                Display ref = en.display;
+                boolean multi = en.computeExpr(temp[0], ref);
+                Display d = en.display;
+                Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (!SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_NQ:
-                if (SpecialCompare.testEq(val, val2))
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_LS:
-                if (SpecialCompare.computeCmp(val, val2) >= 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_LQ:
-                if (SpecialCompare.computeCmp(val, val2) > 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_GR:
-                if (SpecialCompare.computeCmp(val, val2) <= 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_GQ:
-                if (SpecialCompare.computeCmp(val, val2) < 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
                 return en.getNextRaw();
             default:

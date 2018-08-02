@@ -6,6 +6,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
@@ -274,10 +276,10 @@ public final class Flag extends AbstractFlag {
                 /* can't modify */
                 return false;
             case FLAG_DOUBLE_QUOTES:
-                en.store.foyer.setUtilDouble(ReadOpts.atomToUtil(m, d, en));
+                en.store.foyer.setUtilDouble(ReadOpts.atomToUtil(m, d));
                 return true;
             case FLAG_BACK_QUOTES:
-                en.store.foyer.setUtilBack(ReadOpts.atomToUtil(m, d, en));
+                en.store.foyer.setUtilBack(ReadOpts.atomToUtil(m, d));
                 return true;
             case FLAG_MAX_CODE:
                 /* can't modify */
@@ -300,7 +302,7 @@ public final class Flag extends AbstractFlag {
                 /* can't modify */
                 return false;
             case FLAG_SINGLE_QUOTES:
-                en.store.foyer.setUtilSingle(ReadOpts.atomToUtil(m, d, en));
+                en.store.foyer.setUtilSingle(ReadOpts.atomToUtil(m, d));
                 return true;
             case FLAG_SYS_VARIABLES:
                 /* can't modify */
@@ -315,22 +317,16 @@ public final class Flag extends AbstractFlag {
                 /* can't modify */
                 return false;
             case FLAG_SYS_RANDOM:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                if (en.skel instanceof Random) {
-                    en.store.foyer.random = (Random) en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                if (m instanceof Random) {
+                    en.store.foyer.random = (Random) m;
                 } else {
-                    EngineMessage.checkRef(en.skel, en.display);
                     throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                            EngineMessage.OP_DOMAIN_FLAG_VALUE, m));
                 }
                 return true;
             case FLAG_SYS_TIMEOUT:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(m, d);
                 en.store.foyer.timeout = EngineMessage.castLongValue(num);
                 return true;
             default:

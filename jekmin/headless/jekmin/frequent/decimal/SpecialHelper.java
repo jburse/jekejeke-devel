@@ -54,17 +54,18 @@ public class SpecialHelper extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      */
-    public final void moniEvaluate(Engine en) {
+    public final boolean moniEvaluate(Engine en) {
         switch (id) {
             case EVALUABLE_LOG2:
                 en.skel = DOUBLE_LOG2;
                 en.display = Display.DISPLAY_CONST;
-                return;
+                return false;
             case EVALUABLE_LOG10:
                 en.skel = DOUBLE_LOG10;
                 en.display = Display.DISPLAY_CONST;
-                return;
+                return false;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }

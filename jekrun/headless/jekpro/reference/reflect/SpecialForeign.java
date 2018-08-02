@@ -5,6 +5,7 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.AbstractSkel;
@@ -123,10 +124,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                name = EngineMessage.castString(en.skel, en.display);
+                name = SpecialUniv.derefAndCastString(temp[2], ref);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_PRED))
                     throw new EngineMessage(en.skel);
@@ -144,10 +142,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                name = EngineMessage.castString(en.skel, en.display);
+                name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_SET))
                     throw new EngineMessage(en.skel);
@@ -184,10 +179,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                name = EngineMessage.castString(en.skel, en.display);
+                name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_EVAL))
                     throw new EngineMessage(en.skel);

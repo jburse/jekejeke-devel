@@ -155,7 +155,7 @@ public abstract class AbstractDelegate {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public void moniEvaluate(Engine en)
+    public boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
@@ -173,6 +173,7 @@ public abstract class AbstractDelegate {
         en.skel = temp;
         en.display = ref;
         en.deref();
+        return false;
     }
 
     /**
@@ -265,13 +266,16 @@ public abstract class AbstractDelegate {
         Goal r = (Goal) en.contskel;
         DisplayClause u = en.contdisplay;
         int snap = en.number;
-        en.wrapGoal();
+        boolean multi=en.wrapGoal();
+        Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        DisplayClause ref = new DisplayClause(clause.dispsize);
-        ref.addArgument(en.skel, en.display, en);
-        ref.setEngine(en);
+        DisplayClause ref2 = new DisplayClause(clause.dispsize);
+        ref2.addArgument(en.skel, ref, en);
+        if (multi)
+            ref.remTab(en);
+        ref2.setEngine(en);
         en.contskel = clause.getNextRaw(en);
-        en.contdisplay = ref;
+        en.contdisplay = ref2;
         if (!en.runFirst(snap))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));

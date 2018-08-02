@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -73,10 +74,7 @@ final class LenseUpdate extends AbstractLense {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref);
-        en.skel = ((SkelCompound) temp).args[1];
-        en.display = ref;
-        en.deref();
-        Number num = EngineMessage.castInteger(en.skel, en.display);
+        Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
         EngineMessage.checkNotLessThanZero(num);
         int idx = EngineMessage.castIntValue(num);
         Object res = AbstractLense.convertArg(

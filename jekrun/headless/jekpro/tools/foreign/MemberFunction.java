@@ -111,7 +111,7 @@ final class MemberFunction extends AbstractMember {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
@@ -124,6 +124,7 @@ final class MemberFunction extends AbstractMember {
                     AbstractFactory.OP_REPRESENTATION_NULL));
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
+        return false;
     }
 
     /***************************************************************/

@@ -201,13 +201,12 @@ public final class ForeignAtom {
      * @param to    The to word index.
      * @param cout  The codepoint position.
      * @return The word position.
-     * @throws InterpreterMessage   Shit hapens.
      * @throws InterpreterException Shit hapens.
      */
     public static Integer sysAtomWordPos(Interpreter inter, CallOut co,
                                          String str, int cfrom, int from,
                                          int to, AbstractTerm cout)
-            throws InterpreterMessage, InterpreterException {
+            throws InterpreterException {
         AtomCursor ac;
         if (co.getFirst()) {
             ac = new AtomCursor(str, cfrom, from, to);

@@ -240,10 +240,9 @@ public abstract class AbstractTerm {
      * @param snd   The second term.
      * @return True if the this term unifies with the other term, otherwise false.
      * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
      */
     public static boolean unifyTerm(Interpreter inter, Object fst, Object snd)
-            throws InterpreterException, InterpreterMessage {
+            throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
@@ -251,10 +250,6 @@ public abstract class AbstractTerm {
         try {
             res = en.unifyTerm(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
                     AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
-        } catch (EngineMessage x) {
-            en.visor.setFence(backthread);
-            en.visor.setInuse(backuse);
-            throw new InterpreterMessage(x);
         } catch (EngineException x) {
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);

@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -60,60 +61,82 @@ public final class SupplementBits extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_BITCOUNT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    Number alfa = EngineMessage.castInteger(en.skel, en.display);
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = Integer.valueOf(bitCount(alfa));
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_BITLENGTH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = Integer.valueOf(bitLength(alfa));
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_LOWESTSETBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castInteger(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = Integer.valueOf(lowestSetBit(alfa));
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_SETBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castInteger(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    Number beta = EngineMessage.castInteger(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     EngineMessage.checkNotLessThanZero(alfa);
                     int x = EngineMessage.castIntValue(alfa);
                     en.skel = setBit(x, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_CLEARBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castInteger(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castInteger(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     EngineMessage.checkNotLessThanZero(alfa);
                     x = EngineMessage.castIntValue(alfa);
                     en.skel = clearBit(x, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }

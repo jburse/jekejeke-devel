@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -111,10 +112,7 @@ final class LenseDimension extends AbstractLense {
             throws EngineException, EngineMessage {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        en.skel = temp[0];
-        en.display = ref;
-        en.deref();
-        Number num = EngineMessage.castInteger(en.skel, en.display);
+        Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
         EngineMessage.checkNotLessThanZero(num);
         int size = EngineMessage.castIntValue(num);
         Object val = newInstance(size);

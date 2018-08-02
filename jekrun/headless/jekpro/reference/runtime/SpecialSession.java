@@ -12,6 +12,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
@@ -130,10 +131,7 @@ public final class SpecialSession extends AbstractSpecial {
                 wr = (Writer) obj;
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                String fun = EngineMessage.castString(en.skel, en.display);
+                String fun = SpecialUniv.derefAndCastString(temp[0], ref);
                 showVariable(wr, fun, en);
                 return en.getNextRaw();
             case SPECIAL_KBS:

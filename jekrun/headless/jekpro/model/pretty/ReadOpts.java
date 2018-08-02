@@ -7,6 +7,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -117,15 +118,15 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
-                utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
+                utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_BACK_QUOTES)) {
-                utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
+                utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
-                utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
+                utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
@@ -148,9 +149,8 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SOURCE)) {
-                en.skel = ((SkelCompound) en.skel).args[0];
-                en.deref();
-                String fun = EngineMessage.castString(en.skel, en.display);
+                String fun = SpecialUniv.derefAndCastString(
+                        ((SkelCompound) en.skel).args[0], en.display);
                 AbstractSource src = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(src, fun);
                 source = src;
@@ -161,7 +161,7 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PART)) {
-                int part = atomToReadPart(((SkelCompound) en.skel).args[0], en.display, en);
+                int part = atomToReadPart(((SkelCompound) en.skel).args[0], en.display);
                 if ((part & WriteOpts.PART_STMT) != 0) {
                     flags |= PrologWriter.FLAG_STMT;
                 } else {
@@ -345,16 +345,12 @@ public final class ReadOpts {
      *
      * @param m  The util value skel.
      * @param d  The util value display.
-     * @param en The engine.
      * @return The util value.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToUtil(Object m, Display d, Engine en)
+    public static int atomToUtil(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_VALUE_ERROR)) {
             return UTIL_ERROR;
         } else if (fun.equals(OP_VALUE_CODES)) {
@@ -367,7 +363,7 @@ public final class ReadOpts {
             return UTIL_VARIABLE;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
@@ -399,23 +395,19 @@ public final class ReadOpts {
      *
      * @param m  The annotation mode skel.
      * @param d  The annotation mode display.
-     * @param en The engine.
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToReadPart(Object m, Display d, Engine en)
+    public static int atomToReadPart(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;
         } else if (fun.equals(Foyer.OP_TRUE)) {
             return WriteOpts.PART_STMT;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 

@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -109,15 +110,12 @@ final class LenseMember extends AbstractLense {
      * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref);
-        en.skel = ((SkelCompound) temp).args[1];
-        en.display = ref;
-        en.deref();
-        Number num = EngineMessage.castInteger(en.skel, en.display);
+        Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
         EngineMessage.checkNotLessThanZero(num);
         int idx = EngineMessage.castIntValue(num);
         Object res = get(obj, idx);
@@ -127,6 +125,7 @@ final class LenseMember extends AbstractLense {
                     AbstractFactory.OP_REPRESENTATION_NULL));
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
+        return false;
     }
 
     /**

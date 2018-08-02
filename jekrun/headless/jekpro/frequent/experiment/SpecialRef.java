@@ -1,19 +1,23 @@
 package jekpro.frequent.experiment;
 
 import derek.util.protect.LicenseError;
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.*;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Named;
+import jekpro.model.rope.PreClause;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
-import matula.comp.sharik.AbstractBundle;
 
 /**
  * <p>Provides built-in predicates for the internal database predicates.</p>
@@ -68,7 +72,7 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>The goal is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
-     * 
+     *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
@@ -98,28 +102,28 @@ public final class SpecialRef extends AbstractSpecial {
             case SPECIAL_RECORDA_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                InterfaceReference ptr = SpecialRef.castReference(temp[0], ref);
+                InterfaceReference ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 if (!ptr.assertRef(0, en))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_RECORDZ_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 if (!ptr.assertRef(AbstractDefined.OPT_ACTI_BOTT, en))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_ERASE_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 if (!ptr.retractRef(en))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPILED_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 ptr.clauseRef(en);
                 if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
@@ -131,7 +135,7 @@ public final class SpecialRef extends AbstractSpecial {
             case SPECIAL_SYS_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 SpecialRef.refToProperties(ptr, en);
                 if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
@@ -139,7 +143,7 @@ public final class SpecialRef extends AbstractSpecial {
             case SPECIAL_SYS_REF_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
                 SpecialRef.refToProperty(sk, ptr, en);
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
@@ -148,7 +152,7 @@ public final class SpecialRef extends AbstractSpecial {
             case SPECIAL_SET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -158,7 +162,7 @@ public final class SpecialRef extends AbstractSpecial {
             case SPECIAL_RESET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.castReference(temp[0], ref);
+                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -218,7 +222,7 @@ public final class SpecialRef extends AbstractSpecial {
         clause.analyzeBody(molec, en);
         return clause;
     }
-    
+
     /***************************************************************/
     /* High-Level Clause Access/Modification                       */
     /***************************************************************/
@@ -229,7 +233,7 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param ptr The reference.
-     * @param en     The engine.
+     * @param en  The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void refToProperties(InterfaceReference ptr, Engine en)
@@ -260,9 +264,9 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Create a prolog list for the property of the given reference.</p>
      * <p>Result is returned in skeleton and display.</p>
      *
-     * @param prop   The property.
-     * @param ptr The ptr.
-     * @param en     The engine.
+     * @param prop The property.
+     * @param ptr  The ptr.
+     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void refToProperty(StoreKey prop,
@@ -278,10 +282,10 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Set a ptr property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param temp   The value skeleton.
-     * @param ref    The value display.
-     * @param ptr The ptr.
-     * @param en     The engine.
+     * @param temp The value skeleton.
+     * @param ref  The value display.
+     * @param ptr  The ptr.
+     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void addRefProp(Object temp, Display ref,
@@ -297,10 +301,10 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Reset a ptr property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param temp   The value skeleton.
-     * @param ref    The value display.
-     * @param ptr The ptr.
-     * @param en     The engine.
+     * @param temp The value skeleton.
+     * @param ref  The value display.
+     * @param ptr  The ptr.
+     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void removeRefProp(Object temp, Display ref,
@@ -311,7 +315,7 @@ public final class SpecialRef extends AbstractSpecial {
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);
     }
-    
+
     /***************************************************************/
     /* Low-Level Clause Access/Modification                        */
     /***************************************************************/
@@ -321,9 +325,9 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Throws a domain error for undefined ptr properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop   The property.
-     * @param ptr The reference.
-     * @param en     The engine.
+     * @param prop The property.
+     * @param ptr  The reference.
+     * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
@@ -351,10 +355,10 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Throws a domain error for undefined values properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop   The property.
-     * @param vals2  The values, non null.
-     * @param ptr The reference.
-     * @param en     The engine.
+     * @param prop  The property.
+     * @param vals2 The values, non null.
+     * @param ptr   The reference.
+     * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void setRefProp(StoreKey prop, Object[] vals2,
@@ -374,30 +378,25 @@ public final class SpecialRef extends AbstractSpecial {
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
                 StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
     }
-    
+
     /*******************************************************************/
-    /* Check InterfaceReference                                                 */
+    /* Check InterfaceReference                                        */
     /*******************************************************************/
 
     /**
      * <p>Cast a ptr.</p>
      *
      * @param m The skel.
+     * @param d The display.
      * @return The ptr.
      * @throws EngineMessage Shit happens.
      */
-    public static InterfaceReference castReference(Object m, Display d)
+    public static InterfaceReference derefAndCastPtr(Object m, Display d)
             throws EngineMessage {
-        BindVar b;
-        while (m instanceof SkelVar &&
-                (b = d.bind[((SkelVar) m).id]).display != null) {
-            m = b.skel;
-            d = b.display;
-        }
+        m = SpecialUniv.derefAndCastRef(m, d);
         if (m instanceof InterfaceReference) {
             return (InterfaceReference) m;
         } else {
-            EngineMessage.checkRef(m, d);
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_REF, m));
         }

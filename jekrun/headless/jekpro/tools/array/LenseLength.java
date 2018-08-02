@@ -108,13 +108,14 @@ final class LenseLength extends AbstractLense {
      * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertObj(temp, ref);
         en.skel = Integer.valueOf(getLength(obj));
         en.display = Display.DISPLAY_CONST;
+        return false;
     }
 
     /**

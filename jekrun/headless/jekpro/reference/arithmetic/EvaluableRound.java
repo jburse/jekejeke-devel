@@ -67,90 +67,129 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_INTEGER:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = integer(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_TRUNCATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = truncate(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_FLOOR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = floor(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_CEILING:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = ceiling(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_ROUND:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = round(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_SLASH_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    Number beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = slashSlash(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_REM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = rem(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_DIV:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = div(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_MOD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = mod(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }

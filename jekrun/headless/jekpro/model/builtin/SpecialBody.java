@@ -12,6 +12,7 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.Operator;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -94,10 +95,7 @@ public final class SpecialBody extends AbstractSpecial {
                 Object t = en.skel;
                 Display d = en.display;
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                String key = EngineMessage.castString(en.skel, en.display);
+                String key = SpecialUniv.derefAndCastString(temp[1], ref);
                 AbstractSource scope;
                 if (!"".equals(key)) {
                     scope = en.store.getSource(key);

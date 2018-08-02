@@ -4,6 +4,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 
 import java.math.BigInteger;
@@ -62,16 +63,8 @@ public final class SpecialBits extends AbstractSpecial {
             case SPECIAL_TESTBIT:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Number alfa = EngineMessage.castInteger(en.skel, en.display);
-
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                Number beta = EngineMessage.castInteger(en.skel, en.display);
+                Number alfa = SpecialEval.derefAndCastInteger(temp[0], ref);
+                Number beta = SpecialEval.derefAndCastInteger(temp[1], ref);
                 if (!sysTestBit(alfa, beta))
                     return false;
                 return en.getNextRaw();

@@ -137,7 +137,7 @@ public final class SpecialLexical extends AbstractSpecial {
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
                     witmolec = SpecialLexical.comparisonAtom(
                             new EngineLexical(cmp, en)
                                     .localeCompareTerm(temp[2], ref, temp[3], ref), en);

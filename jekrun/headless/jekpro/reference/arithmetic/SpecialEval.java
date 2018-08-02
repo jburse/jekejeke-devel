@@ -2,8 +2,15 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>Provides built-in predicates for the eval theory.</p>
@@ -59,12 +66,98 @@ public final class SpecialEval extends AbstractSpecial {
             case SPECIAL_IS:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.computeExpr(temp[1], ref);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                boolean multi = en.computeExpr(temp[1], ref);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
+    }
+
+    /*****************************************************************/
+    /* Deref And Cast                                                */
+    /*****************************************************************/
+
+    /**
+     * <p>Check whether the given term is a Prolog number.</p>
+     *
+     * @param t The term skel.
+     * @param d The display skel.
+     * @return The number.
+     * @throws EngineMessage Not a number.
+     */
+    public static Number derefAndCastNumber(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof Number) {
+            return (Number) t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_NUMBER, t), d);
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a Prolog integer.</p>
+     *
+     * @param t The term skel.
+     * @param d The display skel.
+     * @return The integer, either Integer or BigInteger.
+     * @throws EngineMessage Not a integer.
+     */
+    public static Number derefAndCastInteger(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof Integer) {
+            return (Integer) t;
+        } else if (t instanceof BigInteger) {
+            return (BigInteger) t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_INTEGER, t), d);
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a Prolog decimal.</p>
+     *
+     * @param t The term skel.
+     * @param d The display skel.
+     * @return The decimal, either Long or BigDecimal.
+     * @throws EngineMessage Not a integer.
+     */
+    public static Number derefAndCastDecimal(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof Long) {
+            return (Long) t;
+        } else if (t instanceof BigDecimal) {
+            return (BigDecimal) t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_DECIMAL, t), d);
         }
     }
 

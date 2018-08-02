@@ -9,6 +9,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Goal;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -67,17 +68,8 @@ public final class SpecialArith extends AbstractSpecial {
             case SPECIAL_BETWEEN:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Number num1 = EngineMessage.castNumber(en.skel, en.display);
-
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                Number num2 = EngineMessage.castNumber(en.skel, en.display);
-
+                Number num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
+                Number num2 = SpecialEval.derefAndCastNumber(temp[1], ref);
                 AbstractBind mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
                 while (res <= 0) {
@@ -104,12 +96,7 @@ public final class SpecialArith extends AbstractSpecial {
             case SPECIAL_ABOVE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                num1 = EngineMessage.castNumber(en.skel, en.display);
-
+                num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 mark = en.bind;
                 while (true) {
                     if (en.unifyTerm(temp[1], ref, num1, Display.DISPLAY_CONST)) {

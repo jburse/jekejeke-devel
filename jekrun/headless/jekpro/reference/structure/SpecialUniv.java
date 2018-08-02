@@ -1,10 +1,13 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -90,10 +93,7 @@ public final class SpecialUniv extends AbstractSpecial {
             case SPECIAL_ARG:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
                 EngineMessage.checkNotLessThanZero(num);
                 int nth = EngineMessage.castIntValue(num);
                 en.skel = temp[1];
@@ -119,10 +119,7 @@ public final class SpecialUniv extends AbstractSpecial {
             case SPECIAL_SET_ARG:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                num = EngineMessage.castInteger(en.skel, en.display);
+                num = SpecialEval.derefAndCastInteger(temp[0], ref);
                 EngineMessage.checkNotLessThanZero(num);
                 nth = EngineMessage.castIntValue(num);
 
@@ -588,6 +585,113 @@ public final class SpecialUniv extends AbstractSpecial {
             } else {
                 return (v == t && d == d2);
             }
+        }
+    }
+
+    /*****************************************************************/
+    /* Deref And Cast                                                */
+    /*****************************************************************/
+
+    /**
+     * <p>Check whether the given term is an atom.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return The string.
+     * @throws EngineMessage Type error.
+     */
+    public static String derefAndCastString(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof SkelAtom) {
+            return ((SkelAtom) t).fun;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_ATOM, t), d);
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an atom.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return The wrapped string.
+     * @throws EngineMessage Type error.
+     */
+    public static SkelAtom derefAndCastStringWrapped(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof SkelAtom) {
+            return (SkelAtom) t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_ATOM, t), d);
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a reference.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return The reference.
+     * @throws EngineMessage Type error.
+     */
+    public static Object derefAndCastRef(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (!(t instanceof AbstractSkel) && !(t instanceof Number)) {
+            return t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_REF, t), d);
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a null atom or a reference.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return The reference or null.
+     * @throws EngineMessage Type error.
+     */
+    public static Object derefAndCastRefOrNull(Object t, Display d)
+            throws EngineMessage {
+        BindVar b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(AbstractFlag.OP_NULL)) {
+            return null;
+        } else if (!(t instanceof AbstractSkel) && !(t instanceof Number)) {
+            return t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_REF, t), d);
         }
     }
 

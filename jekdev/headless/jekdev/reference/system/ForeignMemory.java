@@ -1,6 +1,7 @@
 package jekdev.reference.system;
 
 import jekpro.frequent.stream.ForeignStream;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
@@ -142,7 +143,7 @@ public class ForeignMemory {
             len++;
             help = ((TermCompound) help).getArg(1);
         }
-        if (help.equals(Knowledgebase.OP_NIL)) {
+        if (help.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(help);
@@ -174,7 +175,7 @@ public class ForeignMemory {
             pos++;
             help = ((TermCompound) help).getArg(1);
         }
-        if (help.equals(Knowledgebase.OP_NIL)) {
+        if (help.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(help);

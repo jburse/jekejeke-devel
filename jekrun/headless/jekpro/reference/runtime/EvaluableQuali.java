@@ -2,8 +2,9 @@ package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
-import jekpro.tools.term.SkelAtom;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -65,7 +66,7 @@ public final class EvaluableQuali extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case EVALUABLE_COLON:
@@ -75,8 +76,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 String fun = SpecialQuali.objToString(obj, temp.args[0], ref, false);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(fun, temp.sym, true, en);
-                en.computeExpr(en.skel, en.display);
-                return;
+                return en.computeExpr(en.skel, en.display);
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
@@ -89,10 +89,9 @@ public final class EvaluableQuali extends AbstractSpecial {
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 fun = SpecialQuali.objToString(obj, recv, d2, true);
-                boolean ext=SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
+                boolean ext = SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToMethod(fun, temp.sym, recv, d2, true, ext, en);
-                en.computeExpr(en.skel, en.display);
-                return;
+                return en.computeExpr(en.skel, en.display);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

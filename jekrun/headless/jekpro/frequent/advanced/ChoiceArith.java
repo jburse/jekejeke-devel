@@ -7,6 +7,7 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
@@ -101,10 +102,7 @@ final class ChoiceArith extends AbstractChoice {
 
         switch (id) {
             case SpecialArith.SPECIAL_BETWEEN:
-                en.skel = temp[1];
-                en.display = d;
-                en.deref();
-                Number num2 = EngineMessage.castNumber(en.skel, en.display);
+                Number num2 = SpecialEval.derefAndCastNumber(temp[1], d);
 
                 cur = EvaluableElem.add(cur, Integer.valueOf(1));
 

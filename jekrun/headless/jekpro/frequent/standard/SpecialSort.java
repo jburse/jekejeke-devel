@@ -7,6 +7,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -126,20 +127,14 @@ public final class SpecialSort extends AbstractSpecial {
             case SPECIAL_SYS_GROUND:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                val = EngineMessage.castInteger(en.skel, en.display);
+                val = SpecialEval.derefAndCastInteger(temp[1], ref);
                 if (!termGround(temp[0], ref, EngineMessage.castIntValue(val)))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_HASH_CODE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                val = EngineMessage.castInteger(en.skel, en.display);
+                val = SpecialEval.derefAndCastInteger(temp[1], ref);
                 val = Integer.valueOf(termHash(temp[0], ref,
                         EngineMessage.castIntValue(val), 0));
                 if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
@@ -148,7 +143,7 @@ public final class SpecialSort extends AbstractSpecial {
             case SPECIAL_LOCALE_SORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
                 multi = SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
@@ -159,7 +154,7 @@ public final class SpecialSort extends AbstractSpecial {
             case SPECIAL_LOCALE_KEYSORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                cmp = EngineLexical.comparatorAtom(temp[0], ref);
                 multi = SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display))

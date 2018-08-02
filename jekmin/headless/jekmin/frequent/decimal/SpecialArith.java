@@ -1,14 +1,13 @@
 package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
 import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -64,7 +63,7 @@ public class SpecialArith extends AbstractSpecial {
      * <p>The goal is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
-     * 
+     *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
@@ -77,14 +76,8 @@ public class SpecialArith extends AbstractSpecial {
                 case SPECIAL_MP_DECIMAL:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    MathContext mc = castContext(en.skel, en.display);
+                    Number alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    MathContext mc = SpecialArith.derefAndCastContext(temp[1], ref);
                     if (!en.unifyTerm(temp[2], ref, mpDecimal(alfa, mc),
                             Display.DISPLAY_CONST))
                         return false;
@@ -92,18 +85,9 @@ public class SpecialArith extends AbstractSpecial {
                 case SPECIAL_MP_ADD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    Number beta = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[2];
-                    en.display = ref;
-                    en.deref();
-                    mc = castContext(en.skel, en.display);
+                    alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    Number beta = SpecialEval.derefAndCastNumber(temp[1], ref);
+                    mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpAdd(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
@@ -111,18 +95,9 @@ public class SpecialArith extends AbstractSpecial {
                 case SPECIAL_MP_SUB:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    beta = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[2];
-                    en.display = ref;
-                    en.deref();
-                    mc = castContext(en.skel, en.display);
+                    alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    beta = SpecialEval.derefAndCastNumber(temp[1], ref);
+                    mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpSub(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
@@ -130,18 +105,9 @@ public class SpecialArith extends AbstractSpecial {
                 case SPECIAL_MP_MUL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    beta = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[2];
-                    en.display = ref;
-                    en.deref();
-                    mc = castContext(en.skel, en.display);
+                    alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    beta = SpecialEval.derefAndCastNumber(temp[1], ref);
+                    mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpMul(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
@@ -149,18 +115,9 @@ public class SpecialArith extends AbstractSpecial {
                 case SPECIAL_MP_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    beta = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[2];
-                    en.display = ref;
-                    en.deref();
-                    mc = castContext(en.skel, en.display);
+                    alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    beta = SpecialEval.derefAndCastNumber(temp[1], ref);
+                    mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpSlash(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
@@ -168,18 +125,9 @@ public class SpecialArith extends AbstractSpecial {
                 case SPECIAL_MP_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    beta = EngineMessage.castNumber(en.skel, en.display);
-                    en.skel = temp[2];
-                    en.display = ref;
-                    en.deref();
-                    mc = castContext(en.skel, en.display);
+                    alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    beta = SpecialEval.derefAndCastNumber(temp[1], ref);
+                    mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     int x = EngineMessage.castIntValue(beta);
                     if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, x, mc),
                             Display.DISPLAY_CONST))
@@ -195,18 +143,19 @@ public class SpecialArith extends AbstractSpecial {
     }
 
     /**
-     * <p>Cast a clause.</p>
+     * <p>Cast a math context.</p>
      *
      * @param m The skel.
+     * @param d The display.
      * @return The clause.
      * @throws EngineMessage Shit happens.
      */
-    static MathContext castContext(Object m, Display d)
+    static MathContext derefAndCastContext(Object m, Display d)
             throws EngineMessage {
+        m = SpecialUniv.derefAndCastRef(m, d);
         if (m instanceof MathContext) {
             return (MathContext) m;
         } else {
-            EngineMessage.checkRef(m, d);
             throw new EngineMessage(EngineMessage.domainError(
                     "math_context", m));
         }
@@ -391,14 +340,14 @@ public class SpecialArith extends AbstractSpecial {
      * @param mc The math context.
      * @return The result.
      */
-    private static Number mpIntPow(Number m, int x,  MathContext mc) {
+    private static Number mpIntPow(Number m, int x, MathContext mc) {
         if (m instanceof Integer || m instanceof BigInteger) {
             return TermAtomic.normBigInteger(
                     TermAtomic.widenBigInteger(m).pow(x));
         } else if (m instanceof Float) {
-            return TermAtomic.makeFloat( (float) Math.pow(m.floatValue(), x));
+            return TermAtomic.makeFloat((float) Math.pow(m.floatValue(), x));
         } else if (m instanceof Double) {
-            return TermAtomic.makeDouble( Math.pow(m.doubleValue(), x));
+            return TermAtomic.makeDouble(Math.pow(m.doubleValue(), x));
         } else if (m instanceof Long || m instanceof BigDecimal) {
             BigDecimal b = SupplementScale.widenBigDecimal(m, mc);
             if (x < 0 && b.signum() == 0)

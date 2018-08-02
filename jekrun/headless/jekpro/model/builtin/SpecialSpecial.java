@@ -7,11 +7,13 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.term.SkelAtom;
@@ -188,10 +190,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             case SPECIAL_SET_SOURCE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                fun = EngineMessage.castString(en.skel, en.display);
+                fun = SpecialUniv.derefAndCastString(temp[0], ref);
                 AbstractSource source = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(source, fun);
 
@@ -204,10 +203,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             case SPECIAL_RESET_SOURCE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                fun = EngineMessage.castString(en.skel, en.display);
+                fun = SpecialUniv.derefAndCastString(temp[0], ref);
                 source = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(source, fun);
 
@@ -220,18 +216,11 @@ public final class SpecialSpecial extends AbstractSpecial {
             case SPECIAL_SYS_OP:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
                 EngineMessage.checkNotLessThanZero(num);
                 int level = EngineMessage.castIntValue(num);
                 SpecialOper.checkOperatorLevel(level);
-
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                String modestr = EngineMessage.castString(en.skel, en.display);
+                String modestr = SpecialUniv.derefAndCastString(temp[1], ref);
                 int leftright = SpecialOper.atomToLeftRight(modestr);
                 int type = SpecialOper.atomToType(modestr);
 
@@ -285,7 +274,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                 en.skel = temp[2];
                 en.display = ref;
                 en.deref();
-                num = EngineMessage.castInteger(en.skel, en.display);
+                num = SpecialEval.derefAndCastInteger(en.skel, en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 EngineMessage.castIntValue(num);
                 Constructor con = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INT);

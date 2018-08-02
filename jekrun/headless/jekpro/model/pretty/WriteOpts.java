@@ -7,8 +7,10 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
@@ -130,7 +132,7 @@ public final class WriteOpts {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_QUOTED)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
+                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                     flags |= PrologWriter.FLAG_QUOT;
                 } else {
                     flags &= ~PrologWriter.FLAG_QUOT;
@@ -138,7 +140,7 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_NUMBERVARS)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
+                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                     flags |= PrologWriter.FLAG_NUMV;
                 } else {
                     flags &= ~PrologWriter.FLAG_NUMV;
@@ -146,7 +148,7 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_OPS)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
+                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                     flags |= PrologWriter.FLAG_IGNO;
                 } else {
                     flags &= ~PrologWriter.FLAG_IGNO;
@@ -154,7 +156,7 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_MOD)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display, en)) {
+                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                     flags |= PrologWriter.FLAG_IGNM;
                 } else {
                     flags &= ~PrologWriter.FLAG_IGNM;
@@ -162,16 +164,14 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
-                en.skel = ((SkelCompound) en.skel).args[0];
-                en.deref();
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
                 EngineMessage.checkNotLessThanZero(num);
                 lev = EngineMessage.castIntValue(num);
                 SpecialOper.checkOperatorLevel(lev);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_FORMAT)) {
-                int form = atomToFormat(((SkelCompound) en.skel).args[0], en.display, en);
+                int form = atomToFormat(((SkelCompound) en.skel).args[0], en.display);
                 if ((form & FORMAT_NEWL) != 0) {
                     flags |= PrologWriter.FLAG_NEWL;
                 } else {
@@ -185,7 +185,7 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_PART)) {
-                int part = atomToWritePart(((SkelCompound) en.skel).args[0], en.display, en);
+                int part = atomToWritePart(((SkelCompound) en.skel).args[0], en.display);
                 if ((part & PART_CMMT) != 0) {
                     flags |= PrologWriter.FLAG_CMMT;
                 } else {
@@ -225,18 +225,18 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
-                utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0],
-                        en.display, en);
+                utildouble = (byte) ReadOpts.atomToUtil(
+                        ((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_BACK_QUOTES)) {
-                utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0],
-                        en.display, en);
+                utilback = (byte) ReadOpts.atomToUtil(
+                        ((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
-                utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0],
-                        en.display, en);
+                utilsingle = (byte) ReadOpts.atomToUtil(
+                        ((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_ANNOTATION)) {
@@ -259,9 +259,7 @@ public final class WriteOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_SOURCE)) {
-                en.skel = ((SkelCompound) en.skel).args[0];
-                en.deref();
-                String fun = EngineMessage.castString(en.skel, en.display);
+                String fun = SpecialUniv.derefAndCastString(((SkelCompound) en.skel).args[0], en.display);
                 AbstractSource src = en.store.getSource(fun);
                 AbstractSource.checkExistentSource(src, fun);
                 source = src;
@@ -316,23 +314,19 @@ public final class WriteOpts {
      *
      * @param m  The bool skel.
      * @param d  The bool display.
-     * @param en The engine.
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean atomToBool(Object m, Display d, Engine en)
+    public static boolean atomToBool(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(Foyer.OP_TRUE)) {
             return true;
         } else if (fun.equals(AbstractFlag.OP_FALSE)) {
             return false;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
@@ -347,16 +341,12 @@ public final class WriteOpts {
      *
      * @param m  The bool skel.
      * @param d  The bool display.
-     * @param en The engine.
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToFormat(Object m, Display d, Engine en)
+    private static int atomToFormat(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;
         } else if (fun.equals(OP_FORMAT_NEWL)) {
@@ -367,7 +357,7 @@ public final class WriteOpts {
             return FORMAT_NEWL + FORMAT_NAVI;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
@@ -454,16 +444,12 @@ public final class WriteOpts {
      *
      * @param m  The annotation mode skel.
      * @param d  The annotation mode display.
-     * @param en The engine.
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToWritePart(Object m, Display d, Engine en)
+    public static int atomToWritePart(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;
         } else if (fun.equals(OP_PART_CMMT)) {
@@ -474,7 +460,7 @@ public final class WriteOpts {
             return PART_CMMT + PART_STMT;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
@@ -498,7 +484,7 @@ public final class WriteOpts {
         en.skel = m;
         en.display = d;
         en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(en.skel, en.display);
         if (fun.equals(OP_OPERAND_NONE)) {
             return 0;
         } else if (fun.equals(OP_OPERAND_LEFT)) {

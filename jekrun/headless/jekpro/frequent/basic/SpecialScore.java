@@ -4,6 +4,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
 
@@ -61,14 +62,11 @@ public final class SpecialScore extends AbstractSpecial {
             case SPECIAL_SYS_TYPE_OF:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkRef(en.skel, en.display);
-                if (!(en.skel instanceof Class))
+                Object m = SpecialUniv.derefAndCastRef(temp[0], ref);
+                if (!(m instanceof Class))
                     throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_CLASS, en.skel));
-                Class clazz = (Class) en.skel;
+                            EngineMessage.OP_DOMAIN_CLASS, m));
+                Class clazz = (Class) m;
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();

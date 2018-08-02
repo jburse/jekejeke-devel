@@ -13,6 +13,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.NamedDistance;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Named;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -142,10 +143,7 @@ public final class SpecialVars extends AbstractSpecial {
             case SPECIAL_NUMBERVARS:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
                 EngineMessage.checkNotLessThanZero(num);
                 EngineMessage.castIntValue(num);
                 num = SpecialVars.numberVars(temp[0], ref, (Integer) en.skel, en);
@@ -424,10 +422,7 @@ public final class SpecialVars extends AbstractSpecial {
             int distance = NamedDistance.derefCount(en);
             if (en.skel instanceof SkelVar) {
                 TermVar pair = new TermVar((SkelVar) en.skel, en.display);
-                en.skel = mc2[0];
-                en.display = d2;
-                en.deref();
-                String name = EngineMessage.castString(en.skel, en.display);
+                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
                 if (print == null)
                     print = new MapHashLink<TermVar, NamedDistance>();
                 NamedDistance.addPriorized(print, pair, name, distance);

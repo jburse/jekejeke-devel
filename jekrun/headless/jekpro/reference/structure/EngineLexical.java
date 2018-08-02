@@ -145,18 +145,14 @@ public final class EngineLexical implements Comparator<Object> {
     /**
      * <p>Compute the collator from an atom.</p>
      *
-     * @param t  The skeleton.
+     * @param m  The skeleton.
      * @param d  The display.
-     * @param en The engine.
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */
-    public static Comparator comparatorAtom(Object t, Display d, Engine en)
+    public static Comparator comparatorAtom(Object m, Display d)
             throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if ("IGNORE_CASE".equals(fun)) {
             return IgnoreCase.DEFAULT;
         } else {

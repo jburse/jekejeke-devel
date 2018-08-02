@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -67,17 +68,8 @@ public final class SpecialElem extends AbstractSpecial {
                 case SPECIAL_DIVMOD:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
-
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    Number beta = EngineMessage.castNumber(en.skel, en.display);
-
+                    Number alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
+                    Number beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     Number[] res = divMod(alfa, beta);
                     if (!en.unifyTerm(temp[2], ref, res[0], Display.DISPLAY_CONST))
                         return false;
