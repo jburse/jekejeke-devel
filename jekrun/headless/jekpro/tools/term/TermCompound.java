@@ -53,6 +53,20 @@ import jekpro.tools.call.Interpreter;
 public final class TermCompound extends AbstractTerm {
     final SkelCompound skel;
     final Display display;
+    final int flags;
+
+    /**
+     * <p>Constructor for internal use only.</p>
+     *
+     * @param s The compound skel.
+     * @param d The compound display.
+     * @param f The flags.
+     */
+    TermCompound(Display d, SkelCompound s, int f) {
+        display = d;
+        skel = s;
+        flags = f;
+    }
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -61,8 +75,7 @@ public final class TermCompound extends AbstractTerm {
      * @param d The compound display.
      */
     TermCompound(Display d, SkelCompound s) {
-        display = d;
-        skel = s;
+        this(d, s, 0);
     }
 
     /**

@@ -99,7 +99,7 @@ public final class ForeignPath {
      * @param opt   The options list.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
-     * @throws IOException IO Error.
+     * @throws IOException        IO Error.
      */
     public static String sysFindPrefix(Interpreter inter,
                                        String path, String key,
@@ -113,7 +113,7 @@ public final class ForeignPath {
                 scope = engine.store.getSource(key);
                 AbstractSource.checkExistentSource(scope, key);
             } else {
-                scope=engine.store.user;
+                scope = engine.store.user;
             }
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -130,7 +130,7 @@ public final class ForeignPath {
      * @param opt   The options list.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
-     * @throws IOException IO Error.
+     * @throws IOException        IO Error.
      */
     public static Object sysUnfindPrefix(Interpreter inter,
                                          String path, String key,
@@ -145,7 +145,7 @@ public final class ForeignPath {
                 scope = engine.store.getSource(key);
                 AbstractSource.checkExistentSource(scope, key);
             } else {
-                scope=engine.store.user;
+                scope = engine.store.user;
             }
             res = CacheModule.unfindPrefix(path, scope, mask);
         } catch (EngineMessage x) {
@@ -176,7 +176,7 @@ public final class ForeignPath {
                 scope = engine.store.getSource(key);
                 AbstractSource.checkExistentSource(scope, key);
             } else {
-                scope=engine.store.user;
+                scope = engine.store.user;
             }
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);

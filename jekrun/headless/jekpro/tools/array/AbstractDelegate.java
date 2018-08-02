@@ -115,12 +115,13 @@ public abstract class AbstractDelegate {
         SkelCompound temp = (SkelCompound) en.skel;
         Display ref = en.display;
 
-        Object expr = tunnelArgs(temp);
-        en.computeExpr(expr, ref);
-
-        if (!en.unifyTerm(temp.args[temp.args.length - 1], ref,
-                en.skel, en.display))
+        Object expr = AbstractDelegate.tunnelArgs(temp);
+        boolean multi = en.computeExpr(expr, ref);
+        Display d = en.display;
+        if (!en.unifyTerm(temp.args[temp.args.length - 1], ref, en.skel, d))
             return false;
+        if (multi)
+            d.remTab(en);
         return en.getNext();
     }
 
@@ -130,7 +131,7 @@ public abstract class AbstractDelegate {
      * @param temp The goal skeleton.
      * @return The arguments.
      */
-    private Object tunnelArgs(SkelCompound temp) {
+    private static Object tunnelArgs(SkelCompound temp) {
         int n = temp.args.length - 1;
         if (n > 0) {
             Object[] args = new Object[n];
@@ -172,8 +173,7 @@ public abstract class AbstractDelegate {
 
         en.skel = temp;
         en.display = ref;
-        en.deref();
-        return false;
+        return true;
     }
 
     /**
@@ -202,8 +202,9 @@ public abstract class AbstractDelegate {
             i++;
         }
         for (; i < help.length; i++) {
-            en.computeExpr(help[i], ref);
-            args[i] = AbstractTerm.createMolec(en.skel, en.display);
+            boolean multi = en.computeExpr(help[i], ref);
+            args[i] = AbstractTerm.createMolec(en.skel, en.display,
+                    (multi ? AbstractTerm.MASK_TERM_MLTI : 0));
         }
         return args;
     }
@@ -238,12 +239,15 @@ public abstract class AbstractDelegate {
         int k = 0;
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
-            Object temp = AbstractTerm.getSkel(args[i]);
+            Object obj = args[i];
+            Object temp = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(temp) != null) {
-                Display ref2 = AbstractTerm.getDisplay(args[i]);
+                Display ref2 = AbstractTerm.getDisplay(obj);
                 SkelVar sv = SkelVar.valueOf(k);
                 k++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
+                if ((AbstractTerm.getFlags(obj) & AbstractTerm.MASK_TERM_MLTI) != 0)
+                    ref2.remTab(en);
                 args[i] = sv;
             } else {
                 args[i] = temp;
@@ -266,7 +270,7 @@ public abstract class AbstractDelegate {
         Goal r = (Goal) en.contskel;
         DisplayClause u = en.contdisplay;
         int snap = en.number;
-        boolean multi=en.wrapGoal();
+        boolean multi = en.wrapGoal();
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
         DisplayClause ref2 = new DisplayClause(clause.dispsize);

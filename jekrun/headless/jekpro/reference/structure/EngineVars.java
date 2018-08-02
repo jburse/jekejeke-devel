@@ -5,9 +5,9 @@ import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.NamedDistance;
 import jekpro.model.pretty.PrologReader;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import jekpro.tools.term.TermVar;
 import matula.util.data.*;
 
 /**
@@ -37,8 +37,8 @@ import matula.util.data.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class EngineVars {
-    public SetHashLink<TermVar> vars; /* input order */
-    public SetHashLink<TermVar> anon; /* input order */
+    public SetHashLink<Object> vars; /* input order */
+    public SetHashLink<Object> anon; /* input order */
 
     /****************************************************************/
     /* Molec Operations                                             */
@@ -111,9 +111,9 @@ public final class EngineVars {
                     if (b.display != null) {
                         varInclude(b.skel, b.display);
                     } else {
-                        TermVar key = new TermVar(v, d);
+                        Object key = AbstractTerm.createMolec(v, d);
                         if (vars == null) {
-                            vars = new SetHashLink<TermVar>();
+                            vars = new SetHashLink<Object>();
                             vars.add(key);
                         } else {
                             if (vars.getKey(key) == null)
@@ -128,9 +128,9 @@ public final class EngineVars {
                 t = b.skel;
                 d = b.display;
             } else {
-                TermVar key = new TermVar(v, d);
+                Object key = AbstractTerm.createMolec(v, d);
                 if (vars == null) {
-                    vars = new SetHashLink<TermVar>();
+                    vars = new SetHashLink<Object>();
                     vars.add(key);
                 } else {
                     if (vars.getKey(key) == null)
@@ -167,7 +167,7 @@ public final class EngineVars {
                     if (b.display != null) {
                         varExclude(b.skel, b.display);
                     } else {
-                        TermVar key = new TermVar(v, d);
+                        Object key = AbstractTerm.createMolec(v, d);
                         if (vars != null) {
                             vars.remove(key);
                             if (vars.size == 0)
@@ -182,7 +182,7 @@ public final class EngineVars {
                 t = b.skel;
                 d = b.display;
             } else {
-                TermVar key = new TermVar(v, d);
+                Object key = AbstractTerm.createMolec(v, d);
                 if (vars != null) {
                     vars.remove(key);
                     if (vars.size == 0)
@@ -212,10 +212,10 @@ public final class EngineVars {
                     d = b.display;
                     continue;
                 }
-                TermVar key = new TermVar(v, d);
+                Object key = AbstractTerm.createMolec(v, d);
                 boolean f;
                 if (vars == null) {
-                    vars = new SetHashLink<TermVar>();
+                    vars = new SetHashLink<Object>();
                     f = false;
                 } else {
                     f = vars.getKey(key) != null;
@@ -223,7 +223,7 @@ public final class EngineVars {
                 if (!f) {
                     vars.add(key);
                     if (anon == null)
-                        anon = new SetHashLink<TermVar>();
+                        anon = new SetHashLink<Object>();
                     anon.add(key);
                 } else {
                     if (anon != null) {
@@ -271,9 +271,9 @@ public final class EngineVars {
                     v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        TermVar key = new TermVar(v, d);
+                        Object key = AbstractTerm.createMolec(v, d);
                         if (vars == null) {
-                            vars = new SetHashLink<TermVar>();
+                            vars = new SetHashLink<Object>();
                             vars.add(key);
                         } else {
                             if (vars.getKey(key) == null) {
@@ -291,9 +291,9 @@ public final class EngineVars {
             }
             BindVar b = d.bind[v.id];
             if (b.display != null) {
-                TermVar key = new TermVar(v, d);
+                Object key = AbstractTerm.createMolec(v, d);
                 if (vars == null) {
-                    vars = new SetHashLink<TermVar>();
+                    vars = new SetHashLink<Object>();
                     vars.add(key);
                 } else {
                     if (vars.getKey(key) == null) {
@@ -310,7 +310,7 @@ public final class EngineVars {
             }
         }
         while (undo > 0) {
-            SetEntry<TermVar> entry = vars.getLastEntry();
+            SetEntry<Object> entry = vars.getLastEntry();
             vars.remove(entry.key);
             undo--;
         }
@@ -329,10 +329,10 @@ public final class EngineVars {
      * @param vars The old variable names, can be null.
      * @return The new variable names, can be null.
      */
-    public static MapHashLink<TermVar, NamedDistance> numberVariables(SetHashLink<TermVar> mvs3,
-                                                                      SetHashLink<TermVar> mvs,
-                                                                      MapHashLink<TermVar, NamedDistance> vars) {
-        MapHashLink<TermVar, NamedDistance> copy = new MapHashLink<TermVar, NamedDistance>();
+    public static MapHashLink<Object, NamedDistance> numberVariables(SetHashLink<Object> mvs3,
+                                                                     SetHashLink<Object> mvs,
+                                                                     MapHashLink<Object, NamedDistance> vars) {
+        MapHashLink<Object, NamedDistance> copy = new MapHashLink<Object, NamedDistance>();
         SetHash<String> range = namedToCopy(mvs, vars, copy);
         restToCopy(range, mvs3, mvs, vars, copy);
         return copy;
@@ -346,15 +346,15 @@ public final class EngineVars {
      * @param copy The new variable names.
      * @return The name range.
      */
-    private static SetHash<String> namedToCopy(SetHashLink<TermVar> mvs,
-                                               MapHashLink<TermVar, NamedDistance> vars,
-                                               MapHashLink<TermVar, NamedDistance> copy) {
+    private static SetHash<String> namedToCopy(SetHashLink<Object> mvs,
+                                               MapHashLink<Object, NamedDistance> vars,
+                                               MapHashLink<Object, NamedDistance> copy) {
         if (vars == null)
             return null;
         SetHash<String> range = null;
-        for (MapEntry<TermVar, NamedDistance> entry = vars.getFirstEntry();
+        for (MapEntry<Object, NamedDistance> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            TermVar key = entry.key;
+            Object key = entry.key;
             NamedDistance nd = entry.value;
             if (mvs != null && mvs.getKey(key) != null) {
                 NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
@@ -377,14 +377,14 @@ public final class EngineVars {
      * @param copy  The new variable names.
      */
     private static void restToCopy(SetHash<String> range,
-                                   SetHashLink<TermVar> mvs3,
-                                   SetHashLink<TermVar> mvs,
-                                   MapHashLink<TermVar, NamedDistance> vars,
-                                   MapHashLink<TermVar, NamedDistance> copy) {
+                                   SetHashLink<Object> mvs3,
+                                   SetHashLink<Object> mvs,
+                                   MapHashLink<Object, NamedDistance> vars,
+                                   MapHashLink<Object, NamedDistance> copy) {
         int k = 0;
-        for (SetEntry<TermVar> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
+        for (SetEntry<Object> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
              entry != null; entry = mvs3.successor(entry)) {
-            TermVar key = entry.key;
+            Object key = entry.key;
             if (vars != null && vars.get(key) != null)
                 continue;
             if (mvs != null && mvs.getKey(key) != null) {

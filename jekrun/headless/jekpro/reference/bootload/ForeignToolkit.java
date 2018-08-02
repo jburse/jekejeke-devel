@@ -1,11 +1,8 @@
 package jekpro.reference.bootload;
 
 import jekpro.tools.call.*;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
-
-import java.util.ArrayList;
 
 /**
  * <p>The foreign predicates for the module toolkit.</p>

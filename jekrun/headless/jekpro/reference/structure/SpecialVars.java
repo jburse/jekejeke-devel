@@ -14,7 +14,10 @@ import jekpro.model.pretty.NamedDistance;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Named;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.data.SetHashLink;
@@ -165,7 +168,7 @@ public final class SpecialVars extends AbstractSpecial {
                 Frame frame = en.visor.ref;
                 Display ref2 = (frame != null ? frame.getDisplay() : null);
                 Clause def = (frame != null ? frame.getClause() : null);
-                MapHashLink<TermVar, NamedDistance> print =
+                MapHashLink<Object, NamedDistance> print =
                         Named.namedToMap((def != null ? def.vars : null), ref2, en);
                 mapToAssoc(print, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
@@ -326,10 +329,10 @@ public final class SpecialVars extends AbstractSpecial {
     private static void numberVariables(Object[] temp, Display ref,
                                         Engine en)
             throws EngineMessage {
-        SetHashLink<TermVar> mvs2 = arrayToSet(temp[0], ref, en);
-        MapHashLink<TermVar, NamedDistance> print = assocToMap(temp[1], ref, en);
-        SetHashLink<TermVar> mvs = arrayToSet(temp[2], ref, en);
-        MapHashLink<TermVar, NamedDistance> print2 = EngineVars.numberVariables(mvs2, mvs, print);
+        SetHashLink<Object> mvs2 = arrayToSet(temp[0], ref, en);
+        MapHashLink<Object, NamedDistance> print = assocToMap(temp[1], ref, en);
+        SetHashLink<Object> mvs = arrayToSet(temp[2], ref, en);
+        MapHashLink<Object, NamedDistance> print2 = EngineVars.numberVariables(mvs2, mvs, print);
         mapToAssoc(print2, en);
     }
 
@@ -343,9 +346,9 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The variable list.
      * @throws EngineMessage Shit happens.
      */
-    private static SetHashLink<TermVar> arrayToSet(Object t, Display d, Engine en)
+    private static SetHashLink<Object> arrayToSet(Object t, Display d, Engine en)
             throws EngineMessage {
-        SetHashLink<TermVar> set = null;
+        SetHashLink<Object> set = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -357,9 +360,9 @@ public final class SpecialVars extends AbstractSpecial {
             en.skel = mc.args[0];
             en.deref();
             if (en.skel instanceof SkelVar) {
-                TermVar pair = new TermVar((SkelVar) en.skel, en.display);
+                Object pair = AbstractTerm.createMolec(en.skel, en.display);
                 if (set == null) {
-                    set = new SetHashLink<TermVar>();
+                    set = new SetHashLink<Object>();
                     set.add(pair);
                 } else {
                     if (set.getKey(pair) == null)
@@ -392,10 +395,10 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The print map.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<TermVar, NamedDistance> assocToMap(Object t, Display d,
-                                                                 Engine en)
+    public static MapHashLink<Object, NamedDistance> assocToMap(Object t, Display d,
+                                                                Engine en)
             throws EngineMessage {
-        MapHashLink<TermVar, NamedDistance> print = null;
+        MapHashLink<Object, NamedDistance> print = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -421,10 +424,10 @@ public final class SpecialVars extends AbstractSpecial {
             en.skel = mc2[1];
             int distance = NamedDistance.derefCount(en);
             if (en.skel instanceof SkelVar) {
-                TermVar pair = new TermVar((SkelVar) en.skel, en.display);
+                Object pair = AbstractTerm.createMolec(en.skel, en.display);
                 String name = SpecialUniv.derefAndCastString(mc2[0], d2);
                 if (print == null)
-                    print = new MapHashLink<TermVar, NamedDistance>();
+                    print = new MapHashLink<Object, NamedDistance>();
                 NamedDistance.addPriorized(print, pair, name, distance);
             }
             en.skel = mc[1];
@@ -450,36 +453,40 @@ public final class SpecialVars extends AbstractSpecial {
      * @param mvs The variable map.
      * @param en  The engine.
      */
-    public static void mapToAssoc(MapHashLink<TermVar, NamedDistance> mvs, Engine en) {
+    public static void mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
+                                  Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
+        for (MapEntry<Object, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
-            TermVar key = entry.key;
-            countvar++;
-            if (last == Display.DISPLAY_CONST) {
-                last = AbstractTerm.getDisplay(key);
-            } else if (last != AbstractTerm.getDisplay(key)) {
-                multi = true;
+            Object t = AbstractTerm.getSkel(entry.key);
+            if (EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(entry.key);
+                countvar++;
+                if (last == Display.DISPLAY_CONST) {
+                    last = d;
+                } else if (last != d) {
+                    multi = true;
+                }
             }
         }
-        if (multi) {
+        if (multi)
             last = new Display(countvar);
-            countvar = 0;
-        }
+        countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
-        for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
+        for (MapEntry<Object, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
-            TermVar key = entry.key;
+            Object t = AbstractTerm.getSkel(entry.key);
             Object val;
-            if (multi) {
+            if (multi && EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(entry.key);
                 SkelVar var = SkelVar.valueOf(countvar);
                 countvar++;
-                last.bind[var.id].bindVar(AbstractTerm.getSkel(key), AbstractTerm.getDisplay(key), en);
+                last.bind[var.id].bindVar(t, d, en);
                 val = var;
             } else {
-                val = AbstractTerm.getSkel(key);
+                val = t;
             }
             val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
                     new SkelAtom(entry.value.getName()), val);

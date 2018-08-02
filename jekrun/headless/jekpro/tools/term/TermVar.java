@@ -49,6 +49,20 @@ import jekpro.tools.call.Interpreter;
 public final class TermVar extends AbstractTerm {
     final SkelVar skel;
     final Display display;
+    final int flags;
+
+    /**
+     * <p>Constructor for internal use only.</p>
+     *
+     * @param s The var skel.
+     * @param d The var display.
+     * @param f The flags.
+     */
+    TermVar(SkelVar s, Display d, int f) {
+        skel = s;
+        display = d;
+        flags = f;
+    }
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -56,9 +70,8 @@ public final class TermVar extends AbstractTerm {
      * @param s The var skel.
      * @param d The var display.
      */
-    public TermVar(SkelVar s, Display d) {
-        skel = s;
-        display = d;
+    TermVar(SkelVar s, Display d) {
+        this(s, d, 0);
     }
 
     /**

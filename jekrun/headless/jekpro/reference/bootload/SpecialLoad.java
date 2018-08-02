@@ -835,7 +835,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      */
     public static Display showClause(PrologWriter pw, Object t, Named[] vars,
-                                  Engine en, int flags)
+                                     Engine en, int flags)
             throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
                 ((flags & MASK_SHOW_NRBD) != 0)) {
@@ -847,7 +847,7 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 ev.singsOf(t, ref);
             }
-            MapHashLink<TermVar, NamedDistance> print = Named.namedToMap(vars, ref, en);
+            MapHashLink<Object, NamedDistance> print = Named.namedToMap(vars, ref, en);
             print = EngineVars.numberVariables(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
@@ -902,7 +902,7 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 ev.singsOf(var, dc);
             }
-            MapHashLink<TermVar, NamedDistance> print = Named.namedToMap(vars, dc, en);
+            MapHashLink<Object, NamedDistance> print = Named.namedToMap(vars, dc, en);
             print = EngineVars.numberVariables(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), var);

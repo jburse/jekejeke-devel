@@ -145,8 +145,8 @@ public final class EngineLexical implements Comparator<Object> {
     /**
      * <p>Compute the collator from an atom.</p>
      *
-     * @param m  The skeleton.
-     * @param d  The display.
+     * @param m The skeleton.
+     * @param d The display.
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */

@@ -9,7 +9,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
 
 import java.io.StringWriter;
 
@@ -64,6 +63,8 @@ import java.io.StringWriter;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractTerm {
+    public static final int MASK_TERM_MLTI = 0x00000001;
+
     public final static Object VOID_OBJ = AbstractSkel.VOID_OBJ;
 
     /**
@@ -137,7 +138,7 @@ public abstract class AbstractTerm {
 
     /**
      * <p>Retrieve the skeleton.</p>
-     * <p>Works for wrapped and unwrapped data structure.</p>
+     * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
      * @param t The term.
      * @return The skeleton.
@@ -160,7 +161,7 @@ public abstract class AbstractTerm {
 
     /**
      * <p>Retrieve the display.</p>
-     * <p>Works for wrapped and unwrapped data structure.</p>
+     * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
      * @param t The term.
      * @return The display.
@@ -172,6 +173,51 @@ public abstract class AbstractTerm {
             return ((TermCompound) t).display;
         } else if (t != null) {
             return Display.DISPLAY_CONST;
+        } else {
+            throw new NullPointerException("external null");
+        }
+    }
+
+    /************************************************************/
+    /* Experimental Flags                                       */
+    /************************************************************/
+
+    /**
+     * <p>Create a term by the given skeleton and display.</p>
+     * <p>Will first determine the type of the skeleton and
+     * then switch to the constructor of the apppropriate subclass.</p>
+     * <p>Will keep atoms.</p>
+     * <p>Will not wrap numbers and references.</p>
+     *
+     * @param m The skeleton.
+     * @param d The display.
+     * @param f The flags.
+     * @return The molec.
+     */
+    public static Object createMolec(Object m, Display d, int f) {
+        if (m instanceof SkelVar) {
+            return new TermVar((SkelVar) m, d, f);
+        } else if (m instanceof SkelCompound) {
+            return new TermCompound(d, (SkelCompound) m, f);
+        } else {
+            return m;
+        }
+    }
+
+    /**
+     * <p>Retrieve the flags.</p>
+     * <p>Works for unwrapped, wrapped and molec data structure.</p>
+     *
+     * @param t The term.
+     * @return The flags.
+     */
+    public static int getFlags(Object t) {
+        if (t instanceof TermVar) {
+            return ((TermVar) t).flags;
+        } else if (t instanceof TermCompound) {
+            return ((TermCompound) t).flags;
+        } else if (t != null) {
+            return 0;
         } else {
             throw new NullPointerException("external null");
         }

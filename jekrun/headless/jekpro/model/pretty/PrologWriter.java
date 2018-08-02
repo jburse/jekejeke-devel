@@ -92,7 +92,7 @@ public class PrologWriter {
     private int lch = -1;
     public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
     public int lev = Operator.LEVEL_HIGH;
-    private MapHashLink<TermVar, NamedDistance> printmap;
+    private MapHashLink<Object, NamedDistance> printmap;
     public int spez;
     public int offset;
     public int shift;
@@ -250,7 +250,7 @@ public class PrologWriter {
      *
      * @param v The var map.
      */
-    public void setPrintMap(MapHashLink<TermVar, NamedDistance> v) {
+    public void setPrintMap(MapHashLink<Object, NamedDistance> v) {
         printmap = v;
     }
 
@@ -921,7 +921,7 @@ public class PrologWriter {
         } else if (term instanceof SkelVar) {
             SkelVar sv = (SkelVar) term;
             if (printmap != null) {
-                TermVar key = new TermVar(sv, ref);
+                Object key = AbstractTerm.createMolec(sv, ref);
                 NamedDistance nd = printmap.get(key);
                 if (nd != null) {
                     String t = variableQuoted(nd.getName());

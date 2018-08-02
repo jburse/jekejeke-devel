@@ -15,7 +15,6 @@ import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.TermVar;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -90,7 +89,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<TermVar, NamedDistance> printmap;
+    public MapHashLink<Object, NamedDistance> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -312,8 +311,8 @@ public final class WriteOpts {
      * <li><b>false:</b> false.</li>
      * </ul>
      *
-     * @param m  The bool skel.
-     * @param d  The bool display.
+     * @param m The bool skel.
+     * @param d The bool display.
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
@@ -339,8 +338,8 @@ public final class WriteOpts {
      * <li><b>navigation:</b> FORMAT_NAVI.</li>
      * </ul>
      *
-     * @param m  The bool skel.
-     * @param d  The bool display.
+     * @param m The bool skel.
+     * @param d The bool display.
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
@@ -442,8 +441,8 @@ public final class WriteOpts {
      * <li><b>statement:</b> PART_STMT.</li>
      * </ul>
      *
-     * @param m  The annotation mode skel.
-     * @param d  The annotation mode display.
+     * @param m The annotation mode skel.
+     * @param d The annotation mode display.
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
@@ -507,7 +506,7 @@ public final class WriteOpts {
             return;
         if (printmap == null)
             return;
-        for (MapEntry<TermVar, NamedDistance> entry = printmap.getLastEntry();
+        for (MapEntry<Object, NamedDistance> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
             if (PrologWriter.variableNeedsQuotes(entry.value.getName()))
                 throw new EngineMessage(EngineMessage.domainError(

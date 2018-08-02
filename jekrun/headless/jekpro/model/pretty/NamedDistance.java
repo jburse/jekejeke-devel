@@ -3,7 +3,6 @@ package jekpro.model.pretty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindVar;
 import jekpro.tools.term.SkelVar;
-import jekpro.tools.term.TermVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 
@@ -113,17 +112,17 @@ public final class NamedDistance {
      * <p>Add priorized to the map hash.</p>
      *
      * @param print    The print map.
-     * @param pair     The variable.
+     * @param key      The variable.
      * @param name     The variable name.
      * @param distance The variable distance.
      */
-    public static void addPriorized(MapHashLink<TermVar, NamedDistance> print,
-                                    TermVar pair,
+    public static void addPriorized(MapHashLink<Object, NamedDistance> print,
+                                    Object key,
                                     String name, int distance) {
-        MapEntry<TermVar, NamedDistance> entry = print.getEntry(pair);
+        MapEntry<Object, NamedDistance> entry = print.getEntry(key);
         if (entry == null) {
             NamedDistance nd = new NamedDistance(name, distance);
-            print.add(pair, nd);
+            print.add(key, nd);
             return;
         }
         NamedDistance nd = entry.value;
@@ -137,14 +136,14 @@ public final class NamedDistance {
      * <p>Add an anonymous variable.</p>
      *
      * @param print The print map.
-     * @param pair  The variable.
+     * @param key   The variable.
      * @param name  The variable name.
      */
-    public static void addAnon(MapHashLink<TermVar, NamedDistance> print,
-                               TermVar pair,
+    public static void addAnon(MapHashLink<Object, NamedDistance> print,
+                               Object key,
                                String name) {
         NamedDistance nd = new NamedDistance(name, 0);
-        print.add(pair, nd);
+        print.add(key, nd);
     }
 
 }

@@ -321,13 +321,13 @@ public final class ReadOpts {
      */
     private static Object termToList(Object val, AbstractStore store) {
         Object end = store.foyer.ATOM_NIL;
-        Object var= EngineCopy.getVar(val);
+        Object var = EngineCopy.getVar(val);
         if (var == null)
             return end;
         if (var instanceof SkelVar) {
             end = new SkelCompound(store.foyer.ATOM_CONS, var, end);
         } else {
-            SkelVar[] temp=(SkelVar[])var;
+            SkelVar[] temp = (SkelVar[]) var;
             for (int i = 0; i < temp.length; i++)
                 end = new SkelCompound(store.foyer.ATOM_CONS, temp[i], end);
         }
@@ -343,8 +343,8 @@ public final class ReadOpts {
      * <li><b>variable:</b> UTIL_VARIABLE.</li>
      * </ul>
      *
-     * @param m  The util value skel.
-     * @param d  The util value display.
+     * @param m The util value skel.
+     * @param d The util value display.
      * @return The util value.
      * @throws EngineMessage Shit happens.
      */
@@ -393,8 +393,8 @@ public final class ReadOpts {
     /**
      * <p>Convert an atom to a write part.</p>
      *
-     * @param m  The annotation mode skel.
-     * @param d  The annotation mode display.
+     * @param m The annotation mode skel.
+     * @param d The annotation mode display.
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */

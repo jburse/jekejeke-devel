@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.ForeignPath;
