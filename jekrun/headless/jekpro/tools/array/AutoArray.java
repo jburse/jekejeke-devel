@@ -4,22 +4,16 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.CacheModule;
-import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.call.AbstractAuto;
-import jekpro.tools.foreign.AutoClass;
-import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.system.AbstractRuntime;
 
 import java.io.Reader;
 
@@ -178,7 +172,7 @@ public final class AutoArray extends AbstractAuto {
                     break;
             } catch (EngineMessage x) {
                 EngineException y = new EngineException(x, EngineException.fetchStack(en));
-                if (SpecialLoad.systemConsultBreak(y,en, rec))
+                if (SpecialLoad.systemConsultBreak(y, en, rec))
                     break;
             }
         }

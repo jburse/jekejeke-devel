@@ -380,16 +380,17 @@ public final class WriteOpts {
         en.skel = m;
         en.display = d;
         en.deref();
-        if ((en.skel instanceof SkelCompound) &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(PrologReader.OP_BAR)) {
-            SkelCompound sc = (SkelCompound) en.skel;
-            d = en.display;
+        m = en.skel;
+        d = en.display;
+        if ((m instanceof SkelCompound) &&
+                ((SkelCompound) m).args.length == 2 &&
+                ((SkelCompound) m).sym.fun.equals(PrologReader.OP_BAR)) {
+            SkelCompound sc = (SkelCompound) m;
             int val1 = termToAnno(sc.args[0], d, en);
             int val2 = termToAnno(sc.args[1], d, en);
             return val1 | val2;
-        } else {
-            String fun = EngineMessage.castString(en.skel, en.display);
+        } else if (m instanceof SkelAtom) {
+            String fun = ((SkelAtom) m).fun;
             if (fun.equals(AbstractFlag.OP_FALSE)) {
                 return 0;
             } else if (fun.equals(OP_ANNO_MKDT)) {
@@ -402,8 +403,12 @@ public final class WriteOpts {
                 return ANNO_MKDT + ANNO_FILL + ANNO_HINT;
             } else {
                 throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                        EngineMessage.OP_DOMAIN_FLAG_VALUE, m));
             }
+        } else {
+            EngineMessage.checkInstantiated(m);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_ATOM, m), d);
         }
     }
 
@@ -480,10 +485,7 @@ public final class WriteOpts {
      */
     private static int atomToOperand(Object m, Display d, Engine en)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        String fun = SpecialUniv.derefAndCastString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_OPERAND_NONE)) {
             return 0;
         } else if (fun.equals(OP_OPERAND_LEFT)) {
@@ -492,7 +494,7 @@ public final class WriteOpts {
             return PrologWriter.SPEZ_OPLE + PrologWriter.SPEZ_LEFT;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 

@@ -7,8 +7,6 @@ import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -16,8 +14,6 @@ import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * <p>Base class for the Java array class delegates.</p>

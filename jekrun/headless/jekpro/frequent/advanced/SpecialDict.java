@@ -2,13 +2,9 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
-import jekpro.reference.arithmetic.EvaluableElem;
-import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -75,13 +71,10 @@ public final class SpecialDict extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!(en.skel instanceof SkelCompound))
                     return false;
-                SkelCompound sc = (SkelCompound)en.skel;
+                SkelCompound sc = (SkelCompound) en.skel;
                 Display d = en.display;
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                SkelAtom k = EngineMessage.castStringWrapped(en.skel, en.display);
+                SkelAtom k = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
 
                 int i = dictIndex(sc.args, d, k, en);
                 if (i < 0)
@@ -100,13 +93,10 @@ public final class SpecialDict extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!(en.skel instanceof SkelCompound))
                     return false;
-                sc = (SkelCompound)en.skel;
+                sc = (SkelCompound) en.skel;
                 d = en.display;
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                k = EngineMessage.castStringWrapped(en.skel, en.display);
+                k = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
 
                 i = dictIndex(sc.args, d, k, en);
                 if (i < 0)

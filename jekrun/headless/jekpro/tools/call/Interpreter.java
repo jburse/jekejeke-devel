@@ -2,7 +2,9 @@ package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.reference.structure.SpecialLexical;
@@ -167,44 +169,26 @@ public final class Interpreter implements Comparator<Object> {
     /*****************************************************************/
 
     /**
-     * <p>Create a call-in. This amounts to the comprehension "{ void |
-     * true, &lt;custom&gt; }" where "&lt;custom;&gt;" is the Java code
-     * that is called during the interaction.</p>
+     * <p>Create a call-in.</p>
      *
      * @return The call-in.
      */
     public CallIn iterator() {
-        return new CallIn(AbstractTerm.VOID_OBJ,
-                getKnowledgebase().getLobby().GOAL_TRUE, this);
+        return new CallIn(getKnowledgebase().getLobby().GOAL_TRUE, this);
     }
 
     /**
-     * <p>Create a call-in. This amounts to the comprehension "{ void |
-     * &lt;goal&gt;, &lt;custom&gt; }" where "&lt;custom&gt;" is the
-     * Java code that is called during the interaction.</p>
+     * <p>Create a call-in.</p>
      *
      * @param goal The goal, non-null.
      * @return The call-in.
      */
     public CallIn iterator(Object goal) {
-        return new CallIn(AbstractTerm.VOID_OBJ, goal, this);
-    }
-
-    /**
-     * <p>Create a call-in. This amounts to the comprehension "{ &lt;result&gt; |
-     * &lt;goal&gt;, &lt;custom&gt; }" where "&lt;custom&gt;" is the
-     * Java code that is called during the interaction.</p>
-     *
-     * @param result The result, non-null.
-     * @param goal   The goal, non-null.
-     * @return The call-in.
-     */
-    public CallIn iterator(Object result, Object goal) {
-        return new CallIn(result, goal, this);
+        return new CallIn(goal, this);
     }
 
     /*****************************************************************/
-    /* AbstractTerm Comparison                                               */
+    /* AbstractTerm Comparison                                       */
     /*****************************************************************/
 
     /**
@@ -405,12 +389,12 @@ public final class Interpreter implements Comparator<Object> {
                     rd = en.store.foyer.createReader(Foyer.IO_ANNO);
                 }
                 ro.setReadOpts(rd);
-                stmt=((ro.flags & PrologWriter.FLAG_STMT) != 0);
+                stmt = ((ro.flags & PrologWriter.FLAG_STMT) != 0);
             } else {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
                 rd.setReadUtil(en.store);
                 rd.setSource(en.store.user);
-                stmt=true;
+                stmt = true;
             }
             rd.getScanner().setReader(lr);
             rd.setEngineRaw(en);

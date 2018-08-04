@@ -132,8 +132,8 @@ final class LenseElement extends AbstractLense {
     /**
      * <p>Retrieve the element at the specified index.</p>
      *
-     * @param o  The array.
-     * @param i  The index.
+     * @param o The array.
+     * @param i The index.
      * @return The element.
      * @throws EngineMessage FFI error.
      */

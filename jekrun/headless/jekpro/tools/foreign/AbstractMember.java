@@ -11,9 +11,7 @@ import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.RuntimeWrap;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -141,27 +139,22 @@ abstract class AbstractMember extends AbstractLense
     final Object[] computeAndConvertArgs(Object temp, Display ref,
                                          Engine en)
             throws EngineMessage, EngineException {
-        try {
-            Object[] args = (encodeparas.length != 0 ?
-                    new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
-            int k = 0;
-            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+        Object[] args = (encodeparas.length != 0 ?
+                new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
+        int k = 0;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+            k++;
+        for (int i = 0; i < encodeparas.length; i++) {
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_INTERPRETER) {
+                args[i] = en.proxy;
+            } else {
+                en.computeExpr(((SkelCompound) temp).args[k], ref);
                 k++;
-            for (int i = 0; i < encodeparas.length; i++) {
-                int typ = encodeparas[i];
-                if (typ == Types.TYPE_INTERPRETER) {
-                    args[i] = en.proxy;
-                } else {
-                    en.computeExpr(((SkelCompound) temp).args[k], ref);
-                    k++;
-                    Object res = AbstractTerm.createTerm(en.skel, en.display);
-                    args[i] = Types.denormProlog(typ, res);
-                }
+                args[i] = convertArg(en.skel, en.display, typ);
             }
-            return args;
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
         }
+        return args;
     }
 
     /**

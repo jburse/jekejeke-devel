@@ -419,10 +419,7 @@ public final class SpecialQuali extends AbstractSpecial {
             Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
             EngineMessage.checkNotLessThanZero(num);
             EngineMessage.castIntValue(num);
-            en.skel = sc.args[0];
-            en.display = d;
-            en.deref();
-            EngineMessage.castStringWrapped(en.skel, en.display);
+            en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
             return (Integer) num;
         } else {
             EngineMessage.checkInstantiated(t);

@@ -14,6 +14,7 @@ import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.EngineVars;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
@@ -100,10 +101,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 Display ref = en.display;
                 LoadOpts opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                SkelAtom sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
                 opts.makeLoad(source, sa.fun, en);
                 return en.getNextRaw();
@@ -112,10 +110,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 opts.makeUnload(sa.scope, sa.fun, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_IMPORT_FILE:
@@ -123,10 +118,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 SpecialLoad.performImport(source, sa.fun, en, opts);
                 return en.getNextRaw();
@@ -135,10 +127,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 Predicate pick = indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -163,10 +152,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 Operator oper = operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(oper, temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -225,10 +211,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -249,10 +232,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_REGISTER_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return en.getNextRaw();
             case SPECIAL_SYS_MODULE_ACTION:
@@ -260,10 +240,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 LoadForce opts2 = new LoadForce();
                 opts2.decodeLoadForce(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 opts2.makeForce(source, sa.fun, en);
                 return en.getNextRaw();

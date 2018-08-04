@@ -239,123 +239,59 @@ public final class Types {
             throws InterpreterMessage {
         try {
             switch (typ) {
-                case Types.TYPE_VOID:
-                    return null;
                 case Types.TYPE_STRING:
-                    if (res != null) {
-                        return InterpreterMessage.castString(res);
-                    } else {
-                        return null;
-                    }
+                    return InterpreterMessage.castString(res);
                 case Types.TYPE_CHARSEQ:
-                    if (res != null) {
-                        if (res instanceof String) {
-                            return res;
-                        } else {
-                            InterpreterMessage.checkRef(res);
-                            return res;
-                        }
+                    if (res instanceof String) {
+                        return res;
                     } else {
-                        return null;
+                        return InterpreterMessage.castRef(res);
                     }
                 case Types.TYPE_PRIMBOOL:
                 case Types.TYPE_BOOL:
-                    if (res != null) {
-                        String fun = InterpreterMessage.castString(res);
-                        return Boolean.valueOf(fun);
-                    } else {
-                        return null;
-                    }
+                    String str = InterpreterMessage.castString(res);
+                    return Boolean.valueOf(str);
                 case Types.TYPE_PRIMBYTE:
                 case Types.TYPE_BYTE:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castInteger(res);
-                        byte val = InterpreterMessage.castByteValue(num);
-                        return Byte.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    Number num = InterpreterMessage.castInteger(res);
+                    return Byte.valueOf(InterpreterMessage.castByteValue(num));
                 case Types.TYPE_PRIMCHAR:
                 case Types.TYPE_CHAR:
-                    if (res != null) {
-                        String str = InterpreterMessage.castString(res);
-                        char val = InterpreterMessage.castCharValue(str);
-                        return Character.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    str = InterpreterMessage.castString(res);
+                    return Character.valueOf(InterpreterMessage.castCharValue(str));
                 case Types.TYPE_PRIMSHORT:
                 case Types.TYPE_SHORT:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castInteger(res);
-                        short val = InterpreterMessage.castShortValue(num);
-                        return Short.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castInteger(res);
+                    return Short.valueOf(InterpreterMessage.castShortValue(num));
                 case Types.TYPE_PRIMINT:
                 case Types.TYPE_INTEGER:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castInteger(res);
-                        InterpreterMessage.castIntValue(num);
-                        return num;
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castInteger(res);
+                    InterpreterMessage.castIntValue(num);
+                    return num;
                 case Types.TYPE_PRIMLONG:
                 case Types.TYPE_LONG:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castInteger(res);
-                        long val = InterpreterMessage.castLongValue(num);
-                        return Long.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castInteger(res);
+                    return Long.valueOf(InterpreterMessage.castLongValue(num));
                 case Types.TYPE_BIG_INTEGER:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castInteger(res);
-                        return TermAtomic.widenBigInteger(num);
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castInteger(res);
+                    return TermAtomic.widenBigInteger(num);
                 case Types.TYPE_PRIMFLOAT:
                 case Types.TYPE_FLOAT:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castNumber(res);
-                        return (num instanceof Float ? num :
-                                TermAtomic.makeFloat(num.floatValue()));
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castNumber(res);
+                    return (num instanceof Float ? num :
+                            TermAtomic.makeFloat(num.floatValue()));
                 case Types.TYPE_PRIMDOUBLE:
                 case Types.TYPE_DOUBLE:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castNumber(res);
-                        return (num instanceof Double ? num :
-                                TermAtomic.makeDouble(num.doubleValue()));
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castNumber(res);
+                    return (num instanceof Double ? num :
+                            TermAtomic.makeDouble(num.doubleValue()));
                 case Types.TYPE_BIG_DECIMAL:
-                    if (res != null) {
-                        Number num = InterpreterMessage.castNumber(res);
-                        return TermAtomic.widenBigDecimal(num);
-                    } else {
-                        return null;
-                    }
+                    num = InterpreterMessage.castNumber(res);
+                    return TermAtomic.widenBigDecimal(num);
                 case Types.TYPE_NUMBER:
-                    if (res != null) {
-                        return InterpreterMessage.castNumber(res);
-                    } else {
-                        return null;
-                    }
+                    return InterpreterMessage.castNumber(res);
                 case Types.TYPE_REF:
-                    if (res != null) {
-                        InterpreterMessage.checkRef(res);
-                        return res;
-                    } else {
-                        return null;
-                    }
+                    return InterpreterMessage.castRef(res);
                 case Types.TYPE_OBJECT:
                 case Types.TYPE_TERM:
                     return res;

@@ -75,17 +75,10 @@ public final class TermVar extends AbstractTerm {
     }
 
     /**
-     * <p>Create multiple variables.</p>
-     *
-     * @param n The number of variables to created.
-     * @return The variables.
+     * <p>Create a new variables.</p>
      */
-    public static TermVar[] createVars(int n) {
-        Display ref = (n != 0 ? new Display(n) : Display.DISPLAY_CONST);
-        TermVar[] res = new TermVar[n];
-        for (int i = 0; i < n; i++)
-            res[i] = new TermVar(SkelVar.valueOf(i), ref);
-        return res;
+    public TermVar() {
+        this(SkelVar.valueOf(0), new Display(1));
     }
 
     /**

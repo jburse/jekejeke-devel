@@ -13,9 +13,6 @@ import jekpro.tools.term.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.HashMap;
 
 /**
  * <p>Java code for the instantiation example. This class
@@ -176,11 +173,18 @@ final class ExecutorFunction extends AbstractExecutor {
         } else {
             eval = functor;
         }
-        TermVar[] vars = TermVar.createVars(1);
-        Object goal = new TermCompound(is, vars[0], eval);
-        CallIn callin = inter.iterator(vars[0], goal);
-        Object res = callin.nextClose();
-        return Types.denormProlog(encoderet, res);
+        Object help = new TermVar();
+        Object goal = new TermCompound(is, help, eval);
+
+        Object res;
+
+        CallIn callin = inter.iterator(goal);
+        callin.next();
+        res = AbstractTerm.copyTerm(inter, help);
+        callin.close();
+        res = Types.denormProlog(encoderet, res);
+
+        return res;
     }
 
 }

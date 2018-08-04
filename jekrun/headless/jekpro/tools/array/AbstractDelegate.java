@@ -136,7 +136,7 @@ public abstract class AbstractDelegate {
         if (n > 0) {
             Object[] args = new Object[n];
             System.arraycopy(temp.args, 0, args, 0, n);
-            return new SkelCompound(temp.sym, args, temp.var);
+            return new SkelCompound(temp.sym, args);
         } else {
             return temp.sym;
         }
@@ -164,15 +164,14 @@ public abstract class AbstractDelegate {
         Object[] args = computeArgs(temp, ref, en);
         SkelAtom sa = SpecialBody.callableToName(temp);
         ref = bridgeCount(args);
-        temp = bridgeAlloc(args, ref, en);
-
-        en.skel = new SkelCompound(sa, args);
         en.display = ref;
+        en.skel = bridgeAlloc(sa, args, ref, en);
+        temp = args[args.length - 1];
 
         AbstractDelegate.invokeOther(en);
 
-        en.skel = temp;
         en.display = ref;
+        en.skel = temp;
         return true;
     }
 
@@ -216,35 +215,38 @@ public abstract class AbstractDelegate {
      * @return The count.
      */
     private static Display bridgeCount(Object[] args) {
-        int k = 0;
+        int countvar = 0;
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
             Object temp = AbstractTerm.getSkel(args[i]);
             if (EngineCopy.getVar(temp) != null)
-                k++;
+                countvar++;
         }
-        return new Display(k + 1);
+        return new Display(countvar + 1);
     }
 
     /**
      * <p>Unpack the arguments and bind the needed variable
      * place holders.</p>
      *
+     * @param sa   The symbol.
      * @param args The computed arguments.
      * @param ref  The new display.
      * @param en   The engine.
      */
-    private static SkelVar bridgeAlloc(Object[] args, Display ref,
-                                       Engine en) {
-        int k = 0;
+    private static SkelCompound bridgeAlloc(SkelAtom sa,
+                                            Object[] args, Display ref,
+                                            Engine en) {
+        SkelVar[] vars = SkelVar.valueOfArray(ref.bind.length);
+        int countvar = 0;
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
             Object obj = args[i];
             Object temp = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(temp) != null) {
                 Display ref2 = AbstractTerm.getDisplay(obj);
-                SkelVar sv = SkelVar.valueOf(k);
-                k++;
+                SkelVar sv = vars[countvar];
+                countvar++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
                 if ((AbstractTerm.getFlags(obj) & AbstractTerm.MASK_TERM_MLTI) != 0)
                     ref2.remTab(en);
@@ -253,9 +255,8 @@ public abstract class AbstractDelegate {
                 args[i] = temp;
             }
         }
-        SkelVar sv = SkelVar.valueOf(k);
-        args[n] = sv;
-        return sv;
+        args[n] = vars[countvar];
+        return new SkelCompound(sa, args, vars);
     }
 
     /**

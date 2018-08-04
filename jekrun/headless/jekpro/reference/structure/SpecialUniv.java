@@ -335,11 +335,8 @@ public final class SpecialUniv extends AbstractSpecial {
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
         SkelCompound sc = (SkelCompound) t;
-        en.skel = sc.args[0];
-        en.display = d;
-        en.deref();
-        Object t2 = en.skel;
-        Display d2 = en.display;
+        Object t2 = sc.args[0];
+        Display d2 = d;
 
         en.skel = sc.args[1];
         en.display = d;
@@ -349,7 +346,13 @@ public final class SpecialUniv extends AbstractSpecial {
 
         if (t instanceof SkelAtom &&
                 ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
-            if (!(t2 instanceof SkelCompound)) {
+            BindVar b;
+            while (t2 instanceof SkelVar &&
+                    (b = d2.bind[((SkelVar) t2).id]).display != null) {
+                t2 = b.skel;
+                d2 = b.display;
+            }
+            if (!(t2 instanceof SkelCompound) && !(t2 instanceof SkelVar)) {
                 /* */
             } else {
                 EngineMessage.checkInstantiated(t2);
@@ -360,7 +363,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.display = d2;
             return false;
         } else {
-            SkelAtom sa = EngineMessage.castStringWrapped(t2, d2);
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(t2, d2);
             int mullen = univCount(t, d, en);
             en.skel = univAlloc(sa, t, d, mullen, en);
             return (mullen < 0);

@@ -124,7 +124,7 @@ final class LenseDimension extends AbstractLense {
     /**
      * <p>Create a new array instance.</p>
      *
-     * @param s  The size.
+     * @param s The size.
      * @return The new array.
      * @throws EngineMessage FFI error.
      */

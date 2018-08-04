@@ -491,7 +491,8 @@ public final class EngineMessage extends Exception {
      * @param t The term skel.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkInstantiated(Object t) throws EngineMessage {
+    public static void checkInstantiated(Object t)
+            throws EngineMessage {
         if (t instanceof SkelVar) {
             throw new EngineMessage(EngineMessage.instantiationError());
         } else {
@@ -506,7 +507,8 @@ public final class EngineMessage extends Exception {
      * @param d The term display.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkCallable(Object t, Display d) throws EngineMessage {
+    public static void checkCallable(Object t, Display d)
+            throws EngineMessage {
         if (t instanceof SkelCompound) {
             /* */
         } else if (t instanceof SkelAtom) {
@@ -515,25 +517,6 @@ public final class EngineMessage extends Exception {
             EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_CALLABLE, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given number is not less than zero.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param n The number, either Integer or BigInteger.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkNotLessThanZero(Number n) throws EngineMessage {
-        if (n instanceof Integer) {
-            if (n.intValue() < 0)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
-        } else {
-            if (((BigInteger) n).compareTo(BigInteger.ZERO) < 0)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
         }
     }
 
@@ -550,27 +533,9 @@ public final class EngineMessage extends Exception {
     }
 
     /*************************************************************/
-    /* Error Casts                                               */
+    /* Type Casts                                                */
+    /* See SpecialEval and SpecialUniv                           */
     /*************************************************************/
-
-    /**
-     * <p>Check whether the given term is an atom.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The string.
-     * @throws EngineMessage Shit happens.
-     */
-    public static String castString(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof SkelAtom) {
-            return ((SkelAtom) t).fun;
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_ATOM, t), d);
-        }
-    }
 
     /**
      * <p>Check whether the given term is an atom.</p>
@@ -588,6 +553,29 @@ public final class EngineMessage extends Exception {
             EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_ATOM, t), d);
+        }
+    }
+
+    /*************************************************************/
+    /* Number Casts                                              */
+    /*************************************************************/
+
+    /**
+     * <p>Check whether the given number is not less than zero.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param n The number, either Integer or BigInteger.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void checkNotLessThanZero(Number n) throws EngineMessage {
+        if (n instanceof Integer) {
+            if (n.intValue() < 0)
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
+        } else {
+            if (((BigInteger) n).compareTo(BigInteger.ZERO) < 0)
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
         }
     }
 
@@ -692,6 +680,10 @@ public final class EngineMessage extends Exception {
                     EngineMessage.OP_REPRESENTATION_LONG));
         }
     }
+
+    /*************************************************************/
+    /* String Casts                                              */
+    /*************************************************************/
 
     /**
      * <p>Check whether the given atom is a character.</p>

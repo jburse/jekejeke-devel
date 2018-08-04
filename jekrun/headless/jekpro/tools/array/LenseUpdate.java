@@ -86,9 +86,9 @@ final class LenseUpdate extends AbstractLense {
     /**
      * <p>Set the element at the specified index.</p>
      *
-     * @param o  The array.
-     * @param i  The index.
-     * @param v  The element.
+     * @param o The array.
+     * @param i The index.
+     * @param v The element.
      * @throws EngineMessage FFI error.
      */
     private void set(Object o, int i, Object v)

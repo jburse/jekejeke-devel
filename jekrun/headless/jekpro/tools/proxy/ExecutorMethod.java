@@ -13,9 +13,6 @@ import jekpro.tools.term.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.HashMap;
 
 /**
  * <p>Java code for the instantiation example. This class
@@ -216,9 +213,12 @@ final class ExecutorMethod extends AbstractExecutor {
     Object runGoal(Object proxy, Object[] args, Interpreter inter)
             throws InterpreterMessage, InterpreterException {
         Object[] termargs = uncompileArgs(proxy, args);
+        Object help;
         if ((subflags & ExecutorMethod.MASK_METH_FUNC) != 0) {
-            TermVar[] vars = TermVar.createVars(1);
-            termargs[termargs.length - 1] = vars[0];
+            help = new TermVar();
+            termargs[termargs.length - 1] = help;
+        } else {
+            help = null;
         }
         Object goal;
         if (termargs.length != 0) {
@@ -226,19 +226,23 @@ final class ExecutorMethod extends AbstractExecutor {
         } else {
             goal = functor;
         }
-        CallIn callin;
-        if ((subflags & ExecutorMethod.MASK_METH_FUNC) != 0) {
-            callin = inter.iterator(termargs[termargs.length - 1], goal);
-        } else {
-            callin = inter.iterator(goal);
-        }
         Object res;
-        if (encoderet == Types.TYPE_TERM) {
-            res = callin.hasNextCloseWrapped();
+
+        CallIn callin = inter.iterator(goal);
+        if (callin.hasNext()) {
+            callin.next();
+            if (encoderet == Types.TYPE_TERM) {
+                res = (help != null ? AbstractTerm.copyTermWrapped(inter, help) : null);
+            } else {
+                res = (help != null ? AbstractTerm.copyTerm(inter, help) : null);
+            }
+            callin.close();
+            res = (res != null ? Types.denormProlog(encoderet, res) : null);
         } else {
-            res = callin.hasNextClose();
+            res = null;
         }
-        return Types.denormProlog(encoderet, res);
+
+        return res;
     }
 
 }
