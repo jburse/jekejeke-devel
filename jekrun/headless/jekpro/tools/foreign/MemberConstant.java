@@ -119,9 +119,10 @@ final class MemberConstant extends AbstractMember {
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
                     AbstractFactory.OP_REPRESENTATION_NULL));
+        Display d = AbstractTerm.getDisplay(res);
         en.skel = AbstractTerm.getSkel(res);
-        en.display = AbstractTerm.getDisplay(res);
-        return false;
+        en.display = d;
+        return (d.flags & Display.MASK_DISP_MLTI) != 0;
     }
 
     /***************************************************************/

@@ -125,13 +125,30 @@ final class MemberMethodNondet extends AbstractMember {
             res = Types.normJava(encoderet, res);
             if (res == null)
                 return false;
+            Display d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) temp).args[
                                     ((SkelCompound) temp).args.length - 1], ref,
-                            AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
+                            AbstractTerm.getSkel(res), d)) {
                 if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
                     return false;
+
+                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+                }
+                co.flags &= ~CallOut.MASK_CALL_FIRST;
+
+                co.flags &= ~CallOut.MASK_CALL_RETRY;
+                co.flags &= ~CallOut.MASK_CALL_SPECI;
+                co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
+                if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+                    d.remTab(en);
+                    d.flags &= ~Display.MASK_DISP_MLTI;
+                }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     ChoiceForeign cp = new ChoiceForeign(en.choices);
                     cp.co = co;
@@ -146,18 +163,6 @@ final class MemberMethodNondet extends AbstractMember {
                 }
                 return en.getNext();
             }
-
-            if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
-                en.skel = null;
-                en.releaseBind(mark);
-                if (en.skel != null)
-                    throw (EngineException) en.skel;
-            }
-            co.flags &= ~CallOut.MASK_CALL_FIRST;
-
-            co.flags &= ~CallOut.MASK_CALL_RETRY;
-            co.flags &= ~CallOut.MASK_CALL_SPECI;
-            co.flags &= ~CallOut.MASK_CALL_CUTTR;
         }
     }
 

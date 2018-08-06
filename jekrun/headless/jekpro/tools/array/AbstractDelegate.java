@@ -202,8 +202,11 @@ public abstract class AbstractDelegate {
         }
         for (; i < help.length; i++) {
             boolean multi = en.computeExpr(help[i], ref);
-            args[i] = AbstractTerm.createMolec(en.skel, en.display,
-                    (multi ? AbstractTerm.MASK_TERM_MLTI : 0));
+            Display ref2 = en.display;
+            Object val = AbstractTerm.createMolec(en.skel, ref2);
+            if (multi)
+                ref2.flags |= Display.MASK_DISP_MLTI;
+            args[i] = val;
         }
         return args;
     }
@@ -248,8 +251,10 @@ public abstract class AbstractDelegate {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
-                if ((AbstractTerm.getFlags(obj) & AbstractTerm.MASK_TERM_MLTI) != 0)
+                if ((ref2.flags & Display.MASK_DISP_MLTI) != 0) {
                     ref2.remTab(en);
+                    ref2.flags &= ~Display.MASK_DISP_MLTI;
+                }
                 args[i] = sv;
             } else {
                 args[i] = temp;

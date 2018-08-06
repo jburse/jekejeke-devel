@@ -119,11 +119,16 @@ final class MemberConstructor extends AbstractMember {
         res = Types.normJava(encoderet, res);
         if (res == null)
             return false;
+        Display d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
-                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res)))
+                        AbstractTerm.getSkel(res), d))
             return false;
+        if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+            d.remTab(en);
+            d.flags &= ~Display.MASK_DISP_MLTI;
+        }
         return en.getNext();
     }
 

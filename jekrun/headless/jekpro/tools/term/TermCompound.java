@@ -53,29 +53,16 @@ import jekpro.tools.call.Interpreter;
 public final class TermCompound extends AbstractTerm {
     final SkelCompound skel;
     final Display display;
-    final int flags;
 
     /**
      * <p>Constructor for internal use only.</p>
      *
      * @param s The compound skel.
      * @param d The compound display.
-     * @param f The flags.
      */
-    TermCompound(Display d, SkelCompound s, int f) {
+    TermCompound(SkelCompound s, Display d) {
         display = d;
         skel = s;
-        flags = f;
-    }
-
-    /**
-     * <p>Constructor for internal use only.</p>
-     *
-     * @param s The compound skel.
-     * @param d The compound display.
-     */
-    TermCompound(Display d, SkelCompound s) {
-        this(d, s, 0);
     }
 
     /**
@@ -84,7 +71,8 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      */
     public TermCompound(SkelCompound s) {
-        this(Display.DISPLAY_CONST, s);
+        display = Display.DISPLAY_CONST;
+        skel = s;
     }
 
     /**
@@ -95,8 +83,8 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(String sym, Object... args) {
-        this(TermCompound.makeDeref(args),
-                new SkelCompound(new SkelAtom(sym), args));
+        display = TermCompound.makeSkel(args);
+        skel = new SkelCompound(new SkelAtom(sym), args);
     }
 
     /**
@@ -107,8 +95,8 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(TermAtomic sym, Object... args) {
-        this(TermCompound.makeDeref(args),
-                new SkelCompound(getFun(sym), args));
+        display = TermCompound.makeSkel(args);
+        skel = new SkelCompound(getFun(sym), args);
     }
 
     /**
@@ -119,9 +107,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, String sym, Object... args) {
-        this(TermCompound.createCount(args, (Engine) inter.getEngine()),
-                new SkelCompound(new SkelAtom(sym),
-                        TermCompound.createAlloc(args, (Engine) inter.getEngine())));
+        Engine en = (Engine) inter.getEngine();
+        display = TermCompound.createCount(args, en);
+        skel = TermCompound.createAlloc(new SkelAtom(sym), args, en);
     }
 
     /**
@@ -132,9 +120,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, TermAtomic sym, Object... args) {
-        this(TermCompound.createCount(args, (Engine) inter.getEngine()),
-                new SkelCompound(getFun(sym),
-                        TermCompound.createAlloc(args, (Engine) inter.getEngine())));
+        Engine en = (Engine) inter.getEngine();
+        display = TermCompound.createCount(args, en);
+        skel = TermCompound.createAlloc(getFun(sym), args, en);
     }
 
     /**
@@ -268,18 +256,18 @@ public final class TermCompound extends AbstractTerm {
     /******************************************************************/
 
     /**
-     * <p>Determine the homogenous display.</p>
-     * <p>Repopulate array with deref.</p>
+     * <p>Check that the homogenous display.</p>
+     * <p>Repopulate array with skeleton only.</p>
      *
      * @param args The arguments.
      * @return The reused display.
      */
-    private static Display makeDeref(Object[] args) {
+    private static Display makeSkel(Object[] args) {
         Display last = Display.DISPLAY_CONST;
         for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
+            Object obj = args[i];
+            Object t = AbstractTerm.getSkel(obj);
+            Display d = AbstractTerm.getDisplay(obj);
             BindVar b;
             while (t instanceof SkelVar &&
                     (b = d.bind[((SkelVar) t).id]).display != null) {
@@ -315,13 +303,13 @@ public final class TermCompound extends AbstractTerm {
         boolean multi = false;
         Display last = Display.DISPLAY_CONST;
         for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
+            Object obj = args[i];
             /* fast lane */
-            if (arg instanceof String)
+            if (obj instanceof String)
                 continue;
             /* common lane */
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
+            Object t = AbstractTerm.getSkel(obj);
+            Display d = AbstractTerm.getDisplay(obj);
             BindVar b;
             while (t instanceof SkelVar &&
                     (b = d.bind[((SkelVar) t).id]).display != null) {
@@ -337,8 +325,10 @@ public final class TermCompound extends AbstractTerm {
                 }
             }
         }
-        if (multi)
+        if (multi) {
             last = new Display(countvar);
+            last.flags |= Display.MASK_DISP_MLTI;
+        }
         en.skel = Boolean.valueOf(multi);
         en.display = last;
         return last;
@@ -348,17 +338,25 @@ public final class TermCompound extends AbstractTerm {
      * <p>Repopulate array with deref or variable.</p>
      * <p>The display is passed via the engine.</p>
      *
+     * @param sa   The symbol.
      * @param args The arguments.
-     * @param en   The engine, not null.
-     * @return The arguments.
+     * @param en   The engine.
+     * @return The new compound.
      */
-    private static Object[] createAlloc(Object[] args, Engine en) {
+    private static SkelCompound createAlloc(SkelAtom sa, Object[] args, Engine en) {
         boolean multi = (en.skel == Boolean.TRUE);
+        Display d3 = en.display;
+        SkelVar[] vars;
+        if (multi) {
+            vars = SkelVar.valueOfArray(d3.bind.length);
+        } else {
+            vars = null;
+        }
         int countvar = 0;
         for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
+            Object obj = args[i];
+            Object t = AbstractTerm.getSkel(obj);
+            Display d = AbstractTerm.getDisplay(obj);
             BindVar b;
             while (t instanceof SkelVar &&
                     (b = d.bind[((SkelVar) t).id]).display != null) {
@@ -366,15 +364,23 @@ public final class TermCompound extends AbstractTerm {
                 d = b.display;
             }
             if (multi && EngineCopy.getVar(t) != null) {
-                SkelVar sv = SkelVar.valueOf(countvar);
+                SkelVar sv = vars[countvar];
                 countvar++;
-                en.display.bind[sv.id].bindVar(t, d, en);
+                d3.bind[sv.id].bindVar(t, d, en);
+                if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+                    d.remTab(en);
+                    d.flags &= ~Display.MASK_DISP_MLTI;
+                }
                 args[i] = sv;
             } else {
                 args[i] = t;
             }
         }
-        return args;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
+        } else {
+            return new SkelCompound(sa, args);
+        }
     }
 
 }

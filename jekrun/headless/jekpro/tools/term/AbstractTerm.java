@@ -63,8 +63,6 @@ import java.io.StringWriter;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractTerm {
-    public static final int MASK_TERM_MLTI = 0x00000001;
-
     public final static Object VOID_OBJ = AbstractSkel.VOID_OBJ;
 
     /**
@@ -74,7 +72,7 @@ public abstract class AbstractTerm {
      * <p>Will unpack atoms.</p>
      * <p>Will not wrap numbers and references.</p>
      *
-     * @param m The skeleton.
+     * @param m The skeleton, not null.
      * @param d The display.
      * @return The term.
      */
@@ -82,13 +80,11 @@ public abstract class AbstractTerm {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
-            return new TermCompound(d, (SkelCompound) m);
+            return new TermCompound((SkelCompound) m, d);
         } else if (m instanceof SkelAtom) {
             return ((SkelAtom) m).fun;
-        } else if (m != null) {
-            return m;
         } else {
-            throw new NullPointerException("internal null");
+            return m;
         }
     }
 
@@ -98,7 +94,7 @@ public abstract class AbstractTerm {
      * then switch to the constructor of the apppropriate subclass.</p>
      * <p>Will wrap atoms, numbers and references.</p>
      *
-     * @param m The skeleton.
+     * @param m The skeleton, not null.
      * @param d The display.
      * @return The term.
      */
@@ -106,14 +102,11 @@ public abstract class AbstractTerm {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
-            return new TermCompound(d, (SkelCompound) m);
-        } else if (m != null) {
-            return new TermAtomic(m, false);
+            return new TermCompound((SkelCompound) m, d);
         } else {
-            throw new NullPointerException("internal null");
+            return new TermAtomic(m, false);
         }
     }
-
 
     /**
      * <p>Create a term by the given skeleton and display.</p>
@@ -122,7 +115,7 @@ public abstract class AbstractTerm {
      * <p>Will keep atoms.</p>
      * <p>Will not wrap numbers and references.</p>
      *
-     * @param m The skeleton.
+     * @param m The skeleton, not null.
      * @param d The display.
      * @return The molec.
      */
@@ -130,7 +123,7 @@ public abstract class AbstractTerm {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
-            return new TermCompound(d, (SkelCompound) m);
+            return new TermCompound((SkelCompound) m, d);
         } else {
             return m;
         }
@@ -140,7 +133,7 @@ public abstract class AbstractTerm {
      * <p>Retrieve the skeleton.</p>
      * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
-     * @param t The term.
+     * @param t The term, not null.
      * @return The skeleton.
      */
     public static Object getSkel(Object t) {
@@ -152,10 +145,8 @@ public abstract class AbstractTerm {
             return new SkelAtom((String) t);
         } else if (t instanceof TermAtomic) {
             return ((TermAtomic) t).skel;
-        } else if (t != null) {
-            return t;
         } else {
-            throw new NullPointerException("external null");
+            return t;
         }
     }
 
@@ -163,7 +154,7 @@ public abstract class AbstractTerm {
      * <p>Retrieve the display.</p>
      * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
-     * @param t The term.
+     * @param t The term, not null.
      * @return The display.
      */
     public static Display getDisplay(Object t) {
@@ -171,55 +162,8 @@ public abstract class AbstractTerm {
             return ((TermVar) t).display;
         } else if (t instanceof TermCompound) {
             return ((TermCompound) t).display;
-        } else if (t != null) {
+        } else {
             return Display.DISPLAY_CONST;
-        } else {
-            throw new NullPointerException("external null");
-        }
-    }
-
-    /************************************************************/
-    /* Experimental Flags                                       */
-    /************************************************************/
-
-    /**
-     * <p>Create a term by the given skeleton and display.</p>
-     * <p>Will first determine the type of the skeleton and
-     * then switch to the constructor of the apppropriate subclass.</p>
-     * <p>Will keep atoms.</p>
-     * <p>Will not wrap numbers and references.</p>
-     *
-     * @param m The skeleton.
-     * @param d The display.
-     * @param f The flags.
-     * @return The molec.
-     */
-    public static Object createMolec(Object m, Display d, int f) {
-        if (m instanceof SkelVar) {
-            return new TermVar((SkelVar) m, d, f);
-        } else if (m instanceof SkelCompound) {
-            return new TermCompound(d, (SkelCompound) m, f);
-        } else {
-            return m;
-        }
-    }
-
-    /**
-     * <p>Retrieve the flags.</p>
-     * <p>Works for unwrapped, wrapped and molec data structure.</p>
-     *
-     * @param t The term.
-     * @return The flags.
-     */
-    public static int getFlags(Object t) {
-        if (t instanceof TermVar) {
-            return ((TermVar) t).flags;
-        } else if (t instanceof TermCompound) {
-            return ((TermCompound) t).flags;
-        } else if (t != null) {
-            return 0;
-        } else {
-            throw new NullPointerException("external null");
         }
     }
 

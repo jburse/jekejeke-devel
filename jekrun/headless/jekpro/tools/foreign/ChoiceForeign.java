@@ -108,13 +108,25 @@ final class ChoiceForeign extends AbstractChoice {
             res = Types.normJava(del.encoderet, res);
             if (res == null)
                 return false;
+            Display d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) term).args[
                                     ((SkelCompound) term).args.length - 1], ref,
-                            AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
+                            AbstractTerm.getSkel(res), d)) {
                 if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
                     return false;
+
+                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+                }
             } else {
+                if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+                    d.remTab(en);
+                    d.flags &= ~Display.MASK_DISP_MLTI;
+                }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     /* meta argument change */
                     if ((co.flags & CallOut.MASK_CALL_SPECI) != 0)
@@ -124,12 +136,6 @@ final class ChoiceForeign extends AbstractChoice {
                     en.number++;
                 }
                 return en.getNext();
-            }
-            if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
-                en.skel = null;
-                en.releaseBind(mark);
-                if (en.skel != null)
-                    throw (EngineException) en.skel;
             }
         }
     }
