@@ -76,94 +76,99 @@ public final class SpecialSort extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_SORT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                boolean multi = SpecialSort.sort(en, temp[0], ref, en);
-                Display d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_SYS_DISTINCT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = SpecialSort.distinct(temp[0], ref, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_KEYSORT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = SpecialSort.keySort(en, temp[0], ref, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_SYS_KEYGROUP:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = SpecialSort.keyGroup(temp[0], ref, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_HASH_CODE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
-                if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GROUND:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                val = SpecialEval.derefAndCastInteger(temp[1], ref);
-                if (!termGround(temp[0], ref, EngineMessage.castIntValue(val)))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_HASH_CODE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                val = SpecialEval.derefAndCastInteger(temp[1], ref);
-                val = Integer.valueOf(termHash(temp[0], ref,
-                        EngineMessage.castIntValue(val), 0));
-                if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_LOCALE_SORT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
-                multi = SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_LOCALE_KEYSORT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                cmp = EngineLexical.comparatorAtom(temp[0], ref);
-                multi = SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_SORT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    boolean multi = SpecialSort.sort(en, temp[0], ref, en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_DISTINCT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = SpecialSort.distinct(temp[0], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_KEYSORT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = SpecialSort.keySort(en, temp[0], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_KEYGROUP:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = SpecialSort.keyGroup(temp[0], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_HASH_CODE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
+                    if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_GROUND:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    val = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    if (!termGround(temp[0], ref, SpecialEval.castIntValue(val)))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_HASH_CODE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    val = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    val = Integer.valueOf(termHash(temp[0], ref,
+                            SpecialEval.castIntValue(val), 0));
+                    if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_LOCALE_SORT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    multi = SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_LOCALE_KEYSORT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    multi = SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

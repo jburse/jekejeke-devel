@@ -231,7 +231,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     EngineMessage.checkNotLessThanZero(beta);
-                    int x = EngineMessage.castIntValue(beta);
+                    int x = SpecialEval.castIntValue(beta);
                     en.skel = intPow(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return false;
@@ -239,7 +239,11 @@ public final class EvaluableElem extends AbstractSpecial {
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

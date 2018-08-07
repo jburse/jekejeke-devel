@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -114,10 +115,19 @@ final class MemberMethodDet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         Object[] args = convertArgs(temp, ref, en, null);
         Object res = invokeMethod(method, obj, args);
-        res = Types.normJava(encoderet, res);
+        if ((subflags & MASK_METH_FUNC) != 0) {
+            res = Types.normJava(encoderet, res);
+        } else {
+            res = noretNormJava(res);
+        }
         if (res == null)
             return false;
         Display d = AbstractTerm.getDisplay(res);

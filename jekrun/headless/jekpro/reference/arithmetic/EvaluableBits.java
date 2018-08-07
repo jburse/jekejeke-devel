@@ -66,6 +66,7 @@ public final class EvaluableBits extends AbstractSpecial {
      */
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
+        try {
         switch (id) {
             case EVALUABLE_NOT:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -139,7 +140,7 @@ public final class EvaluableBits extends AbstractSpecial {
                 beta = SpecialEval.derefAndCastInteger(en.skel, d);
                 if (multi)
                     d.remTab(en);
-                int x = EngineMessage.castIntValue(beta);
+                int x = SpecialEval.castIntValue(beta);
                 en.skel = shiftLeft(alfa, x);
                 en.display = Display.DISPLAY_CONST;
                 return false;
@@ -156,12 +157,16 @@ public final class EvaluableBits extends AbstractSpecial {
                 beta = SpecialEval.derefAndCastInteger(en.skel, d);
                 if (multi)
                     d.remTab(en);
-                x = EngineMessage.castIntValue(beta);
+                x = SpecialEval.castIntValue(beta);
                 en.skel = shiftRight(alfa, x);
                 en.display = Display.DISPLAY_CONST;
                 return false;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

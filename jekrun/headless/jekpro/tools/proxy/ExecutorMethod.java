@@ -3,7 +3,6 @@ package jekpro.tools.proxy;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallIn;
 import jekpro.tools.call.Interpreter;
@@ -44,19 +43,6 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class ExecutorMethod extends AbstractExecutor {
-    private final static int[] VOID_PARAS = new int[0];
-    private final static Object[] VOID_PROLOG_ARGS = new Object[0];
-
-    public final static int MASK_METH_VIRT = 0x00000001;
-    public final static int MASK_METH_FUNC = 0x00000002;
-
-    private int subflags;
-
-    private int[] encodeparas;
-    private int encoderet;
-
-    private final Method method;
-    private TermAtomic functor;
 
     /**
      * <p>Create method predicate.</p>
@@ -64,7 +50,7 @@ final class ExecutorMethod extends AbstractExecutor {
      * @param m The method.
      */
     ExecutorMethod(Method m) {
-        method = m;
+        super(m);
     }
 
     /**
@@ -113,87 +99,9 @@ final class ExecutorMethod extends AbstractExecutor {
 
         if (!Modifier.isStatic(method.getModifiers()))
             subflags |= MASK_METH_VIRT;
-        if (getRetFlag())
+        if (Types.getRetFlag(encoderet))
             subflags |= MASK_METH_FUNC;
         return true;
-    }
-
-    /**
-     * <p>Compute the declared function status.</p>
-     *
-     * @return The declared fucntion status.
-     */
-    private boolean getRetFlag() {
-        switch (encoderet) {
-            case Types.TYPE_VOID:
-            case Types.TYPE_PRIMBOOL:
-            case Types.TYPE_BOOL:
-                return false;
-            case Types.TYPE_STRING:
-            case Types.TYPE_CHARSEQ:
-            case Types.TYPE_PRIMBYTE:
-            case Types.TYPE_BYTE:
-            case Types.TYPE_PRIMCHAR:
-            case Types.TYPE_CHAR:
-            case Types.TYPE_PRIMSHORT:
-            case Types.TYPE_SHORT:
-            case Types.TYPE_PRIMINT:
-            case Types.TYPE_INTEGER:
-            case Types.TYPE_PRIMLONG:
-            case Types.TYPE_LONG:
-            case Types.TYPE_BIG_INTEGER:
-            case Types.TYPE_PRIMFLOAT:
-            case Types.TYPE_FLOAT:
-            case Types.TYPE_PRIMDOUBLE:
-            case Types.TYPE_DOUBLE:
-            case Types.TYPE_BIG_DECIMAL:
-            case Types.TYPE_NUMBER:
-            case Types.TYPE_REF:
-            case Types.TYPE_OBJECT:
-            case Types.TYPE_TERM:
-                return true;
-            default:
-                throw new IllegalArgumentException("illegal return type");
-        }
-    }
-
-    /***********************************************************/
-    /* Parameter & Result Conversion                           */
-    /***********************************************************/
-
-    /**
-     * <p>Build the arguments.</p>
-     *
-     * @param args The Java arguments.
-     * @return The Prolog arguments.
-     * @throws InterpreterMessage Shit happens.
-     */
-    Object[] uncompileArgs(Object proxy, Object[] args) throws InterpreterMessage {
-        try {
-            int len = encodeparas.length;
-            if ((subflags & MASK_METH_VIRT) != 0)
-                len++;
-            if ((subflags & MASK_METH_FUNC) != 0)
-                len++;
-            Object[] termargs = (len != 0 ?
-                    new Object[len] : ExecutorMethod.VOID_PROLOG_ARGS);
-            int k = 0;
-            if ((subflags & MASK_METH_VIRT) != 0) {
-                termargs[k] = proxy;
-                k++;
-            }
-            for (int i = 0; i < encodeparas.length; i++) {
-                Object res = Types.normJava(encodeparas[i], args[i]);
-                if (res == null)
-                    throw new EngineMessage(EngineMessage.representationError(
-                            AbstractFactory.OP_REPRESENTATION_NULL));
-                termargs[k] = res;
-                k++;
-            }
-            return termargs;
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
     }
 
     /***********************************************************/
@@ -212,37 +120,47 @@ final class ExecutorMethod extends AbstractExecutor {
      */
     Object runGoal(Object proxy, Object[] args, Interpreter inter)
             throws InterpreterMessage, InterpreterException {
-        Object[] termargs = uncompileArgs(proxy, args);
-        Object help;
-        if ((subflags & ExecutorMethod.MASK_METH_FUNC) != 0) {
-            help = new TermVar();
-            termargs[termargs.length - 1] = help;
-        } else {
-            help = null;
-        }
-        Object goal;
-        if (termargs.length != 0) {
-            goal = new TermCompound(inter, functor, termargs);
-        } else {
-            goal = functor;
-        }
-        Object res;
-
-        CallIn callin = inter.iterator(goal);
-        if (callin.hasNext()) {
-            callin.next();
-            if (encoderet == Types.TYPE_TERM) {
-                res = (help != null ? AbstractTerm.copyTermWrapped(inter, help) : null);
+        try {
+            Object[] termargs = uncompileArgs(proxy, args);
+            Object help;
+            if ((subflags & AbstractExecutor.MASK_METH_FUNC) != 0) {
+                help = new TermVar();
+                termargs[termargs.length - 1] = help;
             } else {
-                res = (help != null ? AbstractTerm.copyTerm(inter, help) : null);
+                help = null;
             }
-            callin.close();
-            res = (res != null ? Types.denormProlog(encoderet, res) : null);
-        } else {
-            res = null;
-        }
+            Object goal;
+            if (termargs.length != 0) {
+                goal = new TermCompound(inter, functor, termargs);
+            } else {
+                goal = functor;
+            }
 
-        return res;
+            CallIn callin = inter.iterator(goal);
+            if (callin.hasNext()) {
+                callin.next();
+                help = (help != null ? AbstractTerm.copyMolec(inter, help) : null);
+                callin.close();
+                help = (help != null ? Types.denormProlog(encoderet, AbstractTerm.getSkel(help),
+                        AbstractTerm.getDisplay(help)) : noretDenormProlog(true));
+            } else {
+                help = (help != null ? null : noretDenormProlog(false));
+            }
+
+            return help;
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
+     * <p>Generate a Java return value, where Prolog doesn't provide one.</p>
+     *
+     * @param f The desired value.
+     * @return The Java return value.
+     */
+    private Object noretDenormProlog(boolean f) {
+        return (encoderet == Types.TYPE_VOID ? null : Boolean.valueOf(f));
     }
 
 }

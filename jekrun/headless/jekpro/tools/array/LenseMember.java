@@ -112,20 +112,31 @@ final class LenseMember extends AbstractLense {
      */
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
-        Object temp = en.skel;
-        Display ref = en.display;
-        Object obj = convertObj(temp, ref);
-        Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
-        EngineMessage.checkNotLessThanZero(num);
-        int idx = EngineMessage.castIntValue(num);
-        Object res = get(obj, idx);
-        res = Types.normJava(encoderet, res);
-        if (res == null)
-            throw new EngineMessage(EngineMessage.representationError(
-                    AbstractFactory.OP_REPRESENTATION_NULL));
-        en.skel = AbstractTerm.getSkel(res);
-        en.display = AbstractTerm.getDisplay(res);
-        return false;
+        try {
+            Object temp = en.skel;
+            Display ref = en.display;
+            Object obj;
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+            } else {
+                obj = null;
+            }
+            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            EngineMessage.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = get(obj, idx);
+            res = Types.normJava(encoderet, res);
+            if (res == null)
+                throw new EngineMessage(EngineMessage.representationError(
+                        AbstractFactory.OP_REPRESENTATION_NULL));
+            Display d = AbstractTerm.getDisplay(res);
+            en.skel = AbstractTerm.getSkel(res);
+            en.display = d;
+            return (d.flags & Display.MASK_DISP_MLTI) != 0;
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**

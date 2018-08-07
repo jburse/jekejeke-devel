@@ -116,7 +116,11 @@ final class MemberConstructor extends AbstractMember {
         Display ref = en.display;
         Object[] args = convertArgs(temp, ref, en, null);
         Object res = AutoClass.invokeNew(constructor, args);
-        res = Types.normJava(encoderet, res);
+        if ((subflags & MASK_METH_FUNC) != 0) {
+            res = Types.normJava(encoderet, res);
+        } else {
+            res = noretNormJava(res);
+        }
         if (res == null)
             return false;
         Display d = AbstractTerm.getDisplay(res);

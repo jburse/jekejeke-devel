@@ -300,11 +300,17 @@ public abstract class AbstractTerm {
         ec.vars = null;
         Object val = ec.copyTerm(m, d);
         ec.vars = null;
+        if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
+            return t;
         int size = Display.displaySize(val);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        if (val != m || ref != d)
-            return AbstractTerm.createTerm(val, ref);
-        return t;
+        Display ref;
+        if (size != 0) {
+            ref = new Display(size);
+            ref.flags |= Display.MASK_DISP_MLTI;
+        } else {
+            ref = Display.DISPLAY_CONST;
+        }
+        return AbstractTerm.createTerm(val, ref);
     }
 
     /**
@@ -328,11 +334,51 @@ public abstract class AbstractTerm {
         ec.vars = null;
         Object val = ec.copyTerm(m, d);
         ec.vars = null;
+        if (val == m && (t instanceof AbstractTerm))
+            return (AbstractTerm) t;
         int size = Display.displaySize(val);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        if (val != m || ref != d || !(t instanceof AbstractTerm))
-            return AbstractTerm.createTermWrapped(val, ref);
-        return (AbstractTerm) t;
+        Display ref;
+        if (size != 0) {
+            ref = new Display(size);
+            ref.flags |= Display.MASK_DISP_MLTI;
+        } else {
+            ref = Display.DISPLAY_CONST;
+        }
+        return AbstractTerm.createTermWrapped(val, ref);
+    }
+
+    /**
+     * <p>Create a copy of this term.</p>
+     *
+     * @param inter The call-in.
+     * @param t     The term.
+     * @return The copy of this term.
+     */
+    public static Object copyMolec(Interpreter inter, Object t) {
+        /* common lane */
+        Object m = AbstractTerm.getSkel(t);
+        Display d = AbstractTerm.getDisplay(t);
+
+        Engine en = (Engine) inter.getEngine();
+        EngineCopy ec = en.enginecopy;
+        if (ec == null) {
+            ec = new EngineCopy();
+            en.enginecopy = ec;
+        }
+        ec.vars = null;
+        Object val = ec.copyTerm(m, d);
+        ec.vars = null;
+        if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
+            return t;
+        int size = Display.displaySize(val);
+        Display ref;
+        if (size != 0) {
+            ref = new Display(size);
+            ref.flags |= Display.MASK_DISP_MLTI;
+        } else {
+            ref = Display.DISPLAY_CONST;
+        }
+        return AbstractTerm.createMolec(val, ref);
     }
 
 }

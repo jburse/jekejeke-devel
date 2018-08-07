@@ -4,6 +4,7 @@ import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
@@ -97,10 +98,11 @@ public final class ForeignAtom {
      * @param list The list.
      * @param rep  The representation.
      * @return The string.
+     * @throws ClassCastException Validation error.
      * @throws InterpreterMessage Validation error.
      */
     public static String sysListToAtom(Object list, int rep)
-            throws InterpreterMessage {
+            throws ClassCastException, InterpreterMessage {
         StringBuilder buf = new StringBuilder();
         while (list instanceof TermCompound &&
                 ((TermCompound) list).getArity() == 2 &&
@@ -116,7 +118,7 @@ public final class ForeignAtom {
                     break;
                 case REP_CODES:
                     Number num = InterpreterMessage.castInteger(elem);
-                    n = InterpreterMessage.castCodePoint(num);
+                    n = SpecialEval.castCodePoint(num);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal rep");
@@ -151,11 +153,11 @@ public final class ForeignAtom {
      *
      * @param val The code.
      * @return The char.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      */
     public static String sysCodeToChar(Integer val)
-            throws InterpreterMessage {
-        int n = InterpreterMessage.castCodePoint(val);
+            throws ClassCastException {
+        int n = SpecialEval.castCodePoint(val);
         return new String(Character.toChars(n));
     }
 

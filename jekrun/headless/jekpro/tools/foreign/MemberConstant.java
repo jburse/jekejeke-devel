@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
@@ -113,7 +114,12 @@ final class MemberConstant extends AbstractMember {
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         Object res = AutoClass.invokeGetter(field, obj);
         res = Types.normJava(encoderet, res);
         if (res == null)

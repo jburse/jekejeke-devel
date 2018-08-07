@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
@@ -485,153 +486,158 @@ public final class ForeignStream {
      */
     public static OpenOpts decodeOpenOpts(int mode, Object opt)
             throws InterpreterMessage {
-        OpenOpts res = new OpenOpts();
-        while (opt instanceof TermCompound &&
-                ((TermCompound) opt).getArity() == 2 &&
-                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) opt).getArg(0);
-            if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_BOM)) {
-                switch (mode) {
-                    case MODE_READ:
-                        Object help = ((TermCompound) temp).getArg(0);
-                        if (atomToBool(help)) {
-                            res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_NOBR);
-                        } else {
-                            res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_NOBR);
-                        }
-                        break;
-                    case MODE_WRITE:
-                        help = ((TermCompound) temp).getArg(0);
-                        if (atomToBool(help)) {
-                            res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BOMW);
-                        } else {
-                            res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BOMW);
-                        }
-                        break;
-                    case MODE_APPEND:
-                        throw new InterpreterMessage(InterpreterMessage.permissionError(
-                                OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
-                    default:
-                        throw new IllegalArgumentException("illegal mode");
-                }
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_ENCODING)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                String fun = InterpreterMessage.castString(help);
-                res.setEncoding(fun);
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_IF_MODIFIED_SINCE)) {
-                switch (mode) {
-                    case MODE_READ:
-                        Object help = ((TermCompound) temp).getArg(0);
-                        Number num = InterpreterMessage.castInteger(help);
-                        long time = InterpreterMessage.castLongValue(num);
-                        res.setIfModifiedSince(time);
-                        break;
-                    case MODE_WRITE:
-                    case MODE_APPEND:
-                        throw new InterpreterMessage(InterpreterMessage.permissionError(
-                                OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
-                    default:
-                        throw new IllegalArgumentException("illegal mode");
-                }
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_IF_NONE_MATCH)) {
-                switch (mode) {
-                    case MODE_READ:
-                        Object help = ((TermCompound) temp).getArg(0);
-                        String etag = InterpreterMessage.castString(help);
-                        res.setIfNoneMatch(etag);
-                        break;
-                    case MODE_WRITE:
-                    case MODE_APPEND:
-                        throw new InterpreterMessage(InterpreterMessage.permissionError(
-                                OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
-                    default:
-                        throw new IllegalArgumentException("illegal mode");
-                }
+        try {
+            OpenOpts res = new OpenOpts();
+            while (opt instanceof TermCompound &&
+                    ((TermCompound) opt).getArity() == 2 &&
+                    ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
+                Object temp = ((TermCompound) opt).getArg(0);
+                if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_BOM)) {
+                    switch (mode) {
+                        case MODE_READ:
+                            Object help = ((TermCompound) temp).getArg(0);
+                            if (atomToBool(help)) {
+                                res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_NOBR);
+                            } else {
+                                res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_NOBR);
+                            }
+                            break;
+                        case MODE_WRITE:
+                            help = ((TermCompound) temp).getArg(0);
+                            if (atomToBool(help)) {
+                                res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BOMW);
+                            } else {
+                                res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BOMW);
+                            }
+                            break;
+                        case MODE_APPEND:
+                            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                    OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                        default:
+                            throw new IllegalArgumentException("illegal mode");
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_ENCODING)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    String fun = InterpreterMessage.castString(help);
+                    res.setEncoding(fun);
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_IF_MODIFIED_SINCE)) {
+                    switch (mode) {
+                        case MODE_READ:
+                            Object help = ((TermCompound) temp).getArg(0);
+                            Number num = InterpreterMessage.castInteger(help);
+                            long time = SpecialEval.castLongValue(num);
+                            res.setIfModifiedSince(time);
+                            break;
+                        case MODE_WRITE:
+                        case MODE_APPEND:
+                            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                    OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                        default:
+                            throw new IllegalArgumentException("illegal mode");
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_IF_NONE_MATCH)) {
+                    switch (mode) {
+                        case MODE_READ:
+                            Object help = ((TermCompound) temp).getArg(0);
+                            String etag = InterpreterMessage.castString(help);
+                            res.setIfNoneMatch(etag);
+                            break;
+                        case MODE_WRITE:
+                        case MODE_APPEND:
+                            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                    OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                        default:
+                            throw new IllegalArgumentException("illegal mode");
+                    }
 
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_USE_CACHES)) {
-                switch (mode) {
-                    case MODE_READ:
-                        Object help = ((TermCompound) temp).getArg(0);
-                        if (atomToBool(help)) {
-                            res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_CACH);
-                        } else {
-                            res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_CACH);
-                        }
-                        break;
-                    case MODE_WRITE:
-                    case MODE_APPEND:
-                        throw new InterpreterMessage(InterpreterMessage.permissionError(
-                                OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
-                    default:
-                        throw new IllegalArgumentException("illegal mode");
-                }
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                if (atomToType(help)) {
-                    res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_USE_CACHES)) {
+                    switch (mode) {
+                        case MODE_READ:
+                            Object help = ((TermCompound) temp).getArg(0);
+                            if (atomToBool(help)) {
+                                res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_CACH);
+                            } else {
+                                res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_CACH);
+                            }
+                            break;
+                        case MODE_WRITE:
+                        case MODE_APPEND:
+                            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                    OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                        default:
+                            throw new IllegalArgumentException("illegal mode");
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    if (atomToType(help)) {
+                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                    } else {
+                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_REPOSITION)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    if (atomToBool(help)) {
+                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_RPOS);
+                    } else {
+                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_RPOS);
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    Number num = InterpreterMessage.castInteger(help);
+                    InterpreterMessage.checkNotLessThanZero(num);
+                    int size = SpecialEval.castIntValue(num);
+                    res.setBuffer(size);
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_NEWLINE)) {
+                    switch (mode) {
+                        case MODE_READ:
+                            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                    OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                        case MODE_WRITE:
+                        case MODE_APPEND:
+                            Object help = ((TermCompound) temp).getArg(0);
+                            String newline = InterpreterMessage.castString(help);
+                            res.setNewLine(newline);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("illegal mode");
+                    }
                 } else {
-                    res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                    InterpreterMessage.checkInstantiated(temp);
+                    throw new InterpreterMessage(InterpreterMessage.domainError(
+                            OP_OPEN_OPTION, temp));
                 }
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_REPOSITION)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                if (atomToBool(help)) {
-                    res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_RPOS);
-                } else {
-                    res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_RPOS);
-                }
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                Number num = InterpreterMessage.castInteger(help);
-                InterpreterMessage.checkNotLessThanZero(num);
-                int size = InterpreterMessage.castIntValue(num);
-                res.setBuffer(size);
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_NEWLINE)) {
-                switch (mode) {
-                    case MODE_READ:
-                        throw new InterpreterMessage(InterpreterMessage.permissionError(
-                                OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
-                    case MODE_WRITE:
-                    case MODE_APPEND:
-                        Object help = ((TermCompound)temp).getArg(0);
-                        String newline = InterpreterMessage.castString(help);
-                        res.setNewLine(newline);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal mode");
-                }
-            } else {
-                InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(InterpreterMessage.domainError(
-                        OP_OPEN_OPTION, temp));
+                opt = ((TermCompound) opt).getArg(1);
             }
-            opt = ((TermCompound) opt).getArg(1);
+            if (opt.equals(Foyer.OP_NIL)) {
+                /* */
+            } else {
+                InterpreterMessage.checkInstantiated(opt);
+                throw new InterpreterMessage(InterpreterMessage.typeError(
+                        InterpreterMessage.OP_TYPE_LIST, opt));
+            }
+            return res;
+        } catch (ClassCastException x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.representationError(x.getMessage()));
         }
-        if (opt.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, opt));
-        }
-        return res;
     }
 
 }

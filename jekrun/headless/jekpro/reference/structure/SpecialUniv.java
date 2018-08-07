@@ -68,118 +68,123 @@ public final class SpecialUniv extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_UNIV:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                if (SpecialUniv.termToList(en)) {
-                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                        return false;
-                    return en.getNext();
-                }
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                boolean multi = SpecialUniv.listToTerm(en);
-                Display d = en.display;
-                if (!en.unifyTerm(temp[0], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_ARG:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
-                EngineMessage.checkNotLessThanZero(num);
-                int nth = EngineMessage.castIntValue(num);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                if (en.skel instanceof SkelCompound) {
-                    Object[] cmp = ((SkelCompound) en.skel).args;
-                    if (cmp.length < nth)
-                        return false;
-                    if (nth < 1)
-                        return false;
-                    if (!en.unifyTerm(temp[2], ref, cmp[nth - 1], en.display))
-                        return false;
-                    return en.getNext();
-                } else if (en.skel instanceof SkelAtom) {
-                    return false;
-                } else {
-                    EngineMessage.checkInstantiated(en.skel);
-                    throw new EngineMessage(EngineMessage.typeError(
-                            EngineMessage.OP_TYPE_CALLABLE,
-                            en.skel), en.display);
-                }
-            case SPECIAL_SET_ARG:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                num = SpecialEval.derefAndCastInteger(temp[0], ref);
-                EngineMessage.checkNotLessThanZero(num);
-                nth = EngineMessage.castIntValue(num);
-
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                if (en.skel instanceof SkelCompound) {
-                    SkelCompound sc = (SkelCompound) en.skel;
-                    if (1 > nth || nth > sc.args.length)
-                        return false;
-                    nth--;
-                    d = en.display;
-
-                    en.skel = temp[2];
+        try {
+            switch (id) {
+                case SPECIAL_UNIV:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.skel = temp[0];
                     en.display = ref;
                     en.deref();
-                    Object t2 = en.skel;
-                    Display d2 = en.display;
-
-                    multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
-                    sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
-                    d = en.display;
-                    if (!en.unifyTerm(temp[3], ref, sc, d))
+                    if (SpecialUniv.termToList(en)) {
+                        if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                            return false;
+                        return en.getNext();
+                    }
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    boolean multi = SpecialUniv.listToTerm(en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(temp[0], ref, en.skel, d))
                         return false;
                     if (multi)
                         d.remTab(en);
                     return en.getNext();
-                } else if (en.skel instanceof SkelAtom) {
-                    return false;
-                } else {
-                    EngineMessage.checkInstantiated(en.skel);
-                    throw new EngineMessage(EngineMessage.typeError(
-                            EngineMessage.OP_TYPE_CALLABLE,
-                            en.skel), en.display);
-                }
-            case SPECIAL_UNIFY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                if (!en.unifyTerm(temp[1], ref, temp[0], ref))
-                    return false;
-                return en.getNext();
-            case SPECIAL_UNIFY_CHECKED:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
-                    return false;
-                return en.getNext();
-            case SPECIAL_NOT_UNIFY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                AbstractBind mark = en.bind;
-                if (en.unifyTerm(temp[1], ref, temp[0], ref))
-                    return false;
-                en.skel = null;
-                en.releaseBind(mark);
-                if (en.skel != null)
-                    throw (EngineException) en.skel;
-                return en.getNextRaw();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+                case SPECIAL_ARG:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
+                    EngineMessage.checkNotLessThanZero(num);
+                    int nth = SpecialEval.castIntValue(num);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    if (en.skel instanceof SkelCompound) {
+                        Object[] cmp = ((SkelCompound) en.skel).args;
+                        if (cmp.length < nth)
+                            return false;
+                        if (nth < 1)
+                            return false;
+                        if (!en.unifyTerm(temp[2], ref, cmp[nth - 1], en.display))
+                            return false;
+                        return en.getNext();
+                    } else if (en.skel instanceof SkelAtom) {
+                        return false;
+                    } else {
+                        EngineMessage.checkInstantiated(en.skel);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_CALLABLE,
+                                en.skel), en.display);
+                    }
+                case SPECIAL_SET_ARG:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    num = SpecialEval.derefAndCastInteger(temp[0], ref);
+                    EngineMessage.checkNotLessThanZero(num);
+                    nth = SpecialEval.castIntValue(num);
+
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    if (en.skel instanceof SkelCompound) {
+                        SkelCompound sc = (SkelCompound) en.skel;
+                        if (1 > nth || nth > sc.args.length)
+                            return false;
+                        nth--;
+                        d = en.display;
+
+                        en.skel = temp[2];
+                        en.display = ref;
+                        en.deref();
+                        Object t2 = en.skel;
+                        Display d2 = en.display;
+
+                        multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
+                        sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
+                        d = en.display;
+                        if (!en.unifyTerm(temp[3], ref, sc, d))
+                            return false;
+                        if (multi)
+                            d.remTab(en);
+                        return en.getNext();
+                    } else if (en.skel instanceof SkelAtom) {
+                        return false;
+                    } else {
+                        EngineMessage.checkInstantiated(en.skel);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_CALLABLE,
+                                en.skel), en.display);
+                    }
+                case SPECIAL_UNIFY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    if (!en.unifyTerm(temp[1], ref, temp[0], ref))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_UNIFY_CHECKED:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_NOT_UNIFY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    AbstractBind mark = en.bind;
+                    if (en.unifyTerm(temp[1], ref, temp[0], ref))
+                        return false;
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+                    return en.getNextRaw();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -696,6 +701,27 @@ public final class SpecialUniv extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_REF, t), d);
         }
+    }
+
+    /*************************************************************/
+    /* String Casts                                              */
+    /*************************************************************/
+
+    /**
+     * <p>Check whether the given atom is a char value.</p>
+     *
+     * @param str The atom.
+     * @return The char.
+     * @throws ClassCastException Not a char value.
+     */
+    public static char castCharValue(String str)
+            throws ClassCastException {
+        int k;
+        if (str.length() == 0 ||
+                str.length() != Character.charCount(k = str.codePointAt(0)) ||
+                k > 0xFFFF)
+            throw new ClassCastException(EngineMessage.OP_REPRESENTATION_CHAR);
+        return (char) k;
     }
 
 }

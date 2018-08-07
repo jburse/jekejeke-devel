@@ -151,7 +151,7 @@ public final class SpecialOper extends AbstractSpecial {
     /**
      * <p>Create a prolog list with the public syntax operators.</p>
      *
-     * @param en    The engine.
+     * @param en The engine.
      * @return The prolog list of the public syntax operators.
      * @throws EngineMessage Shit happens.
      */
@@ -413,109 +413,114 @@ public final class SpecialOper extends AbstractSpecial {
     public static void setOperProp(StoreKey prop, Operator op,
                                    Object[] vals, Engine en)
             throws EngineMessage {
-        if (KEY_FULL_NAME.equals(prop)) {
-            /* can't modify */
-        } else if (KEY_NSPL.equals(prop)) {
-            if (vals.length != 0) {
-                op.setBit(Operator.MASK_OPER_NSPL);
-            } else {
-                op.resetBit(Operator.MASK_OPER_NSPL);
-            }
-            return;
-        } else if (KEY_NSPR.equals(prop)) {
-            if (vals.length != 0) {
-                op.setBit(Operator.MASK_OPER_NSPR);
-            } else {
-                op.resetBit(Operator.MASK_OPER_NSPR);
-            }
-            return;
-        } else if (KEY_LEVEL.equals(prop)) {
-            int level;
-            if (vals.length != 0) {
-                Object molec = vals[vals.length - 1];
-                SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                Number num = SpecialEval.derefAndCastInteger(sc.args[0], AbstractTerm.getDisplay(molec));
-                EngineMessage.checkNotLessThanZero(num);
-                level = EngineMessage.castIntValue(num);
-                SpecialOper.checkOperatorLevel(level);
-                if (vals.length > 1)
-                    throw new EngineMessage(EngineMessage.permissionError(
-                            EngineMessage.OP_PERMISSION_ADD,
-                            EngineMessage.OP_PERMISSION_VALUE,
-                            new SkelCompound(new SkelAtom(OP_LEVEL),
-                                    Integer.valueOf(level))));
-            } else {
-                level = 0;
-            }
-            op.setLevel(level);
-            return;
-        } else if (KEY_MODE.equals(prop)) {
-            int leftright;
-            if (vals.length != 0) {
-                Object molec = vals[vals.length - 1];
-                SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                String fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
-                leftright = SpecialOper.atomToLeftRight(fun);
-                if (vals.length > 1)
-                    throw new EngineMessage(EngineMessage.permissionError(
-                            EngineMessage.OP_PERMISSION_ADD,
-                            EngineMessage.OP_PERMISSION_VALUE,
-                            new SkelCompound(new SkelAtom(OP_MODE),
-                                    new SkelAtom(fun))));
-            } else {
-                leftright = 0;
-            }
-            op.resetBit(Operator.MASK_OPER_MODE);
-            op.setBit(leftright);
-            return;
-        } else if (KEY_VISIBLE.equals(prop)) {
-            String fun;
-            if (vals.length != 0) {
-                Object molec = vals[vals.length - 1];
-                SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
-                if (vals.length > 1)
-                    throw new EngineMessage(EngineMessage.permissionError(
-                            EngineMessage.OP_PERMISSION_ADD,
-                            EngineMessage.OP_PERMISSION_VALUE,
-                            new SkelCompound(new SkelAtom(OP_VISIBLE),
-                                    new SkelAtom(fun))));
-            } else {
-                fun = null;
-            }
-            if (AbstractSource.OP_PRIVATE.equals(fun)) {
-                op.setBit(Operator.MASK_OPER_VSPR);
-                op.resetBit(Operator.MASK_OPER_VSPU);
-            } else if (AbstractSource.OP_PUBLIC.equals(fun)) {
-                op.setBit(Operator.MASK_OPER_VSPU);
-                op.resetBit(Operator.MASK_OPER_VSPR);
-            } else if (fun == null) {
-                op.resetBit(Operator.MASK_OPER_VSPR);
-                op.resetBit(Operator.MASK_OPER_VSPU);
+        try {
+            if (KEY_FULL_NAME.equals(prop)) {
+                /* can't modify */
+            } else if (KEY_NSPL.equals(prop)) {
+                if (vals.length != 0) {
+                    op.setBit(Operator.MASK_OPER_NSPL);
+                } else {
+                    op.resetBit(Operator.MASK_OPER_NSPL);
+                }
+                return;
+            } else if (KEY_NSPR.equals(prop)) {
+                if (vals.length != 0) {
+                    op.setBit(Operator.MASK_OPER_NSPR);
+                } else {
+                    op.resetBit(Operator.MASK_OPER_NSPR);
+                }
+                return;
+            } else if (KEY_LEVEL.equals(prop)) {
+                int level;
+                if (vals.length != 0) {
+                    Object molec = vals[vals.length - 1];
+                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
+                    Number num = SpecialEval.derefAndCastInteger(sc.args[0], AbstractTerm.getDisplay(molec));
+                    EngineMessage.checkNotLessThanZero(num);
+                    level = SpecialEval.castIntValue(num);
+                    SpecialOper.checkOperatorLevel(level);
+                    if (vals.length > 1)
+                        throw new EngineMessage(EngineMessage.permissionError(
+                                EngineMessage.OP_PERMISSION_ADD,
+                                EngineMessage.OP_PERMISSION_VALUE,
+                                new SkelCompound(new SkelAtom(OP_LEVEL),
+                                        Integer.valueOf(level))));
+                } else {
+                    level = 0;
+                }
+                op.setLevel(level);
+                return;
+            } else if (KEY_MODE.equals(prop)) {
+                int leftright;
+                if (vals.length != 0) {
+                    Object molec = vals[vals.length - 1];
+                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
+                    String fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
+                    leftright = SpecialOper.atomToLeftRight(fun);
+                    if (vals.length > 1)
+                        throw new EngineMessage(EngineMessage.permissionError(
+                                EngineMessage.OP_PERMISSION_ADD,
+                                EngineMessage.OP_PERMISSION_VALUE,
+                                new SkelCompound(new SkelAtom(OP_MODE),
+                                        new SkelAtom(fun))));
+                } else {
+                    leftright = 0;
+                }
+                op.resetBit(Operator.MASK_OPER_MODE);
+                op.setBit(leftright);
+                return;
+            } else if (KEY_VISIBLE.equals(prop)) {
+                String fun;
+                if (vals.length != 0) {
+                    Object molec = vals[vals.length - 1];
+                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
+                    fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
+                    if (vals.length > 1)
+                        throw new EngineMessage(EngineMessage.permissionError(
+                                EngineMessage.OP_PERMISSION_ADD,
+                                EngineMessage.OP_PERMISSION_VALUE,
+                                new SkelCompound(new SkelAtom(OP_VISIBLE),
+                                        new SkelAtom(fun))));
+                } else {
+                    fun = null;
+                }
+                if (AbstractSource.OP_PRIVATE.equals(fun)) {
+                    op.setBit(Operator.MASK_OPER_VSPR);
+                    op.resetBit(Operator.MASK_OPER_VSPU);
+                } else if (AbstractSource.OP_PUBLIC.equals(fun)) {
+                    op.setBit(Operator.MASK_OPER_VSPU);
+                    op.resetBit(Operator.MASK_OPER_VSPR);
+                } else if (fun == null) {
+                    op.resetBit(Operator.MASK_OPER_VSPR);
+                    op.resetBit(Operator.MASK_OPER_VSPU);
+                } else {
+                    throw new EngineMessage(EngineMessage.domainError(
+                            EngineMessage.OP_DOMAIN_PROPERTY_VALUE,
+                            new SkelAtom(fun)));
+                }
+                return;
+            } else if (KEY_OVERRIDE.equals(prop)) {
+                if (vals.length != 0) {
+                    op.setBit(Operator.MASK_OPER_OVRD);
+                } else {
+                    op.resetBit(Operator.MASK_OPER_OVRD);
+                }
+                return;
+            } else if (KEY_SYS_USAGE.equals(prop)) {
+                /* can't modify */
             } else {
                 throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_PROPERTY_VALUE,
-                        new SkelAtom(fun)));
+                        EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
+                        StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
             }
-            return;
-        } else if (KEY_OVERRIDE.equals(prop)) {
-            if (vals.length != 0) {
-                op.setBit(Operator.MASK_OPER_OVRD);
-            } else {
-                op.resetBit(Operator.MASK_OPER_OVRD);
-            }
-            return;
-        } else if (KEY_SYS_USAGE.equals(prop)) {
-            /* can't modify */
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
                     StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
-        throw new EngineMessage(EngineMessage.permissionError(
-                EngineMessage.OP_PERMISSION_MODIFY,
-                EngineMessage.OP_PERMISSION_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
     }
 
     /*************************************************************************/

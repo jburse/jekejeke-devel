@@ -46,8 +46,8 @@ public final class ForeignPipe {
      */
     public static void sysPipePut(Interpreter inter, AbstractPipe q, AbstractTerm t)
             throws InterruptedException {
-        t = AbstractTerm.copyTermWrapped(inter, t);
-        q.put(t);
+        Object obj = AbstractTerm.copyMolec(inter, t);
+        q.put(obj);
     }
 
     /**
@@ -62,8 +62,8 @@ public final class ForeignPipe {
      */
     public static boolean sysPipeOffer(Interpreter inter, Queue q, AbstractTerm t)
             throws InterruptedException {
-        t = AbstractTerm.copyTermWrapped(inter, t);
-        return q.offer(t);
+        Object obj = AbstractTerm.copyMolec(inter, t);
+        return q.offer(obj);
     }
 
     /**
@@ -82,8 +82,8 @@ public final class ForeignPipe {
     public static boolean sysPipeOffer(Interpreter inter, Queue q,
                                        AbstractTerm t, long sleep)
             throws InterruptedException {
-        t = AbstractTerm.copyTermWrapped(inter, t);
-        return q.offer(t, sleep);
+        Object obj = AbstractTerm.copyMolec(inter, t);
+        return q.offer(obj, sleep);
     }
 
 }

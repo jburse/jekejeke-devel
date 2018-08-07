@@ -1,5 +1,6 @@
 package jekpro.frequent.stream;
 
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.InterpreterMessage;
 
 import java.io.IOException;
@@ -68,12 +69,12 @@ public final class ForeignChar {
      *
      * @param para The stream.
      * @param val  The code.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      * @throws IOException        IO error.
      */
     public static void sysPutCode(Writer para, Integer val)
-            throws InterpreterMessage, IOException {
-        int n = InterpreterMessage.castCodePoint(val);
+            throws ClassCastException, IOException {
+        int n = SpecialEval.castCodePoint(val);
         para.write(Character.toChars(n));
     }
 

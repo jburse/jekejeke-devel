@@ -397,34 +397,39 @@ public final class SpecialQuali extends AbstractSpecial {
      */
     public static Integer colonToIndicator(Object t, Display d, Engine en)
             throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
-            SkelCompound temp = (SkelCompound) t;
-            Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, true, en);
-            String fun = objToString(obj, temp.args[0], d, false);
-            Integer arity = SpecialQuali.colonToIndicator(temp.args[1], d, en);
-            SkelAtom sa = (SkelAtom) en.skel;
-            en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
-            return arity;
-        } else if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
-            SkelCompound sc = (SkelCompound) t;
-            Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
-            EngineMessage.checkNotLessThanZero(num);
-            EngineMessage.castIntValue(num);
-            en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
-            return (Integer) num;
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_PREDICATE_INDICATOR, t), d);
+        try {
+            en.skel = t;
+            en.display = d;
+            en.deref();
+            t = en.skel;
+            d = en.display;
+            if (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 2 &&
+                    ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
+                SkelCompound temp = (SkelCompound) t;
+                Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, true, en);
+                String fun = objToString(obj, temp.args[0], d, false);
+                Integer arity = SpecialQuali.colonToIndicator(temp.args[1], d, en);
+                SkelAtom sa = (SkelAtom) en.skel;
+                en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
+                return arity;
+            } else if (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 2 &&
+                    ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
+                SkelCompound sc = (SkelCompound) t;
+                Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
+                EngineMessage.checkNotLessThanZero(num);
+                SpecialEval.castIntValue(num);
+                en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
+                return (Integer) num;
+            } else {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_PREDICATE_INDICATOR, t), d);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

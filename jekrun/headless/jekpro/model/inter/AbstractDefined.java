@@ -256,7 +256,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, ref, mark);
             en.number++;
-            ref.flags |= DisplayClause.MASK_DISP_MORE;
+            ref.flags |= DisplayClause.MASK_DPCL_MORE;
         }
         en.contskel = clause;
         en.contdisplay = ref;

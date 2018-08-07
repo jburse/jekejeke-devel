@@ -13,6 +13,8 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
+import static jekpro.tools.array.AbstractLense.MASK_METH_FUNC;
+
 /**
  * <p>The class represents a choice point for a foreign predicate.
  * Foreign predicate objects cannot be directly constructed by the
@@ -105,7 +107,11 @@ final class ChoiceForeign extends AbstractChoice {
             co.flags &= ~CallOut.MASK_CALL_CUTTR;
 
             Object res = AbstractMember.invokeMethod(del.method, obj, args);
-            res = Types.normJava(del.encoderet, res);
+            if ((del.subflags & MASK_METH_FUNC) != 0) {
+                res = Types.normJava(del.encoderet, res);
+            } else {
+                res = del.noretNormJava(res);
+            }
             if (res == null)
                 return false;
             Display d = AbstractTerm.getDisplay(res);

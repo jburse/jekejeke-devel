@@ -84,115 +84,120 @@ public final class SpecialVars extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_TERM_VARIABLES:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                EngineVars ev = new EngineVars();
-                ev.varInclude(temp[0], ref);
-                boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                        Display.DISPLAY_CONST, ev.vars, en);
-                Display d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_TERM_VARIABLES_DIFF:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ev = new EngineVars();
-                ev.varInclude(temp[0], ref);
-                multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_SYS_TERM_SINGELTONS:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ev = new EngineVars();
-                ev.singsOf(temp[0], ref);
-                multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                        Display.DISPLAY_CONST, ev.anon, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_SYS_GOAL_KERNEL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialVars.goalKernel(temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GOAL_GLOBALS:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ev = new EngineVars();
-                SpecialVars.goalGlobals(temp[0], ref, ev);
-                multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                        Display.DISPLAY_CONST, ev.vars, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_NUMBERVARS:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
-                EngineMessage.checkNotLessThanZero(num);
-                EngineMessage.castIntValue(num);
-                num = SpecialVars.numberVars(temp[0], ref, (Integer) en.skel, en);
-                if (num == null)
-                    return false;
-                if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_NUMBER_VARIABLES:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialVars.numberVariables(temp, ref, en);
-                if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GET_VARIABLE_NAMES:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Frame frame = en.visor.ref;
-                Display ref2 = (frame != null ? frame.getDisplay() : null);
-                Clause def = (frame != null ? frame.getClause() : null);
-                MapHashLink<Object, NamedDistance> print =
-                        Named.namedToMap((def != null ? def.vars : null), ref2, en);
-                mapToAssoc(print, en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_ACYCLIC_TERM:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ev = new EngineVars();
-                if (!ev.isAcyclic(temp[0], ref))
-                    return false;
-                return en.getNextRaw();
-            case SPECIAL_SYS_GET_RAW_VARIABLES:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                frame = en.visor.ref;
-                ref2 = (frame != null ? frame.getDisplay() : null);
-                def = (frame != null ? frame.getClause() : null);
-                en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref2, en.store);
-                if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
-                    return false;
-                return en.getNext();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_TERM_VARIABLES:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    EngineVars ev = new EngineVars();
+                    ev.varInclude(temp[0], ref);
+                    boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                            Display.DISPLAY_CONST, ev.vars, en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_TERM_VARIABLES_DIFF:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    ev.varInclude(temp[0], ref);
+                    multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_TERM_SINGELTONS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    ev.singsOf(temp[0], ref);
+                    multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                            Display.DISPLAY_CONST, ev.anon, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_GOAL_KERNEL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    SpecialVars.goalKernel(temp[0], ref, en);
+                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_GOAL_GLOBALS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    SpecialVars.goalGlobals(temp[0], ref, ev);
+                    multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                            Display.DISPLAY_CONST, ev.vars, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_NUMBERVARS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.castIntValue(num);
+                    num = SpecialVars.numberVars(temp[0], ref, (Integer) num, en);
+                    if (num == null)
+                        return false;
+                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_NUMBER_VARIABLES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    SpecialVars.numberVariables(temp, ref, en);
+                    if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_GET_VARIABLE_NAMES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Frame frame = en.visor.ref;
+                    Display ref2 = (frame != null ? frame.getDisplay() : null);
+                    Clause def = (frame != null ? frame.getClause() : null);
+                    MapHashLink<Object, NamedDistance> print =
+                            Named.namedToMap((def != null ? def.vars : null), ref2, en);
+                    mapToAssoc(print, en);
+                    if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_ACYCLIC_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    if (!ev.isAcyclic(temp[0], ref))
+                        return false;
+                    return en.getNextRaw();
+                case SPECIAL_SYS_GET_RAW_VARIABLES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    frame = en.visor.ref;
+                    ref2 = (frame != null ? frame.getDisplay() : null);
+                    def = (frame != null ? frame.getClause() : null);
+                    en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref2, en.store);
+                    if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
+                        return false;
+                    return en.getNext();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

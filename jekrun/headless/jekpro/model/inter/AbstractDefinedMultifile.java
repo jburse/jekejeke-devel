@@ -131,7 +131,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             /* create choice point */
             en.choices = new ChoiceDefinedMultfile(en.choices, at, list, ref, mark, nextat);
             en.number++;
-            ref.flags |= DisplayClause.MASK_DISP_MORE;
+            ref.flags |= DisplayClause.MASK_DPCL_MORE;
         }
         en.contskel = clause;
         en.contdisplay = ref;

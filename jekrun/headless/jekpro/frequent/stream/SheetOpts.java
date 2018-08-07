@@ -2,6 +2,7 @@ package jekpro.frequent.stream;
 
 import jekpro.frequent.system.DomOpts;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
@@ -71,76 +72,81 @@ class SheetOpts extends DomOpts {
      */
     public static SheetOpts decodeSheetOpts(Object opt)
             throws InterpreterMessage {
-        SheetOpts res = new SheetOpts();
-        res.setMask(AbstractDom.MASK_TEXT);
-        while (opt instanceof TermCompound &&
-                ((TermCompound) opt).getArity() == 2 &&
-                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) opt).getArg(0);
-            if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(DomOpts.OP_ROOT)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                int mask = DomOpts.atomToMask(help);
-                res.setMask(mask);
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 2 &&
-                    ((TermCompound) temp).getFunctor().equals(DomOpts.OP_TYPE)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                String key = InterpreterMessage.castString(help);
-                help = ((TermCompound) temp).getArg(1);
-                Integer type = Integer.valueOf(atomToType(help));
-                MapHash<String, Integer> control = res.getControl();
-                if (control == null) {
-                    control = new MapHash<String, Integer>();
-                    res.setControl(control);
-                }
-                MapEntry<String, Integer> entry = control.getEntry(key);
-                if (entry != null) {
-                    entry.value = type;
+        try {
+            SheetOpts res = new SheetOpts();
+            res.setMask(AbstractDom.MASK_TEXT);
+            while (opt instanceof TermCompound &&
+                    ((TermCompound) opt).getArity() == 2 &&
+                    ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
+                Object temp = ((TermCompound) opt).getArg(0);
+                if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(DomOpts.OP_ROOT)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    int mask = DomOpts.atomToMask(help);
+                    res.setMask(mask);
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 2 &&
+                        ((TermCompound) temp).getFunctor().equals(DomOpts.OP_TYPE)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    String key = InterpreterMessage.castString(help);
+                    help = ((TermCompound) temp).getArg(1);
+                    Integer type = Integer.valueOf(atomToType(help));
+                    MapHash<String, Integer> control = res.getControl();
+                    if (control == null) {
+                        control = new MapHash<String, Integer>();
+                        res.setControl(control);
+                    }
+                    MapEntry<String, Integer> entry = control.getEntry(key);
+                    if (entry != null) {
+                        entry.value = type;
+                    } else {
+                        control.add(key, type);
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 2 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_VARIABLE)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    String key = InterpreterMessage.castString(help);
+                    help = ((TermCompound) temp).getArg(1);
+                    Object val;
+                    if (!(help instanceof String)) {
+                        Number num = InterpreterMessage.castNumber(help);
+                        long x = SpecialEval.castLongValue(num);
+                        val = Long.valueOf(x);
+                    } else {
+                        val = help;
+                    }
+                    MapHash<String, Object> variables = res.getVariables();
+                    if (variables == null) {
+                        variables = new MapHash<String, Object>();
+                        res.setVariables(variables);
+                    }
+                    MapEntry<String, Object> entry = variables.getEntry(key);
+                    if (entry != null) {
+                        entry.value = val;
+                    } else {
+                        variables.add(key, val);
+                    }
                 } else {
-                    control.add(key, type);
+                    InterpreterMessage.checkInstantiated(temp);
+                    throw new InterpreterMessage(InterpreterMessage.domainError(
+                            OP_SHEET_OPTION, temp));
                 }
-            } else if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 2 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_VARIABLE)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                String key = InterpreterMessage.castString(help);
-                help = ((TermCompound) temp).getArg(1);
-                Object val;
-                if (!(help instanceof String)) {
-                    Number num = InterpreterMessage.castNumber(help);
-                    long x = InterpreterMessage.castLongValue(num);
-                    val = Long.valueOf(x);
-                } else {
-                    val = help;
-                }
-                MapHash<String, Object> variables = res.getVariables();
-                if (variables == null) {
-                    variables = new MapHash<String, Object>();
-                    res.setVariables(variables);
-                }
-                MapEntry<String, Object> entry = variables.getEntry(key);
-                if (entry != null) {
-                    entry.value = val;
-                } else {
-                    variables.add(key, val);
-                }
-            } else {
-                InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(InterpreterMessage.domainError(
-                        OP_SHEET_OPTION, temp));
+                opt = ((TermCompound) opt).getArg(1);
             }
-            opt = ((TermCompound) opt).getArg(1);
+            if (opt.equals(Foyer.OP_NIL)) {
+                /* */
+            } else {
+                InterpreterMessage.checkInstantiated(opt);
+                throw new InterpreterMessage(InterpreterMessage.typeError(
+                        InterpreterMessage.OP_TYPE_LIST, opt));
+            }
+            return res;
+        } catch (ClassCastException x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.representationError(x.getMessage()));
         }
-        if (opt.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, opt));
-        }
-        return res;
     }
 
 }

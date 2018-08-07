@@ -110,15 +110,20 @@ final class LenseDimension extends AbstractLense {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
-        EngineMessage.checkNotLessThanZero(num);
-        int size = EngineMessage.castIntValue(num);
-        Object val = newInstance(size);
-        if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
-            return false;
-        return en.getNext();
+        try {
+            Object[] temp = ((SkelCompound) en.skel).args;
+            Display ref = en.display;
+            Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
+            EngineMessage.checkNotLessThanZero(num);
+            int size = SpecialEval.castIntValue(num);
+            Object val = newInstance(size);
+            if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+                return false;
+            return en.getNext();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**

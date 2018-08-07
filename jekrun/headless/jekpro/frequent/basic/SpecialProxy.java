@@ -76,40 +76,45 @@ public final class SpecialProxy extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        switch (id) {
-            case SPECIAL_SYS_PROXY_HANDLER:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                SkelAtom sa = SpecialQuali.objToAtom(obj, temp[0], ref);
-                obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
-                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_PROXY_STATE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                sa = SpecialQuali.objToAtom(obj, temp[0], ref);
-                Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
-                EngineMessage.checkNotLessThanZero(num);
-                int size = EngineMessage.castIntValue(num);
-                obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
-                if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_ASSIGNABLE_FROM:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                String fun = SpecialQuali.objToString(obj, temp[0], ref, false);
-                obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
-                sa = SpecialQuali.objToAtom(obj, temp[1], ref);
-                if (!CacheSubclass.getSubclass(sa, fun, en))
-                    return false;
-                return en.getNextRaw();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_SYS_PROXY_HANDLER:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
+                    SkelAtom sa = SpecialQuali.objToAtom(obj, temp[0], ref);
+                    obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
+                    if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_PROXY_STATE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
+                    sa = SpecialQuali.objToAtom(obj, temp[0], ref);
+                    Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    EngineMessage.checkNotLessThanZero(num);
+                    int size = SpecialEval.castIntValue(num);
+                    obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
+                    if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_ASSIGNABLE_FROM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
+                    String fun = SpecialQuali.objToString(obj, temp[0], ref, false);
+                    obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
+                    sa = SpecialQuali.objToAtom(obj, temp[1], ref);
+                    if (!CacheSubclass.getSubclass(sa, fun, en))
+                        return false;
+                    return en.getNextRaw();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

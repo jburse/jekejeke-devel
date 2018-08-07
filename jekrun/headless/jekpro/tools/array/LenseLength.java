@@ -112,7 +112,12 @@ final class LenseLength extends AbstractLense {
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         en.skel = Integer.valueOf(getLength(obj));
         en.display = Display.DISPLAY_CONST;
         return false;

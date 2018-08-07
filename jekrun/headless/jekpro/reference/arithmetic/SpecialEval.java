@@ -8,6 +8,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -158,6 +159,112 @@ public final class SpecialEval extends AbstractSpecial {
             EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_DECIMAL, t), d);
+        }
+    }
+
+    /*************************************************************/
+    /* Number Casts                                              */
+    /*************************************************************/
+
+    /**
+     * <p>Check whether the given value is a byte value.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param t The number, either Integer or BigInteger.
+     * @return The primitive byte value.
+     * @throws ClassCastException Not a byte value.
+     */
+    public static byte castByteValue(Number t)
+            throws ClassCastException {
+        if (t instanceof Integer) {
+            int n = t.intValue();
+            if (Byte.MIN_VALUE <= n &&
+                    n <= Byte.MAX_VALUE) {
+                return (byte) n;
+            }
+        }
+        throw new ClassCastException(
+                EngineMessage.OP_REPRESENTATION_BYTE);
+    }
+
+    /**
+     * <p>Check whether the given value is a code point.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param t The number, either Integer or BigInteger.
+     * @return The primitive byte value.
+     * @throws ClassCastException Not a code point value.
+     */
+    public static int castCodePoint(Number t)
+            throws ClassCastException {
+        if (t instanceof Integer) {
+            int n = t.intValue();
+            if (0 <= n &&
+                    n <= Character.MAX_CODE_POINT) {
+                return n;
+            }
+        }
+        throw new ClassCastException(
+                EngineMessage.OP_REPRESENTATION_CODE_POINT);
+    }
+
+    /**
+     * <p>Check whether the given value is a short value.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param t The number, either Integer or BigInteger.
+     * @return The primitive short value.
+     * @throws ClassCastException Not a short value.
+     */
+    public static short castShortValue(Number t)
+            throws ClassCastException {
+        if (t instanceof Integer &&
+                Short.MIN_VALUE <= t.intValue() &&
+                t.intValue() <= Short.MAX_VALUE) {
+            return (short) t.intValue();
+        } else {
+            throw new ClassCastException(
+                    EngineMessage.OP_REPRESENTATION_SHORT);
+        }
+    }
+
+    /**
+     * <p>Check whether the given value is an int value.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param t The number, either Integer or BigInteger.
+     * @return The primitive int value.
+     * @throws ClassCastException Not a int value.
+     */
+    public static int castIntValue(Number t)
+            throws ClassCastException {
+        if (t instanceof Integer) {
+            return t.intValue();
+        } else {
+            throw new ClassCastException(
+                    EngineMessage.OP_REPRESENTATION_INT);
+        }
+    }
+
+    /**
+     * <p>Check whether the given value is a long value.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param t The number, either Integer or BigInteger..
+     * @return The primitive long value.
+     * @throws ClassCastException Not a long value.
+     */
+    public static long castLongValue(Number t)
+            throws ClassCastException {
+        if (t instanceof Integer) {
+            return t.intValue();
+        } else if (t instanceof BigInteger &&
+                TermAtomic.MIN_LONG.compareTo((BigInteger) t) <= 0 &&
+                ((BigInteger) t).compareTo(TermAtomic.MAX_LONG) <= 0) {
+            return t.longValue();
+        } else {
+            throw new ClassCastException(
+                    EngineMessage.OP_REPRESENTATION_LONG);
         }
     }
 

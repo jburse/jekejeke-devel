@@ -44,18 +44,6 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class ExecutorFunction extends AbstractExecutor {
-    private final static int[] VOID_PARAS = new int[0];
-    private final static Object[] VOID_PROLOG_ARGS = new Object[0];
-
-    public final static int MASK_METH_VIRT = 0x00000001;
-
-    private int subflags;
-
-    private int[] encodeparas;
-    private int encoderet;
-
-    private final Method method;
-    private TermAtomic functor;
     private TermAtomic is;
 
     /**
@@ -64,7 +52,7 @@ final class ExecutorFunction extends AbstractExecutor {
      * @param m The method.
      */
     ExecutorFunction(Method m) {
-        method = m;
+        super(m);
     }
 
     /**
@@ -96,7 +84,7 @@ final class ExecutorFunction extends AbstractExecutor {
 
         Class[] paras = method.getParameterTypes();
         encodeparas = (paras.length != 0 ? new int[paras.length] :
-                ExecutorFunction.VOID_PARAS);
+                AbstractExecutor.VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
             ret = paras[i];
             encode = Types.typeeval.get(ret);
@@ -110,44 +98,6 @@ final class ExecutorFunction extends AbstractExecutor {
         if (!Modifier.isStatic(method.getModifiers()))
             subflags |= MASK_METH_VIRT;
         return true;
-    }
-
-    /***********************************************************/
-    /* Parameter & Result Conversion                           */
-    /***********************************************************/
-
-    /**
-     * <p>Build the arguments.</p>
-     *
-     * @param args The Java arguments.
-     * @return The Prolog arguments.
-     * @throws InterpreterMessage Shit happens.
-     */
-    Object[] uncompileArgs(Object proxy, Object[] args)
-            throws InterpreterMessage {
-        try {
-            int len = encodeparas.length;
-            if ((subflags & MASK_METH_VIRT) != 0)
-                len++;
-            Object[] termargs = (len != 0 ?
-                    new Object[len] : ExecutorFunction.VOID_PROLOG_ARGS);
-            int k = 0;
-            if ((subflags & MASK_METH_VIRT) != 0) {
-                termargs[k] = proxy;
-                k++;
-            }
-            for (int i = 0; i < encodeparas.length; i++) {
-                Object res = Types.normJava(encodeparas[i], args[i]);
-                if (res == null)
-                    throw new EngineMessage(EngineMessage.representationError(
-                            AbstractFactory.OP_REPRESENTATION_NULL));
-                termargs[k] = res;
-                k++;
-            }
-            return termargs;
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
     }
 
     /***********************************************************/
@@ -166,25 +116,27 @@ final class ExecutorFunction extends AbstractExecutor {
      */
     Object runGoal(Object proxy, Object[] args, Interpreter inter)
             throws InterpreterMessage, InterpreterException {
-        Object[] termargs = uncompileArgs(proxy, args);
-        Object eval;
-        if (termargs.length != 0) {
-            eval = new TermCompound(functor, termargs);
-        } else {
-            eval = functor;
+        try {
+            Object[] termargs = uncompileArgs(proxy, args);
+            Object eval;
+            if (termargs.length != 0) {
+                eval = new TermCompound(functor, termargs);
+            } else {
+                eval = functor;
+            }
+            Object help = new TermVar();
+            Object goal = new TermCompound(is, help, eval);
+
+            CallIn callin = inter.iterator(goal);
+            callin.next();
+            help = AbstractTerm.copyMolec(inter, help);
+            callin.close();
+
+            return Types.denormProlog(encoderet, AbstractTerm.getSkel(help),
+                    AbstractTerm.getDisplay(help));
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
-        Object help = new TermVar();
-        Object goal = new TermCompound(is, help, eval);
-
-        Object res;
-
-        CallIn callin = inter.iterator(goal);
-        callin.next();
-        res = AbstractTerm.copyTerm(inter, help);
-        callin.close();
-        res = Types.denormProlog(encoderet, res);
-
-        return res;
     }
 
 }

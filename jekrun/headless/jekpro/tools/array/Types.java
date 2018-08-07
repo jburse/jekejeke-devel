@@ -1,12 +1,14 @@
 package jekpro.tools.array;
 
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.*;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
@@ -127,7 +129,10 @@ public final class Types {
         Types.typepred.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
         Types.typepred.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
         Types.typepred.put(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
+        Types.typepred.put(TermVar.class, Integer.valueOf(Types.TYPE_OBJECT));
+        Types.typepred.put(TermCompound.class, Integer.valueOf(Types.TYPE_OBJECT));
         Types.typepred.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
+        Types.typepred.put(TermAtomic.class, Integer.valueOf(Types.TYPE_TERM));
         Types.typepred.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
         Types.typepred.put(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
     }
@@ -148,15 +153,13 @@ public final class Types {
             throws EngineMessage {
         try {
             switch (typ) {
-                case Types.TYPE_VOID:
-                    return AbstractSkel.VOID_OBJ;
                 case Types.TYPE_STRING:
                 case Types.TYPE_CHARSEQ:
                     return res;
                 case Types.TYPE_PRIMBOOL:
                 case Types.TYPE_BOOL:
-                    if (Boolean.TRUE.equals(res)) {
-                        return AbstractSkel.VOID_OBJ;
+                    if (res != null) {
+                        return Boolean.toString((Boolean) res);
                     } else {
                         return null;
                     }
@@ -231,76 +234,101 @@ public final class Types {
      * <p>Denormalize an external Prolog type into a Java type.</p>
      *
      * @param typ The Java type.
-     * @param res The argument object, can be null.
-     * @return The denormalized argument object, can be null.
-     * @throws InterpreterMessage FFI error.
+     * @param t   The argument skeleton.
+     * @param d   The argument display.
+     * @return The denormalized argument.
+     * @throws EngineMessage FFI error.
      */
-    public static Object denormProlog(int typ, Object res)
-            throws InterpreterMessage {
+    public static Object denormProlog(int typ, Object t, Display d)
+            throws EngineMessage {
         try {
             switch (typ) {
                 case Types.TYPE_STRING:
-                    return InterpreterMessage.castString(res);
+                    return SpecialUniv.derefAndCastString(t, d);
                 case Types.TYPE_CHARSEQ:
-                    if (res instanceof String) {
-                        return res;
+                    BindVar b;
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    if (t instanceof SkelAtom) {
+                        return ((SkelAtom) t).fun;
+                    } else if (!(t instanceof AbstractSkel) && !(t instanceof Number)) {
+                        return t;
                     } else {
-                        return InterpreterMessage.castRef(res);
+                        EngineMessage.checkInstantiated(t);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_REF, t), d);
                     }
                 case Types.TYPE_PRIMBOOL:
                 case Types.TYPE_BOOL:
-                    String str = InterpreterMessage.castString(res);
+                    String str = SpecialUniv.derefAndCastString(t, d);
                     return Boolean.valueOf(str);
                 case Types.TYPE_PRIMBYTE:
                 case Types.TYPE_BYTE:
-                    Number num = InterpreterMessage.castInteger(res);
-                    return Byte.valueOf(InterpreterMessage.castByteValue(num));
+                    Number num = SpecialEval.derefAndCastInteger(t, d);
+                    return Byte.valueOf(SpecialEval.castByteValue(num));
                 case Types.TYPE_PRIMCHAR:
                 case Types.TYPE_CHAR:
-                    str = InterpreterMessage.castString(res);
-                    return Character.valueOf(InterpreterMessage.castCharValue(str));
+                    str = SpecialUniv.derefAndCastString(t, d);
+                    return Character.valueOf(SpecialUniv.castCharValue(str));
                 case Types.TYPE_PRIMSHORT:
                 case Types.TYPE_SHORT:
-                    num = InterpreterMessage.castInteger(res);
-                    return Short.valueOf(InterpreterMessage.castShortValue(num));
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    return Short.valueOf(SpecialEval.castShortValue(num));
                 case Types.TYPE_PRIMINT:
                 case Types.TYPE_INTEGER:
-                    num = InterpreterMessage.castInteger(res);
-                    InterpreterMessage.castIntValue(num);
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    SpecialEval.castIntValue(num);
                     return num;
                 case Types.TYPE_PRIMLONG:
                 case Types.TYPE_LONG:
-                    num = InterpreterMessage.castInteger(res);
-                    return Long.valueOf(InterpreterMessage.castLongValue(num));
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    return Long.valueOf(SpecialEval.castLongValue(num));
                 case Types.TYPE_BIG_INTEGER:
-                    num = InterpreterMessage.castInteger(res);
+                    num = SpecialEval.derefAndCastInteger(t, d);
                     return TermAtomic.widenBigInteger(num);
                 case Types.TYPE_PRIMFLOAT:
                 case Types.TYPE_FLOAT:
-                    num = InterpreterMessage.castNumber(res);
+                    num = SpecialEval.derefAndCastNumber(t, d);
                     return (num instanceof Float ? num :
                             TermAtomic.makeFloat(num.floatValue()));
                 case Types.TYPE_PRIMDOUBLE:
                 case Types.TYPE_DOUBLE:
-                    num = InterpreterMessage.castNumber(res);
+                    num = SpecialEval.derefAndCastNumber(t, d);
                     return (num instanceof Double ? num :
                             TermAtomic.makeDouble(num.doubleValue()));
                 case Types.TYPE_BIG_DECIMAL:
-                    num = InterpreterMessage.castNumber(res);
+                    num = SpecialEval.derefAndCastNumber(t, d);
                     return TermAtomic.widenBigDecimal(num);
                 case Types.TYPE_NUMBER:
-                    return InterpreterMessage.castNumber(res);
+                    return SpecialEval.derefAndCastNumber(t, d);
                 case Types.TYPE_REF:
-                    return InterpreterMessage.castRef(res);
+                    return SpecialUniv.derefAndCastRef(t, d);
                 case Types.TYPE_OBJECT:
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    return AbstractTerm.createTerm(t, d);
                 case Types.TYPE_TERM:
-                    return res;
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    return AbstractTerm.createTermWrapped(t, d);
                 default:
                     throw new IllegalArgumentException("illegal type");
             }
         } catch (ArithmeticException x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.evaluationError(x.getMessage()));
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -353,6 +381,50 @@ public final class Types {
             throw (Error) x;
         } else {
             throw new Error("unmappable exception", x);
+        }
+    }
+
+    /***********************************************************/
+    /* Return Types                                            */
+    /***********************************************************/
+
+    /**
+     * <p>Compute the declared function status.</p>
+     *
+     * @param typ The type.
+     * @return The declared fucntion status.
+     */
+    public static boolean getRetFlag(int typ) {
+        switch (typ) {
+            case Types.TYPE_VOID:
+            case Types.TYPE_PRIMBOOL:
+            case Types.TYPE_BOOL:
+                return false;
+            case Types.TYPE_STRING:
+            case Types.TYPE_CHARSEQ:
+            case Types.TYPE_PRIMBYTE:
+            case Types.TYPE_BYTE:
+            case Types.TYPE_PRIMCHAR:
+            case Types.TYPE_CHAR:
+            case Types.TYPE_PRIMSHORT:
+            case Types.TYPE_SHORT:
+            case Types.TYPE_PRIMINT:
+            case Types.TYPE_INTEGER:
+            case Types.TYPE_PRIMLONG:
+            case Types.TYPE_LONG:
+            case Types.TYPE_BIG_INTEGER:
+            case Types.TYPE_PRIMFLOAT:
+            case Types.TYPE_FLOAT:
+            case Types.TYPE_PRIMDOUBLE:
+            case Types.TYPE_DOUBLE:
+            case Types.TYPE_BIG_DECIMAL:
+            case Types.TYPE_NUMBER:
+            case Types.TYPE_REF:
+            case Types.TYPE_OBJECT:
+            case Types.TYPE_TERM:
+                return true;
+            default:
+                throw new IllegalArgumentException("illegal return type");
         }
     }
 

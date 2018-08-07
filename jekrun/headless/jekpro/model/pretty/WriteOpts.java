@@ -117,172 +117,177 @@ public final class WriteOpts {
      */
     public void decodeWriteOptions(Object t, Display d, Engine en)
             throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-        while (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
-            SkelCompound mc = (SkelCompound) t;
-            en.skel = mc.args[0];
-            en.deref();
-            if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_QUOTED)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
-                    flags |= PrologWriter.FLAG_QUOT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_QUOT;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_NUMBERVARS)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
-                    flags |= PrologWriter.FLAG_NUMV;
-                } else {
-                    flags &= ~PrologWriter.FLAG_NUMV;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_OPS)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
-                    flags |= PrologWriter.FLAG_IGNO;
-                } else {
-                    flags &= ~PrologWriter.FLAG_IGNO;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_MOD)) {
-                if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
-                    flags |= PrologWriter.FLAG_IGNM;
-                } else {
-                    flags &= ~PrologWriter.FLAG_IGNM;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
-                Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
-                EngineMessage.checkNotLessThanZero(num);
-                lev = EngineMessage.castIntValue(num);
-                SpecialOper.checkOperatorLevel(lev);
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_FORMAT)) {
-                int form = atomToFormat(((SkelCompound) en.skel).args[0], en.display);
-                if ((form & FORMAT_NEWL) != 0) {
-                    flags |= PrologWriter.FLAG_NEWL;
-                } else {
-                    flags &= ~PrologWriter.FLAG_NEWL;
-                }
-                if ((form & FORMAT_NAVI) != 0) {
-                    flags |= PrologWriter.FLAG_NAVI;
-                } else {
-                    flags &= ~PrologWriter.FLAG_NAVI;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_PART)) {
-                int part = atomToWritePart(((SkelCompound) en.skel).args[0], en.display);
-                if ((part & PART_CMMT) != 0) {
-                    flags |= PrologWriter.FLAG_CMMT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_CMMT;
-                }
-                if ((part & PART_STMT) != 0) {
-                    flags |= PrologWriter.FLAG_STMT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_STMT;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_CONTEXT)) {
-                Object obj = Predicate.checkMetaSpezArg(
-                        ((SkelCompound) en.skel).args[0], en.display, en);
-                if (spezToMeta(obj)) {
-                    spez |= PrologWriter.SPEZ_META;
-                } else {
-                    spez &= ~PrologWriter.SPEZ_META;
-                }
-                if (spezToEval(obj)) {
-                    spez |= PrologWriter.SPEZ_EVAL;
-                } else {
-                    spez &= ~PrologWriter.SPEZ_EVAL;
-                }
-                offset = spezToOffset(obj);
-                shift = spezToShift(obj);
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_OPERAND)) {
-                int k = atomToOperand(((SkelCompound) en.skel).args[0], en.display, en);
-                spez = ((spez & ~PrologWriter.SPEZ_OPLE) & ~PrologWriter.SPEZ_LEFT) | k;
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
-                utildouble = (byte) ReadOpts.atomToUtil(
-                        ((SkelCompound) en.skel).args[0], en.display);
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_BACK_QUOTES)) {
-                utilback = (byte) ReadOpts.atomToUtil(
-                        ((SkelCompound) en.skel).args[0], en.display);
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
-                utilsingle = (byte) ReadOpts.atomToUtil(
-                        ((SkelCompound) en.skel).args[0], en.display);
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_ANNOTATION)) {
-                int anno = termToAnno(((SkelCompound) en.skel).args[0], en.display, en);
-                if ((anno & ANNO_MKDT) != 0) {
-                    flags |= PrologWriter.FLAG_MKDT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_MKDT;
-                }
-                if ((anno & ANNO_FILL) != 0) {
-                    flags |= PrologWriter.FLAG_FILL;
-                } else {
-                    flags &= ~PrologWriter.FLAG_FILL;
-                }
-                if ((anno & ANNO_HINT) != 0) {
-                    flags |= PrologWriter.FLAG_HINT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_HINT;
-                }
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_SOURCE)) {
-                String fun = SpecialUniv.derefAndCastString(((SkelCompound) en.skel).args[0], en.display);
-                AbstractSource src = en.store.getSource(fun);
-                AbstractSource.checkExistentSource(src, fun);
-                source = src;
-            } else {
-                EngineMessage.checkInstantiated(en.skel);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_WRITE_OPTION,
-                        en.skel), en.display);
-            }
-            en.skel = mc.args[1];
+        try {
+            en.skel = t;
             en.display = d;
             en.deref();
             t = en.skel;
             d = en.display;
+            while (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 2 &&
+                    ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
+                SkelCompound mc = (SkelCompound) t;
+                en.skel = mc.args[0];
+                en.deref();
+                if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_QUOTED)) {
+                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                        flags |= PrologWriter.FLAG_QUOT;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_QUOT;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_NUMBERVARS)) {
+                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                        flags |= PrologWriter.FLAG_NUMV;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_NUMV;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_OPS)) {
+                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                        flags |= PrologWriter.FLAG_IGNO;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_IGNO;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_MOD)) {
+                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                        flags |= PrologWriter.FLAG_IGNM;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_IGNM;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
+                    Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
+                    EngineMessage.checkNotLessThanZero(num);
+                    lev = SpecialEval.castIntValue(num);
+                    SpecialOper.checkOperatorLevel(lev);
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_FORMAT)) {
+                    int form = atomToFormat(((SkelCompound) en.skel).args[0], en.display);
+                    if ((form & FORMAT_NEWL) != 0) {
+                        flags |= PrologWriter.FLAG_NEWL;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_NEWL;
+                    }
+                    if ((form & FORMAT_NAVI) != 0) {
+                        flags |= PrologWriter.FLAG_NAVI;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_NAVI;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_PART)) {
+                    int part = atomToWritePart(((SkelCompound) en.skel).args[0], en.display);
+                    if ((part & PART_CMMT) != 0) {
+                        flags |= PrologWriter.FLAG_CMMT;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_CMMT;
+                    }
+                    if ((part & PART_STMT) != 0) {
+                        flags |= PrologWriter.FLAG_STMT;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_STMT;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_CONTEXT)) {
+                    Object obj = Predicate.checkMetaSpezArg(
+                            ((SkelCompound) en.skel).args[0], en.display, en);
+                    if (spezToMeta(obj)) {
+                        spez |= PrologWriter.SPEZ_META;
+                    } else {
+                        spez &= ~PrologWriter.SPEZ_META;
+                    }
+                    if (spezToEval(obj)) {
+                        spez |= PrologWriter.SPEZ_EVAL;
+                    } else {
+                        spez &= ~PrologWriter.SPEZ_EVAL;
+                    }
+                    offset = spezToOffset(obj);
+                    shift = spezToShift(obj);
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_OPERAND)) {
+                    int k = atomToOperand(((SkelCompound) en.skel).args[0], en.display, en);
+                    spez = ((spez & ~PrologWriter.SPEZ_OPLE) & ~PrologWriter.SPEZ_LEFT) | k;
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
+                    printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
+                    utildouble = (byte) ReadOpts.atomToUtil(
+                            ((SkelCompound) en.skel).args[0], en.display);
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_BACK_QUOTES)) {
+                    utilback = (byte) ReadOpts.atomToUtil(
+                            ((SkelCompound) en.skel).args[0], en.display);
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
+                    utilsingle = (byte) ReadOpts.atomToUtil(
+                            ((SkelCompound) en.skel).args[0], en.display);
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_ANNOTATION)) {
+                    int anno = termToAnno(((SkelCompound) en.skel).args[0], en.display, en);
+                    if ((anno & ANNO_MKDT) != 0) {
+                        flags |= PrologWriter.FLAG_MKDT;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_MKDT;
+                    }
+                    if ((anno & ANNO_FILL) != 0) {
+                        flags |= PrologWriter.FLAG_FILL;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_FILL;
+                    }
+                    if ((anno & ANNO_HINT) != 0) {
+                        flags |= PrologWriter.FLAG_HINT;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_HINT;
+                    }
+                } else if (en.skel instanceof SkelCompound &&
+                        ((SkelCompound) en.skel).args.length == 1 &&
+                        ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_SOURCE)) {
+                    String fun = SpecialUniv.derefAndCastString(((SkelCompound) en.skel).args[0], en.display);
+                    AbstractSource src = en.store.getSource(fun);
+                    AbstractSource.checkExistentSource(src, fun);
+                    source = src;
+                } else {
+                    EngineMessage.checkInstantiated(en.skel);
+                    throw new EngineMessage(EngineMessage.domainError(
+                            EngineMessage.OP_DOMAIN_WRITE_OPTION,
+                            en.skel), en.display);
+                }
+                en.skel = mc.args[1];
+                en.display = d;
+                en.deref();
+                t = en.skel;
+                d = en.display;
+            }
+            if (t instanceof SkelAtom &&
+                    ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
+                /* */
+            } else {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_LIST, t), d);
+            }
+            validatePrintMap();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
-        if (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST, t), d);
-        }
-        validatePrintMap();
     }
 
     /**

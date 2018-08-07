@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -114,16 +115,30 @@ final class MemberFieldGet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         Object res = AutoClass.invokeGetter(field, obj);
-        res = Types.normJava(encoderet, res);
+        if ((subflags & MASK_METH_FUNC) != 0) {
+            res = Types.normJava(encoderet, res);
+        } else {
+            res = noretNormJava(res);
+        }
         if (res == null)
             return false;
+        Display d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
-                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res)))
+                        AbstractTerm.getSkel(res), d))
             return false;
+        if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+            d.remTab(en);
+            d.flags &= ~Display.MASK_DISP_MLTI;
+        }
         return en.getNext();
     }
 

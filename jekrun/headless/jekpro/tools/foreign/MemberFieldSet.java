@@ -5,8 +5,9 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.array.AbstractLense;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -114,9 +115,13 @@ final class MemberFieldSet extends AbstractMember {
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref);
-        Object arg = AbstractLense.convertArg(
-                ((SkelCompound) temp).args[1], ref, encodeparas[0]);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
+        Object arg = Types.denormProlog(encodeparas[0], ((SkelCompound) temp).args[1], ref);
         invokeSetter(obj, arg);
         return en.getNextRaw();
     }

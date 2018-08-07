@@ -246,8 +246,9 @@ public final class TermCompound extends AbstractTerm {
      * @return The functor.
      */
     private static SkelAtom getFun(TermAtomic ta) {
-        if (ta.skel instanceof SkelAtom)
-            return (SkelAtom) ta.skel;
+        Object obj = ta.skel;
+        if (obj instanceof SkelAtom)
+            return (SkelAtom) obj;
         throw new IllegalArgumentException("illegal fun");
     }
 

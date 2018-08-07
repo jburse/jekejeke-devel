@@ -71,16 +71,25 @@ final class LenseUpdate extends AbstractLense {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
-        Object temp = en.skel;
-        Display ref = en.display;
-        Object obj = convertObj(temp, ref);
-        Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
-        EngineMessage.checkNotLessThanZero(num);
-        int idx = EngineMessage.castIntValue(num);
-        Object res = AbstractLense.convertArg(
-                ((SkelCompound) temp).args[2], ref, encodeparas[1]);
-        set(obj, idx, res);
-        return en.getNextRaw();
+        try {
+            Object temp = en.skel;
+            Display ref = en.display;
+            Object obj;
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+            } else {
+                obj = null;
+            }
+            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            EngineMessage.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = Types.denormProlog(encodeparas[1], ((SkelCompound) temp).args[2], ref);
+            set(obj, idx, res);
+            return en.getNextRaw();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**

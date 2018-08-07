@@ -92,5 +92,15 @@ sys_eq(X, X).
 :- set_predicate_property(ground/1, visible(public)).
 
 % functor(+-Term, -+Atomic, -+Integer)
-:- special(functor/3, 'SpecialMember', 4).
+functor(T, F, A) :-
+   var(T), !,
+   sys_functor_to_term(F, A, T).
+functor(T, F, A) :-
+   sys_term_to_functor(T, F, A).
 :- set_predicate_property(functor/3, visible(public)).
+
+:- special(sys_functor_to_term/3, 'SpecialMember', 3).
+:- set_predicate_property(sys_functor_to_term/3, visible(private)).
+
+:- special(sys_term_to_functor/3, 'SpecialMember', 4).
+:- set_predicate_property(sys_term_to_functor/3, visible(private)).

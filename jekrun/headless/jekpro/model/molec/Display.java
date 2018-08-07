@@ -31,10 +31,13 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Display {
+    public final static int MASK_DISP_MLTI = 0x00000001;
+
     public final static Display DISPLAY_CONST = new Display(0);
 
     public BindCount[] bind;
     public int serno = -1;
+    public int flags;
 
     /**
      * <p>Create a display.</p>

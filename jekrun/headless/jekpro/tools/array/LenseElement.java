@@ -112,21 +112,40 @@ final class LenseElement extends AbstractLense {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        Object temp = en.skel;
-        Display ref = en.display;
-        Object obj = convertObj(temp, ref);
-        Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
-        EngineMessage.checkNotLessThanZero(num);
-        int idx = EngineMessage.castIntValue(num);
-        Object res = get(obj, idx);
-        res = Types.normJava(encoderet, res);
-        if (res == null)
-            return false;
-        if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(((SkelCompound) temp).args[2], ref,
-                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res)))
-            return false;
-        return en.getNext();
+        try {
+            Object temp = en.skel;
+            Display ref = en.display;
+            Object obj;
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+            } else {
+                obj = null;
+            }
+            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            EngineMessage.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = get(obj, idx);
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                res = Types.normJava(encoderet, res);
+            } else {
+                res = noretNormJava(res);
+            }
+            if (res == null)
+                return false;
+            Display d = AbstractTerm.getDisplay(res);
+            if (res != AbstractSkel.VOID_OBJ &&
+                    !en.unifyTerm(((SkelCompound) temp).args[2], ref,
+                            AbstractTerm.getSkel(res), d))
+                return false;
+            if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+                d.remTab(en);
+                d.flags &= ~Display.MASK_DISP_MLTI;
+            }
+            return en.getNext();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**

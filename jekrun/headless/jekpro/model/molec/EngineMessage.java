@@ -115,11 +115,12 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_ARRAY = "array";
 
     private static final String OP_REPRESENTATION_ERROR = "representation_error"; /* ISO */
-    public static final String OP_REPRESENTATION_CHARACTER_CODE = "character_code";
+    public static final String OP_REPRESENTATION_CODE_POINT = "code_point";
     public final static String OP_REPRESENTATION_BYTE = "byte";
     public final static String OP_REPRESENTATION_SHORT = "short";
     public final static String OP_REPRESENTATION_INT = "int";
     public final static String OP_REPRESENTATION_LONG = "long";
+    public static final String OP_REPRESENTATION_CHAR = "char";
 
     private static final String OP_EXISTENCE_ERROR = "existence_error"; /* ISO */
     public static final String OP_EXISTENCE_PROCEDURE = "procedure";
@@ -567,7 +568,8 @@ public final class EngineMessage extends Exception {
      * @param n The number, either Integer or BigInteger.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkNotLessThanZero(Number n) throws EngineMessage {
+    public static void checkNotLessThanZero(Number n)
+            throws EngineMessage {
         if (n instanceof Integer) {
             if (n.intValue() < 0)
                 throw new EngineMessage(EngineMessage.domainError(
@@ -576,108 +578,6 @@ public final class EngineMessage extends Exception {
             if (((BigInteger) n).compareTo(BigInteger.ZERO) < 0)
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is a byte value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive byte value.
-     * @throws EngineMessage Not a byte value.
-     */
-    public static byte castByteValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            int n = t.intValue();
-            if (Byte.MIN_VALUE <= n &&
-                    n <= Byte.MAX_VALUE) {
-                return (byte) n;
-            }
-        }
-        throw new EngineMessage(EngineMessage.representationError(
-                EngineMessage.OP_REPRESENTATION_BYTE));
-    }
-
-    /**
-     * <p>Check whether the given value is a code point.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive byte value.
-     * @throws EngineMessage Not a byte value.
-     */
-    public static int castCodePoint(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            int n = t.intValue();
-            if (0 <= n &&
-                    n <= Character.MAX_CODE_POINT) {
-                return n;
-            }
-        }
-        throw new EngineMessage(EngineMessage.representationError(
-                EngineMessage.OP_REPRESENTATION_CHARACTER_CODE));
-    }
-
-    /**
-     * <p>Check whether the given value is a short value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive short value.
-     * @throws EngineMessage Not a short value.
-     */
-    public static short castShortValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer &&
-                Short.MIN_VALUE <= t.intValue() &&
-                t.intValue() <= Short.MAX_VALUE) {
-            return (short) t.intValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_SHORT));
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is an int value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive int value.
-     * @throws EngineMessage Not a int value.
-     */
-    public static int castIntValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            return t.intValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_INT));
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is a long value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger..
-     * @return The primitive long value.
-     * @throws EngineMessage Not a long value.
-     */
-    public static long castLongValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            return t.intValue();
-        } else if (t instanceof BigInteger &&
-                TermAtomic.MIN_LONG.compareTo((BigInteger) t) <= 0 &&
-                ((BigInteger) t).compareTo(TermAtomic.MAX_LONG) <= 0) {
-            return t.longValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_LONG));
         }
     }
 
@@ -700,24 +600,6 @@ public final class EngineMessage extends Exception {
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_CHARACTER, new SkelAtom(str)));
         return k;
-    }
-
-    /**
-     * <p>Check whether the given atom is a char value.</p>
-     *
-     * @param str The atom.
-     * @return The char.
-     * @throws EngineMessage Not a char value.
-     */
-    public static char castCharValue(String str)
-            throws EngineMessage {
-        int k;
-        if (str.length() == 0 ||
-                str.length() != Character.charCount(k = str.codePointAt(0)) ||
-                k > 0xFFFF)
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CHARACTER, new SkelAtom(str)));
-        return (char) k;
     }
 
     /******************************************************************/

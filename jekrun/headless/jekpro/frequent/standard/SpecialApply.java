@@ -77,10 +77,7 @@ public final class SpecialApply extends AbstractSpecial {
             case SPECIAL_SYS_MODEXT_ARGS_ANY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                boolean multi = moduleExtendGoal(temp, ref, temp.length - 1, en);
+                boolean multi = moduleExtendGoal(temp[0], ref, temp, ref, temp.length - 1, en);
                 Display d = en.display;
                 if (!en.unifyTerm(temp[temp.length - 1], ref, en.skel, d))
                     return false;
@@ -90,10 +87,7 @@ public final class SpecialApply extends AbstractSpecial {
             case SPECIAL_SYS_CALL_ANY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                boolean ext = moduleExtendGoal(temp, ref, temp.length, en);
+                boolean ext = moduleExtendGoal(temp[0], ref, temp, ref, temp.length, en);
                 d = en.display;
                 multi = en.wrapGoal();
                 if (multi && ext)
@@ -124,19 +118,20 @@ public final class SpecialApply extends AbstractSpecial {
      * @param en    The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean moduleExtendGoal(Object[] t2, Display d2,
+    private static boolean moduleExtendGoal(Object t, Display d,
+                                            Object[] t2, Display d2,
                                             int slice, Engine en)
             throws EngineMessage {
-        Object t = en.skel;
-        Display d = en.display;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        t = en.skel;
+        d = en.display;
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
             SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            boolean ext = moduleExtendGoal(t2, d2, slice, en);
+            boolean ext = moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
             Object t4 = en.skel;
             d2 = en.display;
             en.skel = sc.args[0];
@@ -153,10 +148,7 @@ public final class SpecialApply extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
             SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            boolean ext = moduleExtendGoal(t2, d2, slice, en);
+            boolean ext = moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
             Object t4 = en.skel;
             d2 = en.display;
             en.skel = sc.args[0];

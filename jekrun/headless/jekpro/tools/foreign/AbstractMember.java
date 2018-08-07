@@ -151,7 +151,7 @@ abstract class AbstractMember extends AbstractLense
             } else {
                 en.computeExpr(((SkelCompound) temp).args[k], ref);
                 k++;
-                args[i] = convertArg(en.skel, en.display, typ);
+                args[i] = Types.denormProlog(typ, en.skel, en.display);
             }
         }
         return args;
@@ -182,8 +182,7 @@ abstract class AbstractMember extends AbstractLense
             } else if (typ == Types.TYPE_CALLOUT) {
                 args[i] = co;
             } else {
-                args[i] = AbstractLense.convertArg(
-                        ((SkelCompound) temp).args[k], ref, typ);
+                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref);
                 k++;
             }
         }

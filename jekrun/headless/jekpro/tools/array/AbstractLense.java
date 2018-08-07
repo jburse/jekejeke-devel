@@ -3,15 +3,12 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
 
 import java.lang.reflect.Modifier;
 
@@ -173,49 +170,21 @@ public abstract class AbstractLense extends AbstractDelegate {
             }
         }
 
-        if (getRetFlag())
+        if (Types.getRetFlag(encoderet))
             subflags |= MASK_METH_FUNC;
 
         return true;
     }
 
     /**
-     * <p>Compute the declared function status.</p>
+     * <p>Generate a indicator value, where Java doesn't provide one.</p>
      *
-     * @return The declared fucntion status.
+     * @param res The Java return value.
+     * @return The indicator value.
      */
-    private boolean getRetFlag() {
-        switch (encoderet) {
-            case Types.TYPE_VOID:
-            case Types.TYPE_PRIMBOOL:
-            case Types.TYPE_BOOL:
-                return false;
-            case Types.TYPE_STRING:
-            case Types.TYPE_CHARSEQ:
-            case Types.TYPE_PRIMBYTE:
-            case Types.TYPE_BYTE:
-            case Types.TYPE_PRIMCHAR:
-            case Types.TYPE_CHAR:
-            case Types.TYPE_PRIMSHORT:
-            case Types.TYPE_SHORT:
-            case Types.TYPE_PRIMINT:
-            case Types.TYPE_INTEGER:
-            case Types.TYPE_PRIMLONG:
-            case Types.TYPE_LONG:
-            case Types.TYPE_BIG_INTEGER:
-            case Types.TYPE_PRIMFLOAT:
-            case Types.TYPE_FLOAT:
-            case Types.TYPE_PRIMDOUBLE:
-            case Types.TYPE_DOUBLE:
-            case Types.TYPE_BIG_DECIMAL:
-            case Types.TYPE_NUMBER:
-            case Types.TYPE_REF:
-            case Types.TYPE_OBJECT:
-            case Types.TYPE_TERM:
-                return true;
-            default:
-                throw new IllegalArgumentException("illegal return type");
-        }
+    public Object noretNormJava(Object res) {
+        return (encoderet ==Types.TYPE_VOID ||
+                Boolean.TRUE.equals(res) ? AbstractSkel.VOID_OBJ : null);
     }
 
     /******************************************************************/
@@ -335,59 +304,6 @@ public abstract class AbstractLense extends AbstractDelegate {
             }
         }
         return k;
-    }
-
-    /***********************************************************/
-    /* Foreign Invokation                                      */
-    /***********************************************************/
-
-    /**
-     * <p>Determine the receiver object. The first argument of
-     * the goal is checked and converted if necessary.</p>
-     *
-     * @param temp The skeleton.
-     * @param ref  The display.
-     * @return The arguments array.
-     * @throws EngineMessage FFI error.
-     */
-    public final Object convertObj(Object temp, Display ref)
-            throws EngineMessage {
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            return convertArg(((SkelCompound) temp).args[0], ref, encodeobj);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * <p>Build an argument.  The arguments of the goal
-     * is checked and converted if necessary.</p>
-     *
-     * @param temp The argument skeleton.
-     * @param ref  The argument display.
-     * @param typ  The type.
-     * @return The argument.
-     * @throws EngineMessage FFI error.
-     */
-    public static Object convertArg(Object temp, Display ref, int typ)
-            throws EngineMessage {
-        try {
-            BindVar b;
-            while (temp instanceof SkelVar &&
-                    (b = ref.bind[((SkelVar) temp).id]).display != null) {
-                temp = b.skel;
-                ref = b.display;
-            }
-            Object res;
-            if (typ == Types.TYPE_TERM) {
-                res = AbstractTerm.createTermWrapped(temp, ref);
-            } else {
-                res = AbstractTerm.createTerm(temp, ref);
-            }
-            return Types.denormProlog(typ, res);
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
-        }
     }
 
 }

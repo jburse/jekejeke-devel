@@ -174,140 +174,145 @@ public final class SpecialSpecial extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        switch (id) {
-            case SPECIAL_SYS_CONTEXT_PROPERTY:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SkelAtom sa = SpecialBody.callableToName(en.skel);
-                String fun = (sa.scope != null ? sa.scope.getPath() : "");
-                if (!en.unifyTerm(temp[1], ref, new SkelAtom(fun), Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SET_SOURCE_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                fun = SpecialUniv.derefAndCastString(temp[0], ref);
-                AbstractSource source = en.store.getSource(fun);
-                AbstractSource.checkExistentSource(source, fun);
+        try {
+            switch (id) {
+                case SPECIAL_SYS_CONTEXT_PROPERTY:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    EngineMessage.checkCallable(en.skel, en.display);
+                    SkelAtom sa = SpecialBody.callableToName(en.skel);
+                    String fun = (sa.scope != null ? sa.scope.getPath() : "");
+                    if (!en.unifyTerm(temp[1], ref, new SkelAtom(fun), Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SET_SOURCE_PROPERTY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    fun = SpecialUniv.derefAndCastString(temp[0], ref);
+                    AbstractSource source = en.store.getSource(fun);
+                    AbstractSource.checkExistentSource(source, fun);
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialSource.addSrcProp(en.skel, en.display, source, en);
-                return en.getNextRaw();
-            case SPECIAL_RESET_SOURCE_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                fun = SpecialUniv.derefAndCastString(temp[0], ref);
-                source = en.store.getSource(fun);
-                AbstractSource.checkExistentSource(source, fun);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    EngineMessage.checkCallable(en.skel, en.display);
+                    SpecialSource.addSrcProp(en.skel, en.display, source, en);
+                    return en.getNextRaw();
+                case SPECIAL_RESET_SOURCE_PROPERTY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    fun = SpecialUniv.derefAndCastString(temp[0], ref);
+                    source = en.store.getSource(fun);
+                    AbstractSource.checkExistentSource(source, fun);
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialSource.removeSrcProp(en.skel, en.display, source, en);
-                return en.getNextRaw();
-            case SPECIAL_SYS_OP:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
-                EngineMessage.checkNotLessThanZero(num);
-                int level = EngineMessage.castIntValue(num);
-                SpecialOper.checkOperatorLevel(level);
-                String modestr = SpecialUniv.derefAndCastString(temp[1], ref);
-                int leftright = SpecialOper.atomToLeftRight(modestr);
-                int type = SpecialOper.atomToType(modestr);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    EngineMessage.checkCallable(en.skel, en.display);
+                    SpecialSource.removeSrcProp(en.skel, en.display, source, en);
+                    return en.getNextRaw();
+                case SPECIAL_SYS_OP:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
+                    EngineMessage.checkNotLessThanZero(num);
+                    int level = SpecialEval.castIntValue(num);
+                    SpecialOper.checkOperatorLevel(level);
+                    String modestr = SpecialUniv.derefAndCastString(temp[1], ref);
+                    int leftright = SpecialOper.atomToLeftRight(modestr);
+                    int type = SpecialOper.atomToType(modestr);
 
-                SpecialQuali.colonToCallable(temp[2], ref, false, en);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
-                defineOperator(level, leftright, type, sa, en);
-                return en.getNextRaw();
-            case SPECIAL_SET_OPER_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Operator op = SpecialOper.operToOperator(temp[0], ref, en);
-                Operator.checkExistentOperator(op, temp[0], ref);
+                    SpecialQuali.colonToCallable(temp[2], ref, false, en);
+                    sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                    defineOperator(level, leftright, type, sa, en);
+                    return en.getNextRaw();
+                case SPECIAL_SET_OPER_PROPERTY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Operator op = SpecialOper.operToOperator(temp[0], ref, en);
+                    Operator.checkExistentOperator(op, temp[0], ref);
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.addOperProp(en.skel, en.display, op, en);
-                return en.getNextRaw();
-            case SPECIAL_SET_PREDICATE_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Predicate pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
-                Predicate.checkExistentPredicate(pick, temp[0], ref);
-                Predicate.checkUnsealed(pick, en);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    EngineMessage.checkCallable(en.skel, en.display);
+                    SpecialOper.addOperProp(en.skel, en.display, op, en);
+                    return en.getNextRaw();
+                case SPECIAL_SET_PREDICATE_PROPERTY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Predicate pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
+                    Predicate.checkExistentPredicate(pick, temp[0], ref);
+                    Predicate.checkUnsealed(pick, en);
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialPred.addPredProp(en.skel, en.display, pick, en);
-                return en.getNextRaw();
-            case SPECIAL_RESET_PREDICATE_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
-                Predicate.checkExistentPredicate(pick, temp[0], ref);
-                Predicate.checkUnsealed(pick, en);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    EngineMessage.checkCallable(en.skel, en.display);
+                    SpecialPred.addPredProp(en.skel, en.display, pick, en);
+                    return en.getNextRaw();
+                case SPECIAL_RESET_PREDICATE_PROPERTY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
+                    Predicate.checkExistentPredicate(pick, temp[0], ref);
+                    Predicate.checkUnsealed(pick, en);
 
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialPred.removePredProp(en.skel, en.display, pick, en);
-                return en.getNextRaw();
-            case SPECIAL_SYS_SPECIAL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Class clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    EngineMessage.checkCallable(en.skel, en.display);
+                    SpecialPred.removePredProp(en.skel, en.display, pick, en);
+                    return en.getNextRaw();
+                case SPECIAL_SYS_SPECIAL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Class clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
 
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                num = SpecialEval.derefAndCastInteger(en.skel, en.display);
-                EngineMessage.checkNotLessThanZero(num);
-                EngineMessage.castIntValue(num);
-                Constructor con = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INT);
-                if (!en.store.foyer.getFactory().validateExceptionTypes(con.getExceptionTypes(), en))
-                    throw new EngineMessage(en.skel);
-                Object value = en.store.foyer.getFactory().newInstance(con, new Object[]{num});
-                if (!(value instanceof AbstractSpecial))
-                    throw new EngineMessage(EngineMessage.typeError(
-                            EngineMessage.OP_TYPE_SPECIAL,
-                            new SkelAtom(AbstractRuntime.classToString(value.getClass()))));
-                AbstractDelegate del = (AbstractSpecial) value;
-                /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
-                return en.getNextRaw();
-            case SPECIAL_SYS_CHECK_STYLE_PREDICATE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
-                sa = (SkelAtom) en.skel;
-                Predicate.checkExistentPredicate(pick, temp[0], ref);
-                Predicate.checkPredicateDecl(pick, sa, en);
-                return en.getNextRaw();
-            case SPECIAL_SYS_CHECK_STYLE_OPER:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                op = SpecialOper.operToOperator(temp[0], ref, en);
-                sa = (SkelAtom) en.skel;
-                Operator.checkExistentOperator(op, temp[0], ref);
-                Operator.checkOperDecl(op, sa, en);
-                return en.getNextRaw();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    num = SpecialEval.derefAndCastInteger(en.skel, en.display);
+                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.castIntValue(num);
+                    Constructor con = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INT);
+                    if (!en.store.foyer.getFactory().validateExceptionTypes(con.getExceptionTypes(), en))
+                        throw new EngineMessage(en.skel);
+                    Object value = en.store.foyer.getFactory().newInstance(con, new Object[]{num});
+                    if (!(value instanceof AbstractSpecial))
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_SPECIAL,
+                                new SkelAtom(AbstractRuntime.classToString(value.getClass()))));
+                    AbstractDelegate del = (AbstractSpecial) value;
+                    /* create the builtin */
+                    pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                    SpecialSpecial.definePredicate(pick, del, en);
+                    return en.getNextRaw();
+                case SPECIAL_SYS_CHECK_STYLE_PREDICATE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
+                    sa = (SkelAtom) en.skel;
+                    Predicate.checkExistentPredicate(pick, temp[0], ref);
+                    Predicate.checkPredicateDecl(pick, sa, en);
+                    return en.getNextRaw();
+                case SPECIAL_SYS_CHECK_STYLE_OPER:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    op = SpecialOper.operToOperator(temp[0], ref, en);
+                    sa = (SkelAtom) en.skel;
+                    Operator.checkExistentOperator(op, temp[0], ref);
+                    Operator.checkOperDecl(op, sa, en);
+                    return en.getNextRaw();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

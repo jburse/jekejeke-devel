@@ -88,7 +88,7 @@ public final class TermAtomic extends AbstractTerm {
     }
 
     /**
-     * <p>Retrieve the unwrapped atomic from a wrapped atomic.</p>
+     * <p>Retrieve the unwrapped atomic.</p>
      *
      * @return The unwrapped atomic.
      */
