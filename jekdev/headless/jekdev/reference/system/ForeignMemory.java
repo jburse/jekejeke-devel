@@ -2,6 +2,7 @@ package jekdev.reference.system;
 
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
@@ -162,25 +163,30 @@ public class ForeignMemory {
      */
     private static void bytesFill(Object help, byte[] buf)
             throws InterpreterMessage {
-        int pos = 0;
-        while (help instanceof TermCompound &&
-                ((TermCompound) help).getArity() == 2 &&
-                ((TermCompound) help).getFunctor().equals(
-                        Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) help).getArg(0);
-            Number num = InterpreterMessage.castInteger(temp);
-            int n = InterpreterMessage.castIntValue(num);
-            InterpreterMessage.checkByte(n);
-            buf[pos] = (byte) n;
-            pos++;
-            help = ((TermCompound) help).getArg(1);
-        }
-        if (help.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(help);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, help));
+        try {
+            int pos = 0;
+            while (help instanceof TermCompound &&
+                    ((TermCompound) help).getArity() == 2 &&
+                    ((TermCompound) help).getFunctor().equals(
+                            Knowledgebase.OP_CONS)) {
+                Object temp = ((TermCompound) help).getArg(0);
+                Number num = InterpreterMessage.castInteger(temp);
+                int n = SpecialEval.castIntValue(num);
+                InterpreterMessage.checkByte(n);
+                buf[pos] = (byte) n;
+                pos++;
+                help = ((TermCompound) help).getArg(1);
+            }
+            if (help.equals(Foyer.OP_NIL)) {
+                /* */
+            } else {
+                InterpreterMessage.checkInstantiated(help);
+                throw new InterpreterMessage(InterpreterMessage.typeError(
+                        InterpreterMessage.OP_TYPE_LIST, help));
+            }
+        } catch (ClassCastException x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.representationError(x.getMessage()));
         }
     }
 

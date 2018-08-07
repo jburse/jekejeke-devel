@@ -60,6 +60,7 @@
 :- use_module(library(system/file)).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/stack)).
+:- use_module(library(inspection/provable)).
 :- use_module(library(testing/runner)).
 :- use_module(helper).
 
@@ -103,9 +104,8 @@ is_entry(exit).
 user:goal_tracing(P, Q) :-
    is_entry(P),
    frame_property(Q, sys_call_goal(G)),
-   functor(G, F, _),
-   atom_property(F, sys_context(O)),
-   atom_property(F, line_no(L)), !,
+   callable_property(G, sys_context(O)),
+   callable_property(G, line_no(L)), !,
    update_cover_hit(O, L).
 user:goal_tracing(_, _).
 

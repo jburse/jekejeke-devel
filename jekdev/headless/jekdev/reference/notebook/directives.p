@@ -53,7 +53,7 @@
 :- set_predicate_property(notebook/0, sys_nostack).
 notebook :-
    sys_parent_goal(G),
-   sys_get_context(G, C),
+   sys_context_property(G, C),
    set_source_property(C, sys_source_annotation((makedot|filler))).
 
 /**

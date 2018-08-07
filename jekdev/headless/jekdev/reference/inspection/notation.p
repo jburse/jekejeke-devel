@@ -7,16 +7,18 @@
  * module name and a predi-cate name into a qualified predicate name.
  *
  * Examples:
- * ?- sys_atom_slash(X, a/b/c).
- * X = 'a.b.c'
- * ?- sys_atom_slash('c[][]', X).
- * X = {{c}}
+ * ?- sys_atom_slash(X, foo/bar).
+ * X = 'user$foo$bar'
+ * ?- sys_atom_slash(X, basic/lists).
+ * X = 'jekpro.frequent.basic.lists'
  *
- * The predicate sys_atom_slash/2 can be used to explicitly invoke a
- * slash (/)/2 notation con-version for an atom. The notation can
- * be used to denote Prolog text modules and Java Classes. We
- * additionally support conversion for the {}/1 notation as well,
- * which can be used to denote Java Array Classes.
+ * The predicate sys_atom_slash/2 can be used to explicitly invoke
+ * the slash (/)/2 compound notation conversion, yielding a period (.)
+ * respectively dollar ($) characters in the resulting atom. The
+ * notation can be used to denote Prolog text modules and Java
+ * Classes. We additionally support for the {}/1 compound notation
+ * conversion as well, which can be used to denote Java Array
+ * Classes and yielding ([]) characters.
  *
  * Examples:
  * ?- sys_callable_colon(X, basic/lists:member(A,B)).
@@ -69,7 +71,17 @@
  */
 % sys_atom_slash(+-Atom, -+Term)
 :- public sys_atom_slash/2.
-:- special(sys_atom_slash/2, 'SpecialNotation', 0).
+sys_atom_slash(A, T) :-
+   var(A), !,
+   sys_slash_to_module(T, A).
+sys_atom_slash(A, T) :-
+   sys_module_to_slash(A, T).
+
+:- private sys_slash_to_module/2.
+:- special(sys_slash_to_module/2, 'SpecialNotation', 0).
+
+:- private sys_module_to_slash/2.
+:- special(sys_module_to_slash/2, 'SpecialNotation', 1).
 
 /**
  * sys_callable_colon(S, T):
@@ -78,8 +90,18 @@
  * form p1:..:pk(X1, .., Xm), for 1 ≤ k and 0 ≤ m.
  */
 % sys_callable_colon(+-Callable, -+Term):
-:- special(sys_callable_colon/2, 'SpecialNotation', 1).
-:- set_predicate_property(sys_callable_colon/2, visible(public)).
+:- public sys_callable_colon/2.
+sys_callable_colon(A, T) :-
+   var(A), !,
+   sys_colon_to_callable(T, A).
+sys_callable_colon(A, T) :-
+   sys_callable_to_colon(A, T).
+
+:- private sys_colon_to_callable/2.
+:- special(sys_colon_to_callable/2, 'SpecialNotation', 2).
+
+:- private sys_callable_to_colon/2.
+:- special(sys_callable_to_colon/2, 'SpecialNotation', 3).
 
 /**
  * sys_indicator_colon(S, T):
@@ -88,5 +110,15 @@
  * p1:..:pk/m, for 1 ≤ k and 0 ≤ m.
  */
 % sys_indicator_colon(+-Indicator, -+Term):
-:- special(sys_indicator_colon/2, 'SpecialNotation', 2).
-:- set_predicate_property(sys_indicator_colon/2, visible(public)).
+:- public sys_indicator_colon/2.
+sys_indicator_colon(A, T) :-
+   var(A), !,
+   sys_colon_to_indicator(T, A).
+sys_indicator_colon(A, T) :-
+   sys_indicator_to_colon(A, T).
+
+:- private sys_colon_to_indicator/2.
+:- special(sys_colon_to_indicator/2, 'SpecialNotation', 4).
+
+:- private sys_indicator_to_colon/2.
+:- special(sys_indicator_to_colon/2, 'SpecialNotation', 5).
