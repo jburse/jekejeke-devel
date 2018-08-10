@@ -67,7 +67,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- module(user, []).
+:- package(library(jekpro/frequent/standard)).
+
+:- module(dcg, []).
 
 :- public infix(-->).
 :- op(1200, xfx, -->).
@@ -88,11 +90,11 @@
 phrase(P, I, O) :-
    call(P, I, O).
 
-% goal_expansion(+Goal, -Goal)
-:- discontiguous goal_expansion/2.
-:- public goal_expansion/2.
-:- multifile goal_expansion/2.
-:- meta_predicate goal_expansion(0,0).
+% user:goal_expansion(+Goal, -Goal)
+:- discontiguous user:goal_expansion/2.
+:- public user:goal_expansion/2.
+:- multifile user:goal_expansion/2.
+:- meta_predicate user:goal_expansion(0,0).
 
 /**
  * phrase(A, I):
@@ -105,7 +107,7 @@ phrase(P, I, O) :-
 phrase(P, I) :-
    call(P, I, []).
 
-goal_expansion(phrase(P, I), phrase(P, I, [])).
+user:goal_expansion(phrase(P, I), phrase(P, I, [])).
 
 /**********************************************************/
 /* Goal Rewriting Steadfast                               */
@@ -116,12 +118,12 @@ goal_expansion(phrase(P, I), phrase(P, I, [])).
  * The grammar non-terminal P succeeds whenever the callable P extended
  * by the current input and output succeeds.
  */
-goal_expansion(phrase(P, I, O), call(P, I, O)) :-
+user:goal_expansion(phrase(P, I, O), call(P, I, O)) :-
    sys_var(P).
-goal_expansion(phrase(P, I, O), Q) :-
+user:goal_expansion(phrase(P, I, O), Q) :-
    \+ phrase_abnormal(P), !,
    sys_modext_args(P, I, O, Q).
-goal_expansion(phrase(P, I, O), R) :-
+user:goal_expansion(phrase(P, I, O), R) :-
    phrase_expansion(P, I, O, R).
 
 /**
@@ -337,12 +339,12 @@ phrase_abnormal([_|_]).
 sys_phrase(_, _, _) :-
    throw(error(existence_error(body,sys_phrase/3),_)).
 
-goal_expansion(sys_phrase(P, I, O), call(P, I, O)) :-
+user:goal_expansion(sys_phrase(P, I, O), call(P, I, O)) :-
    sys_var(P).
-goal_expansion(sys_phrase(P, I, O), Q) :-
+user:goal_expansion(sys_phrase(P, I, O), Q) :-
    \+ phrase_abnormal(P), !,
    sys_modext_args(P, I, O, Q).
-goal_expansion(sys_phrase(P, I, O), R) :-
+user:goal_expansion(sys_phrase(P, I, O), R) :-
    sys_phrase_expansion(P, I, O, R).
 
 /**
@@ -386,21 +388,21 @@ sys_phrase_expansion([A|B], [A|I], O, sys_phrase(B, I, O)).
 /* Term Rewriting                                         */
 /**********************************************************/
 
-% term_expansion(+Term, -Term)
-:- public term_expansion/2.
-:- multifile term_expansion/2.
-:- meta_predicate term_expansion(-1,-1).
-:- discontiguous term_expansion/2.
+% user:term_expansion(+Term, -Term)
+:- public user:term_expansion/2.
+:- multifile user:term_expansion/2.
+:- meta_predicate user:term_expansion(-1,-1).
+:- discontiguous user:term_expansion/2.
 
 /**
  * P (grammar):
  * The grammar non-terminal P is defined with the callable P extended
  * by the current input and output.
  */
-term_expansion(phrase(P, _, _), _) :-
+user:term_expansion(phrase(P, _, _), _) :-
    sys_var(P),
    throw(error(instantiation_error,_)).
-term_expansion(phrase(P, I, O), Q) :-
+user:term_expansion(phrase(P, I, O), Q) :-
    sys_modext_args(P, I, O, Q).
 
 /**
@@ -420,13 +422,13 @@ term_expansion(phrase(P, I, O), Q) :-
 (_ --> _) :-
    throw(error(existence_error(body,--> /2),_)).
 
-term_expansion((P --> _), _) :-
+user:term_expansion((P --> _), _) :-
    sys_var(P),
    throw(error(instantiation_error,_)).
-term_expansion((P, B --> C),
-   (phrase(P, I, O) :-
-      sys_phrase(C, I, H),
-      phrase(B, O, H))).
-term_expansion((P --> B),
-   (phrase(P, I, O) :-
-      sys_phrase(B, I, O))).
+user:term_expansion((P, B --> C),
+        (phrase(P, I, O) :-
+           sys_phrase(C, I, H),
+           phrase(B, O, H))).
+user:term_expansion((P --> B),
+        (phrase(P, I, O) :-
+           sys_phrase(B, I, O))).
