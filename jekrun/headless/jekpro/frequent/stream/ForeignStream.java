@@ -600,7 +600,7 @@ public final class ForeignStream {
                         ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
                     Object help = ((TermCompound) temp).getArg(0);
                     Number num = InterpreterMessage.castInteger(help);
-                    InterpreterMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
                     res.setBuffer(size);
                 } else if (temp instanceof TermCompound &&

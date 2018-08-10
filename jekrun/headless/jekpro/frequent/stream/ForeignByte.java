@@ -1,5 +1,6 @@
 package jekpro.frequent.stream;
 
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.InterpreterMessage;
 
 import java.io.*;
@@ -41,13 +42,13 @@ public final class ForeignByte {
      *
      * @param para The stream.
      * @param val  The byte.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      * @throws IOException        IO error.
      */
-    public static void sysPutByte(OutputStream para, int val)
-            throws InterpreterMessage, IOException {
-        InterpreterMessage.checkByte(val);
-        para.write(val);
+    public static void sysPutByte(OutputStream para, Integer val)
+            throws ClassCastException, IOException {
+        int k = SpecialEval.castOctet(val);
+        para.write(k);
     }
 
     /**

@@ -114,7 +114,7 @@ final class LenseDimension extends AbstractLense {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
             Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
-            EngineMessage.checkNotLessThanZero(num);
+            SpecialEval.checkNotLessThanZero(num);
             int size = SpecialEval.castIntValue(num);
             Object val = newInstance(size);
             if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))

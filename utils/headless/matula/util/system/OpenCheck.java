@@ -178,16 +178,26 @@ public class OpenCheck {
     /*
     public static void main(String[] args)
             throws IOException {
+        String adr="http://5ch.net/";
+        System.out.println("adr=" + adr);
+        boolean flag = OpenCheck.DEFAULT_CHECK.checkHead(adr);
+        System.out.println("head(adr)=" + flag);
+
+        adr="http://qb5.5ch.net/saku2ch/";
+        System.out.println("adr=" + adr);
+        flag = OpenCheck.DEFAULT_CHECK.checkHead(adr);
+        System.out.println("head(adr)=" + flag);
+
         String adr = "https://www.stadt-zuerich.ch/robots.txt";
         System.out.println("adr=" + adr);
-        boolean flag = ForeignCache.DEFAULT_CHECK.checkHead(adr);
+        boolean flag = OpenCheck.DEFAULT_CHECK.checkHead(adr);
         System.out.println("head(adr)=" + flag);
 
         System.out.println();
 
         adr = "http://xn--zrich-kva.ch/robots.txt";
         System.out.println("adr=" + adr);
-        adr = ForeignCache.DEFAULT_CHECK.checkRedirect(adr);
+        adr = OpenCheck.DEFAULT_CHECK.checkRedirect(adr);
         System.out.println("redirect(adr)=" + adr);
     }
     */

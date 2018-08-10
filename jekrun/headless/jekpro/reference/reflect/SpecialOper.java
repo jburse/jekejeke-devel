@@ -436,7 +436,7 @@ public final class SpecialOper extends AbstractSpecial {
                     Object molec = vals[vals.length - 1];
                     SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
                     Number num = SpecialEval.derefAndCastInteger(sc.args[0], AbstractTerm.getDisplay(molec));
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     level = SpecialEval.castIntValue(num);
                     SpecialOper.checkOperatorLevel(level);
                     if (vals.length > 1)
@@ -663,7 +663,13 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         int type = opToType(t, d, en);
         SpecialQuali.colonToCallable(en.skel, en.display, false, en);
-        EngineMessage.castStringWrapped(en.skel, en.display);
+        if (en.skel instanceof SkelAtom) {
+            /* ok */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_ATOM, en.skel), en.display);
+        }
         return type;
     }
 

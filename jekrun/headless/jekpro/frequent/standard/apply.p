@@ -281,28 +281,28 @@ maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
  */
 :- public foldl/4.
 :- meta_predicate foldl(3,?,?,?).
-foldl(_, []) --> [].
-foldl(C, [X|L]) -->
-   call(C, X),
-   foldl(C, L).
+foldl(_, [], P, P).
+foldl(C, [X|L], P, Q) :-
+   call(C, X, P, H),
+   foldl(C, L, H, Q).
 
 :- public foldl/5.
 :- meta_predicate foldl(4,?,?,?,?).
-foldl(_, [], []) --> [].
-foldl(C, [X|L], [Y|R]) -->
-   call(C, X, Y),
-   foldl(C, L, R).
+foldl(_, [], [], P, P).
+foldl(C, [X|L], [Y|R], P, Q) :-
+   call(C, X, Y, P, H),
+   foldl(C, L, R, H, Q).
 
 :- public foldl/6.
 :- meta_predicate foldl(5,?,?,?,?,?).
-foldl(_, [], [], []) --> [].
-foldl(C, [X|L], [Y|R], [Z|S]) -->
-   call(C, X, Y, Z),
-   foldl(C, L, R, S).
+foldl(_, [], [], [], P, P).
+foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
+   call(C, X, Y, Z, P, H),
+   foldl(C, L, R, S, H, Q).
 
 :- public foldl/7.
 :- meta_predicate foldl(6,?,?,?,?,?,?).
-foldl(_, [], [], [], []) --> [].
-foldl(C, [X|L], [Y|R], [Z|S], [U|T]) -->
-   call(C, X, Y, Z, U),
-   foldl(C, L, R, S, T).
+foldl(_, [], [], [], [], P, P).
+foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
+   call(C, X, Y, Z, U, P, H),
+   foldl(C, L, R, S, T, H, Q).

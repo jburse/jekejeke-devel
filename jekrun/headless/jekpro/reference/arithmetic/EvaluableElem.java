@@ -230,7 +230,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    EngineMessage.checkNotLessThanZero(beta);
+                    SpecialEval.checkNotLessThanZero(beta);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = intPow(alfa, x);
                     en.display = Display.DISPLAY_CONST;

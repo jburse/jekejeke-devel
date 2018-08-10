@@ -124,9 +124,12 @@ public final class SpecialRef extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                ptr.clauseRef(en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                boolean multi = ptr.clauseRef(en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_CLAUSE_REF:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |

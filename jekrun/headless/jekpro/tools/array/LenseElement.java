@@ -7,10 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
@@ -122,7 +119,7 @@ final class LenseElement extends AbstractLense {
                 obj = null;
             }
             Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
-            EngineMessage.checkNotLessThanZero(num);
+            SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
             Object res = get(obj, idx);
             if ((subflags & MASK_METH_FUNC) != 0) {
@@ -137,9 +134,10 @@ final class LenseElement extends AbstractLense {
                     !en.unifyTerm(((SkelCompound) temp).args[2], ref,
                             AbstractTerm.getSkel(res), d))
                 return false;
-            if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+            Object check = AbstractTerm.getMarker(res);
+            if (check != null && ((MutableBit) check).getBit()) {
                 d.remTab(en);
-                d.flags &= ~Display.MASK_DISP_MLTI;
+                ((MutableBit) check).setBit(false);
             }
             return en.getNext();
         } catch (ClassCastException x) {

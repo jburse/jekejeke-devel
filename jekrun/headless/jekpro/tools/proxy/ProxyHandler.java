@@ -7,6 +7,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.MutableBit;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -193,8 +194,11 @@ public final class ProxyHandler implements InvocationHandler {
             throw new ArrayIndexOutOfBoundsException();
         Object m = state.at(idx);
         int size = Display.displaySize(m);
-        Display d = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        return AbstractTerm.createTermWrapped(m, d);
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        AbstractTerm res = AbstractTerm.createTermWrapped(m, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**

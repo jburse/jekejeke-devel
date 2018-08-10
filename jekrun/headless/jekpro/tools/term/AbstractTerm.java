@@ -168,6 +168,42 @@ public abstract class AbstractTerm {
     }
 
     /************************************************************/
+    /* Experimental Multi                                       */
+    /************************************************************/
+
+    /**
+     * <p>Set the multi flag.</p>
+     *
+     * @param t The term.
+     * @param m The multi flag.
+     */
+    public static void setMarker(Object t, Object m) {
+        if (t instanceof TermVar) {
+            ((TermVar) t).marker = m;
+        } else if (t instanceof TermCompound) {
+            ((TermCompound) t).marker = m;
+        } else {
+            /* */
+        }
+    }
+
+    /**
+     * <p>Retrieve the multi flag.</p>
+     *
+     * @param t The term.
+     * @return The multi flag.
+     */
+    public static Object getMarker(Object t) {
+        if (t instanceof TermVar) {
+            return ((TermVar) t).marker;
+        } else if (t instanceof TermCompound) {
+            return ((TermCompound) t).marker;
+        } else {
+            return null;
+        }
+    }
+
+    /************************************************************/
     /* String Generation                                        */
     /************************************************************/
 
@@ -303,14 +339,11 @@ public abstract class AbstractTerm {
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
         int size = Display.displaySize(val);
-        Display ref;
-        if (size != 0) {
-            ref = new Display(size);
-            ref.flags |= Display.MASK_DISP_MLTI;
-        } else {
-            ref = Display.DISPLAY_CONST;
-        }
-        return AbstractTerm.createTerm(val, ref);
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        Object res = AbstractTerm.createTerm(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**
@@ -337,14 +370,11 @@ public abstract class AbstractTerm {
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
         int size = Display.displaySize(val);
-        Display ref;
-        if (size != 0) {
-            ref = new Display(size);
-            ref.flags |= Display.MASK_DISP_MLTI;
-        } else {
-            ref = Display.DISPLAY_CONST;
-        }
-        return AbstractTerm.createTermWrapped(val, ref);
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**
@@ -371,14 +401,11 @@ public abstract class AbstractTerm {
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
         int size = Display.displaySize(val);
-        Display ref;
-        if (size != 0) {
-            ref = new Display(size);
-            ref.flags |= Display.MASK_DISP_MLTI;
-        } else {
-            ref = Display.DISPLAY_CONST;
-        }
-        return AbstractTerm.createMolec(val, ref);
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        Object res= AbstractTerm.createMolec(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
 }

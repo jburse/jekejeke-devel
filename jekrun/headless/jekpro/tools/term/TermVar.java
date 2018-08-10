@@ -49,6 +49,7 @@ import jekpro.tools.call.Interpreter;
 public final class TermVar extends AbstractTerm {
     final SkelVar skel;
     final Display display;
+    Object marker;
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -66,9 +67,8 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        Display ref2 = new Display(1);
-        ref2.flags |= Display.MASK_DISP_MLTI;
-        display = ref2;
+        display = new Display(1);
+        marker = new MutableBit().setBit(true);
     }
 
     /**

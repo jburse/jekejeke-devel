@@ -1,7 +1,6 @@
 package jekpro.reference.structure;
 
 import jekpro.model.molec.AbstractBind;
-import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -114,7 +113,7 @@ public final class ForeignAtom {
             switch (rep) {
                 case REP_CHARS:
                     String fun = InterpreterMessage.castString(elem);
-                    n = InterpreterMessage.castCharacter(fun);
+                    n = SpecialUniv.castCharacter(fun);
                     break;
                 case REP_CODES:
                     Number num = InterpreterMessage.castInteger(elem);
@@ -141,11 +140,11 @@ public final class ForeignAtom {
      *
      * @param str The char.
      * @return The code.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      */
     public static int sysCharToCode(String str)
-            throws InterpreterMessage {
-        return InterpreterMessage.castCharacter(str);
+            throws ClassCastException {
+        return SpecialUniv.castCharacter(str);
     }
 
     /**
@@ -343,12 +342,7 @@ public final class ForeignAtom {
                                 CodeType.ISO_CODETYPE.resolveDouble(str.substring(k),
                                         CodeType.LINE_SINGLE, k + offset), CodeType.LINE_SINGLE,
                                 false, k + offset, CodeType.ISO_CODETYPE);
-                        int res;
-                        try {
-                            res = EngineMessage.castCharacter(val);
-                        } catch (EngineMessage x) {
-                            throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, k + offset);
-                        }
+                        int res = SpecialUniv.castCharacter(val);
                         return Integer.valueOf(res);
                     case ScannerToken.PREFIX_REFERENCE:
                         throw new ScannerError(ERROR_SYNTAX_REF_NOT_READABLE, k + offset);
@@ -376,6 +370,8 @@ public final class ForeignAtom {
             if (val.length() < 19)
                 return TermAtomic.normBigInteger(Long.parseLong(val));
             return TermAtomic.normBigInteger(new BigInteger(val));
+        } catch (ClassCastException x) {
+            throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, str.length() + offset);
         } catch (ArithmeticException x) {
             throw new ScannerError(ERROR_SYNTAX_NUMBER_OVERFLOW, str.length() + offset);
         } catch (NumberFormatException x) {

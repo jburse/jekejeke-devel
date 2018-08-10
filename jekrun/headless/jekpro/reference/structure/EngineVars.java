@@ -45,47 +45,6 @@ public final class EngineVars {
     /****************************************************************/
 
     /**
-     * <p>Check whether the given term is ground.</p>
-     * <p>Tail recursive solution.</p>
-     *
-     * @param t The term skel.
-     * @param d The term display.
-     * @return True if the term is ground, otherwise false.
-     */
-    public static boolean isGround(Object t, Display d) {
-        for (; ; ) {
-            Object var = EngineCopy.getVar(t);
-            if (var == null)
-                return true;
-            SkelVar v;
-            if (var instanceof SkelVar) {
-                v = (SkelVar) var;
-            } else {
-                SkelVar[] temp = (SkelVar[]) var;
-                int j = 0;
-                for (; j < temp.length - 1; j++) {
-                    v = temp[j];
-                    BindVar b = d.bind[v.id];
-                    if (b.display != null) {
-                        if (!isGround(b.skel, b.display))
-                            return false;
-                    } else {
-                        return false;
-                    }
-                }
-                v = temp[j];
-            }
-            BindVar b = d.bind[v.id];
-            if (b.display != null) {
-                t = b.skel;
-                d = b.display;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    /**
      * <p>Collect the vars of the given term in the given var set.</p>
      * <p>Makes use of the vars of skel compound.</p>
      * <p>The result is collected in vars.</p>

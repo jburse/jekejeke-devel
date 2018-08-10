@@ -93,7 +93,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                     sa = SpecialQuali.objToAtom(obj, temp[0], ref);
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
                     obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
                     if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))

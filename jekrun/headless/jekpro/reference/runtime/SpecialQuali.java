@@ -418,7 +418,7 @@ public final class SpecialQuali extends AbstractSpecial {
                     ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
                 SkelCompound sc = (SkelCompound) t;
                 Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
-                EngineMessage.checkNotLessThanZero(num);
+                SpecialEval.checkNotLessThanZero(num);
                 SpecialEval.castIntValue(num);
                 en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
                 return (Integer) num;

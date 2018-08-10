@@ -167,6 +167,26 @@ public final class SpecialEval extends AbstractSpecial {
     /*************************************************************/
 
     /**
+     * <p>Check whether the given number is not less than zero.</p>
+     * <p>This check must be preceded by an integer check.</p>
+     *
+     * @param n The number, either Integer or BigInteger.
+     * @throws ClassCastException Shit happens.
+     */
+    public static void checkNotLessThanZero(Number n)
+            throws ClassCastException {
+        if (n instanceof Integer) {
+            if (n.intValue() < 0)
+                throw new ClassCastException(
+                        EngineMessage.OP_REPRESENTATION_NOT_LESS_THAN_ZERO);
+        } else {
+            if (((BigInteger) n).signum() < 0)
+                throw new ClassCastException(
+                        EngineMessage.OP_REPRESENTATION_NOT_LESS_THAN_ZERO);
+        }
+    }
+
+    /**
      * <p>Check whether the given value is a byte value.</p>
      * <p>This check must be preceded by an integer check.</p>
      *
@@ -177,11 +197,9 @@ public final class SpecialEval extends AbstractSpecial {
     public static byte castByteValue(Number t)
             throws ClassCastException {
         if (t instanceof Integer) {
-            int n = t.intValue();
-            if (Byte.MIN_VALUE <= n &&
-                    n <= Byte.MAX_VALUE) {
-                return (byte) n;
-            }
+            int k = t.intValue();
+            if (Byte.MIN_VALUE <= k && k <= Byte.MAX_VALUE)
+                return (byte) k;
         }
         throw new ClassCastException(
                 EngineMessage.OP_REPRESENTATION_BYTE);
@@ -198,11 +216,9 @@ public final class SpecialEval extends AbstractSpecial {
     public static int castCodePoint(Number t)
             throws ClassCastException {
         if (t instanceof Integer) {
-            int n = t.intValue();
-            if (0 <= n &&
-                    n <= Character.MAX_CODE_POINT) {
-                return n;
-            }
+            int k = t.intValue();
+            if (0 <= k && k <= Character.MAX_CODE_POINT)
+                return k;
         }
         throw new ClassCastException(
                 EngineMessage.OP_REPRESENTATION_CODE_POINT);
@@ -218,14 +234,14 @@ public final class SpecialEval extends AbstractSpecial {
      */
     public static short castShortValue(Number t)
             throws ClassCastException {
-        if (t instanceof Integer &&
-                Short.MIN_VALUE <= t.intValue() &&
-                t.intValue() <= Short.MAX_VALUE) {
-            return (short) t.intValue();
-        } else {
-            throw new ClassCastException(
-                    EngineMessage.OP_REPRESENTATION_SHORT);
+        if (t instanceof Integer) {
+            int k = t.intValue();
+            if (Short.MIN_VALUE <= k &&
+                    k <= Short.MAX_VALUE)
+                return (short) k;
         }
+        throw new ClassCastException(
+                EngineMessage.OP_REPRESENTATION_SHORT);
     }
 
     /**
@@ -266,6 +282,23 @@ public final class SpecialEval extends AbstractSpecial {
             throw new ClassCastException(
                     EngineMessage.OP_REPRESENTATION_LONG);
         }
+    }
+
+    /**
+     * <p>Check whether the given number is an octet.</p>
+     *
+     * @param t The number.
+     * @throws ClassCastException Not an octet.
+     */
+    public static int castOctet(Number t)
+            throws ClassCastException {
+        if (t instanceof Integer) {
+            int k = t.intValue();
+            if (0 <= k && k <= 255)
+                return k;
+        }
+        throw new ClassCastException(
+                EngineMessage.OP_REPRESENTATION_OCTET);
     }
 
 }

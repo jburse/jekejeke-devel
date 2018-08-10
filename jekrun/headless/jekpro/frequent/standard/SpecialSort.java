@@ -189,7 +189,8 @@ public final class SpecialSort extends AbstractSpecial {
             throws EngineMessage {
         AbstractSet<Object> set = new SetTree<Object>(c);
         SpecialSort.sortSet(set, m, d, en);
-        return createSet(en.store.foyer.ATOM_NIL, Display.DISPLAY_CONST, set, en);
+        return createSet(en.store.foyer.ATOM_NIL,
+                Display.DISPLAY_CONST, set, en);
     }
 
     /**
@@ -203,7 +204,8 @@ public final class SpecialSort extends AbstractSpecial {
             throws EngineMessage {
         AbstractSet<Object> set = new SetHashLink<Object>();
         SpecialSort.sortSet(set, m, d, en);
-        return createSet(en.store.foyer.ATOM_NIL, Display.DISPLAY_CONST, set, en);
+        return createSet(en.store.foyer.ATOM_NIL,
+                Display.DISPLAY_CONST, set, en);
     }
 
     /**

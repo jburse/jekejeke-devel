@@ -70,12 +70,10 @@ public final class EngineMessage extends Exception {
     public static final String OP_TYPE_ATOM = "atom";
     public static final String OP_TYPE_PREDICATE_INDICATOR = "predicate_indicator";
     public static final String OP_TYPE_CALLABLE = "callable";
-    public static final String OP_TYPE_CHARACTER = "character";
     public static final String OP_TYPE_LIST = "list";
     public static final String OP_TYPE_PAIR = "pair";
     public static final String OP_TYPE_ASSOC = "assoc";
     public static final String OP_TYPE_CAPABILITY = "capability";
-    public static final String OP_TYPE_BYTE = "byte";
     public static final String OP_TYPE_REF = "ref";
     public static final String OP_TYPE_DECIMAL = "decimal";
     public static final String OP_TYPE_FLOAT = "float";
@@ -90,7 +88,6 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_OPERATOR_PRIORITY = "operator_priority";
     public static final String OP_DOMAIN_PROLOG_FLAG = "prolog_flag";
     public static final String OP_DOMAIN_FLAG_VALUE = "flag_value";
-    public static final String OP_DOMAIN_NOT_LESS_THAN_ZERO = "not_less_than_zero";
     public static final String OP_DOMAIN_WRITE_OPTION = "write_option";
     public static final String OP_DOMAIN_READ_OPTION = "read_option";
     public static final String OP_DOMAIN_ASSERT_OPTION = "assert_option";
@@ -121,6 +118,9 @@ public final class EngineMessage extends Exception {
     public final static String OP_REPRESENTATION_INT = "int";
     public final static String OP_REPRESENTATION_LONG = "long";
     public static final String OP_REPRESENTATION_CHAR = "char";
+    public static final String OP_REPRESENTATION_NOT_LESS_THAN_ZERO = "not_less_than_zero";
+    public static final String OP_REPRESENTATION_CHARACTER = "character";
+    public static final String OP_REPRESENTATION_OCTET = "octet";
 
     private static final String OP_EXISTENCE_ERROR = "existence_error"; /* ISO */
     public static final String OP_EXISTENCE_PROCEDURE = "procedure";
@@ -519,87 +519,6 @@ public final class EngineMessage extends Exception {
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_CALLABLE, t), d);
         }
-    }
-
-    /**
-     * <p>Check whether the given int is a byte.</p>
-     *
-     * @param n The primitive int.
-     * @throws EngineMessage Not a byte.
-     */
-    public static void checkByte(int n) throws EngineMessage {
-        if (n < 0 || n > 255)
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_BYTE, Integer.valueOf(n)));
-    }
-
-    /*************************************************************/
-    /* Type Casts                                                */
-    /* See SpecialEval and SpecialUniv                           */
-    /*************************************************************/
-
-    /**
-     * <p>Check whether the given term is an atom.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The wrapped string.
-     * @throws EngineMessage Shit happens.
-     */
-    public static SkelAtom castStringWrapped(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof SkelAtom) {
-            return (SkelAtom) t;
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_ATOM, t), d);
-        }
-    }
-
-    /*************************************************************/
-    /* Number Casts                                              */
-    /*************************************************************/
-
-    /**
-     * <p>Check whether the given number is not less than zero.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param n The number, either Integer or BigInteger.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkNotLessThanZero(Number n)
-            throws EngineMessage {
-        if (n instanceof Integer) {
-            if (n.intValue() < 0)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
-        } else {
-            if (((BigInteger) n).compareTo(BigInteger.ZERO) < 0)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
-        }
-    }
-
-    /*************************************************************/
-    /* String Casts                                              */
-    /*************************************************************/
-
-    /**
-     * <p>Check whether the given atom is a character.</p>
-     *
-     * @param str The atom.
-     * @return The code point.
-     * @throws EngineMessage Not a character.
-     */
-    public static int castCharacter(String str)
-            throws EngineMessage {
-        int k;
-        if (str.length() == 0 ||
-                str.length() != Character.charCount(k = str.codePointAt(0)))
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CHARACTER, new SkelAtom(str)));
-        return k;
     }
 
     /******************************************************************/

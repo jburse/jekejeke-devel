@@ -11,6 +11,7 @@ import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -128,10 +129,10 @@ final class MemberFunction extends AbstractMember {
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
                     AbstractFactory.OP_REPRESENTATION_NULL));
-        Display d = AbstractTerm.getDisplay(res);
         en.skel = AbstractTerm.getSkel(res);
-        en.display = d;
-        return (d.flags & Display.MASK_DISP_MLTI) != 0;
+        en.display = AbstractTerm.getDisplay(res);
+        Object check = AbstractTerm.getMarker(res);
+        return (check != null && ((MutableBit) check).getBit());
     }
 
     /***************************************************************/

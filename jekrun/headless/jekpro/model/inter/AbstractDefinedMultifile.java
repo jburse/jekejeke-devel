@@ -4,7 +4,6 @@ import jekpro.model.builtin.SpecialBody;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.PreClause;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -84,11 +83,10 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             } else {
                 ref.setSize(clause.dispsize);
             }
-            if (clause.intargs == null)
-                break;
-            if (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                    ((SkelCompound) clause.head).args, ref,
-                    clause.intargs, en))
+            if (clause.intargs == null ||
+                    (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
+                            ((SkelCompound) clause.head).args, ref,
+                            clause.intargs, en)))
                 break;
 
             /* end of cursor */
@@ -111,13 +109,6 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         ref.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : en.number);
         ref.goalskel = en.contskel;
         ref.goaldisplay = u;
-        if ((clause.flags & Clause.MASK_CLAUSE_NCUT) != 0 &&
-                (!en.hasCont() || (clause.flags & Intermediate.MASK_INTER_MUTE) != 0) &&
-                !en.visor.isDebug()) {
-            en.contskel = clause.getNextRaw(en);
-            en.contdisplay = ref;
-            return true;
-        }
 
         int nextat = at;
         while (nextat != list.length) {
@@ -221,6 +212,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.skel != null)
                 throw (EngineException) en.skel;
         }
+        if (clause.size != 0)
+            ref1.remTab(en);
 
         while (at != list.length) {
             if (multiVisible(list[at], en))

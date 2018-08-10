@@ -45,6 +45,8 @@ public final class SpecialUniv extends AbstractSpecial {
     private final static int SPECIAL_UNIFY = 3;
     private final static int SPECIAL_UNIFY_CHECKED = 4;
     private final static int SPECIAL_NOT_UNIFY = 5;
+    private final static int SPECIAL_SYS_LIST_TO_TERM = 6;
+    private final static int SPECIAL_SYS_TERM_TO_LIST = 7;
 
     /**
      * <p>Create a univ special.</p>
@@ -76,7 +78,8 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.skel = temp[0];
                     en.display = ref;
                     en.deref();
-                    if (SpecialUniv.termToList(en)) {
+                    if (!(en.skel instanceof SkelVar)) {
+                        en.skel = SpecialUniv.termToList(en.skel, en);
                         if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                             return false;
                         return en.getNext();
@@ -95,7 +98,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     int nth = SpecialEval.castIntValue(num);
                     en.skel = temp[1];
                     en.display = ref;
@@ -121,7 +124,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     num = SpecialEval.derefAndCastInteger(temp[0], ref);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     nth = SpecialEval.castIntValue(num);
 
                     en.skel = temp[1];
@@ -179,6 +182,29 @@ public final class SpecialUniv extends AbstractSpecial {
                     if (en.skel != null)
                         throw (EngineException) en.skel;
                     return en.getNextRaw();
+                case SPECIAL_SYS_LIST_TO_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    multi = SpecialUniv.listToTerm(en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_TERM_TO_LIST:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    en.skel = SpecialUniv.termToList(en.skel, en);
+                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -298,22 +324,20 @@ public final class SpecialUniv extends AbstractSpecial {
      *
      * @param en Engine.
      * @return True if the argument was not a variable, otherwise false.
+     * @throws EngineMessage Shit happens.
      */
-    private static boolean termToList(Engine en) {
-        Object t = en.skel;
+    private static Object termToList(Object t, Engine en)
+            throws EngineMessage {
+        Foyer foyer = en.store.foyer;
+        Object res = foyer.ATOM_NIL;
         if (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
-            Object res = en.store.foyer.ATOM_NIL;
             for (int i = sc.args.length - 1; i >= 0; i--)
-                res = new SkelCompound(en.store.foyer.ATOM_CONS, sc.args[i], res);
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, sc.sym, res);
-            return true;
-        } else if (!(t instanceof SkelVar)) {
-            Object res = en.store.foyer.ATOM_NIL;
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t, res);
-            return true;
+                res = new SkelCompound(foyer.ATOM_CONS, sc.args[i], res);
+            return new SkelCompound(foyer.ATOM_CONS, sc.sym, res);
         } else {
-            return false;
+            EngineMessage.checkInstantiated(t);
+            return new SkelCompound(foyer.ATOM_CONS, t, res);
         }
     }
 
@@ -706,6 +730,22 @@ public final class SpecialUniv extends AbstractSpecial {
     /*************************************************************/
     /* String Casts                                              */
     /*************************************************************/
+
+    /**
+     * <p>Check whether the given atom is a character.</p>
+     *
+     * @param str The atom.
+     * @return The code point.
+     * @throws ClassCastException Not a character.
+     */
+    public static int castCharacter(String str)
+            throws ClassCastException {
+        int k;
+        if (str.length() == 0 ||
+                str.length() != Character.charCount(k = str.codePointAt(0)))
+            throw new ClassCastException(EngineMessage.OP_REPRESENTATION_CHARACTER);
+        return k;
+    }
 
     /**
      * <p>Check whether the given atom is a char value.</p>

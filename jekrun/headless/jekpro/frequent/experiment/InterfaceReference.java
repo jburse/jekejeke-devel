@@ -58,8 +58,9 @@ public interface InterfaceReference {
      *
      * @param en The engine.
      * @throws EngineMessage Shit happens.
+     * @return True if new display is returned, otherwise false.
      */
-    void clauseRef(Engine en)
+    boolean clauseRef(Engine en)
             throws EngineMessage;
 
 }

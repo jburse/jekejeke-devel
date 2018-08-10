@@ -3,7 +3,6 @@ package jekpro.tools.proxy;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallIn;
 import jekpro.tools.call.Interpreter;
@@ -120,12 +119,12 @@ final class ExecutorFunction extends AbstractExecutor {
             Object[] termargs = uncompileArgs(proxy, args);
             Object eval;
             if (termargs.length != 0) {
-                eval = new TermCompound(functor, termargs);
+                eval = new TermCompound(inter, functor, termargs);
             } else {
                 eval = functor;
             }
             Object help = new TermVar();
-            Object goal = new TermCompound(is, help, eval);
+            Object goal = new TermCompound(inter, is, help, eval);
 
             CallIn callin = inter.iterator(goal);
             callin.next();

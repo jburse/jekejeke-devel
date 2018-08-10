@@ -6,6 +6,7 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
@@ -17,7 +18,6 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 /**
@@ -47,7 +47,7 @@ import java.util.ArrayList;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignEngine {
-    private final static Integer MAX_UNSIGNED_BYTE = Integer.valueOf(255);
+    private final static int MAX_UNSIGNED_BYTE = 255;
 
     /**
      * <p>Retrieve the list of flags.</p>
@@ -99,16 +99,12 @@ public final class ForeignEngine {
      * <p>Halt the system.</p>
      *
      * @param val The exit code.
-     * @throws InterpreterMessage Illegal exit code.
+     * @throws ClassCastException Illegal exit code.
      */
-    public static void sysHalt(Object val) throws InterpreterMessage {
-        Number num = InterpreterMessage.castInteger(val);
-        InterpreterMessage.checkNotLessThanZero(num);
-        if (num instanceof BigInteger || ((Integer) num).compareTo(MAX_UNSIGNED_BYTE) > 0) {
-            throw new InterpreterMessage(InterpreterMessage.representationError(
-                    "max_status"));
-        }
-        System.exit(num.intValue());
+    public static void sysHalt(Integer val)
+            throws ClassCastException {
+        int k = SpecialEval.castOctet(val);
+        System.exit(k);
     }
 
     /*************************************************************/

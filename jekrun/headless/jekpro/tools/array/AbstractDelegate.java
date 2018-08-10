@@ -204,8 +204,8 @@ public abstract class AbstractDelegate {
             boolean multi = en.computeExpr(help[i], ref);
             Display ref2 = en.display;
             Object val = AbstractTerm.createMolec(en.skel, ref2);
-            if (multi)
-                ref2.flags |= Display.MASK_DISP_MLTI;
+            if (EngineCopy.getVar(en.skel) != null)
+                AbstractTerm.setMarker(val, Boolean.valueOf(multi));
             args[i] = val;
         }
         return args;
@@ -248,13 +248,12 @@ public abstract class AbstractDelegate {
             Object temp = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(temp) != null) {
                 Display ref2 = AbstractTerm.getDisplay(obj);
+                boolean multi = ((Boolean) AbstractTerm.getMarker(obj)).booleanValue();
                 SkelVar sv = vars[countvar];
                 countvar++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
-                if ((ref2.flags & Display.MASK_DISP_MLTI) != 0) {
+                if (multi)
                     ref2.remTab(en);
-                    ref2.flags &= ~Display.MASK_DISP_MLTI;
-                }
                 args[i] = sv;
             } else {
                 args[i] = temp;

@@ -221,11 +221,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 ref.setSize(clause.dispsize);
             }
-            if (clause.intargs == null)
-                break;
-            if (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                    ((SkelCompound) clause.head).args, ref,
-                    clause.intargs, en))
+            if (clause.intargs == null ||
+                    (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
+                            ((SkelCompound) clause.head).args, ref,
+                            clause.intargs, en)))
                 break;
 
             /* end of cursor */
@@ -243,13 +242,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
         ref.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : en.number);
         ref.goalskel = en.contskel;
         ref.goaldisplay = u;
-        if ((clause.flags & Clause.MASK_CLAUSE_NCUT) != 0 &&
-                (!en.hasCont() || (clause.flags & Intermediate.MASK_INTER_MUTE) != 0) &&
-                !en.visor.isDebug()) {
-            en.contskel = clause.getNextRaw(en);
-            en.contdisplay = ref;
-            return true;
-        }
 
         if (at != list.length ||
                 (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
@@ -272,15 +264,14 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param ref2 The cause head display.
      * @param arr  The unify instructions.
      * @param en   The engine.
-     * @return True if resolution was successful, otherwise false.
+     * @return True if the unification was successful, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     static boolean unifyDefined(Object[] t1, Display ref,
                                 Object[] t2, DisplayClause ref2,
                                 int[] arr,
                                 Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
             if (n < 0) {
@@ -556,6 +547,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (en.skel != null)
                 throw (EngineException) en.skel;
         }
+        if (clause.size != 0)
+            ref1.remTab(en);
 
         if (at != list.length ||
                 (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
@@ -578,12 +571,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param ref2 The clause display.
      * @return True if the unification succeeds, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     static boolean unifyArgs(Object[] t1, Display ref,
                              Object[] t2, Display ref2,
                              Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         for (int i = 0; i < t2.length; i++)
             if (!en.unifyTerm(t2[i], ref2, t1[i], ref))
                 return false;

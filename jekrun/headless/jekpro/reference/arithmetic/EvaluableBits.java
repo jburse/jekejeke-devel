@@ -67,103 +67,103 @@ public final class EvaluableBits extends AbstractSpecial {
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
-        switch (id) {
-            case EVALUABLE_NOT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                boolean multi = en.computeExpr(temp[0], ref);
-                Display d = en.display;
-                Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = not(alfa);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_AND:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                multi = en.computeExpr(temp[1], ref);
-                d = en.display;
-                Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = and(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_OR:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                multi = en.computeExpr(temp[1], ref);
-                d = en.display;
-                beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = or(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_XOR:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                multi = en.computeExpr(temp[1], ref);
-                d = en.display;
-                beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = xor(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_SHIFT_LEFT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                multi = en.computeExpr(temp[1], ref);
-                d = en.display;
-                beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                int x = SpecialEval.castIntValue(beta);
-                en.skel = shiftLeft(alfa, x);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_SHIFT_RIGHT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                multi = en.computeExpr(temp[1], ref);
-                d = en.display;
-                beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                x = SpecialEval.castIntValue(beta);
-                en.skel = shiftRight(alfa, x);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
-        }
+            switch (id) {
+                case EVALUABLE_NOT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = not(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_AND:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = and(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_OR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = or(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_XOR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = xor(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_SHIFT_LEFT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    int x = SpecialEval.castIntValue(beta);
+                    en.skel = shiftLeft(alfa, x);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_SHIFT_RIGHT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    x = SpecialEval.castIntValue(beta);
+                    en.skel = shiftRight(alfa, x);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));

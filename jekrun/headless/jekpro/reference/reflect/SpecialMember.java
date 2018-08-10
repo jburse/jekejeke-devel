@@ -1,12 +1,13 @@
 package jekpro.reference.reflect;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -72,32 +73,26 @@ public final class SpecialMember extends AbstractSpecial {
                 case SPECIAL_VAR:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    if (!(en.skel instanceof SkelVar))
+                    if (!isVar(temp[0], ref))
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_NONVAR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    if (en.skel instanceof SkelVar)
+                    if (isVar(temp[0], ref))
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_GROUND:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (!EngineVars.isGround(temp[0], ref))
+                    if (!isGround(temp[0], ref))
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_SYS_FUNCTOR_TO_TERM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     int arity = SpecialEval.castIntValue(num);
 
                     boolean multi;
@@ -159,6 +154,70 @@ public final class SpecialMember extends AbstractSpecial {
         }
     }
 
+    /**
+     * <p>Check whether the argument is a variable.</p>
+     *
+     * @param alfa The term skeleton.
+     * @param d1   The term display.
+     * @return True if a variable, otherwise false.
+     */
+    private static boolean isVar(Object alfa, Display d1) {
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                // combined check and deref
+                BindVar b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is ground.</p>
+     * <p>Tail recursive solution.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return True if the term is ground, otherwise false.
+     */
+    private static boolean isGround(Object t, Display d) {
+        for (; ; ) {
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                return true;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
+                    BindVar b = d.bind[v.id];
+                    if (b.display != null) {
+                        if (!isGround(b.skel, b.display))
+                            return false;
+                    } else {
+                        return false;
+                    }
+                }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
+            } else {
+                return false;
+            }
+        }
+    }
 
 }
 

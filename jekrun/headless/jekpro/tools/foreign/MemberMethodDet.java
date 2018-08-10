@@ -9,10 +9,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.*;
 
 import java.lang.reflect.Method;
 
@@ -136,9 +133,10 @@ final class MemberMethodDet extends AbstractMember {
                                 ((SkelCompound) temp).args.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
-        if ((d.flags & Display.MASK_DISP_MLTI) != 0) {
+        Object check = AbstractTerm.getMarker(res);
+        if (check != null && ((MutableBit) check).getBit()) {
             d.remTab(en);
-            d.flags &= ~Display.MASK_DISP_MLTI;
+            ((MutableBit) check).setBit(false);
         }
         return en.getNext();
     }

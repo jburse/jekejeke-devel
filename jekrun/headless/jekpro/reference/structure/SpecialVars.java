@@ -51,6 +51,8 @@ import matula.util.data.SetHashLink;
 public final class SpecialVars extends AbstractSpecial {
     public final static String OP_DOLLAR_VAR = "$VAR";
 
+    private final static String OP_EXISTENTIAL = "^";
+
     private final static int SPECIAL_TERM_VARIABLES = 0;
     private final static int SPECIAL_TERM_VARIABLES_DIFF = 1;
     private final static int SPECIAL_SYS_TERM_SINGELTONS = 2;
@@ -148,7 +150,7 @@ public final class SpecialVars extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     SpecialEval.castIntValue(num);
                     num = SpecialVars.numberVars(temp[0], ref, (Integer) num, en);
                     if (num == null)
@@ -223,7 +225,7 @@ public final class SpecialVars extends AbstractSpecial {
         }
         while (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Clause.OP_EXISTENTIAL)) {
+                ((SkelCompound) t).sym.fun.equals(OP_EXISTENTIAL)) {
             SkelCompound sc = (SkelCompound) t;
             t = sc.args[1];
             while (t instanceof SkelVar) {
@@ -255,7 +257,7 @@ public final class SpecialVars extends AbstractSpecial {
         }
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Clause.OP_EXISTENTIAL)) {
+                ((SkelCompound) t).sym.fun.equals(OP_EXISTENTIAL)) {
             SkelCompound sc = (SkelCompound) t;
             goalGlobals(sc.args[1], d, ev);
             ev.varExclude(sc.args[0], d);

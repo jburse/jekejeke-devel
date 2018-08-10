@@ -218,7 +218,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     int level = SpecialEval.castIntValue(num);
                     SpecialOper.checkOperatorLevel(level);
                     String modestr = SpecialUniv.derefAndCastString(temp[1], ref);
@@ -226,7 +226,13 @@ public final class SpecialSpecial extends AbstractSpecial {
                     int type = SpecialOper.atomToType(modestr);
 
                     SpecialQuali.colonToCallable(temp[2], ref, false, en);
-                    sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                    if (en.skel instanceof SkelAtom) {
+                        sa = (SkelAtom)en.skel;
+                    } else {
+                        EngineMessage.checkInstantiated(en.skel);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_ATOM, en.skel), en.display);
+                    }
                     defineOperator(level, leftright, type, sa, en);
                     return en.getNextRaw();
                 case SPECIAL_SET_OPER_PROPERTY:
@@ -276,7 +282,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     en.display = ref;
                     en.deref();
                     num = SpecialEval.derefAndCastInteger(en.skel, en.display);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     SpecialEval.castIntValue(num);
                     Constructor con = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INT);
                     if (!en.store.foyer.getFactory().validateExceptionTypes(con.getExceptionTypes(), en))

@@ -81,7 +81,7 @@ final class LenseUpdate extends AbstractLense {
                 obj = null;
             }
             Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
-            EngineMessage.checkNotLessThanZero(num);
+            SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
             Object res = Types.denormProlog(encodeparas[1], ((SkelCompound) temp).args[2], ref);
             set(obj, idx, res);

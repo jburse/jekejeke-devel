@@ -66,8 +66,7 @@ put_byte(Stream, Byte) :-
    sys_put_byte(Stream, Byte).
 
 :- private sys_put_byte/2.
-:- foreign(sys_put_byte/2, 'ForeignByte',
-      sysPutByte('OutputStream',int)).
+:- foreign(sys_put_byte/2, 'ForeignByte', sysPutByte('OutputStream','Integer')).
 
 /**
  * get_byte(B): [ISO 8.13.1]

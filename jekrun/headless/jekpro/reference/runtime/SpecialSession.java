@@ -475,11 +475,10 @@ public final class SpecialSession extends AbstractSpecial {
      * @param en The engine.
      * @return The expanded goal.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
                                                PositionKey pos, Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
                 (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
             PreClause pre = new PreClause();

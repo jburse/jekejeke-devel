@@ -165,7 +165,7 @@ public final class WriteOpts {
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
                     Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
-                    EngineMessage.checkNotLessThanZero(num);
+                    SpecialEval.checkNotLessThanZero(num);
                     lev = SpecialEval.castIntValue(num);
                     SpecialOper.checkOperatorLevel(lev);
                 } else if (en.skel instanceof SkelCompound &&

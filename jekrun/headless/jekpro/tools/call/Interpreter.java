@@ -10,6 +10,7 @@ import jekpro.reference.bootload.ForeignEngine;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.PositionKey;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
@@ -358,9 +359,12 @@ public final class Interpreter implements Comparator<Object> {
         }
         if (val == null)
             return null;
-        Display ref = (rd.getGensym() != 0 ?
-                new Display(rd.getGensym()) : Display.DISPLAY_CONST);
-        return AbstractTerm.createTermWrapped(val, ref);
+        int size = rd.getGensym();
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**
@@ -423,8 +427,8 @@ public final class Interpreter implements Comparator<Object> {
         }
         if (val == null)
             return null;
-        Display ref = (rd.getGensym() != 0 ?
-                new Display(rd.getGensym()) : Display.DISPLAY_CONST);
+        int size = rd.getGensym();
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
         try {
             if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), val, ref, en, rd))
@@ -434,7 +438,10 @@ public final class Interpreter implements Comparator<Object> {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        return AbstractTerm.createTermWrapped(val, ref);
+        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /***********************************************************/
