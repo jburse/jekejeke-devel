@@ -62,15 +62,12 @@ public class PrologReader {
     public final static String OP_RPAREN = ")";
     public final static String OP_LBRACE = "{";
     public final static String OP_RBRACE = "}";
-
-    public final static String OP_SET = "{}";
+    public final static String OP_LBRACKET = "[";
+    public final static String OP_RBRACKET = "]";
 
     /* only read opts */
     public final static int FLAG_SING = 0x00001000;
     public final static int FLAG_NEWV = 0x00002000;
-
-    protected final static String OP_LBRACK = "[";
-    protected final static String OP_RBRACK = "]";
 
     public final static String ERROR_SYNTAX_PARENTHESIS_BALANCE = "parenthesis_balance";
     public final static String ERROR_SYNTAX_CANNOT_START_TERM = "cannot_start_term"; /* SWI */
@@ -78,7 +75,8 @@ public class PrologReader {
     public final static String ERROR_SYNTAX_BRACKET_BALANCE = "bracket_balance";
     public final static String ERROR_SYNTAX_OPERATOR_CLASH = "operator_clash"; /* SWI */
 
-    private final static String[] noTermTempls = {OP_EOF, OP_PERIOD, OP_RPAREN, OP_RBRACE, OP_RBRACK};
+    private final static String[] noTermTempls = {OP_EOF, OP_PERIOD,
+            OP_RPAREN, OP_RBRACE, OP_RBRACKET};
     private final static String[] noOperTempls = {OP_COMMA, OP_BAR};
 
     private Engine engine;
@@ -296,7 +294,7 @@ public class PrologReader {
         } else if (OP_LBRACE.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RBRACE.equals(st.getData())) {
-                skel = makeAtom(OP_SET);
+                skel = makeAtom(Foyer.OP_SET);
                 h = 0;
             } else {
                 Object temp = read(Operator.LEVEL_HIGH);
@@ -304,17 +302,17 @@ public class PrologReader {
                     throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
                             st.getTokenOffset());
                 nextToken();
-                skel = new SkelCompound(makeAtom(OP_SET), temp);
+                skel = new SkelCompound(makeAtom(Foyer.OP_SET), temp);
                 h = -1;
             }
-        } else if (OP_LBRACK.equals(st.getData())) {
+        } else if (OP_LBRACKET.equals(st.getData())) {
             nextToken();
-            if (st.getHint() == 0 && OP_RBRACK.equals(st.getData())) {
+            if (st.getHint() == 0 && OP_RBRACKET.equals(st.getData())) {
                 skel = makeAtom(Foyer.OP_NIL);
                 h = 0;
             } else {
                 skel = readList();
-                if (st.getHint() != 0 || !OP_RBRACK.equals(st.getData()))
+                if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
                             st.getTokenOffset());
                 nextToken();
@@ -379,8 +377,8 @@ public class PrologReader {
                     break;
                 help = (SkelAtom) temp;
             } else if (OP_LBRACE.equals(st.getData())) {
-                help = makeAtom(OP_SET);
-            } else if (OP_LBRACK.equals(st.getData())) {
+                help = makeAtom(Foyer.OP_STRUCT);
+            } else if (OP_LBRACKET.equals(st.getData())) {
                 help = makeAtom(Foyer.OP_NIL);
             } else {
                 h = st.getData().codePointAt(0);
@@ -488,15 +486,28 @@ public class PrologReader {
      */
     protected Object readPostfix(SkelAtom help, Object skel)
             throws ScannerError, IOException, EngineException, EngineMessage {
-        if (st.getHint() == 0 && OP_LBRACK.equals(st.getData())) {
+        if (st.getHint() == 0 && OP_LBRACKET.equals(st.getData())) {
             nextToken();
-            if (st.getHint() == 0 && OP_RBRACK.equals(st.getData())) {
+            if (st.getHint() == 0 && OP_RBRACKET.equals(st.getData())) {
                 nextToken();
                 return new SkelCompound(help, skel);
             } else {
-                skel = readIndex(skel, null, help);
-                if (st.getHint() != 0 || !OP_RBRACK.equals(st.getData()))
+                skel = readArrayIndex(skel, null, help);
+                if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
+                            st.getTokenOffset());
+                nextToken();
+                return skel;
+            }
+        } else if (st.getHint() == 0 && OP_LBRACE.equals(st.getData())) {
+            nextToken();
+            if (st.getHint() == 0 && OP_RBRACE.equals(st.getData())) {
+                nextToken();
+                return new SkelCompound(help, skel);
+            } else {
+                skel = readStruct(skel, null, help);
+                if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
+                    throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
                             st.getTokenOffset());
                 nextToken();
                 return skel;
@@ -603,7 +614,7 @@ public class PrologReader {
 
 
     /**
-     * <p>Reads an index.</p>
+     * <p>Reads an array index.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param skel   The indexed object.
@@ -611,11 +622,11 @@ public class PrologReader {
      * @param help   The functor.
      * @return The compound.
      * @throws ScannerError    Error and position.
-     * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
+     * @throws IOException     IO error.
      */
-    protected Object readIndex(Object skel, String[] filler, SkelAtom help)
+    protected Object readArrayIndex(Object skel, String[] filler, SkelAtom help)
             throws ScannerError, EngineMessage, EngineException, IOException {
         ListArray<Object> vec = new ListArray<Object>();
         vec.add(skel);
@@ -627,6 +638,25 @@ public class PrologReader {
         Object[] args = new Object[vec.size()];
         vec.toArray(args);
         return new SkelCompound(help, args);
+    }
+
+    /**
+     * <p>Reads a struct.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param skel   The indexed object.
+     * @param filler The filler.
+     * @param help   The functor.
+     * @return The compound.
+     * @throws ScannerError    Error and position.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     * @throws IOException     IO error.
+     */
+    protected Object readStruct(Object skel, String[] filler, SkelAtom help)
+            throws ScannerError, EngineMessage, EngineException, IOException {
+        Object arg = read(Operator.LEVEL_HIGH);
+        return new SkelCompound(help, skel, arg);
     }
 
     /***************************************************************/

@@ -6,7 +6,6 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
 import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
@@ -214,7 +213,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         } else if (!comp && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 1 &&
-                ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
             SkelAtom sa = slashToPackage(temp.args[0], d, true, err, en);
             if (sa == null)
@@ -299,7 +298,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         } else if (set && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
-                ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
             SkelAtom sa = slashToPackage(temp.args[0], d, true, err, en);
             if (sa == null)
