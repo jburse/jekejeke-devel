@@ -888,15 +888,38 @@ public class PrologWriter {
                 (backspez & SPEZ_META) != 0 &&
                 (backspez & SPEZ_EVAL) == 0)
             append(' ');
-        if (sc.args.length > 1 && sc.sym.fun.equals(Foyer.OP_NIL)) {
-            writeArrayIndex(sc, ref, cp, decl, backshift, backspez, backoffset, mod, nsa);
-        } else if (sc.sym.fun.equals(Foyer.OP_STRUCT)) {
+        if (isIndex(sc)) {
+            writeIndex(sc, ref, cp, decl, backshift, backspez, backoffset, mod, nsa);
+        } else if (isStruct(sc)) {
             writeStruct(sc, ref, cp, decl, backshift, backspez, backoffset, mod, nsa);
         } else {
             String t = atomQuoted(sc.sym, true);
             safeSpace(t);
             append(t);
         }
+    }
+
+    /**
+     * <p>Check whether the compound is an index.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is an index, otherwise false.
+     */
+    private static boolean isIndex(SkelCompound sc) {
+        return sc.args.length > 1 &&
+                sc.sym.fun.equals(Foyer.OP_INDEX);
+    }
+
+    /**
+     * <p>Check whether the compound is a struct.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is a struct, otherwise false.
+     */
+    private static boolean isStruct(SkelCompound sc) {
+        return sc.args.length >= 1 &&
+                sc.args.length <= 2 &&
+                sc.sym.fun.equals(Foyer.OP_STRUCT);
     }
 
     /********************************************************/
@@ -1120,10 +1143,10 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeArrayIndex(SkelCompound sc, Display ref,
-                                   CachePredicate cp, Object[] decl,
-                                   int backshift, int backspez, int backoffset,
-                                   Object mod, SkelAtom nsa)
+    protected void writeIndex(SkelCompound sc, Display ref,
+                              CachePredicate cp, Object[] decl,
+                              int backshift, int backspez, int backoffset,
+                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         append(PrologReader.OP_LBRACKET);
         int j = 1;
@@ -1248,27 +1271,25 @@ public class PrologWriter {
             }
         }
         if (engine != null && (flags & FLAG_IGNO) == 0) {
-            if (sc.args.length == 1 ||
-                    (sc.args.length > 1 & sc.sym.fun.equals(Foyer.OP_NIL) ||
-                            (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_STRUCT)))) {
-                if (sc.sym.fun.equals(Foyer.OP_SET)) {
-                    CachePredicate cp = offsetToPredicate(term, mod, nsa);
-                    Object[] decl = predicateToMeta(cp);
-                    append(PrologReader.OP_LBRACE);
-                    int backspez = spez;
-                    int backoffset = offset;
-                    int backshift = shift;
-                    Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-                    spez = getSpez(z);
-                    offset = getOffset(z, backoffset);
-                    shift = getShift(z);
-                    write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
-                    spez = backspez;
-                    offset = backoffset;
-                    shift = backshift;
-                    append(PrologReader.OP_RBRACE);
-                    return;
-                }
+            if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
+                CachePredicate cp = offsetToPredicate(term, mod, nsa);
+                Object[] decl = predicateToMeta(cp);
+                append(PrologReader.OP_LBRACE);
+                int backspez = spez;
+                int backoffset = offset;
+                int backshift = shift;
+                Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+                spez = getSpez(z);
+                offset = getOffset(z, backoffset);
+                shift = getShift(z);
+                write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
+                spez = backspez;
+                offset = backoffset;
+                shift = backshift;
+                append(PrologReader.OP_RBRACE);
+                return;
+            }
+            if (sc.args.length == 1 || isIndex(sc) || isStruct(sc)) {
                 Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_PREFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
@@ -1330,11 +1351,11 @@ public class PrologWriter {
                     return;
                 }
             }
+            if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
+                writeList(sc, ref, mod, nsa);
+                return;
+            }
             if (sc.args.length == 2) {
-                if (sc.sym.fun.equals(Foyer.OP_CONS)) {
-                    writeList(sc, ref, mod, nsa);
-                    return;
-                }
                 Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_INFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);

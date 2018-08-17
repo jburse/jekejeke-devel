@@ -404,11 +404,7 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(standard/signal)).
 :- ensure_loaded(library(standard/sort)).
 :- ensure_loaded(library(standard/expand)).
-:- ensure_loaded(library(standard/dcg)).
-
-:- set_prolog_flag(sys_clause_expand, on).
-
 :- ensure_loaded(library(standard/apply)).
 
-
+:- set_prolog_flag(sys_clause_expand, on).
 

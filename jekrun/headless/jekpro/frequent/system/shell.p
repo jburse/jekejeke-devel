@@ -43,7 +43,6 @@
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(shell, []).
-:- use_module(library(basic/lists)).
 
 /*****************************************************************/
 /* Environment Variables                                         */
@@ -61,7 +60,7 @@ getenv(Name, Value) :-
    sys_get_env(Name, Value).
 getenv(Name, Value) :-
    sys_list_env(List),
-   member(Name, List),
+   sys_member(Name, List),
    sys_get_env(Name, Value).
 
 :- private sys_get_env/2.

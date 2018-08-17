@@ -292,7 +292,7 @@ sys_phrase_barrier(U, _, U) :-
  * The grammar connective succeeds when the terminals A1, …, An can be consumed.
  */
 :- public []/2.
-I [O] :-
+[](I, O) :-
    expand_goal(phrase([], I, O), Q),
    call(Q).
 

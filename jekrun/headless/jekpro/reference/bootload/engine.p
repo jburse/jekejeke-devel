@@ -83,8 +83,7 @@ halt :-
 
 % halt(+Integer)
 :- public halt/1.
-:- foreign(halt/1, 'ForeignEngine',
-      sysHalt('Object')).
+:- foreign(halt/1, 'ForeignEngine', sysHalt('Integer')).
 
 /********************************************************/
 /* Locale Modules                                       */

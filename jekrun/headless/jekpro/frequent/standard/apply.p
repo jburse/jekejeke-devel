@@ -195,114 +195,39 @@
 :- meta_predicate call(1,?).
 :- set_predicate_property(call/2, sys_notrace).
 :- special(call/2, 'SpecialApply', 1).
-% call(P, A) :- sys_modext_args(P, A, Q), call(Q).
 
 :- public call/3.
 :- virtual call/3.
 :- meta_predicate call(2,?,?).
 :- set_predicate_property(call/3, sys_notrace).
 :- special(call/3, 'SpecialApply', 1).
-% call(P, A, B) :- sys_modext_args(P, A, B, Q), call(Q).
 
 :- public call/4.
 :- virtual call/4.
 :- meta_predicate call(3,?,?,?).
 :- set_predicate_property(call/4, sys_notrace).
 :- special(call/4, 'SpecialApply', 1).
-% call(P, A, B, C) :- sys_modext_args(P, A, B, C, Q), call(Q).
 
 :- public call/5.
 :- virtual call/5.
 :- meta_predicate call(4,?,?,?,?).
 :- set_predicate_property(call/5, sys_notrace).
 :- special(call/5, 'SpecialApply', 1).
-% call(P, A, B, C, D) :- sys_modext_args(P, A, B, C, D, Q), call(Q).
 
 :- public call/6.
 :- virtual call/6.
 :- meta_predicate call(5,?,?,?,?,?).
 :- set_predicate_property(call/6, sys_notrace).
 :- special(call/6, 'SpecialApply', 1).
-% call(P, A, B, C, D, E) :- sys_modext_args(P, A, B, C, D, E, Q), call(Q).
 
 :- public call/7.
 :- virtual call/7.
 :- meta_predicate call(6,?,?,?,?,?,?).
 :- set_predicate_property(call/7, sys_notrace).
 :- special(call/7, 'SpecialApply', 1).
-% call(P, A, B, C, D, E, F) :- sys_modext_args(P, A, B, C, D, E, F, Q), call(Q).
 
 :- public call/8.
 :- virtual call/8.
 :- meta_predicate call(7,?,?,?,?,?,?,?).
 :- set_predicate_property(call/8, sys_notrace).
 :- special(call/8, 'SpecialApply', 1).
-% call(P, A, B, C, D, E, F, G) :- sys_modext_args(P, A, B, C, D, E, F, G, Q), call(Q).
-
-/**
- * maplist(C, L1, ..., Ln):
- * The predicate succeeds in applying the closure C to the
- * elements of L1, ..., Ln. The predicate is currently
- * defined for 1 ≤ n ≤ 4.
- */
-:- public maplist/2.
-:- meta_predicate maplist(1,?).
-maplist(_, []).
-maplist(C, [X|L]) :-
-   call(C, X),
-   maplist(C, L).
-
-:- public maplist/3.
-:- meta_predicate maplist(2,?,?).
-maplist(_, [], []).
-maplist(C, [X|L], [Y|R]) :-
-   call(C, X, Y),
-   maplist(C, L, R).
-
-:- public maplist/4.
-:- meta_predicate maplist(3,?,?,?).
-maplist(_, [], [], []).
-maplist(C, [X|L], [Y|R], [Z|S]) :-
-   call(C, X, Y, Z),
-   maplist(C, L, R, S).
-
-:- public maplist/5.
-:- meta_predicate maplist(4,?,?,?,?).
-maplist(_, [], [], [], []).
-maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
-   call(C, X, Y, Z, U),
-   maplist(C, L, R, S, T).
-
-/**
- * foldl(C, L1, ..., Ln, I, O):
- * The predicate succeeds in applying the closure C to the
- * elements of L1, ..., Ln and accumulating the result among
- * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
- */
-:- public foldl/4.
-:- meta_predicate foldl(3,?,?,?).
-foldl(_, [], P, P).
-foldl(C, [X|L], P, Q) :-
-   call(C, X, P, H),
-   foldl(C, L, H, Q).
-
-:- public foldl/5.
-:- meta_predicate foldl(4,?,?,?,?).
-foldl(_, [], [], P, P).
-foldl(C, [X|L], [Y|R], P, Q) :-
-   call(C, X, Y, P, H),
-   foldl(C, L, R, H, Q).
-
-:- public foldl/6.
-:- meta_predicate foldl(5,?,?,?,?,?).
-foldl(_, [], [], [], P, P).
-foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
-   call(C, X, Y, Z, P, H),
-   foldl(C, L, R, S, H, Q).
-
-:- public foldl/7.
-:- meta_predicate foldl(6,?,?,?,?,?,?).
-foldl(_, [], [], [], [], P, P).
-foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
-   call(C, X, Y, Z, U, P, H),
-   foldl(C, L, R, S, T, H, Q).

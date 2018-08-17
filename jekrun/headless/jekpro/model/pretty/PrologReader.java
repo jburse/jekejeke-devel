@@ -376,10 +376,10 @@ public class PrologReader {
                 if (!(temp instanceof SkelAtom) || ((SkelAtom) temp).getHint() != 0)
                     break;
                 help = (SkelAtom) temp;
+            } else if (OP_LBRACKET.equals(st.getData())) {
+                help = makeAtom(Foyer.OP_INDEX);
             } else if (OP_LBRACE.equals(st.getData())) {
                 help = makeAtom(Foyer.OP_STRUCT);
-            } else if (OP_LBRACKET.equals(st.getData())) {
-                help = makeAtom(Foyer.OP_NIL);
             } else {
                 h = st.getData().codePointAt(0);
                 if (CodeType.ISO_CODETYPE.isUpper(h) || CodeType.ISO_CODETYPE.isUnderscore(h)) {
@@ -492,7 +492,7 @@ public class PrologReader {
                 nextToken();
                 return new SkelCompound(help, skel);
             } else {
-                skel = readArrayIndex(skel, null, help);
+                skel = readIndex(skel, null, help);
                 if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
                             st.getTokenOffset());
@@ -626,7 +626,7 @@ public class PrologReader {
      * @throws EngineException Auto load problem.
      * @throws IOException     IO error.
      */
-    protected Object readArrayIndex(Object skel, String[] filler, SkelAtom help)
+    protected Object readIndex(Object skel, String[] filler, SkelAtom help)
             throws ScannerError, EngineMessage, EngineException, IOException {
         ListArray<Object> vec = new ListArray<Object>();
         vec.add(skel);

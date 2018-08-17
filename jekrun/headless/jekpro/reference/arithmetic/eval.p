@@ -70,9 +70,6 @@
 :- public infix(is).
 :- op(700, xfx, is).
 
-:- public postfix([]).
-:- op(100, yf, [[]]).
-
 /**
  * X is Y: [ISO 8.6.1]
  * The predicate succeeds when X unifies with the evaluation of Y.
@@ -83,67 +80,3 @@
 :- sys_context_property(here, C),
    set_predicate_property(is/2, sys_meta_predicate(C)).
 :- special(is/2, 'SpecialEval', 0).
-
-/**
- * X [Y1, .., Yn, Z]:
- * The predicate succeeds when Z unifies with the element of term
- * with the subscripts Y1, .., Yn for 1 ≤ n ≤ 7. The term X need
- * not be homogenously shaped and the indexes start with one.
- */
-:- public []/3.
-:- virtual []/3.
-X [Y, Z] :-
-   arg(Y, X, Z), !.
-_ [_, _] :-
-   throw(error(evaluation_error(array_index),_)).
-
-:- public []/4.
-:- virtual []/4.
-X [Y, Z, T] :-
-   X [Y, H],
-   H [Z, T].
-
-:- public []/5.
-:- virtual []/5.
-X [Y, Z, T, U] :-
-   X [Y, H],
-   H [Z, J],
-   J [T, U].
-
-:- public []/6.
-:- virtual []/6.
-X [Y, Z, T, U, V] :-
-   X [Y, H],
-   H [Z, J],
-   J [T, K],
-   K [U, V].
-
-:- public []/7.
-:- virtual []/7.
-X [Y, Z, T, U, V, W] :-
-   X [Y, H],
-   H [Z, J],
-   J [T, K],
-   K [U, L],
-   L [V, W].
-
-:- public []/8.
-:- virtual []/8.
-X [Y, Z, T, U, V, W, S] :-
-   X [Y, H],
-   H [Z, J],
-   J [T, K],
-   K [U, L],
-   L [V, M],
-   M [W, S].
-
-:- public []/9.
-:- virtual []/9.
-X [Y, Z, T, U, V, W, S, R] :-
-   X [Y, H],
-   H [Z, J],
-   J [T, K],
-   K [U, L],
-   L [V, M],
-   M [W, N],
-   N [S, R].
