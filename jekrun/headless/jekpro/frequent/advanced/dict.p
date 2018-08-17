@@ -1,4 +1,23 @@
 /**
+ * This module provides tagged structure access. Tagged structures are
+ * also known as Prolog dicts. They have their own syntax as either an
+ * empty dict Term0 {} or a non-empty dict Term0 { Term1 } which are
+ * short-hands for ordinary compounds. When this module is imported,
+ * the syntax will be enabled in the importing module.
+ *
+ * Examples:
+ * ?- P = point{x:1,y:2}, get_dict(y, P, Y).
+ * Y = 2
+ * ?- P = point{x:1,y:2}, Tag{y:Y} :< P.
+ * Tag = point,
+ * Y = 2
+ *
+ * We do not yet have an automatic sorting of the keys of a Prolog
+ * dict. This is planned for further releases. The only predicates for
+ * dicts provided by this module are so far the predicate get_dict/3 to
+ * access the value of a key and the predicate (:<)/2 to match the tag
+ * and to select multiple values.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -28,19 +47,50 @@
 
 :- module(dict, []).
 
-/**
- * dict_get(D, K, V):
- * The predicate succeeds in V for the first value with key K in dict D.
- */
-% dict_get(+Dict, +Key, -Value)
-:- public dict_get/3.
-:- special(dict_get/3, 'SpecialDict', 0).
+:- public postfix(sys_struct).
+:- op(100, yf, sys_struct).
+
+:- public infix(:<).
+:- op(700, xfx, :<).
 
 /**
- * dict_put(D, K, V, E):
- * The predicate succeeds in E with a new dict, where the first value of
- * key K in dict D is replaced by the value V.
+ * get_dict(K, S, V):
+ * The predicate succeeds with the value V of the key K in the
+ * tagged structure S.
  */
-% dict_put(+Dict, +Key, +Value, -Dict)
-:- public dict_put/4.
-:- special(dict_put/4, 'SpecialDict', 1).
+% get_dict(+Term, +Struct, -Term)
+:- public get_dict/3.
+get_dict(_, _ sys_struct, _) :- fail.
+get_dict(K, _ sys_struct, W) :-
+   get_dict2(K, D, W).
+
+% get_dict2(+Term, +Pairs, -Term)
+:- private get_dict2/3.
+get_dict2(K, K:V, W) :- !,
+   W = V.
+get_dict2(K, (K:V,_), W) :- !,
+   W = V.
+get_dict2(K, (_,D), W) :-
+   get_dict2(K, D, W).
+
+/**
+ * S :< T:
+ * The predicate succeeds when the tags of S and T unify and when
+ * the key value pairs of the tagged structure S appear in the
+ * tagged structure T.
+ */
+% +Struct :< Struct
+:- public :< /2.
+Tag sys_struct :< Tag sys_struct.
+Tag sys_struct :< Tag sys_struct.
+Tag sys_struct :< Tag sys_struct :- fail.
+Tag sys_struct :< Tag sys_struct :-
+   select_dict2(D, E).
+
+% select_dict2(+Pairs, +Pairs)
+:- private select_dict2/2.
+select_dict2(K:V, D) :- !,
+   get_dict2(K, D, V).
+select_dict2((K:V,D), E) :-
+   get_dict2(K, E, V),
+   select_dict2(D, E).
