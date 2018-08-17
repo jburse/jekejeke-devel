@@ -60,8 +60,8 @@
  */
 % get_dict(+Term, +Struct, -Term)
 :- public get_dict/3.
-get_dict(_, _ sys_struct, _) :- fail.
-get_dict(K, _ sys_struct, W) :-
+get_dict(_, _{}, _) :- fail.
+get_dict(K, _{D}, W) :-
    get_dict2(K, D, W).
 
 % get_dict2(+Term, +Pairs, -Term)
@@ -81,10 +81,10 @@ get_dict2(K, (_,D), W) :-
  */
 % +Struct :< Struct
 :- public :< /2.
-Tag sys_struct :< Tag sys_struct.
-Tag sys_struct :< Tag sys_struct.
-Tag sys_struct :< Tag sys_struct :- fail.
-Tag sys_struct :< Tag sys_struct :-
+Tag{} :< Tag{}.
+Tag{} :< Tag{_}.
+Tag{_} :< Tag{} :- fail.
+Tag{D} :< Tag{E} :-
    select_dict2(D, E).
 
 % select_dict2(+Pairs, +Pairs)
