@@ -13,10 +13,10 @@
  * Y = 2
  *
  * We do not yet have an automatic sorting of the keys of a Prolog
- * dict. This is planned for further releases. The only predicates for
- * dicts provided by this module are so far the predicate get_dict/3 to
- * access the value of a key and the predicate (:<)/2 to match the tag
- * and to select multiple values.
+ * dict. This is planned for further releases. The predicates are
+ * modelled after the SWI-Prolog built-ins for Prolog dicts. Our
+ * data structure would allow more bidirectionality, but we adopted
+ * most instantiation tests of SWI-Prolog.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -54,24 +54,100 @@
 :- op(700, xfx, :<).
 
 /**
+ * is_dict(X):
+ * The predicate succeeds when X is a tagged structure.
+ */
+% is_dict(+Term)
+:- public is_dict/1.
+is_dict(X) :-
+   var(X), !, fail.
+is_dict(_{}) :- !.
+is_dict(_{_}).
+
+/**
+ * is_dict(X, T):
+ * The predicate succeeds when X is a tagged structure and
+ * when T unifies with the tag of the tagged structure.
+ */
+% is_dict(+Term, -Term)
+:- public is_dict/2.
+is_dict(X, _) :-
+   var(X), !, fail.
+is_dict(Tag{}, Tag) :- !.
+is_dict(Tag{_}, Tag).
+
+/**
+ * dict_pairs(X, T, L):
+ * The predicate succees in X with the tagged structure
+ * that has tag T and key value pairs L.
+ */
+% dict_pairs(+-Dict, -+Term, -+List)
+:- public dict_pairs/3.
+dict_pairs(X, T, L) :-
+   var(X), !,
+   dict_pairs2(L, T, X).
+dict_pairs(T{}, T, []) :- !.
+dict_pairs(T{L}, T, R) :-
+   map_to_list(L, R).
+
+% dict_pairs(+List, +Term, -Term)
+:- private dict_pairs2/3.
+dict_pairs2(L, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+dict_pairs2([], T, T{}).
+dict_pairs2([X|L], T, T{R}) :-
+   list_to_map(L, X, R).
+
+% list_to_map(+List, +Pair, -Map)
+:- private list_to_map/3.
+list_to_map(L, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+list_to_map([], K-V, K:V).
+list_to_map([X|L], K-V, R) :-
+   list_to_map(L, X, H),
+   make_map(K, H, V, R).
+
+% make_map(+Term, +Map, +Term, -Map)
+:- private make_map/4.
+make_map(K, D, _, _) :-
+   get_dict2(D, K, _),
+   throw(error(domain_eror(duplicate_key,K),_)).
+make_map(K, D, V, (K:V,D)).
+
+% map_to_list(+Map, -List)
+:- private map_to_list/2.
+map_to_list(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+map_to_list(K:V, [K-V]).
+map_to_list((K:V,L), [K-V|R]) :-
+   map_to_list(L, R).
+
+/**
  * get_dict(K, S, V):
  * The predicate succeeds with the value V of the key K in the
  * tagged structure S.
  */
-% get_dict(+Term, +Struct, -Term)
+% get_dict(+Term, +Dict, -Term)
 :- public get_dict/3.
-get_dict(_, _{}, _) :- fail.
+get_dict(_, _{}, _) :- !, fail.
 get_dict(K, _{D}, W) :-
-   get_dict2(K, D, W).
+   var(K), !,
+   get_dict2(D, K, W).
+get_dict(K, _{D}, W) :-
+   get_dict2(D, K, W), !.
 
-% get_dict2(+Term, +Pairs, -Term)
+% get_dict2(+Map, +Term, -Term)
 :- private get_dict2/3.
-get_dict2(K, K:V, W) :- !,
-   W = V.
-get_dict2(K, (K:V,_), W) :- !,
-   W = V.
-get_dict2(K, (_,D), W) :-
-   get_dict2(K, D, W).
+get_dict2(L, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+get_dict2(K:V, K, V).
+get_dict2((K:V,_), K, V).
+get_dict2((_,D), K, V) :-
+   get_dict2(D, K, V).
 
 /**
  * S :< T:
@@ -79,18 +155,33 @@ get_dict2(K, (_,D), W) :-
  * the key value pairs of the tagged structure S appear in the
  * tagged structure T.
  */
-% +Struct :< Struct
+% +Dict :< +Dict
 :- public :< /2.
-Tag{} :< Tag{}.
-Tag{} :< Tag{_}.
-Tag{_} :< Tag{} :- fail.
+Tag{} :< Tag{} :- !.
+Tag{} :< Tag{_} :- !.
+Tag{_} :< Tag{} :- !, fail.
 Tag{D} :< Tag{E} :-
    select_dict2(D, E).
 
-% select_dict2(+Pairs, +Pairs)
+% select_dict2(+Map, +Map)
 :- private select_dict2/2.
 select_dict2(K:V, D) :- !,
    get_dict2(K, D, V).
 select_dict2((K:V,D), E) :-
    get_dict2(K, E, V),
    select_dict2(D, E).
+
+/**
+ * del_dict(K, S, T):
+ * The predicate succeeds in T with the deletion of the key K from
+ * the tagged structure S.
+ */
+% del_dict(+Term, +Dict, -Dict)
+
+/**
+ * put_dict(K, S, V, T):
+ * The predicate succeeds in T with the replacement of the value
+ * for the key K by in the tagged structure S.
+ */
+% put_dict(+Term, +Dict, +Term, -Dict)
+
