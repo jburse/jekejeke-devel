@@ -96,25 +96,28 @@ dict_pairs2(L, _, _) :-
    var(L),
    throw(error(instantiation_error,_)).
 dict_pairs2([], T, T{}).
-dict_pairs2([X|L], T, T{R}) :-
-   list_to_map(L, X, R).
+dict_pairs2([K-V|L], T, T{R}) :-
+   list_to_map(L, K, V, R).
 
-% list_to_map(+List, +Pair, -Map)
-:- private list_to_map/3.
-list_to_map(L, _, _) :-
+% list_to_map(+List, +Term, +Term, -Map)
+:- private list_to_map/4.
+list_to_map(L, _, _, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-list_to_map([], K-V, K:V).
-list_to_map([X|L], K-V, R) :-
-   list_to_map(L, X, H),
+list_to_map(_, K, _, _) :-
+   var(K),
+   throw(error(instantiation_error,_)).
+list_to_map([], K, V, K:V).
+list_to_map([J-W|L], K, V, R) :-
+   list_to_map(L, J, W, H),
    make_map(K, H, V, R).
 
 % make_map(+Term, +Map, +Term, -Map)
 :- private make_map/4.
-make_map(K, D, _, _) :-
-   get_dict2(D, K, _),
+make_map(K, M, _, _) :-
+   get_dict2(M, K, _),
    throw(error(domain_eror(duplicate_key,K),_)).
-make_map(K, D, V, (K:V,D)).
+make_map(K, M, V, (K:V,M)).
 
 % map_to_list(+Map, -List)
 :- private map_to_list/2.
@@ -132,22 +135,25 @@ map_to_list((K:V,L), [K-V|R]) :-
  */
 % get_dict(+Term, +Dict, -Term)
 :- public get_dict/3.
+get_dict(_, T, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
 get_dict(_, _{}, _) :- !, fail.
-get_dict(K, _{D}, W) :-
+get_dict(K, _{M}, W) :-
    var(K), !,
-   get_dict2(D, K, W).
-get_dict(K, _{D}, W) :-
-   get_dict2(D, K, W), !.
+   get_dict2(M, K, W).
+get_dict(K, _{M}, W) :-
+   get_dict2(M, K, W), !.
 
 % get_dict2(+Map, +Term, -Term)
 :- private get_dict2/3.
-get_dict2(L, _, _) :-
-   var(L),
+get_dict2(M, _, _) :-
+   var(M),
    throw(error(instantiation_error,_)).
 get_dict2(K:V, K, V).
 get_dict2((K:V,_), K, V).
-get_dict2((_,D), K, V) :-
-   get_dict2(D, K, V).
+get_dict2((_,M), K, V) :-
+   get_dict2(M, K, V).
 
 /**
  * S :< T:
@@ -172,16 +178,67 @@ select_dict2((K:V,D), E) :-
    select_dict2(D, E).
 
 /**
- * del_dict(K, S, T):
- * The predicate succeeds in T with the deletion of the key K from
- * the tagged structure S.
+ * del_dict(K, S, V, T):
+ * The predicate succeeds in T with the deletion of the key K
+ * from the tagged structure S and in V with the old value.
  */
-% del_dict(+Term, +Dict, -Dict)
+% del_dict(+Term, +Dict, -Term, -Dict)
+:- public del_dict/4.
+del_dict(_, T, _, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+del_dict(_, _{}, _, _) :- !, fail.
+del_dict(K, T{M}, V, R) :-
+   var(K), !,
+   del_dict2(M, K, V, N),
+   make_dict(N, T, H),
+   R = H.
+del_dict(K, T{M}, V, R) :-
+   del_dict2(M, K, V, N),
+   make_dict(N, T, H), !,
+   R = H.
+
+% del_dict2(+Map, +Term, -Term, -Map)
+del_dict2(M, _, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+del_dict2(K:V, K, V, true).
+del_dict2((K:V,M), K, V, M).
+del_dict2((X,M), K, V, R) :-
+   del_dict2(M, K, V, N),
+   make_and(N, X, R).
+
+% make_and(+Map, +Pair, -Map)
+:- private make_and/3.
+make_and(true, X, X) :- !.
+make_and(M, X, (X,M)).
+
+% make_dict(+Map, +Term, -Dict)
+:- private make_dict/3.
+make_dict(true, T, T{}) :- !.
+make_dict(M, T, T{M}).
 
 /**
  * put_dict(K, S, V, T):
- * The predicate succeeds in T with the replacement of the value
- * for the key K by in the tagged structure S.
+ * The predicate succeeds in T with the replacement of the
+ * new value V for the key K by in the tagged structure S.
  */
 % put_dict(+Term, +Dict, +Term, -Dict)
+:- public put_dict/4.
+put_dict(_, T, _, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+put_dict(K, _, _, _) :-
+   var(K),
+   throw(error(instantiation_error,_)).
+put_dict(K, T{}, V, T{K:V}) :- !.
+put_dict(K, T{M}, V, R) :-
+   put_dict2(M, K, V, N),
+   R = T{N}.
 
+% put_dict(+Map, +Term, +Term, -Map)
+:- private put_dict2/4.
+put_dict2(M, K, V, R) :-
+   del_dict2(M, K, _, N), !,
+   make_and(N, K:V, R).
+put_dict2(M, K, V, (K:V,M)).
