@@ -377,21 +377,23 @@ public final class OperatorSearch {
      * <p>Retrieve an operator with module lookup.</p>
      * <p>Respect source visibility.</p>
      *
-     * @param sa   The atom skeleton.
+     * @param scope   The call-site.
+     * @param fun   The name.
      * @param type The type.
      * @param en   The engine.
      * @return The operator or null.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static Operator getOper(SkelAtom sa, int type,
+    public static Operator getOper(AbstractSource scope, String fun,
+                                   int type,
                                    Engine en)
             throws EngineMessage, EngineException {
         try {
-            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
-                    CacheFunctor.sepModule(sa.fun), src, en) : src);
-            Operator oper = performLookup(sa.fun, type, src, base);
+            AbstractSource src = (scope != null ? scope : en.store.user);
+            AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupKey(
+                    CacheFunctor.sepModule(fun), src, en) : src);
+            Operator oper = performLookup(fun, type, src, base);
             if (oper != null && OperatorSearch.visibleOper(oper, src))
                 return oper;
             return null;

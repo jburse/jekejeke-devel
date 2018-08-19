@@ -631,7 +631,8 @@ public class PrologWriter {
             throws IOException, EngineMessage, EngineException {
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
                 (spez & SPEZ_OPLE) != 0) {
-            Operator op = OperatorSearch.getOper(term, Operator.TYPE_PREFIX, engine);
+            Operator op = OperatorSearch.getOper(term.scope, term.fun,
+                    Operator.TYPE_PREFIX, engine);
             if (op != null) {
                 if ((spez & SPEZ_FUNC) != 0)
                     append(' ');
@@ -889,9 +890,11 @@ public class PrologWriter {
                 (backspez & SPEZ_EVAL) == 0)
             append(' ');
         if (isIndex(sc)) {
-            writeIndex(sc, ref, cp, decl, backshift, backspez, backoffset, mod, nsa);
+            writeIndex(sc, ref, cp, decl,
+                    backshift, backspez, backoffset, mod, nsa);
         } else if (isStruct(sc)) {
-            writeStruct(sc, ref, cp, decl, backshift, backspez, backoffset, mod, nsa);
+            writeStruct(sc, ref, cp, decl,
+                    backshift, backspez, backoffset, mod, nsa);
         } else {
             String t = atomQuoted(sc.sym, true);
             safeSpace(t);
@@ -905,7 +908,7 @@ public class PrologWriter {
      * @param sc The compound.
      * @return True if the compound is an index, otherwise false.
      */
-    private static boolean isIndex(SkelCompound sc) {
+    protected static boolean isIndex(SkelCompound sc) {
         return sc.args.length > 1 &&
                 sc.sym.fun.equals(Foyer.OP_INDEX);
     }
@@ -916,7 +919,7 @@ public class PrologWriter {
      * @param sc The compound.
      * @return True if the compound is a struct, otherwise false.
      */
-    private static boolean isStruct(SkelCompound sc) {
+    protected static boolean isStruct(SkelCompound sc) {
         return sc.args.length >= 1 &&
                 sc.args.length <= 2 &&
                 sc.sym.fun.equals(Foyer.OP_STRUCT);
@@ -1290,7 +1293,8 @@ public class PrologWriter {
                 return;
             }
             if (sc.args.length == 1 || isIndex(sc) || isStruct(sc)) {
-                Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_PREFIX, engine);
+                Operator op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                        Operator.TYPE_PREFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
@@ -1317,7 +1321,8 @@ public class PrologWriter {
                         append(PrologReader.OP_RPAREN);
                     return;
                 }
-                op = OperatorSearch.getOper(sc.sym, Operator.TYPE_POSTFIX, engine);
+                op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                        Operator.TYPE_POSTFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
@@ -1356,7 +1361,8 @@ public class PrologWriter {
                 return;
             }
             if (sc.args.length == 2) {
-                Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_INFIX, engine);
+                Operator op = OperatorSearch.getOper(sc.sym.scope,
+                        sc.sym.fun, Operator.TYPE_INFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
@@ -1494,7 +1500,8 @@ public class PrologWriter {
             return null;
         if (!isSimple(sc.args[0], ref))
             return null;
-        Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_INFIX, engine);
+        Operator op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                Operator.TYPE_INFIX, engine);
         if (op == null)
             return null;
         Object[] decl = predicateToMeta(offsetToPredicate(term, mod, nsa));

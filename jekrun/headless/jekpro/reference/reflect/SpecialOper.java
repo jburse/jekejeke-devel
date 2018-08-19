@@ -192,7 +192,7 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage, EngineException {
         int type = colonToOper(t, d, en);
         SkelAtom sa = (SkelAtom) en.skel;
-        Operator op = OperatorSearch.getOper(sa, type, en);
+        Operator op = OperatorSearch.getOper(sa.scope, sa.fun, type, en);
         en.skel = sa;
         return op;
     }
