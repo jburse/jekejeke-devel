@@ -86,9 +86,14 @@ is_dict(Tag{_}, Tag).
 dict_pairs(X, T, L) :-
    var(X), !,
    dict_pairs2(L, T, X).
-dict_pairs(T{}, T, []) :- !.
-dict_pairs(T{L}, T, R) :-
+dict_pairs(T{}, S, L) :- !,
+   S = T,
+   L = [].
+dict_pairs(T{L}, S, R) :- !,
+   S = T,
    map_to_list(L, R).
+dict_pairs(T, _, _) :-
+   throw(error(type_error(dict,T),_)).
 
 % dict_pairs(+List, +Term, -Term)
 :- private dict_pairs2/3.
@@ -105,7 +110,7 @@ list_to_map(L, _, _, _) :-
    var(L),
    throw(error(instantiation_error,_)).
 list_to_map(_, K, _, _) :-
-   var(K),
+   \+ ground(K),
    throw(error(instantiation_error,_)).
 list_to_map([], K, V, K:V).
 list_to_map([J-W|L], K, V, R) :-
@@ -140,10 +145,12 @@ get_dict(_, T, _) :-
    throw(error(instantiation_error,_)).
 get_dict(_, _{}, _) :- !, fail.
 get_dict(K, _{M}, W) :-
-   var(K), !,
-   get_dict2(M, K, W).
-get_dict(K, _{M}, W) :-
+   ground(K), !,
    get_dict2(M, K, W), !.
+get_dict(K, _{M}, W) :- !,
+   get_dict2(M, K, W).
+get_dict(_, T, _) :-
+   throw(error(type_error(dict,T),_)).
 
 % get_dict2(+Map, +Term, -Term)
 :- private get_dict2/3.
@@ -171,10 +178,13 @@ Tag{D} :< Tag{E} :-
 
 % select_dict2(+Map, +Map)
 :- private select_dict2/2.
-select_dict2(K:V, D) :- !,
-   get_dict2(K, D, V).
+select_dict2(M, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+select_dict2(K:V, D) :-
+   get_dict2(D, K, V), !.
 select_dict2((K:V,D), E) :-
-   get_dict2(K, E, V),
+   get_dict2(E, K, V), !,
    select_dict2(D, E).
 
 /**
@@ -189,14 +199,16 @@ del_dict(_, T, _, _) :-
    throw(error(instantiation_error,_)).
 del_dict(_, _{}, _, _) :- !, fail.
 del_dict(K, T{M}, V, R) :-
-   var(K), !,
-   del_dict2(M, K, V, N),
-   make_dict(N, T, H),
-   R = H.
-del_dict(K, T{M}, V, R) :-
+   ground(K), !,
    del_dict2(M, K, V, N),
    make_dict(N, T, H), !,
    R = H.
+del_dict(K, T{M}, V, R) :- !,
+   del_dict2(M, K, V, N),
+   make_dict(N, T, H),
+   R = H.
+del_dict(_, T, _, _) :-
+   throw(error(type_error(dict,T),_)).
 
 % del_dict2(+Map, +Term, -Term, -Map)
 del_dict2(M, _, _, _) :-
@@ -229,12 +241,15 @@ put_dict(_, T, _, _) :-
    var(T),
    throw(error(instantiation_error,_)).
 put_dict(K, _, _, _) :-
-   var(K),
+   \+ ground(K),
    throw(error(instantiation_error,_)).
-put_dict(K, T{}, V, T{K:V}) :- !.
-put_dict(K, T{M}, V, R) :-
+put_dict(K, T{}, V, R) :- !,
+   R = T{K:V}.
+put_dict(K, T{M}, V, R) :- !,
    put_dict2(M, K, V, N),
    R = T{N}.
+put_dict(_, T, _, _) :-
+   throw(error(type_error(dict,T),_)).
 
 % put_dict(+Map, +Term, +Term, -Map)
 :- private put_dict2/4.
