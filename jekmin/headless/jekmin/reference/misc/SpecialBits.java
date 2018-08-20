@@ -55,21 +55,28 @@ public final class SpecialBits extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
-        switch (id) {
-            case SPECIAL_TESTBIT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                Number alfa = SpecialEval.derefAndCastInteger(temp[0], ref);
-                Number beta = SpecialEval.derefAndCastInteger(temp[1], ref);
-                if (!sysTestBit(alfa, beta))
-                    return false;
-                return en.getNextRaw();
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_TESTBIT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    Number alfa = SpecialEval.derefAndCastInteger(temp[0], ref);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    int k = SpecialEval.castIntValue(alfa);
+                    Number beta = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    if (!sysTestBit(k, beta))
+                        return false;
+                    return en.getNextRaw();
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -82,14 +89,11 @@ public final class SpecialBits extends AbstractSpecial {
     /**
      * <p>Test a bit.</p>
      *
-     * @param a The first operand.
+     * @param k The first operand.
      * @param b The second operand.
      * @return The result.
-     * @throws EngineMessage Shit happens.
      */
-    private static boolean sysTestBit(Number a, Number b) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(a);
-        int k = EngineMessage.castIntValue(a);
+    private static boolean sysTestBit(int k, Number b) {
         if (b instanceof Integer) {
             if (k <= 31) {
                 return (b.intValue() & (1 << k)) != 0;

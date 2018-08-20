@@ -223,18 +223,17 @@ sys_list_second([(_,Y)|Z], [Y|T]) :-
    sys_list_second(Z, T).
 
 /**
- * foreach(G, F):
- * Calls the conjunction of those instances of F where G succeeds. Variables
- * occuring in F and not occuring in G are shared across the conjunction
- * and across the context.
+ * foreach(F, G):
+ * Calls the conjunction of those goal instances of G where F succeeds.
+ * Variables occuring in G and not occuring in F are shared.
  */
 % foreach(+Generator, +Goal)
 :- public foreach/2.
 :- meta_predicate foreach(0,0).
-foreach(G, F) :-
-   sys_goal_kernel(F, B),
-   sys_goal_globals(G^F, W),
-   findall(W-B, G, H),
+foreach(F, G) :-
+   sys_goal_kernel(G, B),
+   sys_goal_globals(F^G, W),
+   findall(W-B, F, H),
    sys_join_keys(H, W),
    sys_call_values(H).
 
@@ -250,3 +249,26 @@ sys_call_values([]).
 sys_call_values([_-V|L]) :-
    call(V),
    sys_call_values(L).
+
+/**
+ * foreach(F, G, I, O):
+ * Calls the conjunction of those closure instances of G where F succeeds
+ * threading them with input I and output O. Variables occuring in G and
+ * not occuring in F are shared.
+ */
+% foreach(+Generator, +Goal, +Term, -Term)
+:- public foreach/4.
+:- meta_predicate foreach(0,2,?,?).
+foreach(F, G, I, O) :-
+   sys_goal_kernel(G, B),
+   sys_goal_globals(F^G, W),
+   findall(W-B, F, H),
+   sys_join_keys(H, W),
+   sys_call_values(H, I, O).
+
+% sys_call_values(+Pairs, +Term, -Term)
+:- private sys_call_values/3.
+sys_call_values([], L, L).
+sys_call_values([_-V|L], I, O) :-
+   call(V, I, H),
+   sys_call_values(L, H, O).

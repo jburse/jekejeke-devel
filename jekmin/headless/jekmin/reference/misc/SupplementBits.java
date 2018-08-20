@@ -114,8 +114,8 @@ public final class SupplementBits extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    EngineMessage.checkNotLessThanZero(alfa);
-                    int x = EngineMessage.castIntValue(alfa);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    int x = SpecialEval.castIntValue(alfa);
                     en.skel = setBit(x, beta);
                     en.display = Display.DISPLAY_CONST;
                     return false;
@@ -132,8 +132,8 @@ public final class SupplementBits extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    EngineMessage.checkNotLessThanZero(alfa);
-                    x = EngineMessage.castIntValue(alfa);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    x = SpecialEval.castIntValue(alfa);
                     en.skel = clearBit(x, beta);
                     en.display = Display.DISPLAY_CONST;
                     return false;
@@ -141,7 +141,11 @@ public final class SupplementBits extends AbstractSpecial {
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

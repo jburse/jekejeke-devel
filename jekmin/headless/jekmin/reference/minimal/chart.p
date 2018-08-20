@@ -110,8 +110,8 @@ chart(_, _) :-
 user:goal_expansion(chart(P, N), chart(P, 0, N)).
 user:goal_expansion(chart(P, _, _), _) :-
    sys_var(P), !, fail.
-user:goal_expansion(chart((  A, B), I, O), (  chart(A, I, H),
-                                              chart(B, H, O))).
+user:goal_expansion(chart((A, B), I, O), (  chart(A, I, H),
+                                            chart(B, H, O))).
 user:goal_expansion(chart(P, _, _), P) :-
    P = fail.
 user:goal_expansion(chart({A}, I, I), A).
@@ -139,8 +139,8 @@ sys_sys_chart(_, _, _) :-
    throw(error(existence_error(body,sys_sys_chart/3),_)).
 user:goal_expansion(sys_sys_chart(P, _, _), _) :-
    sys_var(P), !, fail.
-user:goal_expansion(sys_sys_chart((  A, B), I, O), (  sys_sys_chart(A, I, H),
-                                                      sys_chart(B, H, O))).
+user:goal_expansion(sys_sys_chart((A, B), I, O), (  sys_sys_chart(A, I, H),
+                                                    sys_chart(B, H, O))).
 user:goal_expansion(sys_sys_chart(U, I, O), (  + Q,
                                                {H is I+1},
                                                sys_chart(B, H, O))) :-
@@ -171,8 +171,8 @@ user:goal_expansion(sys_chart(P, _, _), P) :-
  * succeeds, or when both react. The predicate succeeds when A
  * and B succeed. The output of A is conjoined with the input of B.
  */
-user:goal_expansion(sys_chart((  A, B), I, O), (  sys_chart(A, I, H),
-                                                  sys_chart(B, H, O))).
+user:goal_expansion(sys_chart((A, B), I, O), (  sys_chart(A, I, H),
+                                                sys_chart(B, H, O))).
 
 /**
  * {A}:
