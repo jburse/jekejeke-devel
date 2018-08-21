@@ -90,7 +90,7 @@ import java.util.Properties;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Knowledgebase extends AbstractRecognizer {
+public class Knowledgebase extends AbstractRecognizer {
     private final AbstractStore store;
 
     public static final String OP_ON = AbstractFlag.OP_ON;
@@ -108,10 +108,23 @@ public final class Knowledgebase extends AbstractRecognizer {
      */
     public Knowledgebase(Toolkit k) {
         Lobby l = new Lobby(k);
-
         Foyer foyer = (Foyer) l.getFoyer();
 
         store = new StoreElder(foyer);
+        store.proxy = this;
+    }
+
+    /**
+     * <p>Create a new </p></o>
+     *
+     * @param k The toolkit.
+     * @param c The caller.
+     */
+    public Knowledgebase(Toolkit k, Class c) {
+        Lobby l = new Lobby(k);
+        Foyer foyer = (Foyer) l.getFoyer();
+
+        store = new StoreElder(foyer, c);
         store.proxy = this;
     }
 
@@ -132,7 +145,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      *
      * @return The lobby.
      */
-    public Lobby getLobby() {
+    public final Lobby getLobby() {
         return (Lobby) store.foyer.proxy;
     }
 
@@ -141,7 +154,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      *
      * @return The parent.
      */
-    public Knowledgebase getParent() {
+    public final Knowledgebase getParent() {
         AbstractStore parent = store.parent;
         return (parent != null ? (Knowledgebase) parent.proxy : null);
     }
@@ -155,7 +168,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      *
      * @return The iterable.
      */
-    public Interpreter iterable() {
+    public final Interpreter iterable() {
         return new Interpreter(this, new Controller(getLobby()));
     }
 
@@ -211,7 +224,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public void finiKnowledgebase()
+    public final void finiKnowledgebase()
             throws InterpreterMessage, InterpreterException {
         try {
             store.finiStore(store);
@@ -231,7 +244,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      *
      * @return The commited loader.
      */
-    public ClassLoader getLoader() {
+    public final ClassLoader getLoader() {
         return store.getLoader();
     }
 
@@ -241,7 +254,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @param path The path.
      * @throws InterpreterMessage Shit happens.
      */
-    public void addClassPath(String path)
+    public final void addClassPath(String path)
             throws InterpreterMessage {
         try {
             store.addClassPath(path);
@@ -257,7 +270,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @return The paths.
      * @throws InterpreterMessage Shit happens.
      */
-    public String[] getClassPaths()
+    public final String[] getClassPaths()
             throws InterpreterMessage {
         try {
             return store.snapshotClassPaths();
@@ -272,7 +285,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @param ext  The file extension.
      * @param type The type.
      */
-    public void addFileExtension(String ext, int type) {
+    public final void addFileExtension(String ext, int type) {
         store.addFileExtension(ext, type);
     }
 
@@ -282,7 +295,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      *
      * @return The file extensions and their type.
      */
-    public MapEntry<String, Integer>[] getFileExtensions() {
+    public final MapEntry<String, Integer>[] getFileExtensions() {
         return store.snapshotFileExtensions();
     }
 
@@ -297,7 +310,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @return The capability.
      * @throws InterpreterMessage Shit happens.
      */
-    public Capability stringToCapability(String name)
+    public final Capability stringToCapability(String name)
             throws InterpreterMessage {
         AbstractStore store = (AbstractStore) getStore();
         try {
@@ -318,7 +331,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @param path The path.
      * @return The branch, or null.
      */
-    public AbstractDecoder pathToDecoder(String path) {
+    public final AbstractDecoder pathToDecoder(String path) {
         AbstractBranch branch;
         if (ForeignUri.sysUriIsRelative(path)) {
             branch = LookupResource.RelativeURIstoRoots(path, store);
@@ -339,7 +352,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @return The error properties.
      * @throws IOException Shit happens.
      */
-    public Properties getErrorProperties(Locale locale)
+    public final Properties getErrorProperties(Locale locale)
             throws IOException {
         return EngineMessage.getErrorLang(locale, store);
     }
@@ -350,7 +363,7 @@ public final class Knowledgebase extends AbstractRecognizer {
      * @param key The adr of the resource bundle.
      * @return The properties cache, or null.
      */
-    public HashMap<String, Properties> getCache(String key) {
+    public final HashMap<String, Properties> getCache(String key) {
         return EngineMessage.getCache(key, store);
     }
 

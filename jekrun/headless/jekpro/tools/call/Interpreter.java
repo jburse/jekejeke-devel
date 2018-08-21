@@ -111,20 +111,6 @@ public final class Interpreter implements Comparator<Object> {
     public final static int FLAG_IGNORE_MOD = PrologWriter.FLAG_IGNM;
 
     /**
-     * <p>Create an interpreter.</p>
-     *
-     * @param k The knowledgebase.
-     * @param i The controller.
-     */
-    public Interpreter(Knowledgebase k, Controller i) {
-        AbstractStore store = (AbstractStore) k.getStore();
-        Supervisor visor = (Supervisor) i.getVisor();
-
-        engine = new Engine(store, visor);
-        engine.proxy = this;
-    }
-
-    /**
      * <p>Retrieve the knowledge base.</p>
      *
      * @return The knowledge base.
@@ -447,6 +433,20 @@ public final class Interpreter implements Comparator<Object> {
     /***********************************************************/
     /* For Internal Use Only                                   */
     /***********************************************************/
+
+    /**
+     * <p>Create an interpreter.</p>
+     *
+     * @param k The knowledgebase.
+     * @param i The controller.
+     */
+    public Interpreter(Knowledgebase k, Controller i) {
+        AbstractStore store = (AbstractStore) k.getStore();
+        Supervisor visor = (Supervisor) i.getVisor();
+
+        engine = new Engine(store, visor);
+        engine.proxy = this;
+    }
 
     /**
      * <p>Retrieve the engine.</p>

@@ -43,6 +43,17 @@ public final class StoreElder extends AbstractStore {
     }
 
     /**
+     * <p>Create a new store.</p>
+     *
+     * @param f The foyer.
+     * @param c The call-site.
+     */
+    public StoreElder(Foyer f, Class c) {
+        super(f, null);
+        loader = c.getClassLoader();
+    }
+
+    /**
      * <p>Init the store.</p>
      *
      * @param en     The engine.
