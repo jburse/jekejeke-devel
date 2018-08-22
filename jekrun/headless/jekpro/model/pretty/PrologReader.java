@@ -772,7 +772,7 @@ public class PrologReader {
             Object val;
             switch (rep) {
                 case PrologReader.REP_CHARS:
-                    val = new SkelAtom(new String(Character.toChars(ch)));
+                    val = new SkelAtom(SkelAtom.valueOf(ch));
                     break;
                 case PrologReader.REP_CODES:
                     val = Integer.valueOf(ch);

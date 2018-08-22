@@ -2,6 +2,7 @@ package jekpro.frequent.stream;
 
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.SkelAtom;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -75,7 +76,7 @@ public final class ForeignChar {
     public static void sysPutCode(Writer para, Integer val)
             throws ClassCastException, IOException {
         int n = SpecialEval.castCodePoint(val);
-        para.write(Character.toChars(n));
+        para.write(SkelAtom.valueOf(n));
     }
 
     /**
@@ -120,7 +121,7 @@ public final class ForeignChar {
         if (ch == -1) {
             val = "end_of_file";
         } else {
-            val = new String(Character.toChars(ch));
+            val = SkelAtom.valueOf(ch);
         }
         return val;
     }
@@ -166,7 +167,7 @@ public final class ForeignChar {
         if (ch == -1) {
             val = "end_of_file";
         } else {
-            val = new String(Character.toChars(ch));
+            val = SkelAtom.valueOf(ch);
         }
         return val;
     }

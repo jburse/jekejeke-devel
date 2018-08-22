@@ -77,7 +77,7 @@ public final class ForeignAtom {
             Object val;
             switch (rep) {
                 case REP_CHARS:
-                    val = new String(Character.toChars(ch));
+                    val = SkelAtom.valueOf(ch);
                     break;
                 case REP_CODES:
                     val = Integer.valueOf(ch);
@@ -157,7 +157,7 @@ public final class ForeignAtom {
     public static String sysCodeToChar(Integer val)
             throws ClassCastException {
         int n = SpecialEval.castCodePoint(val);
-        return new String(Character.toChars(n));
+        return SkelAtom.valueOf(n);
     }
 
     /****************************************************************/

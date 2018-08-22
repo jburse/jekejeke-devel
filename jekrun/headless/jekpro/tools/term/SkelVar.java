@@ -36,6 +36,7 @@ public final class SkelVar extends AbstractSkel
     private static final SkelVar[] cachevar = new SkelVar[CACHE_SIZE];
     private static final SkelVar[][] cachearray = new SkelVar[CACHE_SIZE][];
 
+    /* initialize the caches */
     static {
         for (int i = 0; i < CACHE_SIZE; i++)
             cachevar[i] = new SkelVar(i);

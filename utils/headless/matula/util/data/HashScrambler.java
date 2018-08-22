@@ -1,5 +1,8 @@
 package matula.util.data;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * <p>This class provides a hash scrambler. Currently we have only
  * implemented the murmur algorithm.</p>
