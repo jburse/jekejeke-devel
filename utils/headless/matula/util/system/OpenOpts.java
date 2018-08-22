@@ -4,7 +4,10 @@ import derek.util.protect.LicenseError;
 import matula.util.regex.ScannerError;
 
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 
@@ -288,6 +291,7 @@ public final class OpenOpts extends OpenCheck {
                 }
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
+                adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -382,7 +386,7 @@ public final class OpenOpts extends OpenCheck {
      *
      * @param adr The uri.
      * @return The write stream.
-     * @throws IOException IO error.
+     * @throws IOException              IO error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openWrite(String adr)
@@ -443,6 +447,7 @@ public final class OpenOpts extends OpenCheck {
                 out = new FileOutputStream(file);
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
+                adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setDoInput(false);
@@ -499,7 +504,7 @@ public final class OpenOpts extends OpenCheck {
      *
      * @param adr The uri.
      * @return The read stream.
-     * @throws IOException IO error.
+     * @throws IOException              IO error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openAppend(String adr)

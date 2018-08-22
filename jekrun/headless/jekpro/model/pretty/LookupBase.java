@@ -176,7 +176,7 @@ public final class LookupBase {
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
                     if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                        String key = findRead(path + fix.key, src, en);
+                        String key = findRead(addSuffix(path, fix.key), src, en);
                         if (key != null)
                             return key;
                     }
@@ -193,7 +193,7 @@ public final class LookupBase {
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
                     if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                        String key = findRead(path + fix.key, src, en);
+                        String key = findRead(addSuffix(path, fix.key), src, en);
                         if (key != null)
                             return key;
                     }
@@ -204,6 +204,22 @@ public final class LookupBase {
 
         // failure
         return null;
+    }
+
+    /**
+     * <p>Add a suffix.</p>
+     *
+     * @param adr    The URI.
+     * @param suffix The suffix.
+     * @return The result.
+     */
+    private static String addSuffix(String adr, String suffix) {
+        String spec = ForeignUri.sysUriSpec(adr);
+        String query = ForeignUri.sysUriQuery(adr);
+        String hash = ForeignUri.sysUriHash(adr);
+
+        adr = ForeignUri.sysUriMake(spec + suffix, query, hash);
+        return adr;
     }
 
     /**

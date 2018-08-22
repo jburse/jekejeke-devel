@@ -80,6 +80,7 @@ public class OpenCheck {
                 return true;
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
+                adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -130,6 +131,7 @@ public class OpenCheck {
                 return adr;
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
+                adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -157,6 +159,7 @@ public class OpenCheck {
                 if (loc == null)
                     return null;
                 adr = ForeignUri.sysUriAbsolute(adr, loc);
+                adr = ForeignUri.sysUriDecode(adr);
                 adr = ForeignDomain.sysUriUnpuny(adr);
                 return adr;
             }
