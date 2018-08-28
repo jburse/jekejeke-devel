@@ -558,14 +558,13 @@ sys_melt_const(X, 0) <=
 zero <=
    = sys_sqrc(_, C),
    {C < 0}, !.
-zero <=
-   = sys_sqrc(_, C),
-   {D is isqrt(C),
-    C =\= D*D}, !.
 + (intset:sys_in(X, [H,D], H..D)) <=
    = sys_sqrc(X, C),
-   {D is isqrt(C),
-    H is -D}.
+   {sqrtrem(C, D, R),
+    R =:= 0,
+    H is -D}, !.
+zero <=
+   = sys_sqrc(_, _).
 
 % sys_impv(+Wrap, +Wrap)
 % sys_impv(X,Y), X*Y = X

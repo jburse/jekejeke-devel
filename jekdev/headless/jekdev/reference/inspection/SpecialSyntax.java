@@ -92,7 +92,6 @@ public final class SpecialSyntax extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialOper.addOperProp(en.skel, en.display, op, en);
                 return en.getNextRaw();
@@ -104,7 +103,6 @@ public final class SpecialSyntax extends AbstractSpecial {
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkInstantiated(en.skel);
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialOper.removeOperProp(en.skel, en.display, op, en);
                 return en.getNextRaw();

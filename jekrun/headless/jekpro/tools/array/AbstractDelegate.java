@@ -1,8 +1,8 @@
 package jekpro.tools.array;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
@@ -81,7 +81,7 @@ public abstract class AbstractDelegate {
     /**
      * <p>Shrink this predicate from the store for a source.</p>
      *
-     * @param pick   The predicate.
+     * @param pick  The predicate.
      * @param scope The source.
      * @throws EngineMessage Shit happens.
      */
@@ -90,8 +90,8 @@ public abstract class AbstractDelegate {
 
     /**
      * <p>Release this predicate from the store.</p>
-     *  @param pick  The predicate.
      *
+     * @param pick The predicate.
      */
     public abstract void releasePredicate(Predicate pick);
 
@@ -115,12 +115,13 @@ public abstract class AbstractDelegate {
         SkelCompound temp = (SkelCompound) en.skel;
         Display ref = en.display;
 
-        Object expr = checkArgs(temp, ref, en);
-        en.computeExpr(expr, ref);
-
-        if (!en.unifyTerm(temp.args[temp.args.length - 1], ref,
-                en.skel, en.display))
+        Object expr = AbstractDelegate.tunnelArgs(temp);
+        boolean multi = en.computeExpr(expr, ref);
+        Display d = en.display;
+        if (!en.unifyTerm(temp.args[temp.args.length - 1], ref, en.skel, d))
             return false;
+        if (multi)
+            d.remTab(en);
         return en.getNext();
     }
 
@@ -128,28 +129,17 @@ public abstract class AbstractDelegate {
      * <p>Check and shrink the arguments.</p>
      *
      * @param temp The goal skeleton.
-     * @param ref  The goal display.
-     * @param en   The engine.
      * @return The arguments.
      */
-    private Object checkArgs(SkelCompound temp, Display ref, Engine en)
-            throws EngineMessage {
+    private static Object tunnelArgs(SkelCompound temp) {
         int n = temp.args.length - 1;
-        Object[] args = (n > 0 ? new Object[n] : null);
-        int i = 0;
-        if ((subflags & MASK_DELE_VIRT) != 0) {
-            args[i] = temp.args[i];
-            i++;
+        if (n > 0) {
+            Object[] args = new Object[n];
+            System.arraycopy(temp.args, 0, args, 0, n);
+            return new SkelCompound(temp.sym, args);
+        } else {
+            return temp.sym;
         }
-        for (; i < n; i++) {
-            en.skel = temp.args[i];
-            en.display = ref;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            EngineMessage.checkValue(en.skel, en.display);
-            args[i] = en.skel;
-        }
-        return (n > 0 ? new SkelCompound(temp.sym, args) : temp.sym);
     }
 
     /********************************************************************/
@@ -166,26 +156,23 @@ public abstract class AbstractDelegate {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public void moniEvaluate(Engine en)
+    public boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
 
         Object[] args = computeArgs(temp, ref, en);
-        SkelAtom sa = Frame.callableToName(temp);
+        SkelAtom sa = SpecialBody.callableToName(temp);
         ref = bridgeCount(args);
-        temp = bridgeAlloc(args, ref, en);
-
-        en.skel = new SkelCompound(sa, args);
         en.display = ref;
+        en.skel = bridgeAlloc(sa, args, ref, en);
+        temp = args[args.length - 1];
 
         AbstractDelegate.invokeOther(en);
 
-        en.skel = temp;
         en.display = ref;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        EngineMessage.checkValue(en.skel, en.display);
+        en.skel = temp;
+        return true;
     }
 
     /**
@@ -203,19 +190,23 @@ public abstract class AbstractDelegate {
             throws EngineException, EngineMessage {
         if (!(temp instanceof SkelCompound))
             return new Object[1];
-        SkelCompound sc = (SkelCompound) temp;
-        Object[] args = new Object[sc.args.length + 1];
+        Object[] help = ((SkelCompound) temp).args;
+        Object[] args = new Object[help.length + 1];
         int i = 0;
         if ((subflags & MASK_DELE_VIRT) != 0) {
-            en.skel = sc.args[0];
+            en.skel = help[0];
             en.display = ref;
             en.deref();
             args[i] = AbstractTerm.createMolec(en.skel, en.display);
             i++;
         }
-        for (; i < sc.args.length; i++) {
-            en.computeExpr(sc.args[i], ref);
-            args[i] = AbstractTerm.createMolec(en.skel, en.display);
+        for (; i < help.length; i++) {
+            boolean multi = en.computeExpr(help[i], ref);
+            Display ref2 = en.display;
+            Object val = AbstractTerm.createMolec(en.skel, ref2);
+            if (EngineCopy.getVar(en.skel) != null)
+                AbstractTerm.setMarker(val, Boolean.valueOf(multi));
+            args[i] = val;
         }
         return args;
     }
@@ -227,43 +218,49 @@ public abstract class AbstractDelegate {
      * @return The count.
      */
     private static Display bridgeCount(Object[] args) {
-        int k = 0;
+        int countvar = 0;
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
             Object temp = AbstractTerm.getSkel(args[i]);
-            if (!EngineCopy.isGroundSkel(temp))
-                k++;
+            if (EngineCopy.getVar(temp) != null)
+                countvar++;
         }
-        return new Display(k + 1);
+        return new Display(countvar + 1);
     }
 
     /**
      * <p>Unpack the arguments and bind the needed variable
      * place holders.</p>
      *
+     * @param sa   The symbol.
      * @param args The computed arguments.
      * @param ref  The new display.
      * @param en   The engine.
      */
-    private static SkelVar bridgeAlloc(Object[] args, Display ref,
-                                       Engine en) {
-        int k = 0;
+    private static SkelCompound bridgeAlloc(SkelAtom sa,
+                                            Object[] args, Display ref,
+                                            Engine en) {
+        SkelVar[] vars = SkelVar.valueOfArray(ref.bind.length);
+        int countvar = 0;
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
-            Object temp = AbstractTerm.getSkel(args[i]);
-            if (!EngineCopy.isGroundSkel(temp)) {
-                Display ref2 = AbstractTerm.getDisplay(args[i]);
-                SkelVar sv = SkelVar.valueOf(k);
-                k++;
+            Object obj = args[i];
+            Object temp = AbstractTerm.getSkel(obj);
+            if (EngineCopy.getVar(temp) != null) {
+                Display ref2 = AbstractTerm.getDisplay(obj);
+                boolean multi = ((Boolean) AbstractTerm.getMarker(obj)).booleanValue();
+                SkelVar sv = vars[countvar];
+                countvar++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
+                if (multi)
+                    ref2.remTab(en);
                 args[i] = sv;
             } else {
                 args[i] = temp;
             }
         }
-        SkelVar sv = SkelVar.valueOf(k);
-        args[n] = sv;
-        return sv;
+        args[n] = vars[countvar];
+        return new SkelCompound(sa, args, vars);
     }
 
     /**
@@ -278,13 +275,16 @@ public abstract class AbstractDelegate {
         Goal r = (Goal) en.contskel;
         DisplayClause u = en.contdisplay;
         int snap = en.number;
-        en.wrapGoal();
+        boolean multi = en.wrapGoal();
+        Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        DisplayClause ref = new DisplayClause(clause.dispsize);
-        ref.addArgument(en.skel, en.display, en);
-        ref.setEngine(en);
+        DisplayClause ref2 = new DisplayClause(clause.dispsize);
+        ref2.addArgument(en.skel, ref, en);
+        if (multi)
+            ref.remTab(en);
+        ref2.setEngine(en);
         en.contskel = clause.getNextRaw(en);
-        en.contdisplay = ref;
+        en.contdisplay = ref2;
         if (!en.runFirst(snap))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));

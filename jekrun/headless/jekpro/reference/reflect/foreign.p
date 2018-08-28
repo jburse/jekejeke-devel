@@ -95,9 +95,9 @@
 
 :- set_source_property(system, use_package(foreign(java/lang))).
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 /***************************************************************/
@@ -192,158 +192,14 @@ foreign_const(I, C, M) :-
 :- special(sys_foreign_const/3, 'SpecialForeign', 5).
 :- set_predicate_property(sys_foreign_const/3, visible(private)).
 
-/***************************************************************/
-/* Type and Domain Checks                                      */
-/***************************************************************/
-
-/**
- * sys_boolean(X):
- * The predicate succeeds when X is an atom from the set {true, false}.
- */
-sys_boolean(true).
-sys_boolean(false).
-:- set_predicate_property(sys_boolean/1, visible(public)).
-
-/**
- * sys_integer8(X):
- * The predicate succeeds when X is an integer and X is in the
- * range -2^7 to 2^7-1.
- */
-sys_integer8(X) :-
-   integer(X),
-   -128 =< X,
-   X =< 127.
-:- set_predicate_property(sys_integer8/1, visible(public)).
-
-/**
- * sys_char16(X):
- * The predicate succeeds when X is a character and X is in the
- * range of 0 to 2^16-1.
- */
-sys_char16(X) :-
-   atom(X),
-   atom_codes(X, [Y]),
-   Y =< 65535.
-:- set_predicate_property(sys_char16/1, visible(public)).
-
-/**
- * sys_integer16(X):
- * The predicate succeeds when X is an integer and X is in the
- * range -2^15 to 2^15-1.
- */
-sys_integer16(X) :-
-   integer(X),
-   -32768 =< X,
-   X =< 32767.
-:- set_predicate_property(sys_integer16/1, visible(public)).
-
-/**
- * sys_integer32(X):
- * The predicate succeeds when X is an integer and X is in the
- * range -2^31 to 2^31-1.
- */
-sys_integer32(X) :-
-   integer(X),
-   -2147483648 =< X,
-   X =< 2147483647.
-:- set_predicate_property(sys_integer32/1, visible(public)).
-
-/**
- * sys_integer64(X):
- * The predicate succeeds when X is an integer and X is in the
- * range -2^63 to 2^63-1.
- */
-sys_integer64(X) :-
-   integer(X),
-   -9223372036854775808 =< X,
-   X =< -9223372036854775807.
-:- set_predicate_property(sys_integer64/1, visible(public)).
-
-/**
- * sys_integer32_or_float32(X):
- * The predicate succeeds when X is an 32-bit integer or a 32-bit float.
- */
-sys_integer32_or_float32(X) :-
-   sys_integer32(X), !.
-sys_integer32_or_float32(X) :-
-   float32(X).
-:- set_predicate_property(sys_integer32_or_float32/1, visible(public)).
-
-/**
- * sys_integer64_or_float(X):
- * The predicate succeeds when X is an 64-bit integer or a float.
- */
-sys_integer64_or_float(X) :-
-   sys_integer64(X), !.
-sys_integer64_or_float(X) :-
-   float(X).
-:- set_predicate_property(sys_integer64_or_float/1, visible(public)).
-
-/**
- * sys_integer16_and_not_integer8(X):
- * The predicate succeeds when X is an 16-bit integer but not an 8-bit integer.
- */
-sys_integer16_and_not_integer8(X) :-
-   sys_integer8(X), !, fail.
-sys_integer16_and_not_integer8(X) :-
-   sys_integer16(X).
-:- set_predicate_property(sys_integer16_and_not_integer8/1, visible(public)).
-
-/**
- * sys_integer32_and_not_integer16(X):
- * The predicate succeeds when X is an 32-bit integer but not an 16-bit integer.
- */
-sys_integer32_and_not_integer16(X) :-
-   sys_integer16(X), !, fail.
-sys_integer32_and_not_integer16(X) :-
-   sys_integer32(X).
-:- set_predicate_property(sys_integer32_and_not_integer16/1, visible(public)).
-
-/**
- * sys_integer64_and_not_integer32(X):
- * The predicate succeeds when X is an 64-bit integer but not an 32-bit integer.
- */
-sys_integer64_and_not_integer32(X) :-
-   sys_integer32(X), !, fail.
-sys_integer64_and_not_integer32(X) :-
-   sys_integer64(X).
-:- set_predicate_property(sys_integer64_and_not_integer32/1, visible(public)).
-
-/**
- * sys_integer_and_not_integer64(X):
- * The predicate succeeds when X is an integer but not an 64-bit integer.
- */
-sys_integer_and_not_integer64(X) :-
-   sys_integer64(X), !, fail.
-sys_integer_and_not_integer64(X) :-
-   integer(X).
-:- set_predicate_property(sys_integer_and_not_integer64/1, visible(public)).
-
-/**
- * sys_atom_or_type_of(C, X):
- * The predicate succeeds when X is an atom or an instance of C.
- */
-sys_atom_or_type_of(_, X) :-
-   atom(X), !.
-sys_atom_or_type_of(C, X) :-
-   sys_type_of(C, X).
-:- set_predicate_property(sys_atom_or_type_of/2, visible(public)).
-
-/**
- * sys_type_of(C, X):
- * The predicate succeeds when X is an instance of C.
- */
-:- special(sys_type_of/2, 'SpecialForeign', 6).
-:- set_predicate_property(sys_type_of/2, visible(public)).
-
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator(foreign(I,_,_), I).
 sys_declaration_indicator(foreign_constructor(I,_,_), I).

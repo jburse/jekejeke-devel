@@ -67,90 +67,129 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_INTEGER:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = integer(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_TRUNCATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = truncate(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_FLOOR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = floor(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_CEILING:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = ceiling(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_ROUND:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = round(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_SLASH_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    Number beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = slashSlash(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_REM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = rem(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_DIV:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = div(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_MOD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castNumber(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    beta = EngineMessage.castNumber(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = mod(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -210,14 +249,14 @@ public final class EvaluableRound extends AbstractSpecial {
         } else if (m instanceof Float) {
             float f = m.floatValue();
             if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
-                return TermAtomic.guardFloat(Float.valueOf((int) f));
+                return TermAtomic.makeFloat((int) f);
             } else {
                 return m;
             }
         } else if (m instanceof Double) {
             double d = m.doubleValue();
             if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
-                return TermAtomic.guardDouble(Double.valueOf((long) d));
+                return TermAtomic.makeDouble((long) d);
             } else {
                 return m;
             }
@@ -245,10 +284,10 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf((float) Math.floor(f)));
+            return TermAtomic.makeFloat((float) Math.floor(f));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(Math.floor(d)));
+            return TermAtomic.makeDouble(Math.floor(d));
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -275,10 +314,10 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf((float) Math.ceil(f)));
+            return TermAtomic.makeFloat((float) Math.ceil(f));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(Math.ceil(d)));
+            return TermAtomic.makeDouble(Math.ceil(d));
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -305,12 +344,12 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.guardFloat(Float.valueOf(
-                    (f < 0 ? -Math.round(-f) : Math.round(f))));
+            return TermAtomic.makeFloat(
+                    (f < 0 ? -Math.round(-f) : Math.round(f)));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.guardDouble(Double.valueOf(
-                    (d < 0 ? -Math.round(-d) : Math.round(d))));
+            return TermAtomic.makeDouble(
+                    (d < 0 ? -Math.round(-d) : Math.round(d)));
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -339,12 +378,13 @@ public final class EvaluableRound extends AbstractSpecial {
      *       X // Y = integer(X / Y).
      * </pre>
      *
-     * @param a The first number.
-     * @param b The second number.
-     * @return The first number divided by the second number.
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The first operand divided by the second operand.
      * @throws ArithmeticException Shit happens.
      */
-    private static Number slashSlash(Number a, Number b) throws ArithmeticException {
+    private static Number slashSlash(Number a, Number b)
+            throws ArithmeticException {
         switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
             case SpecialCompare.CATEGORY_INTEGER:
                 int u = b.intValue();
@@ -360,7 +400,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).divide(p));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
@@ -371,7 +411,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
@@ -400,9 +440,9 @@ public final class EvaluableRound extends AbstractSpecial {
      *       X div Y = integer(floor(X / Y)).
      * </pre>
      *
-     * @param a The first number.
-     * @param b The second number.
-     * @return The first number divided by the second number.
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The first operand divided by the second operand.
      * @throws ArithmeticException Shit happens.
      */
     private static Number div(Number a, Number b) {
@@ -437,7 +477,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue() / f;
@@ -449,7 +489,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue() / d;
@@ -479,9 +519,9 @@ public final class EvaluableRound extends AbstractSpecial {
      *      X rem Y = X - (X // Y) * Y.
      * </pre>
      *
-     * @param a The first number.
-     * @param b The second number.
-     * @return The remainder of the first number by the second number.
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The remainder of the first operand by the second operand.
      * @throws ArithmeticException Shit happens.
      */
     private static Number rem(Number a, Number b) throws ArithmeticException {
@@ -500,18 +540,16 @@ public final class EvaluableRound extends AbstractSpecial {
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(p));
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                float g = a.floatValue();
-                return TermAtomic.guardFloat(Float.valueOf(g % f));
+                return TermAtomic.makeFloat(a.floatValue() % f);
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                double e = a.doubleValue();
-                return TermAtomic.guardDouble(Double.valueOf(e % d));
+                return TermAtomic.makeDouble(a.doubleValue() % d);
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
@@ -574,35 +612,35 @@ public final class EvaluableRound extends AbstractSpecial {
                 }
             case SpecialCompare.CATEGORY_FLOAT:
                 float f = b.floatValue();
-                if (f == 0)
+                if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
                 if ((g < 0) != (f < 0)) {
                     float res = g % f;
                     if (res != 0) {
-                        return TermAtomic.guardFloat(Float.valueOf(res + f));
+                        return TermAtomic.makeFloat(res + f);
                     } else {
-                        return Float.valueOf(0);
+                        return TermAtomic.ZERO_FLOAT;
                     }
                 } else {
-                    return TermAtomic.guardFloat(Float.valueOf(g % f));
+                    return TermAtomic.makeFloat(g % f);
                 }
             case SpecialCompare.CATEGORY_DOUBLE:
                 double d = b.doubleValue();
-                if (d == 0)
+                if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
                 if ((e < 0) != (d < 0)) {
                     double res = e % d;
                     if (res != 0) {
-                        return TermAtomic.guardDouble(Double.valueOf(res + d));
+                        return TermAtomic.makeDouble(res + d);
                     } else {
-                        return Float.valueOf(0);
+                        return TermAtomic.ZERO_DOUBLE;
                     }
                 } else {
-                    return TermAtomic.guardDouble(Double.valueOf(e % d));
+                    return TermAtomic.makeDouble(e % d);
                 }
             case SpecialCompare.CATEGORY_LONG:
             case SpecialCompare.CATEGORY_BIG_DECIMAL:
@@ -617,5 +655,34 @@ public final class EvaluableRound extends AbstractSpecial {
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        double x=19.0; double y=12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+        x=19.0; y=-12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+        x=-19.0; y=12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+        x=-19.0; y=-12.0;
+        System.out.println("("+x+"%"+y+")="+(x%y));
+
+        System.out.println();
+
+        x=19.0; y=12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+        x=19.0; y=-12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+        x=-19.0; y=12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+        x=-19.0; y=-12.0;
+        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+    }
+    */
 
 }

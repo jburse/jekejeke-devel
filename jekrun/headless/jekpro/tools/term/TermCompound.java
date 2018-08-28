@@ -1,10 +1,11 @@
 package jekpro.tools.term;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.frequent.standard.SpecialSort;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -52,6 +53,7 @@ import jekpro.tools.call.Interpreter;
 public final class TermCompound extends AbstractTerm {
     final SkelCompound skel;
     final Display display;
+    Object marker;
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -59,9 +61,9 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      * @param d The compound display.
      */
-    public TermCompound(SkelCompound s, Display d) {
-        skel = s;
+    TermCompound(SkelCompound s, Display d) {
         display = d;
+        skel = s;
     }
 
     /**
@@ -70,8 +72,8 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      */
     public TermCompound(SkelCompound s) {
-        skel = s;
         display = Display.DISPLAY_CONST;
+        skel = s;
     }
 
     /**
@@ -82,8 +84,8 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(String sym, Object... args) {
-        this(new SkelCompound(new SkelAtom(sym), makeArgs(args)),
-                TermCompound.createCount(args));
+        display = makeCount(args);
+        skel = new SkelCompound(new SkelAtom(sym), args);
     }
 
     /**
@@ -94,8 +96,8 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      */
     public TermCompound(TermAtomic sym, Object... args) {
-        this(new SkelCompound(getFun(sym), makeArgs(args)),
-                TermCompound.createCount(args));
+        display = makeCount(args);
+        skel = new SkelCompound(getFun(sym), args);
     }
 
     /**
@@ -106,9 +108,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, String sym, Object... args) {
-        this(new SkelCompound(new SkelAtom(sym),
-                        makeArgs((Engine) inter.getEngine(), args)),
-                ((Engine) inter.getEngine()).display);
+        Engine en = (Engine) inter.getEngine();
+        display = createCount(args, en);
+        skel = createAlloc(new SkelAtom(sym), args, en);
     }
 
     /**
@@ -119,9 +121,9 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, TermAtomic sym, Object... args) {
-        this(new SkelCompound(getFun(sym),
-                        makeArgs((Engine) inter.getEngine(), args)),
-                ((Engine) inter.getEngine()).display);
+        Engine en = (Engine) inter.getEngine();
+        display = createCount(args, en);
+        skel = createAlloc(getFun(sym), args, en);
     }
 
     /**
@@ -245,144 +247,135 @@ public final class TermCompound extends AbstractTerm {
      * @return The functor.
      */
     private static SkelAtom getFun(TermAtomic ta) {
-        if (ta.skel instanceof SkelAtom)
-            return (SkelAtom) ta.skel;
+        Object obj = ta.skel;
+        if (obj instanceof SkelAtom)
+            return (SkelAtom) obj;
         throw new IllegalArgumentException("illegal fun");
     }
 
-    /**
-     * <p>Create the arguments for a compound.</p>
-     * <p>The arguments must have single display.</p>
-     *
-     * @param args The term arguments.
-     * @return The object arguments.
-     */
-    private static Object[] makeArgs(Object[] args) {
-        boolean multi = TermCompound.isMulti(args);
-        if (multi)
-            throw new IllegalArgumentException("multi display");
-        return TermCompound.createAlloc(args, false, null);
-    }
+    /******************************************************************/
+    /* Homogenous Case: One Pass                                      */
+    /******************************************************************/
 
     /**
-     * <p>Create the arguments for a compound.</p>
+     * <p>Check that the homogenous display.</p>
+     * <p>Repopulate array with skeleton only.</p>
      *
-     * @param engine The engine.
-     * @param args   The term arguments.
-     * @return The object arguments.
+     * @param args The arguments.
+     * @return The display.
      */
-    private static Object[] makeArgs(Engine engine, Object[] args) {
-        boolean multi = TermCompound.isMulti(args);
-        engine.display = TermCompound.createCount(args);
-        return TermCompound.createAlloc(args, multi, engine);
-    }
-
-    /**
-     * <p>Check whether the arguments have multiple displays.</p>
-     *
-     * @param args The term array.
-     * @return True if arguments have multiple displays, otherwise false.
-     */
-    private static boolean isMulti(Object[] args) {
+    private Display makeCount(Object[] args) {
         Display last = Display.DISPLAY_CONST;
+        Object check = null;
         for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
-            /* fast lane */
-            if (arg instanceof String)
-                continue;
-            /* common lane */
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
-            BindVar b;
-            while (t instanceof SkelVar &&
-                    (b = d.bind[((SkelVar) t).id]).display != null) {
-                t = b.skel;
-                d = b.display;
-            }
-            if (!EngineCopy.isGroundSkel(t)) {
+            Object obj = args[i];
+            Object t = AbstractTerm.getSkel(obj);
+            if (EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(obj);
+                Object c = AbstractTerm.getMarker(obj);
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
-                } else if (last != d) {
-                    return true;
+                    check = c;
+                } else if (last != d || check != c) {
+                    throw new IllegalArgumentException("needs display");
                 }
             }
+            args[i] = t;
         }
-        return false;
+        marker = check;
+        return last;
     }
+
+    /******************************************************************/
+    /* Inhomogenous Case: Two Pass                                    */
+    /******************************************************************/
 
     /**
      * <p>Count the needed variable place holders.</p>
      * <p>New display is only created if multi.</p>
      *
      * @param args The arguments.
-     * @return The new or reused display.
+     * @param en   The engine.
+     * @return The display.
      */
-    private static Display createCount(Object[] args) {
+    private Display createCount(Object[] args, Engine en) {
         int countvar = 0;
         boolean multi = false;
         Display last = Display.DISPLAY_CONST;
+        Object check = null;
         for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
+            Object obj = args[i];
             /* fast lane */
-            if (arg instanceof String)
+            if (obj instanceof String)
                 continue;
             /* common lane */
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
-            BindVar b;
-            while (t instanceof SkelVar &&
-                    (b = d.bind[((SkelVar) t).id]).display != null) {
-                t = b.skel;
-                d = b.display;
-            }
-            if (!EngineCopy.isGroundSkel(t)) {
+            Object t = AbstractTerm.getSkel(obj);
+            if (EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(obj);
+                Object c = AbstractTerm.getMarker(obj);
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
-                } else if (last != d) {
+                    check = c;
+                } else if (last != d || check != c) {
                     multi = true;
                 }
             }
         }
-        if (multi)
+        if (multi) {
             last = new Display(countvar);
+            marker = new MutableBit().setBit(true);
+        } else {
+            marker = check;
+        }
+        en.skel = Boolean.valueOf(multi);
         return last;
     }
 
     /**
-     * <p>Allocate the array and bind the place holders where necessary.</p>
+     * <p>Repopulate array with deref or variable.</p>
      * <p>The display is passed via the engine.</p>
      *
-     * @param args  The arguments.
-     * @param multi The multi flag.
-     * @param en    The engine copy.
-     * @return The arguments.
+     * @param sa   The symbol.
+     * @param args The arguments.
+     * @param en   The engine.
+     * @return The new compound.
      */
-    private static Object[] createAlloc(Object[] args, boolean multi, Engine en) {
-        Object[] newargs = new Object[args.length];
-        int pos = 0;
+    private SkelCompound createAlloc(SkelAtom sa, Object[] args, Engine en) {
+        boolean multi = ((Boolean) en.skel).booleanValue();
+        Display d3;
+        SkelVar[] vars;
+        if (multi) {
+            d3 = display;
+            vars = SkelVar.valueOfArray(d3.bind.length);
+        } else {
+            vars = null;
+            d3 = null;
+        }
         int countvar = 0;
         for (int i = 0; i < args.length; i++) {
-            Object arg = args[i];
-            Object t = AbstractTerm.getSkel(arg);
-            Display d = AbstractTerm.getDisplay(arg);
-            BindVar b;
-            while (t instanceof SkelVar &&
-                    (b = d.bind[((SkelVar) t).id]).display != null) {
-                t = b.skel;
-                d = b.display;
-            }
-            if (multi && !EngineCopy.isGroundSkel(t)) {
-                SkelVar sv = SkelVar.valueOf(countvar);
+            Object obj = args[i];
+            Object t = AbstractTerm.getSkel(obj);
+            if (multi && EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(obj);
+                SkelVar sv = vars[countvar];
                 countvar++;
-                en.display.bind[sv.id].bindVar(t, d, en);
-                newargs[pos] = sv;
+                d3.bind[sv.id].bindVar(t, d, en);
+                Object check = AbstractTerm.getMarker(obj);
+                if (check != null && ((MutableBit) check).getBit()) {
+                    d.remTab(en);
+                    ((MutableBit) check).setBit(false);
+                }
+                args[i] = sv;
             } else {
-                newargs[pos] = t;
+                args[i] = t;
             }
-            pos++;
         }
-        return newargs;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
+        } else {
+            return new SkelCompound(sa, args);
+        }
     }
 
 }

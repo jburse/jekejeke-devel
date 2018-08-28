@@ -5,6 +5,8 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 
+import java.io.StringWriter;
+
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>
  * <p/>
@@ -41,7 +43,9 @@ public abstract class AbstractSkel {
      */
     public String toString() {
         try {
-            return PrologWriter.toString(this, Display.DISPLAY_CONST, 0, null);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(this, Display.DISPLAY_CONST, sw, 0, null);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
         } catch (EngineException x) {

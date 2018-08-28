@@ -88,9 +88,7 @@
 A => _ :-
    var(A),
    throw(error(instantiation_error,_)).
-{A} => B :- !,
-   call(A),
-   call(B).
+{A} => B :- !, A, B.
 
 /**
  * -P:
@@ -106,10 +104,8 @@ A => _ :-
    throw(error(instantiation_error,_)).
 - A => B :-
    \+ minus_abnormal(A), !,
-   clause_ref(A, G, R),
-   call(G),
-   sys_retire_ref(R),
-   call(B),
+   clause_ref(A, true, R),
+   sys_retire_ref(R), B,
    sys_assume_ref(R).
 
 /**
@@ -133,8 +129,7 @@ A /\ B => C :- !, A =>
 % :- public unit/0.
 % unit :- throw(error(existence_error(body, unit/0), _)).
 
-unit => A :- !,
-   call(A).
+unit => A :- !, A.
 
 /**
  * zero:
@@ -157,8 +152,7 @@ zero => _ :- !, fail.
 A => B :-
    \+ hypo_abnormal(A), !,
    assumable_ref(A, R),
-   sys_assume_ref(R),
-   call(B),
+   sys_assume_ref(R), B,
    sys_retire_ref(R).
 
 /**
@@ -198,15 +192,13 @@ hypo_abnormal(zero).
 <= A :-
    var(A),
    throw(error(instantiation_error,_)).
-<= {A} :- !,
-   call(A).
+<= {A} :- !, A.
 <= - A :-
    var(A),
    throw(error(instantiation_error,_)).
 <= - A :-
    \+ minus_abnormal(A), !,
-   clause_ref(A, G, R),
-   call(G),
+   clause_ref(A, true, R),
    sys_retire_ref(R).
 <= A /\ B :- !,
    <= A,

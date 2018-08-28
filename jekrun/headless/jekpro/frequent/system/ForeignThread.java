@@ -62,7 +62,7 @@ public final class ForeignThread {
      */
     public static Thread sysThreadNew(Interpreter inter, AbstractTerm t)
             throws InterpreterMessage {
-        t = AbstractTerm.copyTermWrapped(inter, t);
+        Object obj = AbstractTerm.copyMolec(inter, t);
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_DISP_INPUT);
         ConnectionReader cr;
@@ -97,13 +97,13 @@ public final class ForeignThread {
         inter2.setProperty(Toolkit.PROP_SYS_DISP_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_CUR_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_ATTACHED_TO, inter.getProperty(Toolkit.PROP_SYS_ATTACHED_TO));
-        final CallIn callin = inter2.iterator(t);
+        final CallIn callin = inter2.iterator(obj);
 
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 try {
                     try {
-                        callin.nextClose();
+                        callin.next().close();
                     } catch (InterpreterMessage y) {
                         InterpreterException x = new InterpreterException(y,
                                 InterpreterException.fetchStack(inter2));

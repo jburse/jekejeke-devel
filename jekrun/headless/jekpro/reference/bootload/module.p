@@ -8,7 +8,7 @@
  * default visibility for a member is package local inside Prolog
  * texts elevated to modules and public for ordinary Prolog texts.
  *
- * Example:
+ * Examples:
  * ?- member(X,[1,2,3]).
  * X = 1 ;
  * X = 2 ;
@@ -24,22 +24,21 @@
  * be used. The later predicate will make the corresponding imported
  * members visible to qualified invocations and client imports.
  *
- * Example:
- * ?- source_property(system, use_package(X)).
- * X = foreign(java/lang) ;
- * Etc..
+ * Examples:
+ * ?- absolute_file_name(library(basic/lists), Y),
+ *    source_property(Y, package(X)).
+ * X = library(jekpro/frequent/basic)
  *
- * ?- source_property(system, use_file_extension(X)).
- * X = binary('.class') ;
- * X = text('.p') ;
- * Etc..
+ * ?- absolute_file_name(library(basic/lists), Y),
+ *    source_property(Y, sys_source_name(X)).
+ * X = lists
  *
- * The path resolution uses prefixes and suffixes from the current
- * source and the system source. The prefixes for the current source
- * can be set via the predicate use_package/1 and the suffixes for
- * the current source can be set via the predicate use_file_extension/1.
- * The prefixes and suffixes can be queried via the usual source_property/2
- * predicate.
+ * The path resolution uses prefixes from the current source and
+ * the system sources along the knowledge bases. The prefixes for
+ * the current source can be set via the predicates package/1 and
+ * use_package/1. The prefixes for the system sources can be set
+ * via the predicate set_source_property/2. The prefixes can be
+ * queried via the source_property/2 predicate.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -65,20 +64,11 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- set_source_property(system, use_file_extension(text('.px'))).
-:- set_source_property(system, use_file_extension(text('.p'))).
-:- set_source_property(system, use_file_extension(text('.pl'))).
-:- set_source_property(system, use_file_extension(text('.pro'))).
-:- set_source_property(system, use_file_extension(resource('.propertiesx'))).
-:- set_source_property(system, use_file_extension(resource('.properties'))).
-:- set_source_property(system, use_file_extension(resource('.txtx'))).
-:- set_source_property(system, use_file_extension(resource('.txt'))).
-
 :- set_source_property(system, use_package(library(jekpro/frequent))).
 :- set_source_property(system, use_package(library(jekpro/reference))).
 :- set_source_property(system, use_package(library(jekpro/platform))).
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 :- op(1150, fy, private).
@@ -103,10 +93,10 @@ package(P) :-
    var(P),
    throw(error(instantiation_error,_)).
 package(library(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, package(library(P))).
 package(foreign(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, package(foreign(P))).
 package(P) :-
    throw(error(domain_error(fix_option,P),_)).
@@ -124,37 +114,14 @@ use_package(P) :-
    var(P),
    throw(error(instantiation_error,_)).
 use_package(library(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, use_package(library(P))).
 use_package(foreign(P)) :- !,
-   sys_get_context(P, C),
+   sys_context_property(P, C),
    set_source_property(C, use_package(foreign(P))).
 use_package(P) :-
    throw(error(domain_error(fix_option,P),_)).
 :- set_predicate_property(use_package/1, visible(public)).
-
-/**
- * use_file_extension(E):
- * The predicate adds the suffix E to the list of suffixes of
- * the current source. Currently text/1, binary/1 and resources/1
- * suffixes are supported.
- */
-% use_file_extension(+Callable)
-use_file_extension(E) :-
-   var(E),
-   throw(error(instantiation_error,_)).
-use_file_extension(text(E)) :- !,
-   sys_get_context(E, C),
-   set_source_property(C, use_file_extension(text(E))).
-use_file_extension(binary(E)) :- !,
-   sys_get_context(E, C),
-   set_source_property(C, use_file_extension(binary(E))).
-use_file_extension(resource(E)) :- !,
-   sys_get_context(E, C),
-   set_source_property(C, use_file_extension(resource(E))).
-use_file_extension(E) :-
-   throw(error(domain_error(fix_option,E),_)).
-:- set_predicate_property(use_file_extension/1, visible(public)).
 
 /**
  * module(N, L):
@@ -168,16 +135,16 @@ module(N, _) :-
    throw(error(instantiation_error,_)).
 module(N, L) :-
    sys_eq(N, user), !,
-   sys_get_context(N, C),
+   sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    (public L).
 module(N, L) :-
-   sys_get_context(N, C),
+   sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    set_source_property(C, sys_source_name(N)),
    (public L),
    sys_get_key(C, K),
-   sys_replace_site(J, N, K),
+   sys_set_context_property(J, C, K),
    sys_check_key(J, C).
 :- set_predicate_property(module/2, visible(public)).
 
@@ -332,16 +299,16 @@ sys_public(postfix(X)) :- !,
    set_oper_property(postfix(X), visible(public)).
 sys_public(I) :-
    sys_make_indicator(F, _, I),
-   sys_get_context(F, C),
+   sys_context_property(F, C),
    sys_once(sys_and(predicate_property(I,sys_usage(D)),
                sys_not(sys_eq(C,D)))),
    sys_not(predicate_property(I,sys_public(D))),
    throw(error(permission_error(promote,public,I),_)).
 sys_public(I) :-
+   sys_make_indicator(F, _, I),
+   sys_context_property(F, C),
    sys_neutral_predicate(I),
    set_predicate_property(I, visible(public)),
-   sys_make_indicator(F, _, I),
-   sys_get_context(F, C),
    set_predicate_property(I, sys_public(C)).
 :- set_predicate_property(sys_public/1, visible(private)).
 
@@ -379,9 +346,9 @@ sys_override(postfix(X)) :- !,
    sys_neutral_oper(postfix(X)),
    set_oper_property(postfix(X), override).
 sys_override(I) :-
-   sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
-   sys_get_context(J, C),
+   sys_context_property(J, C),
+   sys_neutral_predicate(I),
    set_predicate_property(I, (override C)).
 :- set_predicate_property(sys_override/1, visible(private)).
 
@@ -389,10 +356,10 @@ sys_override(I) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((public D), I) :-
    sys_declaration_indicator(D, I).
@@ -426,19 +393,18 @@ sys_declaration_indicator((override D), I) :-
 :- ensure_loaded(library(runtime/dynamic)).
 :- ensure_loaded(library(runtime/session)).
 
-:- ensure_loaded(library(standard/apply)).
-:- ensure_loaded(library(standard/bags)).
-:- ensure_loaded(library(standard/expand)).
-:- ensure_loaded(library(standard/dcg)).
-:- ensure_loaded(library(standard/signal)).
-:- ensure_loaded(library(standard/sort)).
-
 :- ensure_loaded(library(stream/stream)).
 :- ensure_loaded(library(stream/byte)).
 :- ensure_loaded(library(stream/char)).
 :- ensure_loaded(library(stream/term)).
 
-:- ensure_loaded(library(basic/array)).
 :- ensure_loaded(library(basic/utility)).
 
+:- ensure_loaded(library(standard/bags)).
+:- ensure_loaded(library(standard/signal)).
+:- ensure_loaded(library(standard/sort)).
+:- ensure_loaded(library(standard/expand)).
+:- ensure_loaded(library(standard/apply)).
+
 :- set_prolog_flag(sys_clause_expand, on).
+

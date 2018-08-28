@@ -78,6 +78,8 @@ public final class ScannerToken {
     public static final int MASK_RTRN_LINE = 0x00000002;
     public static final int MASK_RTRN_BLCK = 0x00000004;
 
+    public static final int MASK_ALLW_NEWL = 0x00000010;
+
     public static final int MASK_RTRN_ALL = MASK_RTRN_LAYT | MASK_RTRN_LINE | MASK_RTRN_BLCK;
 
     private Reader reader;
@@ -212,7 +214,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     private void nextString()
             throws ScannerError, IOException {
@@ -267,7 +269,7 @@ public final class ScannerToken {
      *
      * @param cont The continuation escape sequence flag.
      * @throws ScannerError Scanning problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     private void nextChar(boolean cont)
             throws ScannerError, IOException {
@@ -293,7 +295,7 @@ public final class ScannerToken {
                     ch = getCode();
                 }
             }
-        } else if (ch == CodeType.LINE_EOL) {
+        } else if (ch == CodeType.LINE_EOL && (flags & MASK_ALLW_NEWL) == 0) {
             if (cont) {
                 throw new ScannerError(OP_SYNTAX_END_OF_LINE_IN_STRING,
                         OpenOpts.getOffset(reader));
@@ -333,7 +335,7 @@ public final class ScannerToken {
      * is based on the Java Character.isDigit(int,int) method.</p>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     private void nextNumber()
             throws ScannerError, IOException {
@@ -529,7 +531,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     private void nextBlockComment()
             throws ScannerError, IOException {
@@ -609,7 +611,7 @@ public final class ScannerToken {
      * <p>Retrieve the first token.</p>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     public void firstToken() throws ScannerError, IOException {
         ch = getCode();
@@ -620,7 +622,7 @@ public final class ScannerToken {
      * <p>Advance to next token.</p>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException IO error.
+     * @throws IOException  IO error.
      */
     public void nextToken() throws ScannerError, IOException {
         buf.setLength(0);

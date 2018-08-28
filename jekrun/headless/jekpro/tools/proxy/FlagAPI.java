@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
@@ -133,7 +134,7 @@ public final class FlagAPI extends AbstractFlag {
                 Object val = en.visor.attachedto;
                 return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
             case FLAG_BASE_URL:
-                String path = en.store.foyer.base;
+                String path = en.store.getBase();
                 return new SkelAtom(path != null ? path : "");
             case FLAG_SYS_LOCALE:
                 return new SkelAtom(en.store.foyer.locale.toString());
@@ -189,80 +190,48 @@ public final class FlagAPI extends AbstractFlag {
                 en.visor.setMask(AbstractFlag.atomToSwitch(m, d));
                 return true;
             case FLAG_SYS_DISP_INPUT:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                checkRead(en.skel);
-                en.visor.dispinput = en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkRead(m);
+                en.visor.dispinput = m;
                 return true;
             case FLAG_SYS_DISP_OUTPUT:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                checkWrite(en.skel);
-                en.visor.dispoutput = en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkWrite(m);
+                en.visor.dispoutput = m;
                 return true;
             case FLAG_SYS_DISP_ERROR:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                checkWrite(en.skel);
-                en.visor.disperror = en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkWrite(m);
+                en.visor.disperror = m;
                 return true;
             case FLAG_SYS_CUR_INPUT:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                checkRead(en.skel);
-                en.visor.curinput = en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkRead(m);
+                en.visor.curinput = m;
                 return true;
             case FLAG_SYS_CUR_OUTPUT:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                checkWrite(en.skel);
-                en.visor.curoutput = en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkWrite(m);
+                en.visor.curoutput = m;
                 return true;
             case FLAG_SYS_CUR_ERROR:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkRef(en.skel, en.display);
-                checkWrite(en.skel);
-                en.visor.curerror = en.skel;
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkWrite(m);
+                en.visor.curerror = m;
                 return true;
             case FLAG_SYS_ATTACHED_TO:
-                en.visor.attachedto = castRefOrNull(m, d, en);
+                en.visor.attachedto = SpecialUniv.derefAndCastRefOrNull(m, d);
                 return true;
             case FLAG_BASE_URL:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                String fun = EngineMessage.castString(en.skel, en.display);
-                en.store.foyer.setBase(!"".equals(fun) ? fun : null);
+                String fun = SpecialUniv.derefAndCastString(m, d);
+                en.store.setBase(!"".equals(fun) ? fun : null);
                 return true;
             case FLAG_SYS_LOCALE:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                fun = EngineMessage.castString(en.skel, en.display);
+                fun = SpecialUniv.derefAndCastString(m, d);
                 en.store.foyer.locale = XSelectFormat.stringToLocale(fun);
                 return true;
             case FLAG_SYS_BELONGS_TO:
-                en.store.foyer.belongsto = castRefOrNull(m, d, en);
+                en.store.foyer.belongsto = SpecialUniv.derefAndCastRefOrNull(m, d);
                 return true;
             case FLAG_SYS_CPU_COUNT:
                 /* can't modify */
@@ -271,7 +240,7 @@ public final class FlagAPI extends AbstractFlag {
                 /* can't modify */
                 return false;
             case FLAG_VERBOSE:
-                int verb = LoadOpts.atomToVerbose(m, d, en);
+                int verb = LoadOpts.atomToVerbose(m, d);
                 if ((verb & LoadOpts.VERBOSE_SUMMARY) != 0) {
                     en.store.foyer.setBit(Foyer.MASK_STORE_SMRY);
                 } else {
@@ -313,28 +282,6 @@ public final class FlagAPI extends AbstractFlag {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_INPUT,
                     EngineMessage.OP_PERMISSION_STREAM, obj));
-        }
-    }
-
-    /**
-     * <p>Cast a frame or null.</p>
-     *
-     * @param m The skel.
-     * @return The frame.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object castRefOrNull(Object m, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(AbstractFlag.OP_NULL)) {
-            return null;
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            EngineMessage.checkRef(en.skel, en.display);
-            return en.skel;
         }
     }
 

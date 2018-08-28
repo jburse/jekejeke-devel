@@ -1,12 +1,10 @@
-package jekpro.tools.proxy;
+package jekpro.frequent.experiment;
 
-import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.proxy.InterfaceState;
-
-import java.lang.reflect.InvocationHandler;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineMessage;
 
 /**
- * <p>This interface defines a handler.</p>
+ * <p>Base class for internal database references.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,28 +29,38 @@ import java.lang.reflect.InvocationHandler;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public interface InterfaceHandler extends InvocationHandler {
+public interface InterfaceReference {
 
     /**
-     * <p>Retrieve the source.</p>
+     * <p>Assert this reference.</p>
      *
-     * @return The source.
+     * @param flags The flags.
+     * @param en    The engine.
+     * @return True if the reference was asserted, otherwise false.
+     * @throws EngineMessage Shit happens.
      */
-    AbstractSource getSource();
+    boolean assertRef(int flags, Engine en)
+            throws EngineMessage;
 
     /**
-     * <p>Define the generated proxy class.</p>
+     * <p>Retract this reference.</p>
      *
-     * @return The generated proxy class.
+     * @param en The engine.
+     * @return True if the reference was retracted, otherwise false.
+     * @throws EngineMessage Shit happens.
      */
-    Class defineGener();
+    boolean retractRef(Engine en)
+            throws EngineMessage;
 
     /**
-     * <p>Create a new state and initialize it.</p>
+     * <p>Clause this reference.</p>
+     * <p>The result is returned in the skeleton and display.</p>
      *
-     * @param size The size.
-     * @return The initialized state.
+     * @param en The engine.
+     * @throws EngineMessage Shit happens.
+     * @return True if new display is returned, otherwise false.
      */
-    InterfaceState createState(int size);
+    boolean clauseRef(Engine en)
+            throws EngineMessage;
 
 }

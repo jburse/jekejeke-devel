@@ -49,6 +49,7 @@ import jekpro.tools.call.Interpreter;
 public final class TermVar extends AbstractTerm {
     final SkelVar skel;
     final Display display;
+    Object marker;
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -56,23 +57,18 @@ public final class TermVar extends AbstractTerm {
      * @param s The var skel.
      * @param d The var display.
      */
-    public TermVar(SkelVar s, Display d) {
+    TermVar(SkelVar s, Display d) {
         skel = s;
         display = d;
     }
 
     /**
-     * <p>Create multiple variables.</p>
-     *
-     * @param n The number of variables to created.
-     * @return The variables.
+     * <p>Create a new variables.</p>
      */
-    public static TermVar[] createVars(int n) {
-        Display ref = (n != 0 ? new Display(n) : Display.DISPLAY_CONST);
-        TermVar[] res = new TermVar[n];
-        for (int i = 0; i < n; i++)
-            res[i] = new TermVar(SkelVar.valueOf(i), ref);
-        return res;
+    public TermVar() {
+        skel = SkelVar.valueOf(0);
+        display = new Display(1);
+        marker = new MutableBit().setBit(true);
     }
 
     /**

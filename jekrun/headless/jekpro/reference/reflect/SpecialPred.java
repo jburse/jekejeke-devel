@@ -3,7 +3,9 @@ package jekpro.reference.reflect;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.*;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -11,7 +13,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -48,10 +49,6 @@ import matula.util.data.MapEntry;
  */
 public final class SpecialPred extends AbstractSpecial {
     private final static int SPECIAL_SYS_ENSURE_SHARED_STATIC = 0;
-    private final static int SPECIAL_SYS_ATOM_PROPERTY = 1;
-    private final static int SPECIAL_SYS_ATOM_PROPERTY_CHK = 2;
-    private final static int SPECIAL_SET_ATOM_PROPERTY = 3;
-    private final static int SPECIAL_RESET_ATOM_PROPERTY = 4;
     private final static int SPECIAL_SYS_CURRENT_PREDICATE = 5;
     private final static int SPECIAL_SYS_CURRENT_PREDICATE_CHK = 6;
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY = 7;
@@ -88,59 +85,6 @@ public final class SpecialPred extends AbstractSpecial {
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialPred.defineStatic(pick, en);
                 return en.getNextRaw();
-            case SPECIAL_SYS_ATOM_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                SkelAtom sa = Frame.callableToName(en.skel);
-                atomToProperties(sa, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_ATOM_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                sa = Frame.callableToName(en.skel);
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                atomToProperty(prop, sa, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SET_ATOM_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, en);
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkCallable(en.skel, en.display);
-                sa = SpecialPred.addAtomProp(en.skel, en.display, sa, en);
-                if (!en.unifyTerm(temp[2], ref, sa, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_RESET_ATOM_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, en);
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                EngineMessage.checkCallable(en.skel, en.display);
-                sa = SpecialPred.removeAtomProp(en.skel, en.display, sa, en);
-                if (!en.unifyTerm(temp[2], ref, sa, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
             case SPECIAL_SYS_CURRENT_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -151,14 +95,14 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_PREDICATE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicate(temp[0], ref, en);
+                pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_PREDICATE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicate(temp[0], ref, en);
+                pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 predicateToProperties(pick, en);
@@ -168,10 +112,10 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicate(temp[0], ref, en);
+                pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
                 predicateToProperty(pick, prop, en);
                 if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                     return false;
@@ -186,7 +130,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_MODULE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                AbstractSource base = Predicate.nameToModule(temp[0], ref, en);
+                AbstractSource base = nameToModule(temp[0], ref, en);
                 if (base == null)
                     return false;
                 return en.getNextRaw();
@@ -196,7 +140,7 @@ public final class SpecialPred extends AbstractSpecial {
     }
 
     /**************************************************************/
-    /* High-Level Predicate Enumeration                           */
+    /* Predicate Enumeration & Lookup                             */
     /**************************************************************/
 
     /**
@@ -217,7 +161,7 @@ public final class SpecialPred extends AbstractSpecial {
                 Predicate[] preds = base.snapshotRoutine();
                 for (int i = preds.length - 1; i >= 0; i--) {
                     Predicate pick = preds[i];
-                    if (!pick.visiblePred(en.store.user))
+                    if (!CachePredicate.visiblePred(pick, en.store.user))
                         continue;
                     SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
                     Object val = SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en);
@@ -228,6 +172,32 @@ public final class SpecialPred extends AbstractSpecial {
         }
         return res;
     }
+
+    /**
+     * <p>Get a predicate by indicator.</p>
+     *
+     * @param t  The indicator skel.
+     * @param d  The indicator display.
+     * @param en The engine.
+     * @return The predicate, or null.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static Predicate indicatorToPredicate(Object t, Display d,
+                                                 Engine en)
+            throws EngineMessage, EngineException {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        CachePredicate cp = CachePredicate.getPredicate(sa, arity.intValue(), en);
+        en.skel = sa;
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return null;
+        return cp.pick;
+    }
+
+    /**************************************************************/
+    /* Module Enumeration & Lookup                                */
+    /**************************************************************/
 
     /**
      * <p>Create a prolog list with the modules.</p>
@@ -244,15 +214,32 @@ public final class SpecialPred extends AbstractSpecial {
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int j = 0; j < sources.length; j++) {
                 AbstractSource base = sources[j].value;
-                String fullname = base.getFullName();
-                if (fullname == null)
+                String s = base.getFullName();
+                if (Branch.OP_USER.equals(s))
                     continue;
-                Object val = Clause.moduleToSlashSkel(fullname, en.store.user, en);
+                Object val = Clause.moduleToSlashSkel(s, en.store.user, en);
                 res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
             }
             store = store.parent;
         }
         return res;
+    }
+
+    /**
+     * <p>Get module by name.</p>
+     *
+     * @param t  The name skel.
+     * @param d  The name display.
+     * @param en The engine.
+     * @return The module.
+     * @throws EngineMessage Shit happens.
+     */
+    public static AbstractSource nameToModule(Object t, Display d,
+                                              Engine en)
+            throws EngineMessage {
+        Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
+        String fun = SpecialQuali.objToString(obj, t, d, false);
+        return AbstractSource.getModule(fun, en.store);
     }
 
     /**************************************************************/
@@ -407,158 +394,6 @@ public final class SpecialPred extends AbstractSpecial {
         setPropPred(prop, pred, vals, en);
     }
 
-    /****************************************************************************/
-    /* High-Level Atom Property Access                                          */
-    /****************************************************************************/
-
-    /**
-     * <p>Create a prolog list for the properties of the given atom.</p>
-     * <p>Result is returned in skeleton and display.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param sa The atom, or null.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void atomToProperties(SkelAtom sa, Engine en)
-            throws EngineMessage {
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            StoreKey[] props = branch.listAtomProp();
-            for (int j = props.length - 1; j >= 0; j--) {
-                StoreKey prop = props[j];
-                Object t = en.skel;
-                Display d = en.display;
-                Object[] vals = getPropAtom(prop, sa, en);
-                en.skel = t;
-                en.display = d;
-                AbstractProperty.consArray(vals, en);
-            }
-        }
-    }
-
-    /**
-     * <p>Create a prolog list for the property of the given atom.</p>
-     * <p>Result is returned in skeleton and display.</p>
-     *
-     * @param prop The property.
-     * @param sa   The atom, or null.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void atomToProperty(StoreKey prop, SkelAtom sa,
-                                       Engine en)
-            throws EngineMessage {
-        Object[] vals = getPropAtom(prop, sa, en);
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        AbstractProperty.consArray(vals, en);
-    }
-
-    /**
-     * <p>Retrieve an atom property.</p>
-     * <p>Throws a domain error for undefined atom properties.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param prop The property.
-     * @param sa   The atom, or null.
-     * @param en   The engine.
-     * @return The value.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object[] getPropAtom(StoreKey prop, SkelAtom sa,
-                                        Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            Object[] vals = branch.getAtomProp(prop, sa, en);
-            if (vals != null)
-                return vals;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-    }
-
-    /**
-     * <p>Set an atom property.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param prop The property.
-     * @param skel The atom.
-     * @param vals The values.
-     * @param en   The engine.
-     * @return The new atom.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SkelAtom setPropAtom(StoreKey prop, SkelAtom skel,
-                                        Object[] vals, Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            if (branch.setAtomProp(prop, skel, vals, en))
-                return (SkelAtom) en.skel;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-    }
-
-    /**
-     * <p>Set a predicate property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param sa The atom.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SkelAtom addAtomProp(Object t, Display d,
-                                        SkelAtom sa, Engine en)
-            throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
-        Object[] vals = getPropAtom(prop, sa, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
-        return setPropAtom(prop, sa, vals, en);
-    }
-
-    /**
-     * <p>Reset a predicate property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param sa The atom.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SkelAtom removeAtomProp(Object t, Display d,
-                                           SkelAtom sa, Engine en)
-            throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
-        Object[] vals = getPropAtom(prop, sa, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
-        return setPropAtom(prop, sa, vals, en);
-    }
-
     /*************************************************************/
     /* Predicate Promotion                                       */
     /*************************************************************/
@@ -572,13 +407,15 @@ public final class SpecialPred extends AbstractSpecial {
      */
     private static void defineStatic(Predicate pick, Engine en)
             throws EngineMessage {
-        Predicate.checkUnsealed(pick);
+        Predicate.checkUnsealed(pick, en);
         AbstractDefined.promoteStatic(pick, en.store);
-        if ((pick.del.subflags & AbstractDefined.MASK_DEFI_STAT) == 0)
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_COERCE,
-                    EngineMessage.OP_PERMISSION_PROCEDURE,
-                    SpecialLoad.indicatorToColonSkel(pick.getFun(), pick.getArity())));
+        if ((pick.del.subflags & AbstractDefined.MASK_DEFI_STAT) != 0)
+            return;
+        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
+        throw new EngineMessage(EngineMessage.permissionError(
+                EngineMessage.OP_PERMISSION_COERCE,
+                EngineMessage.OP_PERMISSION_PROCEDURE,
+                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
     }
 
 }

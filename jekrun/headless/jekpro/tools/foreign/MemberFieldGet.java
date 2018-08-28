@@ -3,18 +3,13 @@ package jekpro.tools.foreign;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.*;
 
 import java.lang.reflect.Field;
 
@@ -117,16 +112,31 @@ final class MemberFieldGet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         Object res = AutoClass.invokeGetter(field, obj);
-        res = Types.normJava(encoderet, res);
+        if ((subflags & MASK_METH_FUNC) != 0) {
+            res = Types.normJava(encoderet, res);
+        } else {
+            res = noretNormJava(res);
+        }
         if (res == null)
             return false;
+        Display d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
-                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res)))
+                        AbstractTerm.getSkel(res), d))
             return false;
+        Object check = AbstractTerm.getMarker(res);
+        if (check != null && ((MutableBit) check).getBit()) {
+            d.remTab(en);
+            ((MutableBit) check).setBit(false);
+        }
         return en.getNext();
     }
 

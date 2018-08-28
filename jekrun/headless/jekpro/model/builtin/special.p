@@ -4,29 +4,34 @@
  * with high performance, which could not be gained by using a
  * foreign Java predicate or Prolog clauses. It is possible to
  * register predicates and evaluable functions as special built-ins
- * via the predicates special/3 and special_eval/3.
+ * via the predicates special/3 and special_eval/3. A predicate
+ * indicator, the service class and the service number has
+ * to be specified.
  *
  * directive --> "special(" indicator "," module "," integer ")".
  *
  * static_flag --> "true" | "false".
  *
  * Example:
- * :- special(foo/1, 'FooAPI', 7).
- * % is a special predicate directive.
+ * :- special(foo/1, 'FooAPI', 7). % is a special predicate directive.
  *
- * To register a predicate or evaluable function the predicate
- * indicator, the service class and a function index has to be
- * specified. An evaluable function f/n is identified by a predicate
- * indicator f/n+1, meaning the arity has to be increased by one. To
- * ease the end-user the Jekejeke Prolog system automatically implements
- * for each predicate bridging to an evaluable function, and for each
- * evaluable function tunnelling to a predicate.
+ * An evaluable function f/n is identified by a predicate indicator f/n+1,
+ * meaning the arity has to be increased by one. To ease the end-user
+ * the Jekejeke Prolog system automatically implements for each predicate
+ * bridging to an evaluable function, and for each evaluable function
+ * tunnelling to a predicate.
  *
- * Bridging:
- * X is f(Y1,..,Yn) :- Z1 is Y1, .., Zn is Yn, f(Z1, .., Zn, X), !, value(X).
+ * Bridging, predicate as evaluable function:
+ * X is p(Y1,..,Yn) :-
+ *    Z1 is Y1, .., Zn is Yn,
+ *    p(Z1, .., Zn, X), !, value(X).
+ * _ is p(_,..,_):-
+ *    throw(error(evaluation_error(partial_function),_)).
  *
- * Tunnelling:
- * p(Y1, .., Yn, X) :- value(Y1), .., value(Yn), X is p(Y1,..,Yn).
+ * Tunnelling, evaluable function as predicate:
+ * f(Y1, .., Yn, X) :-
+ *    value(Y1), .., value(Yn),
+ *    X is f(Y1,..,Yn).
  *
  * During bridging the arguments are evaluated and then the corresponding
  * predicate is called with an additional last argument for the result.
@@ -68,7 +73,7 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 :- sys_op(1200, fx, :-).
@@ -98,8 +103,6 @@
 :- set_predicate_property((:-)/1, visible(public)).
 :- set_predicate_property((:-)/1, (meta_predicate (:- -1))).
 :- set_predicate_property((:-)/1, sys_rule).
-
-:- set_source_property(system, use_file_extension(binary('.class'))).
 
 /**
  * special(I, C, K):

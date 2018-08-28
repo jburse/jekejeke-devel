@@ -3,11 +3,11 @@ package jekpro.tools.foreign;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.Tracking;
-import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.LookupChild;
+import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -53,8 +53,8 @@ public final class LookupResource {
     /**
      * <p>Find a path.</p>
      *
-     * @param relpath  The path, in slash notation.
-     * @param store The store.
+     * @param relpath The path, in slash notation.
+     * @param store   The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
@@ -62,7 +62,7 @@ public final class LookupResource {
             throws IOException {
         AbstractBranch branch = RelativeURIstoRoots(relpath, store);
         if (branch != null) {
-            String res = (String)store.foyer.getCanonCache(relpath);
+            String res = (String) store.foyer.getCanonCache(relpath);
             if (res != null)
                 return ("".equals(res) ? null : res);
         }
@@ -84,9 +84,9 @@ public final class LookupResource {
     /**
      * <p>Find a path suffix.</p>
      *
-     * @param relpath  The path, in slash notation.
-     * @param src   The source, not null.
-     * @param mask  The mask.
+     * @param relpath The path, in slash notation.
+     * @param src     The source, not null.
+     * @param mask    The mask.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
@@ -95,59 +95,37 @@ public final class LookupResource {
                                             int mask)
             throws IOException {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
-
-        /* source text suffix */
-        if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                    String key = LookupResource.findResource(relpath + fix.key, src.getStore());
-                    if (key != null)
-                        return key;
-                }
-            }
-        }
-
-        /* source resource suffix */
-        if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                    String key = findResource(relpath + fix.key, src.getStore());
-                    if (key != null)
-                        return key;
-                }
-            }
-        }
-
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                    String key = findResource(relpath + fix.key, src.getStore());
-                    if (key != null)
-                        return key;
+            AbstractStore store = src.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
+                        String key = findResource(relpath + fix.key, src.getStore());
+                        if (key != null)
+                            return key;
+                    }
                 }
+                store = store.parent;
             }
         }
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                    String key = findResource(relpath + fix.key, src.getStore());
-                    if (key != null)
-                        return key;
+            AbstractStore store = src.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
+                        String key = findResource(relpath + fix.key, src.getStore());
+                        if (key != null)
+                            return key;
+                    }
                 }
+                store = store.parent;
             }
         }
 
@@ -274,10 +252,10 @@ public final class LookupResource {
         }
 
         // check paths
-        String[] cps = store.snapshotPaths();
+        String[] cps = store.snapshotClassPaths();
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
-            if (cp.endsWith(CacheSubclass.OP_STRING_OS)) {
+            if (cp.endsWith(CacheModule.OP_STRING_OS)) {
                 if (!path.startsWith(cp))
                     continue;
                 return path.substring(cp.length());
@@ -299,7 +277,7 @@ public final class LookupResource {
     /**
      * <p>Determine whether path belongs to class paths.</p>
      *
-     * @param path The path.
+     * @param path  The path.
      * @param store The store.
      * @return True if path belongs to class paths, otherwise false.
      * @throws EngineMessage Shit happens.
@@ -307,10 +285,10 @@ public final class LookupResource {
     public static boolean hasSourceFile(String path, AbstractStore store)
             throws EngineMessage {
         // check paths
-        String[] cps = store.snapshotPaths();
+        String[] cps = store.snapshotClassPaths();
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
-            if (cp.endsWith(CacheSubclass.OP_STRING_OS)) {
+            if (cp.endsWith(CacheModule.OP_STRING_OS)) {
                 if (!path.startsWith(cp))
                     continue;
                 return true;

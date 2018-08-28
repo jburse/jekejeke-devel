@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -109,25 +110,26 @@ final class LenseDimension extends AbstractLense {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.skel = temp[0];
-        en.display = ref;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        Number num = EngineMessage.castInteger(en.skel, en.display);
-        EngineMessage.checkNotLessThanZero(num);
-        int size = EngineMessage.castIntValue(num);
-        Object val = newInstance(size);
-        if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
-            return false;
-        return en.getNext();
+        try {
+            Object[] temp = ((SkelCompound) en.skel).args;
+            Display ref = en.display;
+            Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
+            SpecialEval.checkNotLessThanZero(num);
+            int size = SpecialEval.castIntValue(num);
+            Object val = newInstance(size);
+            if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+                return false;
+            return en.getNext();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**
      * <p>Create a new array instance.</p>
      *
-     * @param s  The size.
+     * @param s The size.
      * @return The new array.
      * @throws EngineMessage FFI error.
      */

@@ -2,15 +2,15 @@ package jekpro.tools.foreign;
 
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
+import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.*;
+
+import static jekpro.tools.array.AbstractLense.MASK_METH_FUNC;
 
 /**
  * <p>The class represents a choice point for a foreign predicate.
@@ -41,11 +41,14 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ChoiceForeign extends CallOut {
-    private MemberMethodNondet del;
-    private Object obj;
-    private Object[] args;
-    private AbstractBind mark;
+final class ChoiceForeign extends AbstractChoice {
+    CallOut co;
+    MemberMethodNondet del;
+    Object obj;
+    Object[] args;
+    AbstractBind mark;
+    Intermediate goalskel;
+    DisplayClause goaldisplay;
 
     /**
      * <p>Creata choice foreign.</p>
@@ -54,42 +57,6 @@ final class ChoiceForeign extends CallOut {
      */
     ChoiceForeign(AbstractChoice u) {
         super(u);
-    }
-
-    /**
-     * <p>Set the delegate.</p>
-     *
-     * @param d The delegate.
-     */
-    public void setDelegate(MemberMethodNondet d) {
-        del = d;
-    }
-
-    /**
-     * <p>Set the receiver.</p>
-     *
-     * @param o The receiver.
-     */
-    public void setReceiver(Object o) {
-        obj = o;
-    }
-
-    /**
-     * <p>Set the arguments.</p>
-     *
-     * @param a The arguments.
-     */
-    public void setArguments(Object[] a) {
-        args = a;
-    }
-
-    /**
-     * <p>Set the mark.</p>
-     *
-     * @param m The mark.
-     */
-    public void setMark(AbstractBind m) {
-        mark = m;
     }
 
     /**
@@ -108,49 +75,71 @@ final class ChoiceForeign extends CallOut {
         en.choices = next;
         en.number--;
 
-        en.contskel = getGoalSkel();
-        en.contdisplay = getGoalDisplay();
-        if (!getSpecial()) {
+        en.contskel = goalskel;
+        en.contdisplay = goaldisplay;
+        if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
             en.skel = null;
             en.releaseBind(mark);
             if (en.skel != null)
                 throw (EngineException) en.skel;
         }
 
-        Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
-        Object term = en.skel;
-        Display ref = en.display;
+        Goal ir = (Goal) goalskel;
+        Object term = ir.goal;
+        Display ref = goaldisplay;
+        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
+            /* inlined deref */
+            BindVar b1;
+            while (term instanceof SkelVar &&
+                    (b1 = ref.bind[((SkelVar) term).id]).display != null) {
+                term = b1.skel;
+                ref = b1.display;
+            }
+        }
+
+        co.flags &= ~CallOut.MASK_CALL_FIRST;
         for (; ; ) {
-            setFirst(false);
-            setCleanup(false);
-            setRetry(false);
-            setSpecial(false);
-            setCutter(false);
+            co.flags &= ~CallOut.MASK_CALL_RETRY;
+            co.flags &= ~CallOut.MASK_CALL_SPECI;
+            co.flags &= ~CallOut.MASK_CALL_CUTTR;
+
             Object res = AbstractMember.invokeMethod(del.method, obj, args);
-            res = Types.normJava(del.encoderet, res);
+            if ((del.subflags & MASK_METH_FUNC) != 0) {
+                res = Types.normJava(del.encoderet, res);
+            } else {
+                res = del.noretNormJava(res);
+            }
             if (res == null)
                 return false;
-            if (res == AbstractSkel.VOID_OBJ ||
-                    en.unifyTerm(((SkelCompound) term).args[
+            Display d = AbstractTerm.getDisplay(res);
+            if (res != AbstractSkel.VOID_OBJ &&
+                    !en.unifyTerm(((SkelCompound) term).args[
                                     ((SkelCompound) term).args.length - 1], ref,
-                            AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
-                if (getRetry()) {
+                            AbstractTerm.getSkel(res), d)) {
+                if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
+                    return false;
+
+                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+                }
+            } else {
+                Object check = AbstractTerm.getMarker(res);
+                if (check != null && ((MutableBit) check).getBit()) {
+                    d.remTab(en);
+                    ((MutableBit) check).setBit(false);
+                }
+                if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     /* meta argument change */
-                    if (getSpecial())
+                    if ((co.flags & CallOut.MASK_CALL_SPECI) != 0)
                         next = en.choices;
                     /* reuse choice point */
                     en.choices = this;
                     en.number++;
                 }
                 return en.getNext();
-            }
-            if (!getRetry())
-                return false;
-            if (!getSpecial()) {
-                en.skel = null;
-                en.releaseBind(mark);
-                if (en.skel != null)
-                    throw (EngineException) en.skel;
             }
         }
     }
@@ -168,28 +157,27 @@ final class ChoiceForeign extends CallOut {
         en.choices = next;
         en.number--;
 
-        if (!getCutter())
+        if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0)
             return;
 
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
-        en.contskel = getGoalSkel();
-        en.contdisplay = getGoalDisplay();
+        en.contskel = goalskel;
+        en.contdisplay = goaldisplay;
         DisplayClause back = (DisplayClause) en.display;
         if (en.skel != null) {
-            setException(new InterpreterException((EngineException) en.skel));
+            co.setException(new InterpreterException((EngineException) en.skel));
         } else {
-            setException(null);
+            co.setException(null);
         }
-        Frame.callGoal(getGoalSkel(), getGoalDisplay(), en);
         try {
-            setFirst(false);
-            setCleanup(true);
+            co.flags &= ~CallOut.MASK_CALL_FIRST;
+            co.flags |= CallOut.MASK_CALL_CLEAN;
             AbstractMember.invokeMethod(del.method, obj, args);
-            InterpreterException ie = getException();
+            InterpreterException ie = co.getException();
             en.skel = (ie != null ? (EngineException) ie.getException() : null);
         } catch (EngineException x) {
-            InterpreterException ie = getException();
+            InterpreterException ie = co.getException();
             en.skel = (ie != null ? (EngineException) ie.getException() : null);
             if (en.skel != null) {
                 en.skel = new EngineException((EngineException) en.skel, x);
@@ -197,7 +185,7 @@ final class ChoiceForeign extends CallOut {
                 en.skel = x;
             }
         } catch (EngineMessage y) {
-            InterpreterException ie = getException();
+            InterpreterException ie = co.getException();
             en.skel = (ie != null ? (EngineException) ie.getException() : null);
             EngineException x = new EngineException(y, EngineException.fetchStack(en));
             if (en.skel != null) {

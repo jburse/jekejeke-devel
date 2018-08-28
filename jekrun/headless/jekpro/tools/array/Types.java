@@ -1,14 +1,20 @@
 package jekpro.tools.array;
 
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.*;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 /**
  * <p>Provides mapping between Java data types and the external
@@ -67,7 +73,69 @@ public final class Types {
     public static final int TYPE_TERM = 24;
     public static final int TYPE_INTERPRETER = 25;
     public static final int TYPE_CALLOUT = 26;
-    public static final int TYPE_UNSUPPORTED = 27;
+
+    /******************************************************************/
+    /* Evaluable Types                                                */
+    /******************************************************************/
+
+    public final static HashMap<Class, Integer> typeeval = new HashMap<Class, Integer>();
+
+    static {
+        Types.typeeval.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
+        Types.typeeval.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
+        Types.typeeval.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
+        Types.typeeval.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
+        Types.typeeval.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
+        Types.typeeval.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
+        Types.typeeval.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
+        Types.typeeval.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
+        Types.typeeval.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
+        Types.typeeval.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
+        Types.typeeval.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
+        Types.typeeval.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
+        Types.typeeval.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
+        Types.typeeval.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
+        Types.typeeval.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
+        Types.typeeval.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
+    }
+
+    /******************************************************************/
+    /* Predicate Types                                                */
+    /******************************************************************/
+
+    public final static HashMap<Class, Integer> typepred = new HashMap<Class, Integer>();
+
+    static {
+        Types.typepred.put(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));
+        Types.typepred.put(String.class, Integer.valueOf(Types.TYPE_STRING));
+        Types.typepred.put(CharSequence.class, Integer.valueOf(Types.TYPE_CHARSEQ));
+        Types.typepred.put(Boolean.TYPE, Integer.valueOf(Types.TYPE_PRIMBOOL));
+        Types.typepred.put(Boolean.class, Integer.valueOf(Types.TYPE_BOOL));
+        Types.typepred.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
+        Types.typepred.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
+        Types.typepred.put(Character.TYPE, Integer.valueOf(Types.TYPE_PRIMCHAR));
+        Types.typepred.put(Character.class, Integer.valueOf(Types.TYPE_CHAR));
+        Types.typepred.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
+        Types.typepred.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
+        Types.typepred.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
+        Types.typepred.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
+        Types.typepred.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
+        Types.typepred.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
+        Types.typepred.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
+        Types.typepred.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
+        Types.typepred.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
+        Types.typepred.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
+        Types.typepred.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
+        Types.typepred.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
+        Types.typepred.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
+        Types.typepred.put(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
+        Types.typepred.put(TermVar.class, Integer.valueOf(Types.TYPE_OBJECT));
+        Types.typepred.put(TermCompound.class, Integer.valueOf(Types.TYPE_OBJECT));
+        Types.typepred.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
+        Types.typepred.put(TermAtomic.class, Integer.valueOf(Types.TYPE_TERM));
+        Types.typepred.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
+        Types.typepred.put(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
+    }
 
     /******************************************************************/
     /* Type Mappings                                                  */
@@ -85,15 +153,13 @@ public final class Types {
             throws EngineMessage {
         try {
             switch (typ) {
-                case Types.TYPE_VOID:
-                    return AbstractSkel.VOID_OBJ;
                 case Types.TYPE_STRING:
                 case Types.TYPE_CHARSEQ:
                     return res;
                 case Types.TYPE_PRIMBOOL:
                 case Types.TYPE_BOOL:
-                    if (Boolean.TRUE.equals(res)) {
-                        return AbstractSkel.VOID_OBJ;
+                    if (res != null) {
+                        return Boolean.toString((Boolean) res);
                     } else {
                         return null;
                     }
@@ -125,14 +191,22 @@ public final class Types {
                 case Types.TYPE_PRIMFLOAT:
                 case Types.TYPE_FLOAT:
                     if (res != null) {
-                        return TermAtomic.guardFloat((Float) res);
+                        if (TermAtomic.guardFloat(((Float) res).floatValue())) {
+                            return res;
+                        } else {
+                            return TermAtomic.ZERO_FLOAT;
+                        }
                     } else {
                         return null;
                     }
                 case Types.TYPE_PRIMDOUBLE:
                 case Types.TYPE_DOUBLE:
                     if (res != null) {
-                        return TermAtomic.guardDouble((Double) res);
+                        if (TermAtomic.guardDouble(((Double) res).doubleValue())) {
+                            return res;
+                        } else {
+                            return TermAtomic.ZERO_DOUBLE;
+                        }
                     } else {
                         return null;
                     }
@@ -160,154 +234,101 @@ public final class Types {
      * <p>Denormalize an external Prolog type into a Java type.</p>
      *
      * @param typ The Java type.
-     * @param res The argument object, can be null.
-     * @return The denormalized argument object, can be null.
-     * @throws InterpreterMessage FFI error.
+     * @param t   The argument skeleton.
+     * @param d   The argument display.
+     * @return The denormalized argument.
+     * @throws EngineMessage FFI error.
      */
-    public static Object denormProlog(int typ, Object res)
-            throws InterpreterMessage {
+    public static Object denormProlog(int typ, Object t, Display d)
+            throws EngineMessage {
         try {
             switch (typ) {
-                case Types.TYPE_VOID:
-                    return null;
                 case Types.TYPE_STRING:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        return InterpreterMessage.castString(res);
-                    } else {
-                        return null;
-                    }
+                    return SpecialUniv.derefAndCastString(t, d);
                 case Types.TYPE_CHARSEQ:
-                    if (res != null) {
-                        if (res instanceof String) {
-                            return res;
-                        } else {
-                            InterpreterMessage.checkInstantiated(res);
-                            InterpreterMessage.checkRef(res);
-                            return res;
-                        }
+                    BindVar b;
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    if (t instanceof SkelAtom) {
+                        return ((SkelAtom) t).fun;
+                    } else if (!(t instanceof AbstractSkel) && !(t instanceof Number)) {
+                        return t;
                     } else {
-                        return null;
+                        EngineMessage.checkInstantiated(t);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_REF, t), d);
                     }
                 case Types.TYPE_PRIMBOOL:
                 case Types.TYPE_BOOL:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        String fun = InterpreterMessage.castString(res);
-                        return Boolean.valueOf(fun);
-                    } else {
-                        return null;
-                    }
+                    String str = SpecialUniv.derefAndCastString(t, d);
+                    return Boolean.valueOf(str);
                 case Types.TYPE_PRIMBYTE:
                 case Types.TYPE_BYTE:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castInteger(res);
-                        byte val = InterpreterMessage.castByteValue(num);
-                        return Byte.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    Number num = SpecialEval.derefAndCastInteger(t, d);
+                    return Byte.valueOf(SpecialEval.castByteValue(num));
                 case Types.TYPE_PRIMCHAR:
                 case Types.TYPE_CHAR:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        String str = InterpreterMessage.castString(res);
-                        char val = InterpreterMessage.castCharValue(str);
-                        return Character.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    str = SpecialUniv.derefAndCastString(t, d);
+                    return Character.valueOf(SpecialUniv.castCharValue(str));
                 case Types.TYPE_PRIMSHORT:
                 case Types.TYPE_SHORT:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castInteger(res);
-                        short val = InterpreterMessage.castShortValue(num);
-                        return Short.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    return Short.valueOf(SpecialEval.castShortValue(num));
                 case Types.TYPE_PRIMINT:
                 case Types.TYPE_INTEGER:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castInteger(res);
-                        InterpreterMessage.castIntValue(num);
-                        return num;
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    SpecialEval.castIntValue(num);
+                    return num;
                 case Types.TYPE_PRIMLONG:
                 case Types.TYPE_LONG:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castInteger(res);
-                        long val = InterpreterMessage.castLongValue(num);
-                        return Long.valueOf(val);
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    return Long.valueOf(SpecialEval.castLongValue(num));
                 case Types.TYPE_BIG_INTEGER:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castInteger(res);
-                        return TermAtomic.widenBigInteger(num);
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastInteger(t, d);
+                    return TermAtomic.widenBigInteger(num);
                 case Types.TYPE_PRIMFLOAT:
                 case Types.TYPE_FLOAT:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castNumber(res);
-                        return (num instanceof Float ? num :
-                                TermAtomic.guardFloat(Float.valueOf(num.floatValue())));
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastNumber(t, d);
+                    return (num instanceof Float ? num :
+                            TermAtomic.makeFloat(num.floatValue()));
                 case Types.TYPE_PRIMDOUBLE:
                 case Types.TYPE_DOUBLE:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castNumber(res);
-                        return (num instanceof Double ? num :
-                                TermAtomic.guardDouble(Double.valueOf(num.doubleValue())));
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastNumber(t, d);
+                    return (num instanceof Double ? num :
+                            TermAtomic.makeDouble(num.doubleValue()));
                 case Types.TYPE_BIG_DECIMAL:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        Number num = InterpreterMessage.castNumber(res);
-                        return TermAtomic.widenBigDecimal(num);
-                    } else {
-                        return null;
-                    }
+                    num = SpecialEval.derefAndCastNumber(t, d);
+                    return TermAtomic.widenBigDecimal(num);
                 case Types.TYPE_NUMBER:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        return InterpreterMessage.castNumber(res);
-                    } else {
-                        return null;
-                    }
+                    return SpecialEval.derefAndCastNumber(t, d);
                 case Types.TYPE_REF:
-                    if (res != null) {
-                        InterpreterMessage.checkInstantiated(res);
-                        InterpreterMessage.checkRef(res);
-                        return res;
-                    } else {
-                        return null;
-                    }
+                    return SpecialUniv.derefAndCastRef(t, d);
                 case Types.TYPE_OBJECT:
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    return AbstractTerm.createTerm(t, d);
                 case Types.TYPE_TERM:
-                    return res;
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    return AbstractTerm.createTermWrapped(t, d);
                 default:
                     throw new IllegalArgumentException("illegal type");
             }
         } catch (ArithmeticException x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.evaluationError(x.getMessage()));
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -360,6 +381,50 @@ public final class Types {
             throw (Error) x;
         } else {
             throw new Error("unmappable exception", x);
+        }
+    }
+
+    /***********************************************************/
+    /* Return Types                                            */
+    /***********************************************************/
+
+    /**
+     * <p>Compute the declared function status.</p>
+     *
+     * @param typ The type.
+     * @return The declared fucntion status.
+     */
+    public static boolean getRetFlag(int typ) {
+        switch (typ) {
+            case Types.TYPE_VOID:
+            case Types.TYPE_PRIMBOOL:
+            case Types.TYPE_BOOL:
+                return false;
+            case Types.TYPE_STRING:
+            case Types.TYPE_CHARSEQ:
+            case Types.TYPE_PRIMBYTE:
+            case Types.TYPE_BYTE:
+            case Types.TYPE_PRIMCHAR:
+            case Types.TYPE_CHAR:
+            case Types.TYPE_PRIMSHORT:
+            case Types.TYPE_SHORT:
+            case Types.TYPE_PRIMINT:
+            case Types.TYPE_INTEGER:
+            case Types.TYPE_PRIMLONG:
+            case Types.TYPE_LONG:
+            case Types.TYPE_BIG_INTEGER:
+            case Types.TYPE_PRIMFLOAT:
+            case Types.TYPE_FLOAT:
+            case Types.TYPE_PRIMDOUBLE:
+            case Types.TYPE_DOUBLE:
+            case Types.TYPE_BIG_DECIMAL:
+            case Types.TYPE_NUMBER:
+            case Types.TYPE_REF:
+            case Types.TYPE_OBJECT:
+            case Types.TYPE_TERM:
+                return true;
+            default:
+                throw new IllegalArgumentException("illegal return type");
         }
     }
 

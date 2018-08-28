@@ -6,17 +6,11 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.HashMap;
 
 /**
  * <p>Base class for the Java array class delegates.</p>
@@ -53,40 +47,13 @@ public abstract class AbstractLense extends AbstractDelegate {
     public int[] encodeparas;
     public int encoderet;
 
-    /******************************************************************/
-    /* Evaluable Types                                                */
-    /******************************************************************/
-
-    private final static HashMap<Class, Integer> typeeval = new HashMap<Class, Integer>();
-
-    static {
-        typeeval.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
-        typeeval.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
-        typeeval.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
-        typeeval.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
-        typeeval.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
-        typeeval.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
-        typeeval.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
-        typeeval.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
-        typeeval.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
-        typeeval.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
-        typeeval.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
-        typeeval.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
-        typeeval.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
-        typeeval.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
-        typeeval.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
-        typeeval.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
-    }
-
     /**
      * <p>Encode the signature of a foreign method.</p>
      *
      * @param en The engine.
      * @return True if the signature is ok, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public boolean encodeSignatureEval(Engine en)
-            throws EngineMessage {
+    public boolean encodeSignatureEval(Engine en) {
         if (!Modifier.isPublic(getModifiers())) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_VISIBILITY,
@@ -97,82 +64,47 @@ public abstract class AbstractLense extends AbstractDelegate {
         if (!Modifier.isStatic(getModifiers())) {
             subflags |= AbstractDelegate.MASK_DELE_VIRT;
             Class ret = getDeclaringClass();
-            Integer encode = typeeval.get(ret);
+            Integer encode = Types.typeeval.get(ret);
             if (encode == null ||
                     encode.intValue() == Types.TYPE_INTERPRETER) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeobj = encode.intValue();
             }
         }
 
+        Class ret = getReturnType();
+        Integer encode = Types.typeeval.get(ret);
+        if (encode == null ||
+                encode.intValue() == Types.TYPE_INTERPRETER) {
+            en.skel = EngineMessage.domainError(
+                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
+                    SpecialSpecial.classToName(ret));
+            return false;
+        } else {
+            encoderet = encode.intValue();
+        }
+
         Class[] paras = getParameterTypes();
         encodeparas = (paras.length != 0 ? new int[paras.length] :
                 VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
-            Class ret = paras[i];
-            Integer encode = typeeval.get(ret);
+            ret = paras[i];
+            encode = Types.typeeval.get(ret);
             if (encode == null) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
             }
         }
 
-        Class ret = getReturnType();
-        Integer encode = typeeval.get(ret);
-        if (encode == null ||
-                encode.intValue() == Types.TYPE_INTERPRETER) {
-            en.skel = EngineMessage.domainError(
-                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
-            return false;
-        } else {
-            encoderet = encode.intValue();
-        }
-
         return true;
-    }
-
-    /******************************************************************/
-    /* Predicate Types                                                */
-    /******************************************************************/
-
-    private final static HashMap<Class, Integer> typepred = new HashMap<Class, Integer>();
-
-    static {
-        typepred.put(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));
-        typepred.put(String.class, Integer.valueOf(Types.TYPE_STRING));
-        typepred.put(CharSequence.class, Integer.valueOf(Types.TYPE_CHARSEQ));
-        typepred.put(Boolean.TYPE, Integer.valueOf(Types.TYPE_PRIMBOOL));
-        typepred.put(Boolean.class, Integer.valueOf(Types.TYPE_BOOL));
-        typepred.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
-        typepred.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
-        typepred.put(Character.TYPE, Integer.valueOf(Types.TYPE_PRIMCHAR));
-        typepred.put(Character.class, Integer.valueOf(Types.TYPE_CHAR));
-        typepred.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
-        typepred.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
-        typepred.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
-        typepred.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
-        typepred.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
-        typepred.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
-        typepred.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
-        typepred.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
-        typepred.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
-        typepred.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
-        typepred.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
-        typepred.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
-        typepred.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
-        typepred.put(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
-        typepred.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
-        typepred.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
-        typepred.put(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
     }
 
     /**
@@ -181,10 +113,8 @@ public abstract class AbstractLense extends AbstractDelegate {
      *
      * @param en The engine.
      * @return True if the signature is ok, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public boolean encodeSignaturePred(Engine en)
-            throws EngineMessage {
+    public boolean encodeSignaturePred(Engine en) {
         if (!Modifier.isPublic(getModifiers())) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_VISIBILITY,
@@ -195,97 +125,66 @@ public abstract class AbstractLense extends AbstractDelegate {
         if (!Modifier.isStatic(getModifiers())) {
             subflags |= AbstractDelegate.MASK_DELE_VIRT;
             Class ret = getDeclaringClass();
-            Integer encode = typepred.get(ret);
+            Integer encode = Types.typepred.get(ret);
             if (encode == null) {
                 encodeobj = Types.TYPE_REF;
             } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
-                    encode.intValue() == Types.TYPE_CALLOUT ||
-                    encode.intValue() == Types.TYPE_UNSUPPORTED) {
+                    encode.intValue() == Types.TYPE_CALLOUT) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeobj = encode.intValue();
             }
         }
 
+        Class ret = getReturnType();
+        Integer encode = Types.typepred.get(ret);
+        if (encode == null) {
+            encoderet = Types.TYPE_REF;
+        } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
+                encode.intValue() == Types.TYPE_CALLOUT) {
+            en.skel = EngineMessage.domainError(
+                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
+                    SpecialSpecial.classToName(ret));
+            return false;
+        } else {
+            encoderet = encode.intValue();
+        }
+
         Class[] paras = getParameterTypes();
         encodeparas = (paras.length != 0 ? new int[paras.length] : VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
-            Class ret = paras[i];
-            Integer encode = typepred.get(ret);
+            ret = paras[i];
+            encode = Types.typepred.get(ret);
             if (encode == null) {
                 encodeparas[i] = Types.TYPE_REF;
-            } else if (encode.intValue() == Types.TYPE_VOID ||
-                    encode.intValue() == Types.TYPE_UNSUPPORTED) {
+            } else if (encode.intValue() == Types.TYPE_VOID) {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
+                        SpecialSpecial.classToName(ret));
                 return false;
             } else {
                 encodeparas[i] = encode.intValue();
             }
         }
 
-        Class ret = getReturnType();
-        Integer encode = typepred.get(ret);
-        if (encode == null) {
-            encoderet = Types.TYPE_REF;
-        } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
-                encode.intValue() == Types.TYPE_CALLOUT ||
-                encode.intValue() == Types.TYPE_UNSUPPORTED) {
-            en.skel = EngineMessage.domainError(
-                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialSpecial.classToName(ret, en.store.foyer.SOURCE_SYSTEM, en));
-            return false;
-        } else {
-            encoderet = encode.intValue();
-        }
-
-        if (getRetFlag())
+        if (Types.getRetFlag(encoderet))
             subflags |= MASK_METH_FUNC;
 
         return true;
     }
 
     /**
-     * <p>Compute the declared function status.</p>
+     * <p>Generate a indicator value, where Java doesn't provide one.</p>
      *
-     * @return The declared fucntion status.
+     * @param res The Java return value.
+     * @return The indicator value.
      */
-    private boolean getRetFlag() {
-        switch (encoderet) {
-            case Types.TYPE_VOID:
-            case Types.TYPE_PRIMBOOL:
-            case Types.TYPE_BOOL:
-                return false;
-            case Types.TYPE_STRING:
-            case Types.TYPE_CHARSEQ:
-            case Types.TYPE_PRIMBYTE:
-            case Types.TYPE_BYTE:
-            case Types.TYPE_PRIMCHAR:
-            case Types.TYPE_CHAR:
-            case Types.TYPE_PRIMSHORT:
-            case Types.TYPE_SHORT:
-            case Types.TYPE_PRIMINT:
-            case Types.TYPE_INTEGER:
-            case Types.TYPE_PRIMLONG:
-            case Types.TYPE_LONG:
-            case Types.TYPE_BIG_INTEGER:
-            case Types.TYPE_PRIMFLOAT:
-            case Types.TYPE_FLOAT:
-            case Types.TYPE_PRIMDOUBLE:
-            case Types.TYPE_DOUBLE:
-            case Types.TYPE_BIG_DECIMAL:
-            case Types.TYPE_NUMBER:
-            case Types.TYPE_REF:
-            case Types.TYPE_OBJECT:
-            case Types.TYPE_TERM:
-                return true;
-            default:
-                throw new IllegalArgumentException("illegal return type");
-        }
+    public Object noretNormJava(Object res) {
+        return (encoderet ==Types.TYPE_VOID ||
+                Boolean.TRUE.equals(res) ? AbstractSkel.VOID_OBJ : null);
     }
 
     /******************************************************************/
@@ -405,37 +304,6 @@ public abstract class AbstractLense extends AbstractDelegate {
             }
         }
         return k;
-    }
-
-    /***********************************************************/
-    /* Foreign Invokation                                      */
-    /***********************************************************/
-
-    /**
-     * <p>Determine the receiver object. The first argument of
-     * the goal is checked and converted if necessary.</p>
-     *
-     * @param temp The skeleton.
-     * @param ref  The display.
-     * @param en   The engine.
-     * @return The arguments array.
-     * @throws EngineMessage FFI error.
-     */
-    public final Object convertObj(Object temp, Display ref, Engine en)
-            throws EngineMessage {
-        try {
-            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-                en.skel = ((SkelCompound) temp).args[0];
-                en.display = ref;
-                en.deref();
-                Object res = AbstractTerm.createTerm(en.skel, en.display);
-                return Types.denormProlog(encodeobj, res);
-            } else {
-                return null;
-            }
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
-        }
     }
 
 }

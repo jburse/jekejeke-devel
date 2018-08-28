@@ -3,16 +3,11 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.tools.term.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
@@ -114,37 +109,52 @@ final class LenseElement extends AbstractLense {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        Object temp = en.skel;
-        Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
-        en.skel = ((SkelCompound) temp).args[1];
-        en.display = ref;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        Number num = EngineMessage.castInteger(en.skel, en.display);
-        EngineMessage.checkNotLessThanZero(num);
-        int idx = EngineMessage.castIntValue(num);
-        Object res = get(obj, idx, en);
-        res = Types.normJava(encoderet, res);
-        if (res == null)
-            return false;
-        if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(((SkelCompound) temp).args[2], ref,
-                        AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res)))
-            return false;
-        return en.getNext();
+        try {
+            Object temp = en.skel;
+            Display ref = en.display;
+            Object obj;
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+            } else {
+                obj = null;
+            }
+            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            SpecialEval.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = get(obj, idx);
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                res = Types.normJava(encoderet, res);
+            } else {
+                res = noretNormJava(res);
+            }
+            if (res == null)
+                return false;
+            Display d = AbstractTerm.getDisplay(res);
+            if (res != AbstractSkel.VOID_OBJ &&
+                    !en.unifyTerm(((SkelCompound) temp).args[2], ref,
+                            AbstractTerm.getSkel(res), d))
+                return false;
+            Object check = AbstractTerm.getMarker(res);
+            if (check != null && ((MutableBit) check).getBit()) {
+                d.remTab(en);
+                ((MutableBit) check).setBit(false);
+            }
+            return en.getNext();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**
      * <p>Retrieve the element at the specified index.</p>
      *
-     * @param o  The array.
-     * @param i  The index.
-     * @param en The engine.
+     * @param o The array.
+     * @param i The index.
      * @return The element.
      * @throws EngineMessage FFI error.
      */
-    private Object get(Object o, int i, Engine en)
+    private Object get(Object o, int i)
             throws EngineMessage {
         try {
             return Array.get(o, i);
@@ -152,12 +162,12 @@ final class LenseElement extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_INDEX,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         }
     }
 

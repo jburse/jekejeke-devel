@@ -1,11 +1,11 @@
 package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
-import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.builtin.Branch;
-import jekpro.model.builtin.PropertyIndicator;
-import jekpro.model.inter.*;
+import jekpro.model.builtin.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
@@ -13,13 +13,15 @@ import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.EngineVars;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.SetHash;
+import matula.util.data.MapHashLink;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -66,6 +68,9 @@ public final class SpecialLoad extends AbstractSpecial {
     private final static int SPECIAL_SYS_MODULE_ACTION = 11;
     private final static int SPECIAL_SYS_PEEK_STACK = 12;
 
+    public static final int MASK_SHOW_NANO = 0x00000001;
+    public static final int MASK_SHOW_NRBD = 0x00000002;
+
     public final static String OP_MODULE = "module";
 
     /**
@@ -96,11 +101,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 Display ref = en.display;
                 LoadOpts opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                SkelAtom sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
                 opts.makeLoad(source, sa.fun, en);
                 return en.getNextRaw();
@@ -109,11 +110,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 opts.makeUnload(sa.scope, sa.fun, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_IMPORT_FILE:
@@ -121,11 +118,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 SpecialLoad.performImport(source, sa.fun, en, opts);
                 return en.getNextRaw();
@@ -134,11 +127,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 Predicate pick = indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -163,11 +152,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 Operator oper = operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(oper, temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -191,7 +176,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        SpecialLoad.currentProvable(en), Display.DISPLAY_CONST))
+                        SpecialLoad.currentProvables(en), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
@@ -226,11 +211,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -251,11 +232,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_REGISTER_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return en.getNextRaw();
             case SPECIAL_SYS_MODULE_ACTION:
@@ -263,11 +240,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 LoadForce opts2 = new LoadForce();
                 opts2.decodeLoadForce(temp[1], ref, en);
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                sa = EngineMessage.castStringWrapped(en.skel, en.display);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 opts2.makeForce(source, sa.fun, en);
                 return en.getNextRaw();
@@ -346,7 +319,7 @@ public final class SpecialLoad extends AbstractSpecial {
                         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                         pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                        AbstractSource.flushWriter(pw.getWriter());
+                        SpecialLoad.flushWriter(pw.getWriter());
                     }
                 }
             }
@@ -358,7 +331,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = Frame.callableToName(clause.head);
+            SkelAtom sa = SpecialBody.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             if (modifiers != null) {
@@ -369,19 +342,11 @@ public final class SpecialLoad extends AbstractSpecial {
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                 decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                 pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                AbstractSource.flushWriter(pw.getWriter());
+                SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
-            EngineSkel ek = new EngineSkel();
-            ek.vars = new SetHash<SkelVar>();
-            ek.anon = new SetHash<SkelVar>();
-            ek.singsOfSkel(t);
-            Named[] vars = EngineSkel.numberVariablesSkel(ek.vars, ek.anon, clause.vars);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
-//                pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_NAVI
-//                        | PrologWriter.FLAG_MKDT);
-//                pw.setSource(source);
-            AbstractSource.showClause(pw, t, vars, en);
+            SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
         }
     }
@@ -399,7 +364,7 @@ public final class SpecialLoad extends AbstractSpecial {
         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
         pw.unparseStatement(decl, Display.DISPLAY_CONST);
-        AbstractSource.flushWriter(pw.getWriter());
+        SpecialLoad.flushWriter(pw.getWriter());
     }
 
     /**
@@ -420,14 +385,14 @@ public final class SpecialLoad extends AbstractSpecial {
 
         if (src != null &&
                 (src.getBits() & AbstractSource.MASK_SRC_VSNP) == 0 &&
-                src.getFullName() == null) {
+                Branch.OP_USER.equals(src.getFullName())) {
             Object decl = new SkelCompound(new SkelAtom(OP_MODULE),
                     new SkelAtom(Branch.OP_USER),
                     new SkelAtom(Foyer.OP_NIL));
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, Display.DISPLAY_CONST);
-            AbstractSource.flushWriter(pw.getWriter());
+            SpecialLoad.flushWriter(pw.getWriter());
         }
 
         if (src == null)
@@ -447,16 +412,16 @@ public final class SpecialLoad extends AbstractSpecial {
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_HIDE) != 0)
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODL) != 0 &&
-                        src.getFullName() == null)
+                        Branch.OP_USER.equals(src.getFullName()))
                     continue;
                 Object[] vals = SpecialSource.getPropSrc(prop, src, en);
                 for (int j = 0; j < vals.length; j++) {
                     Object val = vals[j];
-                    Object decl = prop.srcDeclSkel(AbstractTerm.getSkel(val), src);
+                    Object decl = prop.srcDeclSkel(AbstractTerm.getSkel(val), src, en);
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
-                    AbstractSource.flushWriter(pw.getWriter());
+                    SpecialLoad.flushWriter(pw.getWriter());
                 }
             }
         }
@@ -519,7 +484,7 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 Object[] newargs = new Object[sc.args.length - 1];
                 System.arraycopy(sc.args, 1, newargs, 0, newargs.length);
-                res.add(new TermCompound(new SkelCompound(sc.sym, newargs),
+                res.add(AbstractTerm.createTerm(new SkelCompound(sc.sym, newargs),
                         AbstractTerm.getDisplay(val2)));
             }
         }
@@ -631,17 +596,19 @@ public final class SpecialLoad extends AbstractSpecial {
         return true;
     }
 
-    /****************************************************************/
-    /* Listing Members                                              */
-    /****************************************************************/
+    /**************************************************************/
+    /* Provable Enumeration & Lookup                              */
+    /**************************************************************/
 
     /**
      * <p>Create a prolog list with the directly accessible predicates.</p>
      *
      * @param en The engine.
      * @return The prolog list of the directly accessible predicates.
+     * @throws EngineMessage Shit happens.
      */
-    private static Object currentProvable(Engine en) {
+    private static Object currentProvables(Engine en)
+            throws EngineMessage {
         AbstractStore store = en.store;
         Object res = en.store.foyer.ATOM_NIL;
         while (store != null) {
@@ -651,7 +618,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 Predicate[] preds = base.snapshotRoutine();
                 for (int i = preds.length - 1; i >= 0; i--) {
                     Predicate pick = preds[i];
-                    Object val = indicatorToColonSkel(pick.getFun(), pick.getArity());
+                    SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
+                    Object val = SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
@@ -661,12 +629,45 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
+     * <p>Get predicate by indicator.</p>
+     *
+     * @param t  The skel of the compound.
+     * @param d  The display of the compound.
+     * @param en The engine.
+     * @return The predicate.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
+            throws EngineMessage {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        AbstractSource base;
+        if (!CacheFunctor.isQuali(sa.fun)) {
+            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
+            return CachePredicate.getRoutineUser(sk, en.store);
+        } else {
+            String s = CacheFunctor.sepModule(sa.fun);
+            base = AbstractSource.getModule(s, en.store);
+            if (base == null)
+                return null;
+            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
+            return base.getRoutine(sk);
+        }
+    }
+
+    /**************************************************************/
+    /* Syntax Enumeration & Lookup                                */
+    /**************************************************************/
+
+    /**
      * <p>Create a prolog list with the directly accessible syntax operators.</p>
      *
      * @param en The engine.
      * @return The prolog list of the directly accessible syntax operators.
+     * @throws EngineMessage Shit happens.
      */
-    private static Object currentSyntax(Engine en) {
+    private static Object currentSyntax(Engine en)
+            throws EngineMessage {
         AbstractStore store = en.store;
         Object res = en.store.foyer.ATOM_NIL;
         while (store != null) {
@@ -676,13 +677,39 @@ public final class SpecialLoad extends AbstractSpecial {
                 MapEntry<String, Operator>[] opers = base.snapshotOper();
                 for (int i = opers.length - 1; i >= 0; i--) {
                     Operator oper = opers[i].value;
-                    Object val = operToColonSkel(oper.getType(), oper.getKey());
+                    SkelAtom sa = new SkelAtom(oper.getKey(), en.store.user);
+                    Object val = SpecialOper.operToColonSkel(oper.getType(), sa, en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
             store = store.parent;
         }
         return res;
+    }
+
+
+    /**
+     * <p>Lookup an operator from a compound.</p>
+     *
+     * @param t  The compound skeleton.
+     * @param d  The compound display.
+     * @param en The engine copy.
+     * @return The operator or null.
+     * @throws EngineMessage Shit happends.
+     */
+    public static Operator operToSyntax(Object t, Display d, Engine en)
+            throws EngineMessage {
+        int type = SpecialOper.colonToOper(t, d, en);
+        String fun = ((SkelAtom) en.skel).fun;
+        if (!CacheFunctor.isQuali(fun)) {
+            return OperatorSearch.getOperUser(type, fun, en.store);
+        } else {
+            String s = CacheFunctor.sepModule(fun);
+            AbstractSource base = AbstractSource.getModule(s, en.store);
+            if (base == null)
+                return null;
+            return base.getOper(type, fun);
+        }
     }
 
     /****************************************************************/
@@ -769,224 +796,124 @@ public final class SpecialLoad extends AbstractSpecial {
         }
     }
 
-    /*******************************************************************/
-    /* Provable Direct Access                                          */
-    /*******************************************************************/
+    /***************************************************************/
+    /* Show Clause                                                 */
+    /***************************************************************/
 
     /**
-     * <p>Get predicate by indicator.</p>
+     * <p>List a clause.</p>
      *
-     * @param t  The skel of the compound.
-     * @param d  The display of the compound.
-     * @param en The engine.
-     * @return The predicate.
+     * @param pw    The prolog writer.
+     * @param t     The term.
+     * @param vars  The variable names.
+     * @param en    The engine.
+     * @param flags The show flags.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    public static Display showClause(PrologWriter pw, Object t, Named[] vars,
+                                     Engine en, int flags)
+            throws EngineException, EngineMessage {
+        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
+                ((flags & MASK_SHOW_NRBD) != 0)) {
+            int size = Display.displaySize(t);
+            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            EngineVars ev = new EngineVars();
+            if ((flags & MASK_SHOW_NANO) != 0) {
+                ev.varInclude(t, ref);
+            } else {
+                ev.singsOf(t, ref);
+            }
+            MapHashLink<Object, NamedDistance> print = Named.namedToMap(vars, ref, en);
+            print = EngineVars.numberVariables(ev.vars, ev.anon, print);
+            pw.setPrintMap(print);
+            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
+            pw.unparseStatement(t, ref);
+            SpecialLoad.flushWriter(pw.getWriter());
+            return ref;
+        }
+        AbstractBind mark = en.bind;
+        int snap = en.number;
+        int size = Display.displaySize(t);
+        SkelVar var = SkelVar.valueOf(size);
+        Display dc = new Display(size + 1);
+        t = new SkelCompound(new SkelAtom("sys_rebuild_term"), t, var);
+        t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
+                new SkelAtom("experiment/simp"), t);
+        Intermediate r = en.contskel;
+        DisplayClause u = en.contdisplay;
+        try {
+            Clause clause = en.store.foyer.CLAUSE_CALL;
+            DisplayClause ref = new DisplayClause(clause.dispsize);
+            ref.addArgument(t, dc, en);
+            ref.setEngine(en);
+            en.contskel = clause.getNextRaw(en);
+            en.contdisplay = ref;
+            if (!en.runFirst(snap))
+                throw new EngineMessage(
+                        EngineMessage.syntaxError(EngineMessage.OP_SYNTAX_REBUILD_FAILED));
+        } catch (EngineMessage x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.skel = new EngineException(x, EngineException.fetchStack(en));
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.skel = x;
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        }
+        en.contskel = r;
+        en.contdisplay = u;
+        en.skel = null;
+        en.display = null;
+        en.cutChoices(snap);
+        try {
+            if (en.skel != null)
+                throw (EngineException) en.skel;
+            EngineVars ev = new EngineVars();
+            if ((flags & MASK_SHOW_NANO) != 0) {
+                ev.varInclude(var, dc);
+            } else {
+                ev.singsOf(var, dc);
+            }
+            MapHashLink<Object, NamedDistance> print = Named.namedToMap(vars, dc, en);
+            print = EngineVars.numberVariables(ev.vars, ev.anon, print);
+            pw.setPrintMap(print);
+            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), var);
+            pw.unparseStatement(t, dc);
+            SpecialLoad.flushWriter(pw.getWriter());
+        } catch (EngineMessage y) {
+            en.skel = new EngineException(y, EngineException.fetchStack(en));
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        } catch (EngineException x) {
+            en.skel = x;
+            en.releaseBind(mark);
+            throw (EngineException) en.skel;
+        }
+        en.skel = null;
+        en.releaseBind(mark);
+        if (en.skel != null)
+            throw (EngineException) en.skel;
+        return dc;
+    }
+
+    /**
+     * <p>Flush the writer.</p>
+     *
+     * @param wr The writer.
      * @throws EngineMessage Shit happens.
      */
-    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
+    public static void flushWriter(Writer wr)
             throws EngineMessage {
-        Integer arity = SpecialLoad.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        AbstractSource base;
-        if (!CacheFunctor.isQuali(sa.fun)) {
-            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
-            return CachePredicate.getRoutineUser(sk, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(sa.fun);
-            base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
-            return base.getRoutine(sk);
+        try {
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
-    }
-
-    /**
-     * <p>Convert a colon indicator to a store key.</p>
-     * <p>The converted name is returned in engine skel.</p>
-     *
-     * @param t  The slash skeleton.
-     * @param d  The slash display.
-     * @param en The engine.
-     * @return The length.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    private static Integer colonToIndicator(Object t, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
-            SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa2 = SpecialQuali.slashToPackageTest(temp.args[0], d, true, en);
-            if (sa2 == null) {
-                EngineMessage.checkInstantiated(temp.args[0]);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_MODULE, temp.args[0]), d);
-            }
-            Integer arity = colonToIndicator(temp.args[1], d, en);
-            SkelAtom sa = (SkelAtom) en.skel;
-            en.skel = CacheFunctor.getFunctor(sa, sa2.fun, temp.sym, en);
-            return arity;
-        } else if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
-            SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            Number num = EngineMessage.castInteger(en.skel, en.display);
-            EngineMessage.checkNotLessThanZero(num);
-            EngineMessage.castIntValue(num);
-            en.skel = sc.args[0];
-            en.display = d;
-            en.deref();
-            EngineMessage.checkInstantiated(en.skel);
-            EngineMessage.castStringWrapped(en.skel, en.display);
-            return (Integer) num;
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_PREDICATE_INDICATOR, t), d);
-        }
-    }
-
-    /**
-     * <p>Convert an store key to a colon.</p>
-     *
-     * @param fun   The name.
-     * @param arity The length.
-     * @return The colon
-     */
-    public static Object indicatorToColonSkel(String fun, int arity) {
-        Object s;
-        if (CacheFunctor.isQuali(fun)) {
-            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun), null);
-
-            Object t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                    new SkelAtom(CacheFunctor.sepName(fun)),
-                    Integer.valueOf(arity));
-            s = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON), s, t);
-        } else {
-            s = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                    new SkelAtom(fun),
-                    Integer.valueOf(arity));
-        }
-        return s;
-    }
-
-    /*******************************************************************/
-    /* Syntax Direct Access                                            */
-    /*******************************************************************/
-
-    /**
-     * <p>Lookup an operator from a compound.</p>
-     *
-     * @param t  The compound skeleton.
-     * @param d  The compound display.
-     * @param en The engine copy.
-     * @return The operator or null.
-     * @throws EngineMessage Shit happends.
-     */
-    public static Operator operToSyntax(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int type = colonToOper(t, d, en);
-        String fun = ((SkelAtom) en.skel).fun;
-        if (!CacheFunctor.isQuali(fun)) {
-            return OperatorSearch.getOperUser(type, fun, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(fun);
-            AbstractSource base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            return base.getOper(type, fun);
-        }
-    }
-
-    /**
-     * <p>Convert a colon oper to a type and key.</p>
-     *
-     * @param t  The slash skeleton.
-     * @param d  The slash display.
-     * @param en The engine.
-     * @return The length.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    private static int colonToOper(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int type = SpecialOper.opToType(t, d, en);
-        en.skel = colonToAtom(en.skel, en.display, en);
-        return type;
-    }
-
-    /**
-     * <p>Convert a colon atom to a string.</p>
-     *
-     * @param t  The slash skeleton.
-     * @param d  The slash display.
-     * @param en The engine.
-     * @return The string.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    private static SkelAtom colonToAtom(Object t, Display d, Engine en)
-            throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
-            SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa2 = SpecialQuali.slashToPackageTest(temp.args[0], d, true, en);
-            if (sa2 == null) {
-                EngineMessage.checkInstantiated(temp.args[0]);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_MODULE, temp.args[0]), d);
-            }
-            SkelAtom sa = colonToAtom(temp.args[1], d, en);
-            return CacheFunctor.getFunctor(sa, sa2.fun, temp.sym, en);
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            return EngineMessage.castStringWrapped(en.skel, en.display);
-        }
-    }
-
-    /**
-     * <p>Convert a type and key to a colon oper.</p>
-     *
-     * @param type The type.
-     * @param key  The key.
-     * @return The compound.
-     */
-    public static Object operToColonSkel(int type, String key) {
-        Object s = atomToColonSkel(key);
-
-        return SpecialOper.typeToOpSkel(s, type);
-    }
-
-    /**
-     * <p>Convert a string to colon atom.</p>
-     *
-     * @param fun The string.
-     * @return The colon atom.
-     */
-    private static Object atomToColonSkel(String fun) {
-        Object s;
-        if (CacheFunctor.isQuali(fun)) {
-            s = Clause.packageToSlashSkel(CacheFunctor.sepModule(fun), null);
-
-            Object t = new SkelAtom(CacheFunctor.sepName(fun));
-            s = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON), s, t);
-        } else {
-            s = new SkelAtom(fun);
-        }
-        return s;
     }
 
 }

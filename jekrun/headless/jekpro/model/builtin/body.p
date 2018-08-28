@@ -28,10 +28,8 @@
  * and determine how arguments are traversed. The predicate properties
  * sys_body/0 and sys_rule/0 will indicate that the meta-predicates
  * should be traversed during body conversion respectively rule conversion.
- * To facilitate the declaration of body and rule conversion the predicates
- * sys_neutral_predicate/1 and sys_neutral_evaluable/1 allow defining
- * dictionary entries that are not yet completely defined and
- * cannot be executed.
+ * To facilitate the declaration the predicate sys_neutral_predicate/1 allows
+ * defining dictionary entries that are not yet completely defined.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -57,9 +55,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/model/builtin))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 /**
@@ -77,31 +75,55 @@
  * indicator I, defines a corresponding neutral syntax operator.
  */
 % sys_neutral_oper(+Indicator)
-:- special(sys_neutral_oper/1, 'SpecialBody', 2).
+:- special(sys_neutral_oper/1, 'SpecialBody', 1).
 :- set_predicate_property(sys_neutral_oper/1, visible(public)).
 
+/**
+ * sys_context_property(C, Q):
+ * The predicate succeeds for the context property Q of the callable C.
+ */
+% sys_contex_property(+Callable, -Atom)
+% natively defined in SpecialSpecial
+
+/**
+ * sys_set_context_property(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A with the context property Q.
+ */
+% sys_set_context_property(-Callable, +Atom, +Callable)
+:- special(sys_set_context_property/3, 'SpecialBody', 2).
+:- set_predicate_property(sys_set_context_property/3, visible(public)).
+
+/**
+ * sys_replace_site(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A with all the site properties of the callable Q.
+ */
 % sys_replace_site(-Term, +Term, +Term)
-:- special(sys_replace_site/3, 'SpecialBody', 3).
+:- special(sys_replace_site/3, 'SpecialBody', 4).
 :- set_predicate_property(sys_replace_site/3, visible(public)).
 
+/**
+ * sys_parent_goal(B):
+ * The predicate succeeds in B with the call parent of the current clause.
+ */
 % sys_parent_goal(-Term)
-:- special(sys_parent_goal/1, 'SpecialBody', 4).
+:- special(sys_parent_goal/1, 'SpecialBody', 5).
 :- set_predicate_property(sys_parent_goal/1, visible(public)).
 
 /**
  * sys_declaration_indicator(D, I):
- * The predicate succeeds with the indicator I for the
- * declaration D. The predicate is multifile and can be
- * extended by consulting further clauses.
+ * The predicate succeeds with the indicator I for the declaration D.
+ * The predicate is multifile and can be extended by further clauses.
  */
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_public(C)).
+:- sys_context_property(here, C),
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_accessible_multifile(C)).
+:- sys_context_property(here, C),
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 
 sys_declaration_indicator(special(I,_,_), I).
 sys_declaration_indicator(set_predicate_property(I,_), I).

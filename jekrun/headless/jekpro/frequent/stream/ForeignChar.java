@@ -1,6 +1,8 @@
 package jekpro.frequent.stream;
 
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.SkelAtom;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -54,12 +56,12 @@ public final class ForeignChar {
      *
      * @param para The stream.
      * @param val  The character.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      * @throws IOException        IO error.
      */
     public static void sysPutChar(Writer para, String val)
-            throws InterpreterMessage, IOException {
-        InterpreterMessage.castCharacter(val);
+            throws ClassCastException, IOException {
+        SpecialUniv.castCharacter(val);
         para.write(val);
     }
 
@@ -68,13 +70,13 @@ public final class ForeignChar {
      *
      * @param para The stream.
      * @param val  The code.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      * @throws IOException        IO error.
      */
-    public static void sysPutCode(Writer para, int val)
-            throws InterpreterMessage, IOException {
-        InterpreterMessage.checkCharacterCode(val);
-        para.write(Character.toChars(val));
+    public static void sysPutCode(Writer para, Integer val)
+            throws ClassCastException, IOException {
+        int n = SpecialEval.castCodePoint(val);
+        para.write(SkelAtom.valueOf(n));
     }
 
     /**
@@ -119,7 +121,7 @@ public final class ForeignChar {
         if (ch == -1) {
             val = "end_of_file";
         } else {
-            val = new String(Character.toChars(ch));
+            val = SkelAtom.valueOf(ch);
         }
         return val;
     }
@@ -165,7 +167,7 @@ public final class ForeignChar {
         if (ch == -1) {
             val = "end_of_file";
         } else {
-            val = new String(Character.toChars(ch));
+            val = SkelAtom.valueOf(ch);
         }
         return val;
     }

@@ -10,6 +10,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 
@@ -135,7 +136,8 @@ public final class FlagTrace extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en) throws EngineMessage {
+    public boolean setFlag(Object m, Display d, Engine en)
+            throws EngineMessage {
         switch (id) {
             case FLAG_UNKNOWN:
                 /* */
@@ -164,12 +166,12 @@ public final class FlagTrace extends AbstractFlag {
                 }
                 return true;
             case FLAG_SYS_SKIP_FRAME:
-                Frame frame = SpecialFrame.castFrame(m, d);
+                Frame frame = SpecialFrame.derefAndCastFrame(m, d);
                 SpecialStack.checkStackFrame(frame);
                 ((SupervisorTrace) en.visor).setSkipFrame(frame);
                 return true;
             case FLAG_SYS_QUERY_FRAME:
-                frame = SpecialFrame.castFrame(m, d);
+                frame = SpecialFrame.derefAndCastFrame(m, d);
                 SpecialStack.checkStackFrame(frame);
                 en.visor.ref = frame;
                 return true;
@@ -177,11 +179,7 @@ public final class FlagTrace extends AbstractFlag {
                 en.visor.setIgnore(AbstractFlag.atomToSwitch(m, d));
                 return true;
             case FLAG_SYS_MAX_STACK:
-                en.skel = m;
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                Number num = EngineMessage.castInteger(en.skel, en.display);
+                Number num = SpecialEval.derefAndCastInteger(m, d);
                 EngineMessage.checkNotLessThanZero(num);
                 int n = EngineMessage.castIntValue(num);
                 en.visor.setMaxStack(n);

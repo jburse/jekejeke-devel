@@ -1,11 +1,13 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -112,19 +114,19 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
                 /* do nothing */
-                flags |= PrologWriter.FLAG_SING;
+                flags |= PrologReader.FLAG_SING;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
-                utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
+                utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_BACK_QUOTES)) {
-                utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
+                utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
-                utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display, en);
+                utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
@@ -147,11 +149,11 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SOURCE)) {
-                en.skel = ((SkelCompound) en.skel).args[0];
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                String fun = EngineMessage.castString(en.skel, en.display);
-                source = (!"".equals(fun) ? AbstractSource.keyToSource(fun, en.store) : null);
+                String fun = SpecialUniv.derefAndCastString(
+                        ((SkelCompound) en.skel).args[0], en.display);
+                AbstractSource src = en.store.getSource(fun);
+                AbstractSource.checkExistentSource(src, fun);
+                source = src;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
@@ -159,7 +161,7 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PART)) {
-                int part = atomToReadPart(((SkelCompound) en.skel).args[0], en.display, en);
+                int part = atomToReadPart(((SkelCompound) en.skel).args[0], en.display);
                 if ((part & WriteOpts.PART_STMT) != 0) {
                     flags |= PrologWriter.FLAG_STMT;
                 } else {
@@ -212,10 +214,10 @@ public final class ReadOpts {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public static boolean  decodeReadOptions(Object t, Display d,
-                                     Object t2, Display d2,
-                                     Engine en,
-                                     PrologReader rd)
+    public static boolean decodeReadOptions(Object t, Display d,
+                                            Object t2, Display d2,
+                                            Engine en,
+                                            PrologReader rd)
             throws EngineMessage, EngineException {
         en.skel = t;
         en.display = d;
@@ -319,14 +321,15 @@ public final class ReadOpts {
      */
     private static Object termToList(Object val, AbstractStore store) {
         Object end = store.foyer.ATOM_NIL;
-        if (val instanceof SkelVar) {
-            end = new SkelCompound(store.foyer.ATOM_CONS, val, end);
-        } else if (val instanceof SkelCompound) {
-            SkelVar[] vars = ((SkelCompound) val).vars;
-            if (vars == null)
-                return end;
-            for (int i = 0; i < vars.length; i++)
-                end = new SkelCompound(store.foyer.ATOM_CONS, vars[i], end);
+        Object var = EngineCopy.getVar(val);
+        if (var == null)
+            return end;
+        if (var instanceof SkelVar) {
+            end = new SkelCompound(store.foyer.ATOM_CONS, var, end);
+        } else {
+            SkelVar[] temp = (SkelVar[]) var;
+            for (int i = 0; i < temp.length; i++)
+                end = new SkelCompound(store.foyer.ATOM_CONS, temp[i], end);
         }
         return end;
     }
@@ -340,19 +343,14 @@ public final class ReadOpts {
      * <li><b>variable:</b> UTIL_VARIABLE.</li>
      * </ul>
      *
-     * @param m  The util value skel.
-     * @param d  The util value display.
-     * @param en The engine.
+     * @param m The util value skel.
+     * @param d The util value display.
      * @return The util value.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToUtil(Object m, Display d, Engine en)
+    public static int atomToUtil(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_VALUE_ERROR)) {
             return UTIL_ERROR;
         } else if (fun.equals(OP_VALUE_CODES)) {
@@ -365,7 +363,7 @@ public final class ReadOpts {
             return UTIL_VARIABLE;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
@@ -395,26 +393,21 @@ public final class ReadOpts {
     /**
      * <p>Convert an atom to a write part.</p>
      *
-     * @param m  The annotation mode skel.
-     * @param d  The annotation mode display.
-     * @param en The engine.
+     * @param m The annotation mode skel.
+     * @param d The annotation mode display.
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToReadPart(Object m, Display d, Engine en)
+    public static int atomToReadPart(Object m, Display d)
             throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
             return 0;
         } else if (fun.equals(Foyer.OP_TRUE)) {
             return WriteOpts.PART_STMT;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel));
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 

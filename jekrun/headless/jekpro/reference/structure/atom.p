@@ -274,37 +274,37 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
 
 /**
  * atom_chars(X, Y): [ISO 8.16.4]
- * If Y is ground and Y is a character list then the predicate
- * succeeds when X unifies with the corresponding atom. If Y is
- * not ground and X is a atom then the predicate succeeds when Y
- * unifies with the corresponding character list.
+ * If X is a variable and Y is a character list then the predicate
+ * succeeds when X unifies with the corresponding atom. Otherwise if
+ * X is an atom then the predicate succeeds when Y unifies with the
+ * corresponding character list.
  */
 % atom_chars(+-Atom, -+Chars)
 :- public atom_chars/2.
 atom_chars(Atom, Chars) :-
-   ground(Chars), !,
+   var(Atom), !,
    sys_list_to_atom(Chars, 0, Atom).
 atom_chars(Atom, Chars) :-
    sys_atom_to_list(Atom, 0, Chars).
 
 /**
  * atom_codes(X, Y): [ISO 8.16.5]
- * If Y is ground and Y is a code list then the predicate succeeds
- * when X unifies with the corresponding atom. If Y is not ground
- * and X is a atom then the predicate succeeds when Y unifies with
- * the corresponding code list.
+ * If X is a variable and Y is a code list then the predicate succeeds
+ * when X unifies with the corresponding atom. Otherwise if X is
+ * an atom then the predicate succeeds when Y unifies with the
+ * corresponding code list.
  */
 % atom_codes(+-Atom, -+Codes)
 :- public atom_codes/2.
 atom_codes(Atom, Codes) :-
-   ground(Codes), !,
+   var(Atom), !,
    sys_list_to_atom(Codes, 1, Atom).
 atom_codes(Atom, Codes) :-
    sys_atom_to_list(Atom, 1, Codes).
 
 :- private sys_atom_to_list/3.
 :- foreign(sys_atom_to_list/3, 'ForeignAtom',
-      sysAtomToList('String',int)).
+      sysAtomToList('Interpreter','String',int)).
 
 :- private sys_list_to_atom/3.
 :- foreign(sys_list_to_atom/3, 'ForeignAtom',
@@ -312,7 +312,7 @@ atom_codes(Atom, Codes) :-
 
 /**
  * char_code(X, Y): [ISO 8.16.6]
- * If Y is ground and if Y is a code then the predicate succeeds
+ * If X is a variable and if Y is a code then the predicate succeeds
  * when X unifies with the corresponding character. Otherwise if X
  * is a character then the predicate succeeds when Y unifies with
  * the corresponding code.
@@ -331,14 +331,14 @@ char_code(Char, Code) :-
 
 :- private sys_code_to_char/2.
 :- foreign(sys_code_to_char/2, 'ForeignAtom',
-      sysCodeToChar(int)).
+      sysCodeToChar('Integer')).
 
 /**
  * number_chars(X, Y): [ISO 8.16.7]
  * If Y is ground and Y is a character list then the predicate
- * succeeds when X unifies with the corresponding number. If Y
- * is not ground and X is a number then the predicate succeeds
- * when Y unifies with the corresponding character list.
+ * succeeds when X unifies with the corresponding number. Otherwise
+ * if X is a number then the predicate succeeds when Y unifies with
+ * the corresponding character list.
  */
 % number_chars(+-Number, -+Chars)
 :- public number_chars/2.
@@ -352,9 +352,9 @@ number_chars(Number, Chars) :-
 
 /**
  * number_codes(X, Y): [ISO 8.16.8]
- * If Y is ground and Y is a code list then the predicate succeeds
- * when X unifies with the corresponding number. If Y is not ground
- * and X is a number then the predicate suc-ceeds when Y unifies
+ * If Y is ground and Y is a code list then the predicate
+ * succeeds when X unifies with the corresponding number. Otherwise
+ * if X is a number then the predicate suceeds when Y unifies
  * with the corresponding code list.
  */
 % number_codes(+-Number, -+Codes)
@@ -406,42 +406,6 @@ number_codes(Number, Codes) :-
 :- private sys_atom_word_pos/6.
 :- foreign(sys_atom_word_pos/6, 'ForeignAtom',
       sysAtomWordPos('Interpreter','CallOut','String',int,int,int,'AbstractTerm')).
-
-/****************************************************************/
-/* SWI-Prolog Inspired                                          */
-/****************************************************************/
-
-/**
- * atom_list_concat(L, S, R):
- * If L is ground the predicate succeeds when R unifies with the
- * concatenation of each atom from the list L separated by the
- * atom S. Otherwise the predicate splits the atom R into a list L
- * of atoms that are separated by the atom S.
- */
-% atom_list_concat(+-List, +Atom, -+Atom)
-:- public atom_list_concat/3.
-atom_list_concat(L, S, R) :-
-   ground(L), !,
-   atom_list_concat1(L, S, R).
-atom_list_concat(L, S, R) :-
-   atom_list_concat2(R, S, L).
-
-% atom_list_concat1(+List, +Atom, -Atom)
-:- private atom_list_concat1/3.
-atom_list_concat1([X], _, X) :- !.
-atom_list_concat1([X,Y|Z], S, R) :-
-   atom_list_concat1([Y|Z], S, H),
-   atom_concat(S, H, J),
-   atom_concat(X, J, R).
-
-% atom_list_concat2(+Atom, +Atom, -List)
-:- private atom_list_concat2/3.
-atom_list_concat2(R, S, [X|L]) :-
-   sub_atom(R, Before, _, After, S), !,
-   sub_atom(R, 0, Before, _, X),
-   sub_atom(R, _, After, 0, H),
-   atom_list_concat2(H, S, L).
-atom_list_concat2(R, _, [R]).
 
 /****************************************************************/
 /* String Reverse Ops                                           */
@@ -655,6 +619,47 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
    Pos2 is Pos+Count1,
    sys_atom_word_len(Str, Count),
    sys_atom_word_count(Str, Pos2, Count, Off2).
+
+/****************************************************************/
+/* SWI-Prolog Inspired                                          */
+/****************************************************************/
+
+/**
+ * atom_list_concat(L, S, R):
+ * If R is a variable the predicate succeeds when R unifies with the
+ * concatenation of each atom from the non-empty list L separated by
+ * the atom S. Otherwise the predicate splits the atom R into a list L
+ * of atoms that are separated by the atom S.
+ */
+% atom_list_concat(+-List, +Atom, -+Atom)
+:- public atom_list_concat/3.
+atom_list_concat(List, Sep, Atom) :-
+   var(Atom), !,
+   atom_list_concat1(List, Sep, Atom).
+atom_list_concat(List, Sep, Atom) :-
+   atom_list_concat2(Atom, Sep, List).
+
+% atom_list_concat1(+List, +Atom, -Atom)
+:- private atom_list_concat1/3.
+atom_list_concat1(List, _, _) :-
+   var(List),
+   throw(error(instantiation_error,_)).
+atom_list_concat1([X], _, X) :- !.
+atom_list_concat1([X,Y|Z], Sep, R) :- !,
+   atom_list_concat1([Y|Z], Sep, H),
+   atom_concat(Sep, H, J),
+   atom_concat(X, J, R).
+atom_list_concat1(List, _, _) :-
+   throw(error(type_error(list,List),_)).
+
+% atom_list_concat2(+Atom, +Atom, -List)
+:- private atom_list_concat2/3.
+atom_list_concat2(Atom, Sep, [X|L]) :-
+   sub_atom(Atom, Before, _, After, Sep), !,
+   sub_atom(Atom, 0, Before, X),
+   last_sub_atom(Atom, After, 0, H),
+   atom_list_concat2(H, Sep, L).
+atom_list_concat2(Atom, _, [Atom]).
 
 /****************************************************************/
 /* Term Conversion                                              */

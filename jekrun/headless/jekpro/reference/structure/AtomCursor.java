@@ -48,7 +48,7 @@ final class AtomCursor implements Enumeration<Integer> {
         cfrom = cf;
         from = f;
         to = t;
-        forward = (from<=to);
+        forward = (from <= to);
     }
 
     /**
@@ -66,7 +66,7 @@ final class AtomCursor implements Enumeration<Integer> {
      * @return True if there are more elements, otherwise false.
      */
     public boolean hasMoreElements() {
-        return (forward ? from<=to : from>=to);
+        return (forward ? from <= to : from >= to);
     }
 
     /**
@@ -77,7 +77,7 @@ final class AtomCursor implements Enumeration<Integer> {
     public Integer nextElement() {
         Integer val = Integer.valueOf(from);
         if (forward) {
-            if (from<to) {
+            if (from < to) {
                 cfrom++;
                 int ch = str.codePointAt(from);
                 from = from + Character.charCount(ch);
@@ -85,7 +85,7 @@ final class AtomCursor implements Enumeration<Integer> {
                 from++;
             }
         } else {
-            if (from>to) {
+            if (from > to) {
                 cfrom--;
                 int ch = str.codePointBefore(from);
                 from = from - Character.charCount(ch);

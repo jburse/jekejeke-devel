@@ -2,8 +2,9 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
-import jekpro.reference.structure.SpecialLexical;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -51,6 +52,8 @@ public final class SpecialCompare extends AbstractSpecial {
     public static final int CATEGORY_LONG = 4;
     public static final int CATEGORY_BIG_DECIMAL = 5;
 
+    public final static double EPSILON = Math.ulp(1.0);
+
     public static final String OP_ILLEGAL_CATEGORY = "illegal category";
 
     /**
@@ -74,35 +77,101 @@ public final class SpecialCompare extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.computeExpr(temp[0], ref);
-        Number val = EngineMessage.castNumber(en.skel, en.display);
-        en.computeExpr(temp[1], ref);
-        Number val2 = EngineMessage.castNumber(en.skel, en.display);
         switch (id) {
             case SPECIAL_COMPARE_EQ:
-                if (!SpecialCompare.testEq(val, val2))
+                Object[] temp = ((SkelCompound) en.skel).args;
+                Display ref = en.display;
+                boolean multi = en.computeExpr(temp[0], ref);
+                Display d = en.display;
+                Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (!SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_NQ:
-                if (SpecialCompare.testEq(val, val2))
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_LS:
-                if (SpecialCompare.computeCmp(val, val2) >= 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_LQ:
-                if (SpecialCompare.computeCmp(val, val2) > 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_GR:
-                if (SpecialCompare.computeCmp(val, val2) <= 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_GQ:
-                if (SpecialCompare.computeCmp(val, val2) < 0)
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
                 return en.getNextRaw();
             default:
@@ -149,11 +218,11 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param n The second Prolog number.
      * @return <0 m < n,  0 m == m, >0 m > n.
      */
-    static int computeCmp(Number m, Number n) {
+    public static int computeCmp(Number m, Number n) {
         switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
             case SpecialCompare.CATEGORY_INTEGER:
             case SpecialCompare.CATEGORY_BIG_INTEGER:
-                return SpecialLexical.compareInteger(m, n);
+                return compareIntegerArithmetical(m, n);
             case SpecialCompare.CATEGORY_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();
@@ -196,6 +265,30 @@ public final class SpecialCompare extends AbstractSpecial {
             return SpecialCompare.CATEGORY_BIG_DECIMAL;
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+
+    /**
+     * <p>Compare two Prolog integers lexically.</p>
+     *
+     * @param alfa The first Prolog integer.
+     * @param beta The second Prolog integer.
+     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     */
+    public static int compareIntegerArithmetical(Object alfa, Object beta) {
+        if (alfa instanceof Integer) {
+            if (beta instanceof Integer) {
+                return ((Integer) alfa).compareTo((Integer) beta);
+            } else {
+                return -((BigInteger) beta).signum();
+            }
+        } else {
+            if (beta instanceof Integer) {
+                return ((BigInteger) alfa).signum();
+            } else {
+                return ((BigInteger) alfa).compareTo((BigInteger) beta);
+            }
         }
     }
 

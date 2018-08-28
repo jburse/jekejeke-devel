@@ -1,9 +1,9 @@
-package jekpro.tools.proxy;
+package jekpro.model.pretty;
 
-import java.lang.reflect.InvocationHandler;
+import jekpro.model.molec.EngineMessage;
 
 /**
- * <p>This interface defines a state.</p>
+ * <p>An child store specialization of abstract stores.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -28,13 +28,42 @@ import java.lang.reflect.InvocationHandler;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public interface InterfaceState extends InvocationHandler {
+public final class StoreChild extends AbstractStore {
 
     /**
-     * <p>Retrieve the handler.</p>
+     * <p>Create a new store.</p>
      *
-     * @return The handler.
+     * @param p The parent.
      */
-    InterfaceHandler getHandler();
+    public StoreChild(AbstractStore p) {
+        super(p.foyer, p);
+        loader = p.getLoader();
+    }
+
+
+    /**
+     * <p>Add a path.</p>
+     *
+     * @param path The path.
+     * @throws EngineMessage Shit happens.
+     */
+    public void addClassPath(String path)
+            throws EngineMessage {
+        super.addClassPath(path);
+
+        foyer.notifyFixvers(this);
+    }
+
+    /**
+     * <p>Add a file extension.</p>
+     *
+     * @param ext  The file extension.
+     * @param type The type.
+     */
+    public void addFileExtension(String ext, int type) {
+        super.addFileExtension(ext, type);
+
+        foyer.notifyFixvers(this);
+    }
 
 }

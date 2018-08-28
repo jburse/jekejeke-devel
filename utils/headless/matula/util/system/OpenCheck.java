@@ -74,12 +74,13 @@ public class OpenCheck {
                 File file = new File(path.replace('/', File.separatorChar));
 
                 /* spare an IOException */
-                if (!file.exists())
+                if (!file.exists() || !file.isFile())
                     return false;
 
                 return true;
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
+                adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -130,6 +131,7 @@ public class OpenCheck {
                 return adr;
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
+                adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
                 con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
@@ -157,6 +159,7 @@ public class OpenCheck {
                 if (loc == null)
                     return null;
                 adr = ForeignUri.sysUriAbsolute(adr, loc);
+                adr = ForeignUri.sysUriDecode(adr);
                 adr = ForeignDomain.sysUriUnpuny(adr);
                 return adr;
             }
@@ -178,16 +181,26 @@ public class OpenCheck {
     /*
     public static void main(String[] args)
             throws IOException {
+        String adr="http://5ch.net/";
+        System.out.println("adr=" + adr);
+        boolean flag = OpenCheck.DEFAULT_CHECK.checkHead(adr);
+        System.out.println("head(adr)=" + flag);
+
+        adr="http://qb5.5ch.net/saku2ch/";
+        System.out.println("adr=" + adr);
+        flag = OpenCheck.DEFAULT_CHECK.checkHead(adr);
+        System.out.println("head(adr)=" + flag);
+
         String adr = "https://www.stadt-zuerich.ch/robots.txt";
         System.out.println("adr=" + adr);
-        boolean flag = ForeignCache.DEFAULT_CHECK.checkHead(adr);
+        boolean flag = OpenCheck.DEFAULT_CHECK.checkHead(adr);
         System.out.println("head(adr)=" + flag);
 
         System.out.println();
 
         adr = "http://xn--zrich-kva.ch/robots.txt";
         System.out.println("adr=" + adr);
-        adr = ForeignCache.DEFAULT_CHECK.checkRedirect(adr);
+        adr = OpenCheck.DEFAULT_CHECK.checkRedirect(adr);
         System.out.println("redirect(adr)=" + adr);
     }
     */

@@ -526,61 +526,6 @@ sys_value_expr(abs(X), S, H) :- !,
    sys_abs_lin(L, A, S, H, V, G).
 
 /**
- * T [E1, .., En] (finite):
- * If T is a term and E1, .., En are integer expressions for 1 ≤ n ≤ 7
- * then T [E1, .., En] is also a value expression.
- */
-sys_value_expr(T[E], L, A) :- !,
-   N is E,
-   T [N, X],
-   sys_value_expr(X, L, A).
-sys_value_expr(T[E,F], L, A) :- !,
-   N is E,
-   M is F,
-   T [N, M, X],
-   sys_value_expr(X, L, A).
-sys_value_expr(T[E,F,G], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   T [N, M, O, X],
-   sys_value_expr(X, L, A).
-sys_value_expr(T[E,F,G,H], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   T [N, M, O, P, X],
-   sys_value_expr(X, L, A).
-sys_value_expr(T[E,F,G,H,I], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   Q is I,
-   T [N, M, O, P, Q, X],
-   sys_value_expr(X, L, A).
-sys_value_expr(T[E,F,G,H,I,J], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   Q is I,
-   R is J,
-   T [N, M, O, P, Q, R, X],
-   sys_value_expr(X, L, A).
-sys_value_expr(T[E,F,G,H,I,J,K], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   Q is I,
-   R is J,
-   S is K,
-   T [N, M, O, P, Q, R, S, X],
-   sys_value_expr(X, L, A).
-
-/**
  * C (finite):
  * A callable C is also a value expression.
  */
@@ -631,55 +576,6 @@ sys_value_expr_inv(abs(X), S, H) :- !,
    sys_fresh_var(_, V),
    sys_value_expr_inv(X, L, A),
    sys_abs_lin(L, A, S, H, V, G).
-sys_value_expr_inv(T[E], L, A) :- !,
-   N is E,
-   T [N, X],
-   sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(T[E,F], L, A) :- !,
-   N is E,
-   M is F,
-   T [N, M, X],
-   sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(T[E,F,G], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   T [N, M, O, X],
-   sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(T[E,F,G,H], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   T [N, M, O, P, X],
-   sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(T[E,F,G,H,I], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   Q is I,
-   T [N, M, O, P, Q, X],
-   sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(T[E,F,G,H,I,J], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   Q is I,
-   R is J,
-   T [N, M, O, P, Q, R, X],
-   sys_value_expr_inv(X, L, A).
-sys_value_expr_inv(T[E,F,G,H,I,J,K], L, A) :- !,
-   N is E,
-   M is F,
-   O is G,
-   P is H,
-   Q is I,
-   R is J,
-   S is K,
-   T [N, M, O, P, Q, R, S, X],
-   sys_value_expr_inv(X, L, A).
 sys_value_expr_inv(C, L, A) :-
    sys_callable(C), !,
    X is C,

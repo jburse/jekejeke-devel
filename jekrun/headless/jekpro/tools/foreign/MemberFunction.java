@@ -7,9 +7,11 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -111,11 +113,16 @@ final class MemberFunction extends AbstractMember {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         Object[] args = computeAndConvertArgs(temp, ref, en);
         Object res = invokeMethod(method, obj, args);
         res = Types.normJava(encoderet, res);
@@ -124,6 +131,8 @@ final class MemberFunction extends AbstractMember {
                     AbstractFactory.OP_REPRESENTATION_NULL));
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
+        Object check = AbstractTerm.getMarker(res);
+        return (check != null && ((MutableBit) check).getBit());
     }
 
     /***************************************************************/

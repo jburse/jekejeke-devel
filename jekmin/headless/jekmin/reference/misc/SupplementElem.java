@@ -1,19 +1,16 @@
 package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 
 /**
  * <p>Provides additional elementary evaluables.</p>
@@ -62,30 +59,40 @@ public final class SupplementElem extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_ULP:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    Number alfa = EngineMessage.castNumber(en.skel, en.display);
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = ulp(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 case EVALUABLE_GCD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    alfa = EngineMessage.castInteger(en.skel, en.display);
-                    en.computeExpr(temp[1], ref);
-                    Number beta = EngineMessage.castInteger(en.skel, en.display);
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
                     en.skel = gcd(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return;
+                    return false;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
 
@@ -111,9 +118,9 @@ public final class SupplementElem extends AbstractSpecial {
         if (m instanceof Integer || m instanceof BigInteger) {
             return Integer.valueOf(1);
         } else if (m instanceof Float) {
-            return TermAtomic.guardFloat(Float.valueOf(Math.ulp(m.floatValue())));
+            return TermAtomic.makeFloat(Math.ulp(m.floatValue()));
         } else if (m instanceof Double) {
-            return TermAtomic.guardDouble(Double.valueOf(Math.ulp(m.doubleValue())));
+            return TermAtomic.makeDouble(Math.ulp(m.doubleValue()));
         } else if (m instanceof Long) {
             return Long.valueOf(1);
         } else {

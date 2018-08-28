@@ -1,19 +1,25 @@
 package jekpro.tools.foreign;
 
+import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.SpecialSpecial;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.inter.Usage;
 import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
+import jekpro.model.rope.LoadForce;
+import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
+import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -92,6 +98,7 @@ public final class AutoClass extends AbstractAuto {
 
         AutoClass superjava = reexportSuperclass(en);
         AutoClass[] interfacesjava = reexportInterfaces(en);
+        usemoduleScore(en);
 
         meths = new MapHash<StoreKey, ListArray<AbstractMember>>();
         collectConstructors(en);
@@ -106,6 +113,26 @@ public final class AutoClass extends AbstractAuto {
         defineMeths(en, rec);
     }
 
+    /**
+     * <p>Reexport the super class of a class.</p>
+     *
+     * @param en The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private void usemoduleScore(Engine en)
+            throws EngineException, EngineMessage {
+        LoadOpts opts = new LoadOpts();
+        opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
+        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
+        opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_MODL);
+
+        String key = "jekpro/frequent/basic/score.p";
+        key = AbstractBranch.findPathLibrary(key, en);
+
+        opts.makeLoad(this, key, en);
+    }
+
     /*******************************************************************/
     /* Collect preds & Evaluables                                      */
     /*******************************************************************/
@@ -113,11 +140,9 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Collect the constructors.</p>
      *
-     * @param en The interpreter.
-     * @throws EngineMessage FFI error.
+     * @param en The engine.
      */
-    private void collectConstructors(Engine en)
-            throws EngineMessage {
+    private void collectConstructors(Engine en) {
         Constructor[] constructors = getAuto().getDeclaredConstructors();
         for (int i = 0; i < constructors.length; i++) {
             Constructor constructor = constructors[i];
@@ -133,11 +158,9 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Collect the methods.</p>
      *
-     * @param en The interpreter.
-     * @throws EngineMessage FFI error.
+     * @param en The engine.
      */
-    private void collectMethods(Engine en)
-            throws EngineMessage {
+    private void collectMethods(Engine en) {
         Method[] methods = getAuto().getDeclaredMethods();
         for (int i = 0; i < methods.length; i++) {
             Method method = methods[i];
@@ -156,11 +179,9 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Collect the fields.</p>
      *
-     * @param en The interpreter.
-     * @throws EngineMessage FFI error.
+     * @param en The engine.
      */
-    private void collectFields(Engine en)
-            throws EngineMessage {
+    private void collectFields(Engine en) {
         Field[] fields = getAuto().getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
@@ -235,8 +256,7 @@ public final class AutoClass extends AbstractAuto {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Engine en,
-                             boolean rec)
+    private void defineMeths(Engine en, boolean rec)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, ListArray<AbstractMember>> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {
@@ -255,7 +275,7 @@ public final class AutoClass extends AbstractAuto {
                 Predicate over = makeOverride(pick, en);
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
-                    SpecialSpecial.definePredicate(pick, del);
+                    SpecialSpecial.definePredicate(pick, del, en);
                     Predicate.checkPredicateDecl(pick, sa, en);
                 } else {
                     for (int i = 0; i < dels.length; i++) {
@@ -289,7 +309,7 @@ public final class AutoClass extends AbstractAuto {
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
                         virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                         pick = makePrivate(sa, sk.getArity(), virt, en);
-                        SpecialSpecial.definePredicate(pick, del);
+                        SpecialSpecial.definePredicate(pick, del, en);
                         Predicate.checkPredicateDecl(pick, sa, en);
                     }
                 }
@@ -337,21 +357,24 @@ public final class AutoClass extends AbstractAuto {
     }
 
     /**
-     * <p>Create a test.</p>
+     * <p>Create a test and change scope.</p>
      *
      * @param closure The closure.
      * @param arg     The argument.
      */
     private SkelCompound makeTest(Object closure, Object arg) {
         if (closure instanceof SkelAtom) {
-            SkelAtom sa = (SkelAtom) closure;
-            return new SkelCompound(sa, arg);
+            String fun = ((SkelAtom) closure).fun;
+            return new SkelCompound(new SkelAtom(fun, this), arg);
         } else if (closure instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) closure;
+
             Object[] args = new Object[sc.args.length + 1];
             System.arraycopy(sc.args, 0, args, 0, sc.args.length);
             args[sc.args.length] = arg;
-            return new SkelCompound(sc.sym, args);
+
+            String fun = sc.sym.fun;
+            return new SkelCompound(new SkelAtom(fun, this), args);
         } else {
             throw new IllegalArgumentException("illegal closure");
         }
@@ -376,7 +399,7 @@ public final class AutoClass extends AbstractAuto {
         pick.setBit(Predicate.MASK_PRED_VSPR);
         Usage loc = pick.getUsage(this);
         if (loc != null)
-            loc.setBit(Usage.MASK_USE_VSPR);
+            loc.setBit(Usage.MASK_TRCK_VSPR);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);
@@ -444,10 +467,8 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createMethod(Method m, Engine en, boolean k)
-            throws EngineMessage {
+    public static boolean createMethod(Method m, Engine en, boolean k) {
         AbstractMember del;
         if (k) {
             if (!validateExceptionTypes(m.getExceptionTypes(), en))
@@ -477,10 +498,8 @@ public final class AutoClass extends AbstractAuto {
      * @param c  The constructor.
      * @param en The engine.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createConstructor(Constructor c, Engine en)
-            throws EngineMessage {
+    public static boolean createConstructor(Constructor c, Engine en) {
         if (!validateExceptionTypes(c.getExceptionTypes(), en))
             return false;
         AbstractMember del = new MemberConstructor(c);
@@ -498,10 +517,8 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @param k  The desired delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
      */
-    public static boolean createField(Field f, Engine en, int k)
-            throws EngineMessage {
+    public static boolean createField(Field f, Engine en, int k) {
         AbstractMember del;
         switch (k) {
             case AbstractFactory.FIELD_GET_PRED:

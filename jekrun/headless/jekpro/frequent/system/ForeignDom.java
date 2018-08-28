@@ -1,5 +1,6 @@
 package jekpro.frequent.system;
 
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.*;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.TermAtomic;
@@ -177,12 +178,17 @@ public final class ForeignDom {
      */
     public static void sysSetElemAttr(DomElement dh, String key, Object val)
             throws InterpreterMessage {
-        if (!(val instanceof String)) {
-            Number num = InterpreterMessage.castNumber(val);
-            long x = InterpreterMessage.castLongValue(num);
-            dh.setAttrLong(key, x);
-        } else {
-            dh.setAttr(key, (String) val);
+        try {
+            if (!(val instanceof String)) {
+                Number num = InterpreterMessage.castNumber(val);
+                long x = SpecialEval.castLongValue(num);
+                dh.setAttrLong(key, x);
+            } else {
+                dh.setAttr(key, (String) val);
+            }
+        } catch (ClassCastException x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.representationError(x.getMessage()));
         }
     }
 

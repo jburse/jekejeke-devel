@@ -2,7 +2,7 @@ package jekpro.reference.structure;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;

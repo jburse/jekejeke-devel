@@ -3,6 +3,7 @@ package jekpro.reference.structure;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -38,13 +39,6 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLexical extends AbstractSpecial {
-    public final static int CMP_TYPE_VAR = 0;
-    public final static int CMP_TYPE_DECIMAL = 1;
-    public final static int CMP_TYPE_FLOAT = 2;
-    public final static int CMP_TYPE_INTEGER = 3;
-    public final static int CMP_TYPE_REF = 4;
-    public final static int CMP_TYPE_ATOM = 5;
-    public final static int CMP_TYPE_COMPOUND = 6;
     private final static int SPECIAL_LEX_EQ = 0;
     private final static int SPECIAL_LEX_NQ = 1;
     private final static int SPECIAL_LEX_LS = 2;
@@ -54,9 +48,19 @@ public final class SpecialLexical extends AbstractSpecial {
     private final static int SPECIAL_COMPARE = 6;
     private final static int SPECIAL_LOCALE_COMPARE = 7;
 
+    /* the syntactic equality categories */
     private final static int EQ_TYPE_VAR = 0;
     private final static int EQ_TYPE_ATOMIC = 1;
     private final static int EQ_TYPE_COMPOUND = 2;
+
+    /* the lexical compare categories */
+    public final static int CMP_TYPE_VAR = 0;
+    public final static int CMP_TYPE_DECIMAL = 1;
+    public final static int CMP_TYPE_FLOAT = 2;
+    public final static int CMP_TYPE_INTEGER = 3;
+    public final static int CMP_TYPE_REF = 4;
+    public final static int CMP_TYPE_ATOM = 5;
+    public final static int CMP_TYPE_COMPOUND = 6;
 
     /**
      * <p>Create an compare special.</p>
@@ -75,7 +79,7 @@ public final class SpecialLexical extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public final boolean moniFirst(Engine en)
@@ -133,7 +137,7 @@ public final class SpecialLexical extends AbstractSpecial {
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
                     witmolec = SpecialLexical.comparisonAtom(
                             new EngineLexical(cmp, en)
                                     .localeCompareTerm(temp[2], ref, temp[3], ref), en);
@@ -284,11 +288,11 @@ public final class SpecialLexical extends AbstractSpecial {
                     if (k != 0) return k;
                     return ((SkelVar) alfa).compareTo((SkelVar) beta);
                 case CMP_TYPE_DECIMAL:
-                    return compareDecimal(alfa, beta);
+                    return compareDecimalLexical(alfa, beta);
                 case CMP_TYPE_FLOAT:
-                    return compareFloat(alfa, beta);
+                    return compareFloatLexical(alfa, beta);
                 case CMP_TYPE_INTEGER:
-                    return compareInteger(alfa, beta);
+                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
                 case CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);
@@ -342,36 +346,13 @@ public final class SpecialLexical extends AbstractSpecial {
     }
 
     /**
-     * <p>Compare two Prolog integers lexically.</p>
-     *
-     * @param alfa The first Prolog integer.
-     * @param beta The second Prolog integer.
-     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
-     */
-    public static int compareInteger(Object alfa, Object beta) {
-        if (alfa instanceof Integer) {
-            if (beta instanceof Integer) {
-                return ((Integer) alfa).compareTo((Integer) beta);
-            } else {
-                return -((BigInteger) beta).signum();
-            }
-        } else {
-            if (beta instanceof Integer) {
-                return ((BigInteger) alfa).signum();
-            } else {
-                return ((BigInteger) alfa).compareTo((BigInteger) beta);
-            }
-        }
-    }
-
-    /**
      * <p>Compare two Prolog floats lexically.</p>
      *
      * @param alfa The first Prolog float.
      * @param beta The second Prolog float.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
-    public static int compareFloat(Object alfa, Object beta) {
+    public static int compareFloatLexical(Object alfa, Object beta) {
         if (!(alfa instanceof Double)) {
             if (!(beta instanceof Double)) {
                 return ((Float) alfa).compareTo((Float) beta);
@@ -392,7 +373,7 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param beta The second Prolog decimal.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
-    public static int compareDecimal(Object alfa, Object beta) {
+    public static int compareDecimalLexical(Object alfa, Object beta) {
         if (alfa instanceof Long) {
             if (beta instanceof Long) {
                 return ((Long) alfa).compareTo((Long) beta);

@@ -1,20 +1,21 @@
 package jekpro.reference.bootload;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.CacheModule;
+import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.LookupBase;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
-import matula.util.system.ForeignUri;
+import matula.util.data.MapEntry;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.charset.CharacterCodingException;
 
 /**
  * <p>The foreign predicates for the module path.</p>
@@ -57,36 +58,36 @@ public final class ForeignPath {
     public static final int MASK_FAIL_CHLD = 0x00000200;
 
     /* combined prefix, suffix and failure flags */
-    public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR | MASK_SUFX_TEXT;
-    public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN | MASK_SUFX_BNRY;
-    public static final int MASK_MODL_AUTO = MASK_MODL_LIBR | MASK_MODL_FRGN | MASK_FAIL_CHLD;
-    public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR | MASK_SUFX_RSCS;
-    public static final int MASK_MODL_VERB = MASK_MODL_LIBR | MASK_FAIL_CHLD;
+    public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR |
+            MASK_SUFX_TEXT;
+    public static final int MASK_MODL_FRGN = MASK_PRFX_FRGN |
+            MASK_SUFX_BNRY;
+    public static final int MASK_MODL_RSCS = MASK_PRFX_LIBR |
+            MASK_SUFX_RSCS;
+
+    /* find prefix */
+    public static final int MASK_MODL_AUTO = MASK_MODL_LIBR |
+            MASK_MODL_FRGN | MASK_FAIL_CHLD;
+    public static final int MASK_MODL_VERB = MASK_MODL_LIBR |
+            MASK_FAIL_CHLD;
+
+    /* find key */
+    public static final int MASK_MODL_BASE = MASK_MODL_LIBR |
+            MASK_MODL_FRGN;
 
     /**
-     * <p>Find a write adr.</p>
-     * <p>Resolve the given adr against the base url.</p>
-     * <p>Always canonize the adr before returning the result.</p>
+     * <p>Find a write key according to the auto loader.</p>
      *
      * @param inter The interpreter.
-     * @param adr   The path.
-     * @return The write path.
-     * @throws InterpreterMessage       Validation error.
-     * @throws CharacterCodingException File canonization problem.
-     * @throws MalformedURLException    URL assembling problem.
+     * @param path  The prefixed path.
+     * @return The source key.
+     * @throws IOException IO Error.
      */
-    public static String sysFindWrite(Interpreter inter, String adr)
-            throws IOException, InterpreterMessage {
-        /* make it absolute */
-        if (ForeignUri.sysUriIsRelative(adr)) {
-            String base = (String) inter.getProperty("base_url");
-            if ("".equals(base))
-                throw new InterpreterMessage(
-                        InterpreterMessage.resourceError("baseurl_missing"));
-            adr = ForeignUri.sysUriAbsolute(base, adr);
-        }
-        /* make it canonical */
-        return ForeignUri.sysCanonicalUri(adr);
+    public static String sysFindWrite(Interpreter inter,
+                                      String path)
+            throws IOException {
+        Engine engine = (Engine) inter.getEngine();
+        return LookupBase.findWrite(path, engine);
     }
 
     /**
@@ -98,17 +99,63 @@ public final class ForeignPath {
      * @param opt   The options list.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
+     * @throws IOException        IO Error.
      */
     public static String sysFindPrefix(Interpreter inter,
                                        String path, String key,
                                        Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        return inter.findPrefix(path, key, mask);
+        Engine engine = (Engine) inter.getEngine();
+        AbstractSource scope;
+        try {
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope = engine.store.user;
+            }
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return CacheModule.findPrefix(path, scope, mask);
     }
 
     /**
-     * <p>Find a key according to the auto loader.</p>
+     * <p>Unfind a prefix according to the auto loader.</p>
+     *
+     * @param inter The interpreter.
+     * @param path  The path.
+     * @param key   The call-site.
+     * @param opt   The options list.
+     * @return The prefixed name, or null.
+     * @throws InterpreterMessage Shit happens.
+     * @throws IOException        IO Error.
+     */
+    public static Object sysUnfindPrefix(Interpreter inter,
+                                         String path, String key,
+                                         Object opt)
+            throws InterpreterMessage, IOException {
+        int mask = decodeFindOptions(opt);
+        Object res;
+        Engine engine = (Engine) inter.getEngine();
+        try {
+            AbstractSource scope;
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope = engine.store.user;
+            }
+            res = CacheModule.unfindPrefix(path, scope, mask);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Find a read key according to the auto loader.</p>
      *
      * @param inter The interpreter.
      * @param path  The prefixed path.
@@ -120,27 +167,53 @@ public final class ForeignPath {
     public static String sysFindKey(Interpreter inter,
                                     String path, String key,
                                     Object opt)
-            throws InterpreterMessage {
+            throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        return inter.findKey(path, key, mask);
+        Engine engine = (Engine) inter.getEngine();
+        AbstractSource scope;
+        try {
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope = engine.store.user;
+            }
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return CacheSubclass.findKey(path, scope, mask, engine);
     }
 
-
     /**
-     * <p>Revert a path back to a spec.</p>
+     * <p>Unfind a key according to the auto loader.</p>
      *
      * @param inter The interpreter.
-     * @param path  The path.
+     * @param path  The prefixed path.
      * @param key   The call-site.
      * @param opt   The options list.
-     * @return The spec.
+     * @return The source key.
+     * @throws InterpreterMessage Shit happens.
      */
-    public static Object sysKeyToSpec(Interpreter inter,
-                                    String path, String key,
-                                    Object opt)
-            throws InterpreterMessage {
+    public static Object sysUnfindKey(Interpreter inter,
+                                      String path, String key,
+                                      Object opt)
+            throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        return inter.keyToSpec(path, key, mask);
+        Object res;
+        Engine engine = (Engine) inter.getEngine();
+        try {
+            AbstractSource scope;
+            if (!"".equals(key)) {
+                scope = engine.store.getSource(key);
+                AbstractSource.checkExistentSource(scope, key);
+            } else {
+                scope = engine.store.user;
+            }
+            res = CacheSubclass.unfindKey(path, scope, mask, engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return res;
     }
 
     /**
@@ -161,7 +234,6 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals("package")) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_PRFX_LIBR;
@@ -183,7 +255,6 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals("file_extension")) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_SUFX_TEXT;
@@ -205,7 +276,6 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals("failure")) {
                 Object help = ((TermCompound) temp).getArg(0);
-                InterpreterMessage.checkInstantiated(help);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_FAIL_READ;
@@ -217,17 +287,17 @@ public final class ForeignPath {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_CHLD;
                 } else {
-                    throw new InterpreterMessage(
-                            InterpreterMessage.domainError("fix_option", help));
+                    throw new InterpreterMessage(InterpreterMessage.domainError(
+                            "fix_option", help));
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError("fix_option", temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        "fix_option", temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);
@@ -254,41 +324,57 @@ public final class ForeignPath {
     }
 
     /**
-     * <p>Retrieve the class paths.</p>
+     * <p>Retrieve the class paths along the class paths.</p>
      *
      * @param inter The interpreter.
      * @return The list of class paths.
      */
     public static Object sysGetClassPaths(Interpreter inter)
             throws InterpreterMessage {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         Knowledgebase know = inter.getKnowledgebase();
-        Object end = Knowledgebase.OP_NIL;
+        Object end = lobby.ATOM_NIL;
         while (know != null) {
             String[] paths = know.getClassPaths();
             for (int i = paths.length - 1; i >= 0; i--)
-                end = new TermCompound(Knowledgebase.OP_CONS, paths[i], end);
+                end = new TermCompound(lobby.ATOM_CONS, paths[i], end);
             know = know.getParent();
         }
         return end;
     }
 
     /**
-     * <p>Push a new knowledge base.</p>
+     * <p>Add a file extension.</p>
      *
      * @param inter The interpreter.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
+     * @param ext   The file extension.
+     * @param type  The type.
      */
-    public static void sysPushKB(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        Knowledgebase know = inter.getKnowledgebase();
-        know = new Knowledgebase(know);
-        inter.setKnowledgebase(know);
-        Knowledgebase.initKnowledgebase(inter);
+    public static void sysAddFileExtenstion(Interpreter inter,
+                                            String ext, int type) {
+        inter.getKnowledgebase().addFileExtension(ext, type);
+    }
 
-        Engine engine=(Engine)inter.getEngine();
-        engine.visor.popStack();
-        engine.visor.pushStack(engine.store.user);
+    /**
+     * <p>Retrieve the file extensions along the knowledge bases.</p>
+     *
+     * @param inter The interpreter.
+     * @return The list of class paths.
+     */
+    public static Object sysGetFileExtenstions(Interpreter inter) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Knowledgebase know = inter.getKnowledgebase();
+        Object end = lobby.ATOM_NIL;
+        while (know != null) {
+            MapEntry<String, Integer>[] exts = know.getFileExtensions();
+            for (int i = exts.length - 1; i >= 0; i--) {
+                MapEntry<String, Integer> ext = exts[i];
+                Object val = new TermCompound(Knowledgebase.OP_SUB, ext.key, ext.value);
+                end = new TermCompound(lobby.ATOM_CONS, val, end);
+            }
+            know = know.getParent();
+        }
+        return end;
     }
 
 }

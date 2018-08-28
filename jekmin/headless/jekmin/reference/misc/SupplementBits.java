@@ -1,13 +1,11 @@
 package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -63,57 +61,91 @@ public final class SupplementBits extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case EVALUABLE_BITCOUNT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref);
-                Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(bitCount(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_BITLENGTH:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(bitLength(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_LOWESTSETBIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = Integer.valueOf(lowestSetBit(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_SETBIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                Number beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = setBit(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_CLEARBIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = clearBit(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case EVALUABLE_BITCOUNT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(bitCount(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_BITLENGTH:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(bitLength(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_LOWESTSETBIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(lowestSetBit(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_SETBIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    int x = SpecialEval.castIntValue(alfa);
+                    en.skel = setBit(x, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_CLEARBIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    x = SpecialEval.castIntValue(alfa);
+                    en.skel = clearBit(x, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ArithmeticException x) {
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -173,7 +205,7 @@ public final class SupplementBits extends AbstractSpecial {
     }
 
     /**
-     * <p>The number of bits to represent this number.</p>
+     * <p>The lowest set bit of this number.</p>
      *
      * @param m The operand.
      * @return The result.
@@ -199,55 +231,47 @@ public final class SupplementBits extends AbstractSpecial {
     /* Additional Binary Bitwise Built-in:                              */
     /*      setbit/3: setBit()                                          */
     /*      clearbit/3: clearBit()                                      */
-    /*      new_decimal/3: newDecimal()                                 */
     /********************************************************************/
 
     /**
      * <p>Set a bit.</p>
      *
-     * @param m The first operand.
+     * @param x The first operand.
      * @param n The second operand.
      * @return The result.
-     * @throws EngineMessage Shit happens.
      */
-    private static Number setBit(Number m, Number n) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(m);
-        int k = EngineMessage.castIntValue(m);
+    private static Number setBit(int x, Number n) {
         if (n instanceof Integer) {
-            if (k <= 30) {
-                return Integer.valueOf(n.intValue() | (1 << k));
+            if (x <= 30) {
+                return Integer.valueOf(n.intValue() | (1 << x));
             } else {
                 return TermAtomic.normBigInteger(
-                        BigInteger.valueOf(n.intValue()).setBit(k));
+                        BigInteger.valueOf(n.intValue()).setBit(x));
             }
         } else {
             return TermAtomic.normBigInteger(
-                    ((BigInteger) n).setBit(k));
+                    ((BigInteger) n).setBit(x));
         }
     }
 
     /**
      * <p>Clear a bit.</p>
      *
-     * @param m The first operand.
+     * @param x The first operand.
      * @param n The second operand.
      * @return The result.
-     * @throws EngineMessage Shit happens.
      */
-    private static Number clearBit(Number m, Number n)
-            throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(m);
-        int k = EngineMessage.castIntValue(m);
+    private static Number clearBit(int x, Number n) {
         if (n instanceof Integer) {
-            if (k <= 30) {
-                return Integer.valueOf(n.intValue() & ~(1 << k));
+            if (x <= 30) {
+                return Integer.valueOf(n.intValue() & ~(1 << x));
             } else {
                 return TermAtomic.normBigInteger(
-                        BigInteger.valueOf(n.intValue()).clearBit(k));
+                        BigInteger.valueOf(n.intValue()).clearBit(x));
             }
         } else {
             return TermAtomic.normBigInteger(
-                    ((BigInteger) n).clearBit(k));
+                    ((BigInteger) n).clearBit(x));
         }
     }
 

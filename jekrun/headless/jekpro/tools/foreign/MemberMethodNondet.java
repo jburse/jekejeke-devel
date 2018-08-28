@@ -7,13 +7,11 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.term.*;
 
 import java.lang.reflect.Method;
 
@@ -113,50 +111,66 @@ final class MemberMethodNondet extends AbstractMember {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
 
-        ChoiceForeign co = new ChoiceForeign(en.choices);
-        co.setGoalSkel((Goal) en.contskel);
-        co.setGoalDisplay(en.contdisplay);
-
+        CallOut co = new CallOut();
         AbstractBind mark = en.bind;
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
         Object[] args = convertArgs(temp, ref, en, co);
-        co.setFirst(true);
+        co.flags |= CallOut.MASK_CALL_FIRST;
         for (; ; ) {
-            co.setCleanup(false);
-            co.setRetry(false);
-            co.setSpecial(false);
-            co.setCutter(false);
             Object res = invokeMethod(method, obj, args);
-            res = Types.normJava(encoderet, res);
-            if (res == null) {
-                return false;
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                res = Types.normJava(encoderet, res);
+            } else {
+                res = noretNormJava(res);
             }
-            if (res == AbstractSkel.VOID_OBJ ||
-                    en.unifyTerm(((SkelCompound) temp).args[
+            if (res == null)
+                return false;
+            Display d = AbstractTerm.getDisplay(res);
+            if (res != AbstractSkel.VOID_OBJ &&
+                    !en.unifyTerm(((SkelCompound) temp).args[
                                     ((SkelCompound) temp).args.length - 1], ref,
-                            AbstractTerm.getSkel(res), AbstractTerm.getDisplay(res))) {
-                if (co.getRetry()) {
-                    co.setDelegate(this);
-                    co.setReceiver(obj);
-                    co.setArguments(args);
-                    co.setMark(mark);
-                    en.choices = co;
+                            AbstractTerm.getSkel(res), d)) {
+                if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
+                    return false;
+
+                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                    en.skel = null;
+                    en.releaseBind(mark);
+                    if (en.skel != null)
+                        throw (EngineException) en.skel;
+                }
+                co.flags &= ~CallOut.MASK_CALL_FIRST;
+
+                co.flags &= ~CallOut.MASK_CALL_RETRY;
+                co.flags &= ~CallOut.MASK_CALL_SPECI;
+                co.flags &= ~CallOut.MASK_CALL_CUTTR;
+            } else {
+                Object check = AbstractTerm.getMarker(res);
+                if (check != null && ((MutableBit) check).getBit()) {
+                    d.remTab(en);
+                    ((MutableBit) check).setBit(false);
+                }
+                if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
+                    ChoiceForeign cp = new ChoiceForeign(en.choices);
+                    cp.co = co;
+                    cp.del = this;
+                    cp.obj = obj;
+                    cp.args = args;
+                    cp.mark = mark;
+                    cp.goalskel = en.contskel;
+                    cp.goaldisplay = en.contdisplay;
+                    en.choices = cp;
                     en.number++;
                 }
                 return en.getNext();
             }
-            if (!co.getRetry()) {
-                return false;
-            }
-            if (!co.getSpecial()) {
-                en.skel = null;
-                en.releaseBind(mark);
-                if (en.skel != null)
-                    throw (EngineException) en.skel;
-            }
-            co.setFirst(false);
         }
     }
 

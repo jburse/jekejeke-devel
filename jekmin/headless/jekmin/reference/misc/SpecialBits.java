@@ -1,13 +1,10 @@
 package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 
 import java.math.BigInteger;
@@ -39,10 +36,10 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialBits extends AbstractSpecial {
-    private final static int SPECIAL_SYS_TEST_BIT = 0;
+    private final static int SPECIAL_TESTBIT = 0;
 
     /**
-     * <p>Create a additional bitwise operations special.</p>
+     * <p>Create a additional bitwise predicates.</p>
      *
      * @param i The id.
      */
@@ -58,27 +55,28 @@ public final class SpecialBits extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
-        switch (id) {
-            case SPECIAL_SYS_TEST_BIT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                Number beta = EngineMessage.castInteger(en.skel, en.display);
-                if (!sysTestBit(alfa, beta))
-                    return false;
-                return en.getNextRaw();
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_TESTBIT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    Number alfa = SpecialEval.derefAndCastInteger(temp[0], ref);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    int k = SpecialEval.castIntValue(alfa);
+                    Number beta = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    if (!sysTestBit(k, beta))
+                        return false;
+                    return en.getNextRaw();
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -91,14 +89,11 @@ public final class SpecialBits extends AbstractSpecial {
     /**
      * <p>Test a bit.</p>
      *
-     * @param a The first operand.
+     * @param k The first operand.
      * @param b The second operand.
      * @return The result.
-     * @throws EngineMessage Shit happens.
      */
-    private static boolean sysTestBit(Number a, Number b) throws EngineMessage {
-        EngineMessage.checkNotLessThanZero(a);
-        int k = EngineMessage.castIntValue(a);
+    private static boolean sysTestBit(int k, Number b) {
         if (b instanceof Integer) {
             if (k <= 31) {
                 return (b.intValue() & (1 << k)) != 0;

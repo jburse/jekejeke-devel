@@ -1,8 +1,10 @@
 package jekpro.model.molec;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.LookupBase;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
@@ -44,9 +46,7 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CacheSubclass extends AbstractCache {
-    public final static char OP_CHAR_OS = '/';
     public final static char OP_CHAR_SYN = '$';
-    public final static String OP_STRING_OS = "/";
     public final static String OP_STRING_SYN = "$";
 
     String fun;
@@ -55,60 +55,7 @@ public final class CacheSubclass extends AbstractCache {
     boolean res;
 
     /**************************************************************/
-    /* Home Module                                                */
-    /**************************************************************/
-
-    /**
-     * <p>Check whether the path is locale.</p>
-     *
-     * @param path The path.
-     * @return True if path is locale, otherwise false.
-     */
-    public static boolean isLocal(String path) {
-        int k = path.lastIndexOf(OP_CHAR_OS);
-        k = path.indexOf(OP_CHAR_SYN, k + 1);
-        return (k != -1);
-    }
-
-    /**
-     * <p>Separate the home from the local path.</p>
-     *
-     * @param path The local path.
-     * @return The home.
-     */
-    public static String sepHome(String path) {
-        int k = path.lastIndexOf(OP_CHAR_OS);
-        return path.substring(0, path.indexOf(OP_CHAR_SYN, k + 1));
-    }
-
-    /**
-     * <p>Separate the rest from the local path.</p>
-     *
-     * @param path The local path.
-     * @return The rest.
-     */
-    public static String sepRest(String path) {
-        int k = path.lastIndexOf(OP_CHAR_OS);
-        return path.substring(path.indexOf(OP_CHAR_SYN, k + 1) + 1);
-    }
-
-    /**
-     * <p>Compose a local path from a parent and a child.</p>
-     *
-     * @param par   The parent.
-     * @param child The child.
-     * @return The local path.
-     */
-    public static String composeLocal(String par, String child) {
-        StringBuilder buf = new StringBuilder();
-        buf.append(par);
-        buf.append(OP_CHAR_SYN);
-        buf.append(child);
-        return buf.toString();
-    }
-
-    /**************************************************************/
-    /* Lookup Base                                                */
+    /* Lookup Key                                                 */
     /**************************************************************/
 
     /**
@@ -121,10 +68,11 @@ public final class CacheSubclass extends AbstractCache {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static AbstractSource lookupBase(String mod,
-                                            AbstractSource scope,
-                                            Engine en)
+    public static AbstractSource lookupKey(String mod,
+                                           AbstractSource scope,
+                                           Engine en)
             throws EngineMessage, EngineException {
+
         if (Branch.OP_USER.equals(mod))
             return scope.getStore().user;
 
@@ -133,14 +81,16 @@ public final class CacheSubclass extends AbstractCache {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
         en.enginecopy = null;
         en.enginewrap = null;
-        mod = mod.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
-        String key = findKey(mod, scope, ForeignPath.MASK_MODL_AUTO);
-
+        mod = mod.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+        String key;
+        try {
+            key = findKey(mod, scope, ForeignPath.MASK_MODL_BASE, null);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
         if (key == null)
             throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_SOURCE_SINK,
-                    new SkelAtom(mod)));
-
+                    EngineMessage.OP_EXISTENCE_VERBATIM, new SkelAtom(mod)));
         return opts.makeLoad(scope, key, en);
     }
 
@@ -162,7 +112,7 @@ public final class CacheSubclass extends AbstractCache {
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
             String s = base.getFullName();
-            if (s == null)
+            if (Branch.OP_USER.equals(s))
                 return false;
             if (fun.equals(s))
                 return true;
@@ -205,7 +155,7 @@ public final class CacheSubclass extends AbstractCache {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s == null)
+                if (Branch.OP_USER.equals(s))
                     continue;
                 if (fun.equals(s))
                     return true;
@@ -243,7 +193,7 @@ public final class CacheSubclass extends AbstractCache {
             for (; ; ) {
                 if (temp == null) {
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = lookupBase(sa.fun, src, en);
+                    AbstractSource base = lookupKey(sa.fun, src, en);
                     Object basevers = base.importvers;
                     boolean flag = lookupChain(fun, base);
 
@@ -265,7 +215,7 @@ public final class CacheSubclass extends AbstractCache {
                         boolean flag;
                         if (ca.basevers != ca.base.importvers) {
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = lookupBase(sa.fun, src, en);
+                            AbstractSource base = lookupKey(sa.fun, src, en);
                             Object basevers = base.importvers;
                             flag = lookupChain(fun, base);
 
@@ -307,7 +257,7 @@ public final class CacheSubclass extends AbstractCache {
         for (; ; ) {
             if (temp == null) {
                 AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                AbstractSource base = lookupBase(sa.fun, src, en);
+                AbstractSource base = lookupKey(sa.fun, src, en);
                 Object basevers = base.importvers;
 
                 CacheSubclass ca = new CacheSubclass();
@@ -328,7 +278,7 @@ public final class CacheSubclass extends AbstractCache {
                     AbstractSource base;
                     if (ca.basevers != ca.base.importvers) {
                         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                        base = lookupBase(sa.fun, src, en);
+                        base = lookupKey(sa.fun, src, en);
                         Object basevers = base.importvers;
 
                         ca.fun = null;
@@ -356,48 +306,42 @@ public final class CacheSubclass extends AbstractCache {
      * @param path  The path.
      * @param scope The source, not null.
      * @param mask  The mask.
+     * @param en    The engine, or null.
      * @return The source key, or null.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException IO Error.
      */
-    public static String findKey(String path, AbstractSource scope, int mask)
-            throws EngineMessage {
-        try {
-            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                if (ForeignUri.sysUriIsRelative(path)) {
-                    String res = LookupChild.findChildKey(path, scope);
-                    if (res != null)
-                        return res;
-                }
-            }
-
-            if (isLocal(path)) {
-                String res = sepHome(path);
-                res = findKeyParent(res, scope, mask);
-                if (res == null)
-                    return null;
-                path = sepRest(path);
-                return composeLocal(res, path);
-            } else {
-                return findKeyParent(path, scope, mask);
-            }
-
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
+    public static String findKey(String path,
+                                 AbstractSource scope,
+                                 int mask,
+                                 Engine en)
+            throws IOException {
+        if (isLocal(path)) {
+            String res = sepHome(path);
+            res = findKeyParent(res, scope, mask, en);
+            if (res != null)
+                return composeLocal(res, sepRest(path));
+        } else {
+            String res = findKeyParent(path, scope, mask, en);
+            if (res != null)
+                return res;
         }
+        return null;
     }
 
     /**
      * <p>Find a key according in the best way.</p>
      *
-     * @param path  The path.
-     * @param src   The source, not null.
-     * @param mask  The mask.
+     * @param path The path.
+     * @param src  The call-site, not null.
+     * @param mask The mask.
+     * @param en   The engine, or null.
      * @return The source key.
      * @throws IOException Shit happens.
      */
-    private static String findKeyParent(String path,
-                                        AbstractSource src,
-                                        int mask)
+    public static String findKeyParent(String path,
+                                       AbstractSource src,
+                                       int mask,
+                                       Engine en)
             throws IOException {
 
         /* special case */
@@ -426,10 +370,10 @@ public final class CacheSubclass extends AbstractCache {
 
         /* failure read */
         if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
-            String key = LookupRead.findReadSuffix(path, src, mask);
+            String key = LookupBase.findReadSuffix(path, src, mask, en);
             if (key != null)
                 return key;
-            key = LookupRead.findRead(path, src);
+            key = LookupBase.findRead(path, src, en);
             if (key != null)
                 return key;
         }
@@ -448,59 +392,55 @@ public final class CacheSubclass extends AbstractCache {
      * @param path  The absolute or relative path.
      * @param scope The call-site, not null.
      * @param mask  The mask.
+     * @param en    The engine.
      * @return The path without suffix.
      */
-    public static Object unfindKey(String path, AbstractSource scope, int mask)
-            throws EngineMessage {
-        try {
-            if ((mask & ForeignPath.MASK_FAIL_CHLD) != 0) {
-                String res = LookupChild.unfindChildSuffix(path, scope);
-                if (res != null)
-                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_VERBATIM),
-                            new SkelAtom(res));
-            }
-
-            if (isLocal(path)) {
-                String res = sepHome(path);
-                path = sepRest(path);
-                Object temp = unfindKeyParent(res, scope, mask);
-                if (temp instanceof SkelAtom) {
-                    SkelAtom sa = (SkelAtom) temp;
-                    path = composeLocal(sa.fun, path);
-                    return new SkelAtom(path);
-                } else if (temp instanceof SkelCompound) {
-                    SkelCompound sc = (SkelCompound) temp;
-                    path = composeLocal(((SkelAtom) sc.args[0]).fun, path);
-                    return new SkelCompound(sc.sym, new SkelAtom(path));
-                } else {
-                    throw new IllegalArgumentException("illegal key");
-                }
+    public static Object unfindKey(String path,
+                                   AbstractSource scope,
+                                   int mask,
+                                   Engine en)
+            throws EngineMessage, IOException {
+        if (isLocal(path)) {
+            String res = sepHome(path);
+            path = sepRest(path);
+            Object temp = unfindKeyParent(res, scope, mask, en);
+            if (temp instanceof SkelAtom) {
+                SkelAtom sa = (SkelAtom) temp;
+                path = composeLocal(sa.fun, path);
+                return new SkelAtom(path);
+            } else if (temp instanceof SkelCompound) {
+                SkelCompound sc = (SkelCompound) temp;
+                path = composeLocal(((SkelAtom) sc.args[0]).fun, path);
+                return new SkelCompound(sc.sym, new SkelAtom(path));
             } else {
-                return unfindKeyParent(path, scope, mask);
+                throw new IllegalArgumentException("illegal spec");
             }
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
+        } else {
+            return unfindKeyParent(path, scope, mask, en);
         }
     }
 
     /**
      * <p>Unfind a key in the best way.</p>
      *
-     * @param path  The absolute or relative path.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param path The absolute or relative path.
+     * @param src  The call-site, not null.
+     * @param mask The mask.
+     * @param en   The engine or null.
      * @return The path without suffix.
      * @throws IOException Shit happens.
      */
-    public static Object unfindKeyParent(String path,
-                                         AbstractSource src,
-                                         int mask)
+    private static Object unfindKeyParent(String path,
+                                          AbstractSource src,
+                                          int mask,
+                                          Engine en)
             throws IOException, EngineMessage {
 
         /* special case */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (Branch.OP_USER.equals(path))
-                return new SkelAtom(path);
+                return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
+                        new SkelAtom(path));
         }
 
         /* foreign .class */
@@ -514,15 +454,9 @@ public final class CacheSubclass extends AbstractCache {
             return new SkelAtom(path);
         }
 
-        String key = LookupRead.unfindReadSuffix(path, src, mask);
+        String key = LookupBase.unfindReadSuffix(path, src, mask, en);
         if (key != null)
             path = key;
-
-        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
-            String res = LookupRead.unfindRead(path, src);
-            if (res != null)
-                return new SkelAtom(res);
-        }
 
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
@@ -532,7 +466,67 @@ public final class CacheSubclass extends AbstractCache {
                         new SkelAtom(res));
         }
 
+        /* relative */
+        if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
+            String res = LookupBase.unfindRead(path, src, en);
+            if (res != null)
+                return new SkelAtom(res);
+        }
+
         return new SkelAtom(path);
+    }
+
+    /**************************************************************/
+    /* Home Module                                                */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether the path is locale.</p>
+     *
+     * @param path The path.
+     * @return True if path is locale, otherwise false.
+     */
+    public static boolean isLocal(String path) {
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
+        k = path.indexOf(OP_CHAR_SYN, k + 1);
+        return (k != -1);
+    }
+
+    /**
+     * <p>Separate the home from the local path.</p>
+     *
+     * @param path The local path.
+     * @return The home.
+     */
+    public static String sepHome(String path) {
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
+        return path.substring(0, path.indexOf(OP_CHAR_SYN, k + 1));
+    }
+
+    /**
+     * <p>Separate the rest from the local path.</p>
+     *
+     * @param path The local path.
+     * @return The rest.
+     */
+    public static String sepRest(String path) {
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
+        return path.substring(path.indexOf(OP_CHAR_SYN, k + 1) + 1);
+    }
+
+    /**
+     * <p>Compose a local path from a parent and a child.</p>
+     *
+     * @param par   The parent.
+     * @param child The child.
+     * @return The local path.
+     */
+    public static String composeLocal(String par, String child) {
+        StringBuilder buf = new StringBuilder();
+        buf.append(par);
+        buf.append(OP_CHAR_SYN);
+        buf.append(child);
+        return buf.toString();
     }
 
 }

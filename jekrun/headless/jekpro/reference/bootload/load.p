@@ -46,9 +46,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/bootload))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 :- op(1150, fy, override).
@@ -93,9 +93,9 @@ ensure_loaded(Path) :-
 consult(Path) :-
    var(Path),
    throw(error(instantiation_error,_)).
-consult(X) :-
-   sys_eq(X, user), !,
-   sys_import_file(X, []).
+consult(user) :- !,
+   sys_set_context_property(U, '', user),
+   sys_import_file(U, []).
 consult(Path) :-
    absolute_file_name(Path, Pin),
    sys_load_file(Pin, [sys_link(use_module)]).
@@ -143,9 +143,8 @@ unload_file(Path) :-
  */
 % make
 make :-
-   sys_get_context(here, C),
-   reset_atom_property(user, sys_context(C), X),
-   sys_load_file(X, [condition(on)]).
+   sys_set_context_property(U, '', user),
+   sys_load_file(U, [condition(on)]).
 :- set_predicate_property(make/0, visible(public)).
 
 /**
@@ -154,9 +153,8 @@ make :-
  */
 % rebuild
 rebuild :-
-   sys_get_context(here, C),
-   reset_atom_property(user, sys_context(C), X),
-   sys_load_file(X, []).
+   sys_set_context_property(U, '', user),
+   sys_load_file(U, []).
 :- set_predicate_property(rebuild/0, visible(public)).
 
 /**
@@ -232,9 +230,9 @@ sys_discontiguous(D) :-
    sys_discontiguous(I),
    call(D).
 sys_discontiguous(I) :-
-   sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
-   sys_get_context(J, C),
+   sys_context_property(J, C),
+   sys_neutral_predicate(I),
    set_predicate_property(I, (discontiguous C)).
 :- set_predicate_property(sys_discontiguous/1, visible(private)).
 
@@ -264,16 +262,16 @@ sys_multifile(D) :-
    call(D).
 sys_multifile(I) :-
    sys_make_indicator(F, _, I),
-   sys_get_context(F, C),
+   sys_context_property(F, C),
    sys_once(sys_and(predicate_property(I,sys_usage(D)),
                sys_not(sys_eq(C,D)))),
    sys_not(predicate_property(I,sys_multifile(D))),
    throw(error(permission_error(promote,multifile,I),_)).
 sys_multifile(I) :-
-   sys_neutral_predicate(I),
    sys_make_indicator(J, _, I),
+   sys_context_property(J, C),
+   sys_neutral_predicate(I),
    set_predicate_property(I, multifile),
-   sys_get_context(J, C),
    set_predicate_property(I, sys_multifile(C)).
 :- set_predicate_property(sys_multifile/1, visible(private)).
 
@@ -281,10 +279,10 @@ sys_multifile(I) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((discontiguous D), I) :-
    sys_declaration_indicator(D, I).

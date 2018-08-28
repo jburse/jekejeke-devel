@@ -45,9 +45,10 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- package(library(jekpro/frequent/basic)).
 :- use_package(foreign(jekpro/frequent/basic)).
 
-:- module(user, []).
+:- module(array, []).
 
 /**
  * foreign_dimension(I, C):

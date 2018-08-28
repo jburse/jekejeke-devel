@@ -1,16 +1,14 @@
 package jekpro.reference.structure;
 
 import jekpro.model.molec.AbstractBind;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.*;
 import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
@@ -64,19 +62,22 @@ public final class ForeignAtom {
     /**
      * <p>Convert a string either to a char or code list.</p>
      *
-     * @param str The string.
-     * @param rep The representation.
+     * @param inter The interpreter.
+     * @param str   The string.
+     * @param rep   The representation.
      * @return The list.
      */
-    public static Object sysAtomToList(String str, int rep) {
-        Object res = Knowledgebase.OP_NIL;
+    public static Object sysAtomToList(Interpreter inter,
+                                       String str, int rep) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Object res = lobby.ATOM_NIL;
         int i = str.length();
         while (i > 0) {
             int ch = str.codePointBefore(i);
             Object val;
             switch (rep) {
                 case REP_CHARS:
-                    val = new String(Character.toChars(ch));
+                    val = SkelAtom.valueOf(ch);
                     break;
                 case REP_CODES:
                     val = Integer.valueOf(ch);
@@ -85,7 +86,7 @@ public final class ForeignAtom {
                     throw new IllegalArgumentException("illegal rep");
             }
             i -= Character.charCount(ch);
-            res = new TermCompound(Knowledgebase.OP_CONS, val, res);
+            res = new TermCompound(lobby.ATOM_CONS, val, res);
         }
         return res;
     }
@@ -96,10 +97,11 @@ public final class ForeignAtom {
      * @param list The list.
      * @param rep  The representation.
      * @return The string.
+     * @throws ClassCastException Validation error.
      * @throws InterpreterMessage Validation error.
      */
     public static String sysListToAtom(Object list, int rep)
-            throws InterpreterMessage {
+            throws ClassCastException, InterpreterMessage {
         StringBuilder buf = new StringBuilder();
         while (list instanceof TermCompound &&
                 ((TermCompound) list).getArity() == 2 &&
@@ -107,24 +109,23 @@ public final class ForeignAtom {
                         Knowledgebase.OP_CONS)) {
             TermCompound tc = (TermCompound) list;
             Object elem = tc.getArg(0);
-            InterpreterMessage.checkInstantiated(elem);
+            int n;
             switch (rep) {
                 case REP_CHARS:
                     String fun = InterpreterMessage.castString(elem);
-                    int n = InterpreterMessage.castCharacter(fun);
-                    buf.appendCodePoint(n);
+                    n = SpecialUniv.castCharacter(fun);
                     break;
                 case REP_CODES:
                     Number num = InterpreterMessage.castInteger(elem);
-                    InterpreterMessage.checkCharacterCode(num.intValue());
-                    buf.appendCodePoint(num.intValue());
+                    n = SpecialEval.castCodePoint(num);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal rep");
             }
+            buf.appendCodePoint(n);
             list = tc.getArg(1);
         }
-        if (list.equals(Knowledgebase.OP_NIL)) {
+        if (list.equals(Foyer.OP_NIL)) {
             /* do nothing */
         } else {
             InterpreterMessage.checkInstantiated(list);
@@ -139,11 +140,11 @@ public final class ForeignAtom {
      *
      * @param str The char.
      * @return The code.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      */
     public static int sysCharToCode(String str)
-            throws InterpreterMessage {
-        return InterpreterMessage.castCharacter(str);
+            throws ClassCastException {
+        return SpecialUniv.castCharacter(str);
     }
 
     /**
@@ -151,12 +152,12 @@ public final class ForeignAtom {
      *
      * @param val The code.
      * @return The char.
-     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      */
-    public static String sysCodeToChar(int val)
-            throws InterpreterMessage {
-        InterpreterMessage.checkCharacterCode(val);
-        return new String(Character.toChars(val));
+    public static String sysCodeToChar(Integer val)
+            throws ClassCastException {
+        int n = SpecialEval.castCodePoint(val);
+        return SkelAtom.valueOf(n);
     }
 
     /****************************************************************/
@@ -201,13 +202,12 @@ public final class ForeignAtom {
      * @param to    The to word index.
      * @param cout  The codepoint position.
      * @return The word position.
-     * @throws InterpreterMessage   Shit hapens.
      * @throws InterpreterException Shit hapens.
      */
     public static Integer sysAtomWordPos(Interpreter inter, CallOut co,
                                          String str, int cfrom, int from,
                                          int to, AbstractTerm cout)
-            throws InterpreterMessage, InterpreterException {
+            throws InterpreterException {
         AtomCursor ac;
         if (co.getFirst()) {
             ac = new AtomCursor(str, cfrom, from, to);
@@ -342,12 +342,7 @@ public final class ForeignAtom {
                                 CodeType.ISO_CODETYPE.resolveDouble(str.substring(k),
                                         CodeType.LINE_SINGLE, k + offset), CodeType.LINE_SINGLE,
                                 false, k + offset, CodeType.ISO_CODETYPE);
-                        int res;
-                        try {
-                            res = EngineMessage.castCharacter(val);
-                        } catch (EngineMessage x) {
-                            throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, k + offset);
-                        }
+                        int res = SpecialUniv.castCharacter(val);
                         return Integer.valueOf(res);
                     case ScannerToken.PREFIX_REFERENCE:
                         throw new ScannerError(ERROR_SYNTAX_REF_NOT_READABLE, k + offset);
@@ -358,7 +353,7 @@ public final class ForeignAtom {
                     case ScannerToken.PREFIX_FLOAT32:
                         k += Character.charCount(ch);
                         val = prepareParts(k, str, offset, mask);
-                        return TermAtomic.guardFloat(Float.valueOf(val));
+                        return TermAtomic.makeFloat(Float.parseFloat(val));
                     default:
                         break;
                 }
@@ -368,13 +363,15 @@ public final class ForeignAtom {
                 j += Character.charCount(ScannerToken.SCAN_PERIOD);
                 if (j < str.length() && Character.isDigit(str.codePointAt(j))) {
                     String val = prepareParts(0, str, offset, mask);
-                    return TermAtomic.guardDouble(Double.valueOf(val));
+                    return TermAtomic.makeDouble(Double.parseDouble(val));
                 }
             }
             String val = prepareUnderscore(0, str, offset, mask);
             if (val.length() < 19)
                 return TermAtomic.normBigInteger(Long.parseLong(val));
             return TermAtomic.normBigInteger(new BigInteger(val));
+        } catch (ClassCastException x) {
+            throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, str.length() + offset);
         } catch (ArithmeticException x) {
             throw new ScannerError(ERROR_SYNTAX_NUMBER_OVERFLOW, str.length() + offset);
         } catch (NumberFormatException x) {
@@ -567,7 +564,7 @@ public final class ForeignAtom {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public static Object sysParseTerm(Interpreter inter, String s)
+    public static AbstractTerm sysParseTerm(Interpreter inter, String s)
             throws InterpreterMessage, InterpreterException {
         return inter.parseTerm(s);
     }

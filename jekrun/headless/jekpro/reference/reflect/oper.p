@@ -70,9 +70,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 /**
@@ -171,6 +171,18 @@ current_oper(I) :-
    var(I), !,
    sys_current_oper(L),
    sys_member(I, L).
+current_oper(postfix(I)) :-
+   var(I), !,
+   sys_current_oper(L),
+   sys_member(postfix(I), L).
+current_oper(prefix(I)) :-
+   var(I), !,
+   sys_current_oper(L),
+   sys_member(prefix(I), L).
+current_oper(infix(I)) :-
+   var(I), !,
+   sys_current_oper(L),
+   sys_member(infix(I), L).
 current_oper(I) :-
    sys_current_oper_chk(I).
 :- set_predicate_property(current_oper/1, visible(public)).
@@ -224,10 +236,10 @@ oper_property(I, R) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator(op(_,M,_), _) :-
    var(M),

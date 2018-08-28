@@ -1,14 +1,13 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
-import jekpro.model.rope.NamedDistance;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.ForeignAtom;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.proxy.BranchAPI;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
@@ -16,7 +15,6 @@ import matula.util.regex.CompLang;
 import matula.util.regex.ScannerToken;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 
 /**
@@ -30,9 +28,28 @@ import java.io.Writer;
  * <li><b>level:</b> Initial operator level.</li>
  * <li><b>spez:</b> SPEZ_OPLE, SPEZ_LEFT, SPEZ_TERM and SPEZ_GOAL control.</li>
  * </ul>
- *
- * @author Copyright 1985-2016, XLOG Technologies GmbH, Switzerland
- * @version Jekejeke Prolog 0.9.2 (a fast and small prolog interpreter)
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class PrologWriter {
     public final static int SPACES = 3;
@@ -55,9 +72,6 @@ public class PrologWriter {
     public final static int FLAG_CMMT = 0x00000400;
     public final static int FLAG_STMT = 0x00000800;
 
-    /* only read opts */
-    public final static int FLAG_SING = 0x00001000;
-
     public final static int SPEZ_OPLE = 0x00000001;
     public final static int SPEZ_LEFT = 0x00000002;
     public final static int SPEZ_META = 0x00000004;
@@ -78,7 +92,7 @@ public class PrologWriter {
     private int lch = -1;
     public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
     public int lev = Operator.LEVEL_HIGH;
-    private MapHashLink<TermVar, NamedDistance> printmap;
+    private MapHashLink<Object, NamedDistance> printmap;
     public int spez;
     public int offset;
     public int shift;
@@ -236,7 +250,7 @@ public class PrologWriter {
      *
      * @param v The var map.
      */
-    public void setPrintMap(MapHashLink<TermVar, NamedDistance> v) {
+    public void setPrintMap(MapHashLink<Object, NamedDistance> v) {
         printmap = v;
     }
 
@@ -303,7 +317,7 @@ public class PrologWriter {
             if (nsa.fun.equals(SpecialQuali.OP_COLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
-                    String fun = BranchAPI.classOrProxyName(mod);
+                    String fun = SpecialProxy.classOrProxyName(mod);
                     if (fun != null)
                         sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
                 } else if (mod instanceof SkelAtom) {
@@ -313,9 +327,9 @@ public class PrologWriter {
             } else if (nsa.fun.equals(SpecialQuali.OP_COLONCOLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
-                    mod = BranchAPI.refClassOrProxy(mod);
+                    mod = SpecialProxy.refClassOrProxy(mod);
                     if (mod != null) {
-                        String fun = BranchAPI.classOrProxyName(mod);
+                        String fun = SpecialProxy.classOrProxyName(mod);
                         if (fun != null) {
                             sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
                             k++;
@@ -504,8 +518,8 @@ public class PrologWriter {
         if (!CodeType.ISO_CODETYPE.wordBreak1(lch, ch) &&
                 !CodeType.ISO_CODETYPE.wordBreak2(lch, ch)) {
             append(' ');
-        } else if (CodeType.ISO_CODETYPE.getQuotes().indexOf(lch) != -1 &&
-                lch == ch) {
+        } else if (lch == ch &&
+                CodeType.ISO_CODETYPE.getQuotes().indexOf(lch) != -1) {
             append(' ');
         }
     }
@@ -617,7 +631,8 @@ public class PrologWriter {
             throws IOException, EngineMessage, EngineException {
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
                 (spez & SPEZ_OPLE) != 0) {
-            Operator op = OperatorSearch.getOper(term, Operator.TYPE_PREFIX, engine);
+            Operator op = OperatorSearch.getOper(term.scope, term.fun,
+                    Operator.TYPE_PREFIX, engine);
             if (op != null) {
                 if ((spez & SPEZ_FUNC) != 0)
                     append(' ');
@@ -696,7 +711,7 @@ public class PrologWriter {
         if (!CompLang.ISO_COMPLANG.relevantToken(fun))
             return true;
         if (!CodeType.ISO_CODETYPE.singleToken(fun) &&
-                !fun.equals(PrologReader.OP_SET) &&
+                !fun.equals(Foyer.OP_SET) &&
                 !fun.equals(Foyer.OP_NIL))
             return true;
         return false;
@@ -874,13 +889,40 @@ public class PrologWriter {
                 (backspez & SPEZ_META) != 0 &&
                 (backspez & SPEZ_EVAL) == 0)
             append(' ');
-        if (sc.args.length > 1 && sc.sym.fun.equals(Foyer.OP_NIL)) {
-            writeIndex(sc, ref, cp, decl, backshift, backspez, backoffset, mod, nsa);
+        if (isIndex(sc)) {
+            writeIndex(sc, ref, cp, decl,
+                    backshift, backspez, backoffset, mod, nsa);
+        } else if (isStruct(sc)) {
+            writeStruct(sc, ref, cp, decl,
+                    backshift, backspez, backoffset, mod, nsa);
         } else {
             String t = atomQuoted(sc.sym, true);
             safeSpace(t);
             append(t);
         }
+    }
+
+    /**
+     * <p>Check whether the compound is an index.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is an index, otherwise false.
+     */
+    protected static boolean isIndex(SkelCompound sc) {
+        return sc.args.length > 1 &&
+                sc.sym.fun.equals(Foyer.OP_INDEX);
+    }
+
+    /**
+     * <p>Check whether the compound is a struct.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is a struct, otherwise false.
+     */
+    protected static boolean isStruct(SkelCompound sc) {
+        return sc.args.length >= 1 &&
+                sc.args.length <= 2 &&
+                sc.sym.fun.equals(Foyer.OP_STRUCT);
     }
 
     /********************************************************/
@@ -907,7 +949,7 @@ public class PrologWriter {
         } else if (term instanceof SkelVar) {
             SkelVar sv = (SkelVar) term;
             if (printmap != null) {
-                TermVar key = new TermVar(sv, ref);
+                Object key = AbstractTerm.createMolec(sv, ref);
                 NamedDistance nd = printmap.get(key);
                 if (nd != null) {
                     String t = variableQuoted(nd.getName());
@@ -973,7 +1015,7 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        append(PrologReader.OP_LBRACK);
+        append(PrologReader.OP_LBRACKET);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1026,7 +1068,7 @@ public class PrologWriter {
         spez = backspez;
         offset = backoffset;
         shift = backshift;
-        append(PrologReader.OP_RBRACK);
+        append(PrologReader.OP_RBRACKET);
     }
 
     /**
@@ -1072,14 +1114,14 @@ public class PrologWriter {
             if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, false, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, false, false, engine) : null);
                 nsa2 = sc.sym;
             } else if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, true, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, true, false, engine) : null);
                 nsa2 = sc.sym;
             } else {
                 mod2 = null;
@@ -1094,7 +1136,7 @@ public class PrologWriter {
     }
 
     /**
-     * <p>Write a compound.</p>
+     * <p>Write an array index.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param sc  The term.
@@ -1109,7 +1151,7 @@ public class PrologWriter {
                               int backshift, int backspez, int backoffset,
                               Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
-        append(PrologReader.OP_LBRACK);
+        append(PrologReader.OP_LBRACKET);
         int j = 1;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -1130,14 +1172,14 @@ public class PrologWriter {
             if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, false, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, false, false, engine) : null);
                 nsa2 = sc.sym;
             } else if (j == 1 &&
                     sc.args.length == 2 &&
                     sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                        ref, true, engine) : null);
+                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                        ref, true, false, engine) : null);
                 nsa2 = sc.sym;
             } else {
                 mod2 = null;
@@ -1145,7 +1187,34 @@ public class PrologWriter {
             }
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
         }
-        append(PrologReader.OP_RBRACK);
+        append(PrologReader.OP_RBRACKET);
+    }
+
+    /**
+     * <p>Write a struct.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param sc  The term.
+     * @param ref The display.
+     * @param mod The module.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected void writeStruct(SkelCompound sc, Display ref,
+                               CachePredicate cp, Object[] decl,
+                               int backshift, int backspez, int backoffset,
+                               Object mod, SkelAtom nsa)
+            throws IOException, EngineMessage, EngineException {
+        append(PrologReader.OP_LBRACE);
+        if (sc.args.length == 2) {
+            Object z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
+            spez = getSpez(z);
+            offset = getOffset(z, backoffset);
+            shift = getShift(z);
+            write(sc.args[1], ref, Operator.LEVEL_HIGH, null, null);
+        }
+        append(PrologReader.OP_RBRACE);
     }
 
     /**************************************************************/
@@ -1205,27 +1274,27 @@ public class PrologWriter {
             }
         }
         if (engine != null && (flags & FLAG_IGNO) == 0) {
-            if (sc.args.length == 1 ||
-                    (sc.args.length > 1 & sc.sym.fun.equals(Foyer.OP_NIL))) {
-                if (sc.sym.fun.equals(PrologReader.OP_SET)) {
-                    CachePredicate cp = offsetToPredicate(term, mod, nsa);
-                    Object[] decl = predicateToMeta(cp);
-                    append(PrologReader.OP_LBRACE);
-                    int backspez = spez;
-                    int backoffset = offset;
-                    int backshift = shift;
-                    Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-                    spez = getSpez(z);
-                    offset = getOffset(z, backoffset);
-                    shift = getShift(z);
-                    write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
-                    spez = backspez;
-                    offset = backoffset;
-                    shift = backshift;
-                    append(PrologReader.OP_RBRACE);
-                    return;
-                }
-                Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_PREFIX, engine);
+            if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
+                CachePredicate cp = offsetToPredicate(term, mod, nsa);
+                Object[] decl = predicateToMeta(cp);
+                append(PrologReader.OP_LBRACE);
+                int backspez = spez;
+                int backoffset = offset;
+                int backshift = shift;
+                Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+                spez = getSpez(z);
+                offset = getOffset(z, backoffset);
+                shift = getShift(z);
+                write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
+                spez = backspez;
+                offset = backoffset;
+                shift = backshift;
+                append(PrologReader.OP_RBRACE);
+                return;
+            }
+            if (sc.args.length == 1 || isIndex(sc) || isStruct(sc)) {
+                Operator op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                        Operator.TYPE_PREFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
@@ -1252,7 +1321,8 @@ public class PrologWriter {
                         append(PrologReader.OP_RPAREN);
                     return;
                 }
-                op = OperatorSearch.getOper(sc.sym, Operator.TYPE_POSTFIX, engine);
+                op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                        Operator.TYPE_POSTFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
@@ -1286,12 +1356,13 @@ public class PrologWriter {
                     return;
                 }
             }
+            if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
+                writeList(sc, ref, mod, nsa);
+                return;
+            }
             if (sc.args.length == 2) {
-                if (sc.sym.fun.equals(Foyer.OP_CONS)) {
-                    writeList(sc, ref, mod, nsa);
-                    return;
-                }
-                Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_INFIX, engine);
+                Operator op = OperatorSearch.getOper(sc.sym.scope,
+                        sc.sym.fun, Operator.TYPE_INFIX, engine);
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
@@ -1343,12 +1414,12 @@ public class PrologWriter {
                     Object mod2;
                     SkelAtom nsa2;
                     if ((sc.sym.fun.equals(SpecialQuali.OP_COLON))) {
-                        mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                                ref, false, engine) : null);
+                        mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                                ref, false, false, engine) : null);
                         nsa2 = sc.sym;
                     } else if ((sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON))) {
-                        mod2 = (engine != null ? SpecialQuali.slashToClassTest(sc.args[0],
-                                ref, true, engine) : null);
+                        mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                                ref, true, false, engine) : null);
                         nsa2 = sc.sym;
                     } else {
                         mod2 = null;
@@ -1429,7 +1500,8 @@ public class PrologWriter {
             return null;
         if (!isSimple(sc.args[0], ref))
             return null;
-        Operator op = OperatorSearch.getOper(sc.sym, Operator.TYPE_INFIX, engine);
+        Operator op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                Operator.TYPE_INFIX, engine);
         if (op == null)
             return null;
         Object[] decl = predicateToMeta(offsetToPredicate(term, mod, nsa));
@@ -1575,25 +1647,6 @@ public class PrologWriter {
     /***********************************************************************/
     /* Unparsing Convenience                                               */
     /***********************************************************************/
-
-    /**
-     * <p>Convert a term to a string.</p>
-     *
-     * @param t     The term skeleton.
-     * @param ref   The term display.
-     * @param flags The flags.
-     * @param en    The engine, can be null.
-     * @return The string.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
-     */
-    public static String toString(Object t, Display ref, int flags,
-                                  Engine en)
-            throws EngineException, EngineMessage {
-        StringWriter sw = new StringWriter();
-        toString(t, ref, sw, flags, en);
-        return sw.toString();
-    }
 
     /**
      * <p>Writer a term to a stream.</p>

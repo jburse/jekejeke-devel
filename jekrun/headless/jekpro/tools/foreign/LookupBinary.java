@@ -1,11 +1,12 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.LookupChild;
+import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractRuntime;
@@ -42,8 +43,8 @@ public final class LookupBinary {
     /**
      * <p>Convert a key to a java class.</p>
      *
-     * @param relpath   The path, in slash notation.
-     * @param store The store.
+     * @param relpath The path, in slash notation.
+     * @param store   The store.
      * @return The class, or null.
      */
     public static Class keyToClass(String relpath, AbstractStore store) {
@@ -57,7 +58,7 @@ public final class LookupBinary {
         Object obj;
         String res = LookupBinary.removeClassExt(relpath);
         if (res != null) {
-            res = res.replace(CacheSubclass.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+            res = res.replace(CacheModule.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
             Class clazz = AbstractRuntime.stringToClass(res, store.getLoader());
             if (clazz != null) {
                 obj = clazz;
@@ -80,95 +81,69 @@ public final class LookupBinary {
     /**
      * <p>Find a path suffix.</p>
      *
-     * @param relpath  The path, in slash notation.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param relpath The path, in slash notation.
+     * @param src     The call-site, not null.
+     * @param mask    The mask.
      * @return The source key, or null.
      */
     public static String findBinarySuffix(String relpath,
                                           AbstractSource src,
                                           int mask) {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
-
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
-                    String key = relpath + fix.key;
-                    Class clazz = keyToClass(key, src.getStore());
-                    if (clazz != null)
-                        return key;
+            AbstractStore store = src.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
+                        String key = relpath + fix.key;
+                        Class clazz = keyToClass(key, src.getStore());
+                        if (clazz != null)
+                            return key;
+                    }
                 }
+                store = store.parent;
             }
         }
 
-        /* source binary suffix */
-        if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
-                    String key = relpath + fix.key;
-                    Class clazz = keyToClass(key, src.getStore());
-                    if (clazz != null)
-                        return key;
-                }
-            }
-        }
-
-        /* failure */
+        // failure
         return null;
     }
 
     /**
      * <p>Unfind a path suffix.</p>
      *
-     * @param relpath  The path, in slash notation.
-     * @param src   The call-site, not null.
-     * @param mask  The mask.
+     * @param relpath The path, in slash notation.
+     * @param src     The call-site, not null.
+     * @param mask    The mask.
      * @return The source key, or null.
      */
     public static String unfindBinarySuffix(String relpath,
                                             AbstractSource src,
                                             int mask) {
 
-        AbstractSource src2 = LookupChild.derefParentImport(src);
-
-        /* source binary suffix */
-        if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0 &&
-                !src2.equals(src.getStore().foyer.SOURCE_SYSTEM)) {
-            MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
-                    if (relpath.endsWith(fix.key)) {
-                        String path2 = relpath.substring(0, relpath.length() - fix.key.length());
-                        if (relpath.equals(findBinarySuffix(path2, src, mask)))
-                            return path2;
-                    }
-                }
-            }
-        }
-
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
-            MapEntry<String, Integer>[] fixes = src.getStore().foyer.SOURCE_SYSTEM.snapshotFixes();
-            for (int i = 0; i < fixes.length; i++) {
-                MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
-                    if (relpath.endsWith(fix.key)) {
-                        String path2 = relpath.substring(0, relpath.length() - fix.key.length());
-                        if (relpath.equals(findBinarySuffix(path2, src, mask)))
-                            return path2;
+            AbstractStore store = src.getStore();
+            while (store != null) {
+                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+                for (int i = 0; i < fixes.length; i++) {
+                    MapEntry<String, Integer> fix = fixes[i];
+                    if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
+                        if (relpath.endsWith(fix.key)) {
+                            String path2 = relpath.substring(0, relpath.length() - fix.key.length());
+                            if (relpath.equals(findBinarySuffix(path2, src, mask)))
+                                return path2;
+                        }
                     }
                 }
+                store = store.parent;
             }
         }
 
+        // failure
         return null;
     }
 
@@ -183,7 +158,7 @@ public final class LookupBinary {
      * @return The path without suffix.
      */
     public static String removeClassExt(String path) {
-        int k = path.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         k = path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1);
         if (k != -1) {
             String res = path.substring(0, k);
@@ -205,7 +180,7 @@ public final class LookupBinary {
      * @return The extended Java path.
      */
     public static String addClassExt(String path) {
-        int k = path.lastIndexOf(CacheSubclass.OP_CHAR_OS);
+        int k = path.lastIndexOf(CacheModule.OP_CHAR_OS);
         k = path.indexOf(CacheSubclass.OP_CHAR_SYN, k + 1);
         if (k != -1) {
             String res = path.substring(0, k);

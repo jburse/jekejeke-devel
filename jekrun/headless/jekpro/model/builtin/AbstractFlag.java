@@ -1,11 +1,10 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelVar;
 
 /**
  * <p>Abstract class for toolkit and capability flags.</p>
@@ -85,14 +84,7 @@ public abstract class AbstractFlag {
      */
     public static boolean atomToSwitch(Object m, Display d)
             throws EngineMessage {
-        BindVar b1;
-        while (m instanceof SkelVar &&
-                (b1 = d.bind[((SkelVar) m).id]).display != null) {
-            m = b1.skel;
-            d = b1.display;
-        }
-        EngineMessage.checkInstantiated(m);
-        String fun = EngineMessage.castString(m, d);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_ON)) {
             return true;
         } else if (fun.equals(OP_OFF)) {

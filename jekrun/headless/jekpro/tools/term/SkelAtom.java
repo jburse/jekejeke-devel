@@ -35,6 +35,15 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
     public final static int MASK_ATOM_ANNO = 0x00000001;
     public final static int MASK_ATOM_POSI = 0x00000002;
 
+    private static final int CACHE_SIZE = 128;
+    private static final String[] chars = new String[CACHE_SIZE];
+
+    /* initialize the caches */
+    static {
+        for (int i = 0; i < CACHE_SIZE; i++)
+            chars[i] = String.valueOf((char) i);
+    }
+
     public final String fun;
     public final AbstractSource scope;
     public AbstractCache cache;
@@ -107,6 +116,22 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
      */
     public int compareTo(SkelAtom o, Comparator c) {
         return c.compare(fun, o.fun);
+    }
+
+    /********************************************************/
+    /* Caching of Low Range Characters                      */
+    /********************************************************/
+
+    /**
+     * <p>Create a string, possibly cached.</p>
+     *
+     * @param ch The code point.
+     * @return The string.
+     */
+    public static String valueOf(int ch) {
+        if (ch < CACHE_SIZE)
+            return chars[ch];
+        return new String(Character.toChars(ch));
     }
 
     /********************************************************/

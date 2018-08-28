@@ -1,13 +1,23 @@
 package jekpro.reference.structure;
 
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.rope.*;
-import jekpro.tools.term.*;
+import jekpro.model.pretty.NamedDistance;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Named;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.data.SetHashLink;
@@ -40,6 +50,8 @@ import matula.util.data.SetHashLink;
  */
 public final class SpecialVars extends AbstractSpecial {
     public final static String OP_DOLLAR_VAR = "$VAR";
+
+    private final static String OP_EXISTENTIAL = "^";
 
     private final static int SPECIAL_TERM_VARIABLES = 0;
     private final static int SPECIAL_TERM_VARIABLES_DIFF = 1;
@@ -74,112 +86,120 @@ public final class SpecialVars extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_TERM_VARIABLES:
-                Object[] t = ((SkelCompound) en.skel).args;
-                Display d = en.display;
-                EngineVars ev = new EngineVars();
-                ev.varInclude(t[0], d);
-                en.skel = en.store.foyer.ATOM_NIL;
-                en.display = Display.DISPLAY_CONST;
-                AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_TERM_VARIABLES_DIFF:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                ev = new EngineVars();
-                ev.varInclude(t[0], d);
-                en.skel = t[2];
-                en.display = d;
-                AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_TERM_SINGELTONS:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                ev = new EngineVars();
-                ev.singsOf(t[0], d);
-                en.skel = en.store.foyer.ATOM_NIL;
-                en.display = Display.DISPLAY_CONST;
-                AbstractProperty.consSet(ev.anon, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GOAL_KERNEL:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                SpecialVars.goalKernel(t[0], d, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GOAL_GLOBALS:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                ev = new EngineVars();
-                SpecialVars.goalGlobals(t[0], d, ev);
-                en.skel = en.store.foyer.ATOM_NIL;
-                en.display = Display.DISPLAY_CONST;
-                AbstractProperty.consSet(ev.vars, en);
-                if (!en.unifyTerm(t[1], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_NUMBERVARS:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                en.skel = t[1];
-                en.display = d;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                Number num = EngineMessage.castInteger(en.skel, en.display);
-                EngineMessage.checkNotLessThanZero(num);
-                EngineMessage.castIntValue(num);
-                num = SpecialVars.numberVars(t[0], d, (Integer) en.skel, en);
-                if (num == null)
-                    return false;
-                if (!en.unifyTerm(t[2], d, num, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_NUMBER_VARIABLES:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                SpecialVars.numberVariables(t, d, en);
-                if (!en.unifyTerm(t[3], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GET_VARIABLE_NAMES:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                Frame frame = en.visor.ref;
-                Display ref = (frame != null ? frame.getDisplay() : null);
-                Clause def = (frame != null ? frame.getClause() : null);
-                MapHashLink<TermVar, NamedDistance> print =
-                        Named.namedToMap((def != null ? def.vars : null), ref, en);
-                mapToAssoc(print, en);
-                if (!en.unifyTerm(t[0], d, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_ACYCLIC_TERM:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                ev = new EngineVars();
-                if (!ev.isAcyclic(t[0], d))
-                    return false;
-                return en.getNextRaw();
-            case SPECIAL_SYS_GET_RAW_VARIABLES:
-                t = ((SkelCompound) en.skel).args;
-                d = en.display;
-                frame = en.visor.ref;
-                ref = (frame != null ? frame.getDisplay() : null);
-                def = (frame != null ? frame.getClause() : null);
-                en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref, en.store);
-                if (!en.unifyTerm(t[0], d, en.skel, ref))
-                    return false;
-                return en.getNext();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_TERM_VARIABLES:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    EngineVars ev = new EngineVars();
+                    ev.varInclude(temp[0], ref);
+                    boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                            Display.DISPLAY_CONST, ev.vars, en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_TERM_VARIABLES_DIFF:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    ev.varInclude(temp[0], ref);
+                    multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_TERM_SINGELTONS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    ev.singsOf(temp[0], ref);
+                    multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                            Display.DISPLAY_CONST, ev.anon, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_GOAL_KERNEL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    SpecialVars.goalKernel(temp[0], ref, en);
+                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_GOAL_GLOBALS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    SpecialVars.goalGlobals(temp[0], ref, ev);
+                    multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
+                            Display.DISPLAY_CONST, ev.vars, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_NUMBERVARS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    SpecialEval.checkNotLessThanZero(num);
+                    SpecialEval.castIntValue(num);
+                    num = SpecialVars.numberVars(temp[0], ref, (Integer) num, en);
+                    if (num == null)
+                        return false;
+                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_NUMBER_VARIABLES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    SpecialVars.numberVariables(temp, ref, en);
+                    if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_GET_VARIABLE_NAMES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Frame frame = en.visor.ref;
+                    Display ref2 = (frame != null ? frame.getDisplay() : null);
+                    Clause def = (frame != null ? frame.getClause() : null);
+                    MapHashLink<Object, NamedDistance> print =
+                            Named.namedToMap((def != null ? def.vars : null), ref2, en);
+                    mapToAssoc(print, en);
+                    if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_ACYCLIC_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    if (!ev.isAcyclic(temp[0], ref))
+                        return false;
+                    return en.getNextRaw();
+                case SPECIAL_SYS_GET_RAW_VARIABLES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    frame = en.visor.ref;
+                    ref2 = (frame != null ? frame.getDisplay() : null);
+                    def = (frame != null ? frame.getClause() : null);
+                    en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref2, en.store);
+                    if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
+                        return false;
+                    return en.getNext();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -205,7 +225,7 @@ public final class SpecialVars extends AbstractSpecial {
         }
         while (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Clause.OP_EXISTENTIAL)) {
+                ((SkelCompound) t).sym.fun.equals(OP_EXISTENTIAL)) {
             SkelCompound sc = (SkelCompound) t;
             t = sc.args[1];
             while (t instanceof SkelVar) {
@@ -237,7 +257,7 @@ public final class SpecialVars extends AbstractSpecial {
         }
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Clause.OP_EXISTENTIAL)) {
+                ((SkelCompound) t).sym.fun.equals(OP_EXISTENTIAL)) {
             SkelCompound sc = (SkelCompound) t;
             goalGlobals(sc.args[1], d, ev);
             ev.varExclude(sc.args[0], d);
@@ -266,51 +286,40 @@ public final class SpecialVars extends AbstractSpecial {
                                       Engine en)
             throws EngineException, EngineMessage {
         for (; ; ) {
-            if (m instanceof SkelVar) {
-                SkelVar v = (SkelVar) m;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    m = b.skel;
-                    d = b.display;
-                } else {
-                    Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
-                    if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
-                        return null;
-                    return Integer.valueOf(val.intValue() + 1);
-                }
-            } else if (m instanceof SkelCompound) {
-                SkelCompound tc = (SkelCompound) m;
-                if (tc.vars != null) {
-                    for (int j = 0; j < tc.vars.length - 1; j++) {
-                        SkelVar v = tc.vars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            val = numberVars(b.skel, b.display, val, en);
-                            if (val == null)
-                                return null;
-                        } else {
-                            Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
-                            if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
-                                return null;
-                            val = Integer.valueOf(val.intValue() + 1);
-                        }
-                    }
-                    SkelVar v = tc.vars[tc.vars.length - 1];
+            Object var = EngineCopy.getVar(m);
+            if (var == null)
+                return val;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        m = b.skel;
-                        d = b.display;
+                        val = numberVars(b.skel, b.display, val, en);
+                        if (val == null)
+                            return null;
                     } else {
                         Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
                         if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                             return null;
-                        return Integer.valueOf(val.intValue() + 1);
+                        val = Integer.valueOf(val.intValue() + 1);
                     }
-                } else {
-                    return val;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                m = b.skel;
+                d = b.display;
             } else {
-                return val;
+                Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
+                if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
+                    return null;
+                return Integer.valueOf(val.intValue() + 1);
             }
         }
     }
@@ -327,13 +336,10 @@ public final class SpecialVars extends AbstractSpecial {
     private static void numberVariables(Object[] temp, Display ref,
                                         Engine en)
             throws EngineMessage {
-        SetHashLink<TermVar> mvs2 = new SetHashLink<TermVar>();
-        arrayToSet(temp[0], ref, mvs2, en);
-        MapHashLink<TermVar, NamedDistance> print = assocToMap(temp[1], ref, en);
-        SetHashLink<TermVar> mvs = new SetHashLink<TermVar>();
-        arrayToSet(temp[2], ref, mvs, en);
-        MapHashLink<TermVar, NamedDistance> print2 = new MapHashLink<TermVar, NamedDistance>();
-        EngineVars.numberVariables(mvs2, mvs, print, print2);
+        SetHashLink<Object> mvs2 = arrayToSet(temp[0], ref, en);
+        MapHashLink<Object, NamedDistance> print = assocToMap(temp[1], ref, en);
+        SetHashLink<Object> mvs = arrayToSet(temp[2], ref, en);
+        MapHashLink<Object, NamedDistance> print2 = EngineVars.numberVariables(mvs2, mvs, print);
         mapToAssoc(print2, en);
     }
 
@@ -341,15 +347,15 @@ public final class SpecialVars extends AbstractSpecial {
      * <p>Create variable set from variables.</p>
      * <p>Non variable associations are skipped.</p>
      *
-     * @param t   The variable names skel.
-     * @param d   The variable names display.
-     * @param en  The engine.
-     * @param set The print map.
+     * @param t  The variable list skel.
+     * @param d  The variable list display.
+     * @param en The engine.
+     * @return The variable list.
      * @throws EngineMessage Shit happens.
      */
-    private static void arrayToSet(Object t, Display d,
-                                   SetHashLink<TermVar> set, Engine en)
+    private static SetHashLink<Object> arrayToSet(Object t, Display d, Engine en)
             throws EngineMessage {
+        SetHashLink<Object> set = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -361,9 +367,14 @@ public final class SpecialVars extends AbstractSpecial {
             en.skel = mc.args[0];
             en.deref();
             if (en.skel instanceof SkelVar) {
-                TermVar pair = new TermVar((SkelVar) en.skel, en.display);
-                if (set.getKey(pair) == null)
+                Object pair = AbstractTerm.createMolec(en.skel, en.display);
+                if (set == null) {
+                    set = new SetHashLink<Object>();
                     set.add(pair);
+                } else {
+                    if (set.getKey(pair) == null)
+                        set.add(pair);
+                }
             }
             en.skel = mc.args[1];
             en.display = d;
@@ -378,6 +389,7 @@ public final class SpecialVars extends AbstractSpecial {
                     EngineMessage.OP_TYPE_LIST,
                     en.skel), en.display);
         }
+        return set;
     }
 
     /**
@@ -390,10 +402,10 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The print map.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<TermVar, NamedDistance> assocToMap(Object t, Display d,
-                                                                 Engine en)
+    public static MapHashLink<Object, NamedDistance> assocToMap(Object t, Display d,
+                                                                Engine en)
             throws EngineMessage {
-        MapHashLink<TermVar, NamedDistance> print = null;
+        MapHashLink<Object, NamedDistance> print = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -416,32 +428,14 @@ public final class SpecialVars extends AbstractSpecial {
             }
             Object[] mc2 = ((SkelCompound) en.skel).args;
             Display d2 = en.display;
-            int distance = 0;
             en.skel = mc2[1];
-            BindVar b;
-            while (en.skel instanceof SkelVar &&
-                    (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
-                distance++;
-                en.skel = b.skel;
-                en.display = b.display;
-            }
+            int distance = NamedDistance.derefCount(en);
             if (en.skel instanceof SkelVar) {
-                TermVar pair = new TermVar((SkelVar) en.skel, en.display);
-                en.skel = mc2[0];
-                en.display = d2;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                String name = EngineMessage.castString(en.skel, en.display);
-                NamedDistance nd = new NamedDistance(distance, name);
+                Object pair = AbstractTerm.createMolec(en.skel, en.display);
+                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
                 if (print == null)
-                    print = new MapHashLink<TermVar, NamedDistance>();
-                NamedDistance nd2 = print.get(pair);
-                if (nd2 == null) {
-                    print.add(pair, nd);
-                } else if (nd.getDistance() < nd2.getDistance()) {
-                    print.remove(pair);
-                    print.add(pair, nd);
-                }
+                    print = new MapHashLink<Object, NamedDistance>();
+                NamedDistance.addPriorized(print, pair, name, distance);
             }
             en.skel = mc[1];
             en.display = d;
@@ -466,36 +460,40 @@ public final class SpecialVars extends AbstractSpecial {
      * @param mvs The variable map.
      * @param en  The engine.
      */
-    public static void mapToAssoc(MapHashLink<TermVar, NamedDistance> mvs, Engine en) {
+    public static void mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
+                                  Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
+        for (MapEntry<Object, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
-            TermVar key = entry.key;
-            countvar++;
-            if (last == Display.DISPLAY_CONST) {
-                last = AbstractTerm.getDisplay(key);
-            } else if (last != AbstractTerm.getDisplay(key)) {
-                multi = true;
+            Object t = AbstractTerm.getSkel(entry.key);
+            if (EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(entry.key);
+                countvar++;
+                if (last == Display.DISPLAY_CONST) {
+                    last = d;
+                } else if (last != d) {
+                    multi = true;
+                }
             }
         }
-        if (multi) {
+        if (multi)
             last = new Display(countvar);
-            countvar = 0;
-        }
+        countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
-        for (MapEntry<TermVar, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
+        for (MapEntry<Object, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
-            TermVar key = entry.key;
+            Object t = AbstractTerm.getSkel(entry.key);
             Object val;
-            if (multi) {
+            if (multi && EngineCopy.getVar(t) != null) {
+                Display d = AbstractTerm.getDisplay(entry.key);
                 SkelVar var = SkelVar.valueOf(countvar);
                 countvar++;
-                last.bind[var.id].bindVar(AbstractTerm.getSkel(key), AbstractTerm.getDisplay(key), en);
+                last.bind[var.id].bindVar(t, d, en);
                 val = var;
             } else {
-                val = AbstractTerm.getSkel(key);
+                val = t;
             }
             val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
                     new SkelAtom(entry.value.getName()), val);

@@ -1,5 +1,6 @@
 package jekpro.tools.proxy;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 /**
@@ -28,8 +29,8 @@ import java.lang.reflect.Method;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ProxyState implements InterfaceState {
-    private final InterfaceHandler handler;
+public final class ProxyState implements InvocationHandler {
+    private final ProxyHandler handler;
     private Object[] template;
 
     /**
@@ -38,7 +39,7 @@ final class ProxyState implements InterfaceState {
      * @param h    The handler.
      * @param size The size.
      */
-    ProxyState(InterfaceHandler h, int size) {
+    ProxyState(ProxyHandler h, int size) {
         handler = h;
         template = new Object[size];
     }
@@ -48,7 +49,7 @@ final class ProxyState implements InterfaceState {
      *
      * @return The handler.
      */
-    public InterfaceHandler getHandler() {
+    public ProxyHandler getHandler() {
         return handler;
     }
 

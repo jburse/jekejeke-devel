@@ -5,11 +5,15 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.TermVar;
 import matula.util.data.ListArray;
+import matula.util.data.SetEntry;
+import matula.util.data.SetHashLink;
 
 /**
- * <p>Provides built-in predicates for the set theory.</p>
+ * <p>Provides built-in predicates for the module bags.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -64,9 +68,12 @@ public final class SpecialFind extends AbstractSpecial {
             case SPECIAL_FINDALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                SpecialFind.findAll(temp, ref, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                boolean multi = SpecialFind.findAll(temp, ref, en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
@@ -83,6 +90,8 @@ public final class SpecialFind extends AbstractSpecial {
                 Display ref2 = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
                 if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                     return false;
+                if (size != 0)
+                    ref2.remTab(en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -100,16 +109,17 @@ public final class SpecialFind extends AbstractSpecial {
      * @param temp The goal skel.
      * @param ref  The goal display.
      * @param en   The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineException Shit happens.
      */
-    private static void findAll(Object[] temp, Display ref,
-                                Engine en)
+    private static boolean findAll(Object[] temp, Display ref,
+                                   Engine en)
             throws EngineException {
         en.skel = temp[1];
         en.display = ref;
         en.deref();
         ListArray<Object> list = iterFindAll(temp[0], ref, en);
-        SpecialFind.createList(list, en);
+        return SpecialFind.createList(list, en);
     }
 
     /**
@@ -125,27 +135,29 @@ public final class SpecialFind extends AbstractSpecial {
     private static ListArray<Object> iterFindAll(Object t2, Display d2,
                                                  Engine en)
             throws EngineException {
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
-
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         ListArray<Object> temp = null;
         AbstractBind mark = en.bind;
         int snap = en.number;
         try {
-            en.wrapGoal();
+            boolean multi = en.wrapGoal();
+            Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause(clause.dispsize);
-            ref.addArgument(en.skel, en.display, en);
-            ref.setEngine(en);
+            DisplayClause ref2 = new DisplayClause(clause.dispsize);
+            ref2.addArgument(en.skel, en.display, en);
+            if (multi)
+                ref.remTab(en);
+            ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
-            en.contdisplay = ref;
+            en.contdisplay = ref2;
             boolean found = en.runFirst(snap);
             while (found) {
+                EngineCopy ec = en.enginecopy;
+                if (ec == null) {
+                    ec = new EngineCopy();
+                    en.enginecopy = ec;
+                }
                 ec.vars = null;
                 Object val = ec.copyTerm(t2, d2);
                 ec.vars = null;
@@ -178,18 +190,29 @@ public final class SpecialFind extends AbstractSpecial {
      *
      * @param temp The list of solutions.
      * @param en   The engine.
+     * @return True if new display is returned, otherwise false.
      */
-    private static void createList(ListArray<Object> temp, Engine en) {
-        en.display = Display.DISPLAY_CONST;
+    private static boolean createList(ListArray<Object> temp, Engine en) {
         en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
+        boolean multi = false;
         if (temp == null)
-            return;
+            return multi;
         for (int i = temp.size() - 1; i >= 0; i--) {
+            Object t4 = en.skel;
+            Display d2 = en.display;
+            boolean ext = multi;
             Object val = temp.get(i);
             int size = Display.displaySize(val);
             Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-            consValue(val, ref, en.skel, en.display, en);
+            multi = pairValue(en.store.foyer.CELL_CONS, val, ref, t4, d2, en);
+            if (multi && ext)
+                d2.remTab(en);
+            if (multi && (size != 0))
+                ref.remTab(en);
+            multi = (multi || ext || (size != 0));
         }
+        return multi;
     }
 
     /**
@@ -201,23 +224,74 @@ public final class SpecialFind extends AbstractSpecial {
      * @param t  The term skeleton.
      * @param d  The term display.
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      */
-    public static void consValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineCopy.isGroundSkel(t2)) {
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t2, t);
+    public static boolean pairValue(SkelCompound sc,
+                                    Object t2, Display d2,
+                                    Object t, Display d, Engine en) {
+        Object v2 = EngineCopy.getVar(t2);
+        Object v = EngineCopy.getVar(t);
+        if (v2 == null) {
+            Object[] args = new Object[2];
+            args[0] = t2;
+            args[1] = t;
+            en.skel = new SkelCompound(sc.sym, args, v);
             en.display = d;
-            return;
-        }
-        if (EngineCopy.isGroundSkel(t)) {
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, t2, t);
+            return false;
+        } else if (v == null) {
+            Object[] args = new Object[2];
+            args[0] = t2;
+            args[1] = t;
+            en.skel = new SkelCompound(sc.sym, args, v2);
             en.display = d2;
-            return;
+            return false;
+        } else {
+            Display d3 = new Display(2);
+            d3.bind[0].bindVar(t2, d2, en);
+            d3.bind[1].bindVar(t, d, en);
+            en.skel = sc;
+            en.display = d3;
+            return true;
         }
-        Display d3 = new Display(2);
-        d3.bind[0].bindVar(t2, d2, en);
-        d3.bind[1].bindVar(t, d, en);
-        en.skel = en.store.foyer.CELL_CONS;
-        en.display = d3;
+    }
+
+    /******************************************************************/
+    /* Shelved Cons Value                                             */
+    /******************************************************************/
+
+    /**
+     * <p>Cons the value to the given term.</p>
+     * <p>The result is returned in skeleton and display.</p>
+     *
+     * @param t2 The term skeleton.
+     * @param d2 The term display.
+     * @param t  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     */
+    public static void consValue(Object t2, Display d2,
+                                 Object t, Display d, Engine en) {
+        Object v2 = EngineCopy.getVar(t2);
+        Object v = EngineCopy.getVar(t);
+        if (v2 == null) {
+            Object[] args = new Object[2];
+            args[0] = t2;
+            args[1] = t;
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, args, v);
+            en.display = d;
+        } else if (v == null) {
+            Object[] args = new Object[2];
+            args[0] = t2;
+            args[1] = t;
+            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, args, v2);
+            en.display = d2;
+        } else {
+            Display d3 = new Display(2);
+            d3.bind[0].bindVar(t2, d2, en);
+            d3.bind[1].bindVar(t, d, en);
+            en.skel = en.store.foyer.CELL_CONS;
+            en.display = d3;
+        }
     }
 
 }

@@ -205,7 +205,8 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @return The index.
      */
     public int index(E key) {
-        return (key != null ? HashScrambler.murmur(key.hashCode()) &
+        return (key != null ? HashScrambler.murmur(
+                key.hashCode()) &
                 (table.length - 1) : 0);
     }
 

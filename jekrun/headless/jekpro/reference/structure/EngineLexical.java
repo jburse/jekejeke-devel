@@ -1,8 +1,11 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindSerno;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -47,7 +50,7 @@ public final class EngineLexical implements Comparator<Object> {
     /**
      * <p>Create a engine lexical.</p>
      *
-     * @param c The comparator.
+     * @param c  The comparator.
      * @param en The engine.
      */
     public EngineLexical(Comparator c, Engine en) {
@@ -107,11 +110,11 @@ public final class EngineLexical implements Comparator<Object> {
                     if (k != 0) return k;
                     return ((SkelVar) alfa).compareTo((SkelVar) beta);
                 case SpecialLexical.CMP_TYPE_DECIMAL:
-                    return SpecialLexical.compareDecimal(alfa, beta);
+                    return SpecialLexical.compareDecimalLexical(alfa, beta);
                 case SpecialLexical.CMP_TYPE_FLOAT:
-                    return SpecialLexical.compareFloat(alfa, beta);
+                    return SpecialLexical.compareFloatLexical(alfa, beta);
                 case SpecialLexical.CMP_TYPE_INTEGER:
-                    return SpecialLexical.compareInteger(alfa, beta);
+                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
                 case SpecialLexical.CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);
@@ -142,19 +145,14 @@ public final class EngineLexical implements Comparator<Object> {
     /**
      * <p>Compute the collator from an atom.</p>
      *
-     * @param t  The skeleton.
-     * @param d  The display.
-     * @param en The engine.
+     * @param m The skeleton.
+     * @param d The display.
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */
-    public static Comparator comparatorAtom(Object t, Display d, Engine en)
+    public static Comparator comparatorAtom(Object m, Display d)
             throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        String fun = EngineMessage.castString(en.skel, en.display);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if ("IGNORE_CASE".equals(fun)) {
             return IgnoreCase.DEFAULT;
         } else {

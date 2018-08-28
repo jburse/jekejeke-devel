@@ -5,12 +5,10 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.inter.Usage;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
-import jekpro.tools.proxy.InterfaceHandler;
 import jekpro.tools.term.SkelAtom;
 import matula.util.system.AbstractRuntime;
 import matula.util.wire.AbstractLivestock;
@@ -20,9 +18,29 @@ import java.io.StringReader;
 
 /**
  * <p>The synthetic source class for Java classes.</p>
- *
- * @author Copyright 2015-2017, XLOG Technologies GmbH, Switzerland
- * @version Jekejeke Prolog 1.0.9 (a fast and small prolog interpreter)
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractAuto extends AbstractSource {
     private Class auto;
@@ -55,7 +73,7 @@ public abstract class AbstractAuto extends AbstractSource {
     }
 
     /**************************************************************/
-    /* Variation Points                                           */
+    /* Init & Clear Module                                        */
     /**************************************************************/
 
     /**
@@ -67,49 +85,37 @@ public abstract class AbstractAuto extends AbstractSource {
             throw new RuntimeException("illegal path");
 
         /* add package and name */
-        if (SourceLocal.isOs(path)) {
-            addFix(SourceLocal.sepDirectory(path), MASK_PCKG_FRGN);
-            path = SourceLocal.sepFile(path);
+        if (CacheModule.isOs(path)) {
+            addFix(CacheModule.sepDirectory(path), MASK_PCKG_FRGN);
+            setName(CacheModule.sepFile(path));
+        } else {
+            setName(path);
         }
-        setName(path);
+
+        /* set the full name */
+        path = path.replace(CacheModule.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
+        setFullName(path);
 
         /* change default visibility */
         resetBit(MASK_SRC_VSPU);
     }
 
     /**
-     * Remove default package, name and parent.
-     */
-    public void finiSource() {
-        String path = LookupBinary.removeClassExt(getPath());
-        if (path == null)
-            throw new RuntimeException("illegal path");
-
-        /* remove package and name */
-        clearFixes(MASK_PCKG_FRGN);
-        setName(null);
-    }
-
-    /**
-     * <p>Retrieve the invocation handler.</p>
+     * <p>Unload the module before a reconsult or purge.</p>
      *
-     * @return The invocation handler.
      * @throws EngineMessage Shit happens.
      */
-    public InterfaceHandler getHandler() throws EngineMessage {
-        throw new EngineMessage(EngineMessage.permissionError(
-                EngineMessage.OP_PERMISSION_CREATE,
-                EngineMessage.OP_PERMISSION_PROXY,
-                new SkelAtom(getPath())));
-    }
+    public void clearModule()
+            throws EngineMessage {
+        super.clearModule();
+        setAuto(null);
 
-    /**
-     * <p>Set the invocation handler.</p>
-     *
-     * @param h The invocation handler.
-     */
-    public void setHandler(InterfaceHandler h) {
-        /* do nothing */
+        /* clear deps without notify */
+        clearDeps(-1);
+
+        /* clear fixes without notify */
+        setName(null);
+        clearFixes(-1);
     }
 
     /**************************************************************/
@@ -144,17 +150,6 @@ public abstract class AbstractAuto extends AbstractSource {
     /**************************************************************/
 
     /**
-     * <p>Unload the module before a reconsult or purge.</p>
-     *
-     * @throws EngineMessage Shit happens.
-     */
-    public void clearModule()
-            throws EngineMessage {
-        super.clearModule();
-        setAuto(null);
-    }
-
-    /**
      * <p>Consult a verbatim module.</p>
      *
      * @param en  The interpreter.
@@ -182,7 +177,7 @@ public abstract class AbstractAuto extends AbstractSource {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public AutoClass reexportSuperclass(Engine en)
+    protected AutoClass reexportSuperclass(Engine en)
             throws EngineException, EngineMessage {
         Class superclazz = getAuto().getSuperclass();
         if (superclazz == null)
@@ -194,7 +189,7 @@ public abstract class AbstractAuto extends AbstractSource {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_MODL);
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_REEX);
         String key = AbstractRuntime.classToString(superclazz);
-        key = key.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+        key = key.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         key = LookupBinary.addClassExt(key);
         return (AutoClass) opts.makeLoad(this, key, en);
     }
@@ -207,7 +202,7 @@ public abstract class AbstractAuto extends AbstractSource {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public AutoClass[] reexportInterfaces(Engine en)
+    protected AutoClass[] reexportInterfaces(Engine en)
             throws EngineException, EngineMessage {
         Class[] interfaces = getAuto().getInterfaces();
         AutoClass[] res = new AutoClass[interfaces.length];
@@ -219,7 +214,7 @@ public abstract class AbstractAuto extends AbstractSource {
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_REEX);
         for (int i = 0; i < interfaces.length; i++) {
             String key = AbstractRuntime.classToString(interfaces[i]);
-            key = key.replace(CachePackage.OP_CHAR_SEG, CacheSubclass.OP_CHAR_OS);
+            key = key.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
             key = LookupBinary.addClassExt(key);
             res[i] = (AutoClass) opts.makeLoad(this, key, en);
         }
@@ -248,7 +243,7 @@ public abstract class AbstractAuto extends AbstractSource {
         pick.setBit(Predicate.MASK_PRED_VSPU);
         Usage loc = pick.getUsage(this);
         if (loc != null)
-            loc.setBit(Usage.MASK_USE_VSPU);
+            loc.setBit(Usage.MASK_TRCK_VSPU);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);
@@ -267,7 +262,7 @@ public abstract class AbstractAuto extends AbstractSource {
                                   Engine en)
             throws EngineMessage, EngineException {
         String fun = pick.getFun();
-        AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupBase(
+        AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupKey(
                 CacheFunctor.sepModule(fun), this, en) : this);
         Predicate over;
         try {
@@ -276,11 +271,11 @@ public abstract class AbstractAuto extends AbstractSource {
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
-        if (over == null || !over.visiblePred(this))
+        if (over == null || !CachePredicate.visiblePred(over, this))
             return null;
         Usage loc = pick.getUsage(this);
         if (loc != null)
-            loc.setBit(Usage.MASK_USE_OVRD);
+            loc.setBit(Usage.MASK_TRCK_OVRD);
         return over;
     }
 

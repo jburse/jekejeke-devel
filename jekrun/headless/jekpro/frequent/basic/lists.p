@@ -10,6 +10,13 @@
  * ?- last([1,2,3], X).
  * X = 3
  *
+ * The predicates append/3, reverse/2, member/2, select/3, last/2
+ * and last/3 work directly with lists. The predicates length/2,
+ * nth0/3, nth0/4, nth1/3 and nth1/4 take also a length respective
+ * index into account. The predicates maplist/n and foldl/n have
+ * a closure argument to apply a predicate repeatedly to a number
+ * of arguments.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -285,3 +292,71 @@ nth13(1, _, _, _) :- !, fail.
 nth13(N, [H|Y], X, [H|T]) :-
    M is N-1,
    nth13(M, Y, X, T).
+
+/**
+ * maplist(C, L1, ..., Ln):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L1, ..., Ln. The predicate is currently
+ * defined for 1 ≤ n ≤ 4.
+ */
+:- public maplist/2.
+:- meta_predicate maplist(1,?).
+maplist(_, []).
+maplist(C, [X|L]) :-
+   call(C, X),
+   maplist(C, L).
+
+:- public maplist/3.
+:- meta_predicate maplist(2,?,?).
+maplist(_, [], []).
+maplist(C, [X|L], [Y|R]) :-
+   call(C, X, Y),
+   maplist(C, L, R).
+
+:- public maplist/4.
+:- meta_predicate maplist(3,?,?,?).
+maplist(_, [], [], []).
+maplist(C, [X|L], [Y|R], [Z|S]) :-
+   call(C, X, Y, Z),
+   maplist(C, L, R, S).
+
+:- public maplist/5.
+:- meta_predicate maplist(4,?,?,?,?).
+maplist(_, [], [], [], []).
+maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
+   call(C, X, Y, Z, U),
+   maplist(C, L, R, S, T).
+
+/**
+ * foldl(C, L1, ..., Ln, I, O):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L1, ..., Ln and accumulating the result among
+ * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
+ */
+:- public foldl/4.
+:- meta_predicate foldl(3,?,?,?).
+foldl(_, [], P, P).
+foldl(C, [X|L], P, Q) :-
+   call(C, X, P, H),
+   foldl(C, L, H, Q).
+
+:- public foldl/5.
+:- meta_predicate foldl(4,?,?,?,?).
+foldl(_, [], [], P, P).
+foldl(C, [X|L], [Y|R], P, Q) :-
+   call(C, X, Y, P, H),
+   foldl(C, L, R, H, Q).
+
+:- public foldl/6.
+:- meta_predicate foldl(5,?,?,?,?,?).
+foldl(_, [], [], [], P, P).
+foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
+   call(C, X, Y, Z, P, H),
+   foldl(C, L, R, S, H, Q).
+
+:- public foldl/7.
+:- meta_predicate foldl(6,?,?,?,?,?,?).
+foldl(_, [], [], [], [], P, P).
+foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
+   call(C, X, Y, Z, U, P, H),
+   foldl(C, L, R, S, T, H, Q).

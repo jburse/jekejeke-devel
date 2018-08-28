@@ -1,7 +1,6 @@
 package jekpro.tools.term;
 
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.call.Interpreter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -89,7 +88,7 @@ public final class TermAtomic extends AbstractTerm {
     }
 
     /**
-     * <p>Retrieve the unwrapped atomic from a wrapped atomic.</p>
+     * <p>Retrieve the unwrapped atomic.</p>
      *
      * @return The unwrapped atomic.
      */
@@ -153,8 +152,7 @@ public final class TermAtomic extends AbstractTerm {
      * @return The normalized result.
      */
     public static Number normBigInteger(BigInteger i) {
-        if (MIN_INTEGER.compareTo(i) <= 0 &&
-                i.compareTo(MAX_INTEGER) <= 0) {
+        if (MIN_INTEGER.compareTo(i) <= 0 && i.compareTo(MAX_INTEGER) <= 0) {
             return Integer.valueOf(i.intValue());
         } else {
             return i;
@@ -183,47 +181,71 @@ public final class TermAtomic extends AbstractTerm {
     /****************************************************************/
 
     /**
-     * <p>Guard a float.</p>
-     * <p>If the float value is a NaN an exception is thrown.</p>
-     * <p>If the float value is infinite an exception is thrown.</p>
-     * <p>If the float is negative zero it is converted to zero.</p>
+     * <p>Create a float object.</p>
      *
      * @param f The float.
-     * @return The guarded float.
-     * @throws ArithmeticException Shit happens.
+     * @return The float object.
+     * @throws ArithmeticException Illegal value.
      */
-    public static Float guardFloat(Float f) throws ArithmeticException {
-        if (f.isNaN())
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_UNDEFINED);
-        if (f.floatValue() == Float.POSITIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW);
-        if (f.floatValue() == Float.NEGATIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW);
-        if (f.floatValue() == 0.0f)
+    public static Float makeFloat(float f) throws ArithmeticException {
+        if (guardFloat(f)) {
+            return Float.valueOf(f);
+        } else {
             return ZERO_FLOAT;
-        return f;
+        }
     }
 
     /**
-     * <p>Guard a double.</p>
-     * <p>If the double value is a NaN an exception is thrown.</p>
-     * <p>If the double value is infinite an exception is thrown.</p>
-     * <p>If the double is negative zero it is converted to zero.</p>
+     * <p>Check a float.</p>
+     *
+     * @param f The float.
+     * @return True non-zero, otherwise false.
+     * @throws ArithmeticException Illegal value.
+     */
+    public static boolean guardFloat(float f) throws ArithmeticException {
+        if (Float.isNaN(f))
+            throw new ArithmeticException(EngineMessage.OP_EVALUATION_UNDEFINED);
+        if (f == Float.POSITIVE_INFINITY)
+            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW);
+        if (f == Float.NEGATIVE_INFINITY)
+            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW);
+        if (f == 0.0f)
+            return false;
+        return true;
+    }
+
+    /**
+     * <p>Create a double object.</p>
      *
      * @param d The double.
-     * @return The guarded double.
-     * @throws ArithmeticException Shit happens.
+     * @return The double object.
+     * @throws ArithmeticException Illegal value.
      */
-    public static Double guardDouble(Double d) throws ArithmeticException {
-        if (d.isNaN())
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_UNDEFINED);
-        if (d.doubleValue() == Double.POSITIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW);
-        if (d.doubleValue() == Double.NEGATIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW);
-        if (d.doubleValue() == 0.0)
+    public static Double makeDouble(double d) throws ArithmeticException {
+        if (guardDouble(d)) {
+            return Double.valueOf(d);
+        } else {
             return ZERO_DOUBLE;
-        return d;
+        }
+    }
+
+    /**
+     * <p>Check a double.</p>
+     *
+     * @param d The double.
+     * @return True non-zero, otherwise false.
+     * @throws ArithmeticException Illegal value.
+     */
+    public static boolean guardDouble(double d) throws ArithmeticException {
+        if (Double.isNaN(d))
+            throw new ArithmeticException(EngineMessage.OP_EVALUATION_UNDEFINED);
+        if (d == Double.POSITIVE_INFINITY)
+            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW);
+        if (d == Double.NEGATIVE_INFINITY)
+            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW);
+        if (d == 0.0)
+            return false;
+        return true;
     }
 
     /****************************************************************/
@@ -332,20 +354,5 @@ public final class TermAtomic extends AbstractTerm {
             return new BigDecimal(m.doubleValue());
         }
     }
-
-    /**
-     * <p>Some testing.</p>
-     *
-     * @param args Not used.
-     */
-    /*
-    public static void main(String[] args) {
-        TermAtomic ta = new TermAtomic("abc");
-        System.out.println("ta=" + ta.toString(Interpreter.FLAG_QUOTED));
-
-        ta = new TermAtomic("Foo");
-        System.out.println("ta=" + ta.toString(Interpreter.FLAG_QUOTED));
-    }
-    */
 
 }

@@ -79,35 +79,6 @@
 :- set_prolog_flag(sys_body_convert, off).
 
 /**
- * sys_local_cut:
- * The predicate removes pending choice points between the direct parent
- * goal invocation and this goal and then succeeds once.
- */
-:- private sys_local_cut/0.
-:- special(sys_local_cut/0, 'SpecialLogic', 0).
-:- set_predicate_property(sys_local_cut/0, sys_notrace).
-
-/**
- * sys_soft_local_cut:
- * The predicate marks the choice point of the direct parent, if there is any
- * at all, as non-redo able and then succeeds once.
- */
-:- private sys_soft_local_cut/0.
-:- special(sys_soft_local_cut/0, 'SpecialLogic', 1).
-:- set_predicate_property(sys_soft_local_cut/0, sys_notrace).
-
-/**
- * sys_safe(A):
- * The predicate succeeds whenever A succeeds. The argument A is not goal
- * converted before calling.
- */
-% sys_safe(+Goal)
-:- private sys_safe/1.
-:- special(sys_safe/1, 'SpecialLogic', 2).
-:- meta_predicate sys_safe(0).
-:- set_predicate_property(sys_safe/1, sys_notrace).
-
-/**
  * call(A): [ÍSO 7.8.3]
  * The predicate succeeds whenever A succeeds. The argument A is goal
  * converted before calling.
@@ -117,14 +88,6 @@
 :- special(call/1, 'SpecialLogic', 3).
 :- meta_predicate call(0).
 :- set_predicate_property(call/1, sys_notrace).
-
-/**
- * repeat: [ISO 8.15.3]
- * The predicate succeeds repeatedly.
- */
-:- public repeat/0.
-repeat.
-repeat :- repeat.
 
 /**
  * A, B: [ISO 7.8.5]
@@ -190,6 +153,15 @@ sys_soft_cond(A, B, _) :-
 sys_soft_cond(_, _, C) :- C.                      % Proto
 
 /**
+ * sys_soft_local_cut:
+ * The predicate marks the choice point of the direct parent, if there is any
+ * at all, as non-redo able and then succeeds once.
+ */
+:- private sys_soft_local_cut/0.
+:- special(sys_soft_local_cut/0, 'SpecialLogic', 1).
+:- set_predicate_property(sys_soft_local_cut/0, sys_notrace).
+
+/**
  * A -> B: [ISO 7.8.7]
  * The predicate succeeds when A succeeds and then whenever B
  * succeeds. Only the goal argument B is cut transparent.
@@ -203,6 +175,15 @@ sys_soft_cond(_, _, C) :- C.                      % Proto
 :- set_predicate_property(-> /2, sys_nobarrier).
 A -> B :-
    sys_safe(A), sys_local_cut, B.                              % Proto
+
+/**
+ * sys_local_cut:
+ * The predicate removes pending choice points between the direct parent
+ * goal invocation and this goal and then succeeds once.
+ */
+:- private sys_local_cut/0.
+:- special(sys_local_cut/0, 'SpecialLogic', 0).
+:- set_predicate_property(sys_local_cut/0, sys_notrace).
 
 /**
  * A *-> B:
@@ -220,14 +201,17 @@ A *-> B :-
    sys_safe(A), B.                                % Proto
 
 /**
- * once(A): [ISO 8.15.2]
- * The predicate succeeds once if A succeeds.
+ * sys_safe(A):
+ * The predicate succeeds whenever A succeeds. The argument A is not goal
+ * converted before calling.
  */
-% once(+Goal)
-:- public once/1.
-:- meta_predicate once(0).
-once(A) :-
-   call(A), !.
+% sys_safe(+Goal)
+:- private sys_safe/1.
+:- special(sys_safe/1, 'SpecialLogic', 2).
+:- meta_predicate sys_safe(0).
+:- set_predicate_property(sys_safe/1, sys_notrace).
+
+:- set_prolog_flag(sys_body_convert, on).
 
 /**
  * \+ A: [ISO 8.15.1]
@@ -236,8 +220,22 @@ once(A) :-
  */
 :- public (\+)/1.
 :- meta_predicate \+0.
-\+ A :-
-   call(A), !, fail.
+\+ A :- A, !, fail.
 \+ _.
 
-:- set_prolog_flag(sys_body_convert, on).
+/**
+ * once(A): [ISO 8.15.2]
+ * The predicate succeeds once if A succeeds.
+ */
+% once(+Goal)
+:- public once/1.
+:- meta_predicate once(0).
+once(A) :- A, !.
+
+/**
+ * repeat: [ISO 8.15.3]
+ * The predicate succeeds repeatedly.
+ */
+:- public repeat/0.
+repeat.
+repeat :- repeat.

@@ -1,6 +1,7 @@
 package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.pretty.Foyer;
@@ -15,6 +16,7 @@ import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.Properties;
@@ -83,7 +85,7 @@ public final class EngineException extends Exception {
      * @param m The exception skeleton.
      */
     public EngineException(Object m) {
-        if (!EngineCopy.isGroundSkel(m))
+        if (EngineCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -115,7 +117,7 @@ public final class EngineException extends Exception {
      * @param ctx The back trace.
      */
     public EngineException(EngineMessage msg, Object ctx) {
-        if (!EngineCopy.isGroundSkel(ctx))
+        if (EngineCopy.getVar(ctx) != null)
             throw new IllegalArgumentException("needs display");
         template = new SkelCompound(new SkelAtom(OP_ERROR), msg.getTemplate(), ctx);
         initCause(msg);
@@ -129,7 +131,7 @@ public final class EngineException extends Exception {
      * @param type The type functor.
      */
     public EngineException(EngineMessage msg, Object ctx, String type) {
-        if (!EngineCopy.isGroundSkel(ctx))
+        if (EngineCopy.getVar(ctx) != null)
             throw new IllegalArgumentException("needs display");
         template = new SkelCompound(new SkelAtom(type), msg.getTemplate(), ctx);
         initCause(msg);
@@ -197,8 +199,8 @@ public final class EngineException extends Exception {
             while (en.display != null && k < en.visor.getMaxStack()) {
                 r = (Intermediate) en.skel;
                 u = (DisplayClause) en.display;
-                Frame.callGoal(r, u, en);
-                SkelAtom sa = Frame.callableToName(en.skel);
+                SpecialBody.callGoal(r, u, en);
+                SkelAtom sa = SpecialBody.callableToName(en.skel);
                 Object val;
                 if (sa != null) {
                     int arity = Frame.callableToArity(en.skel);
@@ -312,9 +314,9 @@ public final class EngineException extends Exception {
      *
      * @param en The engine.
      * @return The detailed message.
-     * @throws IOException Shit happens.
+     * @throws IOException     Shit happens.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     public String getMessage(Engine en)
             throws IOException, EngineException, EngineMessage {
@@ -389,12 +391,12 @@ public final class EngineException extends Exception {
      * @param prop   The properties.
      * @param en     The engine.
      * @return The exception message.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static String errorMake(Object term, Display ref,
-                                    Locale locale, Properties prop,
-                                    Engine en)
+                                   Locale locale, Properties prop,
+                                   Engine en)
             throws EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;
@@ -427,10 +429,10 @@ public final class EngineException extends Exception {
                 SkelCompound sc = (SkelCompound) term;
                 term = sc.args[EngineException.ARG_PRIMARY];
             } else {
-                StringBuilder buf = new StringBuilder();
+                StringWriter buf = new StringWriter();
                 buf.append(prop != null ? prop.getProperty("exception.unknown") : "Unknown exception");
                 buf.append(": ");
-                buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
+                PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
                 return buf.toString();
             }
         }
@@ -456,8 +458,8 @@ public final class EngineException extends Exception {
      * @throws EngineMessage Not a number.
      */
     public static void printStackTrace(Writer wr, Object term, Display ref,
-                                        Locale locale, Properties prop,
-                                        Engine en)
+                                       Locale locale, Properties prop,
+                                       Engine en)
             throws IOException, EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;

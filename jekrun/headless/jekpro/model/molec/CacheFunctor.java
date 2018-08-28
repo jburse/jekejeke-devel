@@ -38,10 +38,10 @@ public final class CacheFunctor extends AbstractCache {
     /**
      * <p>Create a qualified functor name.</p>
      *
-     * @param sa   The atom.
+     * @param sa  The atom.
      * @param fun The module.
-     * @param nsa  The call-site, not null.
-     * @param en   The engine.
+     * @param nsa The call-site, not null.
+     * @param en  The engine.
      * @return The qualified functor name.
      */
     private static SkelAtom lookupFunctor(SkelAtom sa, String fun,
@@ -64,10 +64,10 @@ public final class CacheFunctor extends AbstractCache {
     /**
      * <p>Retrieve a qualified functor name.</p>
      *
-     * @param sa   The atom.
+     * @param sa  The atom.
      * @param fun The module.
-     * @param nsa  The call-site, not null.
-     * @param en   The store.
+     * @param nsa The call-site, not null.
+     * @param en  The store.
      * @return The qualified functor.
      */
     public static SkelAtom getFunctor(SkelAtom sa, String fun,

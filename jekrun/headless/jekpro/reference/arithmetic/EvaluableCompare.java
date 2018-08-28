@@ -2,8 +2,13 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.TermAtomic;
+
+import java.math.BigDecimal;
 
 /**
  * <p>Provides the compare evaluables.</p>
@@ -52,25 +57,44 @@ public final class EvaluableCompare extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.computeExpr(temp[0], ref);
-        Number alfa = EngineMessage.castNumber(en.skel, en.display);
-        en.computeExpr(temp[1], ref);
-        Number beta = EngineMessage.castNumber(en.skel, en.display);
         switch (id) {
             case EVALUABLE_MIN:
+                Object[] temp = ((SkelCompound) en.skel).args;
+                Display ref = en.display;
+                boolean multi = en.computeExpr(temp[0], ref);
+                Display d = en.display;
+                Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
                 en.skel = min(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
-                return;
+                return false;
             case EVALUABLE_MAX:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                multi = en.computeExpr(temp[0], ref);
+                d = en.display;
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                multi = en.computeExpr(temp[1], ref);
+                d = en.display;
+                beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
                 en.skel = max(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
-                return;
+                return false;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -85,30 +109,98 @@ public final class EvaluableCompare extends AbstractSpecial {
     /**
      * <p>Min the two number.</p>
      *
-     * @param a The first number.
-     * @param b The second number.
+     * @param m The first number.
+     * @param n The second number.
      * @return The minimum of the two numbers.
      */
-    private static Number min(Number a, Number b) {
-        if (SpecialCompare.computeCmp(a, b) < 0) {
-            return a;
-        } else {
-            return b;
+    private static Number min(Number m, Number n) {
+        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
+            case SpecialCompare.CATEGORY_INTEGER:
+            case SpecialCompare.CATEGORY_BIG_INTEGER:
+                if (SpecialCompare.compareIntegerArithmetical(m, n) > 0) {
+                    return n;
+                } else {
+                    return m;
+                }
+            case SpecialCompare.CATEGORY_FLOAT:
+                float x = m.floatValue();
+                float y = n.floatValue();
+                if (x > y) {
+                    m = n;
+                    x = y;
+                }
+                return (m instanceof Float ? m :
+                        TermAtomic.makeFloat(x));
+            case SpecialCompare.CATEGORY_DOUBLE:
+                double a = m.doubleValue();
+                double b = n.doubleValue();
+                if (a > b) {
+                    m = n;
+                    a = b;
+                }
+                return (m instanceof Double ? m :
+                        TermAtomic.makeDouble(a));
+            case SpecialCompare.CATEGORY_LONG:
+            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+                BigDecimal u = TermAtomic.widenBigDecimal(m);
+                BigDecimal v = TermAtomic.widenBigDecimal(n);
+                if (u.compareTo(v) > 0) {
+                    m = n;
+                    u = v;
+                }
+                return ((m instanceof Long || m instanceof BigDecimal) ? m :
+                        TermAtomic.normBigDecimal(u));
+            default:
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 
     /**
      * <p>Max the two number.</p>
      *
-     * @param a The first number.
-     * @param b The second number.
+     * @param m The first number.
+     * @param n The second number.
      * @return The minimum of the two numbers.
      */
-    private static Number max(Number a, Number b) {
-        if (SpecialCompare.computeCmp(a, b) > 0) {
-            return a;
-        } else {
-            return b;
+    private static Number max(Number m, Number n) {
+        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
+            case SpecialCompare.CATEGORY_INTEGER:
+            case SpecialCompare.CATEGORY_BIG_INTEGER:
+                if (SpecialCompare.compareIntegerArithmetical(m, n) < 0) {
+                    return n;
+                } else {
+                    return m;
+                }
+            case SpecialCompare.CATEGORY_FLOAT:
+                float x = m.floatValue();
+                float y = n.floatValue();
+                if (x < y) {
+                    m = n;
+                    x = y;
+                }
+                return (m instanceof Float ? m :
+                        TermAtomic.makeFloat(x));
+            case SpecialCompare.CATEGORY_DOUBLE:
+                double a = m.doubleValue();
+                double b = n.doubleValue();
+                if (a < b) {
+                    m = n;
+                    a = b;
+                }
+                return (m instanceof Double ? m :
+                        TermAtomic.makeDouble(a));
+            case SpecialCompare.CATEGORY_LONG:
+            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+                BigDecimal u = TermAtomic.widenBigDecimal(m);
+                BigDecimal v = TermAtomic.widenBigDecimal(n);
+                if (u.compareTo(v) < 0) {
+                    m = n;
+                    u = v;
+                }
+                return ((m instanceof Long || m instanceof BigDecimal) ? m :
+                        TermAtomic.normBigDecimal(u));
+            default:
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 

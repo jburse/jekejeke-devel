@@ -157,7 +157,8 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
      * @return The index.
      */
     public int index(K key) {
-        return (key != null ? HashScrambler.murmur(key.hashCode()) &
+        return (key != null ? HashScrambler.murmur(
+                key.hashCode()) &
                 (table.length - 1) : 0);
     }
 

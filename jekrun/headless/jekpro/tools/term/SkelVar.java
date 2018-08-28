@@ -30,13 +30,22 @@ import jekpro.model.molec.Display;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SkelVar extends AbstractSkel implements Comparable<SkelVar> {
+public final class SkelVar extends AbstractSkel
+        implements Comparable<SkelVar> {
     private static final int CACHE_SIZE = 8;
-    private static final SkelVar[] cache = new SkelVar[CACHE_SIZE];
+    private static final SkelVar[] cachevar = new SkelVar[CACHE_SIZE];
+    private static final SkelVar[][] cachearray = new SkelVar[CACHE_SIZE][];
 
+    /* initialize the caches */
     static {
         for (int i = 0; i < CACHE_SIZE; i++)
-            cache[i] = new SkelVar(i);
+            cachevar[i] = new SkelVar(i);
+        for (int i = 0; i < CACHE_SIZE; i++) {
+            SkelVar[] temp = new SkelVar[i];
+            if (i > 0)
+                System.arraycopy(cachevar, 0, temp, 0, i);
+            cachearray[i] = temp;
+        }
     }
 
     public int id;
@@ -58,8 +67,23 @@ public final class SkelVar extends AbstractSkel implements Comparable<SkelVar> {
      */
     public static SkelVar valueOf(int i) {
         if (i < CACHE_SIZE)
-            return cache[i];
+            return cachevar[i];
         return new SkelVar(i);
+    }
+
+    /**
+     * <p>Create a skel var array, possibly cached.</p>
+     *
+     * @param i The length of the var array.
+     * @return The skel var array.
+     */
+    public static SkelVar[] valueOfArray(int i) {
+        if (i < CACHE_SIZE)
+            return cachearray[i];
+        SkelVar[] temp = new SkelVar[i];
+        for (int j = 0; j < i; j++)
+            temp[j] = SkelVar.valueOf(j);
+        return temp;
     }
 
     /**
@@ -94,8 +118,8 @@ public final class SkelVar extends AbstractSkel implements Comparable<SkelVar> {
     /**
      * <p>Retrieve the serial number of a variable.</p>
      *
-     *  @param ref The display.
-     * @param en The engine, or null.
+     * @param ref The display.
+     * @param en  The engine, or null.
      * @return The serial number.
      */
     public int getValue(Display ref, Engine en) {

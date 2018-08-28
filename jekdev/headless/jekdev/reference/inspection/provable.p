@@ -7,9 +7,9 @@
  * module already loaded.
  *
  * Examples:
- * ?- current_predicate(basic/lists:member/2).
- * Yes
- * ?- current_provable(jekpro/frequent/basic/lists:member/2).
+ * ?- current_predicate(basic/lists:member2/3).
+ * No
+ * ?- current_provable(basic/lists:member2/3).
  * Yes
  *
  * The directly accessible predicates can be tested and enumerated
@@ -18,13 +18,18 @@
  * for accessing and modifying properties of directly
  * accessible predicates.
  *
- * The predicates sys_callable_colon/2 can be used to explicitly invoke
- * the colon (:)/2 and colon colon (::)/2 notation conversion for a
- * callable. The colon colon notation is analogously handled to the
- * colon notation by prepending the receiver and combining the receiver
- * module name. The predicate sys_indicator_colon/2 can be used to
- * explicitly invoke to colon notation conversion for a
- * predicate indicator.
+ * Example:
+ * ?- length(X, 0), callable_property(X, Y), writeq(Y), nl, fail; true.
+ * sys_context('<path>/lists.px')
+ * source_file('<path>/lists.px')
+ * line_no(136)
+ * Yes
+ *
+ * Context and pretty printing information of an atom can be accessed and
+ * modified by the predicates callable_property/2, set_callable_property/3
+ * and reset_callable_property/3. The predicates defined here generalize
+ * the predicates sys_context_property/2 and sys_replace_site/3 from
+ * the Jekejeke Prolog runtime.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -115,3 +120,42 @@ provable_property(I, R) :-
 % reset_provable_property(+Oper, +Property)
 :- public reset_provable_property/2.
 :- special(reset_provable_property/2, 'SpecialProvable', 5).
+
+/**
+ * callable_property(C, Q):
+ * The predicate succeeds for the properties Q of the callable C.
+ */
+% callable_property(+Callable, -Property)
+:- public callable_property/2.
+callable_property(I, R) :-
+   var(R), !,
+   sys_callable_property(I, P),
+   sys_member(R, P).
+callable_property(I, R) :-
+   functor(R, F, A),
+   sys_callable_property_chk(I, F/A, P),
+   sys_member(R, P).
+
+:- private sys_callable_property/2.
+:- special(sys_callable_property/2, 'SpecialProvable', 6).
+
+:- private sys_callable_property_chk/3.
+:- special(sys_callable_property_chk/3, 'SpecialProvable', 7).
+
+/**
+ * set_callable_property(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A except for the property Q which is now set.
+ */
+% reset_callable_property(-Callable, +Property, +Callable)
+:- public set_callable_property/3.
+:- special(set_callable_property/3, 'SpecialProvable', 8).
+
+/**
+ * reset_callable_property(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A except for the property Q which is now reset.
+ */
+% reset_callable_property(-Callable, +Property, +Callable)
+:- public reset_callable_property/3.
+:- special(reset_callable_property/3, 'SpecialProvable', 9).

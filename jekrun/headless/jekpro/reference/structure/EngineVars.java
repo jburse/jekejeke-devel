@@ -1,12 +1,13 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
+import jekpro.model.pretty.NamedDistance;
 import jekpro.model.pretty.PrologReader;
-import jekpro.model.rope.NamedDistance;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import jekpro.tools.term.TermVar;
 import matula.util.data.*;
 
 /**
@@ -36,62 +37,12 @@ import matula.util.data.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class EngineVars {
-    public SetHashLink<TermVar> vars; /* input order */
-    public SetHashLink<TermVar> anon; /* input order */
+    public SetHashLink<Object> vars; /* input order */
+    public SetHashLink<Object> anon; /* input order */
 
     /****************************************************************/
     /* Molec Operations                                             */
     /****************************************************************/
-
-    /**
-     * <p>Check whether the given term is ground.</p>
-     * <p>Tail recursive solution.</p>
-     *
-     * @param t The term skel.
-     * @param d The term display.
-     * @return True if the term is ground, otherwise false.
-     */
-    public static boolean isGround(Object t, Display d) {
-        for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    return false;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] vars = ((SkelCompound) t).vars;
-                if (vars != null) {
-                    int j = 0;
-                    for (; j < vars.length - 1; j++) {
-                        SkelVar v = vars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            if (!isGround(b.skel, b.display))
-                                return false;
-                        } else {
-                            return false;
-                        }
-                    }
-                    SkelVar v = vars[j];
-                    BindVar b = d.bind[v.id];
-                    if (b.display != null) {
-                        t = b.skel;
-                        d = b.display;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return true;
-                }
-            } else {
-                return true;
-            }
-        }
-    }
 
     /**
      * <p>Collect the vars of the given term in the given var set.</p>
@@ -104,63 +55,46 @@ public final class EngineVars {
      */
     public void varInclude(Object t, Display d) {
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    TermVar key = new TermVar(v, d);
-                    if (vars == null) {
-                        vars = new SetHashLink<TermVar>();
-                        vars.add(key);
-                    } else {
-                        if (vars.getKey(key) == null)
-                            vars.add(key);
-                    }
-                    break;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] scvars = ((SkelCompound) t).vars;
-                if (scvars != null) {
-                    int j = 0;
-                    for (; j < scvars.length - 1; j++) {
-                        SkelVar v = scvars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            varInclude(b.skel, b.display);
-                        } else {
-                            TermVar key = new TermVar(v, d);
-                            if (vars == null) {
-                                vars = new SetHashLink<TermVar>();
-                                vars.add(key);
-                            } else {
-                                if (vars.getKey(key) == null)
-                                    vars.add(key);
-                            }
-                        }
-                    }
-                    SkelVar v = scvars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        t = b.skel;
-                        d = b.display;
+                        varInclude(b.skel, b.display);
                     } else {
-                        TermVar key = new TermVar(v, d);
+                        Object key = AbstractTerm.createMolec(v, d);
                         if (vars == null) {
-                            vars = new SetHashLink<TermVar>();
+                            vars = new SetHashLink<Object>();
                             vars.add(key);
                         } else {
                             if (vars.getKey(key) == null)
                                 vars.add(key);
                         }
-                        break;
                     }
-                } else {
-                    break;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
             } else {
+                Object key = AbstractTerm.createMolec(v, d);
+                if (vars == null) {
+                    vars = new SetHashLink<Object>();
+                    vars.add(key);
+                } else {
+                    if (vars.getKey(key) == null)
+                        vars.add(key);
+                }
                 break;
             }
         }
@@ -177,57 +111,42 @@ public final class EngineVars {
      */
     public void varExclude(Object t, Display d) {
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    TermVar key = new TermVar(v, d);
-                    if (vars != null) {
-                        vars.remove(key);
-                        if (vars.size == 0)
-                            vars = null;
-                    }
-                    break;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] scvars = ((SkelCompound) t).vars;
-                if (scvars != null) {
-                    int j = 0;
-                    for (; j < scvars.length - 1; j++) {
-                        SkelVar v = scvars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            varExclude(b.skel, b.display);
-                        } else {
-                            TermVar key = new TermVar(v, d);
-                            if (vars != null) {
-                                vars.remove(key);
-                                if (vars.size == 0)
-                                    vars = null;
-                            }
-                        }
-                    }
-                    SkelVar v = scvars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        t = b.skel;
-                        d = b.display;
+                        varExclude(b.skel, b.display);
                     } else {
-                        TermVar key = new TermVar(v, d);
+                        Object key = AbstractTerm.createMolec(v, d);
                         if (vars != null) {
                             vars.remove(key);
                             if (vars.size == 0)
                                 vars = null;
                         }
-                        break;
                     }
-                } else {
-                    break;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
             } else {
+                Object key = AbstractTerm.createMolec(v, d);
+                if (vars != null) {
+                    vars.remove(key);
+                    if (vars.size == 0)
+                        vars = null;
+                }
                 break;
             }
         }
@@ -252,10 +171,10 @@ public final class EngineVars {
                     d = b.display;
                     continue;
                 }
-                TermVar key = new TermVar(v, d);
+                Object key = AbstractTerm.createMolec(v, d);
                 boolean f;
                 if (vars == null) {
-                    vars = new SetHashLink<TermVar>();
+                    vars = new SetHashLink<Object>();
                     f = false;
                 } else {
                     f = vars.getKey(key) != null;
@@ -263,22 +182,24 @@ public final class EngineVars {
                 if (!f) {
                     vars.add(key);
                     if (anon == null)
-                        anon = new SetHashLink<TermVar>();
+                        anon = new SetHashLink<Object>();
                     anon.add(key);
                 } else {
-                    anon.remove(key);
+                    if (anon != null) {
+                        anon.remove(key);
+                        if (anon.size() == 0)
+                            anon = null;
+                    }
                 }
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
-                if (sc.vars != null) {
-                    int i = 0;
-                    for (; i < sc.args.length - 1; i++)
-                        singsOf(sc.args[i], d);
-                    t = sc.args[i];
-                } else {
+                if (sc.var == null)
                     break;
-                }
+                int i = 0;
+                for (; i < sc.args.length - 1; i++)
+                    singsOf(sc.args[i], d);
+                t = sc.args[i];
             } else {
                 break;
             }
@@ -296,57 +217,22 @@ public final class EngineVars {
     public boolean isAcyclic(Object t, Display d) {
         int undo = 0;
         for (; ; ) {
-            if (t instanceof SkelVar) {
-                SkelVar v = (SkelVar) t;
-                BindVar b = d.bind[v.id];
-                if (b.display != null) {
-                    TermVar key = new TermVar(v, d);
-                    if (vars == null) {
-                        vars = new SetHashLink<TermVar>();
-                        vars.add(key);
-                    } else {
-                        if (vars.getKey(key) == null) {
-                            vars.add(key);
-                        } else {
-                            return false;
-                        }
-                    }
-                    undo++;
-                    t = b.skel;
-                    d = b.display;
-                } else {
-                    break;
-                }
-            } else if (t instanceof SkelCompound) {
-                SkelVar[] scvars = ((SkelCompound) t).vars;
-                if (scvars != null) {
-                    int j = 0;
-                    for (; j < scvars.length - 1; j++) {
-                        SkelVar v = scvars[j];
-                        BindVar b = d.bind[v.id];
-                        if (b.display != null) {
-                            TermVar key = new TermVar(v, d);
-                            if (vars == null) {
-                                vars = new SetHashLink<TermVar>();
-                                vars.add(key);
-                            } else {
-                                if (vars.getKey(key) == null) {
-                                    vars.add(key);
-                                } else {
-                                    return false;
-                                }
-                            }
-                            if (!isAcyclic(b.skel, b.display))
-                                return false;
-                            vars.remove(key);
-                        }
-                    }
-                    SkelVar v = scvars[j];
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        TermVar key = new TermVar(v, d);
+                        Object key = AbstractTerm.createMolec(v, d);
                         if (vars == null) {
-                            vars = new SetHashLink<TermVar>();
+                            vars = new SetHashLink<Object>();
                             vars.add(key);
                         } else {
                             if (vars.getKey(key) == null) {
@@ -355,21 +241,35 @@ public final class EngineVars {
                                 return false;
                             }
                         }
-                        undo++;
-                        t = b.skel;
-                        d = b.display;
-                    } else {
-                        break;
+                        if (!isAcyclic(b.skel, b.display))
+                            return false;
+                        vars.remove(key);
                     }
-                } else {
-                    break;
                 }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                Object key = AbstractTerm.createMolec(v, d);
+                if (vars == null) {
+                    vars = new SetHashLink<Object>();
+                    vars.add(key);
+                } else {
+                    if (vars.getKey(key) == null) {
+                        vars.add(key);
+                    } else {
+                        return false;
+                    }
+                }
+                undo++;
+                t = b.skel;
+                d = b.display;
             } else {
                 break;
             }
         }
         while (undo > 0) {
-            SetEntry<TermVar> entry = vars.getLastEntry();
+            SetEntry<Object> entry = vars.getLastEntry();
             vars.remove(entry.key);
             undo--;
         }
@@ -382,45 +282,44 @@ public final class EngineVars {
 
     /**
      * <p>Complement the variable names.</p>
-     * @param mvs3  The var set.
-     * @param mvs   The anon set, can be null.
-     * @param vars  The old variable names.
-     * @param print The new variable names.
+     *
+     * @param mvs3 The var set, can be null.
+     * @param mvs  The anon set, can be null.
+     * @param vars The old variable names, can be null.
+     * @return The new variable names, can be null.
      */
-    public static void numberVariables(SetHashLink<TermVar> mvs3,
-                                       SetHashLink<TermVar> mvs,
-                                       MapHashLink<TermVar, NamedDistance> vars,
-                                       MapHashLink<TermVar, NamedDistance> print) {
-        SetHash<String> range = namedToCopy(mvs3, mvs, vars, print);
-        restToCopy(mvs3, mvs, range, print);
+    public static MapHashLink<Object, NamedDistance> numberVariables(SetHashLink<Object> mvs3,
+                                                                     SetHashLink<Object> mvs,
+                                                                     MapHashLink<Object, NamedDistance> vars) {
+        MapHashLink<Object, NamedDistance> copy = new MapHashLink<Object, NamedDistance>();
+        SetHash<String> range = namedToCopy(mvs, vars, copy);
+        restToCopy(range, mvs3, mvs, vars, copy);
+        return copy;
     }
 
     /**
      * <p>Copy the variable names, anonymous get underscore ("_").</p>
      *
-     * @param mvs3 The var set.
      * @param mvs  The anon set, can be null.
      * @param vars The variable names, can be null.
      * @param copy The new variable names.
      * @return The name range.
      */
-    private static SetHash<String> namedToCopy(SetHashLink<TermVar> mvs3,
-                                               SetHashLink<TermVar> mvs,
-                                               MapHashLink<TermVar, NamedDistance> vars,
-                                               MapHashLink<TermVar, NamedDistance> copy) {
+    private static SetHash<String> namedToCopy(SetHashLink<Object> mvs,
+                                               MapHashLink<Object, NamedDistance> vars,
+                                               MapHashLink<Object, NamedDistance> copy) {
         if (vars == null)
             return null;
         SetHash<String> range = null;
-        for (MapEntry<TermVar, NamedDistance> entry = vars.getFirstEntry();
+        for (MapEntry<Object, NamedDistance> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            TermVar key = entry.key;
+            Object key = entry.key;
             NamedDistance nd = entry.value;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.add(key, new NamedDistance(0, PrologReader.OP_ANON));
+                NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
             } else {
                 copy.add(key, nd);
             }
-            mvs3.remove(key);
             if (range == null)
                 range = new SetHash<String>();
             range.add(nd.getName());
@@ -436,26 +335,25 @@ public final class EngineVars {
      * @param range The name range.
      * @param copy  The new variable names.
      */
-    private static void restToCopy(SetHashLink<TermVar> mvs3,
-                                   SetHashLink<TermVar> mvs,
-                                   SetHash<String> range,
-                                   MapHashLink<TermVar, NamedDistance> copy) {
+    private static void restToCopy(SetHash<String> range,
+                                   SetHashLink<Object> mvs3,
+                                   SetHashLink<Object> mvs,
+                                   MapHashLink<Object, NamedDistance> vars,
+                                   MapHashLink<Object, NamedDistance> copy) {
         int k = 0;
-        for (SetEntry<TermVar> entry = mvs3.getFirstEntry();
+        for (SetEntry<Object> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
              entry != null; entry = mvs3.successor(entry)) {
-            TermVar key = entry.key;
+            Object key = entry.key;
+            if (vars != null && vars.get(key) != null)
+                continue;
             if (mvs != null && mvs.getKey(key) != null) {
-                copy.add(key, new NamedDistance(0, PrologReader.OP_ANON));
+                NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
             } else {
                 for (; ; ) {
-                    StringBuilder buf = new StringBuilder();
-                    buf.appendCodePoint(k % 26 + 'A');
-                    if (k > 26)
-                        buf.append(k / 26);
+                    String name = SkelVar.sernoToString(k, false);
                     k++;
-                    String name = buf.toString();
                     if (range == null || range.getKey(name) == null) {
-                        copy.add(key, new NamedDistance(0, name));
+                        NamedDistance.addAnon(copy, key, name);
                         break;
                     }
                 }

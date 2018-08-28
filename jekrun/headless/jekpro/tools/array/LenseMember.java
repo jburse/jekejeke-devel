@@ -3,11 +3,11 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -111,37 +111,44 @@ final class LenseMember extends AbstractLense {
      * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
-        Object temp = en.skel;
-        Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
-        en.skel = ((SkelCompound) temp).args[1];
-        en.display = ref;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        Number num = EngineMessage.castInteger(en.skel, en.display);
-        EngineMessage.checkNotLessThanZero(num);
-        int idx = EngineMessage.castIntValue(num);
-        Object res = get(obj, idx, en);
-        res = Types.normJava(encoderet, res);
-        if (res == null)
-            throw new EngineMessage(EngineMessage.representationError(
-                    AbstractFactory.OP_REPRESENTATION_NULL));
-        en.skel = AbstractTerm.getSkel(res);
-        en.display = AbstractTerm.getDisplay(res);
+        try {
+            Object temp = en.skel;
+            Display ref = en.display;
+            Object obj;
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+            } else {
+                obj = null;
+            }
+            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            SpecialEval.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = get(obj, idx);
+            res = Types.normJava(encoderet, res);
+            if (res == null)
+                throw new EngineMessage(EngineMessage.representationError(
+                        AbstractFactory.OP_REPRESENTATION_NULL));
+            en.skel = AbstractTerm.getSkel(res);
+            en.display = AbstractTerm.getDisplay(res);
+            Object check = AbstractTerm.getMarker(res);
+            return (check != null && ((MutableBit) check).getBit());
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
     }
 
     /**
      * <p>Retrieve the element at the specified index.</p>
      *
-     * @param o  The array.
-     * @param i  The index.
-     * @param en The engine.
+     * @param o The array.
+     * @param i The index.
      * @return The element.
      * @throws EngineMessage FFI error.
      */
-    private Object get(Object o, int i, Engine en)
+    private Object get(Object o, int i)
             throws EngineMessage {
         try {
             return Array.get(o, i);
@@ -149,12 +156,12 @@ final class LenseMember extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_INDEX,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         }
     }
 

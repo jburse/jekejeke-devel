@@ -1,6 +1,7 @@
 package jekdev.reference.system;
 
 import jekpro.frequent.stream.ForeignStream;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
@@ -130,7 +131,6 @@ final class MemoryOpts {
      * <p>Decode the memory options.</p>
      *
      * @param opt The memory options term.
-     * @return The memory options.
      * @throws InterpreterMessage Validation error.
      */
     void decodeOpenOptions(Object opt)
@@ -151,12 +151,12 @@ final class MemoryOpts {
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(
-                        InterpreterMessage.domainError(ForeignStream.OP_OPEN_OPTION, temp));
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        ForeignStream.OP_OPEN_OPTION, temp));
             }
             opt = ((TermCompound) opt).getArg(1);
         }
-        if (opt.equals(Knowledgebase.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(opt);

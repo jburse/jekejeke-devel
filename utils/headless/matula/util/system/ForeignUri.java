@@ -69,23 +69,19 @@ public final class ForeignUri {
      * @return The first parameter name.
      */
     public static String sysQueryName(String query) {
-        try {
-            if ("".equals(query))
-                return null;
-            int k = query.indexOf(CHAR_AMP);
-            String pair;
-            if (k != -1) {
-                pair = query.substring(0, k);
-            } else {
-                pair = query;
-            }
-            k = pair.indexOf(CHAR_EQ);
-            if (k != -1)
-                pair = pair.substring(0, k);
-            return decode(pair, ENCODING_UTF8);
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
+        if (ForeignFile.STRING_EMPTY.equals(query))
+            return null;
+        int k = query.indexOf(CHAR_AMP);
+        String pair;
+        if (k != -1) {
+            pair = query.substring(0, k);
+        } else {
+            pair = query;
         }
+        k = pair.indexOf(CHAR_EQ);
+        if (k != -1)
+            pair = pair.substring(0, k);
+        return decode(pair, ENCODING_UTF8);
     }
 
     /**
@@ -96,27 +92,23 @@ public final class ForeignUri {
      * @return The first parameter value.
      */
     public static String sysQueryValue(String query) {
-        try {
-            if ("".equals(query))
-                return null;
-            int k = query.indexOf(CHAR_AMP);
-            String pair;
-            if (k != -1) {
-                pair = query.substring(0, k);
-            } else {
-                pair = query;
-            }
-            k = pair.indexOf(CHAR_EQ);
-            String value;
-            if (k != -1) {
-                value = pair.substring(k + 1);
-            } else {
-                value = "";
-            }
-            return decode(value, ENCODING_UTF8);
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
+        if (ForeignFile.STRING_EMPTY.equals(query))
+            return null;
+        int k = query.indexOf(CHAR_AMP);
+        String pair;
+        if (k != -1) {
+            pair = query.substring(0, k);
+        } else {
+            pair = query;
         }
+        k = pair.indexOf(CHAR_EQ);
+        String value;
+        if (k != -1) {
+            value = pair.substring(k + 1);
+        } else {
+            value = ForeignFile.STRING_EMPTY;
+        }
+        return decode(value, ENCODING_UTF8);
     }
 
     /**
@@ -126,13 +118,13 @@ public final class ForeignUri {
      * @return The query rest.
      */
     public static String sysQueryRest(String query) {
-        if ("".equals(query))
+        if (ForeignFile.STRING_EMPTY.equals(query))
             return null;
         int k = query.indexOf(CHAR_AMP);
         if (k != -1) {
             query = query.substring(k + 1);
         } else {
-            query = "";
+            query = ForeignFile.STRING_EMPTY;
         }
         return query;
     }
@@ -148,16 +140,13 @@ public final class ForeignUri {
      */
     public static String sysQueryMake(String name, String value,
                                       String rest) {
-        try {
-            name = encode(name, false, NEEDS_COMP, ENCODING_UTF8);
-            if (!"".equals(value))
-                name += "=" + encode(value, false, NEEDS_COMP, ENCODING_UTF8);
-            if (!"".equals(rest))
-                name += "&" + rest;
-            return name;
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
-        }
+        name = encode(name, false, NEEDS_COMP, ENCODING_UTF8);
+        if (!ForeignFile.STRING_EMPTY.equals(value))
+            name += "=" + encode(value, false, NEEDS_COMP, ENCODING_UTF8);
+        if (!ForeignFile.STRING_EMPTY.equals(rest))
+            name += "&" + rest;
+        return name;
+
     }
 
     /*******************************************************************/
@@ -174,8 +163,8 @@ public final class ForeignUri {
     public static String sysSpecScheme(String spec) {
         int k = getSchemeLength(spec);
         if (k == SCHEME_DRIVE)
-            return "";
-        return (k != 0 ? spec.substring(0, k - 1) : "");
+            return ForeignFile.STRING_EMPTY;
+        return (k != 0 ? spec.substring(0, k - 1) : ForeignFile.STRING_EMPTY);
     }
 
     /**
@@ -188,9 +177,9 @@ public final class ForeignUri {
     public static String sysSpecAuthority(String spec) {
         int k = getSchemeLength(spec);
         if (k == SCHEME_DRIVE)
-            return "";
+            return ForeignFile.STRING_EMPTY;
         if (!spec.startsWith("//", k))
-            return "";
+            return ForeignFile.STRING_EMPTY;
         int j = spec.indexOf("/", k + 2);
         if (j == -1)
             return spec.substring(k + 2);
@@ -212,7 +201,7 @@ public final class ForeignUri {
             return spec.substring(k);
         int j = spec.indexOf("/", k + 2);
         if (j == -1)
-            return "";
+            return ForeignFile.STRING_EMPTY;
         return spec.substring(j);
     }
 
@@ -279,15 +268,15 @@ public final class ForeignUri {
                                      String authority,
                                      String path)
             throws MalformedURLException {
-        if (!"".equals(authority)) {
+        if (!ForeignFile.STRING_EMPTY.equals(authority)) {
             if (!ForeignUri.isAuthority(authority))
                 throw new MalformedURLException("illegal authority");
-            if (!"".equals(path) &&
+            if (!ForeignFile.STRING_EMPTY.equals(path) &&
                     ForeignFile.sysPathIsRelative(path))
                 throw new MalformedURLException("path relative");
             path = "//" + authority + path;
         }
-        if (!"".equals(scheme)) {
+        if (!ForeignFile.STRING_EMPTY.equals(scheme)) {
             if (!ForeignUri.isScheme(scheme))
                 throw new MalformedURLException("illegal scheme");
             path = scheme + ":" + path;
@@ -337,18 +326,14 @@ public final class ForeignUri {
      * @return The decoded hash.
      */
     public static String sysUriHash(String adr) {
-        try {
-            int k = adr.indexOf(CHAR_HASH);
-            String hash;
-            if (k != -1) {
-                hash = adr.substring(k + 1);
-            } else {
-                hash = "";
-            }
-            return decode(hash, ENCODING_UTF8);
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
+        int k = adr.indexOf(CHAR_HASH);
+        String hash;
+        if (k != -1) {
+            hash = adr.substring(k + 1);
+        } else {
+            hash = ForeignFile.STRING_EMPTY;
         }
+        return decode(hash, ENCODING_UTF8);
     }
 
     /**
@@ -366,7 +351,7 @@ public final class ForeignUri {
         if (k != -1) {
             query = adr.substring(k + 1);
         } else {
-            query = "";
+            query = ForeignFile.STRING_EMPTY;
         }
         return query;
     }
@@ -379,17 +364,13 @@ public final class ForeignUri {
      * @return The decoded spec.
      */
     public static String sysUriSpec(String adr) {
-        try {
-            int k = adr.indexOf(CHAR_HASH);
-            if (k != -1)
-                adr = adr.substring(0, k);
-            k = adr.indexOf(CHAR_ASK);
-            if (k != -1)
-                adr = adr.substring(0, k);
-            return decode(adr, ENCODING_UTF8);
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
-        }
+        int k = adr.indexOf(CHAR_HASH);
+        if (k != -1)
+            adr = adr.substring(0, k);
+        k = adr.indexOf(CHAR_ASK);
+        if (k != -1)
+            adr = adr.substring(0, k);
+        return decode(adr, ENCODING_UTF8);
     }
 
     /**
@@ -403,16 +384,12 @@ public final class ForeignUri {
      */
     public static String sysUriMake(String spec, String query,
                                     String hash) {
-        try {
-            spec = encode(spec, false, NEEDS_SPEC, ENCODING_UTF8);
-            if (!"".equals(query))
-                spec += "?" + query;
-            if (!"".equals(hash))
-                spec += "#" + encode(hash, false, NEEDS_HASH, ENCODING_UTF8);
-            return spec;
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
-        }
+        spec = encode(spec, false, NEEDS_SPEC, ENCODING_UTF8);
+        if (!ForeignFile.STRING_EMPTY.equals(query))
+            spec += "?" + query;
+        if (!ForeignFile.STRING_EMPTY.equals(hash))
+            spec += "#" + encode(hash, false, NEEDS_HASH, ENCODING_UTF8);
+        return spec;
     }
 
     /*******************************************************************/
@@ -430,7 +407,8 @@ public final class ForeignUri {
         String scheme = ForeignUri.sysSpecScheme(spec);
         String authority = ForeignUri.sysSpecAuthority(spec);
 
-        if ("".equals(scheme) && "".equals(authority)) {
+        if (ForeignFile.STRING_EMPTY.equals(scheme) &&
+                ForeignFile.STRING_EMPTY.equals(authority)) {
             String path = ForeignUri.sysSpecPath(spec);
             return ForeignFile.sysPathIsRelative(path);
         } else {
@@ -456,7 +434,8 @@ public final class ForeignUri {
         String scheme2 = ForeignUri.sysSpecScheme(spec2);
         String authority2 = ForeignUri.sysSpecAuthority(spec2);
 
-        if ("".equals(scheme2) && "".equals(authority2)) {
+        if (ForeignFile.STRING_EMPTY.equals(scheme2) &&
+                ForeignFile.STRING_EMPTY.equals(authority2)) {
             String path1 = ForeignUri.sysSpecPath(spec1);
             String path2 = ForeignUri.sysSpecPath(spec2);
             path1 = ForeignFile.sysPathAbsolute(path1, path2);
@@ -490,7 +469,8 @@ public final class ForeignUri {
             String path1 = ForeignUri.sysSpecPath(spec1);
             String path2 = ForeignUri.sysSpecPath(spec2);
             path1 = ForeignFile.sysPathRelative(path1, path2);
-            spec1 = ForeignUri.sysSpecMake("", "", path1);
+            spec1 = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                    ForeignFile.STRING_EMPTY, path1);
             String query = ForeignUri.sysUriQuery(b);
             String hash = ForeignUri.sysUriHash(b);
             return ForeignUri.sysUriMake(spec1, query, hash);
@@ -518,10 +498,10 @@ public final class ForeignUri {
         if (SCHEME_FILE.equals(scheme)) {
             /* remove the query for file */
             String hash = ForeignUri.sysUriHash(adr);
-            adr = ForeignUri.sysUriMake(spec, "", hash);
+            adr = ForeignUri.sysUriMake(spec, ForeignFile.STRING_EMPTY, hash);
         } else {
             String query = ForeignUri.sysUriQuery(adr);
-            query = ForeignUri.decodeQuery(query);
+            query = ForeignUri.decodeEncodeQuery(query);
             String hash = ForeignUri.sysUriHash(adr);
             adr = ForeignUri.sysUriMake(spec, query, hash);
             adr = derefUri(adr);
@@ -573,24 +553,27 @@ public final class ForeignUri {
         if (SCHEME_JAR.equals(scheme)) {
             int k = path.lastIndexOf("!/");
             if (k != -1) {
-                spec = sysSpecMake("", authority, path.substring(0, k));
+                spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path.substring(0, k));
                 spec = ForeignUri.sysCanonicalUri(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec + path.substring(k));
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, ForeignFile.STRING_EMPTY,
+                        spec + path.substring(k));
             } else {
-                spec = sysSpecMake("", authority, path);
+                spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path);
                 spec = ForeignUri.sysCanonicalUri(spec);
-                spec = ForeignUri.sysSpecMake(SCHEME_JAR, "", spec);
+                spec = ForeignUri.sysSpecMake(SCHEME_JAR, ForeignFile.STRING_EMPTY, spec);
             }
         } else if (SCHEME_FILE.equals(scheme)) {
             /* remove the authority for file */
-            spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
-        } else if ("".equals(scheme) &&
-                "".equals(authority) &&
+            spec = ForeignUri.sysSpecMake(SCHEME_FILE, ForeignFile.STRING_EMPTY,
+                    ForeignFile.sysCanonicalPath(path));
+        } else if (ForeignFile.STRING_EMPTY.equals(scheme) &&
+                ForeignFile.STRING_EMPTY.equals(authority) &&
                 !ForeignFile.sysPathIsRelative(path)) {
             /* remove the authority for file */
-            spec = ForeignUri.sysSpecMake(SCHEME_FILE, "", ForeignFile.sysCanonicalPath(path));
-        } else if ("".equals(scheme) &&
-                !"".equals(authority)) {
+            spec = ForeignUri.sysSpecMake(SCHEME_FILE, ForeignFile.STRING_EMPTY,
+                    ForeignFile.sysCanonicalPath(path));
+        } else if (ForeignFile.STRING_EMPTY.equals(scheme) &&
+                !ForeignFile.STRING_EMPTY.equals(authority)) {
             spec = ForeignUri.sysSpecMake(SCHEME_HTTP, authority, path);
         } else {
             /* */
@@ -611,12 +594,7 @@ public final class ForeignUri {
      * @return The encoded uri.
      */
     public static String sysUriEncode(String adr) {
-        try {
-            adr = encode(adr, true, null, ENCODING_UTF8);
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
-        }
-        return adr;
+        return encode(adr, true, null, ENCODING_UTF8);
     }
 
     /**
@@ -632,9 +610,8 @@ public final class ForeignUri {
         String query = ForeignUri.sysUriQuery(adr);
         String hash = ForeignUri.sysUriHash(adr);
 
-        query = ForeignUri.decodeQuery(query);
-        adr = sysUriMake(spec, query, hash);
-        return adr;
+        query = ForeignUri.decodeEncodeQuery(query);
+        return ForeignUri.sysUriMake(spec, query, hash);
     }
 
     /**
@@ -644,24 +621,20 @@ public final class ForeignUri {
      * @param s The query.
      * @return The decoded query.
      */
-    private static String decodeQuery(String s) {
-        try {
-            if ("".equals(s))
-                return "";
-            StringBuilder buf = new StringBuilder();
-            int k1 = 0;
-            int k = s.indexOf(CHAR_AMP, k1);
-            while (k != -1) {
-                buf.append(decodePair(s.substring(k1, k)));
-                buf.appendCodePoint(CHAR_AMP);
-                k1 = k + 1;
-                k = s.indexOf(CHAR_AMP, k1);
-            }
-            buf.append(decodePair(s.substring(k1)));
-            return buf.toString();
-        } catch (UnsupportedEncodingException x) {
-            throw new RuntimeException(SHOULDNT_HAPPEN, x);
+    private static String decodeEncodeQuery(String s) {
+        if (ForeignFile.STRING_EMPTY.equals(s))
+            return ForeignFile.STRING_EMPTY;
+        StringBuilder buf = new StringBuilder();
+        int k1 = 0;
+        int k = s.indexOf(CHAR_AMP, k1);
+        while (k != -1) {
+            buf.append(decodeEncodePair(s.substring(k1, k)));
+            buf.appendCodePoint(CHAR_AMP);
+            k1 = k + 1;
+            k = s.indexOf(CHAR_AMP, k1);
         }
+        buf.append(decodeEncodePair(s.substring(k1)));
+        return buf.toString();
     }
 
     /**
@@ -670,20 +643,18 @@ public final class ForeignUri {
      *
      * @param s The pair.
      * @return The decoded pair.
-     * @throws UnsupportedEncodingException Encoding problem.
      */
-    private static String decodePair(String s)
-            throws UnsupportedEncodingException {
+    private static String decodeEncodePair(String s) {
         int k = s.indexOf(CHAR_EQ);
         String value;
         if (k != -1) {
             value = s.substring(k + 1);
             s = s.substring(0, k);
         } else {
-            value = "";
+            value = ForeignFile.STRING_EMPTY;
         }
         s = encode(decode(s, ENCODING_UTF8), false, NEEDS_COMP, ENCODING_UTF8);
-        if (!"".equals(value))
+        if (!ForeignFile.STRING_EMPTY.equals(value))
             s += "=" + encode(decode(value, ENCODING_UTF8), false, NEEDS_COMP, ENCODING_UTF8);
         return s;
     }
@@ -702,36 +673,39 @@ public final class ForeignUri {
      * @return The URL encoded string.
      */
     public static String encode(String s, boolean above,
-                                String needs, String cset)
-            throws UnsupportedEncodingException {
-        StringBuilder buf = null;
-        StringBuilder enc = null;
-        int n = s.length();
-        int pos = 0;
-        while (pos < n) {
-            int ch = s.codePointAt(pos);
-            if ((above && (ch >= 0x80 || ch == '+' || ch <= 0x20)) ||
-                    (needs != null && needs.indexOf(ch) != -1)) {
-                if (buf == null)
-                    buf = new StringBuilder(s.substring(0, pos));
-                if (enc == null)
-                    enc = new StringBuilder();
-                enc.appendCodePoint(ch);
-            } else {
-                if (enc != null) {
-                    hexDigits(buf, enc, cset);
-                    enc = null;
+                                String needs, String cset) {
+        try {
+            StringBuilder buf = null;
+            StringBuilder enc = null;
+            int n = s.length();
+            int pos = 0;
+            while (pos < n) {
+                int ch = s.codePointAt(pos);
+                if ((above && (ch >= 0x80 || ch == '+' || ch <= 0x20)) ||
+                        (needs != null && needs.indexOf(ch) != -1)) {
+                    if (buf == null)
+                        buf = new StringBuilder(s.substring(0, pos));
+                    if (enc == null)
+                        enc = new StringBuilder();
+                    enc.appendCodePoint(ch);
+                } else {
+                    if (enc != null) {
+                        hexDigits(buf, enc, cset);
+                        enc = null;
+                    }
+                    if (buf != null)
+                        buf.appendCodePoint(ch);
                 }
-                if (buf != null)
-                    buf.appendCodePoint(ch);
+                pos += Character.charCount(pos);
             }
-            pos += Character.charCount(pos);
+            if (enc != null)
+                hexDigits(buf, enc, cset);
+            if (buf != null)
+                return buf.toString();
+            return s;
+        } catch (UnsupportedEncodingException x) {
+            throw new RuntimeException(SHOULDNT_HAPPEN, x);
         }
-        if (enc != null)
-            hexDigits(buf, enc, cset);
-        if (buf != null)
-            return buf.toString();
-        return s;
     }
 
     /**
@@ -774,55 +748,58 @@ public final class ForeignUri {
      * @param cset The character set.
      * @return The URL decoded string.
      */
-    public static String decode(String s, String cset)
-            throws UnsupportedEncodingException {
-        StringBuilder buf = null;
-        ByteArrayOutputStream bs = null;
-        int n = s.length();
-        int pos = 0;
-        while (pos < n) {
-            int ch = s.codePointAt(pos);
-            if (ch == '%') {
-                int k = pos;
-                pos += Character.charCount(ch);
-                int i = 0;
-                int val;
-                int octet = 0;
-                while (pos < n && i < 2 &&
-                        (val = digitHex(ch = s.codePointAt(pos))) != -1) {
-                    octet = octet * 16 + val;
+    public static String decode(String s, String cset) {
+        try {
+            StringBuilder buf = null;
+            ByteArrayOutputStream bs = null;
+            int n = s.length();
+            int pos = 0;
+            while (pos < n) {
+                int ch = s.codePointAt(pos);
+                if (ch == '%') {
+                    int k = pos;
                     pos += Character.charCount(ch);
-                    i++;
-                }
-                if (i == 2) {
-                    if (buf == null)
-                        buf = new StringBuilder(s.substring(0, k));
-                    if (bs == null)
-                        bs = new ByteArrayOutputStream();
-                    bs.write(octet);
+                    int i = 0;
+                    int val;
+                    int octet = 0;
+                    while (pos < n && i < 2 &&
+                            (val = digitHex(ch = s.codePointAt(pos))) != -1) {
+                        octet = octet * 16 + val;
+                        pos += Character.charCount(ch);
+                        i++;
+                    }
+                    if (i == 2) {
+                        if (buf == null)
+                            buf = new StringBuilder(s.substring(0, k));
+                        if (bs == null)
+                            bs = new ByteArrayOutputStream();
+                        bs.write(octet);
+                    } else {
+                        if (bs != null) {
+                            buf.append(bs.toString(cset));
+                            bs = null;
+                        }
+                        if (buf != null)
+                            buf.append(s.substring(k, pos));
+                    }
                 } else {
                     if (bs != null) {
                         buf.append(bs.toString(cset));
                         bs = null;
                     }
                     if (buf != null)
-                        buf.append(s.substring(k, pos));
+                        buf.appendCodePoint(ch);
+                    pos += Character.charCount(ch);
                 }
-            } else {
-                if (bs != null) {
-                    buf.append(bs.toString(cset));
-                    bs = null;
-                }
-                if (buf != null)
-                    buf.appendCodePoint(ch);
-                pos += Character.charCount(ch);
             }
+            if (bs != null)
+                buf.append(bs.toString(cset));
+            if (buf != null)
+                return buf.toString();
+            return s;
+        } catch (UnsupportedEncodingException x) {
+            throw new RuntimeException(SHOULDNT_HAPPEN, x);
         }
-        if (bs != null)
-            buf.append(bs.toString(cset));
-        if (buf != null)
-            return buf.toString();
-        return s;
     }
 
     /**

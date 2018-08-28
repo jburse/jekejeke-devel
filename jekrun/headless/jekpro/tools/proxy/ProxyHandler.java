@@ -1,16 +1,18 @@
 package jekpro.tools.proxy;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.MutableBit;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -40,7 +42,7 @@ import java.lang.reflect.Proxy;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ProxyHandler implements InterfaceHandler {
+public final class ProxyHandler implements InvocationHandler {
     private final AbstractSource src;
     private Class gener;
     private MapHash<Method, AbstractExecutor> execs = new MapHash<Method, AbstractExecutor>();
@@ -129,7 +131,7 @@ final class ProxyHandler implements InterfaceHandler {
             exe = createFunction(method);
             if (exe == null)
                 exe = createMethod(method);
-            exe.setHandler(this);
+            exe.setSource(getSource());
             execs.add(method, exe);
         }
         return exe;
@@ -171,7 +173,7 @@ final class ProxyHandler implements InterfaceHandler {
      * @param size The size.
      * @return The initialized state.
      */
-    public InterfaceState createState(int size) {
+    public ProxyState createState(int size) {
         ProxyState state = new ProxyState(this, size);
         for (int i = 0; i < size; i++)
             state.set_at(i, src.getStore().foyer.ATOM_NIL);
@@ -192,8 +194,11 @@ final class ProxyHandler implements InterfaceHandler {
             throw new ArrayIndexOutOfBoundsException();
         Object m = state.at(idx);
         int size = Display.displaySize(m);
-        Display d = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        return AbstractTerm.createTermWrapped(m, d);
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        AbstractTerm res = AbstractTerm.createTermWrapped(m, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**
@@ -269,10 +274,10 @@ final class ProxyHandler implements InterfaceHandler {
                 continue;
             int flags = entry.value.intValue();
             if ((flags & AbstractSource.MASK_IMPT_AUTO) == 0 ||
-                (flags & AbstractSource.MASK_IMPT_MODL) == 0 ||
-                (flags & AbstractSource.MASK_IMPT_REEX) == 0)
+                    (flags & AbstractSource.MASK_IMPT_MODL) == 0 ||
+                    (flags & AbstractSource.MASK_IMPT_REEX) == 0)
                 continue;
-            Class clazz = ((AbstractAuto)entry.key).getAuto();
+            Class clazz = ((AbstractAuto) entry.key).getAuto();
             if (clazz == null || !clazz.isInterface())
                 continue;
             list.add(clazz);

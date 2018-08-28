@@ -1,7 +1,9 @@
 /**
- * This module provides additional integer predicates. The predicates
- * between/3 and above/2 allow enumerating integers. The predicate
- * plus/3 provides a multi-directional addition.
+ * This module provides additional number predicates. The predicates
+ * between/3 and above/2 allow enumerating numbers in a given range
+ * by the unit step. For both predicates the type of the result is
+ * the type of the lower bound. The predicate above/2 doesn't have
+ * an upper bound and will return numbers forever.
  *
  * Examples:
  * ?- between(1, 3, X).
@@ -10,6 +12,12 @@
  * X = 3
  * ?- between(1, 3, 4).
  * No
+ *
+ * The predicates plus/3 and succ/2 allow solving primitive numeric
+ * addition equations. These predicates will not enumerate solutions,
+ * but they will work in different modes. The predicate plus/3
+ * requires at least two instantiated arguments and the predicate
+ * succ/2 requires at least one instantiated argument.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,87 +44,68 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/frequent/advanced)).
 
 :- module(arith, []).
 
 /**
  * between(L, H, X):
- * The predicate succeeds for every integer X between the two integers L and H.
+ * The predicate succeeds in unit steps for every
+ * number X between the two numbers L and H.
  */
 % between(+Integer, +Integer, -Integer)
 :- public between/3.
-between(L, _, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-between(L, _, _) :-
-   \+ integer(L),
-   throw(error(type_error(integer,L),_)).
-between(_, H, _) :-
-   var(H),
-   throw(error(instantiation_error,_)).
-between(_, H, _) :-
-   \+ integer(H),
-   throw(error(type_error(integer,H),_)).
 between(L, H, X) :-
    var(X), !,
-   L =< H,
-   between2(L, H, X).
+   sys_between(L, H, X).
 between(L, H, X) :-
-   integer(X), !,
    L =< X,
    X =< H.
-between(_, _, X) :-
-   throw(error(type_error(integer,X),_)).
 
-% between2(+Integer, +Integer, -Integer)
-:- private between2/3.
-between2(L, H, X) :-
-   (  L = H -> !; true),
-   X = L.
-between2(L, H, X) :-
-   Y is L+1,
-   between2(Y, H, X).
+:- private sys_between/3.
+:- special(sys_between/3, 'SpecialArith', 0).
 
 /**
  * above(L, X):
- * The predicate succeeds for every integer X above the integer L.
+ * The predicate succeeds in unit steps for every
+ * number X above the number L.
  */
 % above(+Integer, -Integer)
 :- public above/2.
-above(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-above(L, _) :-
-   \+ integer(L),
-   throw(error(type_error(integer,L),_)).
 above(L, X) :-
    var(X), !,
-   above2(L, X).
+   sys_above(L, X).
 above(L, X) :-
-   integer(X), !,
    L =< X.
-above(_, X) :-
-   throw(error(type_error(integer,X),_)).
 
-:- private above2/2.
-above2(L, X) :-
-   X = L.
-above2(L, X) :-
-   Y is L+1,
-   above2(Y, X).
+:- private sys_above/2.
+:- special(sys_above/2, 'SpecialArith', 1).
 
 /**
  * plus(A, B, C):
- * The predicate succeeds for numbers A, B and C such that A+B equals C.
- * At least two arguments have to be instantiated.
+ * The predicate succeeds for numbers A, B and C such that
+ * A+B equals C. At least two arguments have to be instantiated.
  */
 % plus(+Number, +Number, -Number)
 :- public plus/3.
 plus(A, B, C) :-
-   var(C), !,
-   C is A+B.
-plus(A, B, C) :-
    var(A), !,
    A is C-B.
 plus(A, B, C) :-
+   var(B), !,
    B is C-A.
+plus(A, B, C) :-
+   C is A+B.
+
+/**
+ * succ(A, B):
+ * The predicate succeeds for numbers A and B such that
+ * A+1 equals B. At least one arguments has to be instantiated.
+ */
+% succ(+Number, -Number)
+:- public succ/2.
+succ(A, B) :-
+   var(A), !,
+   A is B-1.
+succ(A, B) :-
+   B is A+1.

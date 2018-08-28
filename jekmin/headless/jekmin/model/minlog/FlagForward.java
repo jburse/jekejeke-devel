@@ -5,7 +5,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Store;
 import matula.util.data.MapHash;
 
 /**
@@ -68,7 +67,7 @@ public final class FlagForward extends AbstractFlag {
     public Object getFlag(Engine en) {
         switch (id) {
             case FLAG_SYS_VERIFY:
-                return en.store.switchToAtom((en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0);
+                return AbstractFlag.switchToAtom((en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -83,10 +82,11 @@ public final class FlagForward extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en) throws EngineMessage {
+    public boolean setFlag(Object m, Display d, Engine en)
+            throws EngineMessage {
         switch (id) {
             case FLAG_SYS_VERIFY:
-                en.visor.setVerify(Store.atomToSwitch(m, d));
+                en.visor.setVerify(AbstractFlag.atomToSwitch(m, d));
                 return true;
             default:
                 throw new IllegalArgumentException("illegal flag");

@@ -2,13 +2,15 @@ package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
-import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.PositionKey;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
@@ -16,6 +18,7 @@ import matula.util.system.OpenOpts;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -58,14 +61,10 @@ import java.util.Comparator;
  * <tr valign="baseline"><td>Binary Stream</td><td>OutputStream</td></tr>
  * </table>
  * <p>
- * The methods findKey(), findPrefix() and keyToSpec() do relative file
- * name translation. The translation corresponds to the Prolog predicates
- * absolute_file_name/[2,3].
- * <p>
- * The toString() methods convert a term to a string. The unparseTerm()
- * methods convert a term to a string or stream. The following flags are
- * recognized. The method with an option term recognizes all options from
- * the write_term/2 predicate. The following flags are available:
+ * The unparseTerm() methods convert a term to a string or stream. The
+ * following flags are recognized. The method with an option term
+ * recognizes all options from the write_term/2 predicate. The
+ * following flags are available:
  * <p>
  * <ul>
  * <li><b>FLAG_QUOTED:</b> Quote atoms when necessary.</li>
@@ -110,20 +109,6 @@ public final class Interpreter implements Comparator<Object> {
     public final static int FLAG_NUMBERVARS = PrologWriter.FLAG_NUMV;
     public final static int FLAG_IGNORE_OPS = PrologWriter.FLAG_IGNO;
     public final static int FLAG_IGNORE_MOD = PrologWriter.FLAG_IGNM;
-
-    /**
-     * <p>Create an interpreter.</p>
-     *
-     * @param k The knowledgebase.
-     * @param i The controller.
-     */
-    public Interpreter(Knowledgebase k, Controller i) {
-        AbstractStore store = (AbstractStore) k.getStore();
-        Supervisor visor = (Supervisor) i.getVisor();
-
-        engine = new Engine(store, visor);
-        engine.proxy = this;
-    }
 
     /**
      * <p>Retrieve the knowledge base.</p>
@@ -171,44 +156,26 @@ public final class Interpreter implements Comparator<Object> {
     /*****************************************************************/
 
     /**
-     * <p>Create a call-in. This amounts to the comprehension "{ void |
-     * true, &lt;custom&gt; }" where "&lt;custom;&gt;" is the Java code
-     * that is called during the interaction.</p>
+     * <p>Create a call-in.</p>
      *
      * @return The call-in.
      */
     public CallIn iterator() {
-        return new CallIn(AbstractTerm.VOID_OBJ,
-                getKnowledgebase().getLobby().GOAL_TRUE, this);
+        return new CallIn(getKnowledgebase().getLobby().GOAL_TRUE, this);
     }
 
     /**
-     * <p>Create a call-in. This amounts to the comprehension "{ void |
-     * &lt;goal&gt;, &lt;custom&gt; }" where "&lt;custom&gt;" is the
-     * Java code that is called during the interaction.</p>
+     * <p>Create a call-in.</p>
      *
      * @param goal The goal, non-null.
      * @return The call-in.
      */
     public CallIn iterator(Object goal) {
-        return new CallIn(AbstractTerm.VOID_OBJ, goal, this);
-    }
-
-    /**
-     * <p>Create a call-in. This amounts to the comprehension "{ &lt;result&gt; |
-     * &lt;goal&gt;, &lt;custom&gt; }" where "&lt;custom&gt;" is the
-     * Java code that is called during the interaction.</p>
-     *
-     * @param result The result, non-null.
-     * @param goal   The goal, non-null.
-     * @return The call-in.
-     */
-    public CallIn iterator(Object result, Object goal) {
-        return new CallIn(result, goal, this);
+        return new CallIn(goal, this);
     }
 
     /*****************************************************************/
-    /* AbstractTerm Comparison                                               */
+    /* AbstractTerm Comparison                                       */
     /*****************************************************************/
 
     /**
@@ -265,82 +232,6 @@ public final class Interpreter implements Comparator<Object> {
         }
     }
 
-    /*****************************************************************/
-    /* File Probing                                                  */
-    /*****************************************************************/
-
-    /**
-     * <p>Find a prefix according to the auto loader.</p>
-     *
-     * @param path The path.
-     * @param key  The call-site, or null.
-     * @param mask The mask.
-     * @return The prefixed path, or null.
-     * @throws InterpreterMessage Shit happens.
-     */
-    public String findPrefix(String path, String key, int mask)
-            throws InterpreterMessage {
-        String res;
-        try {
-            AbstractSource scope = (!"".equals(key) ?
-                    AbstractSource.keyToSource(key, engine.store) : null);
-            AbstractSource src = (scope != null ?
-                    scope : engine.store.user);
-            res = CacheModule.findPrefix(path, src, mask);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return res;
-    }
-
-    /**
-     * <p>Find a key according to the auto loader.</p>
-     *
-     * @param path The path.
-     * @param key  The call-site, or null.
-     * @param mask The mask.
-     * @return The source key.
-     * @throws InterpreterMessage Shit happens.
-     */
-    public String findKey(String path, String key, int mask)
-            throws InterpreterMessage {
-        String res;
-        try {
-            AbstractSource scope = (!"".equals(key) ?
-                    AbstractSource.keyToSource(key, engine.store) : null);
-            AbstractSource src = (scope != null ?
-                    scope : engine.store.user);
-            res = CacheSubclass.findKey(path, src, mask);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return res;
-    }
-
-    /**
-     * <p>Revert a path back to a spec.</p>
-     *
-     * @param path The source key.
-     * @param key  The call-site.
-     * @param mask The mask.
-     * @return The spec.
-     */
-    public Object keyToSpec(String path, String key, int mask)
-            throws InterpreterMessage {
-        boolean rsc = (mask & ForeignPath.MASK_SUFX_RSCS) != 0;
-        Object spec;
-        try {
-            AbstractSource scope = (!"".equals(key) ?
-                    AbstractSource.keyToSource(key, engine.store) : null);
-            AbstractSource src = (scope != null ?
-                    scope : engine.store.user);
-            spec = AbstractSource.keyToSpec(path, rsc, src);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return spec;
-    }
-
     /****************************************************************/
     /* AbstractTerm Writing                                         */
     /****************************************************************/
@@ -358,8 +249,10 @@ public final class Interpreter implements Comparator<Object> {
             throws InterpreterMessage, InterpreterException {
         try {
             Engine en = (Engine) getEngine();
-            return PrologWriter.toString(AbstractTerm.getSkel(t),
-                    AbstractTerm.getDisplay(t), flags, en);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(AbstractTerm.getSkel(t), AbstractTerm.getDisplay(t),
+                    sw, flags, en);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
@@ -380,17 +273,24 @@ public final class Interpreter implements Comparator<Object> {
             throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         try {
-            WriteOpts wo = new WriteOpts(en);
-            wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), en);
             PrologWriter pw;
-            if ((wo.flags & PrologWriter.FLAG_FILL) == 0 && (wo.flags & PrologWriter.FLAG_NAVI) == 0) {
-                pw = Foyer.createWriter(Foyer.IO_TERM);
+            if (!opt.equals(Foyer.OP_NIL)) {
+                WriteOpts wo = new WriteOpts(en);
+                wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
+                        AbstractTerm.getDisplay(opt), en);
+                if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
+                        (wo.flags & PrologWriter.FLAG_NAVI) == 0) {
+                    pw = Foyer.createWriter(Foyer.IO_TERM);
+                } else {
+                    pw = Foyer.createWriter(Foyer.IO_ANNO);
+                }
+                wo.setWriteOpts(pw);
             } else {
-                pw = Foyer.createWriter(Foyer.IO_ANNO);
+                pw = Foyer.createWriter(Foyer.IO_TERM);
+                pw.setWriteUtil(en.store);
+                pw.setSource(en.store.user);
             }
             pw.setEngineRaw(en);
-            wo.setWriteOpts(pw);
             pw.setWriter(wr);
             pw.unparseStatement(AbstractTerm.getSkel(t),
                     AbstractTerm.getDisplay(t));
@@ -415,7 +315,7 @@ public final class Interpreter implements Comparator<Object> {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public Object parseTerm(String s)
+    public AbstractTerm parseTerm(String s)
             throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
@@ -445,9 +345,12 @@ public final class Interpreter implements Comparator<Object> {
         }
         if (val == null)
             return null;
-        Display ref = (rd.getGensym() != 0 ?
-                new Display(rd.getGensym()) : Display.DISPLAY_CONST);
-        return AbstractTerm.createTerm(val, ref);
+        int size = rd.getGensym();
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**
@@ -463,25 +366,30 @@ public final class Interpreter implements Comparator<Object> {
     public AbstractTerm parseTerm(Reader lr, Object opt)
             throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) getEngine();
-        ReadOpts ro = new ReadOpts(en);
-        try {
-            ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        PrologReader rd;
-        if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
-            rd = en.store.foyer.createReader(Foyer.IO_TERM);
-        } else {
-            rd = en.store.foyer.createReader(Foyer.IO_ANNO);
-        }
-        rd.getScanner().setReader(lr);
-        ro.setReadOpts(rd);
-        rd.setEngineRaw(en);
         Object val;
+        PrologReader rd;
         try {
+            boolean stmt;
+            if (!opt.equals(Foyer.OP_NIL)) {
+                ReadOpts ro = new ReadOpts(en);
+                ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
+                if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
+                    rd = en.store.foyer.createReader(Foyer.IO_TERM);
+                } else {
+                    rd = en.store.foyer.createReader(Foyer.IO_ANNO);
+                }
+                ro.setReadOpts(rd);
+                stmt = ((ro.flags & PrologWriter.FLAG_STMT) != 0);
+            } else {
+                rd = en.store.foyer.createReader(Foyer.IO_TERM);
+                rd.setReadUtil(en.store);
+                rd.setSource(en.store.user);
+                stmt = true;
+            }
+            rd.getScanner().setReader(lr);
+            rd.setEngineRaw(en);
             try {
-                if ((ro.flags & PrologWriter.FLAG_STMT) != 0) {
+                if (stmt) {
                     val = rd.parseHeadStatement();
                 } else {
                     val = rd.parseHeadInternal();
@@ -505,8 +413,8 @@ public final class Interpreter implements Comparator<Object> {
         }
         if (val == null)
             return null;
-        Display ref = (rd.getGensym() != 0 ?
-                new Display(rd.getGensym()) : Display.DISPLAY_CONST);
+        int size = rd.getGensym();
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
         try {
             if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), val, ref, en, rd))
@@ -516,12 +424,29 @@ public final class Interpreter implements Comparator<Object> {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        return AbstractTerm.createTermWrapped(val, ref);
+        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /***********************************************************/
     /* For Internal Use Only                                   */
     /***********************************************************/
+
+    /**
+     * <p>Create an interpreter.</p>
+     *
+     * @param k The knowledgebase.
+     * @param i The controller.
+     */
+    public Interpreter(Knowledgebase k, Controller i) {
+        AbstractStore store = (AbstractStore) k.getStore();
+        Supervisor visor = (Supervisor) i.getVisor();
+
+        engine = new Engine(store, visor);
+        engine.proxy = this;
+    }
 
     /**
      * <p>Retrieve the engine.</p>

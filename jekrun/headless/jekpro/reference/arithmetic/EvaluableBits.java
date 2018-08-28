@@ -61,71 +61,112 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
+     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case EVALUABLE_NOT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.computeExpr(temp[0], ref);
-                Number alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = not(alfa);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_AND:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                Number beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = and(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_OR:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = or(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_XOR:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = xor(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_SHIFT_LEFT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = shiftLeft(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            case EVALUABLE_SHIFT_RIGHT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                alfa = EngineMessage.castInteger(en.skel, en.display);
-                en.computeExpr(temp[1], ref);
-                beta = EngineMessage.castInteger(en.skel, en.display);
-                en.skel = shiftRight(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
-                return;
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case EVALUABLE_NOT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = not(alfa);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_AND:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = and(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_OR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = or(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_XOR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = xor(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_SHIFT_LEFT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    int x = SpecialEval.castIntValue(beta);
+                    en.skel = shiftLeft(alfa, x);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_SHIFT_RIGHT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    x = SpecialEval.castIntValue(beta);
+                    en.skel = shiftRight(alfa, x);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -201,13 +242,11 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>If b<0 then same as a div (2**(-b)).</p>
      * <p/>
      *
-     * @param m The Prolog integer.
-     * @param n The offset.
+     * @param m The first operand.
+     * @param x The second operand.
      * @return The shift left.
-     * @throws EngineMessage Not a Prolog integer or max length.
      */
-    public static Number shiftLeft(Number m, Number n) throws EngineMessage {
-        int x = EngineMessage.castIntValue(n);
+    public static Number shiftLeft(Number m, int x) {
         if (m instanceof Integer) {
             if (x == 0) {
                 return m;
@@ -231,14 +270,12 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>If b<0 then same as a * (2**(-b)).</p>
      * <p/>
      *
-     * @param m The Prolog integer.
-     * @param n The offset.
+     * @param m The first operand.
+     * @param x The second operand.
      * @return The shift left.
-     * @throws EngineMessage Not a Prolog integer or max length.
      */
-    public static Number shiftRight(Number m, Number n) throws EngineMessage {
-        int x = EngineMessage.castIntValue(n);
-        if (m instanceof Integer && -31 <= x && x <= 31) {
+    public static Number shiftRight(Number m, int x) {
+        if (m instanceof Integer) {
             if (x == 0) {
                 return m;
             } else if (x > 0 && x <= 31) {

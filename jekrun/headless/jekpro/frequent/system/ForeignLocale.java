@@ -3,6 +3,7 @@ package jekpro.frequent.system;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
@@ -147,7 +148,7 @@ public final class ForeignLocale {
             }
             term = tc.getArg(1);
         }
-        if (term.equals(Knowledgebase.OP_NIL)) {
+        if (term.equals(Foyer.OP_NIL)) {
             /* do nothing */
         } else {
             InterpreterMessage.checkInstantiated(term);

@@ -63,13 +63,13 @@ public final class ForeignRandom {
             if (x <= 0)
                 throw new InterpreterMessage(InterpreterMessage.evaluationError(
                         "undefined"));
-            return TermAtomic.guardFloat(Float.valueOf(x * r.nextFloat()));
+            return TermAtomic.makeFloat(x * r.nextFloat());
         } else if (m instanceof Double) {
             double x = m.doubleValue();
             if (x <= 0)
                 throw new InterpreterMessage(InterpreterMessage.evaluationError(
                         "undefined"));
-            return TermAtomic.guardDouble(Double.valueOf(x * r.nextDouble()));
+            return TermAtomic.makeDouble(x * r.nextDouble());
         } else if (m instanceof Long) {
             long x = m.longValue();
             if (x <= 0)

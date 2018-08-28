@@ -44,8 +44,8 @@ public final class ForeignTime {
      */
     public static AlarmEntry sysAlarmSchedule(Interpreter inter, Alarm a,
                                               AbstractTerm t, long sleep) {
-        t = AbstractTerm.copyTermWrapped(inter, t);
-        return a.schedule(t, sleep);
+        Object obj = AbstractTerm.copyMolec(inter, t);
+        return a.schedule(obj, sleep);
     }
 
     /**

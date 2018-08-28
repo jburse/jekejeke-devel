@@ -6,8 +6,8 @@ import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.FileResource;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.pretty.SourceFileResource;
 import jekpro.model.rope.Resource;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
@@ -18,10 +18,7 @@ import matula.util.system.ForeignCache;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.PropertiesWithImport;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -73,12 +70,10 @@ public final class EngineMessage extends Exception {
     public static final String OP_TYPE_ATOM = "atom";
     public static final String OP_TYPE_PREDICATE_INDICATOR = "predicate_indicator";
     public static final String OP_TYPE_CALLABLE = "callable";
-    public static final String OP_TYPE_CHARACTER = "character";
     public static final String OP_TYPE_LIST = "list";
     public static final String OP_TYPE_PAIR = "pair";
     public static final String OP_TYPE_ASSOC = "assoc";
     public static final String OP_TYPE_CAPABILITY = "capability";
-    public static final String OP_TYPE_BYTE = "byte";
     public static final String OP_TYPE_REF = "ref";
     public static final String OP_TYPE_DECIMAL = "decimal";
     public static final String OP_TYPE_FLOAT = "float";
@@ -86,14 +81,13 @@ public final class EngineMessage extends Exception {
     public static final String OP_TYPE_METHOD = "method";
     public static final String OP_TYPE_CONSTRUCTOR = "constructor";
     public static final String OP_TYPE_OPER_INDICATOR = "oper_indicator";
-    public static final String OP_TYPE_VALUE = "value";
+    public static final String OP_TYPE_ATOMIC = "atomic";
 
     private static final String OP_DOMAIN_ERROR = "domain_error"; /* ISO */
     public static final String OP_DOMAIN_OPERATOR_SPECIFIER = "operator_specifier";
     public static final String OP_DOMAIN_OPERATOR_PRIORITY = "operator_priority";
     public static final String OP_DOMAIN_PROLOG_FLAG = "prolog_flag";
     public static final String OP_DOMAIN_FLAG_VALUE = "flag_value";
-    public static final String OP_DOMAIN_NOT_LESS_THAN_ZERO = "not_less_than_zero";
     public static final String OP_DOMAIN_WRITE_OPTION = "write_option";
     public static final String OP_DOMAIN_READ_OPTION = "read_option";
     public static final String OP_DOMAIN_ASSERT_OPTION = "assert_option";
@@ -114,18 +108,25 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_CLASS = "class";
     public static final String OP_DOMAIN_MODULE = "module";
     public static final String OP_DOMAIN_RECEIVER = "receiver";
+    public static final String OP_DOMAIN_PACKAGE = "package";
+    public static final String OP_DOMAIN_ARRAY = "array";
 
     private static final String OP_REPRESENTATION_ERROR = "representation_error"; /* ISO */
-    public static final String OP_REPRESENTATION_CHARACTER_CODE = "character_code";
+    public static final String OP_REPRESENTATION_CODE_POINT = "code_point";
     public final static String OP_REPRESENTATION_BYTE = "byte";
     public final static String OP_REPRESENTATION_SHORT = "short";
     public final static String OP_REPRESENTATION_INT = "int";
     public final static String OP_REPRESENTATION_LONG = "long";
+    public static final String OP_REPRESENTATION_CHAR = "char";
+    public static final String OP_REPRESENTATION_NOT_LESS_THAN_ZERO = "not_less_than_zero";
+    public static final String OP_REPRESENTATION_CHARACTER = "character";
+    public static final String OP_REPRESENTATION_OCTET = "octet";
 
     private static final String OP_EXISTENCE_ERROR = "existence_error"; /* ISO */
     public static final String OP_EXISTENCE_PROCEDURE = "procedure";
     public static final String OP_EXISTENCE_LIBRARY = "library";
     public static final String OP_EXISTENCE_SOURCE_SINK = "source_sink";
+    public static final String OP_EXISTENCE_VERBATIM = "verbatim";
     public static final String OP_EXISTENCE_HOST = "host";
     public static final String OP_EXISTENCE_PORT = "port";
     public static final String OP_EXISTENCE_ENCODING = "encoding";
@@ -140,6 +141,9 @@ public final class EngineMessage extends Exception {
     public static final String OP_EXISTENCE_PROXY = "proxy";
     public static final String OP_EXISTENCE_BODY = "body";
     public static final String OP_EXISTENCE_CODE = "code";
+    public static final String OP_EXISTENCE_CLASS_PATH = "class_path";
+    public static final String OP_EXISTENCE_EXTENSION = "extension";
+    public static final String OP_EXISTENCE_CONTEXT = "context";
 
     private static final String OP_PERMISSION_ERROR = "permission_error"; /* ISO */
     public static final String OP_PERMISSION_ACCESS = "access"; /* ISO */
@@ -213,7 +217,6 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_SINGLETON_VAR = "singleton_var";
 
     public static final String OP_SYNTAX_DIRECTIVE_FAILED = "directive_failed";
-    public final static String OP_SYNTAX_SITE_MISSING = "site_missing";
 
     public final static String OP_EVALUATION_ERROR = "evaluation_error";
     public final static String OP_EVALUATION_ZERO_DIVISOR = "zero_divisor"; /* arithmetic */
@@ -249,7 +252,7 @@ public final class EngineMessage extends Exception {
      * @param m The message skeleton.
      */
     public EngineMessage(Object m) {
-        if (!EngineCopy.isGroundSkel(m))
+        if (EngineCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -489,7 +492,8 @@ public final class EngineMessage extends Exception {
      * @param t The term skel.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkInstantiated(Object t) throws EngineMessage {
+    public static void checkInstantiated(Object t)
+            throws EngineMessage {
         if (t instanceof SkelVar) {
             throw new EngineMessage(EngineMessage.instantiationError());
         } else {
@@ -499,318 +503,22 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Check whetehr the given term is a callable.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
      *
      * @param t The term skel.
      * @param d The term display.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkCallable(Object t, Display d) throws EngineMessage {
+    public static void checkCallable(Object t, Display d)
+            throws EngineMessage {
         if (t instanceof SkelCompound) {
             /* */
         } else if (t instanceof SkelAtom) {
             /* */
         } else {
+            EngineMessage.checkInstantiated(t);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_CALLABLE, t), d);
         }
-    }
-
-    /**
-     * <p>Check whether the given term is a reference.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @throws EngineMessage Not a reference.
-     */
-    public static void checkRef(Object t, Display d)
-            throws EngineMessage {
-        if (!(t instanceof AbstractSkel) && !(t instanceof Number)) {
-            /* */
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_REF, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a number or a reference.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @throws EngineMessage Not a number or a reference.
-     */
-    public static void checkValue(Object t, Display d)
-            throws EngineMessage {
-        if (!(t instanceof AbstractSkel)) {
-            /* */
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_VALUE, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given number is not less than zero.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param n The number, either Integer or BigInteger.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkNotLessThanZero(Number n) throws EngineMessage {
-        if (n instanceof Integer) {
-            if (n.intValue() < 0)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
-        } else {
-            if (((BigInteger) n).compareTo(BigInteger.ZERO) < 0)
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_NOT_LESS_THAN_ZERO, n));
-        }
-    }
-
-    /**
-     * <p>Check whether the given int is a character code.</p>
-     *
-     * @param n The primitive int.
-     * @throws EngineMessage Not a character code.
-     */
-    public static void checkCharacterCode(int n) throws EngineMessage {
-        if (n < 0 || n > Character.MAX_CODE_POINT)
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_CHARACTER_CODE));
-    }
-
-    /**
-     * <p>Check whether the given int is a byte.</p>
-     *
-     * @param n The primitive int.
-     * @throws EngineMessage Not a byte.
-     */
-    public static void checkByte(int n) throws EngineMessage {
-        if (n < 0 || n > 255)
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_BYTE, Integer.valueOf(n)));
-    }
-
-    /*************************************************************/
-    /* Error Casts                                               */
-    /*************************************************************/
-
-    /**
-     * <p>Check whether the given term is an atom.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The string.
-     * @throws EngineMessage Shit happens.
-     */
-    public static String castString(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof SkelAtom) {
-            return ((SkelAtom) t).fun;
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_ATOM, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an atom.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The wrapped string.
-     * @throws EngineMessage Shit happens.
-     */
-    public static SkelAtom castStringWrapped(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof SkelAtom) {
-            return (SkelAtom) t;
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_ATOM, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a Prolog number.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The number.
-     * @throws EngineMessage Not a number.
-     */
-    public static Number castNumber(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof Number) {
-            return (Number) t;
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_NUMBER, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a Prolog integer.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The integer, either Integer or BigInteger.
-     * @throws EngineMessage Not a integer.
-     */
-    public static Number castInteger(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            return (Integer) t;
-        } else if (t instanceof BigInteger) {
-            return (BigInteger) t;
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_INTEGER, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a Prolog decimal.</p>
-     * <p>This check must be preceded by an instantiation check.</p>
-     *
-     * @param t The term skel.
-     * @param d The display skel.
-     * @return The decimal, either Long or BigDecimal.
-     * @throws EngineMessage Not a integer.
-     */
-    public static Number castDecimal(Object t, Display d)
-            throws EngineMessage {
-        if (t instanceof Long) {
-            return (Long) t;
-        } else if (t instanceof BigDecimal) {
-            return (BigDecimal) t;
-        } else {
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_DECIMAL, t), d);
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is a byte value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive byte value.
-     * @throws EngineMessage Not a byte value.
-     */
-    public static byte castByteValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer &&
-                Byte.MIN_VALUE <= t.intValue() &&
-                t.intValue() <= Byte.MAX_VALUE) {
-            return (byte) t.intValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_BYTE));
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is a short value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive short value.
-     * @throws EngineMessage Not a short value.
-     */
-    public static short castShortValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer &&
-                Short.MIN_VALUE <= t.intValue() &&
-                t.intValue() <= Short.MAX_VALUE) {
-            return (short) t.intValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_SHORT));
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is an int value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger.
-     * @return The primitive int value.
-     * @throws EngineMessage Not a int value.
-     */
-    public static int castIntValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            return t.intValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_INT));
-        }
-    }
-
-    /**
-     * <p>Check whether the given value is a long value.</p>
-     * <p>This check must be preceded by an integer check.</p>
-     *
-     * @param t The number, either Integer or BigInteger..
-     * @return The primitive long value.
-     * @throws EngineMessage Not a long value.
-     */
-    public static long castLongValue(Number t)
-            throws EngineMessage {
-        if (t instanceof Integer) {
-            return t.intValue();
-        } else if (t instanceof BigInteger &&
-                TermAtomic.MIN_LONG.compareTo((BigInteger) t) <= 0 &&
-                ((BigInteger) t).compareTo(TermAtomic.MAX_LONG) <= 0) {
-            return t.longValue();
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    EngineMessage.OP_REPRESENTATION_LONG));
-        }
-    }
-
-    /**
-     * <p>Check whether the given atom is a character.</p>
-     *
-     * @param str The atom.
-     * @return The code point.
-     * @throws EngineMessage Not a character.
-     */
-    public static int castCharacter(String str)
-            throws EngineMessage {
-        int k;
-        if (str.length() == 0 ||
-                str.length() != Character.charCount(k = str.codePointAt(0)))
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CHARACTER, new SkelAtom(str)));
-        return k;
-    }
-
-    /**
-     * <p>Check whether the given atom is a char value.</p>
-     *
-     * @param str The atom.
-     * @return The char.
-     * @throws EngineMessage Not a char value.
-     */
-    public static char castCharValue(String str)
-            throws EngineMessage {
-        int k;
-        if (str.length() == 0 ||
-                str.length() != Character.charCount(k = str.codePointAt(0)) ||
-                k > 0xFFFF)
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CHARACTER, new SkelAtom(str)));
-        return (char) k;
     }
 
     /******************************************************************/
@@ -886,8 +594,11 @@ public final class EngineMessage extends Exception {
                                      Locale locale, Properties prop,
                                      Engine en)
             throws EngineMessage, EngineException {
-        if (prop == null)
-            return PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en);
+        if (prop == null) {
+            StringWriter buf = new StringWriter();
+            PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
+            return buf.toString();
+        }
         BindVar b;
         while (term instanceof SkelVar &&
                 (b = ref.bind[((SkelVar) term).id]).display != null) {
@@ -896,18 +607,18 @@ public final class EngineMessage extends Exception {
         }
         ArrayList<String> pat = messagePattern(term, prop);
         if (pat == null) {
-            StringBuilder buf = new StringBuilder();
+            StringWriter buf = new StringWriter();
             buf.append(prop.getProperty("term.pattern"));
             buf.append(": ");
-            buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
+            PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
             return buf.toString();
         }
         String temp = EngineMessage.messageTemplate(term, ref, pat, prop, en);
         if (temp == null) {
-            StringBuilder buf = new StringBuilder();
+            StringWriter buf = new StringWriter();
             buf.append(prop.getProperty("term.template"));
             buf.append(": ");
-            buf.append(PrologWriter.toString(term, ref, PrologWriter.FLAG_QUOT, en));
+            PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
             return buf.toString();
         }
         Object[] paras = EngineMessage.messageParameters(term, ref, pat, en);
@@ -988,9 +699,9 @@ public final class EngineMessage extends Exception {
      * @param ref  The message display.
      * @param pat  The message pattern.
      * @param prop The properties file.
-     * @param en The engine.
+     * @param en   The engine.
      * @return The message template or null.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private static String messageTemplate(Object term, Display ref,
@@ -1006,7 +717,7 @@ public final class EngineMessage extends Exception {
         } else {
             fun = null;
         }
-        StringBuilder buf = new StringBuilder();
+        StringWriter buf = new StringWriter();
         buf.append(fun);
         for (int i = 0; i < pat.size(); i++) {
             if (ARGTYPE_ID.equals(pat.get(i))) {
@@ -1019,7 +730,7 @@ public final class EngineMessage extends Exception {
                     d = b.display;
                 }
                 buf.append('.');
-                buf.append(PrologWriter.toString(t, d, 0, en));
+                PrologWriter.toString(t, d, buf, 0, en);
             }
         }
         return prop.getProperty(buf.toString());
@@ -1047,27 +758,33 @@ public final class EngineMessage extends Exception {
         ListArray<Object> paravec = new ListArray<Object>();
         for (int i = 0; i < pat.size(); i++) {
             String argtype = pat.get(i);
-            if (!ARGTYPE_ID.equals(argtype)) {
-                Object t = ((SkelCompound) term).args[i];
-                Display d = ref;
-                BindVar b;
-                while (t instanceof SkelVar &&
-                        (b = d.bind[((SkelVar) t).id]).display != null) {
-                    t = b.skel;
-                    d = b.display;
-                }
-                if (argtype.equals(ARGTYPE_PARASQ)) {
-                    String path = ((SkelAtom) t).fun;
-                    t = new SkelAtom(ForeignLocale.shortName(path));
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT, en));
-                } else if (argtype.equals(ARGTYPE_PARAQ)) {
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_QUOT, en));
-                } else if (argtype.equals(ARGTYPE_PARAM)) {
-                    paravec.add(PrologWriter.toString(t, d, PrologWriter.FLAG_IGNM, en));
-                } else {
-                    paravec.add(EngineMessage.prepareArgument(t, d, en));
-                }
+            if (ARGTYPE_ID.equals(argtype))
+                continue;
+            Object t = ((SkelCompound) term).args[i];
+            Display d = ref;
+            BindVar b;
+            while (t instanceof SkelVar &&
+                    (b = d.bind[((SkelVar) t).id]).display != null) {
+                t = b.skel;
+                d = b.display;
             }
+            StringWriter buf;
+            if (argtype.equals(ARGTYPE_PARASQ)) {
+                String path = ((SkelAtom) t).fun;
+                t = new SkelAtom(ForeignLocale.shortName(path));
+                buf = new StringWriter();
+                PrologWriter.toString(t, d, buf, PrologWriter.FLAG_QUOT, en);
+            } else if (argtype.equals(ARGTYPE_PARAQ)) {
+                buf = new StringWriter();
+                PrologWriter.toString(t, d, buf, PrologWriter.FLAG_QUOT, en);
+            } else if (argtype.equals(ARGTYPE_PARAM)) {
+                buf = new StringWriter();
+                PrologWriter.toString(t, d, buf, PrologWriter.FLAG_IGNM, en);
+            } else {
+                paravec.add(EngineMessage.prepareArgument(t, d, en));
+                continue;
+            }
+            paravec.add(buf.toString());
         }
         Object[] paras = new Object[paravec.size()];
         paravec.toArray(paras);
@@ -1081,7 +798,7 @@ public final class EngineMessage extends Exception {
      * @param d  The term display.
      * @param en The engine.
      * @return The Java object.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static Object prepareArgument(Object t, Display d,
@@ -1098,7 +815,9 @@ public final class EngineMessage extends Exception {
         } else if (!(t instanceof AbstractSkel)) {
             return t;
         } else {
-            return PrologWriter.toString(t, d, 0, en);
+            StringWriter buf = new StringWriter();
+            PrologWriter.toString(t, d, buf, 0, en);
+            return buf;
         }
     }
 
@@ -1149,9 +868,9 @@ public final class EngineMessage extends Exception {
      */
     public static HashMap<String, Properties> getCache(String key, AbstractStore store) {
         AbstractSource src = store.getSource(key);
-        if (!(src instanceof SourceFileResource))
+        if (!(src instanceof FileResource))
             return null;
-        return ((SourceFileResource) src).getCache();
+        return ((FileResource) src).getCache();
     }
 
 }

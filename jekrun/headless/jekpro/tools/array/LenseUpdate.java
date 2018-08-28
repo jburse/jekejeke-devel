@@ -3,14 +3,9 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
-import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -76,60 +71,36 @@ final class LenseUpdate extends AbstractLense {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
-        Object temp = en.skel;
-        Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
-        en.skel = ((SkelCompound) temp).args[1];
-        en.display = ref;
-        en.deref();
-        EngineMessage.checkInstantiated(en.skel);
-        Number num = EngineMessage.castInteger(en.skel, en.display);
-        EngineMessage.checkNotLessThanZero(num);
-        int idx = EngineMessage.castIntValue(num);
-        Object res = convertArg(temp, ref, en);
-        set(obj, idx, res, en);
-        return en.getNextRaw();
-    }
-
-    /**
-     * <p>Build the argument. The argument of the goal is
-     * checked and converted if necessary.</p>
-     *
-     * @param temp The skeleton.
-     * @param ref  The display.
-     * @param en   The engine.
-     * @return The argument.
-     * @throws EngineMessage FFI error.
-     */
-    private Object convertArg(Object temp, Display ref, Engine en)
-            throws EngineMessage {
         try {
-            int typ = encodeparas[1];
-            en.skel = ((SkelCompound) temp).args[2];
-            en.display = ref;
-            en.deref();
-            Object res;
-            if (typ == Types.TYPE_TERM) {
-                res = AbstractTerm.createTermWrapped(en.skel, en.display);
+            Object temp = en.skel;
+            Display ref = en.display;
+            Object obj;
+            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
             } else {
-                res = AbstractTerm.createTerm(en.skel, en.display);
+                obj = null;
             }
-            return Types.denormProlog(typ, res);
-        } catch (InterpreterMessage x) {
-            throw (EngineMessage) x.getException();
+            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            SpecialEval.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = Types.denormProlog(encodeparas[1], ((SkelCompound) temp).args[2], ref);
+            set(obj, idx, res);
+            return en.getNextRaw();
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
     /**
      * <p>Set the element at the specified index.</p>
      *
-     * @param o  The array.
-     * @param i  The index.
-     * @param v  The element.
-     * @param en The engine.
+     * @param o The array.
+     * @param i The index.
+     * @param v The element.
      * @throws EngineMessage FFI error.
      */
-    private void set(Object o, int i, Object v, Engine en)
+    private void set(Object o, int i, Object v)
             throws EngineMessage {
         try {
             Array.set(o, i, v);
@@ -137,12 +108,12 @@ final class LenseUpdate extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_SETTER,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_INDEX,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         }
     }
 

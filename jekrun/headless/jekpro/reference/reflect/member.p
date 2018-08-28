@@ -23,9 +23,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
 /*************************************************************************/
@@ -92,5 +92,15 @@ sys_eq(X, X).
 :- set_predicate_property(ground/1, visible(public)).
 
 % functor(+-Term, -+Atomic, -+Integer)
-:- special(functor/3, 'SpecialMember', 4).
+functor(T, F, A) :-
+   var(T), !,
+   sys_functor_to_term(F, A, T).
+functor(T, F, A) :-
+   sys_term_to_functor(T, F, A).
 :- set_predicate_property(functor/3, visible(public)).
+
+:- special(sys_functor_to_term/3, 'SpecialMember', 3).
+:- set_predicate_property(sys_functor_to_term/3, visible(private)).
+
+:- special(sys_term_to_functor/3, 'SpecialMember', 4).
+:- set_predicate_property(sys_term_to_functor/3, visible(private)).

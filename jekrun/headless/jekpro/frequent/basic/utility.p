@@ -6,13 +6,13 @@
  *
  * Example:
  * ?- apropos(time).
- * Indicator               Module
- * get_time/1              system/shell
- * get_time/2              system/shell
- * get_time_file/2         system/file
- * set_time_file/2         system/file
- * time_out/2              misc/time
- * time/1                  swing/stats
+ * Indicator               Evalu   Module
+ * get_time/1              no      system/shell
+ * get_time/2              no      system/shell
+ * get_time_file/2         no      system/file
+ * set_time_file/2         no      system/file
+ * time_out/2              no      misc/time
+ * time/1                  no      swing/stats
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,6 +40,8 @@
 
 :- use_package(foreign(jekpro/frequent/basic)).
 
+:- use_package(library(jekpro/model)).
+
 :- module(user, []).
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
@@ -58,12 +60,12 @@
  */
 % apropos(+Atom)
 :- public apropos/1.
-apropos(P) :-
-   pattern_compile(P, [boundary(part)], H), sys_apropos_keys,
-   sys_apropos_table(N),
-   sys_enum_apropos(N, A),
-   sys_match_apropos(H, A),
-   sys_apropos_values(A), fail.
+apropos(Pattern) :-
+   sys_apropos_compile(Pattern, Compiled), sys_apropos_keys,
+   sys_apropos_table(Table),
+   sys_enum_apropos(Table, Row),
+   sys_match_row(Compiled, Row),
+   sys_apropos_values(Row), fail.
 apropos(_).
 :- set_predicate_property(apropos/1, sys_notrace).
 
@@ -76,7 +78,7 @@ sys_apropos_keys :-
    ttywrite(M), fail.
 sys_apropos_keys :- ttynl.
 
-% sys_apropos_values(+Apropos)
+% sys_apropos_values(+Row)
 :- private sys_apropos_values/1.
 sys_apropos_values(A) :-
    sys_get_lang(info, P),
@@ -89,12 +91,14 @@ sys_apropos_values(_) :- ttynl.
 % sys_apropos_key(-Atom)
 :- private sys_apropos_key/1.
 sys_apropos_key(pred).
+sys_apropos_key(arith).
 sys_apropos_key(path).
 
-% sys_apropos_value(+Apropos, +Atom, -Atomic)
+% sys_apropos_value(+Row, +Atom, -Term)
 :- private sys_apropos_value/3.
-sys_apropos_value(I-_, pred, I).
-sys_apropos_value(_-M, path, M).
+sys_apropos_value(row(I,_,_), pred, I).
+sys_apropos_value(row(_,E,_), arith, E).
+sys_apropos_value(row(_,_,M), path, M).
 
 /***********************************************************/
 /* Apropos Search                                          */
@@ -106,40 +110,67 @@ sys_apropos_value(_-M, path, M).
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
+sys_apropos_table(library(builtin/reference)).
 sys_apropos_table(library(bootload/reference)).
 sys_apropos_table(library(stream/frequent)).
 
-% sys_enum_apropos(+Atom, -Apropos)
+% sys_enum_apropos(+Atom, -Row)
 :- private sys_enum_apropos/2.
-sys_enum_apropos(N, I-M) :-
+sys_enum_apropos(N, row(I,E,T)) :-
    setup_call_cleanup(
       open_resource(N, S),
       (  repeat,
          (  read_line(S, L)
-         -> sys_split_line(L, H, T),
-            term_atom(I, H),
-            term_atom(M, T); !, fail)),
+         -> atom_list_concat(U, '\t', L),
+            sys_split_line(U, H, E, T),
+            sys_split_indicator(H, I); !, fail)),
       close(S)).
 
-% sys_split_line(+Atom, -Atom, -Atom)
-:- private sys_split_line/3.
-sys_split_line(L, H, T) :-
-   sub_atom(L, P, 1, '\t'),
-   sub_atom(L, 0, P, H),
-   atom_length(L, N),
-   Q is P+1,
-   M is N-Q,
-   sub_atom(L, Q, M, T).
+% sys_split_line(+List, -Atom, -Atom)
+:- private sys_split_line/4.
+% old apropos format
+sys_split_line([H,T], H, undef, T).
+% new apropos format
+sys_split_line([H,E,T], H, E, T).
 
-% sys_match_apropos(+Compiled, +Apropos)
-:- private sys_match_apropos/2.
-sys_match_apropos(H, A) :-
-   sys_apropos_value(A, pred, I),
-   sys_indicator_fun(I, F),
-   compiled_match(H, F).
+% sys_split_indicator(+Atom, -Indicator)
+:- private sys_split_indicator/2.
+sys_split_indicator(Indicator, Module:Fun/Arity) :-
+   sub_atom(Indicator, Before, _, After, :),
+   Before > 1, !,
+   sub_atom(Indicator, 0, Before, Module),
+   last_sub_atom(Indicator, After, 0, Str),
+   sys_split_indicator(Str, Fun/Arity).
+sys_split_indicator(Indicator, Fun/Arity) :-
+   last_sub_atom(Indicator, Before, _, After, /), !,
+   sub_atom(Indicator, 0, Before, Fun),
+   last_sub_atom(Indicator, After, 0, Str),
+   term_atom(Arity, Str).
 
-% sys_indicator_fun(+Indicator, -Functor)
-:- private sys_indicator_fun/2.
-sys_indicator_fun(F/_, F).
-sys_indicator_fun(_:F/_, F).
+/***********************************************************/
+/* Compile and Match                                       */
+/***********************************************************/
 
+% sys_apropos_compile(+Pattern, -Compiled)
+:- private sys_apropos_compile/2.
+sys_apropos_compile(Pattern/Arity, Compiled/Arity) :- !,
+   pattern_compile(Pattern, [boundary(part)], Compiled).
+sys_apropos_compile(Pattern, Compiled) :-
+   pattern_compile(Pattern, [boundary(part)], Compiled).
+
+% sys_match_row(+Compiled, +Row)
+:- private sys_match_row/2.
+sys_match_row(Compiled, Row) :-
+   sys_apropos_value(Row, pred, _:Indicator), !,
+   sys_apropos_match(Compiled, Indicator).
+sys_match_row(Compiled, Row) :-
+   sys_apropos_value(Row, pred, Indicator),
+   sys_apropos_match(Compiled, Indicator).
+
+% sys_apropos_match(+Compiled, +Instance)
+:- private sys_apropos_match/2.
+sys_apropos_match(Compiled/Arity1, Fun/Arity2) :- !,
+   compiled_match(Compiled, Fun),
+   Arity1 = Arity2.
+sys_apropos_match(Compiled, Fun/_) :- !,
+   compiled_match(Compiled, Fun).

@@ -85,19 +85,16 @@
 :- public write/1.
 write(Term) :-
    current_output(Stream),
-   sys_write(Stream, Term).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 % write(+AliasOrStream, +Term)
 :- public write/2.
 write(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write(Stream, Term).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 write(Stream, Term) :-
-   sys_write(Stream, Term).
-
-:- foreign(sys_write/2, 'ForeignTerm',
-      sysWrite('Interpreter','Writer','Object')).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 /**
  * writeq(E): [ISO 8.14.2]
@@ -110,19 +107,16 @@ write(Stream, Term) :-
 :- public writeq/1.
 writeq(Term) :-
    current_output(Stream),
-   sys_writeq(Stream, Term).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 
 % writeq(+AliasOrStream, +Term)
 :- public writeq/2.
 writeq(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_writeq(Stream, Term).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 writeq(Stream, Term) :-
-   sys_writeq(Stream, Term).
-
-:- foreign(sys_writeq/2, 'ForeignTerm',
-      sysWriteq('Interpreter','Writer','Object')).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 
 /**
  * write_canonical(E): [ISO 8.14.2]
@@ -136,20 +130,16 @@ writeq(Stream, Term) :-
 :- public write_canonical/1.
 write_canonical(Term) :-
    current_output(Stream),
-   sys_write_canonical(Stream, Term).
+   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
 
 % write_canonical(+AliasOrStream, +Term)
 :- public write_canonical/2.
 write_canonical(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_canonical(Stream, Term).
+   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
 write_canonical(Stream, Term) :-
-   sys_write_canonical(Stream, Term).
-
-:- private sys_write_canonical/2.
-:- foreign(sys_write_canonical/2, 'ForeignTerm',
-      sysWriteCanonical('Interpreter','Writer','Object')).
+   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
 
 /**
  * write_term(E, O): [ISO 8.14.2]
@@ -192,20 +182,16 @@ write_term(Stream, Term, Opt) :-
 :- public read/1.
 read(Term) :-
    current_input(Stream),
-   sys_read(Stream, Term).
+   sys_read_term(Stream, [], Term).
 
 % read(+AliasOrStream, -Term)
 :- public read/2.
 read(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_read(Stream, Term).
+   sys_read_term(Stream, [], Term).
 read(Stream, Term) :-
-   sys_read(Stream, Term).
-
-:- private sys_read/2.
-:- foreign(sys_read/2, 'ForeignTerm',
-      sysRead('Interpreter','Reader')).
+   sys_read_term(Stream, [], Term).
 
 /**
  * read_term(E, O): [ISO 8.14.1]

@@ -10,13 +10,18 @@
  * 0d1.00D < 2
  * 1 =:= 0d1.00
  *
- * We also provide evaluable functions min/2 and max/2. These functions
- * are based on the aforementioned arithmetic comparison. They always
- * return a value that belongs to the widening type of both arguments:
+ * We also provide evaluable functions min/2 and max/2. These functions are
+ * based on the aforementioned arithmetic comparison. The type of the return
+ * value depends on the order of the arguments of these evaluable functions.
  *
  * min, max: integer x integer -> integer
  * min, max: float x float -> float
  * min, max: decimal x decimal -> decimal
+ * epsilon: float
+ *
+ * The constant epsilon allows querying the smallest float number that when
+ * added to one will still result in a float number different from one
+ * without any rounding.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -71,7 +76,7 @@
 % +Expr =:= +Expr
 :- public =:= /2.
 :- set_predicate_property(=:= /2, (meta_predicate#(1)=:= #(1))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(=:= /2, sys_meta_predicate(C)).
 :- special(=:= /2, 'SpecialCompare', 0).
 
@@ -82,7 +87,7 @@
 % +Expr =\= +Expr
 :- public =\= /2.
 :- set_predicate_property(=\= /2, (meta_predicate#(1)=\= #(1))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(=\= /2, sys_meta_predicate(C)).
 :- special(=\= /2, 'SpecialCompare', 1).
 
@@ -93,7 +98,7 @@
 % +Expr < +Expr
 :- public < /2.
 :- set_predicate_property(< /2, (meta_predicate#(1)< #(1))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(< /2, sys_meta_predicate(C)).
 :- special(< /2, 'SpecialCompare', 2).
 
@@ -104,7 +109,7 @@
 % +Expr =< +Expr
 :- public =< /2.
 :- set_predicate_property(=< /2, (meta_predicate#(1)=< #(1))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(=< /2, sys_meta_predicate(C)).
 :- special(=< /2, 'SpecialCompare', 3).
 
@@ -115,7 +120,7 @@
 % +Expr > +Expr
 :- public > /2.
 :- set_predicate_property(> /2, (meta_predicate#(1)> #(1))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(> /2, sys_meta_predicate(C)).
 :- special(> /2, 'SpecialCompare', 4).
 
@@ -126,7 +131,7 @@
 % +Expr >= +Expr
 :- public >= /2.
 :- set_predicate_property(>= /2, (meta_predicate#(1)>= #(1))).
-:- sys_get_context(here, C),
+:- sys_context_property(here, C),
    set_predicate_property(>= /2, sys_meta_predicate(C)).
 :- special(>= /2, 'SpecialCompare', 5).
 
@@ -149,3 +154,10 @@
 % max: decimal x decimal -> decimal
 :- public max/3.
 :- special(max/3, 'EvaluableCompare', 1).
+
+/**
+ * epsilon: [N208 9.7.3]
+ * Returns the ulp of one.
+ */
+:- public epsilon/1.
+:- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').

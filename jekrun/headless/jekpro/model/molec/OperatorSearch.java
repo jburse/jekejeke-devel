@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
@@ -60,40 +61,37 @@ public final class OperatorSearch {
         } else {
             n = CacheFunctor.sepName(key);
         }
-        String s = base.getFullName();
         MapEntry<AbstractSource, Integer>[] deps2;
-        if (s == null) {
-            /* find oper */
-            Operator oper = (f ? getOperUser(type, s, scope.getStore()) : null);
-            if (oper != null)
-                return oper;
-            deps2 = base.snapshotDeps();
-        } else {
-            s = CacheFunctor.composeQuali(s, n);
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
-                /* find name%oper */
-                Operator oper = base.getOper(type, s);
+        String s;
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            /* find name%oper */
+            s = base.getFullName();
+            if (!Branch.OP_USER.equals(s)) {
+                String s1 = CacheFunctor.composeQuali(s, n);
+                Operator oper = base.getOper(type, s1);
                 if (oper != null)
                     return oper;
-                deps2 = base.snapshotDeps();
-            } finally {
-                base.getRead().release();
+            } else if (f) {
+                Operator oper = getOperUser(type, n, scope.getStore());
+                if (oper != null)
+                    return oper;
             }
+            deps2 = base.snapshotDeps();
+        } finally {
+            base.getRead().release();
         }
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
             return oper;
-        if (s == null) {
-            /* find oper */
-            return (!f ? getOperUser(type, n, scope.getStore()) : null);
-        } else {
+        if (!Branch.OP_USER.equals(s) || !f) {
             /* find oper */
             return getOperUser(type, n, scope.getStore());
         }
+        return null;
     }
 
     /**
@@ -120,24 +118,24 @@ public final class OperatorSearch {
         } else {
             n = CacheFunctor.sepName(key);
         }
-        String s = base.getFullName();
-        if (s == null) {
-            /* create oper */
-            return (create ? defineOperUser(type, n, scope, pos, scope.getStore()) :
-                    getOperUser(type, n, scope.getStore()));
-        } else {
-            s = CacheFunctor.composeQuali(s, n);
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            String s = base.getFullName();
+            if (!Branch.OP_USER.equals(s)) {
                 /* create name%oper */
+                s = CacheFunctor.composeQuali(s, n);
                 return (create ? base.defineOper(type, s, scope, pos) :
                         base.getOper(type, s));
-            } finally {
-                base.getRead().release();
+            } else {
+                /* create oper */
+                return (create ? defineOperUser(type, n, scope, pos, scope.getStore()) :
+                        getOperUser(type, n, scope.getStore()));
             }
+        } finally {
+            base.getRead().release();
         }
     }
 
@@ -163,32 +161,26 @@ public final class OperatorSearch {
         } else {
             n = CacheFunctor.sepName(key);
         }
-        String s = base.getFullName();
         MapEntry<AbstractSource, Integer>[] deps2;
-        if (s == null) {
-            /* find dependent oper */
+        String s;
+        /* wait for complete source */
+        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            throw new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+        try {
+            s = base.getFullName();
             deps2 = base.snapshotDeps();
-        } else {
-            /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
-            try {
-                /* find dependent oper */
-                deps2 = base.snapshotDeps();
-            } finally {
-                base.getRead().release();
-            }
+        } finally {
+            base.getRead().release();
         }
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
             return oper;
-        if (s == null) {
-            return null;
-        } else {
+        if (!Branch.OP_USER.equals(s)) {
             /* find oper */
             return getOperUser(type, n, scope.getStore());
         }
+        return null;
     }
 
     /*****************************************************/
@@ -234,7 +226,7 @@ public final class OperatorSearch {
      *
      * @param key  The operator name.
      * @param type The operator type.
-     * @param src  The call-site.
+     * @param src  The call-site, not null.
      * @param deps The deps.
      * @return The resolved operator or null.
      * @throws EngineMessage        Shit happens.
@@ -259,10 +251,10 @@ public final class OperatorSearch {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s != null) {
+                if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, key);
                     Operator oper = base.getOper(type, s);
-                    if (oper != null && oper.visibleOper(src))
+                    if (oper != null && OperatorSearch.visibleOper(oper, src))
                         return oper;
                 }
                 deps2 = base.snapshotDeps();
@@ -282,7 +274,7 @@ public final class OperatorSearch {
      *
      * @param fun     The name.
      * @param type    The type.
-     * @param src     The call-site.
+     * @param src     The call-site, not null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The operator or null.
@@ -308,10 +300,10 @@ public final class OperatorSearch {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s != null) {
+                if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
                     Operator oper = base.getOper(type, s);
-                    if (oper != null && oper.visibleOper(src))
+                    if (oper != null && OperatorSearch.visibleOper(oper, src))
                         return oper;
                 }
                 deps2 = base.snapshotDeps();
@@ -331,7 +323,7 @@ public final class OperatorSearch {
      *
      * @param key  The operator name.
      * @param type The operator type.
-     * @param src  The call-site.
+     * @param src  The call-site, not null.
      * @param deps The deps.
      * @return The resolved operator or null.
      * @throws EngineMessage        Shit happens.
@@ -356,10 +348,10 @@ public final class OperatorSearch {
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
-                if (s != null) {
+                if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, key);
                     Operator oper = base.getOper(type, s);
-                    if (oper != null && oper.visibleOper(src))
+                    if (oper != null && OperatorSearch.visibleOper(oper, src))
                         return oper;
                 }
                 deps2 = base.snapshotDeps();
@@ -385,23 +377,25 @@ public final class OperatorSearch {
      * <p>Retrieve an operator with module lookup.</p>
      * <p>Respect source visibility.</p>
      *
-     * @param sa   The atom skeleton.
+     * @param scope   The call-site.
+     * @param fun   The name.
      * @param type The type.
      * @param en   The engine.
      * @return The operator or null.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static Operator getOper(SkelAtom sa, int type,
+    public static Operator getOper(AbstractSource scope, String fun,
+                                   int type,
                                    Engine en)
             throws EngineMessage, EngineException {
         try {
-            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
-                    CacheFunctor.sepModule(sa.fun), src, en) : src);
-            Operator op = performLookup(sa.fun, type, src, base);
-            if (op != null && op.visibleOper(src))
-                return op;
+            AbstractSource src = (scope != null ? scope : en.store.user);
+            AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupKey(
+                    CacheFunctor.sepModule(fun), src, en) : src);
+            Operator oper = performLookup(fun, type, src, base);
+            if (oper != null && OperatorSearch.visibleOper(oper, src))
+                return oper;
             return null;
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -422,12 +416,12 @@ public final class OperatorSearch {
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupBase(
+            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
                     CacheFunctor.sepModule(sa.fun), src, en) : src);
-            Operator op = performLookupDefined(sa.fun, type, src,
+            Operator oper = performLookupDefined(sa.fun, type, src,
                     sa.getPosition(), base, create);
-            if (op != null && op.visibleOper(src))
-                return op;
+            if (oper != null && OperatorSearch.visibleOper(oper, src))
+                return oper;
             if (create)
                 throw new EngineMessage(EngineMessage.permissionError(
                         EngineMessage.OP_PERMISSION_MODIFY,
@@ -480,6 +474,68 @@ public final class OperatorSearch {
         if (oper == null)
             oper = store.user.defineOper(type, fun, scope, pos);
         return oper;
+    }
+
+    /*******************************************************************/
+    /* Operator Visibility                                             */
+    /*******************************************************************/
+
+    /**
+     * <p>Check whether the operator is visible.</p>
+     *
+     * @param oper The operator.
+     * @param src  The call-site, non-null.
+     * @return True if the operator is visible, otherwise false.
+     */
+    public static boolean visibleOper(Operator oper, AbstractSource src) {
+        if ((oper.getBits() & Operator.MASK_OPER_VSPR) != 0) {
+            return sameHome(oper.getScope(), src);
+        } else if ((oper.getBits() & Operator.MASK_OPER_VSPU) == 0) {
+            return samePackage(oper.getScope(), src);
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * <p>Check whether this source has the same home as another source.</p>
+     *
+     * @param fst The first source, not null.
+     * @param snd The second source, not null.
+     * @return True if the two sources share the same home, otherwise false.
+     */
+    public static boolean sameHome(AbstractSource fst, AbstractSource snd) {
+        String path1 = fst.getPath();
+        int k1 = path1.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
+        int j = path1.indexOf(CacheSubclass.OP_CHAR_SYN, k1);
+        k1 = (j == -1 ? path1.length() : j);
+
+        String path2 = snd.getPath();
+        int k2 = path2.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
+        j = path2.indexOf(CacheSubclass.OP_CHAR_SYN, k2);
+        k2 = (j == -1 ? path2.length() : j);
+
+        return (k1 == k2 &&
+                (k1 == 0 || path1.regionMatches(0, path2, 0, k1)));
+    }
+
+
+    /**
+     * <p>Check whether this source has the same package as another source.</p>
+     *
+     * @param fst The first source, not null.
+     * @param snd The second source, not null.
+     * @return True if the two sources share the same package, otherwise false.
+     */
+    public static boolean samePackage(AbstractSource fst, AbstractSource snd) {
+        String path1 = fst.getPath();
+        int k1 = path1.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
+
+        String path2 = snd.getPath();
+        int k2 = path2.lastIndexOf(CacheModule.OP_CHAR_OS) + 1;
+
+        return (k1 == k2 &&
+                (k1 == 0 || path1.regionMatches(0, path2, 0, k1)));
     }
 
 }

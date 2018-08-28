@@ -1511,11 +1511,9 @@ sys_root_range(_..A, H..B) :- !,
 sys_root_range(0, 0) :- !.
 sys_root_range(A, _) :-
    A < 0, !, fail.
-sys_root_range(A, _) :-
-   B is isqrt(A),
-   A =\= B*B, !, fail.
 sys_root_range(A, H..B) :-
-   B is isqrt(A),
+   sqrtrem(A, B, R),
+   R =:= 0,
    H is -B.
 
 % sys_prem_range(+Range, -Range)

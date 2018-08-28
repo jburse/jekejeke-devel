@@ -2,8 +2,12 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -72,84 +76,99 @@ public final class SpecialSort extends AbstractSpecial {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_SORT:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                SpecialSort.sort(en, temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_DISTINCT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialSort.distinct(temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_KEYSORT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialSort.keySort(en, temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_KEYGROUP:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialSort.keyGroup(temp[0], ref, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_HASH_CODE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
-                if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_GROUND:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                val = EngineMessage.castInteger(en.skel, en.display);
-                if (!termGround(temp[0], ref, EngineMessage.castIntValue(val)))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_HASH_CODE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkInstantiated(en.skel);
-                val = EngineMessage.castInteger(en.skel, en.display);
-                val = Integer.valueOf(termHash(temp[0], ref,
-                        EngineMessage.castIntValue(val), 0));
-                if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_LOCALE_SORT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
-                SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            case SPECIAL_LOCALE_KEYSORT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
-                SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case SPECIAL_SORT:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    boolean multi = SpecialSort.sort(en, temp[0], ref, en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_DISTINCT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = SpecialSort.distinct(temp[0], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_KEYSORT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = SpecialSort.keySort(en, temp[0], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_SYS_KEYGROUP:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = SpecialSort.keyGroup(temp[0], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_HASH_CODE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
+                    if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_GROUND:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    val = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    if (!termGround(temp[0], ref, SpecialEval.castIntValue(val)))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_SYS_HASH_CODE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    val = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    val = Integer.valueOf(termHash(temp[0], ref,
+                            SpecialEval.castIntValue(val), 0));
+                    if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_LOCALE_SORT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    multi = SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                case SPECIAL_LOCALE_KEYSORT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    multi = SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return en.getNext();
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
@@ -165,11 +184,13 @@ public final class SpecialSort extends AbstractSpecial {
      * @param d  The display.
      * @param en The engine.
      */
-    private static void sort(Comparator<Object> c, Object m, Display d, Engine en)
+    private static boolean sort(Comparator<Object> c,
+                                Object m, Display d, Engine en)
             throws EngineMessage {
         AbstractSet<Object> set = new SetTree<Object>(c);
         SpecialSort.sortSet(set, m, d, en);
-        SpecialSort.createSet(set, en);
+        return createSet(en.store.foyer.ATOM_NIL,
+                Display.DISPLAY_CONST, set, en);
     }
 
     /**
@@ -179,11 +200,12 @@ public final class SpecialSort extends AbstractSpecial {
      * @param d  The display.
      * @param en The engine.
      */
-    private static void distinct(Object m, Display d, Engine en)
+    private static boolean distinct(Object m, Display d, Engine en)
             throws EngineMessage {
         AbstractSet<Object> set = new SetHashLink<Object>();
         SpecialSort.sortSet(set, m, d, en);
-        SpecialSort.createSet(set, en);
+        return createSet(en.store.foyer.ATOM_NIL,
+                Display.DISPLAY_CONST, set, en);
     }
 
     /**
@@ -237,18 +259,33 @@ public final class SpecialSort extends AbstractSpecial {
     /**
      * <p>Create the set.</p>
      *
+     * @param t4  The difference skeleton.
+     * @param d2  The difference display.
      * @param set The abstract map.
      * @param en  The engine.
      */
-    private static void createSet(AbstractSet<Object> set, Engine en) {
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        for (SetEntry<Object> entry = set.getLastEntry();
+    public static <T> boolean createSet(Object t4, Display d2,
+                                        AbstractSet<T> set, Engine en) {
+        en.skel = t4;
+        en.display = d2;
+        boolean multi = false;
+        if (set == null)
+            return multi;
+        for (SetEntry<T> entry = set.getLastEntry();
              entry != null; entry = set.predecessor(entry)) {
-            Object elem = entry.key;
-            SpecialFind.consValue(AbstractTerm.getSkel(elem), AbstractTerm.getDisplay(elem),
-                    en.skel, en.display, en);
+            t4 = en.skel;
+            d2 = en.display;
+            boolean ext = multi;
+            T elem = entry.key;
+            Object val = AbstractTerm.getSkel(elem);
+            Display ref = AbstractTerm.getDisplay(elem);
+            multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                    val, ref, t4, d2, en);
+            if (multi && ext)
+                d2.remTab(en);
+            multi = (multi || ext);
         }
+        return multi;
     }
 
     /************************************************************************/
@@ -264,12 +301,12 @@ public final class SpecialSort extends AbstractSpecial {
      * @param d  The display.
      * @param en The engine.
      */
-    private static void keySort(Comparator<Object> c, Object m, Display d, Engine en)
+    private static boolean keySort(Comparator<Object> c,
+                                   Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractMap<Object, ListArray<Object>> map =
-                new MapTree<Object, ListArray<Object>>(c);
+        AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(c);
         SpecialSort.sortMap(map, m, d, en);
-        SpecialSort.createMap(map, en);
+        return SpecialSort.createMap(map, en);
     }
 
     /**
@@ -280,12 +317,11 @@ public final class SpecialSort extends AbstractSpecial {
      * @param d  The display.
      * @param en The engine.
      */
-    private static void keyGroup(Object m, Display d, Engine en)
+    private static boolean keyGroup(Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractMap<Object, ListArray<Object>> map =
-                new MapHashLink<Object, ListArray<Object>>();
+        AbstractMap<Object, ListArray<Object>> map = new MapHashLink<Object, ListArray<Object>>();
         SpecialSort.sortMap(map, m, d, en);
-        SpecialSort.createMap(map, en);
+        return SpecialSort.createMap(map, en);
     }
 
     /**
@@ -320,7 +356,8 @@ public final class SpecialSort extends AbstractSpecial {
                 /* */
             } else {
                 EngineMessage.checkInstantiated(m2);
-                throw new EngineMessage(EngineMessage.typeError(EngineMessage.OP_TYPE_PAIR, m2), d2);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_PAIR, m2), d2);
             }
             SkelCompound sc2 = (SkelCompound) m2;
             en.skel = sc2.args[0];
@@ -365,55 +402,38 @@ public final class SpecialSort extends AbstractSpecial {
      * @param map The abstract map.
      * @param en  The engine.
      */
-    private static void createMap(AbstractMap<Object, ListArray<Object>> map,
-                                  Engine en) {
+    private static <K, V> boolean createMap(AbstractMap<K, ListArray<V>> map,
+                                            Engine en) {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        for (MapEntry<Object, ListArray<Object>> entry = map.getLastEntry();
+        boolean multi = false;
+        for (MapEntry<K, ListArray<V>> entry = map.getLastEntry();
              entry != null; entry = map.predecessor(entry)) {
-            Object elem = entry.key;
-            ListArray<Object> list = entry.value;
+            K elem2 = entry.key;
+            Object val2 = AbstractTerm.getSkel(elem2);
+            Display ref2 = AbstractTerm.getDisplay(elem2);
+            ListArray<V> list = entry.value;
             for (int i = list.size() - 1; i >= 0; i--) {
-                Object elem2 = list.get(i);
-                Object t = en.skel;
-                Display d = en.display;
-                SpecialSort.subValue(AbstractTerm.getSkel(elem), AbstractTerm.getDisplay(elem),
-                        AbstractTerm.getSkel(elem2), AbstractTerm.getDisplay(elem2), en);
-                SpecialFind.consValue(en.skel, en.display, t, d, en);
+                Object t4 = en.skel;
+                Display d2 = en.display;
+                boolean ext = multi;
+                V elem = list.get(i);
+                Object val = AbstractTerm.getSkel(elem);
+                Display ref = AbstractTerm.getDisplay(elem);
+                boolean ext2 = SpecialFind.pairValue(en.store.foyer.CELL_SUB,
+                        val2, ref2, val, ref, en);
+                val = en.skel;
+                ref = en.display;
+                multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                        val, ref, t4, d2, en);
+                if (multi && ext)
+                    d2.remTab(en);
+                if (multi && ext2)
+                    ref.remTab(en);
+                multi = (multi || ext || ext2);
             }
         }
-    }
-
-    /********************************************************************/
-    /* Cons Helper                                                      */
-    /********************************************************************/
-
-    /**
-     * <p>Sub the value to the given term.</p>
-     * <p>The result is returned in skeleton and display.</p>
-     *
-     * @param t2 The term skeleton.
-     * @param d2 The term display.
-     * @param t  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     */
-    private static void subValue(Object t2, Display d2, Object t, Display d, Engine en) {
-        if (EngineCopy.isGroundSkel(t2)) {
-            en.skel = new SkelCompound(en.store.foyer.ATOM_SUB, t2, t);
-            en.display = d;
-            return;
-        }
-        if (EngineCopy.isGroundSkel(t)) {
-            en.skel = new SkelCompound(en.store.foyer.ATOM_SUB, t2, t);
-            en.display = d2;
-            return;
-        }
-        Display d3 = new Display(2);
-        d3.bind[0].bindVar(t2, d2, en);
-        d3.bind[1].bindVar(t, d, en);
-        en.skel = en.store.foyer.CELL_SUB;
-        en.display = d3;
+        return multi;
     }
 
     /********************************************************************/

@@ -39,10 +39,10 @@ public final class ConnectionWriter extends FilterWriter {
     private String encoding = "";
     private RandomAccessFile raf;
     private String path;
-    private boolean append;
     private int buffer;
     private Writer unbuf;
     private String newline = OpenOpts.UNIX_NEWLINE;
+    private boolean append;
 
     /**
      * <p>Create a connection writer from a write.</p>
@@ -225,9 +225,11 @@ public final class ConnectionWriter extends FilterWriter {
     public void write(char cbuf[], int off, int len) throws IOException {
         int k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
         while (k != -1) {
-            if (k != off)
-                out.write(cbuf, off, k - off);
-            out.write(newline);
+            synchronized (lock) {
+                if (k != off)
+                    out.write(cbuf, off, k - off);
+                out.write(newline);
+            }
             k++;
             len = len - k + off;
             off = k;
@@ -265,9 +267,11 @@ public final class ConnectionWriter extends FilterWriter {
     public void write(String str, int off, int len) throws IOException {
         int k = indexOf(str, off, len, CodeType.LINE_EOL);
         while (k != -1) {
-            if (k != off)
-                out.write(str, off, k - off);
-            out.write(newline);
+            synchronized (lock) {
+                if (k != off)
+                    out.write(str, off, k - off);
+                out.write(newline);
+            }
             k++;
             len = len - k + off;
             off = k;

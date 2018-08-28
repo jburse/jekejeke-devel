@@ -9,7 +9,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
+
+import java.io.StringWriter;
 
 /**
  * This class provides writing, reading, unification and copying
@@ -71,7 +72,7 @@ public abstract class AbstractTerm {
      * <p>Will unpack atoms.</p>
      * <p>Will not wrap numbers and references.</p>
      *
-     * @param m The skeleton.
+     * @param m The skeleton, not null.
      * @param d The display.
      * @return The term.
      */
@@ -82,10 +83,8 @@ public abstract class AbstractTerm {
             return new TermCompound((SkelCompound) m, d);
         } else if (m instanceof SkelAtom) {
             return ((SkelAtom) m).fun;
-        } else if (m != null) {
-            return m;
         } else {
-            throw new NullPointerException("internal null");
+            return m;
         }
     }
 
@@ -95,7 +94,7 @@ public abstract class AbstractTerm {
      * then switch to the constructor of the apppropriate subclass.</p>
      * <p>Will wrap atoms, numbers and references.</p>
      *
-     * @param m The skeleton.
+     * @param m The skeleton, not null.
      * @param d The display.
      * @return The term.
      */
@@ -104,13 +103,10 @@ public abstract class AbstractTerm {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
             return new TermCompound((SkelCompound) m, d);
-        } else if (m != null) {
-            return new TermAtomic(m, false);
         } else {
-            throw new NullPointerException("internal null");
+            return new TermAtomic(m, false);
         }
     }
-
 
     /**
      * <p>Create a term by the given skeleton and display.</p>
@@ -119,7 +115,7 @@ public abstract class AbstractTerm {
      * <p>Will keep atoms.</p>
      * <p>Will not wrap numbers and references.</p>
      *
-     * @param m The skeleton.
+     * @param m The skeleton, not null.
      * @param d The display.
      * @return The molec.
      */
@@ -135,9 +131,9 @@ public abstract class AbstractTerm {
 
     /**
      * <p>Retrieve the skeleton.</p>
-     * <p>Works for wrapped and unwrapped data structure.</p>
+     * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
-     * @param t The term.
+     * @param t The term, not null.
      * @return The skeleton.
      */
     public static Object getSkel(Object t) {
@@ -149,18 +145,16 @@ public abstract class AbstractTerm {
             return new SkelAtom((String) t);
         } else if (t instanceof TermAtomic) {
             return ((TermAtomic) t).skel;
-        } else if (t != null) {
-            return t;
         } else {
-            throw new NullPointerException("external null");
+            return t;
         }
     }
 
     /**
      * <p>Retrieve the display.</p>
-     * <p>Works for wrapped and unwrapped data structure.</p>
+     * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
-     * @param t The term.
+     * @param t The term, not null.
      * @return The display.
      */
     public static Display getDisplay(Object t) {
@@ -168,12 +162,50 @@ public abstract class AbstractTerm {
             return ((TermVar) t).display;
         } else if (t instanceof TermCompound) {
             return ((TermCompound) t).display;
-        } else if (t != null) {
-            return Display.DISPLAY_CONST;
         } else {
-            throw new NullPointerException("external null");
+            return Display.DISPLAY_CONST;
         }
     }
+
+    /************************************************************/
+    /* Experimental Multi                                       */
+    /************************************************************/
+
+    /**
+     * <p>Set the multi flag.</p>
+     *
+     * @param t The term.
+     * @param m The multi flag.
+     */
+    public static void setMarker(Object t, Object m) {
+        if (t instanceof TermVar) {
+            ((TermVar) t).marker = m;
+        } else if (t instanceof TermCompound) {
+            ((TermCompound) t).marker = m;
+        } else {
+            /* */
+        }
+    }
+
+    /**
+     * <p>Retrieve the multi flag.</p>
+     *
+     * @param t The term.
+     * @return The multi flag.
+     */
+    public static Object getMarker(Object t) {
+        if (t instanceof TermVar) {
+            return ((TermVar) t).marker;
+        } else if (t instanceof TermCompound) {
+            return ((TermCompound) t).marker;
+        } else {
+            return null;
+        }
+    }
+
+    /************************************************************/
+    /* String Generation                                        */
+    /************************************************************/
 
     /**
      * <p>Return a string of a skeleton.</p>
@@ -182,7 +214,9 @@ public abstract class AbstractTerm {
      */
     public String toString() {
         try {
-            return PrologWriter.toString(getSkel(this), getDisplay(this), 0, null);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(getSkel(this), getDisplay(this), sw, 0, null);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
         } catch (EngineException x) {
@@ -198,7 +232,9 @@ public abstract class AbstractTerm {
      */
     public String toString(int flags) {
         try {
-            return PrologWriter.toString(getSkel(this), getDisplay(this), flags, null);
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(getSkel(this), getDisplay(this), sw, flags, null);
+            return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
         } catch (EngineException x) {
@@ -230,10 +266,9 @@ public abstract class AbstractTerm {
      * @param snd   The second term.
      * @return True if the this term unifies with the other term, otherwise false.
      * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
      */
     public static boolean unifyTerm(Interpreter inter, Object fst, Object snd)
-            throws InterpreterException, InterpreterMessage {
+            throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
@@ -241,10 +276,6 @@ public abstract class AbstractTerm {
         try {
             res = en.unifyTerm(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
                     AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
-        } catch (EngineMessage x) {
-            en.visor.setFence(backthread);
-            en.visor.setInuse(backuse);
-            throw new InterpreterMessage(x);
         } catch (EngineException x) {
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -305,11 +336,14 @@ public abstract class AbstractTerm {
         ec.vars = null;
         Object val = ec.copyTerm(m, d);
         ec.vars = null;
+        if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
+            return t;
         int size = Display.displaySize(val);
         Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        if (val != m || ref != d)
-            return AbstractTerm.createTerm(val, ref);
-        return t;
+        Object res = AbstractTerm.createTerm(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
     /**
@@ -333,11 +367,45 @@ public abstract class AbstractTerm {
         ec.vars = null;
         Object val = ec.copyTerm(m, d);
         ec.vars = null;
+        if (val == m && (t instanceof AbstractTerm))
+            return (AbstractTerm) t;
         int size = Display.displaySize(val);
         Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        if (val != m || ref != d || !(t instanceof AbstractTerm))
-            return AbstractTerm.createTermWrapped(val, ref);
-        return (AbstractTerm) t;
+        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
+    }
+
+    /**
+     * <p>Create a copy of this term.</p>
+     *
+     * @param inter The call-in.
+     * @param t     The term.
+     * @return The copy of this term.
+     */
+    public static Object copyMolec(Interpreter inter, Object t) {
+        /* common lane */
+        Object m = AbstractTerm.getSkel(t);
+        Display d = AbstractTerm.getDisplay(t);
+
+        Engine en = (Engine) inter.getEngine();
+        EngineCopy ec = en.enginecopy;
+        if (ec == null) {
+            ec = new EngineCopy();
+            en.enginecopy = ec;
+        }
+        ec.vars = null;
+        Object val = ec.copyTerm(m, d);
+        ec.vars = null;
+        if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
+            return t;
+        int size = Display.displaySize(val);
+        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        Object res= AbstractTerm.createMolec(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+        return res;
     }
 
 }

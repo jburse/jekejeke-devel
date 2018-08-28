@@ -3,10 +3,8 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Goal;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -110,24 +108,29 @@ final class LenseLength extends AbstractLense {
      * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    public final void moniEvaluate(Engine en)
+    public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        Object obj = convertObj(temp, ref, en);
-        en.skel = Integer.valueOf(getLength(obj, en));
+        Object obj;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            obj = null;
+        }
+        en.skel = Integer.valueOf(getLength(obj));
         en.display = Display.DISPLAY_CONST;
+        return false;
     }
 
     /**
      * <p>Retrieve the length.</p>
      *
      * @param obj The array.
-     * @param en  The engine.
      * @return The length.
      * @throws EngineMessage FFI error.
      */
-    private int getLength(Object obj, Engine en)
+    private int getLength(Object obj)
             throws EngineMessage {
         try {
             return Array.getLength(obj);
@@ -135,7 +138,7 @@ final class LenseLength extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz, en.store.foyer.SOURCE_SYSTEM, en)));
+                    SpecialSpecial.classToName(clazz)));
         }
     }
 
