@@ -504,6 +504,7 @@ public final class ForeignUri {
             query = ForeignUri.decodeEncodeQuery(query);
             String hash = ForeignUri.sysUriHash(adr);
             adr = ForeignUri.sysUriMake(spec, query, hash);
+            adr = ForeignDomain.sysUriUnpuny(adr);
             adr = derefUri(adr);
         }
         return adr;

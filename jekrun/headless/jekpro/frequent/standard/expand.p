@@ -85,7 +85,7 @@ _^_ :-
 :- set_predicate_property(^ /2, sys_body).
 
 /*******************************************************/
-/* Term/Goal Expand                                    */
+/* Term Expand                                         */
 /*******************************************************/
 
 /**
@@ -99,18 +99,6 @@ _^_ :-
 :- meta_predicate term_expansion(-1,-1).
 :- set_predicate_property(term_expansion/2, sys_noexpand).
 :- static term_expansion/2.
-
-/**
- * goal_expansion(C, D):
- * This predicate can be used to define custom goal
- * expansion rules.
- */
-% goal_expansion(+Goal, -Goal)
-:- public goal_expansion/2.
-:- multifile goal_expansion/2.
-:- meta_predicate goal_expansion(0,0).
-:- set_predicate_property(goal_expansion/2, sys_noexpand).
-:- static goal_expansion/2.
 
 /**
  * expand_term(C, D):
@@ -130,15 +118,24 @@ expand_term(G, N) :-
    sys_callable(G),
    sys_functor(G, J, A),
    sys_make_indicator(J, A, I),
-   predicate_property(I, (meta_predicate P)),
    \+ predicate_property(I, sys_noexpand), !,
-   P =.. [_|R],
-   sys_univ(G, [_|L]),
-   sys_expand_term_args(R, L, S),
-   sys_univ(H, [J|S]),
-   sys_simplify_term(H, N).
+   expand_term_callable(G, I, H),
+   simplify_term(H, N).
 expand_term(T, U) :-
-   sys_simplify_term(T, U).
+   simplify_term(T, U).
+
+% expand_term_callable(+Callable, +Indicator, -Callable)
+:- private expand_term_callable/3.
+expand_term_callable(G, I, H) :-
+   predicate_property(I, (meta_predicate P)), !,
+   P =.. [_|R],
+   sys_univ(G, [K|L]),
+   sys_expand_term_args(R, L, S),
+   sys_univ(H, [K|S]).
+expand_term_callable(G, _, H) :-
+   sys_univ(G, [K|L]),
+   sys_expand_rest_args(L, S),
+   sys_univ(H, [K|S]).
 
 % sys_expand_term_args(+Modes, +Args, -Args)
 :- private sys_expand_term_args/3.
@@ -153,7 +150,24 @@ sys_expand_term_arg(0, X, Y) :- !,
    expand_term(X, Y).
 sys_expand_term_arg(-1, X, Y) :- !,
    expand_goal(X, Y).
-sys_expand_term_arg(_, X, X).
+sys_expand_term_arg(_, X, Y) :-
+   expand_rest(X, Y).
+
+/*******************************************************/
+/* Goal Expand                                         */
+/*******************************************************/
+
+/**
+ * goal_expansion(C, D):
+ * This predicate can be used to define custom goal
+ * expansion rules.
+ */
+% goal_expansion(+Goal, -Goal)
+:- public goal_expansion/2.
+:- multifile goal_expansion/2.
+:- meta_predicate goal_expansion(0,0).
+:- set_predicate_property(goal_expansion/2, sys_noexpand).
+:- static goal_expansion/2.
 
 /**
  * expand_goal(C, D):
@@ -173,15 +187,24 @@ expand_goal(G, N) :-
    sys_callable(G),
    sys_functor(G, J, A),
    sys_make_indicator(J, A, I),
-   predicate_property(I, (meta_predicate P)),
    \+ predicate_property(I, sys_noexpand), !,
-   P =.. [_|R],
-   sys_univ(G, [_|L]),
-   sys_expand_goal_args(R, L, S),
-   sys_univ(H, [J|S]),
-   sys_simplify_goal(H, N).
+   expand_goal_callable(G, I, H),
+   simplify_goal(H, N).
 expand_goal(G, H) :-
-   sys_simplify_goal(G, H).
+   simplify_goal(G, H).
+
+% expand_goal_callable(+Callable, +Indicator, -Callable)
+:- private expand_goal_callable/3.
+expand_goal_callable(G, I, H) :-
+   predicate_property(I, (meta_predicate P)), !,
+   P =.. [_|R],
+   sys_univ(G, [K|L]),
+   sys_expand_goal_args(R, L, S),
+   sys_univ(H, [K|S]).
+expand_goal_callable(G, _, H) :-
+   sys_univ(G, [K|L]),
+   sys_expand_rest_args(L, S),
+   sys_univ(H, [K|S]).
 
 % sys_expand_goal_args(+Modes, +Args, -Args)
 :- private sys_expand_goal_args/3.
@@ -196,4 +219,49 @@ sys_expand_goal_arg(0, X, Y) :- !,
    expand_goal(X, Y).
 sys_expand_goal_arg(-1, X, Y) :- !,
    expand_term(X, Y).
-sys_expand_goal_arg(_, X, X).
+sys_expand_goal_arg(_, X, Y) :-
+   expand_rest(X, Y).
+
+/*******************************************************/
+/* Rest Expand                                         */
+/*******************************************************/
+
+/**
+ * rest_expansion(C, D):
+ * This predicate can be used to define custom rest
+ * expansion rules.
+ */
+% rest_expansion(+Clause, -Clause)
+:- public rest_expansion/2.
+:- multifile rest_expansion/2.
+:- set_predicate_property(rest_expansion/2, sys_noexpand).
+:- static rest_expansion/2.
+
+/**
+ * expand_rest(C, D):
+ * The system predicate succeeds if the expansion of
+ * the rest C unifies with D.
+ */
+% expand_rest(+Goal, -Goal)
+:- public expand_rest/2.
+:- set_predicate_property(expand_rest/2, sys_noexpand).
+expand_rest(P, P) :-
+   var(P), !.
+expand_rest(A, C) :-
+   rest_expansion(A, B), !,
+   expand_rest(B, C).
+expand_rest(G, N) :-
+   callable(G), !,
+   G =.. [K|L],
+   sys_expand_rest_args(L, S),
+   H =.. [K|S],
+   simplify_rest(H, N).
+expand_rest(G, H) :-
+   simplify_rest(G, H).
+
+% sys_expand_rest_args(+Args, -Args)
+:- private sys_expand_rest_args/2.
+sys_expand_rest_args([], []).
+sys_expand_rest_args([A|L], [B|S]) :-
+   expand_rest(A, B),
+   sys_expand_rest_args(L, S).

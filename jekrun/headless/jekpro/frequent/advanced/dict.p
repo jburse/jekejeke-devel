@@ -53,6 +53,17 @@
 :- public infix(:<).
 :- op(700, xfx, :<).
 
+% user:rest_expansion(+Term, -Term)
+:- public user:rest_expansion/2.
+:- multifile user:rest_expansion/2.
+user:rest_expansion(_{D}, _) :-
+   var(D), !, fail.
+user:rest_expansion(T{D}, R) :-
+   map_to_list(D, L),
+   keysort(L, H),
+   L \== H, !,
+   dict_pairs2(H, T, R).
+
 /**
  * is_dict(X):
  * The predicate succeeds when X is a tagged structure.
@@ -85,7 +96,8 @@ is_dict(Tag{_}, Tag).
 :- public dict_pairs/3.
 dict_pairs(X, T, L) :-
    var(X), !,
-   dict_pairs2(L, T, X).
+   keysort(L, H),
+   dict_pairs2(H, T, X).
 dict_pairs(T{}, S, L) :- !,
    S = T,
    L = [].
@@ -129,9 +141,23 @@ make_map(K, M, V, (K:V,M)).
 map_to_list(L, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-map_to_list(K:V, [K-V]).
-map_to_list((K:V,L), [K-V|R]) :-
+map_to_list((C,L), [P|R]) :- !,
+   colon_to_pair(C, P),
    map_to_list(L, R).
+map_to_list(C, [P]) :-
+   colon_to_pair(C, P).
+
+% colon_to_pair(+Colon, -Pair)
+:- private colon_to_pair/2.
+colon_to_pair(C, _) :-
+   var(C),
+   throw(error(instantiation_error,_)).
+colon_to_pair(K:_, _) :-
+   \+ ground(K),
+   throw(error(instantiation_error,_)).
+colon_to_pair(K:V, K-V) :- !.
+colon_to_pair(X, _) :-
+   throw(error(type_error(map,X),_)).
 
 /**
  * get_dict(K, S, V):
@@ -170,10 +196,10 @@ get_dict2((_,M), K, V) :-
  */
 % +Dict :< +Dict
 :- public :< /2.
-Tag{} :< Tag{} :- !.
-Tag{} :< Tag{_} :- !.
-Tag{_} :< Tag{} :- !, fail.
-Tag{D} :< Tag{E} :-
+T{} :< T{} :- !.
+T{} :< T{_} :- !.
+T{_} :< T{} :- !, fail.
+T{D} :< T{E} :-
    select_dict2(D, E).
 
 % select_dict2(+Map, +Map)
@@ -244,7 +270,8 @@ put_dict(K, _, _, _) :-
    \+ ground(K),
    throw(error(instantiation_error,_)).
 put_dict(K, T{}, V, R) :- !,
-   R = T{K:V}.
+   N = K:V,
+   R = T{N}.
 put_dict(K, T{M}, V, R) :- !,
    put_dict2(M, K, V, N),
    R = T{N}.

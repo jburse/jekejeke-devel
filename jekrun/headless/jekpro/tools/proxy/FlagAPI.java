@@ -144,16 +144,20 @@ public final class FlagAPI extends AbstractFlag {
             case FLAG_SYS_CPU_COUNT:
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
             case FLAG_SYS_RUNTIME_VERSION:
-                return System.getProperty("java.vm.specification.version");
+                path = System.getProperty("java.vm.name");
+                int k = (path != null ? path.indexOf(':') : -1);
+                if (k != -1)
+                    path = path.substring(0, k);
+                return path + ", " + System.getProperty("java.version");
             case FLAG_VERBOSE:
-                int verb = 0;
+                k = 0;
                 int flags = en.store.foyer.getBits();
                 if ((flags & Foyer.MASK_STORE_SMRY) != 0)
-                    verb |= LoadOpts.VERBOSE_SUMMARY;
+                    k |= LoadOpts.VERBOSE_SUMMARY;
                 if ((flags & Foyer.MASK_STORE_DTLS) != 0)
-                    verb |= LoadOpts.VERBOSE_DETAILS;
+                    k |= LoadOpts.VERBOSE_DETAILS;
                 String name;
-                switch (verb) {
+                switch (k) {
                     case 0:
                         name = AbstractFlag.OP_OFF;
                         break;

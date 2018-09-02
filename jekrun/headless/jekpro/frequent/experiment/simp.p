@@ -2,17 +2,17 @@
  * The body conversion only caters for wrapping variables into call/1.
  * It is possible to implement further heuristics be explicitly calling
  * expand_term/2 respectively expand_goal/2 during asserts or calls. By
- * this module it is arranged that sys_simplify_term/2 respectively
- * sys_simplify_goal/2 are called after the expansion. The predicates
- * are customizable by the end-user via sys_term_simplification/2
- * respectively sys_goal_simplification/2.
+ * this module it is arranged that simplify_term/2 respectively
+ * simplify_goal/2 are called after the expansion. The predicates
+ * are customizable by the end-user via term_simplification/2
+ * respectively goal_simplification/2.
  *
  * Example:
  * ?- use_module(library(expand)).
  *
  * ?- [user].
- * :- multifile simp:sys_goal_simplification/2.
- * simp:sys_goal_simplification((X is E), (X=V)) :- ground(E), V is E.
+ * :- multifile simp:goal_simplification/2.
+ * simp:goal_simplification((X is E), (X=V)) :- ground(E), V is E.
  *
  * test(X) :- X is 1+2*3.
  * ^D
@@ -23,10 +23,10 @@
  *
  * There are situations where the compile-time heuristics have to be undone
  * to make them transparent. For example when listing clauses or debugging
- * goals. The predicates sys_rebuild_term/2 respectively sys_rebuild_goal/2
+ * goals. The predicates rebuild_term/2 respectively rebuild_goal/2
  * are responsible for undoing expansions and simplifications. The rebuilding
  * uses the same flags as the expansion and as well customizable via
- * sys_term_rebuilding/2 respectively sys_goal_rebuilding/2.
+ * term_rebuilding/2 respectively goal_rebuilding/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -57,195 +57,291 @@
 :- module(simp, []).
 
 /*******************************************************/
-/* Term/Goal Simplify                                  */
+/* Term Simplify                                       */
 /*******************************************************/
 
 /**
- * sys_term_simplification(C, D):
+ * term_simplification(C, D):
  * This predicate can be used to define custom term
  * simplification rules.
  */
-% sys_term_simplification(+Clause, -Clause)
-:- public sys_term_simplification/2.
-:- multifile sys_term_simplification/2.
-:- meta_predicate sys_term_simplification(-1,-1).
-:- set_predicate_property(sys_term_simplification/2, sys_noexpand).
+% term_simplification(+Clause, -Clause)
+:- public term_simplification/2.
+:- multifile term_simplification/2.
+:- meta_predicate term_simplification(-1,-1).
+:- set_predicate_property(term_simplification/2, sys_noexpand).
 
 /**
- * sys_goal_simplification(C, D):
- * This predicate can be used to define custom goal
- * simplification rules.
- */
-% sys_goal_simplification(+Goal, -Goal)
-:- public sys_goal_simplification/2.
-:- multifile sys_goal_simplification/2.
-:- meta_predicate sys_goal_simplification(0,0).
-:- set_predicate_property(sys_goal_simplification/2, sys_noexpand).
-
-/**
- * sys_simplify_term(C, D):
+ * simplify_term(C, D):
  * The system predicate succeeds if the simplification of
  * the term C unifies with D.
  */
-% sys_simplify_term(+Clause, -Clause)
-:- public sys_simplify_term/2.
-:- meta_predicate sys_simplify_term(-1,-1).
-:- set_predicate_property(sys_simplify_term/2, sys_noexpand).
-sys_simplify_term(A, B) :-
-   sys_term_simplification(A, B), !.
-sys_simplify_term(T, T).
+% simplify_term(+Clause, -Clause)
+:- public simplify_term/2.
+:- meta_predicate simplify_term(-1,-1).
+:- set_predicate_property(simplify_term/2, sys_noexpand).
+simplify_term(A, B) :-
+   term_simplification(A, B), !.
+simplify_term(T, T).
+
+/* Predefined Simplifications */
+/* (/\)/2 flattening */
+term_simplification(A /\ _, _) :-
+   var(A), !, fail.
+term_simplification(unit /\ C, C).
+term_simplification(_ /\ A, _) :-
+   var(A), !, fail.
+term_simplification(C /\ unit, C).
+term_simplification(A /\
+                    (  B /\ C), J) :-
+   simplify_term(A /\ B, H),
+   simplify_term(H /\ C, J).
+
+/*******************************************************/
+/* Goal Simplify                                       */
+/*******************************************************/
 
 /**
- * sys_simplify_goal(C, D):
+ * goal_simplification(C, D):
+ * This predicate can be used to define custom goal
+ * simplification rules.
+ */
+% goal_simplification(+Goal, -Goal)
+:- public goal_simplification/2.
+:- multifile goal_simplification/2.
+:- meta_predicate goal_simplification(0,0).
+:- set_predicate_property(goal_simplification/2, sys_noexpand).
+
+/**
+ * simplify_goal(C, D):
  * The system predicate succeeds if the simplification of
  * the goal C unifies with D.
  */
-% sys_simplify_goal(+Goal, -Goal)
-:- public sys_simplify_goal/2.
-:- meta_predicate sys_simplify_goal(0,0).
-:- set_predicate_property(sys_simplify_goal/2, sys_noexpand).
-sys_simplify_goal(A, B) :-
-   sys_goal_simplification(A, B), !.
-sys_simplify_goal(G, G).
+% simplify_goal(+Goal, -Goal)
+:- public simplify_goal/2.
+:- meta_predicate simplify_goal(0,0).
+:- set_predicate_property(simplify_goal/2, sys_noexpand).
+simplify_goal(A, B) :-
+   goal_simplification(A, B), !.
+simplify_goal(G, G).
+
+/* Predefined Simplifications */
+/* (,)/2 and (;)/2 flattening */
+goal_simplification((  A, _), _) :-
+   var(A), !, fail.
+goal_simplification((  true, C), C).
+goal_simplification((  _, A), _) :-
+   var(A), !, fail.
+goal_simplification((  C, true), C).
+goal_simplification((  (  A, B), C), J) :-
+   simplify_goal((  B, C), H),
+   simplify_goal((  A, H), J).
+goal_simplification((  A; _), _) :-
+   var(A), !, fail.
+goal_simplification((  (  A; B); C), J) :-
+   simplify_goal((  B; C), H),
+   simplify_goal((  A; H), J).
 
 /*******************************************************/
-/* Term/Goal Rebuild                                   */
+/* Rest Simplify                                       */
 /*******************************************************/
 
 /**
- * sys_term_rebuilding(C, D):
+ * rest_simplification(C, D):
+ * This predicate can be used to define custom rest
+ * simplification rules.
+ */
+% rest_simplification(+Goal, -Goal)
+:- public rest_simplification/2.
+:- multifile rest_simplification/2.
+:- set_predicate_property(rest_simplification/2, sys_noexpand).
+:- static rest_simplification/2.
+
+/**
+ * simplify_rest(C, D):
+ * The system predicate succeeds if the simplification of
+ * the rest C unifies with D.
+ */
+% simplify_rest(+Goal, -Goal)
+:- public simplify_rest/2.
+:- set_predicate_property(simplify_rest/2, sys_noexpand).
+simplify_rest(A, B) :-
+   rest_simplification(A, B), !.
+simplify_rest(G, G).
+
+/*******************************************************/
+/* Term Rebuild                                        */
+/*******************************************************/
+
+/**
+ * term_rebuilding(C, D):
  * This predicate can be used to define custom term
  * rebuilding rules.
  */
-% sys_term_rebuilding(+Clause, -Clause)
-:- public sys_term_rebuilding/2.
-:- multifile sys_term_rebuilding/2.
-:- meta_predicate sys_term_rebuilding(-1,-1).
-:- set_predicate_property(sys_term_rebuilding/2, sys_noexpand).
-:- static sys_term_rebuilding/2.
+% term_rebuilding(+Clause, -Clause)
+:- public term_rebuilding/2.
+:- multifile term_rebuilding/2.
+:- meta_predicate term_rebuilding(-1,-1).
+:- set_predicate_property(term_rebuilding/2, sys_noexpand).
+:- static term_rebuilding/2.
 
 /**
- * sys_goal_rebuilding(C, D):
- * This predicate can be used to define custom goal
- * rebuilding rules.
- */
-% sys_goal_rebuilding(+Goal, -Goal)
-:- public sys_goal_rebuilding/2.
-:- multifile sys_goal_rebuilding/2.
-:- meta_predicate sys_goal_rebuilding(0,0).
-:- set_predicate_property(sys_goal_rebuilding/2, sys_noexpand).
-:- static sys_goal_rebuilding/2.
-
-/**
- * sys_rebuild_term(C, D):
+ * rebuild_term(C, D):
  * The system predicate succeeds if the rebuild of
  * the term C unifies with D
  */
-% sys_rebuild_term(+Clause, -Clause)
-:- public sys_rebuild_term/2.
-:- meta_predicate sys_rebuild_term(-1,-1).
-:- set_predicate_property(sys_rebuild_term/2, sys_noexpand).
-sys_rebuild_term(P, P) :-
+% rebuild_term(+Clause, -Clause)
+:- public rebuild_term/2.
+:- meta_predicate rebuild_term(-1,-1).
+:- set_predicate_property(rebuild_term/2, sys_noexpand).
+rebuild_term(P, P) :-
    sys_var(P), !.
-sys_rebuild_term(A, C) :-
-   sys_term_rebuilding(A, B), !,
-   sys_rebuild_term(B, C).
-sys_rebuild_term(G, H) :-
+rebuild_term(A, C) :-
+   term_rebuilding(A, B), !,
+   rebuild_term(B, C).
+rebuild_term(G, H) :-
    sys_callable(G),
    sys_functor(G, J, A),
    sys_make_indicator(J, A, I),
-   predicate_property(I, (meta_predicate M)),
    \+ predicate_property(I, sys_noexpand), !,
-   M =.. [_|R],
-   sys_univ(G, [_|L]),
-   sys_rebuild_term_args(R, L, S),
-   sys_univ(H, [J|S]).
-sys_rebuild_term(G, G).
+   rebuild_term_callable(G, I, H).
+rebuild_term(G, G).
 
-% sys_rebuild_term_args(+Modes, +Args, -Args)
-:- private sys_rebuild_term_args/3.
-sys_rebuild_term_args([], [], []).
-sys_rebuild_term_args([M|R], [A|L], [B|S]) :-
-   sys_rebuild_term_arg(M, A, B),
-   sys_rebuild_term_args(R, L, S).
+% rebuild_term_callable(+Callable, +Indicator, -Callable)
+:- private rebuild_term_callable/3.
+rebuild_term_callable(G, I, H) :-
+   predicate_property(I, (meta_predicate P)), !,
+   P =.. [_|R],
+   sys_univ(G, [K|L]),
+   rebuild_term_args(R, L, S),
+   sys_univ(H, [K|S]).
+rebuild_term_callable(G, _, H) :-
+   sys_univ(G, [K|L]),
+   rebuild_rest_args(L, S),
+   sys_univ(H, [K|S]).
 
-% sys_rebuild_term_arg(+Mode, +Arg, -Arg)
-:- private sys_rebuild_term_arg/3.
-sys_rebuild_term_arg(0, X, Y) :- !,
-   sys_rebuild_term(X, Y).
-sys_rebuild_term_arg(-1, X, Y) :- !,
-   sys_rebuild_goal(X, Y).
-sys_rebuild_term_arg(_, X, X).
+% rebuild_term_args(+Modes, +Args, -Args)
+:- private rebuild_term_args/3.
+rebuild_term_args([], [], []).
+rebuild_term_args([M|R], [A|L], [B|S]) :-
+   rebuild_term_arg(M, A, B),
+   rebuild_term_args(R, L, S).
+
+% rebuild_term_arg(+Mode, +Arg, -Arg)
+:- private rebuild_term_arg/3.
+rebuild_term_arg(0, X, Y) :- !,
+   rebuild_term(X, Y).
+rebuild_term_arg(-1, X, Y) :- !,
+   rebuild_goal(X, Y).
+rebuild_term_arg(_, X, Y) :-
+   rebuild_rest(X, Y).
+
+/*******************************************************/
+/* Goal Rebuild                                        */
+/*******************************************************/
 
 /**
- * sys_rebuild_goal(C, D):
+ * goal_rebuilding(C, D):
+ * This predicate can be used to define custom goal
+ * rebuilding rules.
+ */
+% goal_rebuilding(+Goal, -Goal)
+:- public goal_rebuilding/2.
+:- multifile goal_rebuilding/2.
+:- meta_predicate goal_rebuilding(0,0).
+:- set_predicate_property(goal_rebuilding/2, sys_noexpand).
+:- static goal_rebuilding/2.
+
+/**
+ * rebuild_goal(C, D):
  * The system predicate succeeds if the rebuild of
  * the goal C unifies with D.
  */
-% sys_rebuild_goal(+Goal, -Goal)
-:- public sys_rebuild_goal/2.
-:- meta_predicate sys_rebuild_goal(0,0).
-:- set_predicate_property(sys_rebuild_goal/2, sys_noexpand).
-sys_rebuild_goal(P, P) :-
+% rebuild_goal(+Goal, -Goal)
+:- public rebuild_goal/2.
+:- meta_predicate rebuild_goal(0,0).
+:- set_predicate_property(rebuild_goal/2, sys_noexpand).
+rebuild_goal(P, P) :-
    sys_var(P), !.
-sys_rebuild_goal(A, C) :-
-   sys_goal_rebuilding(A, B), !,
-   sys_rebuild_goal(B, C).
-sys_rebuild_goal(G, H) :-
+rebuild_goal(A, C) :-
+   goal_rebuilding(A, B), !,
+   rebuild_goal(B, C).
+rebuild_goal(G, H) :-
    sys_callable(G),
    sys_functor(G, J, A),
    sys_make_indicator(J, A, I),
-   predicate_property(I, (meta_predicate M)),
    \+ predicate_property(I, sys_noexpand), !,
-   M =.. [_|R],
-   sys_univ(G, [_|L]),
-   sys_rebuild_goal_args(R, L, S),
-   sys_univ(H, [J|S]).
-sys_rebuild_goal(G, G).
+   rebuild_goal_callable(G, I, H).
+rebuild_goal(G, G).
 
-% sys_rebuild_goal_args(+Modes, +Args, -Args)
-:- private sys_rebuild_goal_args/3.
-sys_rebuild_goal_args([], [], []).
-sys_rebuild_goal_args([M|R], [A|L], [B|S]) :-
-   sys_rebuild_goal_arg(M, A, B),
-   sys_rebuild_goal_args(R, L, S).
+% rebuild_goal_callable(+Callable, +Indicator, -Callable)
+:- private rebuild_goal_callable/3.
+rebuild_goal_callable(G, I, H) :-
+   predicate_property(I, (meta_predicate P)), !,
+   P =.. [_|R],
+   sys_univ(G, [K|L]),
+   rebuild_goal_args(R, L, S),
+   sys_univ(H, [K|S]).
+rebuild_goal_callable(G, _, H) :-
+   sys_univ(G, [K|L]),
+   rebuild_rest_args(L, S),
+   sys_univ(H, [K|S]).
 
-% sys_rebuild_goal_arg(+Mode, +Arg, -Arg)
-:- public sys_rebuild_goal_arg/3.
-sys_rebuild_goal_arg(0, X, Y) :- !,
-   sys_rebuild_goal(X, Y).
-sys_rebuild_goal_arg(-1, X, Y) :- !,
-   sys_rebuild_term(X, Y).
-sys_rebuild_goal_arg(_, X, X).
+% rebuild_goal_args(+Modes, +Args, -Args)
+:- private rebuild_goal_args/3.
+rebuild_goal_args([], [], []).
+rebuild_goal_args([M|R], [A|L], [B|S]) :-
+   rebuild_goal_arg(M, A, B),
+   rebuild_goal_args(R, L, S).
 
-/********************************************************************/
-/* Predefined Simplifications                                       */
-/********************************************************************/
+% rebuild_goal_arg(+Mode, +Arg, -Arg)
+:- public rebuild_goal_arg/3.
+rebuild_goal_arg(0, X, Y) :- !,
+   rebuild_goal(X, Y).
+rebuild_goal_arg(-1, X, Y) :- !,
+   rebuild_term(X, Y).
+rebuild_goal_arg(_, X, Y) :-
+   rebuild_rest(X, Y).
 
-/* (,)/2 and (;)/2 flattening */
-sys_goal_simplification((  A, _), _) :-
-   var(A), !, fail.
-sys_goal_simplification((  true, C), C).
-sys_goal_simplification((  _, A), _) :-
-   var(A), !, fail.
-sys_goal_simplification((  C, true), C).
-sys_goal_simplification((  (  A, B), C), J) :-
-   sys_simplify_goal((  B, C), H),
-   sys_simplify_goal((  A, H), J).
-sys_goal_simplification((  A; _), _) :-
-   var(A), !, fail.
-sys_goal_simplification((  (  A; B); C), J) :-
-   sys_simplify_goal((  B; C), H),
-   sys_simplify_goal((  A; H), J).
+/*******************************************************/
+/* Rest Rebuild                                        */
+/*******************************************************/
 
-/* (/\)/2 flattening */
-sys_term_simplification(A /\ _, _) :-
-   var(A), !, fail.
-sys_term_simplification(unit /\ C, C).
-sys_term_simplification(_ /\ A, _) :-
-   var(A), !, fail.
-sys_term_simplification(C /\ unit, C).
-sys_term_simplification(A /\
-                        (  B /\ C), J) :-
-   sys_simplify_term(A /\ B, H),
-   sys_simplify_term(H /\ C, J).
+/**
+ * rest_rebuilding(C, D):
+ * This predicate can be used to define custom rest
+ * rebuilding rules.
+ */
+% rest_rebuilding(+Goal, -Goal)
+:- public rest_rebuilding/2.
+:- multifile rest_rebuilding/2.
+:- set_predicate_property(rest_rebuilding/2, sys_noexpand).
+:- static rest_rebuilding/2.
+
+/**
+ * rebuild_rest(C, D):
+ * The system predicate succeeds if the rebuild of
+ * the rest C unifies with D.
+ */
+% rebuild_rest(+Goal, -Goal)
+:- public rebuild_rest/2.
+:- set_predicate_property(rebuild_rest/2, sys_noexpand).
+rebuild_rest(P, P) :-
+   var(P), !.
+rebuild_rest(A, C) :-
+   rest_rebuilding(A, B), !,
+   rebuild_rest(B, C).
+rebuild_rest(G, H) :-
+   callable(G), !,
+   G =.. [K|L],
+   rebuild_rest_args(L, S),
+   H =.. [K|S].
+rebuild_rest(G, G).
+
+% rebuild_rest_args(+Args, -Args)
+:- private rebuild_rest_args/2.
+rebuild_rest_args([], []).
+rebuild_rest_args([A|L], [B|S]) :-
+   rebuild_rest(A, B),
+   rebuild_rest_args(L, S).
+

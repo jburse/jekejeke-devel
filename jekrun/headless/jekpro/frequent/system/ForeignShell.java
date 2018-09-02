@@ -1,11 +1,12 @@
 package jekpro.frequent.system;
 
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * <p>The foreign predicates for the module system/shell.</p>
@@ -54,5 +55,22 @@ public final class ForeignShell {
         }
         return res;
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        Properties prop = System.getProperties();
+        Enumeration<Object> keys = prop.keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = prop.get(key);
+            System.out.println(key + "\t" + value);
+        }
+    }
+    */
 
 }

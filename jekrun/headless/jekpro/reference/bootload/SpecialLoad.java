@@ -837,7 +837,7 @@ public final class SpecialLoad extends AbstractSpecial {
         int size = Display.displaySize(t);
         SkelVar var = SkelVar.valueOf(size);
         Display dc = new Display(size + 1);
-        t = new SkelCompound(new SkelAtom("sys_rebuild_term"), t, var);
+        t = new SkelCompound(new SkelAtom("rebuild_term"), t, var);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
                 new SkelAtom("experiment/simp"), t);
         Intermediate r = en.contskel;
