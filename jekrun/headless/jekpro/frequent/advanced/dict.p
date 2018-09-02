@@ -6,17 +6,30 @@
  * the syntax will be enabled in the importing module.
  *
  * Examples:
+ * ?- X = point{y:2, x:1}.
+ * X = point{x:1,y:2}
+ * ?- point{y:2, x:1} = point{x:1, y:2}.
+ * Yes
+ *
+ * The keys inside a Prolog dictionary are not restricted to any Prolog
+ * term category. All that is required is that they are ground. With the
+ * introduction of function expansion in the Jekejeke Prolog runtime
+ * library, the Prolog dictionaries will be automatically pre-sorted
+ * during consult. This assures that they are equal even if they
+ * differ in their key order.
+ *
+ * Example:
  * ?- P = point{x:1,y:2}, get_dict(y, P, Y).
  * Y = 2
  * ?- P = point{x:1,y:2}, Tag{y:Y} :< P.
  * Tag = point,
  * Y = 2
  *
- * We do not yet have an automatic sorting of the keys of a Prolog
- * dict. This is planned for further releases. The predicates are
- * modelled after the SWI-Prolog built-ins for Prolog dicts. Our
- * data structure would allow more bidirectionality, but we adopted
- * most instantiation tests of SWI-Prolog.
+ * The set of predicates for Prolog dicts is modelled after the
+ * corresponding SWI-Prolog library. We have adopted most of the
+ * instantiation checks and most of the type checks. What this library
+ * does not provide is the dot notation and the corresponding facility to
+ * define and invoke functions for Prolog dictionaries.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -89,7 +102,7 @@ is_dict(Tag{_}, Tag).
 
 /**
  * dict_pairs(X, T, L):
- * The predicate succees in X with the tagged structure
+ * The predicate succeeds in X with the tagged structure
  * that has tag T and key value pairs L.
  */
 % dict_pairs(+-Dict, -+Term, -+List)
