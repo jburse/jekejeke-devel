@@ -71,11 +71,11 @@
 :- multifile user:rest_expansion/2.
 user:rest_expansion(_{D}, _) :-
    var(D), !, fail.
-user:rest_expansion(T{D}, R) :-
+user:rest_expansion(T{D}, T{M}) :-
    map_to_list(D, L),
    keysort(L, H),
    L \== H, !,
-   dict_pairs2(H, T, R).
+   list_to_map(H, M).
 
 /**
  * is_dict(X):
@@ -110,67 +110,57 @@ is_dict(Tag{_}, Tag).
 dict_pairs(X, T, L) :-
    var(X), !,
    keysort(L, H),
-   dict_pairs2(H, T, X).
+   list_to_map(H, M),
+   make_dict(M, T, X).
 dict_pairs(T{}, S, L) :- !,
    S = T,
    L = [].
-dict_pairs(T{L}, S, R) :- !,
+dict_pairs(T{M}, S, L) :- !,
    S = T,
-   map_to_list(L, R).
+   map_to_list(M, L).
 dict_pairs(T, _, _) :-
    throw(error(type_error(dict,T),_)).
 
-% dict_pairs(+List, +Term, -Term)
-:- private dict_pairs2/3.
-dict_pairs2(L, _, _) :-
+% list_to_map(+List, -Map)
+:- private list_to_map/2.
+list_to_map(L, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-dict_pairs2([], T, T{}).
-dict_pairs2([K-V|L], T, T{R}) :-
-   list_to_map(L, K, V, R).
+list_to_map([], true).
+list_to_map([K-V|L], R) :-
+   list_to_map(L, H),
+   make_map(K, V, H, R).
 
-% list_to_map(+List, +Term, +Term, -Map)
-:- private list_to_map/4.
-list_to_map(L, _, _, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-list_to_map(_, K, _, _) :-
+% make_map(+Term, +Term, +Map, -Map)
+:- private make_map/4.
+make_map(K, _, _, _) :-
    \+ ground(K),
    throw(error(instantiation_error,_)).
-list_to_map([], K, V, K:V).
-list_to_map([J-W|L], K, V, R) :-
-   list_to_map(L, J, W, H),
-   make_map(K, H, V, R).
-
-% make_map(+Term, +Map, +Term, -Map)
-:- private make_map/4.
-make_map(K, M, _, _) :-
-   get_dict2(M, K, _),
+make_map(K, _, M, _) :-
+   get_dict_ord(M, K, _),
    throw(error(domain_eror(duplicate_key,K),_)).
-make_map(K, M, V, (K:V,M)).
+make_map(K, V, M, R) :-
+   make_and(M, K:V, R).
+
+% make_and(+Map, +Pair, -Map)
+:- private make_and/3.
+make_and(true, X, X) :- !.
+make_and(M, X, (X,M)).
+
+% make_dict(+Map, +Term, -Dict)
+:- private make_dict/3.
+make_dict(true, T, R) :- !,
+   R = T{}.
+make_dict(M, T, T{M}).
 
 % map_to_list(+Map, -List)
 :- private map_to_list/2.
-map_to_list(L, _) :-
-   var(L),
+map_to_list(M, _) :-
+   var(M),
    throw(error(instantiation_error,_)).
-map_to_list((C,L), [P|R]) :- !,
-   colon_to_pair(C, P),
+map_to_list(K:V, [K-V]).
+map_to_list((K:V,L), [K-V|R]) :-
    map_to_list(L, R).
-map_to_list(C, [P]) :-
-   colon_to_pair(C, P).
-
-% colon_to_pair(+Colon, -Pair)
-:- private colon_to_pair/2.
-colon_to_pair(C, _) :-
-   var(C),
-   throw(error(instantiation_error,_)).
-colon_to_pair(K:_, _) :-
-   \+ ground(K),
-   throw(error(instantiation_error,_)).
-colon_to_pair(K:V, K-V) :- !.
-colon_to_pair(X, _) :-
-   throw(error(type_error(map,X),_)).
 
 /**
  * get_dict(K, S, V):
@@ -183,23 +173,34 @@ get_dict(_, T, _) :-
    var(T),
    throw(error(instantiation_error,_)).
 get_dict(_, _{}, _) :- !, fail.
+get_dict(_, _{M}, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
 get_dict(K, _{M}, W) :-
    ground(K), !,
-   get_dict2(M, K, W), !.
+   get_dict_ord(M, K, W).
 get_dict(K, _{M}, W) :- !,
-   get_dict2(M, K, W).
+   get_dict_enum(M, K, W).
 get_dict(_, T, _) :-
    throw(error(type_error(dict,T),_)).
 
-% get_dict2(+Map, +Term, -Term)
-:- private get_dict2/3.
-get_dict2(M, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
-get_dict2(K:V, K, V).
-get_dict2((K:V,_), K, V).
-get_dict2((_,M), K, V) :-
-   get_dict2(M, K, V).
+% get_dict_ord(+Map, +Term, -Term)
+% See experiment/ordmaps:ord_get/3
+:- private get_dict_ord/3.
+get_dict_ord(K:V, K, V).
+get_dict_ord((K:_,_), J, _) :-
+   J @< K, !, fail.
+get_dict_ord((K:V,_), K, W) :- !,
+   W = V.
+get_dict_ord((_,M), K, V) :-
+   get_dict_ord(M, K, V).
+
+% get_dict_enum(+Map, +Term, -Term)
+:- private get_dict_enum/3.
+get_dict_enum(K:V, K, V).
+get_dict_enum((K:V,_), K, V).
+get_dict_enum((_,M), K, V) :-
+   get_dict_enum(M, K, V).
 
 /**
  * S :< T:
@@ -212,19 +213,33 @@ get_dict2((_,M), K, V) :-
 T{} :< T{} :- !.
 T{} :< T{_} :- !.
 T{_} :< T{} :- !, fail.
-T{D} :< T{E} :-
-   select_dict2(D, E).
-
-% select_dict2(+Map, +Map)
-:- private select_dict2/2.
-select_dict2(M, _) :-
-   var(M),
+_{D} :< _ :-
+   var(D),
    throw(error(instantiation_error,_)).
-select_dict2(K:V, D) :-
-   get_dict2(D, K, V), !.
-select_dict2((K:V,D), E) :-
-   get_dict2(E, K, V), !,
-   select_dict2(D, E).
+_ :< _{E} :-
+   var(E),
+   throw(error(instantiation_error,_)).
+T{D} :< T{E} :-
+   select_dict(D, E).
+
+% select_dict(+Map, +Map)
+:- private select_dict/2.
+select_dict(K:V, D) :-
+   get_dict_ord(D, K, V).
+select_dict((K:V,D), E) :-
+   select_dict_ord(E, K, V, F),
+   select_dict(D, F).
+
+% select_dict_ord(+Map, +Term, -Term, -Map)
+% See avanced/ordsets:ord_subset/3
+:- private select_dict_ord/4.
+select_dict_ord(K:V, K, V, true).
+select_dict_ord((K:_,_), J, _, _) :-
+   J @< K, !, fail.
+select_dict_ord((K:V,M), K, W, M) :- !,
+   W = V.
+select_dict_ord((_,M), K, V, N) :-
+   select_dict_ord(M, K, V, N).
 
 /**
  * del_dict(K, S, V, T):
@@ -237,37 +252,38 @@ del_dict(_, T, _, _) :-
    var(T),
    throw(error(instantiation_error,_)).
 del_dict(_, _{}, _, _) :- !, fail.
+del_dict(_, _{M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
 del_dict(K, T{M}, V, R) :-
    ground(K), !,
-   del_dict2(M, K, V, N),
-   make_dict(N, T, H), !,
-   R = H.
+   del_dict_ord(M, K, V, N),
+   make_dict(N, T, R).
 del_dict(K, T{M}, V, R) :- !,
-   del_dict2(M, K, V, N),
-   make_dict(N, T, H),
-   R = H.
+   del_dict_enum(M, K, V, N),
+   make_dict(N, T, R).
 del_dict(_, T, _, _) :-
    throw(error(type_error(dict,T),_)).
 
-% del_dict2(+Map, +Term, -Term, -Map)
-del_dict2(M, _, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
-del_dict2(K:V, K, V, true).
-del_dict2((K:V,M), K, V, M).
-del_dict2((X,M), K, V, R) :-
-   del_dict2(M, K, V, N),
+% del_dict_ord(+Map, +Term, -Term, -Map)
+% See experiment/ordmaps:ord_remove/3
+:- private del_dict_ord/4.
+del_dict_ord(K:V, K, V, true).
+del_dict_ord((K:_,_), J, _, _) :-
+   J @< K, !, fail.
+del_dict_ord((K:V,M), K, W, M) :- !,
+   W = V.
+del_dict_ord((X,M), K, V, R) :-
+   del_dict_ord(M, K, V, N),
    make_and(N, X, R).
 
-% make_and(+Map, +Pair, -Map)
-:- private make_and/3.
-make_and(true, X, X) :- !.
-make_and(M, X, (X,M)).
-
-% make_dict(+Map, +Term, -Dict)
-:- private make_dict/3.
-make_dict(true, T, T{}) :- !.
-make_dict(M, T, T{M}).
+% del_dict_enum(+Map, +Term, -Term, -Map)
+:- private del_dict_enum/4.
+del_dict_enum(K:V, K, V, true).
+del_dict_enum((K:V,M), K, V, M).
+del_dict_enum((X,M), K, V, R) :-
+   del_dict_enum(M, K, V, N),
+   make_and(N, X, R).
 
 /**
  * put_dict(K, S, V, T):
@@ -285,15 +301,24 @@ put_dict(K, _, _, _) :-
 put_dict(K, T{}, V, R) :- !,
    N = K:V,
    R = T{N}.
+put_dict(_, _{M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
 put_dict(K, T{M}, V, R) :- !,
-   put_dict2(M, K, V, N),
+   put_dict_ord(M, K, V, N),
    R = T{N}.
 put_dict(_, T, _, _) :-
    throw(error(type_error(dict,T),_)).
 
-% put_dict(+Map, +Term, +Term, -Map)
-:- private put_dict2/4.
-put_dict2(M, K, V, R) :-
-   del_dict2(M, K, _, N), !,
-   make_and(N, K:V, R).
-put_dict2(M, K, V, (K:V,M)).
+% put_dict_ord(+Map, +Term, +Term, -Map)
+% See experiment/ordmaps:ord_put/3
+:- private put_dict_ord/4.
+put_dict_ord(K:V, J, W, (J:W,K:V)) :-
+   J @< K, !.
+put_dict_ord(K:_, K, W, K:W) :- !.
+put_dict_ord(K:V, J, W, (K:V,J:W)).
+put_dict_ord((K:V,M), J, W, (J:W,K:V,M)) :-
+   J @< K, !.
+put_dict_ord((K:_,M), K, W, (K:W,M)) :- !.
+put_dict_ord((X,M), K, V, (X,N)) :-
+   put_dict_ord(M, K, V, N).
