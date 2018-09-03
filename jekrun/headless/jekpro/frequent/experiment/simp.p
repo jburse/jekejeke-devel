@@ -332,11 +332,25 @@ rebuild_rest(A, C) :-
    rest_rebuilding(A, B), !,
    rebuild_rest(B, C).
 rebuild_rest(G, H) :-
-   callable(G), !,
+   callable(G),
+   functor(G, J, A),
+   J/A = I,
+   \+ predicate_property(I, sys_noexpand), !,
+   rebuild_rest_callable(G, I, H).
+rebuild_rest(G, G).
+
+% rebuild_rest_callable(+Callable, +Indicator, -Callable)
+:- private rebuild_rest_callable/3.
+rebuild_rest_callable(G, I, H) :-
+   predicate_property(I, (meta_function P)), !,
+   P =.. [_|R],
+   G =.. [K|L],
+   rebuild_goal_args(R, L, S),
+   H =.. [K|S].
+rebuild_rest_callable(G, _, H) :-
    G =.. [K|L],
    rebuild_rest_args(L, S),
    H =.. [K|S].
-rebuild_rest(G, G).
 
 % rebuild_rest_args(+Args, -Args)
 :- private rebuild_rest_args/2.
@@ -344,4 +358,3 @@ rebuild_rest_args([], []).
 rebuild_rest_args([A|L], [B|S]) :-
    rebuild_rest(A, B),
    rebuild_rest_args(L, S).
-

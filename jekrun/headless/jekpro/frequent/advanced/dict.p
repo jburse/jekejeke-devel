@@ -56,7 +56,6 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
-:- use_package(foreign(jekpro/frequent/advanced)).
 
 :- module(dict, []).
 
