@@ -1,5 +1,23 @@
 /**
- * This module provides function notation.
+ * This module provides functions on tagged structures without the sins
+ * of SWI-Prolog 7. Like already with the tagged structures itself, no
+ * new Prolog term category is introduced and we stay complete in the
+ * data model of the ISO core standard. Further, the translation is such
+ * that head side conditions are added to the end of a Prolog clause.
+ *
+ * Examples:
+ * ?- P = point{x:1,y:2}, X = P$x, Y = P$y.
+ * X = 1, Y = 2
+ * ?- P = point{x:1,y:2}, V = P$K.
+ * V = 1, K = x ;
+ * V = 2, K = y
+ *
+ * After importing the module a dot notation by the operator ($)/2 will
+ * be available to the importing module. The operator can be used to
+ * access tagged structure fields anywhere inside the head or the body
+ * of a Prolog clause. The operator will be replaced by ($)/3 side
+ * conditions through the function expansion framework and by a
+ * rest expansion.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -41,6 +59,11 @@
 :- multifile user:rest_expansion/2.
 user:rest_expansion(D$F, sys_cond(X,$(D, F, X))).
 
+/**
+ * $(D, F, X):
+ * The predicate succeeds whenever the function F applied to the
+ * tagged structure D succeeds with a value X.
+ */
 :- public $ /3.
 $(D, F, X) :-
    get_dict(F, D, X).
