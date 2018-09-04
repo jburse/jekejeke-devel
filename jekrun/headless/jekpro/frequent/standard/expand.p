@@ -84,10 +84,9 @@ _^_ :-
    throw(error(existence_error(body,^ /2),_)).
 :- set_predicate_property(^ /2, sys_body).
 
-:- public sys_aux/2.
-:- meta_predicate sys_aux(0,-1).
-sys_aux(_, _) :-
-   throw(error(existence_error(body,sys_aux/2),_)).
+% :- public sys_aux/2.
+% :- meta_predicate sys_aux(0, -1).
+% sys_aux(_,_) :- throw(error(existence_error(body, sys_aux/2), _)).
 
 :- public sys_cond/2.
 :- meta_function sys_cond(?,0).
@@ -99,18 +98,16 @@ sys_cond(_, _) :-
 /*******************************************************/
 
 % sys_unpack_aux(+Goal, -Goal, -Term)
-:- private sys_unpack_aux/3.
-sys_unpack_aux(G, G, unit) :-
-   var(G), !.
-sys_unpack_aux(sys_aux(G,T), G, T) :- !.
-sys_unpack_aux(G, G, unit).
+% :- private sys_unpack_aux/3.
+% sys_unpack_aux(G, G, unit) :- var(G), !.
+% sys_unpack_aux(sys_aux(G,T), G, T) :- !.
+% sys_unpack_aux(G, G, unit).
 
 % sys_pack_aux(+Goal, +Term, -Goal)
-:- private sys_pack_aux/3.
-sys_pack_aux(G, T, sys_aux(G,T)) :-
-   var(T), !.
-sys_pack_aux(G, unit, G) :- !.
-sys_pack_aux(G, T, sys_aux(G,T)).
+% :- private sys_pack_aux/3.
+% sys_pack_aux(G, T, sys_aux(G,T)) :- var(T), !.
+% sys_pack_aux(G, unit, G) :- !.
+% sys_pack_aux(G, T, sys_aux(G,T)).
 
 % sys_unpack_cond(+Rest, -Rest, -Goal)
 :- private sys_unpack_cond/3.
@@ -161,47 +158,42 @@ expand_term(G, N) :-
    sys_functor(G, J, A),
    sys_make_indicator(J, A, I),
    \+ predicate_property(I, sys_noexpand), !,
-   expand_term_callable(G, I, N).
+   expand_term_callable(G, I, H, U),
+   simplify_term(H, K),
+   simplify_term((K :- U), N).
 expand_term(T, U) :-
    simplify_term(T, U).
 
-% expand_term_callable(+Callable, +Indicator, -Callable)
-:- private expand_term_callable/3.
-expand_term_callable(G, I, N) :-
+% expand_term_callable(+Callable, +Indicator, -Callable, -Goal)
+:- private expand_term_callable/4.
+expand_term_callable(G, I, H, U) :-
    predicate_property(I, (meta_predicate P)), !,
    P =.. [_|R],
    sys_univ(G, [K|L]),
-   sys_expand_term_args(R, L, S),
-   sys_univ(H, [K|S]),
-   simplify_term(H, N).
-expand_term_callable(G, _, N) :-
+   sys_expand_term_args(R, L, S, U),
+   sys_univ(H, [K|S]).
+expand_term_callable(G, _, H, U) :-
    sys_univ(G, [K|L]),
-   sys_expand_term_args(L, S),
-   sys_univ(H, [K|S]),
-   simplify_term(H, N).
+   sys_expand_rest_args(L, S, U),
+   sys_univ(H, [K|S]).
 
-% sys_expand_term_args(+Modes, +Args, -Args)
-:- private sys_expand_term_args/3.
-sys_expand_term_args([], [], []).
-sys_expand_term_args([M|R], [A|L], [B|S]) :-
-   sys_expand_term_arg(M, A, B),
-   sys_expand_term_args(R, L, S).
+% sys_expand_term_args(+Modes, +Args, -Args, -Goal)
+:- private sys_expand_term_args/4.
+sys_expand_term_args([], [], [], true).
+sys_expand_term_args([M|R], [A|L], [B|S], T) :-
+   sys_expand_term_arg(M, A, B, P),
+   sys_expand_term_args(R, L, S, Q),
+   simplify_goal((  P, Q), T).
 
 % sys_expand_term_arg(+Mode, +Arg, -Arg)
-:- private sys_expand_term_arg/3.
-sys_expand_term_arg(0, X, Y) :- !,
+:- private sys_expand_term_arg/4.
+sys_expand_term_arg(0, X, Y, true) :- !,
    expand_term(X, Y).
-sys_expand_term_arg(-1, X, Y) :- !,
+sys_expand_term_arg(-1, X, Y, true) :- !,
    expand_goal(X, Y).
-sys_expand_term_arg(_, X, Y) :-
-   expand_rest(X, Y).
-
-% sys_expand_term_args(+Args, -Args)
-:- private sys_expand_term_args/2.
-sys_expand_term_args([], []).
-sys_expand_term_args([A|L], [B|S]) :-
-   expand_rest(A, B),
-   sys_expand_term_args(L, S).
+sys_expand_term_arg(_, X, Y, G) :-
+   expand_rest(X, H),
+   sys_unpack_cond(H, Y, G).
 
 /*******************************************************/
 /* Goal Expand                                         */
@@ -254,7 +246,7 @@ expand_goal_callable(G, I, H, U) :-
    sys_univ(H, [K|S]).
 expand_goal_callable(G, _, H, U) :-
    sys_univ(G, [K|L]),
-   sys_expand_goal_args(L, S, U),
+   sys_expand_rest_args(L, S, U),
    sys_univ(H, [K|S]).
 
 % sys_expand_goal_args(+Modes, +Args, -Args, -Goal)
@@ -274,15 +266,6 @@ sys_expand_goal_arg(-1, X, Y, true) :- !,
 sys_expand_goal_arg(_, X, Y, G) :-
    expand_rest(X, H),
    sys_unpack_cond(H, Y, G).
-
-% sys_expand_goal_args(+Args, -Args, -Goal)
-:- private sys_expand_goal_args/3.
-sys_expand_goal_args([], [], true).
-sys_expand_goal_args([A|L], [B|S], T) :-
-   expand_rest(A, H),
-   sys_unpack_cond(H, B, P),
-   sys_expand_goal_args(L, S, Q),
-   simplify_goal((  P, Q), T).
 
 /*******************************************************/
 /* Rest Expand                                         */
@@ -329,30 +312,12 @@ expand_rest_callable(G, I, H, U) :-
    predicate_property(I, (meta_function P)), !,
    P =.. [_|R],
    G =.. [K|L],
-   sys_expand_rest_args(R, L, S, U),
+   sys_expand_goal_args(R, L, S, U),
    H =.. [K|S].
 expand_rest_callable(G, _, H, U) :-
    G =.. [K|L],
    sys_expand_rest_args(L, S, U),
    H =.. [K|S].
-
-% sys_expand_rest_args(+Modes, +Args, -Args, -Goal)
-:- private sys_expand_rest_args/4.
-sys_expand_rest_args([], [], [], true).
-sys_expand_rest_args([M|R], [A|L], [B|S], T) :-
-   sys_expand_rest_arg(M, A, B, P),
-   sys_expand_rest_args(R, L, S, Q),
-   simplify_goal((  P, Q), T).
-
-% sys_expand_rest_arg(+Mode, +Arg, -Arg, -Goal)
-:- private sys_expand_rest_arg/4.
-sys_expand_rest_arg(0, X, Y, true) :- !,
-   expand_goal(X, Y).
-sys_expand_rest_arg(-1, X, Y, true) :- !,
-   expand_term(X, Y).
-sys_expand_rest_arg(_, X, Y, G) :-
-   expand_rest(X, H),
-   sys_unpack_cond(H, Y, G).
 
 % sys_expand_rest_args(+Args, -Args, -Goal)
 :- private sys_expand_rest_args/3.
