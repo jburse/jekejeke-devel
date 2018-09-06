@@ -253,27 +253,27 @@ public abstract class AbstractAuto extends AbstractSource {
     /**
      * <p>Make predicate or evaluable function overriden.</p>
      *
+     * @param sa   The functor.
      * @param pick The predicate.
      * @param en   The engine.
      * @return The overriden predicate or evaluable function.
      * @throws EngineMessage Shit happens.
      */
-    public Predicate makeOverride(Predicate pick,
-                                  Engine en)
+    public static Predicate makeOverride(SkelAtom sa,
+                                         Predicate pick,
+                                         Engine en)
             throws EngineMessage, EngineException {
-        String fun = pick.getFun();
-        AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupKey(
-                CacheFunctor.sepModule(fun), this, en) : this);
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        AbstractSource base = CachePredicate.performBase(sa, src, en);
         Predicate over;
         try {
-            over = CachePredicate.performOverrides(fun, pick.getArity(), this,
-                    base);
+            over = CachePredicate.performOverrides(sa, pick.getArity(), base);
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
-        if (over == null || !CachePredicate.visiblePred(over, this))
+        if (over == null || !CachePredicate.visiblePred(over, src))
             return null;
-        Usage loc = pick.getUsage(this);
+        Usage loc = pick.getUsage(src);
         if (loc != null)
             loc.setBit(Usage.MASK_TRCK_OVRD);
         return over;

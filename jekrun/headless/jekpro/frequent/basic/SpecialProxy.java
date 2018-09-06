@@ -8,6 +8,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.AbstractStore;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.proxy.InterfaceSlots;
@@ -82,7 +83,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                    SkelAtom sa = SpecialQuali.objToAtom(obj, temp[0], ref);
+                    SkelAtom sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
@@ -91,7 +92,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                    sa = SpecialQuali.objToAtom(obj, temp[0], ref);
+                    sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
@@ -103,10 +104,10 @@ public final class SpecialProxy extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                    String fun = SpecialQuali.objToString(obj, temp[0], ref, false);
+                    SkelAtom mod = SpecialQuali.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
-                    sa = SpecialQuali.objToAtom(obj, temp[1], ref);
-                    if (!CacheSubclass.getSubclass(sa, fun, en))
+                    sa = SpecialQuali.modToAtom(obj, temp[1], ref, en);
+                    if (!CacheSubclass.getSubclass(sa, mod.fun, en))
                         return false;
                     return en.getNextRaw();
                 default:
@@ -218,13 +219,41 @@ public final class SpecialProxy extends AbstractSpecial {
      * <p>Only proxies based on our sources are recognized.</p>
      *
      * @param obj The class or proxy.
+     * @param en  The engine.
      * @return The name.
      */
-    public static String classOrProxyName(Object obj) {
-        if (obj instanceof Class)
-            return AbstractRuntime.classToString((Class) obj);
-        if (obj instanceof AbstractSource)
-            return ((AbstractSource) obj).getFullName();
+    public static SkelAtom classOrProxyName(Object obj, Engine en) {
+        if (obj instanceof Class) {
+            Class clazz = (Class) obj;
+            AbstractStore store = inChain(clazz.getClassLoader(), en);
+            if (store == null)
+                return null;
+            String s1 = AbstractRuntime.classToString(clazz);
+            return new SkelAtom(s1, store.user);
+        }
+        if (obj instanceof AbstractSource) {
+            AbstractSource src = (AbstractSource) obj;
+            AbstractStore store = src.getStore();
+            String s1 = src.getFullName();
+            return new SkelAtom(s1, store.user);
+        }
+        return null;
+    }
+
+    /**
+     * <p>Check whether a class loader is in some store.</p>
+     *
+     * @param what The class loader.
+     * @param en   The engine.
+     */
+    public static AbstractStore inChain(ClassLoader what, Engine en) {
+        AbstractStore[] stores = en.store.foyer.snapshotStores();
+        for (int i = 0; i < stores.length; i++) {
+            AbstractStore store = stores[i];
+            ClassLoader stop = (store.parent != null ? store.parent.loader : null);
+            if (AbstractRuntime.inChain(store.loader, stop, what))
+                return store;
+        }
         return null;
     }
 

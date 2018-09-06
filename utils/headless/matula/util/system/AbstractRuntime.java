@@ -50,7 +50,7 @@ public abstract class AbstractRuntime {
     }
 
     /*******************************************************************/
-    /* New API                                                         */
+    /* Class Paths                                                     */
     /*******************************************************************/
 
     /**
@@ -62,20 +62,48 @@ public abstract class AbstractRuntime {
      * @return The new class loader.
      * @throws LicenseError License problem.
      */
-    public abstract ClassLoader addURL(ClassLoader parent, String adr, Object data)
+    public abstract ClassLoader addURL(ClassLoader parent, String adr,
+                                       Object data)
             throws LicenseError;
 
     /**
      * <p>Retrieve the paths.</p>
      *
-     * @param loader The loader.
-     * @param stop   The stop.
+     * @param loader The chain start.
+     * @param stop   The chain stop.
      * @param data   The client data.
      * @return The paths.
      * @throws LicenseError License problem.
      */
-    public abstract ListArray<String> getURLs(ClassLoader loader, ClassLoader stop, Object data)
+    public abstract ListArray<String> getURLs(ClassLoader loader,
+                                              ClassLoader stop, Object data)
             throws LicenseError;
+
+    /********************************************************************/
+    /* Class Loaders                                                    */
+    /********************************************************************/
+
+    /**
+     * <p>Check whether a class loader is in some chain.</p>
+     *
+     * @param loader The chain start.
+     * @param stop   The chain stop.
+     * @param what   The class loader.
+     * @return True if the class loader is in the chain, otherwise false.
+     */
+    public static boolean inChain(ClassLoader loader, ClassLoader stop,
+                                  ClassLoader what) {
+        while (stop != loader) {
+            if (loader == what)
+                return true;
+            loader = loader.getParent();
+        }
+        return false;
+    }
+
+    /********************************************************************/
+    /* Class Names                                                      */
+    /********************************************************************/
 
     /**
      * <p>Convert a string to a class.</p>

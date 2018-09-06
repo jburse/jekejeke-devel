@@ -272,7 +272,7 @@ public final class AutoClass extends AbstractAuto {
                     virt |= (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                 }
                 Predicate pick = makePublic(sa, sk.getArity(), virt, en);
-                Predicate over = makeOverride(pick, en);
+                Predicate over = makeOverride(sa, pick, en);
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
                     SpecialSpecial.definePredicate(pick, del, en);

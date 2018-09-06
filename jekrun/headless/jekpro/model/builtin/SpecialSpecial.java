@@ -227,7 +227,7 @@ public final class SpecialSpecial extends AbstractSpecial {
 
                     SpecialQuali.colonToCallable(temp[2], ref, false, en);
                     if (en.skel instanceof SkelAtom) {
-                        sa = (SkelAtom)en.skel;
+                        sa = (SkelAtom) en.skel;
                     } else {
                         EngineMessage.checkInstantiated(en.skel);
                         throw new EngineMessage(EngineMessage.typeError(
@@ -340,7 +340,7 @@ public final class SpecialSpecial extends AbstractSpecial {
         try {
             /* slash syntax */
             Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
-            SkelAtom sa = SpecialQuali.objToAtom(obj, t, d);
+            SkelAtom sa = SpecialQuali.modToAtom(obj, t, d, en);
 
             /* find key */
             AbstractSource scope = (sa.scope != null ? sa.scope : en.store.user);

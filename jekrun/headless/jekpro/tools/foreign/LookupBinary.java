@@ -6,7 +6,6 @@ import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractRuntime;
@@ -59,7 +58,7 @@ public final class LookupBinary {
         String res = LookupBinary.removeClassExt(relpath);
         if (res != null) {
             res = res.replace(CacheModule.OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
-            Class clazz = AbstractRuntime.stringToClass(res, store.getLoader());
+            Class clazz = AbstractRuntime.stringToClass(res, store.loader);
             if (clazz != null) {
                 obj = clazz;
             } else {

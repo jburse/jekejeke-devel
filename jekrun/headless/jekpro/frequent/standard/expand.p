@@ -299,7 +299,7 @@ expand_rest(G, N) :-
    callable(G),
    functor(G, J, A),
    J/A = I,
-   \+ predicate_property(I, sys_noexpand), !,
+   \+ predicate_property(I, sys_nomacro), !,
    expand_rest_callable(G, I, H, U),
    simplify_rest(H, K),
    sys_pack_cond(K, U, N).

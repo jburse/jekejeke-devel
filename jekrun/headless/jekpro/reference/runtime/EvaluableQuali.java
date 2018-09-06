@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -73,9 +74,9 @@ public final class EvaluableQuali extends AbstractSpecial {
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
-                String fun = SpecialQuali.objToString(obj, temp.args[0], ref, false);
+                SkelAtom mod = SpecialQuali.modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                SpecialQuali.colonToRoutine(fun, temp.sym, true, en);
+                SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
                 return en.computeExpr(en.skel, en.display);
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
@@ -88,9 +89,9 @@ public final class EvaluableQuali extends AbstractSpecial {
                 Display d2 = en.display;
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
-                fun = SpecialQuali.objToString(obj, recv, d2, true);
+                mod = SpecialQuali.objToAtom(obj, recv, d2, en);
                 boolean ext = SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                SpecialQuali.colonToMethod(fun, temp.sym, recv, d2, true, ext, en);
+                SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, ext, en);
                 return en.computeExpr(en.skel, en.display);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

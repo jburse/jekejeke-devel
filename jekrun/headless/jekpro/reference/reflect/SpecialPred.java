@@ -238,8 +238,8 @@ public final class SpecialPred extends AbstractSpecial {
                                               Engine en)
             throws EngineMessage {
         Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
-        String fun = SpecialQuali.objToString(obj, t, d, false);
-        return AbstractSource.getModule(fun, en.store);
+        SkelAtom mod = SpecialQuali.modToAtom(obj, t, d, en);
+        return AbstractSource.getModule(mod.fun, en.store);
     }
 
     /**************************************************************/

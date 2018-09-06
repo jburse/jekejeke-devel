@@ -34,6 +34,7 @@ import java.util.Comparator;
 public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
     public final static int MASK_ATOM_ANNO = 0x00000001;
     public final static int MASK_ATOM_POSI = 0x00000002;
+    public final static int MASK_ATOM_QALI = 0x00000004;
 
     private static final int CACHE_SIZE = 128;
     private static final String[] chars = new String[CACHE_SIZE];
@@ -193,6 +194,24 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
      * @param o The position, can be null.
      */
     public void setPosition(PositionKey o) {
+        /* do nothing */
+    }
+
+    /**
+     * <p>Retrieve the module.</p>
+     *
+     * @return The module source.
+     */
+    public SkelAtom getModule() {
+        return null;
+    }
+
+    /**
+     * <p>Set the module.</p>
+     *
+     * @param s The module source.
+     */
+    public void setModule(SkelAtom s) {
         /* do nothing */
     }
 

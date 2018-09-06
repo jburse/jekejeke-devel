@@ -318,7 +318,7 @@ public final class ForeignDomain {
      */
     private static String sysDomainUnpuny(String dom)
             throws MalformedURLException {
-        if (tounicode==null)
+        if (tounicode == null)
             return dom;
         try {
             String host = sysDomainHost(dom);

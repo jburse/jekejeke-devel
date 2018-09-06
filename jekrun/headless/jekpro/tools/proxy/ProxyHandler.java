@@ -4,6 +4,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.AbstractStore;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
@@ -286,8 +287,8 @@ public final class ProxyHandler implements InvocationHandler {
         Class[] interfaces = new Class[list.size()];
         list.toArray(interfaces);
 
-        ClassLoader loader = src.getStore().getLoader();
-        return Proxy.getProxyClass(loader, interfaces);
+        AbstractStore store = src.getStore();
+        return Proxy.getProxyClass(store.loader, interfaces);
     }
 
 }

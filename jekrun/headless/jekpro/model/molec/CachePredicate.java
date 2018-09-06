@@ -81,32 +81,48 @@ public final class CachePredicate extends AbstractCache {
     }
 
     /*********************************************************************/
-    /* Lookup Predicate                                                  */
+    /* Lookup Predicates                                                 */
     /*********************************************************************/
+
+    /**
+     * <p>Find the base of a predicate name.</p>
+     *
+     * @param sa  The predicate name.
+     * @param src The call-site.
+     * @param en  The engine.
+     * @return The base.
+     */
+    public static AbstractSource performBase(SkelAtom sa,
+                                             AbstractSource src, Engine en)
+            throws EngineException, EngineMessage {
+        if (sa instanceof SkelAtomQuali) {
+            sa = sa.getModule();
+            return CacheSubclass.lookupKey(sa.fun, sa.scope, en);
+        } else {
+            return src;
+        }
+    }
 
     /**
      * <p>Resolve a name with import.</p>
      *
-     * @param fun   The predicate name.
+     * @param sa    The predicate name.
      * @param arity The predicate length.
-     * @param scope The call-site, non null.
      * @param base  The lookup base.
      * @return The resolved name.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Predicate performLookup(String fun, int arity,
-                                           AbstractSource scope,
+    private static Predicate performLookup(SkelAtom sa, int arity,
                                            AbstractSource base)
             throws EngineMessage, InterruptedException {
         String n;
-        boolean f = CacheFunctor.isQuali(fun);
+        boolean f = (sa instanceof SkelAtomQuali);
         if (!f) {
-            n = fun;
+            n = sa.fun;
         } else {
-            n = CacheFunctor.sepName(fun);
+            n = CacheFunctor.sepName(sa.fun);
         }
-        StoreKey sk;
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
         /* wait for complete source */
@@ -118,13 +134,13 @@ public final class CachePredicate extends AbstractCache {
             s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 String s1 = CacheFunctor.composeQuali(s, n);
-                sk = new StoreKey(s1, arity);
+                StoreKey sk = new StoreKey(s1, arity);
                 Predicate pick = base.getRoutine(sk);
                 if (pick != null)
                     return pick;
             } else if (f) {
-                sk = new StoreKey(n, arity);
-                Predicate pick = getRoutineUser(sk, scope.getStore());
+                StoreKey sk = new StoreKey(n, arity);
+                Predicate pick = getRoutineUser(sk, base.getStore());
                 if (pick != null)
                     return pick;
             }
@@ -137,8 +153,8 @@ public final class CachePredicate extends AbstractCache {
             return pick;
         if (!Branch.OP_USER.equals(s) || !f) {
             /* find pred */
-            sk = new StoreKey(n, arity);
-            return getRoutineUser(sk, scope.getStore());
+            StoreKey sk = new StoreKey(n, arity);
+            return getRoutineUser(sk, base.getStore());
         }
         return null;
     }
@@ -146,7 +162,7 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Resolve a name without import and created.</p>
      *
-     * @param fun    The predicate name.
+     * @param sa     The predicate name.
      * @param arity  The predicate length.
      * @param scope  The call-site, non null.
      * @param base   The base.
@@ -155,16 +171,16 @@ public final class CachePredicate extends AbstractCache {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Predicate performLookupDefined(String fun, int arity,
+    private static Predicate performLookupDefined(SkelAtom sa, int arity,
                                                   AbstractSource scope,
                                                   AbstractSource base,
                                                   boolean create)
             throws InterruptedException, EngineMessage {
         String n;
-        if (!CacheFunctor.isQuali(fun)) {
-            n = fun;
+        if (!(sa instanceof SkelAtomQuali)) {
+            n = sa.fun;
         } else {
-            n = CacheFunctor.sepName(fun);
+            n = CacheFunctor.sepName(sa.fun);
         }
         /* wait for complete source */
         if (!base.getRead().attempt(base.getStore().foyer.timeout))
@@ -194,24 +210,22 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Determine the predicate that this predicate overrides.</p>
      *
-     * @param fun   The predicate name.
+     * @param sa   The predicate name.
      * @param arity The predicate length.
-     * @param scope The call-site, not null.
      * @param base  The lookup base.
      * @return The predicate that is overridden, or null.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    public static Predicate performOverrides(String fun, int arity,
-                                             AbstractSource scope,
+    public static Predicate performOverrides(SkelAtom sa, int arity,
                                              AbstractSource base)
             throws EngineMessage, InterruptedException {
         String n;
-        boolean f = CacheFunctor.isQuali(fun);
+        boolean f = (sa instanceof SkelAtomQuali);
         if (!f) {
-            n = fun;
+            n = sa.fun;
         } else {
-            n = CacheFunctor.sepName(fun);
+            n = CacheFunctor.sepName(sa.fun);
         }
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
@@ -231,7 +245,7 @@ public final class CachePredicate extends AbstractCache {
         if (!Branch.OP_USER.equals(s)) {
             /* find pred */
             StoreKey sk = new StoreKey(n, arity);
-            return getRoutineUser(sk, scope.getStore());
+            return getRoutineUser(sk, base.getStore());
         }
         return null;
     }
@@ -452,10 +466,9 @@ public final class CachePredicate extends AbstractCache {
                 if (temp == null) {
                     /* cache miss, so lookup */
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
-                            CacheFunctor.sepModule(sa.fun), src, en) : src);
+                    AbstractSource base = performBase(sa, src, en);
                     Object basevers = base.importvers;
-                    Predicate pick = performLookup(sa.fun, arity, src, base);
+                    Predicate pick = performLookup(sa, arity, base);
                     /* cache if found */
                     CachePredicate cp;
                     if (pick != null) {
@@ -487,10 +500,9 @@ public final class CachePredicate extends AbstractCache {
                         if (cp.basevers != cp.base.importvers) {
                             /* cache invalidated, so lookup */
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
-                                    CacheFunctor.sepModule(sa.fun), src, en) : src);
+                            AbstractSource base = performBase(sa, src, en);
                             Object basevers = base.importvers;
-                            pick = performLookup(sa.fun, arity, src, base);
+                            pick = performLookup(sa, arity, base);
                             /* update if found, otherwise remove */
                             if (pick != null) {
                                 cp.pick = pick;
@@ -544,10 +556,9 @@ public final class CachePredicate extends AbstractCache {
                 if (temp == null) {
                     /* cache miss, so lookup */
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                    AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
-                            CacheFunctor.sepModule(sa.fun), src, en) : src);
+                    AbstractSource base = performBase(sa, src, en);
                     Object basevers = base.importvers;
-                    Predicate pick = performLookupDefined(sa.fun, arity, src, base, create);
+                    Predicate pick = performLookupDefined(sa, arity, src, base, create);
                     CachePredicate cp;
                     if (pick != null) {
                         cp = new CachePredicate();
@@ -581,10 +592,9 @@ public final class CachePredicate extends AbstractCache {
                         if (cp.basevers != cp.base.importvers || (cp.flags & MASK_PRED_STBL) == 0) {
                             /* cache invalidated or instable, so lookup */
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-                            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
-                                    CacheFunctor.sepModule(sa.fun), src, en) : src);
+                            AbstractSource base = performBase(sa, src, en);
                             Object basevers = base.importvers;
-                            pick = performLookupDefined(sa.fun, arity, src, base, create);
+                            pick = performLookupDefined(sa, arity, src, base, create);
                             /* update if found, otherwise remove */
                             if (pick != null) {
                                 cp.pick = pick;

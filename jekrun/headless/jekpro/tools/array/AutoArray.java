@@ -162,7 +162,7 @@ public final class AutoArray extends AbstractAuto {
             try {
                 boolean virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                 Predicate pick = makePublic(sa, sk.getArity(), virt, en);
-                Predicate over = makeOverride(pick, en);
+                Predicate over = makeOverride(sa, pick, en);
                 if (over != null)
                     throw new IllegalArgumentException("indicator clash");
                 SpecialSpecial.definePredicate(pick, del, en);

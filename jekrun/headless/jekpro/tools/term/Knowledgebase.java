@@ -245,7 +245,7 @@ public class Knowledgebase extends AbstractRecognizer {
      * @return The commited loader.
      */
     public final ClassLoader getLoader() {
-        return store.getLoader();
+        return store.loader;
     }
 
     /**
@@ -314,7 +314,7 @@ public class Knowledgebase extends AbstractRecognizer {
             throws InterpreterMessage {
         AbstractStore store = (AbstractStore) getStore();
         try {
-            AbstractBranch branch = store.foyer.getFactory().stringToBranch(name, store);
+            AbstractBranch branch = store.foyer.getFactory().stringToBranch(name, store.loader);
             return (Capability) branch.proxy;
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);

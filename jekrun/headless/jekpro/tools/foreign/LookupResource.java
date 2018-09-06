@@ -7,7 +7,6 @@ import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.SourceLocal;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -67,8 +66,7 @@ public final class LookupResource {
                 return ("".equals(res) ? null : res);
         }
 
-        ClassLoader loader = store.getLoader();
-        URL url = loader.getResource(relpath);
+        URL url = store.loader.getResource(relpath);
         String res;
         if (url != null) {
             res = ForeignUri.sysCanonicalUri(url.toString());
@@ -140,15 +138,14 @@ public final class LookupResource {
     /**
      * <p>Precompute the uris of the roots.</p>
      *
-     * @param roots The roots.
-     * @param store The store.
+     * @param roots  The roots.
+     * @param loader The loader.
      * @return The uris.
      * @throws IOException Shit happens.
      */
-    public static String[][] rootsToAbsoluteURIs(String[] roots, AbstractStore store)
+    public static String[][] rootsToAbsoluteURIs(String[] roots, ClassLoader loader)
             throws IOException {
         ListArray<String[]> res = new ListArray<String[]>();
-        ClassLoader loader = store.getLoader();
         for (int j = 0; j < roots.length; j++) {
             ListArray<String> res2 = new ListArray<String>();
             Enumeration<URL> urls = loader.getResources(roots[j] + LookupResource.OP_ROOT);

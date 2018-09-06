@@ -247,11 +247,11 @@ public final class MimeHeader {
      * @param args Not used.
      */
     public static void main(String[] args) throws ScannerError {
-        String str="text/plain; charset=UTF-8";
-        System.out.println("str="+str);
+        String str = "text/plain; charset=UTF-8";
+        System.out.println("str=" + str);
 
-        MimeHeader mime=new MimeHeader(str);
-        System.out.println("mime(str)="+mime);
+        MimeHeader mime = new MimeHeader(str);
+        System.out.println("mime(str)=" + mime);
     }
 
 }

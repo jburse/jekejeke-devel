@@ -5,7 +5,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import dalvik.system.PathClassLoader;
 import derek.util.protect.LicenseError;
 import matula.util.data.ListArray;
 import matula.util.system.AbstractRuntime;
@@ -13,7 +12,6 @@ import matula.util.system.ForeignUri;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 
 /**
  * Android specialization of an abstract runtime.
@@ -60,7 +58,7 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * <p>Extend a class loader by a given path.</p>
      *
      * @param parent The parent.
-     * @param adr   The URL.
+     * @param adr    The URL.
      * @param data   The client data.
      * @return The new class loader.
      * @throws LicenseError License problem.
@@ -127,7 +125,7 @@ public final class RuntimeDalvik extends AbstractRuntime {
             return urlloader.getURLs();
         } else if (loader == ((Application) data).getClassLoader()) {
             PackageManager pm = ((Application) data).getPackageManager();
-            String path=((Application) data).getPackageName();
+            String path = ((Application) data).getPackageName();
             PackageInfo pi;
             try {
                 pi = pm.getPackageInfo(path, 0);

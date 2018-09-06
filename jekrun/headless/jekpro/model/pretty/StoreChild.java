@@ -37,7 +37,7 @@ public final class StoreChild extends AbstractStore {
      */
     public StoreChild(AbstractStore p) {
         super(p.foyer, p);
-        loader = p.getLoader();
+        loader = p.loader;
     }
 
 

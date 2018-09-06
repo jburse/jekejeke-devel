@@ -86,9 +86,9 @@ public final class SpecialQuali extends AbstractSpecial {
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
-                String fun = objToString(obj, temp.args[0], ref, false);
+                SkelAtom mod = modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                SpecialQuali.colonToRoutine(fun, temp.sym, true, en);
+                SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
@@ -111,9 +111,9 @@ public final class SpecialQuali extends AbstractSpecial {
                 Display d2 = en.display;
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
-                fun = objToString(obj, recv, d2, true);
+                mod = objToAtom(obj, recv, d2, en);
                 boolean ext = SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                ext = SpecialQuali.colonToMethod(fun, temp.sym, recv, d2, true, ext, en);
+                ext = SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, ext, en);
                 d2 = en.display;
                 multi = en.wrapGoal();
                 if (multi && ext)
@@ -353,9 +353,9 @@ public final class SpecialQuali extends AbstractSpecial {
                 ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
             Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, true, en);
-            String fun = objToString(obj, temp.args[0], d, false);
+            SkelAtom mod = modToAtom(obj, temp.args[0], d, en);
             SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
-            return colonToRoutine(fun, temp.sym, comp, en);
+            return colonToRoutine(mod, temp.sym, comp, en);
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(OP_COLONCOLON)) {
@@ -368,9 +368,9 @@ public final class SpecialQuali extends AbstractSpecial {
             Display d2 = en.display;
 
             Object obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
-            String fun = objToString(obj, recv, d2, true);
+            SkelAtom mod = objToAtom(obj, recv, d2, en);
             boolean ext = SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
-            return colonToMethod(fun, temp.sym, recv, d2, comp, ext, en);
+            return colonToMethod(mod, temp.sym, recv, d2, comp, ext, en);
         } else {
             return false;
         }
@@ -407,10 +407,10 @@ public final class SpecialQuali extends AbstractSpecial {
                     ((SkelCompound) t).sym.fun.equals(OP_COLON)) {
                 SkelCompound temp = (SkelCompound) t;
                 Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, true, en);
-                String fun = objToString(obj, temp.args[0], d, false);
+                SkelAtom mod = modToAtom(obj, temp.args[0], d, en);
                 Integer arity = SpecialQuali.colonToIndicator(temp.args[1], d, en);
                 SkelAtom sa = (SkelAtom) en.skel;
-                en.skel = CacheFunctor.getFunctor(sa, fun, temp.sym, en);
+                en.skel = CacheFunctor.getFunctor(sa, mod, temp.sym, en);
                 return arity;
             } else if (t instanceof SkelCompound &&
                     ((SkelCompound) t).args.length == 2 &&
@@ -469,58 +469,56 @@ public final class SpecialQuali extends AbstractSpecial {
     /**
      * <p>Retrieve the module name.</p>
      *
-     * @param obj  The object.
+     * @param mod  The object.
      * @param t    The slash skeleton.
      * @param d    The slash display.
-     * @param comp The compound flag.
+     * @param en   The engine.
      * @return The nodule name.
      * @throws EngineMessage Shit happens.
      */
-    public static String objToString(Object obj, Object t, Display d, boolean comp)
+    public static SkelAtom objToAtom(Object mod, Object t, Display d,
+                                       Engine en)
             throws EngineMessage {
-        /* reference */
-        if (!(obj instanceof AbstractSkel) &&
-                !(obj instanceof Number)) {
-            if (comp) {
-                obj = SpecialProxy.refClassOrProxy(obj);
-                if (obj == null)
-                    throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
-            }
-            String fun = SpecialProxy.classOrProxyName(obj);
-            if (fun == null)
+        if (!(mod instanceof AbstractSkel) &&
+                !(mod instanceof Number)) {
+            /* reference */
+            mod = SpecialProxy.refClassOrProxy(mod);
+            if (mod == null)
+                 throw new EngineMessage(EngineMessage.domainError(
+                         EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
+            mod = SpecialProxy.classOrProxyName(mod, en);
+            if (mod == null)
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_CLASS, t), d);
-            /* atom */
-            return fun;
         } else {
-            return ((SkelAtom) obj).fun;
+            /* atom */
         }
+        return (SkelAtom) mod;
     }
 
     /**
      * <p>Retrieve the module atom.</p>
      *
-     * @param obj The object.
+     * @param mod The object.
      * @param t   The slash skeleton.
      * @param d   The slash display.
+     * @param en  The engine.
      * @return The nodule atom.
      * @throws EngineMessage Shit happens.
      */
-    public static SkelAtom objToAtom(Object obj, Object t, Display d)
+    public static SkelAtom modToAtom(Object mod, Object t, Display d, Engine en)
             throws EngineMessage {
-        if (!(obj instanceof AbstractSkel) &&
-                !(obj instanceof Number)) {
+        if (!(mod instanceof AbstractSkel) &&
+                !(mod instanceof Number)) {
             /* reference */
-            String fun = SpecialProxy.classOrProxyName(obj);
-            if (fun == null)
+            mod = SpecialProxy.classOrProxyName(mod, en);
+            if (mod == null)
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_CLASS, t), d);
-            return new SkelAtom(fun);
         } else {
             /* atom */
-            return (SkelAtom) obj;
         }
+        return (SkelAtom) mod;
     }
 
     /****************************************************************/
@@ -530,24 +528,24 @@ public final class SpecialQuali extends AbstractSpecial {
     /**
      * <p>Add module name to callable.</p>
      *
-     * @param fun  The module name.
+     * @param mod  The module name.
      * @param sa2  The call site.
      * @param comp The compound flag.
      * @param en   The engine.
      * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean colonToRoutine(String fun, SkelAtom sa2,
+    public static boolean colonToRoutine(SkelAtom mod, SkelAtom sa2,
                                          boolean comp, Engine en)
             throws EngineMessage {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
-            en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, fun,
+            en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, mod,
                     sa2, en), sc2.args, sc2.var);
             return false;
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
-            en.skel = CacheFunctor.getFunctor(sa, fun, sa2, en);
+            en.skel = CacheFunctor.getFunctor(sa, mod, sa2, en);
             return false;
         } else {
             EngineMessage.checkInstantiated(en.skel);
@@ -560,7 +558,7 @@ public final class SpecialQuali extends AbstractSpecial {
     /**
      * <p>Add module name and receiver to callable.</p>
      *
-     * @param fun  The module name.
+     * @param mod  The module name.
      * @param sa2  The call site.
      * @param recv The receiver skeleton.
      * @param d2   The receiver display.
@@ -570,7 +568,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean colonToMethod(String fun, SkelAtom sa2,
+    public static boolean colonToMethod(SkelAtom mod, SkelAtom sa2,
                                         Object recv, Display d2,
                                         boolean comp, boolean ext,
                                         Engine en)
@@ -578,7 +576,7 @@ public final class SpecialQuali extends AbstractSpecial {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
             Display d3 = en.display;
-            SkelAtom sa = CacheFunctor.getFunctor(sc2.sym, fun, sa2, en);
+            SkelAtom sa = CacheFunctor.getFunctor(sc2.sym, mod, sa2, en);
             boolean multi = SpecialQuali.prependCount(recv, d2,
                     sc2.args, d3, en);
             en.skel = SpecialQuali.prependAlloc(sa, recv, d2,
@@ -588,7 +586,7 @@ public final class SpecialQuali extends AbstractSpecial {
             return (multi || ext);
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
-            sa = CacheFunctor.getFunctor(sa, fun, sa2, en);
+            sa = CacheFunctor.getFunctor(sa, mod, sa2, en);
             en.skel = new SkelCompound(sa, recv);
             en.display = d2;
             return false;

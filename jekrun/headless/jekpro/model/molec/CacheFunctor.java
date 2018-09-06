@@ -3,6 +3,8 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 import jekpro.tools.term.SkelAtom;
 
+import static jekpro.tools.term.SkelAtom.MASK_ATOM_QALI;
+
 /**
  * <p>The polymorphic cache for qualified functor names.</p>
  * <p/>
@@ -32,28 +34,29 @@ import jekpro.tools.term.SkelAtom;
 public final class CacheFunctor extends AbstractCache {
     public static final char OP_CHAR_SEP = '\b';
 
-    String fun;
+    SkelAtom mod;
     SkelAtom res;
 
     /**
      * <p>Create a qualified functor name.</p>
      *
      * @param sa  The atom.
-     * @param fun The module.
+     * @param mod The module.
      * @param nsa The call-site, not null.
      * @param en  The engine.
      * @return The qualified functor name.
      */
-    private static SkelAtom lookupFunctor(SkelAtom sa, String fun,
+    private static SkelAtom lookupFunctor(SkelAtom sa, SkelAtom mod,
                                           SkelAtom nsa, Engine en) {
         if (isQuali(sa.fun))
             return sa;
-        fun = composeQuali(fun, sa.fun);
+        String s1 = composeQuali(mod.fun, sa.fun);
 
         /* create with call-site */
         int m = (nsa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        sa = en.store.foyer.createAtom(fun, nsa.scope, m);
+        sa = en.store.foyer.createAtom(s1, nsa.scope, m | MASK_ATOM_QALI);
         sa.setPosition(nsa.getPosition());
+        sa.setModule(mod);
         return sa;
     }
 
@@ -65,20 +68,20 @@ public final class CacheFunctor extends AbstractCache {
      * <p>Retrieve a qualified functor name.</p>
      *
      * @param sa  The atom.
-     * @param fun The module.
+     * @param mod The module.
      * @param nsa The call-site, not null.
      * @param en  The store.
      * @return The qualified functor.
      */
-    public static SkelAtom getFunctor(SkelAtom sa, String fun,
-                                      SkelAtom nsa, Engine en) {
+    public static SkelAtom getFunctor(SkelAtom sa, SkelAtom mod,
+                                       SkelAtom nsa, Engine en) {
         AbstractCache back = null;
         AbstractCache temp = sa.cache;
         for (; ; ) {
             if (temp == null) {
-                SkelAtom sa2 = lookupFunctor(sa, fun, nsa, en);
+                SkelAtom sa2 = lookupFunctor(sa, mod, nsa, en);
                 CacheFunctor ca = new CacheFunctor();
-                ca.fun = fun;
+                ca.mod = mod;
                 ca.res = sa2;
                 if (back == null) {
                     sa.cache = ca;
@@ -89,7 +92,8 @@ public final class CacheFunctor extends AbstractCache {
             }
             if (temp instanceof CacheFunctor) {
                 CacheFunctor ca = (CacheFunctor) temp;
-                if ((ca.fun != null ? ca.fun.equals(fun) : null == fun) &&
+                if (ca.mod.fun.equals(mod.fun) &&
+                        ca.mod.scope == mod.scope &&
                         ca.res.scope == nsa.scope &&
                         (ca.res.getPosition() != null ?
                                 ca.res.getPosition().equals(nsa.getPosition()) :

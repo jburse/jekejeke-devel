@@ -317,35 +317,31 @@ public class PrologWriter {
             if (nsa.fun.equals(SpecialQuali.OP_COLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
-                    String fun = SpecialProxy.classOrProxyName(mod);
-                    if (fun != null)
-                        sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
+                    mod = SpecialProxy.classOrProxyName(mod, engine);
+                    if (mod == null)
+                        return null;
+                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
                 } else if (mod instanceof SkelAtom) {
-                    String fun = ((SkelAtom) mod).fun;
-                    sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
+                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                } else {
+                    return null;
                 }
-            } else if (nsa.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+            } else {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
                     mod = SpecialProxy.refClassOrProxy(mod);
-                    if (mod != null) {
-                        String fun = SpecialProxy.classOrProxyName(mod);
-                        if (fun != null) {
-                            sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
-                            k++;
-                        }
-                    }
+                    if (mod == null)
+                        return null;
+                    mod = SpecialProxy.classOrProxyName(mod, engine);
+                    if (mod == null)
+                        return null;
+                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                    k++;
+                } else if (mod instanceof SkelAtom) {
+                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                    k++;
                 } else {
-                    String fun;
-                    if (mod instanceof SkelAtom) {
-                        fun = ((SkelAtom) mod).fun;
-                    } else {
-                        fun = null;
-                    }
-                    if (fun != null) {
-                        sa = CacheFunctor.getFunctor(sa, fun, nsa, engine);
-                        k++;
-                    }
+                    return null;
                 }
             }
         }

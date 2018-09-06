@@ -8,7 +8,6 @@ import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;

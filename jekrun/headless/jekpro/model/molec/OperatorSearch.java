@@ -40,6 +40,31 @@ import matula.util.wire.AbstractLivestock;
  */
 public final class OperatorSearch {
 
+    /*********************************************************************/
+    /* Lookup Predicates                                                 */
+    /*********************************************************************/
+
+    /**
+     * <p>Find the base of a predicate name.</p>
+     *
+     * @param fun  The predicate name.
+     * @param src The call-site.
+     * @param en  The engine.
+     * @return The base.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
+     */
+    private static AbstractSource performBase(String fun,
+                                             AbstractSource src, Engine en)
+            throws EngineException, EngineMessage {
+        if (CacheFunctor.isQuali(fun)) {
+            fun = CacheFunctor.sepModule(fun);
+            return CacheSubclass.lookupKey(fun, src, en);
+        } else {
+            return src;
+        }
+    }
+
     /**
      * <p>Retrieve an operator with module lookup.</p>
      *
@@ -51,7 +76,6 @@ public final class OperatorSearch {
      * @throws InterruptedException Shit happens.
      */
     private static Operator performLookup(String key, int type,
-                                          AbstractSource scope,
                                           AbstractSource base)
             throws InterruptedException, EngineMessage {
         String n;
@@ -76,7 +100,7 @@ public final class OperatorSearch {
                 if (oper != null)
                     return oper;
             } else if (f) {
-                Operator oper = getOperUser(type, n, scope.getStore());
+                Operator oper = getOperUser(type, n, base.getStore());
                 if (oper != null)
                     return oper;
             }
@@ -87,10 +111,9 @@ public final class OperatorSearch {
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
             return oper;
-        if (!Branch.OP_USER.equals(s) || !f) {
+        if (!Branch.OP_USER.equals(s) || !f)
             /* find oper */
-            return getOperUser(type, n, scope.getStore());
-        }
+            return getOperUser(type, n, base.getStore());
         return null;
     }
 
@@ -144,14 +167,12 @@ public final class OperatorSearch {
      *
      * @param type  The operator type.
      * @param key   The operator name.
-     * @param scope The call-site, non null.
      * @param base  The lookup base, non-null.
      * @return The operator that is overridden, or null.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
     public static Operator performOverrides(int type, String key,
-                                            AbstractSource scope,
                                             AbstractSource base)
             throws EngineMessage, InterruptedException {
         String n;
@@ -176,10 +197,9 @@ public final class OperatorSearch {
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
             return oper;
-        if (!Branch.OP_USER.equals(s)) {
+        if (!Branch.OP_USER.equals(s))
             /* find oper */
-            return getOperUser(type, n, scope.getStore());
-        }
+            return getOperUser(type, n, base.getStore());
         return null;
     }
 
@@ -377,10 +397,10 @@ public final class OperatorSearch {
      * <p>Retrieve an operator with module lookup.</p>
      * <p>Respect source visibility.</p>
      *
-     * @param scope   The call-site.
+     * @param scope The call-site.
      * @param fun   The name.
-     * @param type The type.
-     * @param en   The engine.
+     * @param type  The type.
+     * @param en    The engine.
      * @return The operator or null.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
@@ -391,9 +411,8 @@ public final class OperatorSearch {
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (scope != null ? scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(fun) ? CacheSubclass.lookupKey(
-                    CacheFunctor.sepModule(fun), src, en) : src);
-            Operator oper = performLookup(fun, type, src, base);
+            AbstractSource base = performBase(fun, src, en);
+            Operator oper = performLookup(fun, type, base);
             if (oper != null && OperatorSearch.visibleOper(oper, src))
                 return oper;
             return null;
@@ -416,8 +435,7 @@ public final class OperatorSearch {
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = (CacheFunctor.isQuali(sa.fun) ? CacheSubclass.lookupKey(
-                    CacheFunctor.sepModule(sa.fun), src, en) : src);
+            AbstractSource base = performBase(sa.fun, src, en);
             Operator oper = performLookupDefined(sa.fun, type, src,
                     sa.getPosition(), base, create);
             if (oper != null && OperatorSearch.visibleOper(oper, src))

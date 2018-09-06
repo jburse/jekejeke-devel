@@ -182,11 +182,11 @@ public abstract class AbstractFactory extends AbstractFramework {
     /**
      * <p>Find a branch.</p>
      *
-     * @param name  The name.
-     * @param store The store.
+     * @param name   The name.
+     * @param loader The loader.
      * @throws EngineMessage Shit happens.
      */
-    public abstract AbstractBranch stringToBranch(String name, AbstractStore store)
+    public abstract AbstractBranch stringToBranch(String name, ClassLoader loader)
             throws EngineMessage;
 
     /**

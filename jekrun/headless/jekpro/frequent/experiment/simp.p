@@ -346,7 +346,7 @@ rebuild_rest(G, H) :-
    callable(G),
    functor(G, J, A),
    J/A = I,
-   \+ predicate_property(I, sys_noexpand), !,
+   \+ predicate_property(I, sys_nomacro), !,
    rebuild_rest_callable(G, I, H).
 rebuild_rest(G, G).
 

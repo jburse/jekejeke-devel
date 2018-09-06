@@ -129,7 +129,7 @@ final class MemberFieldSet extends AbstractMember {
     /**
      * <p>Invoke the method.</p>
      *
-     * @param obj  The receiver.
+     * @param obj The receiver.
      * @param arg The argument.
      * @throws EngineMessage FFI error.
      */

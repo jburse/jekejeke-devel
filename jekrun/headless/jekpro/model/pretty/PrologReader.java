@@ -337,11 +337,10 @@ public class PrologReader {
             }
         }
         if (h != -1) {
-            SkelAtom help = (SkelAtom) skel;
             if (st.lookAhead() == OP_LPAREN.codePointAt(0)) {
                 nextToken();
                 nextToken();
-                skel = readCompound(help);
+                skel = readCompound((SkelAtom) skel);
                 if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
                             st.getTokenOffset());
@@ -350,8 +349,9 @@ public class PrologReader {
                 nextToken();
                 /* ISO 6.3.3.1 */
                 if (isTemplates(noTermTempls) || isTemplates(noOperTempls)) {
-                    skel = help;
+                    /* */
                 } else {
+                    SkelAtom help = (SkelAtom) skel;
                     Operator op = engine != null ? OperatorSearch.getOper(help.scope,
                             help.fun, Operator.TYPE_PREFIX, engine) : null;
                     if (op != null) {

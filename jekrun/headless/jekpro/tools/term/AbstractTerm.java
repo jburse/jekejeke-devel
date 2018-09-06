@@ -402,7 +402,7 @@ public abstract class AbstractTerm {
             return t;
         int size = Display.displaySize(val);
         Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-        Object res= AbstractTerm.createMolec(val, ref);
+        Object res = AbstractTerm.createMolec(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new MutableBit().setBit(true));
         return res;

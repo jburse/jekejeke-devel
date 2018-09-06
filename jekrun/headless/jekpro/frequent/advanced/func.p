@@ -47,6 +47,7 @@
 
 :- module(func, []).
 :- use_module(library(advanced/dict)).
+:- use_module(library(basic/lists)).
 
 :- public infix($).
 :- op(100, yfx, $).
@@ -54,10 +55,21 @@
 :- public infix(:=).
 :- op(800, xfx, :=).
 
-% user:rest_expansion(+Term, -Term)
+% user:rest_expansion(+Rest, -Rest)
 :- public user:rest_expansion/2.
 :- multifile user:rest_expansion/2.
 user:rest_expansion(D$F, sys_cond(X,$(D, F, X))).
+
+% user:term_expansion(+Term, -Term)
+:- public user:term_expansion/2.
+:- multifile user:term_expansion/2.
+:- meta_predicate user:term_expansion(-1,-1).
+user:term_expansion(A := _, _) :-
+   var(A), !, fail.
+user:term_expansion(D$F := X, H) :-
+   F =.. [G|L],
+   append(L, [X], R),
+   H =.. [G,D|R].
 
 /**
  * $(D, F, X):
@@ -66,4 +78,23 @@ user:rest_expansion(D$F, sys_cond(X,$(D, F, X))).
  */
 :- public $ /3.
 $(D, F, X) :-
+   var(F), !,
    get_dict(F, D, X).
+$(D, F, X) :-
+   atomic(F), !,
+   get_dict_ex(F, D, X).
+$(D, F, X) :-
+   is_dict(D, T), !,
+   F =.. [G|L],
+   append(L, [X], R),
+   H =.. [G,D|R],
+   T:H.
+$(T, _, _) :-
+   throw(error(type_error(dict,T),_)).
+
+:- private get_dict_ex/3.
+get_dict_ex(F, D, X) :-
+   get_dict(F, D, Y), !,
+   X = Y.
+get_dict_ex(F, _, _) :-
+   throw(error(existence_error(key,F),_)).

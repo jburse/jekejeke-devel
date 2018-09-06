@@ -1,6 +1,5 @@
 package jekpro.model.molec;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
@@ -53,6 +52,10 @@ public final class CacheSubclass extends AbstractCache {
     AbstractSource base;
     Object basevers;
     boolean res;
+
+    /*********************************************************************/
+    /* Lookup Predicate                                                  */
+    /*********************************************************************/
 
     /**************************************************************/
     /* Lookup Key                                                 */
