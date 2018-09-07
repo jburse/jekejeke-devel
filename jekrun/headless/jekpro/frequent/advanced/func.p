@@ -6,16 +6,16 @@
  * that head side conditions are added to the end of a Prolog clause.
  *
  * Examples:
- * ?- P = point{x:1,y:2}, X = P$x, Y = P$y.
+ * ?- P = point{x:1,y:2}, X = P.x, Y = P.y.
  * X = 1, Y = 2
- * ?- P = point{x:1,y:2}, V = P$K.
+ * ?- P = point{x:1,y:2}, V = P.K.
  * V = 1, K = x ;
  * V = 2, K = y
  *
- * After importing the module a dot notation by the operator ($)/2 will
+ * After importing the module a dot notation by the operator ('.')/2 will
  * be available to the importing module. The operator can be used to
  * access tagged structure fields anywhere inside the head or the body
- * of a Prolog clause. The operator will be replaced by ($)/3 side
+ * of a Prolog clause. The operator will be replaced by ('.')/3 side
  * conditions through the function expansion framework and by a
  * rest expansion.
  *
@@ -49,47 +49,64 @@
 :- use_module(library(advanced/dict)).
 :- use_module(library(basic/lists)).
 
-:- public infix($).
-:- op(100, yfx, $).
+:- public infix('.').
+:- op(100, yfx, '.').
+:- set_oper_property(infix('.'), sys_alias(sys_dot)).
+
+:- public infix(sys_dot).
+:- op(100, yfx, sys_dot).
+:- set_oper_property(infix(sys_dot), sys_portray('.')).
 
 :- public infix(:=).
 :- op(800, xfx, :=).
 
+:- public := /2.
+_ := _ :-
+   throw(error(existence_error(body,:= /2),_)).
+
 % user:rest_expansion(+Rest, -Rest)
 :- public user:rest_expansion/2.
 :- multifile user:rest_expansion/2.
-user:rest_expansion(D$F, sys_cond(X,$(D, F, X))).
+user:rest_expansion(D.F, sys_cond(X,'.'(D, F, X))).
 
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1,-1).
-user:term_expansion(A := _, _) :-
-   var(A), !, fail.
-user:term_expansion(D$F := X, H) :-
+user:term_expansion(D.F := X, H) :-
+   func_def(D, F, X, H).
+
+:- private func_def/4.
+func_def(_, A, _, _) :-
+   var(A),
+   throw(error(instantiation_error,_)).
+func_def(D, F, X, H) :-
+   compound(F), !,
    F =.. [G|L],
    append(L, [X], R),
    H =.. [G,D|R].
+func_def(_, A, _, _) :-
+   throw(error(type_error(compound,A),_)).
 
 /**
- * $(D, F, X):
+ * '.'(D, F, X):
  * The predicate succeeds whenever the function F applied to the
  * tagged structure D succeeds with a value X.
  */
-:- public $ /3.
-$(D, F, X) :-
+:- public '.'/3.
+'.'(D, F, X) :-
    var(F), !,
    get_dict(F, D, X).
-$(D, F, X) :-
+'.'(D, F, X) :-
    atomic(F), !,
    get_dict_ex(F, D, X).
-$(D, F, X) :-
+'.'(D, F, X) :-
    is_dict(D, T), !,
    F =.. [G|L],
    append(L, [X], R),
    H =.. [G,D|R],
    T:H.
-$(T, _, _) :-
+'.'(T, _, _) :-
    throw(error(type_error(dict,T),_)).
 
 :- private get_dict_ex/3.
