@@ -66,6 +66,8 @@ public final class SpecialOper extends AbstractSpecial {
     public final static String OP_OVERRIDE = "override";
     public final static String OP_SYS_CONTEXT = "sys_context";
     public final static String OP_SYS_USAGE = "sys_usage";
+    public final static String OP_SYS_PORTRAY = "sys_portray";
+    public final static String OP_SYS_ALIAS = "sys_alias";
 
     public final static String OP_FX = "fx";
     public final static String OP_FY = "fy";
@@ -295,6 +297,8 @@ public final class SpecialOper extends AbstractSpecial {
     private static final StoreKey KEY_VISIBLE = new StoreKey(OP_VISIBLE, 1);
     private static final StoreKey KEY_OVERRIDE = new StoreKey(OP_OVERRIDE, 0);
     private static final StoreKey KEY_SYS_USAGE = new StoreKey(OP_SYS_USAGE, 1);
+    private static final StoreKey KEY_SYS_PORTRAY = new StoreKey(OP_SYS_PORTRAY, 1);
+    private static final StoreKey KEY_SYS_ALIAS = new StoreKey(OP_SYS_ALIAS, 1);
 
     private static StoreKey[] OP_OPER_PROPS = {
             KEY_NSPL,
@@ -304,7 +308,9 @@ public final class SpecialOper extends AbstractSpecial {
             KEY_MODE,
             KEY_FULL_NAME,
             KEY_OVERRIDE,
-            KEY_SYS_USAGE};
+            KEY_SYS_USAGE,
+            KEY_SYS_PORTRAY,
+            KEY_SYS_ALIAS};
 
     /**
      * <p>Create a syntax special.</p>
@@ -356,15 +362,18 @@ public final class SpecialOper extends AbstractSpecial {
             int level = oper.getLevel();
             if (level != 0) {
                 Object val = Integer.valueOf(oper.getLevel());
-                return new Object[]{new TermCompound(new SkelCompound(new SkelAtom(OP_LEVEL), val))};
+                return new Object[]{new TermCompound(
+                        new SkelCompound(new SkelAtom(OP_LEVEL), val))};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }
         } else if (KEY_MODE.equals(prop)) {
             int flags = oper.getBits();
             if ((flags & Operator.MASK_OPER_DEFI) != 0) {
-                Object val = new SkelAtom(leftRightTypeToAtom(flags & Operator.MASK_OPER_MODE, oper.getType()));
-                return new Object[]{new TermCompound(new SkelCompound(new SkelAtom(OP_MODE), val))};
+                Object val = new SkelAtom(leftRightTypeToAtom(
+                        flags & Operator.MASK_OPER_MODE, oper.getType()));
+                return new Object[]{new TermCompound(
+                        new SkelCompound(new SkelAtom(OP_MODE), val))};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }
@@ -394,6 +403,24 @@ public final class SpecialOper extends AbstractSpecial {
             return new Object[]{new TermCompound(new SkelCompound(
                     new SkelAtom(SpecialOper.OP_SYS_USAGE),
                     new SkelAtom(oper.getScope().getPath())))};
+        } else if (KEY_SYS_PORTRAY.equals(prop)) {
+            String portray = oper.getPortray();
+            if (portray != null) {
+                SkelAtom val = new SkelAtom(portray);
+                return new Object[]{new TermCompound(new SkelCompound(
+                        new SkelAtom(OP_SYS_PORTRAY), val))};
+            } else {
+                return AbstractBranch.FALSE_PROPERTY;
+            }
+        } else if (KEY_SYS_ALIAS.equals(prop)) {
+            String alias = oper.getAlias();
+            if (alias != null) {
+                SkelAtom val = new SkelAtom(alias);
+                return new Object[]{new TermCompound(new SkelCompound(
+                        new SkelAtom(OP_SYS_ALIAS), val))};
+            } else {
+                return AbstractBranch.FALSE_PROPERTY;
+            }
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
@@ -508,6 +535,40 @@ public final class SpecialOper extends AbstractSpecial {
                 return;
             } else if (KEY_SYS_USAGE.equals(prop)) {
                 /* can't modify */
+            } else if (KEY_SYS_PORTRAY.equals(prop)) {
+                String fun;
+                if (vals.length != 0) {
+                    Object molec = vals[vals.length - 1];
+                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
+                    fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
+                    if (vals.length > 1)
+                        throw new EngineMessage(EngineMessage.permissionError(
+                                EngineMessage.OP_PERMISSION_ADD,
+                                EngineMessage.OP_PERMISSION_VALUE,
+                                new SkelCompound(new SkelAtom(OP_SYS_PORTRAY),
+                                        new SkelAtom(fun))));
+                } else {
+                    fun = null;
+                }
+                op.setPortray(fun);
+                return;
+            } else if (KEY_SYS_ALIAS.equals(prop)) {
+                String fun;
+                if (vals.length != 0) {
+                    Object molec = vals[vals.length - 1];
+                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
+                    fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
+                    if (vals.length > 1)
+                        throw new EngineMessage(EngineMessage.permissionError(
+                                EngineMessage.OP_PERMISSION_ADD,
+                                EngineMessage.OP_PERMISSION_VALUE,
+                                new SkelCompound(new SkelAtom(OP_SYS_ALIAS),
+                                        new SkelAtom(fun))));
+                } else {
+                    fun = null;
+                }
+                op.setAlias(fun);
+                return;
             } else {
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,

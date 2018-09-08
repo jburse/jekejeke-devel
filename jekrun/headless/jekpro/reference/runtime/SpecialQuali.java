@@ -5,6 +5,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -445,8 +446,9 @@ public final class SpecialQuali extends AbstractSpecial {
                                               Engine en)
             throws EngineMessage {
         Object s;
-        if (CacheFunctor.isQuali(sa.fun)) {
-            s = Clause.moduleToSlashSkel(CacheFunctor.sepModule(sa.fun), sa.scope, en);
+        if (sa instanceof SkelAtomQuali) {
+            SkelAtom mod = sa.getModule();
+            s = Clause.moduleToSlashSkel(mod.fun, mod.scope, en);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
             sa2.setPosition(sa.getPosition());
@@ -462,6 +464,38 @@ public final class SpecialQuali extends AbstractSpecial {
         return s;
     }
 
+    /**
+     * <p>Convert an indicator to a qualified indicator.</p>
+     *
+     * @param fun   The name.
+     * @param scope The scope.
+     * @param arity The length.
+     * @param en    The engine.
+     * @return The colon
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object indicatorToColonSkel(String fun,
+                                              AbstractSource scope,
+                                              int arity,
+                                              Engine en)
+            throws EngineMessage {
+        Object s;
+        if (CacheFunctor.isQuali(fun)) {
+            s = Clause.moduleToSlashSkel(CacheFunctor.sepModule(fun), scope, en);
+            SkelAtom sa2 = new SkelAtom(OP_COLON, scope);
+
+            Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
+                    new SkelAtom(CacheFunctor.sepName(fun)),
+                    Integer.valueOf(arity));
+            s = new SkelCompound(sa2, s, t);
+        } else {
+            s = new SkelCompound(en.store.foyer.ATOM_SLASH,
+                    new SkelAtom(fun),
+                    Integer.valueOf(arity));
+        }
+        return s;
+    }
+
     /****************************************************************/
     /* Name Helper                                                  */
     /****************************************************************/
@@ -469,23 +503,23 @@ public final class SpecialQuali extends AbstractSpecial {
     /**
      * <p>Retrieve the module name.</p>
      *
-     * @param mod  The object.
-     * @param t    The slash skeleton.
-     * @param d    The slash display.
-     * @param en   The engine.
+     * @param mod The object.
+     * @param t   The slash skeleton.
+     * @param d   The slash display.
+     * @param en  The engine.
      * @return The nodule name.
      * @throws EngineMessage Shit happens.
      */
     public static SkelAtom objToAtom(Object mod, Object t, Display d,
-                                       Engine en)
+                                     Engine en)
             throws EngineMessage {
         if (!(mod instanceof AbstractSkel) &&
                 !(mod instanceof Number)) {
             /* reference */
             mod = SpecialProxy.refClassOrProxy(mod);
             if (mod == null)
-                 throw new EngineMessage(EngineMessage.domainError(
-                         EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
             mod = SpecialProxy.classOrProxyName(mod, en);
             if (mod == null)
                 throw new EngineMessage(EngineMessage.domainError(

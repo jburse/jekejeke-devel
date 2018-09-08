@@ -1,45 +1,60 @@
 /**
  * Clauses and goals are automatically expanded for the Prolog session
- * queries, for the Prolog text clauses and for the Prolog text directives.
- * The effect can be seen by the following example. The first
- * goal_expansion/2 fact defines a new expansion for the predicate
+ * queries, for the Prolog text clauses and for the Prolog text
+ * directives. The effect can be seen by the following example. The
+ * first goal_expansion/2 fact defines a new expansion for the predicate
  * writeln/2. The next rule for the predicate hello/0 already makes
  * use of the expansion in the body:
  *
  * Example:
  * ?- [user].
- * :- multifile goal_expansion/2.
- * :- meta_predicate goal_expansion(0,0).
  * goal_expansion(writeln(X), (write(X), nl)).
- *  hello :- writeln('Hello World!').
+ * hello :- writeln('Hello World!').
  * ^D
- *
  * ?- listing(hello/0).
  * hello :-
  *     write('Hello World!'), nl.
  *
  * The clauses are expanded with the help of the system predicate
- * expand_term/2, which in turn expands the goals of the bodies
- * via the system predicate expand_goal/2. The two system predicates
- * are customizable by the end-user via additional rules for the
- * multi-file predicates term_expansion/2 and goal_expansion/2. If
- * the additional multi-file rules fail, the system predicates will
- * simply leave the term respectively the goal unchanged.
+ * expand_term/2, which in turn expands the goals of the bodies via the
+ * system predicate expand_goal/2. The two system predicates are
+ * customizable by the end-user via additional rules for the multi-file
+ * predicates term_expansion/2 and goal_expansion/2.
  *
- * The clause expansion is table driven. The predicate property
- * sys_noexpand/0 allows excluding a meta-predicate from the goal
- * or term traversal. Closures are currently not expanded. If the
- * term or goal expansion steps into the colon notation (:)/2 or
- * the double colon notation (::)/2 with a sufficiently instantiated
- * first argument it will look up the meta-declarations for the
- * qualified predicate name.
+ * The predicate property sys_noexpand/0 allows excluding a meta-predicate
+ * from the goal or term traversal. Closures are currently not expanded.
+ * If the term or goal expansion steps into the colon notation (:)/2 or
+ * the double colon notation (::)/2 with a sufficiently instantiated first
+ * argument it will look up the meta-declarations for the qualified
+ * predicate name.
  *
  * The result of the expansion can be no clause, a single clause or
- * multiple clauses. No clause is indicated by unit/0 as a result.
- * A single clause is simply returned by itself. Multiple clauses
- * can be conjoined by the operator (/\)/2 and returned this way.
- * Expansion is also performed along the existential quantifier (^)/2
- * second argument.
+ * multiple clauses. No clause is indicated by unit/0 as a result. A
+ * single clause is simply returned by itself. Multiple clauses can be
+ * conjoined by the operator (/\)/2 and returned this way. Expansion is
+ * also performed along the existential quantifier (^)/2 second argument.
+ *
+ * Example:
+ * ?- op(500,yfx,++).
+ * Yes
+ * ?- [user].
+ * rest_expansion(X++Y,sys_cond(Z,append(X,Y,Z))).
+ * ^D
+ * ?- Y = [1,2]++[3].
+ * Y = [1,2,3]
+ *
+ * It is also possible to define rest expansion via the predicate
+ * rest_expansion/2 and to invoke rest expansion via the predicate
+ * expand_rest/2. Rest expansion is applied to goal or term arguments
+ * that are not goals or terms. Rest expansion is driven by meta function
+ * declarations and can be block by the predicate property sys_nomacro.
+ *
+ * Rest expansion might return a result of the form sys_cond(R, C)
+ * where C is the so-called side condition. In the context of rest
+ * arguments, the side conditions are merged via conjunction to give a
+ * new side condition. In the context of a goal G, the condition C is
+ * prepended as (C,G), in the context of a term T, the condition C is
+ * appended as (T:-C).
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -68,21 +83,15 @@
 :- module(user, []).
 :- use_module(library(experiment/simp)).
 
+:- public unit/0.
+unit :-
+   throw(error(existence_error(body,unit/0),_)).
+
 :- public /\ /2.
 :- meta_predicate 0/\0.
 _ /\ _ :-
    throw(error(existence_error(body,/\ /2),_)).
 :- set_predicate_property(/\ /2, sys_rule).
-
-:- public unit/0.
-unit :-
-   throw(error(existence_error(body,unit/0),_)).
-
-:- public ^ /2.
-:- meta_predicate ? ^0.
-_^_ :-
-   throw(error(existence_error(body,^ /2),_)).
-:- set_predicate_property(^ /2, sys_body).
 
 % :- public sys_aux/2.
 % :- meta_predicate sys_aux(0, -1).

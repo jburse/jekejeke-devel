@@ -163,8 +163,9 @@ public final class SpecialPred extends AbstractSpecial {
                     Predicate pick = preds[i];
                     if (!CachePredicate.visiblePred(pick, en.store.user))
                         continue;
-                    SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
-                    Object val = SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en);
+                    Object val = SpecialQuali.indicatorToColonSkel(
+                            pick.getFun(), pick.getSource().getStore().user,
+                            pick.getArity(), en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
@@ -411,11 +412,12 @@ public final class SpecialPred extends AbstractSpecial {
         AbstractDefined.promoteStatic(pick, en.store);
         if ((pick.del.subflags & AbstractDefined.MASK_DEFI_STAT) != 0)
             return;
-        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
     }
 
 }

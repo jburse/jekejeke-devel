@@ -1,32 +1,27 @@
 /**
  * The body conversion only caters for wrapping variables into call/1.
  * It is possible to implement further heuristics be explicitly calling
- * expand_term/2 respectively expand_goal/2 during asserts or calls. By
- * this module it is arranged that simplify_term/2 respectively
- * simplify_goal/2 are called after the expansion. The predicates
- * are customizable by the end-user via term_simplification/2
- * respectively goal_simplification/2.
+ * expand_term/2 respectively expand_goal/2 during asserts or calls.
+ * By this module it is arranged that simplify_term/2 respectively
+ * simplify_goal/2 are called after the expansion. The predicates are
+ * customizable by the end-user via term_simplification/2 respectively
+ * goal_simplification/2.
  *
  * Example:
- * ?- use_module(library(expand)).
- *
  * ?- [user].
- * :- multifile simp:goal_simplification/2.
- * simp:goal_simplification((X is E), (X=V)) :- ground(E), V is E.
- *
- * test(X) :- X is 1+2*3.
+ * goal_expansion((X is E), true) :- ground(E), X is E.
+ * test(Y) :- X is 1+2, Y is 4*X.
  * ^D
- *
  * ?- listing(test/1).
- * test(X) :-
- *    X = 7.
+ * test(12).
  *
- * There are situations where the compile-time heuristics have to be undone
- * to make them transparent. For example when listing clauses or debugging
- * goals. The predicates rebuild_term/2 respectively rebuild_goal/2
- * are responsible for undoing expansions and simplifications. The rebuilding
- * uses the same flags as the expansion and as well customizable via
- * term_rebuilding/2 respectively goal_rebuilding/2.
+ * There are situations where the compile-time heuristics have to be
+ * undone to make them trans-parent. For example when listing clauses
+ * or debugging goals. The predicates rebuild_term/2 respectively
+ * rebuild_goal/2 are responsible for undoing expansions and
+ * simplifications. The rebuilding uses the same flags as the expansion
+ * and as well customizable via term_rebuilding/2 respectively
+ * goal_rebuilding/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

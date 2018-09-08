@@ -618,8 +618,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 Predicate[] preds = base.snapshotRoutine();
                 for (int i = preds.length - 1; i >= 0; i--) {
                     Predicate pick = preds[i];
-                    SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
-                    Object val = SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en);
+                    Object val = SpecialQuali.indicatorToColonSkel(
+                            pick.getFun(), pick.getSource().getStore().user,
+                            pick.getArity(), en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
