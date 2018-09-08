@@ -143,22 +143,24 @@ public final class SpecialSpecial extends AbstractSpecial {
         boolean f1 = ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0);
         boolean f2 = ((del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0);
         if (f1 != f2) {
-            SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_COERCE,
                     EngineMessage.OP_PERMISSION_VIRTUAL,
-                    SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                    SpecialQuali.indicatorToColonSkel(
+                            pick.getFun(), pick.getSource().getStore().user,
+                            pick.getArity(), en)));
         }
         /* create the builtin */
         Predicate.checkUnsealed(pick, en);
         AbstractDelegate.promoteBuiltin(pick, del);
         if (del.equals(pick.del))
             return;
-        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
     }
 
     /**

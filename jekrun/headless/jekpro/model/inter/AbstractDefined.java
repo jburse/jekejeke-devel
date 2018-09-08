@@ -688,11 +688,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage {
         if (pick.del instanceof AbstractDefined)
             return;
-        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
     }
 
     /**
@@ -706,11 +707,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage {
         if (pick.del instanceof AbstractDefined)
             return;
-        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
     }
 
     /**
@@ -725,11 +727,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
         AbstractDelegate del = pick.del;
         if (del != null && (del.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
-        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
     }
 
     /**
@@ -744,11 +747,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
         AbstractDelegate del = pick.del;
         if (del != null && (del.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
-        SkelAtom sa = new SkelAtom(pick.getFun(), en.store.user);
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(sa, pick.getArity(), en)));
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
     }
 
     /***************************************************************/

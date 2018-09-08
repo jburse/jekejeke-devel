@@ -84,7 +84,7 @@ public class PrologWriter {
     public final static int SPEZ_ICAT = 0x00002000;
 
     public final static String NO_FUNCTOR = "([{}]),|.";
-    public final static String NO_FUNCTOR_OPER = "([{}]).";
+    public final static String NO_FUNCTOR_OPER = "([{}])";
 
     public Engine engine;
     private Writer wr;
@@ -615,30 +615,30 @@ public class PrologWriter {
      * <p>Write an atom.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param term The atom.
+     * @param sa The atom.
      * @param ref  The display.
      * @param mod  The module context, or null.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeAtom(SkelAtom term, Display ref,
+    protected void writeAtom(SkelAtom sa, Display ref,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
                 (spez & SPEZ_OPLE) != 0) {
-            Operator op = OperatorSearch.getOper(term.scope, term.fun,
+            Operator op = OperatorSearch.getOper(sa.scope, sa.fun,
                     Operator.TYPE_PREFIX, engine);
             if (op != null) {
                 if ((spez & SPEZ_FUNC) != 0)
                     append(' ');
                 append(PrologReader.OP_LPAREN);
-                append(atomQuoted(term, false));
+                append(atomQuoted(sa.fun, false));
                 append(PrologReader.OP_RPAREN);
                 return;
             }
         }
-        String t = atomQuoted(term, false);
+        String t = atomQuoted(sa.fun, false);
         safeSpace(t);
         append(t);
     }
@@ -646,19 +646,19 @@ public class PrologWriter {
     /**
      * <p>Compute a quoted atom.</p>
      *
-     * @param sa   The atom.
+     * @param fun   The atom.
      * @param oper True if infix, otherwise false.
      * @return The quoted atom.
      */
-    final String atomQuoted(SkelAtom sa, boolean oper) {
+    final String atomQuoted(String fun, boolean oper) {
         if (utilsingle == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(sa.fun, oper, CodeType.LINE_SINGLE);
+            return atomQuotes(fun, oper, CodeType.LINE_SINGLE);
         } else if (utildouble == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(sa.fun, oper, CodeType.LINE_DOUBLE);
+            return atomQuotes(fun, oper, CodeType.LINE_DOUBLE);
         } else if (utilback == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(sa.fun, oper, CodeType.LINE_BACK);
+            return atomQuotes(fun, oper, CodeType.LINE_BACK);
         } else {
-            return sa.fun;
+            return fun;
         }
     }
 
@@ -707,6 +707,7 @@ public class PrologWriter {
         if (!CompLang.ISO_COMPLANG.relevantToken(fun))
             return true;
         if (!CodeType.ISO_CODETYPE.singleToken(fun) &&
+                !fun.equals(Foyer.OP_UNIT) &&
                 !fun.equals(Foyer.OP_SET) &&
                 !fun.equals(Foyer.OP_NIL))
             return true;
@@ -769,7 +770,7 @@ public class PrologWriter {
          * - spacing.
          * - anti specification
          */
-        String t = atomQuoted(sa, false);
+        String t = atomQuoted(op.getPortrayOrName(), false);
         safeSpace(t);
         append(t);
         if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
@@ -781,9 +782,7 @@ public class PrologWriter {
             if (sa.fun.equals(Foyer.OP_SUB))
                 spez |= SPEZ_MINS;
         }
-
     }
-
 
     /**
      * <p>Write the operator.</p>
@@ -815,7 +814,7 @@ public class PrologWriter {
             if ((backspez & SPEZ_ICUT) != 0) {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(sa, true);
+                String t = atomQuoted(op.getPortrayOrName(), true);
                 safeSpace(t);
                 append(t);
                 if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
@@ -824,7 +823,7 @@ public class PrologWriter {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent - SPACES; i++)
                     append(' ');
-                String t = atomQuoted(sa, true);
+                String t = atomQuoted(op.getPortrayOrName(), true);
                 safeSpace(t);
                 append(t);
                 for (int i = t.length(); i < SPACES; i++)
@@ -832,7 +831,7 @@ public class PrologWriter {
             } else {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(sa, true);
+                String t = atomQuoted(op.getPortrayOrName(), true);
                 safeSpace(t);
                 append(t);
                 append(CodeType.LINE_EOL);
@@ -846,7 +845,7 @@ public class PrologWriter {
                     (backspez & SPEZ_META) != 0 &&
                     (backspez & SPEZ_EVAL) == 0)
                 append(' ');
-            String t = atomQuoted(sa, true);
+            String t = atomQuoted(op.getPortrayOrName(), true);
             safeSpace(t);
             append(t);
             if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
@@ -855,7 +854,6 @@ public class PrologWriter {
                 append(' ');
         }
     }
-
 
     /**
      * <p>Write the operator.</p>
@@ -892,7 +890,7 @@ public class PrologWriter {
             writeStruct(sc, ref, cp, decl,
                     backshift, backspez, backoffset, mod, nsa);
         } else {
-            String t = atomQuoted(sc.sym, true);
+            String t = atomQuoted(op.getPortrayOrName(), true);
             safeSpace(t);
             append(t);
         }
@@ -904,7 +902,7 @@ public class PrologWriter {
      * @param sc The compound.
      * @return True if the compound is an index, otherwise false.
      */
-    protected static boolean isIndex(SkelCompound sc) {
+    static boolean isIndex(SkelCompound sc) {
         return sc.args.length > 1 &&
                 sc.sym.fun.equals(Foyer.OP_INDEX);
     }
@@ -915,7 +913,7 @@ public class PrologWriter {
      * @param sc The compound.
      * @return True if the compound is a struct, otherwise false.
      */
-    protected static boolean isStruct(SkelCompound sc) {
+    static boolean isStruct(SkelCompound sc) {
         return sc.args.length >= 1 &&
                 sc.args.length <= 2 &&
                 sc.sym.fun.equals(Foyer.OP_STRUCT);
@@ -992,11 +990,43 @@ public class PrologWriter {
     /*********************************************************************/
 
     /**
-     * <p>Write a compound.</p>
+     * <p>Write a set.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param sc  The term.
-     * @param ref The display.
+     * @param sc  The set skeleton.
+     * @param ref The set display.
+     * @param mod The module.
+     * @param nsa The call-site.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected void writeSet(SkelCompound sc, Display ref,
+                            Object mod, SkelAtom nsa)
+            throws IOException, EngineException, EngineMessage {
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        int backspez = spez;
+        int backoffset = offset;
+        int backshift = shift;
+        append(PrologReader.OP_LBRACE);
+        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        spez = getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
+        write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        append(PrologReader.OP_RBRACE);
+    }
+
+    /**
+     * <p>Write a list.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param sc  The list skeleton.
+     * @param ref The list display.
      * @param mod The module.
      * @param nsa The call-site.
      * @throws IOException     IO error.
@@ -1071,8 +1101,8 @@ public class PrologWriter {
      * <p>Write a compound.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param sc  The term.
-     * @param ref The display.
+     * @param sc  The compound skeleton.
+     * @param ref The compound display.
      * @param mod The module.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
@@ -1086,7 +1116,7 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        String t = atomQuoted(sc.sym, false);
+        String t = atomQuoted(sc.sym.fun, false);
         safeSpace(t);
         append(t);
         append(PrologReader.OP_LPAREN);
@@ -1271,21 +1301,7 @@ public class PrologWriter {
         }
         if (engine != null && (flags & FLAG_IGNO) == 0) {
             if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
-                CachePredicate cp = offsetToPredicate(term, mod, nsa);
-                Object[] decl = predicateToMeta(cp);
-                append(PrologReader.OP_LBRACE);
-                int backspez = spez;
-                int backoffset = offset;
-                int backshift = shift;
-                Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-                spez = getSpez(z);
-                offset = getOffset(z, backoffset);
-                shift = getShift(z);
-                write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
-                spez = backspez;
-                offset = backoffset;
-                shift = backshift;
-                append(PrologReader.OP_RBRACE);
+                writeSet(sc, ref, mod, nsa);
                 return;
             }
             if (sc.args.length == 1 || isIndex(sc) || isStruct(sc)) {
