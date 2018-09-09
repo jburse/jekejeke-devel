@@ -1,9 +1,10 @@
 /**
- * This module provides functions on tagged structures without the sins
- * of SWI-Prolog 7. Like already with the tagged structures itself, no
- * new Prolog term category is introduced and we stay complete in the
- * data model of the ISO core standard. Further, the translation is such
- * that head side conditions are added to the end of a Prolog clause.
+ * This module provides functions on tagged structures without the
+ * sins of SWI-Prolog 7. Like already with the tagged structures
+ * itself, no new Prolog term category is introduced and we stay
+ * complete in the data model of the ISO core standard. Further, the
+ * translation is such that head side conditions are added to the
+ * end of a Prolog clause.
  *
  * Examples:
  * ?- P = point{x:1,y:2}, X = P.x, Y = P.y.
@@ -12,12 +13,25 @@
  * V = 1, K = x ;
  * V = 2, K = y
  *
- * After importing the module a dot notation by the operator ('.')/2 will
+ * After importing the module a dot notation by the operator (.)/2 will
  * be available to the importing module. The operator can be used to
  * access tagged structure fields anywhere inside the head or the body
- * of a Prolog clause. The operator will be replaced by ('.')/3 side
- * conditions through the function expansion framework and by a
- * rest expansion.
+ * of a Prolog clause. The operator will be replaced by (.)/3 side
+ * conditions through the function expansion framework and by
+ * a rest expansion.
+ *
+ * Examples:
+ * ?- D = point{x:1,y:2}.dist().
+ * D = 2.23606797749979
+ * ?- D = point{x:1,y:2}.offset(3,4).dist().
+ * D = 7.211102550927978
+ *
+ * The operator (.)/2 can be also used to invoke arbitrary arity
+ * functions. To disambiguate be-tween a field access and a zero argument
+ * function invocation the module a unit notation by the operator (())/1.
+ * Arbitrary arity function definitions can be done by the further
+ * operator (:=)/2. Our translation is Pythonesk, the self is placed
+ * in the first argument.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -67,11 +81,21 @@
 _ := _ :-
    throw(error(existence_error(body,:= /2),_)).
 
+/**
+ * D.F:
+ * This rest expansion replaces a dot notation D.F by a
+ * side condition that calls ('.')/3.
+ */
 % user:rest_expansion(+Rest, -Rest)
 :- public user:rest_expansion/2.
 :- multifile user:rest_expansion/2.
 user:rest_expansion(D.F, sys_cond(X,'.'(D, F, X))).
 
+/**
+ * D.F := X:
+ * This term expansion replaces a dot notation D.F by a
+ * clause head with result X.
+ */
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
@@ -98,8 +122,8 @@ func_def(_, A, _, _) :-
 
 /**
  * '.'(D, F, X):
- * The predicate succeeds whenever the function F applied to the
- * tagged structure D succeeds with a value X.
+ * The predicate succeeds whenever the field access or arbitrary arity
+ * function F applied to the argument D succeeds with a value X.
  */
 :- public '.'/3.
 '.'(D, F, X) :-
