@@ -60,6 +60,9 @@
 :- public infix(:=).
 :- op(800, xfx, :=).
 
+:- public postfix(()).
+:- op(50, xf, ()).
+
 :- public := /2.
 _ := _ :-
    throw(error(existence_error(body,:= /2),_)).
@@ -73,20 +76,25 @@ user:rest_expansion(D.F, sys_cond(X,'.'(D, F, X))).
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1,-1).
+user:term_expansion(A := _, _) :-
+   var(A),
+   throw(error(instantiation_error,_)).
+user:term_expansion(_.A := _, _) :-
+   var(A),
+   throw(error(instantiation_error,_)).
+user:term_expansion(D.F() := X, H) :- !,
+   func_def(D, F, X, H).
 user:term_expansion(D.F := X, H) :-
    func_def(D, F, X, H).
 
 :- private func_def/4.
-func_def(_, A, _, _) :-
-   var(A),
-   throw(error(instantiation_error,_)).
 func_def(D, F, X, H) :-
-   compound(F), !,
+   callable(F), !,
    F =.. [G|L],
    append(L, [X], R),
    H =.. [G,D|R].
 func_def(_, A, _, _) :-
-   throw(error(type_error(compound,A),_)).
+   throw(error(type_error(callable,A),_)).
 
 /**
  * '.'(D, F, X):
@@ -100,13 +108,19 @@ func_def(_, A, _, _) :-
 '.'(D, F, X) :-
    atomic(F), !,
    get_dict_ex(F, D, X).
+'.'(D, F(), X) :- !,
+   func_call(D, F, X).
 '.'(D, F, X) :-
+   func_call(D, F, X).
+
+:- private func_call/3.
+func_call(D, F, X) :-
    is_dict(D, T), !,
    F =.. [G|L],
    append(L, [X], R),
    H =.. [G,D|R],
    T:H.
-'.'(T, _, _) :-
+func_call(T, _, _) :-
    throw(error(type_error(dict,T),_)).
 
 :- private get_dict_ex/3.
