@@ -65,6 +65,9 @@
 :- public infix(:<).
 :- op(700, xfx, :<).
 
+:- public infix(>:<).
+:- op(700, xfx, >:<).
+
 % user:rest_expansion(+Term, -Term)
 :- public user:rest_expansion/2.
 :- multifile user:rest_expansion/2.
@@ -186,7 +189,10 @@ get_dict(_, T, _) :-
 % get_dict_ord(+Map, +Term, -Term)
 % See experiment/ordmaps:ord_get/3
 :- private get_dict_ord/3.
-get_dict_ord(K:V, K, V).
+get_dict_ord(K:_, J, _) :-
+   J @< K, !, fail.
+get_dict_ord(K:V, K, W) :- !,
+   W = V.
 get_dict_ord((K:_,_), J, _) :-
    J @< K, !, fail.
 get_dict_ord((K:V,_), K, W) :- !,
@@ -223,8 +229,9 @@ T{D} :< T{E} :-
 
 % select_dict(+Map, +Map)
 :- private select_dict/2.
+select_dict(_, true) :- !, fail.
 select_dict(K:V, D) :-
-   get_dict_ord(D, K, V).
+   select_dict_ord(D, K, V, _).
 select_dict((K:V,D), E) :-
    select_dict_ord(E, K, V, F),
    select_dict(D, F).
@@ -232,13 +239,59 @@ select_dict((K:V,D), E) :-
 % select_dict_ord(+Map, +Term, -Term, -Map)
 % See avanced/ordsets:ord_subset/3
 :- private select_dict_ord/4.
-select_dict_ord(K:V, K, V, true).
+select_dict_ord(K:_, J, _, _) :-
+   J @< K, !, fail.
+select_dict_ord(K:V, K, W, true) :- !,
+   W = V.
 select_dict_ord((K:_,_), J, _, _) :-
    J @< K, !, fail.
 select_dict_ord((K:V,M), K, W, M) :- !,
    W = V.
 select_dict_ord((_,M), K, V, N) :-
    select_dict_ord(M, K, V, N).
+
+/**
+ * S >:< T:
+ * The predicate succeeds when the tags of S and T unify and when
+ * the values for the common keys of S and T unify.
+ */
+% +Dict >:< +Dict
+:- public >:< /2.
+T{} >:< T{} :- !.
+T{} >:< T{_} :- !.
+T{_} >:< T{} :- !.
+_{D} >:< _ :-
+   var(D),
+   throw(error(instantiation_error,_)).
+_ >:< _{E} :-
+   var(E),
+   throw(error(instantiation_error,_)).
+T{D} >:< T{E} :-
+   join_dict(D, E).
+
+% join_dict(+Map, +Map)
+:- private join_dict/2.
+join_dict(_, true) :- !.
+join_dict(K:V, D) :-
+   join_dict_ord(D, K, V, _).
+join_dict((K:V,D), E) :-
+   join_dict_ord(E, K, V, F),
+   join_dict(D, F).
+
+% join_dict_ord(+Map, +Term, -Term, -Map)
+% See avanced/ordsets:ord_intersection/3
+:- private join_dict_ord/4.
+join_dict_ord(K:V, J, _, K:V) :-
+   J @< K, !.
+join_dict_ord(K:V, K, W, true) :- !,
+   W = V.
+join_dict_ord(_:_, _, _, true).
+join_dict_ord((K:V,M), J, _, (K:V,M)) :-
+   J @< K, !.
+join_dict_ord((K:V,M), K, W, M) :- !,
+   W = V.
+join_dict_ord((_,M), K, V, N) :-
+   join_dict_ord(M, K, V, N).
 
 /**
  * del_dict(K, S, V, T):
@@ -267,7 +320,10 @@ del_dict(_, T, _, _) :-
 % del_dict_ord(+Map, +Term, -Term, -Map)
 % See experiment/ordmaps:ord_remove/3
 :- private del_dict_ord/4.
-del_dict_ord(K:V, K, V, true).
+del_dict_ord(K:_, J, _, true) :-
+   J @< K, !, fail.
+del_dict_ord(K:V, K, W, true) :- !,
+   W = V.
 del_dict_ord((K:_,_), J, _, _) :-
    J @< K, !, fail.
 del_dict_ord((K:V,M), K, W, M) :- !,
@@ -298,14 +354,13 @@ put_dict(K, _, _, _) :-
    \+ ground(K),
    throw(error(instantiation_error,_)).
 put_dict(K, T{}, V, R) :- !,
-   N = K:V,
-   R = T{N}.
+   make_dict(K:V, T, R).
 put_dict(_, _{M}, _, _) :-
    var(M),
    throw(error(instantiation_error,_)).
 put_dict(K, T{M}, V, R) :- !,
    put_dict_ord(M, K, V, N),
-   R = T{N}.
+   make_dict(N, T, R).
 put_dict(_, T, _, _) :-
    throw(error(type_error(dict,T),_)).
 
@@ -321,3 +376,63 @@ put_dict_ord((K:V,M), J, W, (J:W,K:V,M)) :-
 put_dict_ord((K:_,M), K, W, (K:W,M)) :- !.
 put_dict_ord((X,M), K, V, (X,N)) :-
    put_dict_ord(M, K, V, N).
+
+/**
+ * put_dict(S, T, R):
+ * The predicate succeeds in R with the replacement of the
+ * key value pairs of S in the tagged structure T.
+ */
+% put_dict(+Dict, +Dict, -Dict)
+:- public put_dict/3.
+put_dict(_, T, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+put_dict(S, T{}, R) :- !,
+   put_dict2(S, T, true, R).
+put_dict(_, _{M}, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+put_dict(S, T{M}, R) :- !,
+   put_dict2(S, T, M, R).
+put_dict(_, T, _) :-
+   throw(error(type_error(dict,T),_)).
+
+% put_dict2(+Dict, +Tag, +Map, -Dict)
+:- private put_dict2/4.
+put_dict2(S, _, _, _) :-
+   var(S),
+   throw(error(instantiation_error,_)).
+put_dict2(_{}, T, M, R) :- !,
+   make_dict(M, T, R).
+put_dict2(_{M}, _, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+put_dict2(_{N}, T, M, R) :- !,
+   put_dict_ord(N, M, O),
+   make_dict(O, T, R).
+put_dict2(S, _, _) :-
+   throw(error(type_error(dict,S),_)).
+
+% put_dict_ord(+Map, +Map, -Map)
+:- private put_dict_ord/3.
+put_dict_ord(N, true, N) :- !.
+put_dict_ord(K:V, M, N) :-
+   put_dict_ord(M, K, V, N).
+put_dict_ord((K:V,M), N, O) :-
+   put_dict_ord(N, K, V, M, O).
+
+% put_dict_ord(+Map, +Term, +Term, +Map, -Map)
+% See experiment/ordmaps:ord_put/3
+:- private put_dict_ord/5.
+put_dict_ord(K:V, J, W, M, (J:W,N)) :-
+   J @< K, !,
+   put_dict_ord(M, K:V, N).
+put_dict_ord(K:_, K, W, M, (K:W,M)) :- !.
+put_dict_ord(K:V, J, W, M, (K:V,J:W,M)).
+put_dict_ord((K:V,M), J, W, N, (J:W,O)) :-
+   J @< K, !,
+   put_dict_ord(N, (K:V,M), O).
+put_dict_ord((K:_,M), K, W, N, (K:W,O)) :- !,
+   put_dict_ord(N, M, O).
+put_dict_ord((X,M), K, V, N, (X,O)) :-
+   put_dict_ord(M, K, V, N, O).

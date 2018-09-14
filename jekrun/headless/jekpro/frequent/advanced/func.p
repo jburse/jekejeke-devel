@@ -129,9 +129,15 @@ func_def(_, A, _, _) :-
 '.'(D, F, X) :-
    var(F), !,
    get_dict(F, D, X).
-'.'(D, F, X) :-
-   atomic(F), !,
-   get_dict_ex(F, D, X).
+'.'(D, K, V) :-
+   atomic(K), !,
+   get_dict_ex(K, D, V).
+'.'(D, get(K), V) :- !,
+   get_dict(K, D, V).
+'.'(D, put(K,V), E) :- !,
+   put_dict(K, D, V, E).
+'.'(D, put(E), F) :- !,
+   put_dict(E, D, F).
 '.'(D, F(), X) :- !,
    func_call(D, F, X).
 '.'(D, F, X) :-
