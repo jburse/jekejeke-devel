@@ -376,6 +376,69 @@ del_dict_enum((X,M), K, V, R) :-
    make_and(N, X, R).
 
 /**
+ * select_dict(S, T, R):
+ * The predicate succeeds when the tags of S and T unify and when
+ * R unifies with a fresh tag and the removal of the key value
+ * pairs of S from the tagged structure T.
+ */
+% select_dict(+Dict, +Dict, -Dict)
+:- public select_dict/3.
+select_dict(_, T, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+select_dict(S, T{}, R) :- !,
+   select_dict2(S, T, true, R).
+select_dict(_, _{M}, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+select_dict(S, T{M}, R) :- !,
+   select_dict2(S, T, M, R).
+select_dict(_, T, _) :-
+   throw(error(type_error(dict,T),_)).
+
+% select_dict2(+Dict, +Tag, +Map, -Dict)
+:- private select_dict2/4.
+select_dict2(S, _, _, _) :-
+   var(S),
+   throw(error(instantiation_error,_)).
+select_dict2(S{}, T, M, R) :- !,
+   S = T,
+   make_dict(M, _, R).
+select_dict2(_{M}, _, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+select_dict2(S{N}, T, M, R) :- !,
+   S = T,
+   del_dict_ord(N, M, O),
+   make_dict(O, _, R).
+select_dict2(S, _, _) :-
+   throw(error(type_error(dict,S),_)).
+
+% del_dict_ord(+Map, +Map, -Map)
+:- private del_dict_ord/3.
+del_dict_ord(_, true, _) :- !, fail.
+del_dict_ord(K:V, M, N) :-
+   del_dict_ord(M, K, V, N).
+del_dict_ord((K:V,M), N, O) :-
+   del_dict_ord(N, K, V, M, O).
+
+% del_dict_ord(+Map, +Term, -Term, +Map, -Map)
+% See experiment/ordmaps:ord_remove/3
+:- private del_dict_ord/5.
+del_dict_ord(K:_, J, _, _, _) :-
+   J @< K, !, fail.
+del_dict_ord(K:V, K, W, M, M) :- !,
+   W = V.
+del_dict_ord((K:_,_), J, _, _, _) :-
+   J @< K, !, fail.
+del_dict_ord((K:V,M), K, W, N, O) :- !,
+   W = V,
+   del_dict_ord(N, M, O).
+del_dict_ord((X,M), K, V, N, R) :-
+   del_dict_ord(M, K, V, N, O),
+   make_and(O, X, R).
+
+/**
  * put_dict(K, S, V, T):
  * The predicate succeeds in T with the replacement of the
  * new value V for the key K by in the tagged structure S.
