@@ -26,12 +26,19 @@
  * ?- D = point{x:1,y:2}.offset(3,4).dist().
  * D = 7.211102550927978
  *
- * The operator (.)/2 can be also used to invoke arbitrary arity
+ * The operator ('.')/2 can be also used to invoke arbitrary arity
  * functions. To disambiguate be-tween a field access and a zero argument
  * function invocation the module a unit notation by the operator (())/1.
  * Arbitrary arity function definitions can be done by the further
  * operator (:=)/2. Our translation is Pythonesk, the self is placed
  * in the first argument.
+ *
+ * Finally the operator ('.')/2 can be also used to perform a couple
+ * of field operations. Among the field operations we find get(K), which
+ * will return the field value. For a non-existing field the field
+ * operation will not throw an exception and fail instead. Further
+ * field operations include put(K,V) and put(D) to set a single
+ * respectively multiple key values at once.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -158,8 +165,9 @@ func_def(_, A, _, _) :-
 
 /**
  * '.'(D, F, X):
- * The predicate succeeds whenever the field access or arbitrary arity
- * function F applied to the argument D succeeds with a value X.
+ * The predicate succeeds whenever the field access, field operation
+ * or arbitrary arity function F applied to the argument D succeeds
+ * with a value X.
  */
 :- public '.'/3.
 '.'(D, F, X) :-
