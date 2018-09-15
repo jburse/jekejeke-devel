@@ -48,6 +48,11 @@ import java.io.Writer;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -637,6 +642,12 @@ public class PrologWriter {
                 append(PrologReader.OP_RPAREN);
                 return;
             }
+        }
+        if (Foyer.OP_UNIT.equals(sa.fun)) {
+            if ((spez & SPEZ_FUNC) != 0)
+                append(' ');
+            append(sa.fun);
+            return;
         }
         String t = atomQuoted(sa.fun, false);
         safeSpace(t);
@@ -1254,7 +1265,9 @@ public class PrologWriter {
      * @return If the operator name is an operator escape.
      */
     private static boolean isOperEscape(String s) {
-        return (",".equals(s) || "|".equals(s));
+        return (PrologReader.OP_COMMA.equals(s) ||
+                PrologReader.OP_BAR.equals(s) ||
+                Foyer.OP_UNIT.equals(s));
     }
 
     /**
@@ -1351,7 +1364,7 @@ public class PrologWriter {
                     /* left operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
                     spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                            (!isOperEscape(op.getKey()) ? SPEZ_OPLE : 0) +
+                            (!isOperEscape(op.getPortrayOrName()) ? SPEZ_OPLE : 0) +
                             getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
@@ -1408,7 +1421,7 @@ public class PrologWriter {
                     /* left operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
                     spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                            (!isOperEscape(op.getKey()) ? SPEZ_OPLE : 0) +
+                            (!isOperEscape(op.getPortrayOrName()) ? SPEZ_OPLE : 0) +
                             getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);

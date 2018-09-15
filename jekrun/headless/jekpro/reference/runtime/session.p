@@ -60,6 +60,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -75,20 +80,6 @@
 /*************************************************************************/
 /* User Session                                                          */
 /*************************************************************************/
-
-/**
- * welcome:
- * version:
- * The predicate displays a version banner.
- */
-% welcome
-:- public welcome/0.
-welcome :- version.
-:- set_predicate_property(welcome/0, sys_notrace).
-
-:- public version/0.
-:- special(version/0, 'SpecialSession', 0).
-:- set_predicate_property(version/0, sys_notrace).
 
 /**
  * abort:

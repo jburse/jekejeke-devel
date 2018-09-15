@@ -45,6 +45,11 @@ import java.io.Reader;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -281,49 +286,49 @@ public class PrologReader {
             if (util != ReadOpts.UTIL_ATOM) {
                 skel = makeQuotedByUtil(fun, util);
                 nextToken();
-                current = -1;
+                current = 0;
             } else {
                 skel = fun;
-                current = 0;
+                current = -1;
             }
         } else if (OP_LPAREN.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
                 skel = Foyer.OP_UNIT;
-                current = 0;
+                current = -1;
             } else {
                 skel = read(Operator.LEVEL_HIGH);
                 if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
                             st.getTokenOffset());
                 nextToken();
-                current = -1;
+                current = 0;
             }
         } else if (OP_LBRACE.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RBRACE.equals(st.getData())) {
                 skel = Foyer.OP_SET;
-                current = 0;
+                current = -1;
             } else {
                 skel = readSet();
                 if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
                             st.getTokenOffset());
                 nextToken();
-                current = -1;
+                current = 0;
             }
         } else if (OP_LBRACKET.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RBRACKET.equals(st.getData())) {
                 skel = Foyer.OP_NIL;
-                current = 0;
+                current = -1;
             } else {
                 skel = readList();
                 if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
                             st.getTokenOffset());
                 nextToken();
-                current = -1;
+                current = 0;
             }
         } else {
             int h = st.getData().codePointAt(0);
@@ -331,34 +336,55 @@ public class PrologReader {
                     CodeType.ISO_CODETYPE.isUnderscore(h)) {
                 skel = atomToVariable(st.getData());
                 nextToken();
-                current = -1;
+                current = 0;
             } else if (Character.isDigit(h) ||
                     (Foyer.OP_SUB.equals(st.getData()) && Character.isDigit(st.lookAhead()))) {
                 skel = readNumber();
                 nextToken();
-                current = -1;
+                current = 0;
             } else if (CodeType.ISO_CODETYPE.isValid(h)) {
                 skel = st.getData();
-                current = 0;
+                current = -1;
             } else {
                 throw new ScannerError(CompLang.OP_SYNTAX_ILLEGAL_UNICODE,
                         st.getTokenOffset());
             }
         }
-        if (current == 0) {
+        if (current == -1) {
+            PositionKey pos = getAtomPos();
             if (st.lookAhead() == OP_LPAREN.codePointAt(0)) {
                 nextToken();
+                skel = makePos((String) skel, pos);
+                current = 0;
                 nextToken();
-                skel = readCompound(makeAtom((String) skel));
-                if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
-                    throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
-                            st.getTokenOffset());
-                nextToken();
+                if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
+                    Operator op = engine != null ? OperatorSearch.getOper(source,
+                            Foyer.OP_UNIT, Operator.TYPE_POSTFIX, engine) : null;
+                    if (op != null && level >= op.getLevel()) {
+                        if (op.getLevel() - op.getLeft() < current)
+                            throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
+                                    st.getTokenOffset());
+                        SkelAtom help = makePos(op.getAliasOrName(), pos);
+                        skel = new SkelCompound(help, skel);
+                        nextToken();
+                        current = op.getLevel();
+                    } else {
+                        throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,
+                                st.getTokenOffset());
+                    }
+                } else {
+                    skel = readCompound((SkelAtom) skel);
+                    if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
+                        throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
+                                st.getTokenOffset());
+                    nextToken();
+                }
             } else {
                 nextToken();
                 /* ISO 6.3.3.1 */
                 if (isTemplates(noTermTempls) || isTemplates(noOperTempls)) {
-                    skel = makeAtom((String) skel);
+                    skel = makePos((String) skel, pos);
+                    current = 0;
                 } else {
                     Operator op = engine != null ? OperatorSearch.getOper(source,
                             (String) skel, Operator.TYPE_PREFIX, engine) : null;
@@ -366,19 +392,19 @@ public class PrologReader {
                         if (level < op.getLevel())
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
+                        SkelAtom help = makePos(op.getAliasOrName(), pos);
                         Object jill = read(op.getLevel() - op.getRight());
-                        skel = new SkelCompound(makeAtom(op.getAliasOrName()), jill);
+                        skel = new SkelCompound(help, jill);
                         current = op.getLevel();
                     } else {
-                        skel = makeAtom((String) skel);
+                        skel = makePos((String) skel, pos);
+                        current = 0;
                     }
                 }
             }
-        } else {
-            current = 0;
         }
         for (; ; ) {
-            if (isTemplates(noTermTempls) || isTemplate(OP_LPAREN))
+            if (isTemplates(noTermTempls))
                 break;
             String fun;
             if (st.getHint() != 0) {
@@ -390,6 +416,8 @@ public class PrologReader {
                 fun = Foyer.OP_INDEX;
             } else if (OP_LBRACE.equals(st.getData())) {
                 fun = Foyer.OP_STRUCT;
+            } else if (OP_LPAREN.equals(st.getData())) {
+                fun = Foyer.OP_UNIT;
             } else {
                 int h = st.getData().codePointAt(0);
                 if (CodeType.ISO_CODETYPE.isUpper(h) ||
@@ -410,7 +438,8 @@ public class PrologReader {
                 if (op.getLevel() - op.getLeft() < current)
                     throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                             st.getTokenOffset());
-                skel = readInfix(makeAtom(op.getAliasOrName()), skel, op);
+                SkelAtom help = makePos(op.getAliasOrName(), getAtomPos());
+                skel = readInfix(help, skel, op);
                 current = op.getLevel();
                 continue;
             }
@@ -420,7 +449,8 @@ public class PrologReader {
                 if (op.getLevel() - op.getLeft() < current)
                     throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                             st.getTokenOffset());
-                skel = readPostfix(makeAtom(op.getAliasOrName()), skel);
+                SkelAtom help = makePos(op.getAliasOrName(), getAtomPos());
+                skel = readPostfix(help, skel);
                 current = op.getLevel();
                 continue;
             }
@@ -522,12 +552,20 @@ public class PrologReader {
                             st.getTokenOffset());
                 nextToken();
             }
-            return skel;
+        } else if (st.getHint() == 0 && OP_LPAREN.equals(st.getData())) {
+            nextToken();
+            if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
+                skel = new SkelCompound(help, skel);
+                nextToken();
+            } else {
+                throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
+                        st.getTokenOffset());
+            }
         } else {
             skel = new SkelCompound(help, skel);
-            nextOperator();
-            return skel;
+            nextToken();
         }
+        return skel;
     }
 
     /**
@@ -554,6 +592,14 @@ public class PrologReader {
                 throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
                         st.getTokenOffset());
             }
+        } else if (st.getHint() == 0 && OP_LPAREN.equals(st.getData())) {
+            nextToken();
+            if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
+                nextToken();
+            } else {
+                throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
+                        st.getTokenOffset());
+            }
         } else {
             nextToken();
         }
@@ -575,7 +621,7 @@ public class PrologReader {
      */
     protected Object readSet()
             throws EngineException, IOException, ScannerError, EngineMessage {
-        SkelAtom help = makeAtom(Foyer.OP_SET);
+        SkelAtom help = makePos(Foyer.OP_SET, getAtomPos());
         Object arg = read(Operator.LEVEL_HIGH);
         return new SkelCompound(help, arg);
     }
@@ -592,7 +638,7 @@ public class PrologReader {
      */
     protected Object readList()
             throws ScannerError, EngineMessage, EngineException, IOException {
-        SkelAtom help = makeAtom(Foyer.OP_CONS);
+        SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
         Object[] args = new Object[2];
         args[0] = read(Operator.LEVEL_MIDDLE);
         args[1] = null;
@@ -601,7 +647,7 @@ public class PrologReader {
         for (; ; ) {
             if (st.getHint() == 0 && OP_COMMA.equals(st.getData())) {
                 nextToken();
-                help = makeAtom(Foyer.OP_CONS);
+                help = makePos(Foyer.OP_CONS, getAtomPos());
                 args = new Object[2];
                 args[0] = read(Operator.LEVEL_MIDDLE);
                 args[1] = back;
@@ -611,7 +657,7 @@ public class PrologReader {
                 t = read(Operator.LEVEL_MIDDLE);
                 break;
             } else {
-                t = makeAtom(Foyer.OP_NIL);
+                t = makePos(Foyer.OP_NIL, getAtomPos());
                 break;
             }
         }
@@ -626,7 +672,7 @@ public class PrologReader {
     }
 
     /**
-     * <p>Reads a compound.</p>
+     * <p>Read a compound.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param help The functor.
@@ -648,7 +694,6 @@ public class PrologReader {
         vec.toArray(args);
         return new SkelCompound(help, args);
     }
-
 
     /**
      * <p>Reads an array index.</p>
@@ -774,7 +819,7 @@ public class PrologReader {
             case ReadOpts.UTIL_CHARS:
                 return atomToList(s, REP_CHARS);
             case ReadOpts.UTIL_ATOM:
-                return makeAtom(s);
+                return makePos(s, getAtomPos());
             case ReadOpts.UTIL_VARIABLE:
                 return atomToVariable(s);
             default:
@@ -790,10 +835,10 @@ public class PrologReader {
      * @return The code list.
      */
     private Object atomToList(String s, int rep) {
-        Object res = makeAtom(Foyer.OP_NIL);
+        Object res = makePos(Foyer.OP_NIL, getAtomPos());
         if (s.length() == 0)
             return res;
-        SkelAtom help = makeAtom(Foyer.OP_CONS);
+        SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
         for (int i = s.length(); i > 0; i--) {
             int ch = s.codePointBefore(i);
             Object val;
@@ -873,13 +918,24 @@ public class PrologReader {
     }
 
     /**
-     * <p>Create an atom to the current source.</p>
+     * <p>Retrieve atom position.</p>
+     * <p>Can be overridden by a sub class.</p>
+     *
+     * @return The atom position.
+     */
+    protected PositionKey getAtomPos() {
+        return null;
+    }
+
+    /**
+     * <p>Create an atom.</p>
      * <p>Can be overridden by a sub class.</p>
      *
      * @param f The name.
+     * @param p The atom position.
      * @return The atom.
      */
-    protected SkelAtom makeAtom(String f) {
+    protected SkelAtom makePos(String f, PositionKey p) {
         return new SkelAtom(f, source);
     }
 
@@ -920,6 +976,14 @@ public class PrologReader {
     protected void nextTerminalSuffix()
             throws IOException {
         st.nextTerminalSuffix();
+    }
+
+    /**
+     * <p>Retrieve the current filler.</p>
+     * <p>Can be overridden by sub classes.</p>
+     */
+    protected String[] getFiller() {
+        return null;
     }
 
     /***************************************************************/

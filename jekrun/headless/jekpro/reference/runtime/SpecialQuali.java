@@ -38,6 +38,11 @@ import jekpro.tools.term.SkelVar;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -326,7 +331,7 @@ public final class SpecialQuali extends AbstractSpecial {
     /**
      * <p>Convert a colon to a callable.</p>
      * <p>The result is return in skel and display of the engine.</p>
-     * <p>A colon callable has the following syntax.</p>
+     * <p>A qualified callable has the following syntax.</p>
      * <pre>
      *     colon --> module ":" colon
      *             | receiver "::" colon
@@ -383,7 +388,6 @@ public final class SpecialQuali extends AbstractSpecial {
 
     /**
      * <p>Convert a qualified indicator to an indicator.</p>
-     * <p>The term is passed in skel and display.</p>
      * <p>The name is returned in skel.</p>
      * <p>A qualified indicator has the following syntax.</p>
      * <pre>
@@ -481,7 +485,8 @@ public final class SpecialQuali extends AbstractSpecial {
             throws EngineMessage {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
-            s = Clause.moduleToSlashSkel(CacheFunctor.sepModule(fun), scope, en);
+            String mod = CacheFunctor.sepModule(fun);
+            s = Clause.moduleToSlashSkel(mod, scope, en);
             SkelAtom sa2 = new SkelAtom(OP_COLON, scope);
 
             Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
@@ -510,7 +515,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The nodule name.
      * @throws EngineMessage Shit happens.
      */
-    public static SkelAtom objToAtom(Object mod, Object t, Display d,
+    static SkelAtom objToAtom(Object mod, Object t, Display d,
                                      Engine en)
             throws EngineMessage {
         if (!(mod instanceof AbstractSkel) &&

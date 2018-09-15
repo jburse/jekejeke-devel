@@ -15,7 +15,7 @@
  * the semaphore has already reached its maximum by other threads. The
  * predicate lock_release/1 allows decrementing the semaphore by one,
  * provided it is not already zero. The slotted versions check that the
- * owner doesn�t change, but currently do not allow re-entrancy.
+ * owner doesn't change, but currently do not allow re-entrancy.
  *
  * A read write pair can be created by the predicates lock_new/1 and
  * nonescalable_new/1. In the non-escalable version the non-binary read
@@ -50,6 +50,11 @@
  * giving away or letting of the execution of the library is prohibited.
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
+ *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
  *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.

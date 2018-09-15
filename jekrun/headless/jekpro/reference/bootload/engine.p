@@ -29,6 +29,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -37,6 +42,7 @@
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(user, []).
+:- use_module(library(stream/console)).
 
 /**
  * current_prolog_flag(F, V): [ISO 8.17.2]
@@ -116,3 +122,33 @@ end_module :-
 
 :- private sys_peek_stack/1.
 :- special(sys_peek_stack/1, 'SpecialLoad', 12).
+
+/********************************************************/
+/* Prolog Data                                          */
+/********************************************************/
+
+/**
+ * welcome:
+ * version:
+ * The predicate displays a version banner.
+ */
+% welcome
+:- public welcome/0.
+welcome :- version.
+:- set_predicate_property(welcome/0, sys_notrace).
+
+:- public version/0.
+version :-
+   sys_prolog_version(V),
+   ttywrite(V), ttynl,
+   sys_prolog_vendor(W),
+   ttywrite(W), ttynl.
+:- set_predicate_property(version/0, sys_notrace).
+
+:- private sys_prolog_version/1.
+:- foreign(sys_prolog_version/1, 'ForeignEngine',
+      sysPrologVersion('Interpreter')).
+
+:- private sys_prolog_vendor/1.
+:- foreign(sys_prolog_vendor/1, 'ForeignEngine',
+      sysPrologVendor('Interpreter')).

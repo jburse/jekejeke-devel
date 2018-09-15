@@ -19,6 +19,8 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * <p>The foreign predicates for the module engine.</p>
@@ -42,6 +44,11 @@ import java.util.ArrayList;
  * giving away or letting of the execution of the library is prohibited.
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
+ * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
  * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
@@ -219,5 +226,40 @@ public final class ForeignEngine {
         }
         return res;
     }
+
+    /*************************************************************/
+    /* Prolog Data                                               */
+    /*************************************************************/
+
+    /**
+     * <p>Retrieve the Prolog version.</p>
+     *
+     * @param inter The interpreter.
+     * @return The Prolog version.
+     */
+    public static String sysPrologVersion(Interpreter inter) {
+        Engine en = (Engine) inter.getEngine();
+        AbstractBranch brand = en.store.foyer.getFactory().getBrandBranch();
+        Locale locale = en.store.foyer.locale;
+        Properties descr = brand.getDescriptionLang(locale);
+        String family = descr.getProperty("family");
+        String product = descr.getProperty("product") + " " + descr.getProperty("release");
+        return family + ", " + product;
+    }
+
+    /**
+     * <p>Retrieve the Prolog vendor.</p>
+     *
+     * @param inter The interpreter.
+     * @return The Prolog vendor.
+     */
+    public static String sysPrologVendor(Interpreter inter) {
+        Engine en = (Engine) inter.getEngine();
+        AbstractBranch brand = en.store.foyer.getFactory().getBrandBranch();
+        Locale locale = en.store.foyer.locale;
+        Properties descr = brand.getDescriptionLang(locale);
+        return descr.getProperty("company");
+    }
+
 
 }

@@ -13,6 +13,7 @@ import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
@@ -54,11 +55,15 @@ import java.util.Properties;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSession extends AbstractSpecial {
-    private final static int SPECIAL_VERSION = 0;
     private final static int SPECIAL_BREAK = 1;
     private final static int SPECIAL_SYS_WRITE_VAR = 2;
     private final static int SPECIAL_KBS = 3;
@@ -86,12 +91,6 @@ public final class SpecialSession extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_VERSION:
-                Object obj = en.visor.dispoutput;
-                FactoryAPI.checkTextWrite(obj);
-                Writer wr = (Writer) obj;
-                showVersion(wr, en);
-                return en.getNextRaw();
             case SPECIAL_BREAK:
                 /* increase level */
                 en.visor.breaklevel++;
@@ -126,9 +125,9 @@ public final class SpecialSession extends AbstractSpecial {
                 en.visor.breaklevel--;
                 return en.getNextRaw();
             case SPECIAL_SYS_WRITE_VAR:
-                obj = en.visor.dispoutput;
+                Object obj = en.visor.dispoutput;
                 FactoryAPI.checkTextWrite(obj);
-                wr = (Writer) obj;
+                Writer wr = (Writer) obj;
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
@@ -158,33 +157,6 @@ public final class SpecialSession extends AbstractSpecial {
             pw.setSource(en.store.user);
             pw.setEngineRaw(en);
             wr.write(pw.variableQuoted(fun));
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>Show a version banner.</p></�p>
-     *
-     * @param wr The writer.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void showVersion(Writer wr, Engine en)
-            throws EngineMessage {
-        try {
-            AbstractBranch brand = en.store.foyer.getFactory().getBrandBranch();
-            Locale locale = en.store.foyer.locale;
-            Properties descr = brand.getDescriptionLang(locale);
-            String family = descr.getProperty("family");
-            String product = descr.getProperty("product") + " " + descr.getProperty("release");
-            String company = descr.getProperty("company");
-            wr.write(family + ", " + product);
-            wr.write('\n');
-            wr.flush();
-            wr.write(company);
-            wr.write('\n');
-            wr.flush();
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
