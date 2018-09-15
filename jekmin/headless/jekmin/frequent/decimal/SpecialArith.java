@@ -38,6 +38,11 @@ import java.math.MathContext;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -128,7 +133,7 @@ public class SpecialArith extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
-                    int x = EngineMessage.castIntValue(beta);
+                    int x = SpecialEval.castIntValue(beta);
                     if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, x, mc),
                             Display.DISPLAY_CONST))
                         return false;
@@ -137,8 +142,11 @@ public class SpecialArith extends AbstractSpecial {
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
-
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

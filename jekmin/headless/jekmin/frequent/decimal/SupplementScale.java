@@ -37,6 +37,11 @@ import java.math.RoundingMode;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -70,83 +75,88 @@ public class SupplementScale extends AbstractSpecial {
      */
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
-        switch (id) {
-            case EVALUABLE_SCALE:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                boolean multi = en.computeExpr(temp[0], ref);
-                Display d = en.display;
-                Number alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = Integer.valueOf(TermAtomic.scale(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_UNSCALED_VALUE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_NEW_DECIMAL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                multi = en.computeExpr(temp[1], ref);
-                d = en.display;
-                Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                int x = EngineMessage.castIntValue(beta);
-                en.skel = newDecimal(alfa, x);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_PRECISION:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = Integer.valueOf(precision(alfa));
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_REQUESTED:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                MathContext mc = SpecialArith.derefAndCastContext(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.skel = Integer.valueOf(mc.getPrecision());
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            case EVALUABLE_NEW_CONTEXT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
-                d = en.display;
-                alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                EngineMessage.checkNotLessThanZero(alfa);
-                x = EngineMessage.castIntValue(alfa);
-                en.skel = newContext(x);
-                en.display = Display.DISPLAY_CONST;
-                return false;
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        try {
+            switch (id) {
+                case EVALUABLE_SCALE:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    boolean multi = en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    Number alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(TermAtomic.scale(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_UNSCALED_VALUE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_NEW_DECIMAL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    multi = en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    int x = SpecialEval.castIntValue(beta);
+                    en.skel = newDecimal(alfa, x);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_PRECISION:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(precision(alfa));
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_REQUESTED:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    MathContext mc = SpecialArith.derefAndCastContext(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(mc.getPrecision());
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                case EVALUABLE_NEW_CONTEXT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    multi = en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    x = SpecialEval.castIntValue(alfa);
+                    en.skel = newContext(x);
+                    en.display = Display.DISPLAY_CONST;
+                    return false;
+                default:
+                    throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

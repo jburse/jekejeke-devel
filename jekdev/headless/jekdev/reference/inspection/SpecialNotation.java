@@ -1,5 +1,6 @@
 package jekdev.reference.inspection;
 
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -12,7 +13,6 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
 
 /**
  * <p>This module provides built-ins for the module notation.</p>
@@ -36,6 +36,11 @@ import jekpro.tools.term.SkelVar;
  * giving away or letting of the execution of the library is prohibited.
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
+ * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
  * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
@@ -102,7 +107,8 @@ public final class SpecialNotation extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                obj = Clause.callableToColonSkel(en.skel, en);
+                sa = SpecialBody.callableToName(en.skel);
+                obj = Clause.callableToColonSkel(en.skel, (sa != null ? sa.scope : null), en);
                 if (!en.unifyTerm(temp[1], ref, obj, en.display))
                     return false;
                 return en.getNext();
@@ -121,7 +127,9 @@ public final class SpecialNotation extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 arity = StoreKey.propToIndicator(en);
-                obj = SpecialQuali.indicatorToColonSkel((SkelAtom) en.skel, arity.intValue(), en);
+                obj = SpecialQuali.indicatorToColonSkel(
+                        ((SkelAtom) en.skel).fun, ((SkelAtom) en.skel).scope,
+                        arity.intValue(), en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();

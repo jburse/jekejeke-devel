@@ -33,6 +33,11 @@ import java.io.StringWriter;
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -171,8 +176,7 @@ public class ForeignMemory {
                             Knowledgebase.OP_CONS)) {
                 Object temp = ((TermCompound) help).getArg(0);
                 Number num = InterpreterMessage.castInteger(temp);
-                int n = SpecialEval.castIntValue(num);
-                InterpreterMessage.checkByte(n);
+                int n = SpecialEval.castOctet(num);
                 buf[pos] = (byte) n;
                 pos++;
                 help = ((TermCompound) help).getArg(1);
