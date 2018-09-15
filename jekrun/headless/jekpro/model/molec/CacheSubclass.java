@@ -53,14 +53,10 @@ public final class CacheSubclass extends AbstractCache {
     public final static char OP_CHAR_SYN = '$';
     public final static String OP_STRING_SYN = "$";
 
-    String fun;
+    SkelAtom mod;
     AbstractSource base;
     Object basevers;
     boolean res;
-
-    /*********************************************************************/
-    /* Lookup Predicate                                                  */
-    /*********************************************************************/
 
     /**************************************************************/
     /* Lookup Key                                                 */
@@ -105,13 +101,14 @@ public final class CacheSubclass extends AbstractCache {
     /**
      * <p>Find a source in the reexport chain of another source.</p>
      *
-     * @param fun  The full name to search.
-     * @param base The start of the reexport chain.
+     * @param other The other source.
+     * @param base  The start of the reexport chain.
      * @return True if the source was found, otherwise false.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static boolean lookupChain(String fun, AbstractSource base)
+    private static boolean lookupChain(AbstractSource other,
+                                       AbstractSource base)
             throws InterruptedException, EngineMessage {
         MapEntry<AbstractSource, Integer>[] deps2;
         /* wait for complete source */
@@ -122,7 +119,7 @@ public final class CacheSubclass extends AbstractCache {
             String s = base.getFullName();
             if (Branch.OP_USER.equals(s))
                 return false;
-            if (fun.equals(s))
+            if (other == base)
                 return true;
             deps2 = base.snapshotDeps();
         } finally {
@@ -130,7 +127,7 @@ public final class CacheSubclass extends AbstractCache {
         }
         ListArray visited = new ListArray<AbstractCache>();
         visited.add(base);
-        if (lookupChain(fun, deps2, visited))
+        if (lookupChain(other, deps2, visited))
             return true;
         return false;
     }
@@ -138,14 +135,14 @@ public final class CacheSubclass extends AbstractCache {
     /**
      * <p>Find a source in the reexport chain of another source.</p>
      *
-     * @param fun     The full name to search, not null.
+     * @param other   The other source.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return True if the source was found, otherwise false.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static boolean lookupChain(String fun,
+    private static boolean lookupChain(AbstractSource other,
                                        MapEntry<AbstractSource, Integer>[] deps,
                                        ListArray<AbstractSource> visited)
             throws InterruptedException, EngineMessage {
@@ -165,14 +162,14 @@ public final class CacheSubclass extends AbstractCache {
                 String s = base.getFullName();
                 if (Branch.OP_USER.equals(s))
                     continue;
-                if (fun.equals(s))
+                if (other == base)
                     return true;
                 deps2 = base.snapshotDeps();
             } finally {
                 base.getRead().release();
             }
             visited.add(base);
-            if (lookupChain(fun, deps2, visited))
+            if (lookupChain(other, deps2, visited))
                 return true;
         }
         return false;
@@ -186,13 +183,13 @@ public final class CacheSubclass extends AbstractCache {
      * <p>Perform a sub class test.</p>
      *
      * @param sa  The atom skeleton.
-     * @param fun The other atom.
+     * @param mod The other atom.
      * @param en  The engine.
      * @return The module name.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static boolean getSubclass(SkelAtom sa, String fun,
+    public static boolean getSubclass(SkelAtom sa, SkelAtom mod,
                                       Engine en)
             throws EngineMessage, EngineException {
         try {
@@ -203,10 +200,12 @@ public final class CacheSubclass extends AbstractCache {
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                     AbstractSource base = lookupKey(sa.fun, src, en);
                     Object basevers = base.importvers;
-                    boolean flag = lookupChain(fun, base);
+                    src = (mod.scope != null ? mod.scope : en.store.user);
+                    AbstractSource other = lookupKey(mod.fun, src, en);
+                    boolean flag = lookupChain(other, base);
 
                     CacheSubclass ca = new CacheSubclass();
-                    ca.fun = fun;
+                    ca.mod = mod;
                     ca.res = flag;
                     ca.base = base;
                     ca.basevers = basevers;
@@ -219,15 +218,18 @@ public final class CacheSubclass extends AbstractCache {
                 }
                 if (temp instanceof CacheSubclass) {
                     CacheSubclass ca = (CacheSubclass) temp;
-                    if (ca.fun.equals(fun)) {
+                    if (ca.mod.fun.equals(mod.fun) &&
+                            ca.mod.scope == mod.scope) {
                         boolean flag;
                         if (ca.basevers != ca.base.importvers) {
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                             AbstractSource base = lookupKey(sa.fun, src, en);
                             Object basevers = base.importvers;
-                            flag = lookupChain(fun, base);
+                            src = (mod.scope != null ? mod.scope : en.store.user);
+                            AbstractSource other = lookupKey(mod.fun, src, en);
+                            flag = lookupChain(other, base);
 
-                            ca.fun = fun;
+                            ca.mod = mod;
                             ca.res = flag;
                             ca.base = base;
                             ca.basevers = basevers;
@@ -269,7 +271,7 @@ public final class CacheSubclass extends AbstractCache {
                 Object basevers = base.importvers;
 
                 CacheSubclass ca = new CacheSubclass();
-                ca.fun = null;
+                ca.mod = null;
                 ca.res = false;
                 ca.base = base;
                 ca.basevers = basevers;
@@ -282,14 +284,14 @@ public final class CacheSubclass extends AbstractCache {
             }
             if (temp instanceof CacheSubclass) {
                 CacheSubclass ca = (CacheSubclass) temp;
-                if (ca.fun == null) {
+                if (ca.mod == null) {
                     AbstractSource base;
                     if (ca.basevers != ca.base.importvers) {
                         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                         base = lookupKey(sa.fun, src, en);
                         Object basevers = base.importvers;
 
-                        ca.fun = null;
+                        ca.mod = null;
                         ca.res = false;
                         ca.base = base;
                         ca.basevers = basevers;

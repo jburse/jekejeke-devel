@@ -6,10 +6,12 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractStore;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermCompound;
@@ -18,6 +20,8 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Properties;
@@ -227,6 +231,36 @@ public final class ForeignEngine {
         return res;
     }
 
+    /**********************************************************/
+    /* Hierarchical Knowledgebases                            */
+    /**********************************************************/
+
+    /**
+     * <p>Show the knowledge base stack.</p>
+     *
+     * @param inter The interpreter.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void sysShowKnowledgebaseStack(Interpreter inter)
+            throws EngineMessage {
+        Engine en = (Engine) inter.getEngine();
+        Object obj = en.visor.dispoutput;
+        FactoryAPI.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        try {
+            AbstractStore store = en.store;
+            while (store != null) {
+                wr.write("store ");
+                wr.write(store.toString());
+                wr.write('\n');
+                wr.flush();
+                store = store.parent;
+            }
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
     /*************************************************************/
     /* Prolog Data                                               */
     /*************************************************************/
@@ -260,6 +294,5 @@ public final class ForeignEngine {
         Properties descr = brand.getDescriptionLang(locale);
         return descr.getProperty("company");
     }
-
 
 }
