@@ -96,7 +96,7 @@ final class DefinedBlocking extends AbstractDefinedMultifile {
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
             SkelAtom sa = SpecialBody.callableToName(clause.head);
-            if (scope != sa.scope)
+            if (scope == sa.scope)
                 retractClause(clause, null);
         }
     }

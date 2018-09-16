@@ -2,7 +2,6 @@ package jekpro.reference.runtime;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.stream.ForeignConsole;
-import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
@@ -13,7 +12,6 @@ import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
@@ -65,7 +63,8 @@ import java.util.Properties;
  */
 public final class SpecialSession extends AbstractSpecial {
     private final static int SPECIAL_BREAK = 1;
-    private final static int SPECIAL_SYS_WRITE_VAR = 2;
+    private final static int SPECIAL_SYS_QUOTED_VAR = 2;
+    private final static int SPECIAL_SYS_GET_RAW_VARIABLES = 3;
 
     /**
      * <p>Create a session special.</p>
@@ -123,38 +122,25 @@ public final class SpecialSession extends AbstractSpecial {
                 }
                 en.visor.breaklevel--;
                 return en.getNextRaw();
-            case SPECIAL_SYS_WRITE_VAR:
-                Object obj = en.visor.dispoutput;
-                FactoryAPI.checkTextWrite(obj);
-                Writer wr = (Writer) obj;
+            case SPECIAL_SYS_QUOTED_VAR:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
-                showVariable(wr, fun, en);
+                if (!en.unifyTerm(temp[1], ref, sysQuoteVar(fun, en), Display.DISPLAY_CONST))
+                    return false;
                 return en.getNextRaw();
+            case SPECIAL_SYS_GET_RAW_VARIABLES:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                Frame frame = en.visor.ref;
+                Display ref2 = (frame != null ? frame.getDisplay() : null);
+                Clause def = (frame != null ? frame.getClause() : null);
+                en.skel = namedToAssoc((def != null ? def.vars : null), ref2, en.store);
+                if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
+                    return false;
+                return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
-        }
-    }
-
-    /**
-     * <p>Show a variable</p>
-     *
-     * @param wr  The writer.
-     * @param fun The variable.
-     * @param en  The engine.
-     */
-    private static void showVariable(Writer wr, String fun,
-                                     Engine en)
-            throws EngineMessage {
-        try {
-            PrologWriter pw = new PrologWriter();
-            pw.setWriteUtil(en.store);
-            pw.setSource(en.store.user);
-            pw.setEngineRaw(en);
-            wr.write(pw.variableQuoted(fun));
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
         }
     }
 
@@ -688,6 +674,51 @@ public final class SpecialSession extends AbstractSpecial {
         en.display = (rd.getGensym() != 0 ?
                 new Display(rd.getGensym()) : Display.DISPLAY_CONST);
         return true;
+    }
+
+    /********************************************************************/
+    /* Raw Variable Names                                               */
+    /********************************************************************/
+
+    /**
+     * <p>Show a variable</p>
+     *
+     * @param fun The variable.
+     * @param en  The engine.
+     * @return The quoted variable.
+     */
+    private static SkelAtom sysQuoteVar(String fun, Engine en) {
+        PrologWriter pw = new PrologWriter();
+        pw.setWriteUtil(en.store);
+        pw.setSource(en.store.user);
+        pw.setEngineRaw(en);
+        return new SkelAtom(pw.variableQuoted(fun));
+    }
+
+    /**
+     * <p>Convert variable names.</p>
+     * <p>Will not convert variables that have not yet been allocated.</p>
+     * <p>Will not convert variables that have already been deallocated.</p>
+     *
+     * @param vars  The variable names.
+     * @param store The store.
+     * @return The Prolog association list.
+     */
+    private static Object namedToAssoc(Named[] vars, Display d,
+                                       AbstractStore store) {
+        Object end = store.foyer.ATOM_NIL;
+        if (vars == null)
+            return end;
+        for (int i = vars.length - 1; i >= 0; i--) {
+            Named cn = vars[i];
+            SkelVar sv = cn.getEnt();
+            if (d.bind == null || sv.id >= d.bind.length || d.bind[sv.id] == null)
+                continue;
+            Object val = new SkelCompound(store.foyer.ATOM_EQUAL,
+                    new SkelAtom(cn.getName()), sv);
+            end = new SkelCompound(store.foyer.ATOM_CONS, val, end);
+        }
+        return end;
     }
 
 }

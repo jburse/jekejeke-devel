@@ -141,48 +141,8 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
     }
 
     /********************************************************/
-    /* Filler Handling                                      */
+    /* Position Handling                                    */
     /********************************************************/
-
-    /**
-     * <p>Retrieve the hint.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @return The hint.
-     */
-    public int getHint() {
-        return 0;
-    }
-
-    /**
-     * <p>Set the hint.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param h The hint.
-     */
-    public void setHint(int h) {
-        /* do nothing */
-    }
-
-    /**
-     * <p>Retrieve the fillers of the atom.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @return The fillers.
-     */
-    public String[][] getFillers() {
-        return null;
-    }
-
-    /**
-     * <p>Set the fillers.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param f The fillers.
-     */
-    public void setFillers(String[][] f) {
-        /* do nothing */
-    }
 
     /**
      * <p>Retrieve the position.</p>
@@ -199,24 +159,6 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
      * @param o The position, can be null.
      */
     public void setPosition(PositionKey o) {
-        /* do nothing */
-    }
-
-    /**
-     * <p>Retrieve the module.</p>
-     *
-     * @return The module source.
-     */
-    public SkelAtom getModule() {
-        return null;
-    }
-
-    /**
-     * <p>Set the module.</p>
-     *
-     * @param s The module source.
-     */
-    public void setModule(SkelAtom s) {
         /* do nothing */
     }
 

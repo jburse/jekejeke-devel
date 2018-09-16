@@ -451,7 +451,7 @@ public final class SpecialQuali extends AbstractSpecial {
             throws EngineMessage {
         Object s;
         if (sa instanceof SkelAtomQuali) {
-            SkelAtom mod = sa.getModule();
+            SkelAtom mod = ((SkelAtomQuali)sa).getModule();
             s = Clause.moduleToSlashSkel(mod.fun, mod.scope, en);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);

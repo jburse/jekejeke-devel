@@ -620,9 +620,9 @@ public class PrologWriter {
      * <p>Write an atom.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param sa The atom.
-     * @param ref  The display.
-     * @param mod  The module context, or null.
+     * @param sa  The atom.
+     * @param ref The display.
+     * @param mod The module context, or null.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
@@ -657,7 +657,7 @@ public class PrologWriter {
     /**
      * <p>Compute a quoted atom.</p>
      *
-     * @param fun   The atom.
+     * @param fun  The atom.
      * @param oper True if infix, otherwise false.
      * @return The quoted atom.
      */

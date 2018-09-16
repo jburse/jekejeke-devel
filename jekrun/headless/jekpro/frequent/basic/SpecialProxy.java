@@ -112,7 +112,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     SkelAtom mod = SpecialQuali.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
                     sa = SpecialQuali.modToAtom(obj, temp[1], ref, en);
-                    if (!CacheSubclass.getSubclass(sa, mod.fun, en))
+                    if (!CacheSubclass.getSubclass(sa, mod, en))
                         return false;
                     return en.getNextRaw();
                 default:
@@ -251,7 +251,7 @@ public final class SpecialProxy extends AbstractSpecial {
      * @param what The class loader.
      * @param en   The engine.
      */
-    public static AbstractStore inChain(ClassLoader what, Engine en) {
+    private static AbstractStore inChain(ClassLoader what, Engine en) {
         AbstractStore[] stores = en.store.foyer.snapshotStores();
         for (int i = 0; i < stores.length; i++) {
             AbstractStore store = stores[i];

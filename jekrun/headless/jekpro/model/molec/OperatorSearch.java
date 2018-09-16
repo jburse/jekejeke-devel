@@ -52,15 +52,15 @@ public final class OperatorSearch {
     /**
      * <p>Find the base of a predicate name.</p>
      *
-     * @param fun  The predicate name.
+     * @param fun The predicate name.
      * @param src The call-site.
      * @param en  The engine.
      * @return The base.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     private static AbstractSource performBase(String fun,
-                                             AbstractSource src, Engine en)
+                                              AbstractSource src, Engine en)
             throws EngineException, EngineMessage {
         if (CacheFunctor.isQuali(fun)) {
             fun = CacheFunctor.sepModule(fun);
@@ -170,9 +170,9 @@ public final class OperatorSearch {
     /**
      * <p>Determine the operator that this operator overrides.</p>
      *
-     * @param type  The operator type.
-     * @param key   The operator name.
-     * @param base  The lookup base, non-null.
+     * @param type The operator type.
+     * @param key  The operator name.
+     * @param base The lookup base, non-null.
      * @return The operator that is overridden, or null.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.

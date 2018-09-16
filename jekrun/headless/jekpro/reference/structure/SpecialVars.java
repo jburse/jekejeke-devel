@@ -67,7 +67,6 @@ public final class SpecialVars extends AbstractSpecial {
     private final static int SPECIAL_SYS_NUMBER_VARIABLES = 6;
     private final static int SPECIAL_SYS_GET_VARIABLE_NAMES = 7;
     private final static int SPECIAL_ACYCLIC_TERM = 8;
-    private final static int SPECIAL_SYS_GET_RAW_VARIABLES = 9;
 
     /**
      * <p>Create a vars special.</p>
@@ -189,16 +188,6 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!ev.isAcyclic(temp[0], ref))
                         return false;
                     return en.getNextRaw();
-                case SPECIAL_SYS_GET_RAW_VARIABLES:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    frame = en.visor.ref;
-                    ref2 = (frame != null ? frame.getDisplay() : null);
-                    def = (frame != null ? frame.getClause() : null);
-                    en.skel = Named.namedToAssoc((def != null ? def.vars : null), ref2, en.store);
-                    if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
-                        return false;
-                    return en.getNext();
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -285,11 +274,10 @@ public final class SpecialVars extends AbstractSpecial {
      * @param en  The engine.
      * @return The end number or null.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     private static Integer numberVars(Object m, Display d, Integer val,
                                       Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         for (; ; ) {
             Object var = EngineCopy.getVar(m);
             if (var == null)
@@ -358,7 +346,8 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The variable list.
      * @throws EngineMessage Shit happens.
      */
-    private static SetHashLink<Object> arrayToSet(Object t, Display d, Engine en)
+    private static SetHashLink<Object> arrayToSet(Object t, Display d,
+                                                  Engine en)
             throws EngineMessage {
         SetHashLink<Object> set = null;
         en.skel = t;
@@ -470,7 +459,8 @@ public final class SpecialVars extends AbstractSpecial {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        for (MapEntry<Object, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
+        for (MapEntry<Object, NamedDistance> entry =
+             (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             Object t = AbstractTerm.getSkel(entry.key);
             if (EngineCopy.getVar(t) != null) {
@@ -487,7 +477,8 @@ public final class SpecialVars extends AbstractSpecial {
             last = new Display(countvar);
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
-        for (MapEntry<Object, NamedDistance> entry = (mvs != null ? mvs.getFirstEntry() : null);
+        for (MapEntry<Object, NamedDistance> entry =
+             (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             Object t = AbstractTerm.getSkel(entry.key);
             Object val;

@@ -101,7 +101,7 @@ public final class CachePredicate extends AbstractCache {
                                              AbstractSource src, Engine en)
             throws EngineException, EngineMessage {
         if (sa instanceof SkelAtomQuali) {
-            sa = sa.getModule();
+            sa = ((SkelAtomQuali) sa).getModule();
             return CacheSubclass.lookupKey(sa.fun, sa.scope, en);
         } else {
             return src;
@@ -215,7 +215,7 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Determine the predicate that this predicate overrides.</p>
      *
-     * @param sa   The predicate name.
+     * @param sa    The predicate name.
      * @param arity The predicate length.
      * @param base  The lookup base.
      * @return The predicate that is overridden, or null.
