@@ -4,6 +4,27 @@
  * predicate set_prolog_flag/2 allows updating an interpreter attribute.
  * The predicates halt/[0,1] allow exiting the current process.
  *
+ * Since recently we have introduce hierarchical knowledge bases.
+ * These are already used in the Swing GUI, but not in the Android GUI.
+ * Every Swing console window runs in its own sub knowledge base which
+ * provides a separate class loader and thread group for all its threads.
+ * The knowledge base stack can be queried by the kbs/0 command:
+ *
+ * Example, in Swing GUI:
+ * Jekejeke Prolog 2, Runtime Library 1.2.7
+ * (c) 1985-2018, XLOG Technologies GmbH, Switzerland
+ * ?- kbs.
+ * store jekpro.model.pretty.StoreChild@101ceba
+ * store jekpro.model.pretty.StoreElder@4e95fbaf
+ * Yes
+ *
+ * Example, in Android GUI:
+ * Jekejeke Prolog 2, Runtime Library 1.2.7
+ * (c) 1985-2018, XLOG Technologies GmbH, Switzerland
+ * ?- kbs.
+ * store jekpro.model.pretty.StoreElder@1d3e528
+ * Yes
+ *
  * The predicates begin_module/1 and end_module/0 can be used to open
  * respectively close a local module. For a consulted file the predicate
  * begin_module/1 will also do first a clear of the local module, and
@@ -92,6 +113,49 @@ halt :-
 :- foreign(halt/1, 'ForeignEngine', sysHalt('Integer')).
 
 /********************************************************/
+/* Prolog Data                                          */
+/********************************************************/
+
+/**
+ * welcome:
+ * version:
+ * The predicate displays a version banner.
+ */
+% welcome
+:- public welcome/0.
+welcome :- version.
+:- set_predicate_property(welcome/0, sys_notrace).
+
+:- public version/0.
+version :-
+   sys_prolog_version(V),
+   ttywrite(V), ttynl,
+   sys_prolog_vendor(W),
+   ttywrite(W), ttynl.
+:- set_predicate_property(version/0, sys_notrace).
+
+:- private sys_prolog_version/1.
+:- foreign(sys_prolog_version/1, 'ForeignEngine',
+      sysPrologVersion('Interpreter')).
+
+:- private sys_prolog_vendor/1.
+:- foreign(sys_prolog_vendor/1, 'ForeignEngine',
+      sysPrologVendor('Interpreter')).
+
+/**********************************************************/
+/* Hierarchical Knowledgebases                            */
+/**********************************************************/
+
+/**
+ * kbs:
+ * The predicate shows the knowledgebase stack.
+ */
+:- public kbs/0.
+:- foreign(kbs/0, 'ForeignEngine',
+      sysShowKnowledgebaseStack('Interpreter')).
+:- set_predicate_property(kbs/0, sys_notrace).
+
+/********************************************************/
 /* Locale Modules                                       */
 /********************************************************/
 
@@ -122,33 +186,3 @@ end_module :-
 
 :- private sys_peek_stack/1.
 :- special(sys_peek_stack/1, 'SpecialLoad', 12).
-
-/********************************************************/
-/* Prolog Data                                          */
-/********************************************************/
-
-/**
- * welcome:
- * version:
- * The predicate displays a version banner.
- */
-% welcome
-:- public welcome/0.
-welcome :- version.
-:- set_predicate_property(welcome/0, sys_notrace).
-
-:- public version/0.
-version :-
-   sys_prolog_version(V),
-   ttywrite(V), ttynl,
-   sys_prolog_vendor(W),
-   ttywrite(W), ttynl.
-:- set_predicate_property(version/0, sys_notrace).
-
-:- private sys_prolog_version/1.
-:- foreign(sys_prolog_version/1, 'ForeignEngine',
-      sysPrologVersion('Interpreter')).
-
-:- private sys_prolog_vendor/1.
-:- foreign(sys_prolog_vendor/1, 'ForeignEngine',
-      sysPrologVendor('Interpreter')).

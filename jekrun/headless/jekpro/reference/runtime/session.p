@@ -5,27 +5,6 @@
  * The query answer loop can be terminated by issuing an end of file.
  * The query answer loop runs in its own input/output stream pair.
  *
- * Since recently we have introduce hierarchical knowledge bases.
- * These are already used in the Swing GUI, but not in the Android GUI.
- * Every Swing console window runs in its own sub knowledge base which
- * provides a separate class loader and thread group for all its threads.
- * The knowledge base stack can be queried by the kbs/0 command:
- *
- * Example, in Swing GUI:
- * Jekejeke Prolog 2, Runtime Library 1.2.7
- * (c) 1985-2018, XLOG Technologies GmbH, Switzerland
- * ?- kbs.
- * store jekpro.model.pretty.StoreChild@101ceba
- * store jekpro.model.pretty.StoreElder@4e95fbaf
- * Yes
- *
- * Example, in Android GUI:
- * Jekejeke Prolog 2, Runtime Library 1.2.7
- * (c) 1985-2018, XLOG Technologies GmbH, Switzerland
- * ?- kbs.
- * store jekpro.model.pretty.StoreElder@1d3e528
- * Yes
- *
  * The system predicates abort/1, exit/1 and close/1 throw some well-known
  * system errors. The system predicate exit/1 allows terminating the query
  * answer loop similarly like issuing an end of file. The system predicate
@@ -212,12 +191,14 @@ sys_show_no :-
 :- private sys_show_name_or_eq/1.
 :- meta_predicate sys_show_name_or_eq(0).
 sys_show_name_or_eq(X is T) :- !,
-   sys_write_var(X),
+   sys_quoted_var(X, Q),
+   ttywrite(Q),
    ttywrite(' is '),
    sys_get_variable_names(N),
    ttywrite_term(T, [quoted(true),priority(699),variable_names(N)]).
 sys_show_name_or_eq(X = T) :- !,
-   sys_write_var(X),
+   sys_quoted_var(X, Q),
+   ttywrite(Q),
    ttywrite(' = '),
    sys_get_variable_names(N),
    ttywrite_term(T, [quoted(true),priority(699),variable_names(N)]).
@@ -226,21 +207,18 @@ sys_show_name_or_eq(T) :-
    ttywrite_term(T, [quoted(true),context(0),variable_names(N)]).
 
 /**
- * sys_write_var(V):
- * Write the variable name with appropriate quoting.
+ * sys_quoted_var(V, Q):
+ * The predicate succeeds in Q with a possibly quoted variable name V.
  */
-% sys_write_var(+Atom)
-:- private sys_write_var/1.
-:- special(sys_write_var/1, 'SpecialSession', 2).
-
-/***********************************************************/
-/* Hierarchical Knowledgebases                             */
-/***********************************************************/
+% sys_quoted_var(+Atom, -Atom)
+:- private sys_quoted_var/2.
+:- special(sys_quoted_var/2, 'SpecialSession', 2).
 
 /**
- * kbs:
- * The predicate shows the knowledgebase stack.
+ * sys_get_raw_variables(L):
+ * The predicate succeeds in L the current variable names
+ * from the top-level query including non-variables or duplicates.
  */
-:- public kbs/0.
-:- special(kbs/0, 'SpecialSession', 3).
-:- set_predicate_property(kbs/0, sys_notrace).
+% sys_get_raw_variables(-VariableNames)
+:- private sys_get_raw_variables/1.
+:- special(sys_get_raw_variables/1, 'SpecialSession', 3).

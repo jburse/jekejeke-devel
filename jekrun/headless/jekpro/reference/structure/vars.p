@@ -32,9 +32,7 @@
  * retrieved via the predicate sys_get_variable_names/1. The predicate
  * will skip non-variable and duplicate entries. In the case of duplicates
  * the entry with a lower dereferencing count is preferred. The result is
- * intended to be used with the predicates write_term/[2,3]. If the
- * unprocessed variable names are required the predicate
- * sys_get_raw_variables/1 can be used.
+ * intended to be used with the predicates write_term/[2,3].
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -152,12 +150,3 @@
 % acyclic_term(+Term)
 :- public acyclic_term/1.
 :- special(acyclic_term/1, 'SpecialVars', 8).
-
-/**
- * sys_get_raw_variables(L):
- * The predicate succeeds in L the current variable names
- * from the top-level query including non-variables or duplicates.
- */
-% sys_get_raw_variables(-VariableNames)
-:- public sys_get_raw_variables/1.
-:- special(sys_get_raw_variables/1, 'SpecialVars', 9).
