@@ -3,6 +3,8 @@ package matula.util.swing;
 import derek.util.protect.LicenseError;
 import matula.util.data.ListArray;
 import matula.util.system.AbstractRuntime;
+import matula.util.system.ForeignDomain;
+import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,11 +72,13 @@ public final class RuntimeHotspot extends AbstractRuntime {
      */
     public ClassLoader addURL(ClassLoader parent, String adr, Object data)
             throws LicenseError {
+        adr = ForeignDomain.sysUriPuny(adr);
+        adr = ForeignUri.sysUriEncode(adr);
         URL url;
         try {
             url = new URL(adr);
         } catch (MalformedURLException x) {
-            throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
+            throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL, adr);
         }
         return new URLClassLoader(new URL[]{url}, parent);
     }
@@ -88,15 +92,24 @@ public final class RuntimeHotspot extends AbstractRuntime {
      * @return The paths.
      */
     public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop,
-                                     Object data) {
+                                     Object data)
+            throws LicenseError {
         if (stop == loader)
             return new ListArray<String>();
         ListArray<String> res = getURLs(loader.getParent(), stop, data);
         URL[] urls = getURLs(loader);
         if (urls == null)
             return res;
-        for (int i = 0; i < urls.length; i++)
-            res.add(urls[i].toString());
+        for (int i = 0; i < urls.length; i++) {
+            String adr = urls[i].toString();
+            adr = ForeignUri.sysUriDecode(adr);
+            try {
+                adr = ForeignDomain.sysUriUnpuny(adr);
+            } catch (MalformedURLException x) {
+                throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL, adr);
+            }
+            res.add(adr);
+        }
         return res;
     }
 

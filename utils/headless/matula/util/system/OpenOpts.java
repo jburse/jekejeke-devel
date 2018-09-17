@@ -161,16 +161,16 @@ public final class OpenOpts extends OpenCheck {
      * <p>Open a read stream.</p>
      *
      * @param know The knowledgebase.
-     * @param adr  The uri.
+     * @param adr2  The uri.
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
      * @throws LicenseError             Decryption error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
-    public Object openRead(AbstractRecognizer know, String adr)
+    public Object openRead(AbstractRecognizer know, String adr2)
             throws LicenseError, IOException, ScannerError {
         if ((getFlags() & MASK_OPEN_RPOS) != 0) {
-            String spec = ForeignUri.sysUriSpec(adr);
+            String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
                 throw new IllegalArgumentException("file needed");
@@ -196,7 +196,7 @@ public final class OpenOpts extends OpenCheck {
                 }
                 cin.setLastModified(file.lastModified());
                 cin.setRaf(raf);
-                cin.setPath(adr);
+                cin.setPath(adr2);
                 return cin;
             } else {
                 String theenconding = getEncoding();
@@ -222,11 +222,11 @@ public final class OpenOpts extends OpenCheck {
                 crd.setLastModified(file.lastModified());
                 crd.setLineNumber(1);
                 crd.setRaf(raf);
-                crd.setPath(adr);
+                crd.setPath(adr2);
                 return crd;
             }
         } else {
-            String spec = ForeignUri.sysUriSpec(adr);
+            String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (ForeignUri.SCHEME_FILE.equals(scheme)) {
                 String path = ForeignUri.sysSpecPath(spec);
@@ -241,7 +241,7 @@ public final class OpenOpts extends OpenCheck {
                 }
 
                 InputStream in = new FileInputStream(file);
-                AbstractDecoder cap = know.pathToDecoder(adr);
+                AbstractDecoder cap = know.pathToDecoder(adr2);
                 if (cap != null)
                     in = cap.prepareStream(in, know);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
@@ -253,7 +253,7 @@ public final class OpenOpts extends OpenCheck {
                         cin = new ConnectionInput(in);
                     }
                     cin.setLastModified(file.lastModified());
-                    cin.setPath(adr);
+                    cin.setPath(adr2);
                     return cin;
                 } else {
                     boolean hasbom = false;
@@ -291,11 +291,11 @@ public final class OpenOpts extends OpenCheck {
                     crd.setBom(hasbom);
                     crd.setLastModified(file.lastModified());
                     crd.setLineNumber(1);
-                    crd.setPath(adr);
+                    crd.setPath(adr2);
                     return crd;
                 }
             } else {
-                adr = ForeignDomain.sysUriPuny(adr);
+                String adr = ForeignDomain.sysUriPuny(adr2);
                 adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
@@ -330,7 +330,7 @@ public final class OpenOpts extends OpenCheck {
                 }
 
                 InputStream in = con.getInputStream();
-                AbstractDecoder cap = know.pathToDecoder(adr);
+                AbstractDecoder cap = know.pathToDecoder(adr2);
                 if (cap != null)
                     in = cap.prepareStream(in, know);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
@@ -344,7 +344,7 @@ public final class OpenOpts extends OpenCheck {
                     cin.setLastModified(OpenOpts.getLastModified(con));
                     cin.setETag(OpenOpts.getETag(con));
                     cin.setExpiration(OpenOpts.getExpiration(con));
-                    cin.setPath(adr);
+                    cin.setPath(adr2);
                     return cin;
                 } else {
                     String theencoding = getEncoding();
@@ -379,7 +379,7 @@ public final class OpenOpts extends OpenCheck {
                     crd.setETag(OpenOpts.getETag(con));
                     crd.setExpiration(OpenOpts.getExpiration(con));
                     crd.setLineNumber(1);
-                    crd.setPath(adr);
+                    crd.setPath(adr2);
                     return crd;
                 }
             }
@@ -389,15 +389,15 @@ public final class OpenOpts extends OpenCheck {
     /**
      * <p>Open a write stream.</p>
      *
-     * @param adr The uri.
+     * @param adr2 The uri.
      * @return The write stream.
      * @throws IOException              IO error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
-    public Object openWrite(String adr)
+    public Object openWrite(String adr2)
             throws IOException {
         if ((getFlags() & MASK_OPEN_RPOS) != 0) {
-            String spec = ForeignUri.sysUriSpec(adr);
+            String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
                 throw new IllegalArgumentException("file needed");
@@ -414,7 +414,7 @@ public final class OpenOpts extends OpenCheck {
                     cout = new ConnectionOutput(out);
                 }
                 cout.setRaf(raf);
-                cout.setPath(adr);
+                cout.setPath(adr2);
                 return cout;
             } else {
                 String theencoding = getEncoding();
@@ -438,12 +438,12 @@ public final class OpenOpts extends OpenCheck {
                 cwr.setEncoding(osw.getEncoding());
                 cwr.setUnbuf(osw);
                 cwr.setRaf(raf);
-                cwr.setPath(adr);
+                cwr.setPath(adr2);
                 cwr.setNewLine(newline);
                 return cwr;
             }
         } else {
-            String spec = ForeignUri.sysUriSpec(adr);
+            String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
             OutputStream out;
             if (ForeignUri.SCHEME_FILE.equals(scheme)) {
@@ -451,7 +451,7 @@ public final class OpenOpts extends OpenCheck {
                 File file = new File(path.replace('/', File.separatorChar));
                 out = new FileOutputStream(file);
             } else {
-                adr = ForeignDomain.sysUriPuny(adr);
+                String adr = ForeignDomain.sysUriPuny(adr2);
                 adr = ForeignUri.sysUriEncode(adr);
                 URL url = new URL(adr);
                 URLConnection con = url.openConnection();
@@ -467,7 +467,7 @@ public final class OpenOpts extends OpenCheck {
                 } else {
                     cout = new ConnectionOutput(out);
                 }
-                cout.setPath(adr);
+                cout.setPath(adr2);
                 return cout;
             } else {
                 String theencoding = getEncoding();
@@ -497,7 +497,7 @@ public final class OpenOpts extends OpenCheck {
                 }
                 cwr.setEncoding(osw.getEncoding());
                 cwr.setUnbuf(osw);
-                cwr.setPath(adr);
+                cwr.setPath(adr2);
                 cwr.setNewLine(newline);
                 return cwr;
             }
@@ -507,15 +507,15 @@ public final class OpenOpts extends OpenCheck {
     /**
      * <p>Open a write stream in append mode.</p>
      *
-     * @param adr The uri.
+     * @param adr2 The uri.
      * @return The read stream.
      * @throws IOException              IO error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
-    public Object openAppend(String adr)
+    public Object openAppend(String adr2)
             throws IOException {
         if ((getFlags() & MASK_OPEN_RPOS) != 0) {
-            String spec = ForeignUri.sysUriSpec(adr);
+            String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
                 throw new IllegalArgumentException("file needed");
@@ -533,7 +533,7 @@ public final class OpenOpts extends OpenCheck {
                     cout = new ConnectionOutput(out);
                 }
                 cout.setRaf(raf);
-                cout.setPath(adr);
+                cout.setPath(adr2);
                 cout.setAppend(true);
                 return cout;
             } else {
@@ -558,13 +558,13 @@ public final class OpenOpts extends OpenCheck {
                 cwr.setEncoding(osw.getEncoding());
                 cwr.setUnbuf(osw);
                 cwr.setRaf(raf);
-                cwr.setPath(adr);
+                cwr.setPath(adr2);
                 cwr.setNewLine(newline);
                 cwr.setAppend(true);
                 return cwr;
             }
         } else {
-            String spec = ForeignUri.sysUriSpec(adr);
+            String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
             if (!ForeignUri.SCHEME_FILE.equals(scheme))
                 throw new IllegalArgumentException("file needed");
@@ -579,7 +579,7 @@ public final class OpenOpts extends OpenCheck {
                 } else {
                     cout = new ConnectionOutput(out);
                 }
-                cout.setPath(adr);
+                cout.setPath(adr2);
                 cout.setAppend(true);
                 return cout;
             } else {
@@ -602,7 +602,7 @@ public final class OpenOpts extends OpenCheck {
                 }
                 cwr.setEncoding(osw.getEncoding());
                 cwr.setUnbuf(osw);
-                cwr.setPath(adr);
+                cwr.setPath(adr2);
                 cwr.setNewLine(newline);
                 cwr.setAppend(true);
                 return cwr;
