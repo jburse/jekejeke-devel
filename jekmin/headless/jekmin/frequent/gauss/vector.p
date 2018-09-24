@@ -49,6 +49,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -84,9 +89,9 @@
  * The predicate succeeds in Z with the Y-the element
  * of the vector X.
  */
-% [](+Vector, +Integer, -Element)
-:- override []/3.
-:- public []/3.
+% +Vector [+Integer, -Element]
+:- override sys_index/3.
+:- public sys_index/3.
 X [Y, Z] :-
    integer(Y),
    arg(Y, X, Z).

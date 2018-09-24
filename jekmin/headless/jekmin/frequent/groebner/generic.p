@@ -46,6 +46,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -62,6 +67,9 @@
 :- override prefix(-).
 :- public prefix(-).
 :- op(500, fx, -).
+
+:- public postfix(sys_index).
+:- op(100, yf, sys_index).
 
 :- reexport(../gauss/ordered).
 :- reexport(../gauss/ring).
