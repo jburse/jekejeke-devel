@@ -53,6 +53,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -220,11 +225,11 @@ sys_assume_delta_second([]).
 /* Disjunction Reduction                                   */
 /***********************************************************/
 
-% simp:sys_goal_simplification(+Goal, -Goal)
-:- public simp:sys_goal_simplification/2.
-:- multifile simp:sys_goal_simplification/2.
-:- meta_predicate simp:sys_goal_simplification(0,0).
-:- discontiguous simp:sys_goal_simplification/2.
+% simp:goal_simplification(+Goal, -Goal)
+:- public simp:goal_simplification/2.
+:- multifile simp:goal_simplification/2.
+:- meta_predicate simp:goal_simplification(0,0).
+:- discontiguous simp:goal_simplification/2.
 
 % sys_none
 :- private sys_none/0.
@@ -238,28 +243,28 @@ sys_or(_, _) :-
    throw(error(existence_error(body,sys_or/2),_)).
 
 % disjunction + disjunction reduction
-simp:sys_goal_simplification(sys_or(A, _), _) :-
+simp:goal_simplification(sys_or(A, _), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification(sys_or(sys_none, A), A).
-simp:sys_goal_simplification(sys_or(sys_or(A, B), C), J) :-
-   sys_simplify_goal(sys_or(B, C), H),
-   sys_simplify_goal(sys_or(A, H), J).
-simp:sys_goal_simplification(sys_or(_, A), _) :-
+simp:goal_simplification(sys_or(sys_none, A), A).
+simp:goal_simplification(sys_or(sys_or(A, B), C), J) :-
+   simplify_goal(sys_or(B, C), H),
+   simplify_goal(sys_or(A, H), J).
+simp:goal_simplification(sys_or(_, A), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification(sys_or(A, sys_none), A).
+simp:goal_simplification(sys_or(A, sys_none), A).
 
 % conjunction + disjunction reduction
-simp:sys_goal_simplification((  sys_none, _), sys_none).
-simp:sys_goal_simplification((  _, sys_none), sys_none).
-simp:sys_goal_simplification((  sys_or(A, B), C), R) :-
-   sys_simplify_goal((  A, C), H),
-   sys_simplify_goal((  B, C), J),
-   sys_simplify_goal(sys_or(H, J), R).
-simp:sys_goal_simplification((  A,
-                                sys_or(B, C)), R) :-
-   sys_simplify_goal((  A, B), H),
-   sys_simplify_goal((  A, C), J),
-   sys_simplify_goal(sys_or(H, J), R).
+simp:goal_simplification((  sys_none, _), sys_none).
+simp:goal_simplification((  _, sys_none), sys_none).
+simp:goal_simplification((  sys_or(A, B), C), R) :-
+   simplify_goal((  A, C), H),
+   simplify_goal((  B, C), J),
+   simplify_goal(sys_or(H, J), R).
+simp:goal_simplification((  A,
+                            sys_or(B, C)), R) :-
+   simplify_goal((  A, B), H),
+   simplify_goal((  A, C), J),
+   simplify_goal(sys_or(H, J), R).
 
 /**********************************************************/
 /* New, Old & OldNew Reduction                            */
@@ -271,7 +276,13 @@ simp:sys_goal_simplification((  A,
 sys_new(_) :-
    throw(error(existence_error(body,sys_new/1),_)).
 
-simp:sys_goal_simplification(sys_new(A), _) :-
+% user:goal_expansion(+Term, -Term)
+:- public user:goal_expansion/2.
+:- multifile user:goal_expansion/2.
+:- meta_predicate user:goal_expansion(0,0).
+:- discontiguous user:goal_expansion/2.
+
+user:goal_expansion(sys_new(A), _) :-
    var(A), !, fail.
 
 /**
@@ -280,14 +291,11 @@ simp:sys_goal_simplification(sys_new(A), _) :-
  * the other succeeds, or when both react. The predicate
  * succeeds when A and B succeed
  */
-simp:sys_goal_simplification(sys_new((  A, B)), O) :-
-   sys_simplify_goal(sys_old(A), H),
-   sys_simplify_goal(sys_new(B), J),
-   sys_simplify_goal((  H, J), K),
-   sys_simplify_goal(sys_new(A), L),
-   sys_simplify_goal(sys_oldnew(B), M),
-   sys_simplify_goal((  L, M), N),
-   sys_simplify_goal(sys_or(K, N), O).
+user:goal_expansion(sys_new((  A, B)),
+        sys_or((  sys_old(A),
+                  sys_new(B)),
+           (  sys_new(A),
+              sys_oldnew(B)))).
 
 /**
  * {A}:
@@ -298,13 +306,13 @@ simp:sys_goal_simplification(sys_new((  A, B)), O) :-
 {_} :-
    throw(error(existence_error(body,{}/1),_)).
 
-simp:sys_goal_simplification(sys_new({_}), sys_none).
+user:goal_expansion(sys_new({_}), sys_none).
 
 /**
  * !:
  * The cut does also apply in a forward clause.
  */
-simp:sys_goal_simplification(sys_new(!), sys_none).
+user:goal_expansion(sys_new(!), sys_none).
 
 /**
  * -P:
@@ -315,7 +323,7 @@ simp:sys_goal_simplification(sys_new(!), sys_none).
 % :- meta_predicate -(0).
 % -(_) :- throw(error(existence_error(body, (-)/1), _)).
 
-simp:sys_goal_simplification(sys_new(- _), sys_none).
+user:goal_expansion(sys_new(- _), sys_none).
 
 /**
  * +P:
@@ -326,7 +334,7 @@ simp:sys_goal_simplification(sys_new(- _), sys_none).
 + _ :-
    throw(error(existence_error(body,(+)/1),_)).
 
-simp:sys_goal_simplification(sys_new(+ H), sys_keep(H)).
+user:goal_expansion(sys_new(+ H), sys_keep(H)).
 
 /**
  * =P:
@@ -337,13 +345,13 @@ simp:sys_goal_simplification(sys_new(+ H), sys_keep(H)).
 = _ :-
    throw(error(existence_error(body,(=)/1),_)).
 
-simp:sys_goal_simplification(sys_new(= H), sys_drop(H)).
+user:goal_expansion(sys_new(= H), sys_drop(H)).
 
 /**
  * P:
  * The literal P is a fact from the database.
  */
-simp:sys_goal_simplification(sys_new(_), sys_none).
+user:goal_expansion(sys_new(_), sys_none).
 
 % sys_old(+Goal)
 :- private sys_old/1.
@@ -351,18 +359,16 @@ simp:sys_goal_simplification(sys_new(_), sys_none).
 sys_old(_) :-
    throw(error(existence_error(body,sys_old/1),_)).
 
-simp:sys_goal_simplification(sys_old(A), _) :-
+user:goal_expansion(sys_old(A), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification(sys_old((  A, B)), K) :-
-   sys_simplify_goal(sys_old(A), H),
-   sys_simplify_goal(sys_old(B), J),
-   sys_simplify_goal((  H, J), K).
-simp:sys_goal_simplification(sys_old({H}), H).
-simp:sys_goal_simplification(sys_old(!), !).
-simp:sys_goal_simplification(sys_old(- H), - H).
-simp:sys_goal_simplification(sys_old(+ H), + H).
-simp:sys_goal_simplification(sys_old(= H), - H).
-simp:sys_goal_simplification(sys_old(H), + H).
+user:goal_expansion(sys_old((  A, B)), (  sys_old(A),
+                                          sys_old(B))).
+user:goal_expansion(sys_old({H}), H).
+user:goal_expansion(sys_old(!), !).
+user:goal_expansion(sys_old(- H), - H).
+user:goal_expansion(sys_old(+ H), + H).
+user:goal_expansion(sys_old(= H), - H).
+user:goal_expansion(sys_old(H), + H).
 
 % sys_oldnew(+Goal)
 :- private sys_oldnew/1.
@@ -370,18 +376,16 @@ simp:sys_goal_simplification(sys_old(H), + H).
 sys_oldnew(_) :-
    throw(error(existence_error(body,sys_oldnew/1),_)).
 
-simp:sys_goal_simplification(sys_oldnew(A), _) :-
+user:goal_expansion(sys_oldnew(A), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification(sys_oldnew((  A, B)), K) :-
-   sys_simplify_goal(sys_oldnew(A), H),
-   sys_simplify_goal(sys_oldnew(B), J),
-   sys_simplify_goal((  H, J), K).
-simp:sys_goal_simplification(sys_oldnew({H}), H).
-simp:sys_goal_simplification(sys_oldnew(!), !).
-simp:sys_goal_simplification(sys_oldnew(- H), - H).
-simp:sys_goal_simplification(sys_oldnew(+ H), sys_or(+ H, sys_keep(H))).
-simp:sys_goal_simplification(sys_oldnew(= H), sys_or(- H, sys_drop(H))).
-simp:sys_goal_simplification(sys_oldnew(H), + H).
+user:goal_expansion(sys_oldnew((  A, B)), (  sys_oldnew(A),
+                                             sys_oldnew(B))).
+user:goal_expansion(sys_oldnew({H}), H).
+user:goal_expansion(sys_oldnew(!), !).
+user:goal_expansion(sys_oldnew(- H), - H).
+user:goal_expansion(sys_oldnew(+ H), sys_or(+ H, sys_keep(H))).
+user:goal_expansion(sys_oldnew(= H), sys_or(- H, sys_drop(H))).
+user:goal_expansion(sys_oldnew(H), + H).
 
 /**********************************************************/
 /* Keep, Drop & Minus Shifting                            */
@@ -400,24 +404,24 @@ sys_drop(_) :-
    throw(error(existence_error(body,sys_drop/1),_)).
 
 % move sys_keep to front, and replace sys_keep/sys_keep by sys_keep/sys_unify
-simp:sys_goal_simplification((  sys_keep(B),
-                                sys_keep(C)), R) :-
-   sys_simplify_goal(sys_unify(B, C), U),
-   sys_simplify_goal((  sys_keep(B), U), R).
-simp:sys_goal_simplification((  A,
-                                sys_keep(C)), R) :-
-   sys_simplify_goal((  sys_keep(C), A), R).
-simp:sys_goal_simplification((  _, A, _), _) :-
+simp:goal_simplification((  sys_keep(B),
+                            sys_keep(C)), R) :-
+   simplify_goal(sys_unify(B, C), U),
+   simplify_goal((  sys_keep(B), U), R).
+simp:goal_simplification((  A,
+                            sys_keep(C)), R) :-
+   simplify_goal((  sys_keep(C), A), R).
+simp:goal_simplification((  _, A, _), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification((  sys_keep(B),
-                                sys_keep(C), D), J) :-
-   sys_simplify_goal(sys_unify(B, C), U),
-   sys_simplify_goal((  U, D), H),
-   sys_simplify_goal((  sys_keep(B), H), J).
-simp:sys_goal_simplification((  A,
-                                sys_keep(C), D), J) :-
-   sys_simplify_goal((  A, D), H),
-   sys_simplify_goal((  sys_keep(C), H), J).
+simp:goal_simplification((  sys_keep(B),
+                            sys_keep(C), D), J) :-
+   simplify_goal(sys_unify(B, C), U),
+   simplify_goal((  U, D), H),
+   simplify_goal((  sys_keep(B), H), J).
+simp:goal_simplification((  A,
+                            sys_keep(C), D), J) :-
+   simplify_goal((  A, D), H),
+   simplify_goal((  sys_keep(C), H), J).
 
 % sys_minus(+List, +List)
 :- private sys_minus/2.
@@ -425,42 +429,42 @@ sys_minus(_, _) :-
    throw(error(existence_error(body,sys_minus/2),_)).
 
 % move sys_minus to front, stop at sys_keep, replace goal by clause
-simp:sys_goal_simplification((  sys_keep(_),
-                                sys_minus(_, _)), _) :- !, fail.
-simp:sys_goal_simplification((  sys_keep(_),
-                                sys_minus(_, _), _), _) :- !, fail.
-simp:sys_goal_simplification((  sys_drop(A),
-                                sys_minus(L, R)),
+simp:goal_simplification((  sys_keep(_),
+                            sys_minus(_, _)), _) :- !, fail.
+simp:goal_simplification((  sys_keep(_),
+                            sys_minus(_, _), _), _) :- !, fail.
+simp:goal_simplification((  sys_drop(A),
+                            sys_minus(L, R)),
         (  sys_keep(A),
            sys_minus([A|L], R))).
-simp:sys_goal_simplification((  sys_drop(A),
-                                sys_minus(L, R), B),
+simp:goal_simplification((  sys_drop(A),
+                            sys_minus(L, R), B),
         (  sys_keep(A),
            sys_minus([A|L], R), B)).
-simp:sys_goal_simplification((  + A, _), _) :-
+simp:goal_simplification((  + A, _), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification((  + A,
-                                sys_minus(L, R)),
+simp:goal_simplification((  + A,
+                            sys_minus(L, R)),
         (  sys_minus(L, R), C)) :-
    sys_replace_site(C, A, clause(A,true)).
-simp:sys_goal_simplification((  + A,
-                                sys_minus(L, R), B),
+simp:goal_simplification((  + A,
+                            sys_minus(L, R), B),
         (  sys_minus(L, R), D, B)) :-
    sys_replace_site(D, A, clause(A,true)).
-simp:sys_goal_simplification((  - A, _), _) :-
+simp:goal_simplification((  - A, _), _) :-
    var(A), !, fail.
-simp:sys_goal_simplification((  - A,
-                                sys_minus(L, R)),
+simp:goal_simplification((  - A,
+                            sys_minus(L, R)),
         (  sys_minus(L, [P|R]), C)) :-
    sys_replace_site(C, A, clause_ref(A,true,P)).
-simp:sys_goal_simplification((  - A,
-                                sys_minus(L, R), B),
+simp:goal_simplification((  - A,
+                            sys_minus(L, R), B),
         (  sys_minus(L, [P|R]), D, B)) :-
    sys_replace_site(D, A, clause_ref(A,true,P)).
-simp:sys_goal_simplification((  A,
-                                sys_minus(L, R)), (  sys_minus(L, R), A)).
-simp:sys_goal_simplification((  A,
-                                sys_minus(L, R), B), (  sys_minus(L, R), A, B)).
+simp:goal_simplification((  A,
+                            sys_minus(L, R)), (  sys_minus(L, R), A)).
+simp:goal_simplification((  A,
+                            sys_minus(L, R), B), (  sys_minus(L, R), A, B)).
 
 /***********************************************************/
 /* Unification Reduction                                   */
@@ -472,19 +476,19 @@ sys_unify(_, _) :-
    throw(error(existence_error(body,sys_unify/2),_)).
 
 % perform unification
-simp:sys_goal_simplification(sys_unify(A, B), true) :-
+simp:goal_simplification(sys_unify(A, B), true) :-
    var(A),
    var(B),
    A == B.
-simp:sys_goal_simplification(sys_unify(A, B), A = B) :-
+simp:goal_simplification(sys_unify(A, B), A = B) :-
    var(A).
-simp:sys_goal_simplification(sys_unify(A, B), A = B) :-
+simp:goal_simplification(sys_unify(A, B), A = B) :-
    var(B).
-simp:sys_goal_simplification(sys_unify(A, B), sys_none) :-
+simp:goal_simplification(sys_unify(A, B), sys_none) :-
    functor(A, P, Q),
    functor(B, R, S),
    P/Q \== R/S.
-simp:sys_goal_simplification(sys_unify(A, B), C) :-
+simp:goal_simplification(sys_unify(A, B), C) :-
    A =.. [_|L],
    B =.. [_|R],
    sys_unify_list(L, R, C).
@@ -493,9 +497,9 @@ simp:sys_goal_simplification(sys_unify(A, B), C) :-
 :- private sys_unify_list/3.
 sys_unify_list([], [], true).
 sys_unify_list([X|Y], [Z|T], C) :-
-   sys_simplify_goal(sys_unify(X, Z), A),
+   simplify_goal(sys_unify(X, Z), A),
    sys_unify_list(Y, T, B),
-   sys_simplify_goal((  A, B), C).
+   simplify_goal((  A, B), C).
 
 /**********************************************************/
 /* Term Rewriting                                         */
@@ -506,20 +510,20 @@ sys_unify_list([X|Y], [Z|T], C) :-
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1,-1).
 
-% simp:sys_term_simplification(+Term, -Term)
-:- public simp:sys_term_simplification/2.
-:- multifile simp:sys_term_simplification/2.
-:- meta_predicate simp:sys_term_simplification(-1,-1).
-:- discontiguous simp:sys_term_simplification/2.
+% simp:term_simplification(+Term, -Term)
+:- public simp:term_simplification/2.
+:- multifile simp:term_simplification/2.
+:- meta_predicate simp:term_simplification(-1,-1).
+:- discontiguous simp:term_simplification/2.
 
 % Or Distribution
-simp:sys_term_simplification((_ :- A), _) :-
+simp:term_simplification((_ :- A), _) :-
    var(A), !, fail.
-simp:sys_term_simplification((A :-
-                                sys_or(D, E)), J) :-
-   sys_simplify_term((A :- D), U),
-   sys_simplify_term((A :- E), H),
-   sys_simplify_term(U /\ H, J).
+simp:term_simplification((A :-
+                            sys_or(D, E)), J) :-
+   simplify_term((A :- D), U),
+   simplify_term((A :- E), H),
+   simplify_term(U /\ H, J).
 
 :- private sys_plus/1.
 :- meta_predicate sys_plus(0).
@@ -544,15 +548,15 @@ user:term_expansion((H <= B), (sys_plus(H) :-
                                  sys_minus([], []))).
 
 % Detect Keep & Minus Combination
-simp:sys_term_simplification((A :- _), _) :-
+simp:term_simplification((A :- _), _) :-
    var(A), !, fail.
-simp:sys_term_simplification((_ :- A, _), _) :-
+simp:term_simplification((_ :- A, _), _) :-
    var(A), !, fail.
-simp:sys_term_simplification((_ :- _, A), _) :-
+simp:term_simplification((_ :- _, A), _) :-
    var(A), !, fail.
-simp:sys_term_simplification((sys_plus(B) :-
-                                sys_keep(D),
-                                sys_minus([U], R)),
+simp:term_simplification((sys_plus(B) :-
+                            sys_keep(D),
+                            sys_minus([U], R)),
         (:- discontiguous I) /\
         (:- cosmetic I) /\
         (E :- G)) :-
@@ -561,9 +565,9 @@ simp:sys_term_simplification((sys_plus(B) :-
    sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
-simp:sys_term_simplification((sys_plus(B) :-
-                                sys_keep(D),
-                                sys_minus([], R)),
+simp:term_simplification((sys_plus(B) :-
+                            sys_keep(D),
+                            sys_minus([], R)),
         (:- discontiguous I) /\
         (:- cosmetic I) /\
         (E :- G)) :-
@@ -571,38 +575,38 @@ simp:sys_term_simplification((sys_plus(B) :-
    sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
-simp:sys_term_simplification((sys_plus(_) :-
-                                sys_keep(_),
-                                sys_minus(_, _)), _) :-
+simp:term_simplification((sys_plus(_) :-
+                            sys_keep(_),
+                            sys_minus(_, _)), _) :-
    throw(error(syntax_error(sys_minus_unexpected),_)).
-simp:sys_term_simplification((_ :- _, A, _), _) :-
+simp:term_simplification((_ :- _, A, _), _) :-
    var(A), !, fail.
-simp:sys_term_simplification((sys_plus(B) :-
-                                sys_keep(D),
-                                sys_minus([U], R), E),
+simp:term_simplification((sys_plus(B) :-
+                            sys_keep(D),
+                            sys_minus([U], R), E),
         (:- discontiguous I) /\
         (:- cosmetic I) /\
         (F :- N)) :-
    D == U,
    sys_replace_site(G, D, M=sys_drop(B,R)),
-   sys_simplify_goal((  E, G), N),
+   simplify_goal((  E, G), N),
    sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).
-simp:sys_term_simplification((sys_plus(B) :-
-                                sys_keep(D),
-                                sys_minus([], R), E),
+simp:term_simplification((sys_plus(B) :-
+                            sys_keep(D),
+                            sys_minus([], R), E),
         (:- discontiguous I) /\
         (:- cosmetic I) /\
         (F :- N)) :-
    sys_replace_site(G, D, M=sys_keep(B,R)),
-   sys_simplify_goal((  E, G), N),
+   simplify_goal((  E, G), N),
    sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).
-simp:sys_term_simplification((sys_plus(_) :-
-                                sys_keep(_),
-                                sys_minus(_, _), _), _) :-
+simp:term_simplification((sys_plus(_) :-
+                            sys_keep(_),
+                            sys_minus(_, _), _), _) :-
    throw(error(syntax_error(sys_minus_unexpected),_)).
 
 /**********************************************************/
