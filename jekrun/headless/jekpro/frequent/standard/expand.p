@@ -98,10 +98,6 @@ _ /\ _ :-
    throw(error(existence_error(body,/\ /2),_)).
 :- set_predicate_property(/\ /2, sys_rule).
 
-% :- public sys_aux/2.
-% :- meta_predicate sys_aux(0, -1).
-% sys_aux(_,_) :- throw(error(existence_error(body, sys_aux/2), _)).
-
 :- public sys_cond/2.
 :- meta_function sys_cond(?,0).
 sys_cond(_, _) :-
@@ -110,18 +106,6 @@ sys_cond(_, _) :-
 /*******************************************************/
 /* Unpack & Pack                                       */
 /*******************************************************/
-
-% sys_unpack_aux(+Goal, -Goal, -Term)
-% :- private sys_unpack_aux/3.
-% sys_unpack_aux(G, G, unit) :- var(G), !.
-% sys_unpack_aux(sys_aux(G,T), G, T) :- !.
-% sys_unpack_aux(G, G, unit).
-
-% sys_pack_aux(+Goal, +Term, -Goal)
-% :- private sys_pack_aux/3.
-% sys_pack_aux(G, T, sys_aux(G,T)) :- var(T), !.
-% sys_pack_aux(G, unit, G) :- !.
-% sys_pack_aux(G, T, sys_aux(G,T)).
 
 % sys_unpack_cond(+Rest, -Rest, -Goal)
 :- private sys_unpack_cond/3.

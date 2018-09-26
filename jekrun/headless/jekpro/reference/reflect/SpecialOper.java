@@ -175,8 +175,8 @@ public final class SpecialOper extends AbstractSpecial {
                     Operator oper = opers[i].value;
                     if (!OperatorSearch.visibleOper(oper, en.store.user))
                         continue;
-                    SkelAtom sa = new SkelAtom(oper.getKey(), en.store.user);
-                    Object val = SpecialOper.operToColonSkel(oper.getType(), sa, en);
+                    Object val = SpecialOper.operToColonSkel(oper.getType(), oper.getKey(),
+                            oper.getSource().getStore().user, en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
@@ -790,6 +790,24 @@ public final class SpecialOper extends AbstractSpecial {
     public static Object operToColonSkel(int type, SkelAtom sa, Engine en)
             throws EngineMessage {
         Object s = Clause.callableToColonSkel(sa, en);
+
+        return typeToOpSkel(s, type);
+    }
+
+    /**
+     * <p>Convert a type and fun to a colon.</p>
+     *
+     * @param type  The type.
+     * @param fun   The name.
+     * @param scope The scope.
+     * @param en    The engine.
+     * @return The compound.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object operToColonSkel(int type, String fun,
+                                         AbstractSource scope, Engine en)
+            throws EngineMessage {
+        Object s = Clause.callableToColonSkel(new SkelAtom(fun), scope, en);
 
         return typeToOpSkel(s, type);
     }

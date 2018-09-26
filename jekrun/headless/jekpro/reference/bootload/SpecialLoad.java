@@ -683,8 +683,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 MapEntry<String, Operator>[] opers = base.snapshotOper();
                 for (int i = opers.length - 1; i >= 0; i--) {
                     Operator oper = opers[i].value;
-                    SkelAtom sa = new SkelAtom(oper.getKey(), en.store.user);
-                    Object val = SpecialOper.operToColonSkel(oper.getType(), sa, en);
+                    Object val = SpecialOper.operToColonSkel(oper.getType(), oper.getKey(),
+                            oper.getSource().getStore().user, en);
                     res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
                 }
             }
