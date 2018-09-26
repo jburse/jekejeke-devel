@@ -225,10 +225,10 @@ sys_reduce_uninst(X, Y, L, R) :-
    var(Y),
    X == Y, !,
    R = L.
-sys_reduce_uninst(T, X, L, R) :-
+sys_reduce_uninst(X, T, L, R) :-
    var(X), !,
    put(L, X, T, R).
-sys_reduce_uninst(X, T, L, R) :-
+sys_reduce_uninst(T, X, L, R) :-
    var(X), !,
    put(L, X, T, R).
 sys_reduce_uninst(S, T, _, _) :-
@@ -249,8 +249,8 @@ sys_reduce_uninst(S, T, L, R) :-
 % sys_reduce_neqs(+List, +List, +Map, -Map)
 :- private sys_reduce_neqs/4.
 sys_reduce_neqs([S|F], [T|G], L, R) :-
-   sys_reduce_neqs(F, G, L, M),
-   sys_reduce_neq(S, T, M, R).
+   sys_reduce_neq(S, T, L, M),
+   sys_reduce_neqs(F, G, M, R).
 sys_reduce_neqs([], [], L, L).
 
 /**
