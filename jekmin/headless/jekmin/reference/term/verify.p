@@ -79,7 +79,7 @@
  * The predicate assigns the value W to the key K of the variable V.
  * The assignment is automatically undone upon backtracking.
  */
-% put_atts(+Var, +Key, +Value)
+% put_atts(+Var, +Term, +Term)
 :- public put_atts/3.
 put_atts(V, K, W) :-
    del_atts(V, K),
@@ -92,7 +92,7 @@ put_atts(V, K, W) :-
  * get_atts(V, K, W):
  * The predicate succeeds for the value W of the key K of the variable V.
  */
-% get_atts(+Var, +Key, -Value)
+% get_atts(+Var, -Term, -Term)
 :- public get_atts/3.
 get_atts(V, K, W) :-
    sys_clause_hook(V, atts(K, F), _),
@@ -103,12 +103,20 @@ get_atts(V, K, W) :-
  * The predicate de-assigns the key K from the variable V.
  * The de-assignment is automatically undone upon backtracking.
  */
-% del_atts(+Var, +Key)
+% del_atts(+Var, +Term)
 :- public del_atts/2.
 del_atts(V, K) :-
+   ground(K), !,
+   del_atts2(V, K).
+del_atts(_, _) :-
+   throw(error(instantiation_error,_)).
+
+% del_atts2(+Var, +Term)
+:- public del_atts2/2.
+del_atts2(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
    sys_retire_ref(R).
-del_atts(_, _).
+del_atts2(_, _).
 
 /**************************************************************/
 /* Attribute Hooks                                            */
