@@ -50,7 +50,7 @@
  * The predicate assigns the value W to the key K.
  * The assignment is automatically undone upon backtracking.
  */
-% b_setval(+Key, +Value)
+% b_setval(+Term, +Term)
 :- public b_setval/2.
 b_setval(K, W) :-
    b_delete(K),
@@ -63,7 +63,7 @@ b_setval(K, W) :-
  * nb_current(K, W):
  * The predicate succeeds for the value W of the key K.
  */
-% nb_current(+Key, -Value)
+% nb_current(-Term, -Term)
 :- public nb_current/2.
 nb_current(K, W) :-
    state(K, F),
@@ -74,9 +74,17 @@ nb_current(K, W) :-
  * The predicate de-assigns the key K.
  * The de-assignment is automatically undone upon backtracking.
  */
-% b_delete(+Key)
+% b_delete(+Term)
 :- public b_delete/1.
 b_delete(K) :-
+   ground(K), !,
+   b_delete2(K).
+b_delete(_) :-
+   throw(error(instantiation_error,_)).
+
+% b_delete2(+Term)
+:- private b_delete2/1.
+b_delete2(K) :-
    clause_ref(state(K, _), true, R), !,
    sys_retire_ref(R).
-b_delete(_).
+b_delete2(_).
