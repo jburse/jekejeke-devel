@@ -112,7 +112,7 @@ del_atts(_, _) :-
    throw(error(instantiation_error,_)).
 
 % del_atts2(+Var, +Term)
-:- public del_atts2/2.
+:- private del_atts2/2.
 del_atts2(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
    sys_retire_ref(R).
