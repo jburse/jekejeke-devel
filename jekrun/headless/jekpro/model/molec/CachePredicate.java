@@ -3,7 +3,6 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.inter.Usage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.StoreKey;
@@ -483,7 +482,7 @@ public final class CachePredicate extends AbstractCache {
                         int flags = 0;
                         if (CachePredicate.visiblePred(pick, src))
                             flags |= MASK_PRED_VISI;
-                        if (pick.getUsage(src) != null && isStable(sa.fun, base, pick))
+                        if (pick.getDef(src) != null && isStable(sa.fun, base, pick))
                             flags |= MASK_PRED_STBL;
                         cp.flags = flags;
                         cp.basevers = basevers;
@@ -515,7 +514,7 @@ public final class CachePredicate extends AbstractCache {
                                 int flags = 0;
                                 if (CachePredicate.visiblePred(pick, src))
                                     flags |= MASK_PRED_VISI;
-                                if (pick.getUsage(src) != null && isStable(sa.fun, base, pick))
+                                if (pick.getDef(src) != null && isStable(sa.fun, base, pick))
                                     flags |= MASK_PRED_STBL;
                                 cp.flags = flags;
                                 cp.basevers = basevers;
@@ -703,9 +702,9 @@ public final class CachePredicate extends AbstractCache {
      * @return True if the predicate has such a usage, otherwise false.
      */
     private static boolean hasHome(Predicate pick, AbstractSource key) {
-        MapEntry<AbstractSource, Usage>[] snapshot = pick.snapshotUses();
+        MapEntry<AbstractSource, Integer>[] snapshot = pick.snapshotDefs();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractSource, Usage> entry = snapshot[i];
+            MapEntry<AbstractSource, Integer> entry = snapshot[i];
             if (OperatorSearch.sameHome(entry.key, key))
                 return true;
         }
@@ -719,9 +718,9 @@ public final class CachePredicate extends AbstractCache {
      * @return True if the predicate has such a usage, otherwise false.
      */
     private static boolean hasPackage(Predicate pick, AbstractSource key) {
-        MapEntry<AbstractSource, Usage>[] snapshot = pick.snapshotUses();
+        MapEntry<AbstractSource, Integer>[] snapshot = pick.snapshotDefs();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractSource, Usage> entry = snapshot[i];
+            MapEntry<AbstractSource, Integer> entry = snapshot[i];
             if (OperatorSearch.samePackage(entry.key, key))
                 return true;
         }

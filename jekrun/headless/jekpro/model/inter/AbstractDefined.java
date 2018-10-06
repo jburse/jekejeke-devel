@@ -1,12 +1,14 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
+import jekpro.model.rope.Named;
+import jekpro.model.rope.PreClause;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
@@ -82,16 +84,25 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int OPT_PROM_DYNA = 0x00000020;
     public final static int OPT_PROM_THLC = 0x00000040;
 
+    /* predicate style flags */
+    public final static int OPT_STYL_MASK = 0x00000F00;
+    public final static int OPT_STYL_DECL = 0x00000100;
+
     /* operation arguments flags */
-    public final static int OPT_ARGS_ASOP = 0x00000100;
+    public final static int OPT_ARGS_ASOP = 0x00001000;
 
     /* operation action flags */
-    public final static int OPT_ACTI_BOTT = 0x00001000;
-    public final static int OPT_ACTI_WRIT = 0x00002000;
+    public final static int OPT_ACTI_BOTT = 0x00010000;
+    public final static int OPT_ACTI_WRIT = 0x00020000;
 
     /* operation result flags */
-    public final static int OPT_RSLT_CREF = 0x00010000;
-    public final static int OPT_RSLT_FRME = 0x00020000;
+    public final static int OPT_RSLT_CREF = 0x00100000;
+    public final static int OPT_RSLT_FRME = 0x00200000;
+
+    /* combined operation flags */
+    public final static int OPT_PERF_CNLT = AbstractDefined.OPT_PROM_STAT |
+            AbstractDefined.OPT_CHCK_DEFN | AbstractDefined.OPT_STYL_DECL |
+            AbstractDefined.OPT_ACTI_BOTT;
 
     /**
      * <p>Create a delegate defined.</p>
@@ -119,15 +130,20 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param pick  The predicate.
      * @param store The store.
+     * @return The promotion result.
      */
-    public static void promoteDynamic(Predicate pick, AbstractStore store) {
-        if (pick.del != null)
-            return;
+    public static AbstractDelegate promoteDynamic(Predicate pick,
+                                                  AbstractStore store) {
+        AbstractDelegate fun = pick.del;
+        if (fun != null)
+            return fun;
+        AbstractDefined del;
         synchronized (pick) {
-            if (pick.del != null)
-                return;
+            fun = pick.del;
+            if (fun != null)
+                return fun;
             int s = store.foyer.acquireHole();
-            AbstractDefined del = new DefinedGroupLocal(s, store.foyer.getBits());
+            del = new DefinedGroupLocal(s, store.foyer.getBits());
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
@@ -135,6 +151,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             del.subflags |= AbstractDefined.MASK_DEFI_DYNA;
             pick.del = del;
         }
+        return del;
     }
 
     /**
@@ -143,15 +160,20 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param pick  The predicate.
      * @param store The store.
+     * @return The promotion result.
      */
-    public static void promoteThreadLocal(Predicate pick, AbstractStore store) {
-        if (pick.del != null)
-            return;
+    public static AbstractDelegate promoteThreadLocal(Predicate pick,
+                                                      AbstractStore store) {
+        AbstractDelegate fun = pick.del;
+        if (fun != null)
+            return fun;
+        AbstractDefined del;
         synchronized (pick) {
-            if (pick.del != null)
-                return;
+            fun = pick.del;
+            if (fun != null)
+                return fun;
             int s = store.foyer.acquireHole();
-            AbstractDefined del = new DefinedThreadLocal(s, store.foyer.getBits());
+            del = new DefinedThreadLocal(s, store.foyer.getBits());
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
@@ -159,6 +181,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             del.subflags |= AbstractDefined.MASK_DEFI_THLC;
             pick.del = del;
         }
+        return del;
     }
 
     /**
@@ -167,14 +190,18 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param pick  The predicate.
      * @param store The store.
+     * @return The promotion result.
      */
-    public static void promoteStatic(Predicate pick, AbstractStore store) {
-        if (pick.del != null)
-            return;
+    public static AbstractDelegate promoteStatic(Predicate pick,
+                                                 AbstractStore store) {
+        AbstractDelegate fun = pick.del;
+        if (fun != null)
+            return fun;
+        AbstractDefined del;
         synchronized (pick) {
-            if (pick.del != null)
-                return;
-            AbstractDefined del;
+            fun = pick.del;
+            if (fun != null)
+                return fun;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
                 del = new DefinedBlocking(store.foyer.getBits());
             } else {
@@ -187,6 +214,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             del.subflags |= AbstractDefined.MASK_DEFI_STAT;
             pick.del = del;
         }
+        return del;
     }
 
     /*************************************************************/
@@ -388,8 +416,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static void enhanceKnowledgebase(int flags,
-                                            Engine en)
+    public static void enhanceKnowledgebase(int flags, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
@@ -408,12 +435,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if ((flags & OPT_ARGS_ASOP) != 0)
             vars = Named.decodeAssertOptions(temp[1], ref, en, ec);
         ec.vars = null;
-        Object head = PreClause.clauseToHead(molec, en);
-        Predicate pick = determineDefined(head, flags, en);
-        Clause clause = determineClause(pick, flags, en);
+        Clause clause = PreClause.determineCompiled(flags, molec, en);
         clause.vars = vars;
-        clause.head = head;
-        clause.analyzeBody(molec, en);
         clause.assertRef(flags, en);
     }
 
@@ -444,20 +467,22 @@ public abstract class AbstractDefined extends AbstractDelegate {
         Object head = en.skel;
         Display refhead = en.display;
 
-        /* check predicate modify/access */
+        /* check predicate existence and visibility */
         CachePredicate cp = Frame.callableToPredicate(head, en);
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
             EngineMessage.checkCallable(head, refhead);
             return false;
         }
         Predicate pick = cp.pick;
+        /* check predicate modify/access */
+        AbstractDelegate fun = pick.del;
         if ((flags & AbstractDefined.OPT_ACTI_WRIT) != 0) {
             switch (flags & OPT_CHCK_MASK) {
                 case OPT_CHCK_DEFN:
-                    AbstractDefined.checkDefinedWrite(pick, en);
+                    AbstractDefined.checkDefinedWrite(fun, pick, en);
                     break;
                 case OPT_CHCK_ASSE:
-                    AbstractDefined.checkAssertableWrite(pick, en);
+                    AbstractDefined.checkAssertableWrite(fun, pick, en);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal check");
@@ -465,18 +490,17 @@ public abstract class AbstractDefined extends AbstractDelegate {
         } else {
             switch (flags & OPT_CHCK_MASK) {
                 case OPT_CHCK_DEFN:
-                    AbstractDefined.checkDefinedRead(pick, en);
+                    AbstractDefined.checkDefinedRead(fun, pick, en);
                     break;
                 case OPT_CHCK_ASSE:
-                    AbstractDefined.checkAssertableRead(pick, en);
+                    AbstractDefined.checkAssertableRead(fun, pick, en);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal check");
             }
         }
         /* find rope */
-        AbstractDefined defined = (AbstractDefined) pick.del;
-        return defined.searchFirst(flags, head, refhead, temp, ref, en);
+        return ((AbstractDefined) fun).searchFirst(flags, head, refhead, temp, ref, en);
     }
 
     /**
@@ -588,110 +612,21 @@ public abstract class AbstractDefined extends AbstractDelegate {
     }
 
     /***********************************************************/
-    /* Head Analysis                                           */
-    /***********************************************************/
-
-    /**
-     * <p>Determine the defined of a head.</p>
-     *
-     * @param head The head, can be null.
-     * @param hopt The head options flag.
-     * @param en   The engine.
-     * @return The predicate.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public static Predicate determineDefined(Object head, int hopt,
-                                             Engine en)
-            throws EngineMessage, EngineException {
-        if (head == null)
-            return null;
-        CachePredicate cp;
-        if (head instanceof SkelCompound) {
-            SkelCompound sc = (SkelCompound) head;
-            cp = CachePredicate.getPredicateDefined(sc.sym, sc.args.length, en, true);
-        } else if (head instanceof SkelAtom) {
-            SkelAtom sa = (SkelAtom) head;
-            cp = CachePredicate.getPredicateDefined(sa, 0, en, true);
-        } else {
-            EngineMessage.checkInstantiated(head);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CALLABLE, head));
-        }
-        Predicate pick = cp.pick;
-        Predicate.checkUnsealed(pick, en);
-        switch ((hopt & OPT_PROM_MASK)) {
-            case OPT_PROM_STAT:
-                promoteStatic(pick, en.store);
-                break;
-            case OPT_PROM_DYNA:
-                promoteDynamic(pick, en.store);
-                break;
-            case OPT_PROM_THLC:
-                promoteThreadLocal(pick, en.store);
-                break;
-            default:
-                throw new IllegalArgumentException("illegal promo");
-        }
-        switch ((hopt & OPT_CHCK_MASK)) {
-            case OPT_CHCK_DEFN:
-                checkDefinedWrite(pick, en);
-                break;
-            case OPT_CHCK_ASSE:
-                checkAssertableWrite(pick, en);
-                break;
-            default:
-                throw new IllegalArgumentException("illegal check");
-        }
-        if ((hopt & OPT_PROM_MASK) == OPT_PROM_STAT) {
-            SkelAtom sa = SpecialBody.callableToName(head);
-            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            Location location = src.defineLocation(pick);
-            location.addPosition(sa.getPosition(), Location.MASK_LOC_STAT);
-        }
-        return pick;
-    }
-
-    /**
-     * <p>Create an appropriate clause for a predicate.</p>
-     *
-     * @param pick The predicate.
-     * @param hopt The head options flag.
-     * @param en   The engine.
-     * @return The clause.
-     */
-    public static Clause determineClause(Predicate pick,
-                                         int hopt, Engine en) {
-        AbstractDefined del = (AbstractDefined) pick.del;
-        int copt = del.subflags;
-        Clause clause;
-        if ((hopt & OPT_PROM_MASK) == OPT_PROM_STAT) {
-            if ((copt & MASK_DEFI_NIST) == 0) {
-                clause = en.store.foyer.createClause(copt);
-            } else {
-                clause = new Clause(copt);
-            }
-        } else {
-            clause = new Clause(copt);
-        }
-        clause.del = del;
-        return clause;
-    }
-
-    /***********************************************************/
     /* Utilities                                               */
     /***********************************************************/
 
     /**
      * <p>Assure that the predicate is defined writeable.</p>
      *
+     * @param fun  The delegate.
      * @param pick The predicate.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkDefinedWrite(Predicate pick, Engine en)
+    public static void checkDefinedWrite(AbstractDelegate fun,
+                                         Predicate pick, Engine en)
             throws EngineMessage {
-        if (pick.del instanceof AbstractDefined)
+        if (fun instanceof AbstractDefined)
             return;
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
@@ -704,13 +639,36 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /**
      * <p>Assure that the predicate is defined readable.</p>
      *
+     * @param fun  The delegate.
      * @param pick The predicate.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkDefinedRead(Predicate pick, Engine en)
+    public static void checkDefinedRead(AbstractDelegate fun,
+                                        Predicate pick, Engine en)
             throws EngineMessage {
-        if (pick.del instanceof AbstractDefined)
+        if (fun instanceof AbstractDefined)
+            return;
+        throw new EngineMessage(EngineMessage.permissionError(
+                EngineMessage.OP_PERMISSION_ACCESS,
+                EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Assure that the predicate is assertable.</p>
+     *
+     * @param fun  The delegate.
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void checkAssertableRead(AbstractDelegate fun,
+                                           Predicate pick, Engine en)
+            throws EngineMessage {
+        if (fun != null && (fun.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
@@ -727,30 +685,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkAssertableRead(Predicate pick, Engine en)
+    public static void checkAssertableWrite(AbstractDelegate fun,
+                                            Predicate pick, Engine en)
             throws EngineMessage {
-        AbstractDelegate del = pick.del;
-        if (del != null && (del.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
-            return;
-        throw new EngineMessage(EngineMessage.permissionError(
-                EngineMessage.OP_PERMISSION_ACCESS,
-                EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
-    }
-
-    /**
-     * <p>Assure that the predicate is assertable.</p>
-     *
-     * @param pick The predicate.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkAssertableWrite(Predicate pick, Engine en)
-            throws EngineMessage {
-        AbstractDelegate del = pick.del;
-        if (del != null && (del.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
+        if (fun != null && (fun.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,

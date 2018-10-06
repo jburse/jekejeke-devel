@@ -70,17 +70,21 @@ public abstract class AbstractDelegate {
      * <p>Promote a predicate to a builtin.</p>
      *
      * @param pick The predicate.
-     * @param d    The builtin delegate.
+     * @param del  The builtin delegate.
+     * @return The promotion result.
      */
-    public static void promoteBuiltin(Predicate pick,
-                                      AbstractDelegate d) {
-        if (pick.del != null)
-            return;
+    public static AbstractDelegate promoteBuiltin(Predicate pick,
+                                                  AbstractDelegate del) {
+        AbstractDelegate fun = pick.del;
+        if (fun != null)
+            return fun;
         synchronized (pick) {
-            if (pick.del != null)
-                return;
-            pick.del = d;
+            fun = pick.del;
+            if (fun != null)
+                return fun;
+            pick.del = del;
         }
+        return del;
     }
 
     /**
@@ -202,13 +206,15 @@ public abstract class AbstractDelegate {
             en.skel = help[0];
             en.display = ref;
             en.deref();
-            args[i] = AbstractTerm.createMolec(en.skel, en.display);
+            Object val = AbstractTerm.createMolec(en.skel, en.display);
+            if (EngineCopy.getVar(en.skel) != null)
+                AbstractTerm.setMarker(val, Boolean.FALSE);
+            args[i] = val;
             i++;
         }
         for (; i < help.length; i++) {
             boolean multi = en.computeExpr(help[i], ref);
-            Display ref2 = en.display;
-            Object val = AbstractTerm.createMolec(en.skel, ref2);
+            Object val = AbstractTerm.createMolec(en.skel, en.display);
             if (EngineCopy.getVar(en.skel) != null)
                 AbstractTerm.setMarker(val, Boolean.valueOf(multi));
             args[i] = val;

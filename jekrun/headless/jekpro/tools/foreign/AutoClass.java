@@ -5,11 +5,12 @@ import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.inter.Usage;
 import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
+import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.PreClause;
@@ -301,11 +302,9 @@ public final class AutoClass extends AbstractAuto {
                                 goal = new SkelCompound(new SkelAtom(","), test, goal);
                             }
                         }
-                        PreClause pre = new PreClause();
-                        pre.molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);
-                        PreClause.consultClause(AbstractDefined.OPT_PROM_STAT |
-                                AbstractDefined.OPT_CHCK_DEFN |
-                                AbstractDefined.OPT_ACTI_BOTT, pre, en);
+                        Object molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);
+                        Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, molec, en);
+                        clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
                     }
                     for (int i = 0; i < dels.length; i++) {
                         AbstractMember del = dels[i];
@@ -394,17 +393,16 @@ public final class AutoClass extends AbstractAuto {
      * @param virt  The static flag.
      * @param en    The interpreter.
      */
-    private Predicate makePrivate(SkelAtom sa, int arity,
+    private static Predicate makePrivate(SkelAtom sa, int arity,
                                   boolean virt,
                                   Engine en)
             throws EngineException, EngineMessage {
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
                 arity, en, true);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPR);
-        Usage loc = pick.getUsage(this);
-        if (loc != null)
-            loc.setBit(Usage.MASK_TRCK_VSPR);
+        pick.addDef(src, Predicate.MASK_TRCK_VSPR);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);

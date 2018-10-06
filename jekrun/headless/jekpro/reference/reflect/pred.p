@@ -109,15 +109,11 @@ sys_static(I) :-
  */
 % current_predicate(-Indicator)
 current_predicate(I) :-
-   var(I), !,
+   ground(I), !,
+   sys_current_predicate_chk(I).
+current_predicate(I) :-
    sys_current_predicate(L),
    sys_member(I, L).
-current_predicate(F/A) :-
-   var(F), !,
-   sys_current_predicate(L),
-   sys_member(F/A, L).
-current_predicate(I) :-
-   sys_current_predicate_chk(I).
 :- set_predicate_property(current_predicate/1, visible(public)).
 
 :- special(sys_current_predicate/1, 'SpecialPred', 5).
@@ -136,6 +132,10 @@ predicate_property(I, R) :-
    sys_predicate_property(I, P),
    sys_member(R, P).
 predicate_property(I, R) :-
+   var(I), !,
+   sys_predicate_property_idx(R, P),
+   sys_member(I, P).
+predicate_property(I, R) :-
    functor(R, F, A),
    sys_predicate_property_chk(I, F/A, P),
    sys_member(R, P).
@@ -146,6 +146,9 @@ predicate_property(I, R) :-
 
 :- special(sys_predicate_property_chk/3, 'SpecialPred', 8).
 :- set_predicate_property(sys_predicate_property_chk/3, visible(private)).
+
+:- special(sys_predicate_property_idx/2, 'SpecialPred', 9).
+:- set_predicate_property(sys_predicate_property_idx/2, visible(private)).
 
 /**
  * set_predicate_property(P, Q):
@@ -164,25 +167,6 @@ predicate_property(I, R) :-
 % already defined in special
 % :- special(reset_predicate_property/2, 'SpecialPred', 9).
 % :- set_predicate_property(reset_predicate_property/2, visible(public)).
-
-/**
- * current_module(M):
- * The predicate succeeds for the modules M.
- */
-% current_module(-Name)
-current_module(M) :-
-   var(M), !,
-   sys_current_module(L),
-   sys_member(M, L).
-current_module(M) :-
-   sys_current_module_chk(M).
-:- set_predicate_property(current_module/1, visible(public)).
-
-:- special(sys_current_module/1, 'SpecialPred', 9).
-:- set_predicate_property(sys_current_module/1, visible(private)).
-
-:- special(sys_current_module_chk/1, 'SpecialPred', 10).
-:- set_predicate_property(sys_current_module_chk/1, visible(private)).
 
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).

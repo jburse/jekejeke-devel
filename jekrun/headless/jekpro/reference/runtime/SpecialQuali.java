@@ -451,7 +451,7 @@ public final class SpecialQuali extends AbstractSpecial {
             throws EngineMessage {
         Object s;
         if (sa instanceof SkelAtomQuali) {
-            SkelAtom mod = ((SkelAtomQuali)sa).getModule();
+            SkelAtom mod = ((SkelAtomQuali) sa).getModule();
             s = Clause.moduleToSlashSkel(mod.fun, mod.scope, en);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
@@ -516,7 +516,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     static SkelAtom objToAtom(Object mod, Object t, Display d,
-                                     Engine en)
+                              Engine en)
             throws EngineMessage {
         if (!(mod instanceof AbstractSkel) &&
                 !(mod instanceof Number)) {

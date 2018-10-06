@@ -2,7 +2,6 @@ package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.inter.Usage;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.LoadForce;
@@ -239,16 +238,15 @@ public abstract class AbstractAuto extends AbstractSource {
      * @param virt  The virtual flag.
      * @param en    The interpreter.
      */
-    public Predicate makePublic(SkelAtom sa, int arity,
+    public static Predicate makePublic(SkelAtom sa, int arity,
                                 boolean virt, Engine en)
             throws EngineException, EngineMessage {
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
                 arity, en, true);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPU);
-        Usage loc = pick.getUsage(this);
-        if (loc != null)
-            loc.setBit(Usage.MASK_TRCK_VSPU);
+        pick.addDef(src, Predicate.MASK_TRCK_VSPU);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);
@@ -278,9 +276,7 @@ public abstract class AbstractAuto extends AbstractSource {
         }
         if (over == null || !CachePredicate.visiblePred(over, src))
             return null;
-        Usage loc = pick.getUsage(src);
-        if (loc != null)
-            loc.setBit(Usage.MASK_TRCK_OVRD);
+        pick.addDef(src, Predicate.MASK_TRCK_OVRD);
         return over;
     }
 

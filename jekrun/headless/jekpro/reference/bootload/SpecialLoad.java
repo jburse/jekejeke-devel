@@ -15,6 +15,7 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
@@ -136,7 +137,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 source = en.store.getSource(sa.fun);
                 if (source == null)
                     return false;
-                if (pick.getUsage(source) == null)
+                if (pick.getDef(source) == null)
                     return false;
                 Object obj = en.visor.curoutput;
                 FactoryAPI.checkTextWrite(obj);
@@ -191,9 +192,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 StoreKey prop = Predicate.propToStoreKey(temp[1], ref, en);
-                SpecialPred.predicateToProperty(pick, prop, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                boolean multi = SpecialPred.predicateToProperty(pick, prop, en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_SYNTAX:
                 temp = ((SkelCompound) en.skel).args;
@@ -209,9 +213,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 prop = Predicate.propToStoreKey(temp[1], ref, en);
-                SpecialOper.operToProperty(prop, oper, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                multi = SpecialOper.operToProperty(prop, oper, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
@@ -329,11 +336,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 }
             }
         }
-        if (!(pick.del instanceof AbstractDefined))
+        AbstractDelegate fun = pick.del;
+        if (!(fun instanceof AbstractDefined))
             return;
 
         /* flesh out clauses */
-        Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
+        Clause[] list = ((AbstractDefined) fun).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
             SkelAtom sa = SpecialBody.callableToName(clause.head);
@@ -507,10 +515,10 @@ public final class SpecialLoad extends AbstractSpecial {
      * @return True if the predicate has no clauses, otherwise false.
      */
     private static boolean noClause(Predicate pick, Engine en) {
-        if (!(pick.del instanceof AbstractDefined))
+        AbstractDelegate fun = pick.del;
+        if (!(fun instanceof AbstractDefined))
             return false;
-        AbstractDefined def = (AbstractDefined) pick.del;
-        return (def.lengthClauses(en) == 0);
+        return ((AbstractDefined) fun).lengthClauses(en) == 0;
     }
 
     /**
@@ -621,15 +629,31 @@ public final class SpecialLoad extends AbstractSpecial {
             for (int j = sources.length - 1; j >= 0; j--) {
                 AbstractSource base = sources[j].value;
                 Predicate[] preds = base.snapshotRoutine();
-                for (int i = preds.length - 1; i >= 0; i--) {
-                    Predicate pick = preds[i];
-                    Object val = SpecialQuali.indicatorToColonSkel(
-                            pick.getFun(), pick.getSource().getStore().user,
-                            pick.getArity(), en);
-                    res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
-                }
+                res = consProvables(preds, res, en);
             }
             store = store.parent;
+        }
+        return res;
+    }
+
+    /**
+     * <p>Collect predicate indicators.</p>
+     *
+     * @param preds The predicates.
+     * @param res   The old predicate indicators.
+     * @param en    The engine.
+     * @return The new predicate indicators.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object consProvables(Predicate[] preds, Object res,
+                                       Engine en)
+            throws EngineMessage {
+        for (int i = preds.length - 1; i >= 0; i--) {
+            Predicate pick = preds[i];
+            Object val = SpecialQuali.indicatorToColonSkel(
+                    pick.getFun(), pick.getSource().getStore().user,
+                    pick.getArity(), en);
+            res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
     }

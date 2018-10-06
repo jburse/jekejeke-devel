@@ -44,7 +44,6 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialUniv extends AbstractSpecial {
-    private final static int SPECIAL_UNIV = 0;
     private final static int SPECIAL_ARG = 1;
     private final static int SPECIAL_SET_ARG = 2;
     private final static int SPECIAL_UNIFY = 3;
@@ -77,31 +76,9 @@ public final class SpecialUniv extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case SPECIAL_UNIV:
+                case SPECIAL_ARG:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    if (!(en.skel instanceof SkelVar)) {
-                        en.skel = SpecialUniv.termToList(en.skel, en);
-                        if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                            return false;
-                        return en.getNext();
-                    }
-                    en.skel = temp[1];
-                    en.display = ref;
-                    en.deref();
-                    boolean multi = SpecialUniv.listToTerm(en);
-                    Display d = en.display;
-                    if (!en.unifyTerm(temp[0], ref, en.skel, d))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return en.getNext();
-                case SPECIAL_ARG:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int nth = SpecialEval.castIntValue(num);
@@ -140,7 +117,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         if (1 > nth || nth > sc.args.length)
                             return false;
                         nth--;
-                        d = en.display;
+                        Display d = en.display;
 
                         en.skel = temp[2];
                         en.display = ref;
@@ -148,7 +125,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         Object t2 = en.skel;
                         Display d2 = en.display;
 
-                        multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
+                        boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
                         if (!en.unifyTerm(temp[3], ref, sc, d))
@@ -193,8 +170,8 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.skel = temp[0];
                     en.display = ref;
                     en.deref();
-                    multi = SpecialUniv.listToTerm(en);
-                    d = en.display;
+                    boolean multi = SpecialUniv.listToTerm(en);
+                    Display d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
@@ -524,13 +501,11 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param d2   The display of the second term.
      * @param en   The engine.
      * @return True if the two terms unify, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     private static boolean unifyTermChecked(Object alfa, Display d1,
                                             Object beta, Display d2,
                                             Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         for (; ; ) {
             en.skel = alfa;
             en.display = d1;

@@ -75,11 +75,11 @@
 % current_source(-+Pin)
 :- static current_source/1.
 current_source(X) :-
-   ground(X), !,
-   sys_current_source_chk(X).
-current_source(X) :-
+   var(X), !,
    sys_current_source(L),
    sys_member(X, L).
+current_source(X) :-
+   sys_current_source_chk(X).
 :- set_predicate_property(current_source/1, visible(public)).
 
 :- special(sys_current_source/1, 'SpecialSource', 0).
@@ -139,5 +139,28 @@ current_resource(X) :-
    sys_member(X, L).
 :- set_predicate_property(current_resource/1, visible(public)).
 
-:- special(sys_current_resource/1, 'SpecialSource', 6).
+:- special(sys_current_resource/1, 'SpecialSource', 4).
 :- set_predicate_property(sys_current_resource/1, visible(private)).
+
+/****************************************************************/
+/* Module Handling                                              */
+/****************************************************************/
+
+/**
+ * current_module(M):
+ * The predicate succeeds for the modules M.
+ */
+% current_module(-Name)
+current_module(M) :-
+   var(M), !,
+   sys_current_module(L),
+   sys_member(M, L).
+current_module(M) :-
+   sys_current_module_chk(M).
+:- set_predicate_property(current_module/1, visible(public)).
+
+:- special(sys_current_module/1, 'SpecialSource', 5).
+:- set_predicate_property(sys_current_module/1, visible(private)).
+
+:- special(sys_current_module_chk/1, 'SpecialSource', 6).
+:- set_predicate_property(sys_current_module_chk/1, visible(private)).

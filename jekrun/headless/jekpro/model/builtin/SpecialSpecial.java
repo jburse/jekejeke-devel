@@ -157,8 +157,8 @@ public final class SpecialSpecial extends AbstractSpecial {
         }
         /* create the builtin */
         Predicate.checkUnsealed(pick, en);
-        AbstractDelegate.promoteBuiltin(pick, del);
-        if (del.equals(pick.del))
+        AbstractDelegate fun = AbstractDelegate.promoteBuiltin(pick, del);
+        if (del.equals(fun))
             return;
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,

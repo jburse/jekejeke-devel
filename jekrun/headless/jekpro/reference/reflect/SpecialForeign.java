@@ -1,14 +1,17 @@
 package jekpro.reference.reflect;
 
 import jekpro.model.builtin.SpecialSpecial;
-import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -98,7 +101,7 @@ public final class SpecialForeign extends AbstractSpecial {
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
-                    /* create the builtin */
+                /* create the builtin */
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialSpecial.definePredicate(pick, del, en);
                 return en.getNextRaw();
@@ -120,7 +123,7 @@ public final class SpecialForeign extends AbstractSpecial {
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
-                    /* create the builtin */
+                /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialSpecial.definePredicate(pick, del, en);
                 return en.getNextRaw();
@@ -138,7 +141,7 @@ public final class SpecialForeign extends AbstractSpecial {
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
-                    /* create the builtin */
+                /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialSpecial.definePredicate(pick, del, en);
                 return en.getNextRaw();
@@ -156,7 +159,7 @@ public final class SpecialForeign extends AbstractSpecial {
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
-                    /* create the builtin */
+                /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialSpecial.definePredicate(pick, del, en);
                 return en.getNextRaw();
@@ -175,7 +178,7 @@ public final class SpecialForeign extends AbstractSpecial {
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
-                    /* create the builtin */
+                /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialSpecial.definePredicate(pick, del, en);
                 return en.getNextRaw();
@@ -193,7 +196,7 @@ public final class SpecialForeign extends AbstractSpecial {
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
-                    /* create the builtin */
+                /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialSpecial.definePredicate(pick, del, en);
                 return en.getNextRaw();
@@ -341,8 +344,8 @@ public final class SpecialForeign extends AbstractSpecial {
     /**
      * <p>Method to callable.</p>
      *
-     * @param name   The name.
-     * @param paras  The parameters.
+     * @param name  The name.
+     * @param paras The parameters.
      * @return The callable.
      */
     public static Object methodToCallable(String name, Class[] paras) {

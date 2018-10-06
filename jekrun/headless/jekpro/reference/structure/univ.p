@@ -66,18 +66,16 @@
  */
 % +-Term =.. -+List
 :- public =.. /2.
-:- special(=.. /2, 'SpecialUniv', 0).
+T =.. L :-
+   var(T), !,
+   sys_list_to_term(L, T).
+T =.. L :-
+   sys_term_to_list(T, L).
 
-% :- public (=..)/2.
-% T =.. L :- var(T), !,
-%    sys_list_to_term(L, T).
-% T =.. L :-
-%    sys_term_to_list(T, L).
-
-:- public sys_list_to_term/2.
+:- private sys_list_to_term/2.
 :- special(sys_list_to_term/2, 'SpecialUniv', 6).
 
-:- public sys_term_to_list/2.
+:- private sys_term_to_list/2.
 :- special(sys_term_to_list/2, 'SpecialUniv', 7).
 
 /**

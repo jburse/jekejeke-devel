@@ -120,9 +120,12 @@ public final class SpecialOper extends AbstractSpecial {
                 op = operToOperator(temp[0], ref, en);
                 if (op == null)
                     return false;
-                operToProperties(op, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                boolean multi = operToProperties(op, en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -131,9 +134,12 @@ public final class SpecialOper extends AbstractSpecial {
                 if (op == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                operToProperty(prop, op, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                multi = operToProperty(prop, op, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_RESET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -214,13 +220,15 @@ public final class SpecialOper extends AbstractSpecial {
      *
      * @param op The operator.
      * @param en The engine.
+     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    public static void operToProperties(Operator op,
-                                        Engine en)
+    public static boolean operToProperties(Operator op,
+                                           Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
+        boolean multi = false;
         StoreKey[] keys = listOperProp();
         for (int j = keys.length - 1; j >= 0; j--) {
             StoreKey key = keys[j];
@@ -229,8 +237,9 @@ public final class SpecialOper extends AbstractSpecial {
             Object[] vals = getOperProp(op, key, en);
             en.skel = t;
             en.display = d;
-            AbstractProperty.consArray(vals, en);
+            multi = AbstractProperty.consArray(multi, vals, en);
         }
+        return multi;
     }
 
     /**
@@ -240,15 +249,16 @@ public final class SpecialOper extends AbstractSpecial {
      * @param key The property.
      * @param op  The operator.
      * @param en  The engine.
+     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    public static void operToProperty(StoreKey key, Operator op,
-                                      Engine en)
+    public static boolean operToProperty(StoreKey key, Operator op,
+                                         Engine en)
             throws EngineMessage {
         Object[] vals = getOperProp(op, key, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractProperty.consArray(vals, en);
+        return AbstractProperty.consArray(false, vals, en);
     }
 
     /**
