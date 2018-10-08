@@ -36,6 +36,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -57,16 +62,35 @@
 
 % The instrumentation hooks
 
+/******************************************************************/
+/* sys_in/0                                                       */
+/*   call: 0                                                      */
+/*   fail: 1                                                      */
+/******************************************************************/
+
 :- public sys_in/0.
 :- static sys_in/0.
 :- set_predicate_property(sys_in/0, sys_noinstrument).
 :- set_predicate_property(sys_in/0, sys_nowakeup).
 :- set_predicate_property(sys_in/0, sys_nostack).
 sys_in :-
-   sys_port(call).
-sys_in :-
-   sys_port(fail), fail.
-:- set_predicate_property(sys_in/0, sys_notrace).
+   sys_port(0), !, sys_in2.
+sys_in.
+
+:- private sys_in2/0.
+:- static sys_in2/0.
+:- set_predicate_property(sys_in2/0, sys_noinstrument).
+:- set_predicate_property(sys_in2/0, sys_nowakeup).
+:- set_predicate_property(sys_in2/0, sys_nostack).
+sys_in2.
+sys_in2 :-
+   sys_port(1), fail.
+
+/******************************************************************/
+/* sys_out/0                                                      */
+/*   exit: 2                                                      */
+/*   redo: 3                                                      */
+/******************************************************************/
 
 :- public sys_out/0.
 :- static sys_out/0.
@@ -74,10 +98,23 @@ sys_in :-
 :- set_predicate_property(sys_out/0, sys_nowakeup).
 :- set_predicate_property(sys_out/0, sys_nostack).
 sys_out :-
-   sys_port(exit).
-sys_out :-
-   sys_port(redo), fail.
-:- set_predicate_property(sys_out/0, sys_notrace).
+   sys_port(2), !, sys_out2.
+sys_out.
+
+:- private sys_out2/0.
+:- static sys_out2/0.
+:- set_predicate_property(sys_out2/0, sys_noinstrument).
+:- set_predicate_property(sys_out2/0, sys_nowakeup).
+:- set_predicate_property(sys_out2/0, sys_nostack).
+sys_out2.
+sys_out2 :-
+   sys_port(3), fail.
+
+/******************************************************************/
+/* sys_at/0                                                       */
+/*   head: 4                                                      */
+/*   chop: 5                                                      */
+/******************************************************************/
 
 :- public sys_at/0.
 :- static sys_at/0.
@@ -85,10 +122,17 @@ sys_out :-
 :- set_predicate_property(sys_at/0, sys_nowakeup).
 :- set_predicate_property(sys_at/0, sys_nostack).
 sys_at :-
-   sys_port(head).
-sys_at :-
-   sys_port(chop), fail.
-:- set_predicate_property(sys_at/0, sys_notrace).
+   sys_port(4), !, sys_at2.
+sys_at.
+
+:- private sys_at2/0.
+:- static sys_at2/0.
+:- set_predicate_property(sys_at2/0, sys_noinstrument).
+:- set_predicate_property(sys_at2/0, sys_nowakeup).
+:- set_predicate_property(sys_at2/0, sys_nostack).
+sys_at2.
+sys_at2 :-
+   sys_port(5), fail.
 
 :- private sys_port/1.
 :- special(sys_port/1, 'SpecialMode', 1).

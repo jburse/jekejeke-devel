@@ -21,7 +21,6 @@ import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 
-
 /**
  * <p>This module provides built-ins for direct predicate access.</p>
  * <p/>
@@ -54,16 +53,17 @@ import matula.util.data.MapEntry;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialProvable extends AbstractSpecial {
+    /* private final static int SPECIAL_SYS_CURRENT_PROVABLE = 0; */
     private final static int SPECIAL_SYS_CURRENT_PROVABLE_CHK = 1;
     private final static int SPECIAL_SYS_PROVABLE_PROPERTY = 2;
-
-    private final static int SPECIAL_SET_PROVABLE_PROPERTY = 4;
-    private final static int SPECIAL_RESET_PROVABLE_PROPERTY = 5;
-
-    private final static int SPECIAL_SYS_CALLABLE_PROPERTY = 6;
-    private final static int SPECIAL_SYS_CALLABLE_PROPERTY_CHK = 7;
-    private final static int SPECIAL_SET_CALLABLE_PROPERTY = 8;
-    private final static int SPECIAL_RESET_CALLABLE_PROPERTY = 9;
+    /* private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 3; */
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 4;
+    private final static int SPECIAL_SET_PROVABLE_PROPERTY = 5;
+    private final static int SPECIAL_RESET_PROVABLE_PROPERTY = 6;
+    private final static int SPECIAL_SYS_CALLABLE_PROPERTY = 7;
+    private final static int SPECIAL_SYS_CALLABLE_PROPERTY_CHK = 8;
+    private final static int SPECIAL_SET_CALLABLE_PROPERTY = 9;
+    private final static int SPECIAL_RESET_CALLABLE_PROPERTY = 10;
 
     /**
      * <p>Create a provable direct access builtin.</p>
@@ -101,8 +101,23 @@ public final class SpecialProvable extends AbstractSpecial {
                 pick = SpecialLoad.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                SpecialPred.predicateToProperties(pick, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                boolean multi = SpecialPred.predicateToProperties(pick, en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    return false;
+                if (multi)
+                    d.remTab(en);
+                return en.getNext();
+            case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                if (!en.unifyTerm(temp[1], ref,
+                        SpecialProvable.propertyToProvables(en.skel, en.display, en),
+                        Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SET_PROVABLE_PROPERTY:
@@ -135,9 +150,12 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SkelAtom sa = SpecialBody.callableToName(en.skel);
-                atomToProperties(sa, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                multi = atomToProperties(sa, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SYS_CALLABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -148,9 +166,12 @@ public final class SpecialProvable extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 sa = SpecialBody.callableToName(en.skel);
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                atomToProperty(prop, sa, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                multi = atomToProperty(prop, sa, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SET_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -160,7 +181,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 Object t = en.skel;
-                Display d = en.display;
+                d = en.display;
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -202,12 +223,14 @@ public final class SpecialProvable extends AbstractSpecial {
      *
      * @param sa The atom, or null.
      * @param en The engine.
+     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static void atomToProperties(SkelAtom sa, Engine en)
+    private static boolean atomToProperties(SkelAtom sa, Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
+        boolean multi = false;
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
@@ -223,9 +246,10 @@ public final class SpecialProvable extends AbstractSpecial {
                 Object[] vals = getPropAtom(prop, sa, en);
                 en.skel = t;
                 en.display = d;
-                AbstractProperty.consArray(vals, en);
+                multi = AbstractProperty.consArray(multi, vals, en);
             }
         }
+        return multi;
     }
 
     /**
@@ -235,15 +259,16 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param prop The property.
      * @param sa   The atom, or null.
      * @param en   The engine.
+     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static void atomToProperty(StoreKey prop, SkelAtom sa,
-                                       Engine en)
+    private static boolean atomToProperty(StoreKey prop, SkelAtom sa,
+                                          Engine en)
             throws EngineMessage {
         Object[] vals = getPropAtom(prop, sa, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractProperty.consArray(vals, en);
+        return AbstractProperty.consArray(false, vals, en);
     }
 
     /**
@@ -353,6 +378,27 @@ public final class SpecialProvable extends AbstractSpecial {
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
                 StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+    }
+
+    /**************************************************************/
+    /* High-Level Provable Property Access III                    */
+    /**************************************************************/
+
+    /**
+     * <p>Retrieve the predicates to a property.</p>
+     *
+     * @param t  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     */
+    private static Object propertyToProvables(Object t, Display d,
+                                              Engine en)
+            throws EngineMessage {
+        StoreKey prop = Frame.callableToStoreKey(t);
+        Predicate[] vals = SpecialPred.idxPropPred(t, d, prop, en);
+        Object res = en.store.foyer.ATOM_NIL;
+        res = SpecialLoad.consProvables(vals, res, en);
+        return res;
     }
 
 }

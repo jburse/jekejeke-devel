@@ -21,6 +21,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -33,6 +38,7 @@
 :- use_module(library(system/uri)).
 :- use_module(library(system/xml)).
 :- use_module(library(system/locale)).
+:- use_module(library(system/file)).
 :- use_module(runner).
 :- use_module(tracker).
 :- sys_load_resource(testing).
@@ -234,3 +240,54 @@ split_source(Source, Directory, Name) :-
    sub_atom(Source, 0, A, _, Directory),
    sub_atom(Source, _, B, 0, Name).
 
+/********************************************************/
+/* Module Ops                                           */
+/********************************************************/
+
+/**
+ * short_indicator(I, C, J):
+ * The predicate succeeds for a short indicator J. The
+ * short indicator is determined from the indicator I
+ * and the context C.
+ */
+% short_indicator(+Indicator, +Context, -Indicator)
+short_indicator(I, C, J) :-
+   predicate_module(I, M1, J),
+   path_module(C, M2),
+   M1 = M2, !.
+short_indicator(I, _, K) :-
+   predicate_module(I, M1, J),
+   predicate_module(K, M1, J).
+
+/**
+ * predicate_module(I, M, J):
+ * The predicate succeeds when M is the module of I and
+ * J is the name and arity of I.
+ */
+% predicate_module(+Indicator, -Module, -Indicator)
+:- private predicate_module/3.
+predicate_module(M:I, M, I) :- !.
+predicate_module(I, user, I).
+
+/**
+ * path_module(C, M):
+ * The predicate succeeds when M is the full module name
+ * of the path C.
+ */
+% path_module(+Context, -Module)
+:- private path_module/2.
+path_module(C, R) :-
+   source_property(C, sys_module(H)), !,
+   R = H.
+path_module(_, user).
+
+/********************************************************/
+/* Path Ops                                             */
+/********************************************************/
+
+% path_last_two(+Context, -LastTwo)
+path_last_two(P, R) :-
+   make_path(D1, N1, P),
+   make_path(_, N2, D1),
+   make_name(B1, _, N1),
+   make_path(N2, B1, R).

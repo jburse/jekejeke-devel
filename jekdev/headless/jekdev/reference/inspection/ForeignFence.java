@@ -1,11 +1,5 @@
 package jekdev.reference.inspection;
 
-import jekpro.tools.call.ArrayEnumeration;
-import jekpro.tools.call.CallOut;
-import matula.util.data.MapEntry;
-import matula.util.wire.AbstractLivestock;
-import matula.util.wire.Fence;
-
 /**
  * <p>The foreign predicates for the module inspection/fence.</p>
  * <p/>

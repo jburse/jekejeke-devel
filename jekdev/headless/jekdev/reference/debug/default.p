@@ -41,6 +41,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -52,21 +57,9 @@
 :- use_module(library(experiment/simp)).
 :- use_module(library(inspection/provable)).
 
-:- public prefix(spy).
-:- op(1150, fx, spy).
-
-:- public prefix(nospy).
-:- op(1150, fx, nospy).
-
-:- public prefix(pin).
-:- op(1150, fx, pin).
-
-:- public prefix(nopin).
-:- op(1150, fx, nopin).
-
-/*******************************************************************************/
-/* Debugging Mode                                                              */
-/*******************************************************************************/
+/***********************************************************************/
+/* Debugging Mode                                                      */
+/***********************************************************************/
 
 /**
  * nodebug:
@@ -160,112 +153,62 @@ sys_name_flags(tight, [call,redo,fail]).
 sys_name_flags(full, [call,exit,redo,fail]).
 sys_name_flags(all, [call,exit,redo,fail,head]).
 
-/*******************************************************************************/
-/* Spy & Break Points                                                          */
-/*******************************************************************************/
-
-/**
- * spy(P):
- * The predicate adds the predicates P to the spy points.
- */
-% spy +Indicators
-:- public (spy)/1.
-spy [P|Q] :- !,
-   sys_spy(P),
-   (spy Q).
-spy P,Q :- !,
-   sys_spy(P),
-   (spy Q).
-spy [] :- !.
-spy P :-
-   sys_spy(P).
-:- set_predicate_property((spy)/1, sys_notrace).
-
-% sys_spy(+Indicator)
-:- private sys_spy/1.
-:- special(sys_spy/1, 'SpecialDefault', 1).
-
-/**
- * nospy(P):
- * The predicate removes the predicates P from the spy points.
- */
-% nospy +Indicators
-:- public (nospy)/1.
-nospy [P|Q] :- !,
-   sys_nospy(P),
-   (nospy Q).
-nospy P,Q :- !,
-   sys_nospy(P),
-   (nospy Q).
-nospy [] :- !.
-nospy P :-
-   sys_nospy(P).
-:- set_predicate_property((nospy)/1, sys_notrace).
-
-% sys_nospy(+Indicator)
-:- private sys_nospy/1.
-:- special(sys_nospy/1, 'SpecialDefault', 2).
-
-/**
- * pin(F:L):
- * The predicate adds the file F and the line number L to the break points.
- */
-% pin +Atom:+Integer
-:- public (pin)/1.
-pin [P:L|R] :- !,
-   absolute_file_name(P, Q),
-   sys_pin(Q, L),
-   (pin R).
-pin P:L,R :- !,
-   absolute_file_name(P, Q),
-   sys_pin(Q, L),
-   (pin R).
-pin [] :- !.
-pin P:L :-
-   absolute_file_name(P, Q),
-   sys_pin(Q, L).
-:- set_predicate_property((pin)/1, sys_notrace).
-
-% sys_pin(+Pin, +Integer)
-:- private sys_pin/2.
-:- special(sys_pin/2, 'SpecialDefault', 3).
-
-/**
- * nopin(F:L):
- * The predicate removes the file F and the line number L from the break points.
- */
-% nopin +Atom:+Integer
-:- public (nopin)/1.
-nopin [P:L|R] :- !,
-   absolute_file_name(P, Q),
-   sys_nopin(Q, L),
-   (nopin R).
-nopin P:L,R :- !,
-   absolute_file_name(P, Q),
-   sys_nopin(Q, L),
-   (nopin R).
-nopin [] :- !.
-nopin P:L :-
-   absolute_file_name(P, Q),
-   sys_nopin(Q, L).
-:- set_predicate_property((nopin)/1, sys_notrace).
-
-% sys_nopin(+Pin, +Integer)
-:- private sys_nopin/2.
-:- special(sys_nopin/2, 'SpecialDefault', 4).
-
-/*******************************************************************************/
-/* Display Debugger State                                                      */
-/*******************************************************************************/
+/***********************************************************************/
+/* Spy & Break Points                                                  */
+/***********************************************************************/
 
 /**
  * debugging:
- * The predicate shows the spying of the predicates and the current debug mode.
+ * The predicate shows the debug mode, the spy points and the break points.
  */
 % debugging
 :- public debugging/0.
 :- special(debugging/0, 'SpecialDefault', 0).
 :- set_predicate_property(debugging/0, sys_notrace).
+
+/**
+ * spy(P):
+ * The predicate adds the predicates P to the spy points.
+ */
+% spy(+Indicator)
+:- public spy/1.
+:- special(spy/1, 'SpecialDefault', 1).
+
+/**
+ * nospy(P):
+ * The predicate removes the predicates P from the spy points.
+ */
+% nospy(+Indicator)
+:- public nospy/1.
+:- special(nospy/1, 'SpecialDefault', 2).
+
+/**
+ * break(F, L):
+ * The predicate adds the file F and the line number L to the break points.
+ */
+% break(+Atom, +Integer)
+:- public break/2.
+break(P, L) :-
+   absolute_file_name(P, Q),
+   sys_break(Q, L).
+
+% sys_break(+Pin, +Integer)
+:- private sys_break/2.
+:- special(sys_break/2, 'SpecialDefault', 3).
+
+/**
+ * nobreak(F, L):
+ * The predicate removes the file F and the line number L from the break points.
+ */
+% nobreak(+Atom, +Integer)
+:- public nobreak/2.
+nobreak(P, L) :-
+   absolute_file_name(P, Q),
+   sys_nobreak(Q, L).
+
+% sys_nobreak(+Pin, +Integer)
+:- private sys_nobreak/2.
+:- special(sys_nobreak/2, 'SpecialDefault', 4).
 
 /*******************************************************************************/
 /* Debugger Hooks                                                              */
@@ -276,7 +219,7 @@ nopin P:L :-
 :- public sys_repose_goal/3.
 sys_repose_goal(P-H, Q-K, C) :-
    expose_goal(P-H, Q-J, C),
-   sys_rebuild_goal_arg(C, J, K).
+   rebuild_goal_arg(C, J, K).
 
 /**
  * sys_trace(P, F):

@@ -8,7 +8,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -85,9 +84,12 @@ public final class SpecialSyntax extends AbstractSpecial {
                 op = SpecialLoad.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
-                SpecialOper.operToProperties(op, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                boolean multi = SpecialOper.operToProperties(op, en);
+                Display d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return en.getNext();
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;

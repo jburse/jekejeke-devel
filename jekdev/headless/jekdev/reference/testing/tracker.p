@@ -50,6 +50,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -57,11 +62,10 @@
 :- package(library(jekdev/reference/testing)).
 
 :- module(tracker, []).
-:- use_module(library(system/file)).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/stack)).
 :- use_module(library(inspection/provable)).
-:- use_module(library(testing/runner)).
+:- use_module(runner).
 :- use_module(helper).
 
 :- public text/1.
@@ -259,8 +263,7 @@ sys_find_indicator(SrcPin, A, B, Fun, Arity) :-
    A =< L,
    L < B,
    short_indicator(Indicator, SrcPin, ShortIndicator),
-   item_last_two(ShortIndicator, ShortShortIndicator),
-   sys_make_indicator(Fun, Arity, ShortShortIndicator).
+   sys_make_indicator(Fun, Arity, ShortIndicator).
 
 % sys_analyze_text(+File)
 :- private sys_analyze_text/1.
@@ -283,19 +286,6 @@ sys_analyze_text(InName) :-
             sys_update_summary(OkNok), fail)),
       close(InStream)).
 
-% path_last_two(+Context, -LastTwo)
-:- private path_last_two/2.
-path_last_two(P, R) :-
-   make_path(D1, N1, P),
-   make_path(_, N2, D1),
-   make_name(B1, _, N1),
-   make_path(N2, B1, R).
-
-% item_last_two(+Item, -LastTwo)
-:- private item_last_two/2.
-item_last_two(_/A/B:C, A/B:C) :- !.
-item_last_two(C, C).
-
 /**
  * analyze_batch:
  * Relate the raw coverage map with the sources given as text/1 facts.
@@ -306,50 +296,6 @@ analyze_batch :- sys_remove_cover, sys_remove_predicate, sys_remove_source, sys_
    text(X),
    sys_analyze_text(X), fail.
 analyze_batch.
-
-/********************************************************/
-/* Module Ops                                           */
-/********************************************************/
-
-/**
- * short_indicator(I, C, J):
- * The predicate succeeds for a short indicator J. The
- * short indicator is determined from the indicator I
- * and the context C.
- */
-% short_indicator(+Indicator, +Context, -Indicator)
-:- private short_indicator/3.
-short_indicator(I, C, J) :-
-   predicate_module(I, M1, J),
-   path_module(C, M2),
-   M1 = M2, !.
-short_indicator(I, _, K) :-
-   predicate_module(I, M1, J),
-   predicate_module(K, M1, J).
-
-/**
- * predicate_module(I, M, J):
- * The predicate succeeds when M is the module of I and
- * J is the name and arity of I.
- */
-% predicate_module(+Indicator, -Module, -Indicator)
-:- private predicate_module/3.
-predicate_module(M:I, M, I) :- !.
-predicate_module(I, user, I).
-
-/**
- * path_module(C, M):
- * The predicate succeeds when M is the full module name
- * of the path C.
- */
-% path_module(+Context, -Module)
-:- private path_module/2.
-path_module(C, P/Q) :-
-   source_property(C, package(library(P))),
-   source_property(C, sys_source_name(Q)), !.
-path_module(C, M) :-
-   source_property(C, sys_source_name(M)), !.
-path_module(_, user).
 
 /*************************************************************/
 /* List Sources                                              */

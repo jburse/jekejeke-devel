@@ -25,6 +25,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -43,31 +48,50 @@
 
 /**
  * summary_batch:
+ * summary_batch(C):
  * The predicate generates a file into the location pointed
- * by the base_url Prolog flag.
+ * by the base_url Prolog flag. The unary predicate allows
+ * specifying the coverage flag C.
  */
 % summary_batch
 :- public summary_batch/0.
 summary_batch :-
+   summary_batch(true).
+
+% summary_batch(+Atom)
+:- public summary_batch/1.
+summary_batch(C) :-
+   var(C),
+   throw(error(instantiation_error,_)).
+summary_batch(C) :-
    write('Generating '),
    write('.'), nl,
    sys_get_lang(testing, P),
    get_property(P, 'summary.summary.title', V),
    setup_call_cleanup(report_begin_html('06_summary.html', V),
-      html_page,
+      html_page(C),
       report_end_html).
 
-% html_page
-:- private html_page/0.
-html_page :-
+% html_page(+Atom)
+:- private html_page/1.
+html_page(true) :- !,
    write('<h1 date='''),
    get_time(S),
    write_atom(atom_format('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
-   get_property(P, 'summary.summary.h1', V1),
+   get_property(P, 'summary.cover_and_result.h1', V1),
    write('''>'),
    write_atom(escape(V1)),
    write('</h1>'), nl, html_cover_list, html_result_list.
+html_page(_) :-
+   write('<h1 date='''),
+   get_time(S),
+   write_atom(atom_format('%1$tF %1$tT',S)),
+   sys_get_lang(testing, P),
+   get_property(P, 'summary.result.h1', V1),
+   write('''>'),
+   write_atom(escape(V1)),
+   write('</h1>'), nl, html_result_list.
 
 /*************************************************************/
 /* Result Summary                                            */

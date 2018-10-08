@@ -51,6 +51,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -92,6 +97,10 @@ provable_property(I, R) :-
    sys_provable_property(I, P),
    sys_member(R, P).
 provable_property(I, R) :-
+   var(I), !,
+   sys_provable_property_idx(R, P),
+   sys_member(I, P).
+provable_property(I, R) :-
    functor(R, F, A),
    sys_provable_property_chk(I, F/A, P),
    sys_member(R, P).
@@ -103,6 +112,9 @@ provable_property(I, R) :-
 % :- private sys_provable_property_chk/3.
 % :- special(sys_provable_property_chk/3, 'SpecialProvable', 3).
 
+:- private sys_provable_property_idx/2.
+:- special(sys_provable_property_idx/2, 'SpecialProvable', 4).
+
 /**
  * set_provable_property(I, Q):
  * The predicate assigns the property Q to the predicate I. The predicate will
@@ -110,7 +122,7 @@ provable_property(I, R) :-
  */
 % set_provable_property(+Oper, +Property)
 :- public set_provable_property/2.
-:- special(set_provable_property/2, 'SpecialProvable', 4).
+:- special(set_provable_property/2, 'SpecialProvable', 5).
 
 /**
  * reset_provable_property(I, Q):
@@ -119,7 +131,7 @@ provable_property(I, R) :-
  */
 % reset_provable_property(+Oper, +Property)
 :- public reset_provable_property/2.
-:- special(reset_provable_property/2, 'SpecialProvable', 5).
+:- special(reset_provable_property/2, 'SpecialProvable', 6).
 
 /**
  * callable_property(C, Q):
@@ -137,10 +149,10 @@ callable_property(I, R) :-
    sys_member(R, P).
 
 :- private sys_callable_property/2.
-:- special(sys_callable_property/2, 'SpecialProvable', 6).
+:- special(sys_callable_property/2, 'SpecialProvable', 7).
 
 :- private sys_callable_property_chk/3.
-:- special(sys_callable_property_chk/3, 'SpecialProvable', 7).
+:- special(sys_callable_property_chk/3, 'SpecialProvable', 8).
 
 /**
  * set_callable_property(B, Q, A):
@@ -149,7 +161,7 @@ callable_property(I, R) :-
  */
 % reset_callable_property(-Callable, +Property, +Callable)
 :- public set_callable_property/3.
-:- special(set_callable_property/3, 'SpecialProvable', 8).
+:- special(set_callable_property/3, 'SpecialProvable', 9).
 
 /**
  * reset_callable_property(B, Q, A):
@@ -158,4 +170,4 @@ callable_property(I, R) :-
  */
 % reset_callable_property(-Callable, +Property, +Callable)
 :- public reset_callable_property/3.
-:- special(reset_callable_property/3, 'SpecialProvable', 9).
+:- special(reset_callable_property/3, 'SpecialProvable', 10).
