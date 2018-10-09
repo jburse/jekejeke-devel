@@ -130,7 +130,7 @@ public final class Interpreter implements Comparator<Object> {
      * @param k The knowledge base.
      */
     public void setKnowledgebase(Knowledgebase k) {
-        AbstractStore store = (AbstractStore) k.getStore();
+        Store store = (Store) k.getStore();
         engine.store = store;
     }
 
@@ -446,7 +446,7 @@ public final class Interpreter implements Comparator<Object> {
      * @param i The controller.
      */
     public Interpreter(Knowledgebase k, Controller i) {
-        AbstractStore store = (AbstractStore) k.getStore();
+        Store store = (Store) k.getStore();
         Supervisor visor = (Supervisor) i.getVisor();
 
         engine = new Engine(store, visor);

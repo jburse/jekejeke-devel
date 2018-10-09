@@ -9,7 +9,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
-import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
@@ -66,13 +65,9 @@ public final class SpecialLoad extends AbstractSpecial {
     private final static int SPECIAL_SYS_SHOW_PROVABLE_SOURCE = 3;
     private final static int SPECIAL_SYS_SHOW_SYNTAX_SOURCE = 4;
     private final static int SPECIAL_SYS_SHOW_BASE = 5;
-    private final static int SPECIAL_SYS_CURRENT_PROVABLE = 6;
-    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 7;
-    private final static int SPECIAL_SYS_CURRENT_SYNTAX = 8;
-    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 9;
-    private final static int SPECIAL_SYS_REGISTER_FILE = 10;
-    private final static int SPECIAL_SYS_MODULE_ACTION = 11;
-    private final static int SPECIAL_SYS_PEEK_STACK = 12;
+    private final static int SPECIAL_SYS_REGISTER_FILE = 6;
+    private final static int SPECIAL_SYS_MODULE_ACTION = 7;
+    private final static int SPECIAL_SYS_PEEK_STACK = 8;
 
     public static final int MASK_SHOW_NANO = 0x00000001;
     public static final int MASK_SHOW_NRBD = 0x00000002;
@@ -131,7 +126,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_PROVABLE_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Predicate pick = indicatorToProvable(temp[0], ref, en);
+                Predicate pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = en.store.getSource(sa.fun);
@@ -156,7 +151,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Operator oper = operToSyntax(temp[0], ref, en);
+                Operator oper = SpecialBody.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(oper, temp[0], ref);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = en.store.getSource(sa.fun);
@@ -178,48 +173,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.listSyntax(pw, oper, en);
                 newLineFlush(wr);
                 return en.getNextRaw();
-            case SPECIAL_SYS_CURRENT_PROVABLE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                if (!en.unifyTerm(temp[0], ref,
-                        SpecialLoad.currentProvables(en), Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = indicatorToProvable(temp[0], ref, en);
-                if (pick == null)
-                    return false;
-                StoreKey prop = Predicate.propToStoreKey(temp[1], ref, en);
-                boolean multi = SpecialPred.predicateToProperty(pick, prop, en);
-                Display d = en.display;
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
-            case SPECIAL_SYS_CURRENT_SYNTAX:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                if (!en.unifyTerm(temp[0], ref,
-                        currentSyntax(en), Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                oper = operToSyntax(temp[0], ref, en);
-                if (oper == null)
-                    return false;
-                prop = Predicate.propToStoreKey(temp[1], ref, en);
-                multi = SpecialOper.operToProperty(prop, oper, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return en.getNext();
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -609,139 +562,6 @@ public final class SpecialLoad extends AbstractSpecial {
         return true;
     }
 
-    /**************************************************************/
-    /* Provable Enumeration & Lookup                              */
-    /**************************************************************/
-
-    /**
-     * <p>Create a prolog list with the directly accessible predicates.</p>
-     *
-     * @param en The engine.
-     * @return The prolog list of the directly accessible predicates.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object currentProvables(Engine en)
-            throws EngineMessage {
-        AbstractStore store = en.store;
-        Object res = en.store.foyer.ATOM_NIL;
-        while (store != null) {
-            MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
-            for (int j = sources.length - 1; j >= 0; j--) {
-                AbstractSource base = sources[j].value;
-                Predicate[] preds = base.snapshotRoutine();
-                res = consProvables(preds, res, en);
-            }
-            store = store.parent;
-        }
-        return res;
-    }
-
-    /**
-     * <p>Collect predicate indicators.</p>
-     *
-     * @param preds The predicates.
-     * @param res   The old predicate indicators.
-     * @param en    The engine.
-     * @return The new predicate indicators.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object consProvables(Predicate[] preds, Object res,
-                                       Engine en)
-            throws EngineMessage {
-        for (int i = preds.length - 1; i >= 0; i--) {
-            Predicate pick = preds[i];
-            Object val = SpecialQuali.indicatorToColonSkel(
-                    pick.getFun(), pick.getSource().getStore().user,
-                    pick.getArity(), en);
-            res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
-        }
-        return res;
-    }
-
-    /**
-     * <p>Get predicate by indicator.</p>
-     *
-     * @param t  The skel of the compound.
-     * @param d  The display of the compound.
-     * @param en The engine.
-     * @return The predicate.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
-            throws EngineMessage {
-        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        AbstractSource base;
-        if (!CacheFunctor.isQuali(sa.fun)) {
-            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
-            return CachePredicate.getRoutineUser(sk, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(sa.fun);
-            base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            StoreKey sk = new StoreKey(sa.fun, arity.intValue());
-            return base.getRoutine(sk);
-        }
-    }
-
-    /**************************************************************/
-    /* Syntax Enumeration & Lookup                                */
-    /**************************************************************/
-
-    /**
-     * <p>Create a prolog list with the directly accessible syntax operators.</p>
-     *
-     * @param en The engine.
-     * @return The prolog list of the directly accessible syntax operators.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object currentSyntax(Engine en)
-            throws EngineMessage {
-        AbstractStore store = en.store;
-        Object res = en.store.foyer.ATOM_NIL;
-        while (store != null) {
-            MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
-            for (int j = sources.length - 1; j >= 0; j--) {
-                AbstractSource base = sources[j].value;
-                MapEntry<String, Operator>[] opers = base.snapshotOper();
-                for (int i = opers.length - 1; i >= 0; i--) {
-                    Operator oper = opers[i].value;
-                    Object val = SpecialOper.operToColonSkel(oper.getType(), oper.getKey(),
-                            oper.getSource().getStore().user, en);
-                    res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
-                }
-            }
-            store = store.parent;
-        }
-        return res;
-    }
-
-
-    /**
-     * <p>Lookup an operator from a compound.</p>
-     *
-     * @param t  The compound skeleton.
-     * @param d  The compound display.
-     * @param en The engine copy.
-     * @return The operator or null.
-     * @throws EngineMessage Shit happends.
-     */
-    public static Operator operToSyntax(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int type = SpecialOper.colonToOper(t, d, en);
-        String fun = ((SkelAtom) en.skel).fun;
-        if (!CacheFunctor.isQuali(fun)) {
-            return OperatorSearch.getOperUser(type, fun, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(fun);
-            AbstractSource base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            return base.getOper(type, fun);
-        }
-    }
-
     /****************************************************************/
     /* Resource Handling                                            */
     /****************************************************************/
@@ -755,7 +575,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @param store The store.
      */
     private static void registerFile(AbstractSource scope, String key,
-                                     PositionKey pos, AbstractStore store) {
+                                     PositionKey pos, Store store) {
         AbstractSource src = (scope != null ? scope : store.user);
         Resource rsc = store.foyer.createResource(key);
         rsc.setPosition(pos);

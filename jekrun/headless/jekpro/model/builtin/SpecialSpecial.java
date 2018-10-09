@@ -156,7 +156,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                             pick.getArity(), en)));
         }
         /* create the builtin */
-        Predicate.checkUnsealed(pick, en);
         AbstractDelegate fun = AbstractDelegate.promoteBuiltin(pick, del);
         if (del.equals(fun))
             return;
@@ -259,7 +258,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                     ref = en.display;
                     Predicate pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                     Predicate.checkExistentPredicate(pick, temp[0], ref);
-                    Predicate.checkUnsealed(pick, en);
 
                     en.skel = temp[1];
                     en.display = ref;
@@ -272,7 +270,6 @@ public final class SpecialSpecial extends AbstractSpecial {
                     ref = en.display;
                     pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                     Predicate.checkExistentPredicate(pick, temp[0], ref);
-                    Predicate.checkUnsealed(pick, en);
 
                     en.skel = temp[1];
                     en.display = ref;
@@ -488,6 +485,7 @@ public final class SpecialSpecial extends AbstractSpecial {
         op.setLevel(level);
         op.resetBit(Operator.MASK_OPER_MODE);
         op.setBit(leftright);
+        op.setPosition(sa.getPosition());
     }
 
 }

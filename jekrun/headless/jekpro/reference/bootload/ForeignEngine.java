@@ -6,7 +6,7 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.Interpreter;
@@ -248,7 +248,7 @@ public final class ForeignEngine {
         FactoryAPI.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
-            AbstractStore store = en.store;
+            Store store = en.store;
             while (store != null) {
                 wr.write("store ");
                 wr.write(store.toString());

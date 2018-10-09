@@ -6,7 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.model.pretty.Foyer;
 import matula.comp.sharik.AbstractFramework;
 import matula.util.data.MapHash;
@@ -235,6 +235,6 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param store The store.
      * @return The foreign source.
      */
-    public abstract AbstractSource createSynth(String key, AbstractStore store);
+    public abstract AbstractSource createSynth(String key, Store store);
 
 }

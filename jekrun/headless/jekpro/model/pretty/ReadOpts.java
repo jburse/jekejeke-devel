@@ -305,7 +305,7 @@ public final class ReadOpts {
      * @param store The store.
      * @return The Prolog association list.
      */
-    private static Object makeAssoc(MapHashLink<String, SkelVar> vars, AbstractStore store) {
+    private static Object makeAssoc(MapHashLink<String, SkelVar> vars, Store store) {
         Object end = store.foyer.ATOM_NIL;
         if (vars == null)
             return end;
@@ -324,7 +324,7 @@ public final class ReadOpts {
      * @param store The store
      * @return The term variables.
      */
-    private static Object termToList(Object val, AbstractStore store) {
+    private static Object termToList(Object val, Store store) {
         Object end = store.foyer.ATOM_NIL;
         Object var = EngineCopy.getVar(val);
         if (var == null)

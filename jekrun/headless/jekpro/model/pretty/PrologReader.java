@@ -253,7 +253,7 @@ public class PrologReader {
      *
      * @param store The store.
      */
-    public void setReadUtil(AbstractStore store) {
+    public void setReadUtil(Store store) {
         utildouble = (byte) store.foyer.getUtilDouble();
         utilback = (byte) store.foyer.getUtilBack();
         utilsingle = (byte) store.foyer.getUtilSingle();
@@ -1208,7 +1208,7 @@ public class PrologReader {
      * @param store The store.
      * @return The list of the singletons names.
      */
-    private static Object singToMolec(Named[] anon, AbstractStore store) {
+    private static Object singToMolec(Named[] anon, Store store) {
         Object end = store.foyer.ATOM_NIL;
         for (int i = anon.length - 1; i >= 0; i--)
             end = new SkelCompound(store.foyer.ATOM_CONS,

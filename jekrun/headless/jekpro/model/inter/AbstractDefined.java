@@ -3,8 +3,8 @@ package jekpro.model.inter;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Named;
@@ -133,7 +133,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return The promotion result.
      */
     public static AbstractDelegate promoteDynamic(Predicate pick,
-                                                  AbstractStore store) {
+                                                  Store store) {
         AbstractDelegate fun = pick.del;
         if (fun != null)
             return fun;
@@ -163,7 +163,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return The promotion result.
      */
     public static AbstractDelegate promoteThreadLocal(Predicate pick,
-                                                      AbstractStore store) {
+                                                      Store store) {
         AbstractDelegate fun = pick.del;
         if (fun != null)
             return fun;
@@ -193,7 +193,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return The promotion result.
      */
     public static AbstractDelegate promoteStatic(Predicate pick,
-                                                 AbstractStore store) {
+                                                 Store store) {
         AbstractDelegate fun = pick.del;
         if (fun != null)
             return fun;

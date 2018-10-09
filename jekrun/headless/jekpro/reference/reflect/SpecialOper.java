@@ -10,7 +10,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.OperatorSearch;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
@@ -21,6 +21,7 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermCompound;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 
 /**
@@ -55,12 +56,16 @@ import matula.util.data.MapEntry;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialOper extends AbstractSpecial {
+    /* private final static int SPECIAL_SYS_OP = 0; */
     private final static int SPECIAL_SYS_CURRENT_OPER = 2;
     private final static int SPECIAL_SYS_CURRENT_OPER_CHK = 3;
     private final static int SPECIAL_SYS_OPER_PROPERTY = 4;
     private final static int SPECIAL_SYS_OPER_PROPERTY_CHK = 5;
+    private final static int SPECIAL_SYS_OPER_PROPERTY_IDX = 6;
+    /* private final static int SPECIAL_SET_OPER_PROPERTY = 7; */
+    private final static int SPECIAL_RESET_OPER_PROPERTY = 8;
 
-    private final static int SPECIAL_RESET_OPER_PROPERTY = 7;
+    public final static Operator[] FALSE_OPERS = new Operator[]{};
 
     public final static String OP_FULL_NAME = "full_name";
     private final static String OP_NSPL = "nspl";
@@ -141,6 +146,18 @@ public final class SpecialOper extends AbstractSpecial {
                 if (multi)
                     d.remTab(en);
                 return en.getNext();
+            case SPECIAL_SYS_OPER_PROPERTY_IDX:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                if (!en.unifyTerm(temp[1], ref,
+                        SpecialOper.propertyToOperators(en.skel, en.display, en),
+                        Display.DISPLAY_CONST))
+                    return false;
+                return en.getNext();
             case SPECIAL_RESET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -170,23 +187,39 @@ public final class SpecialOper extends AbstractSpecial {
      */
     private static Object currentOpers(Engine en)
             throws EngineMessage {
-        AbstractStore store = en.store;
+        Store store = en.store;
         Object res = en.store.foyer.ATOM_NIL;
         while (store != null) {
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int j = 0; j < sources.length; j++) {
                 AbstractSource base = sources[j].value;
-                MapEntry<String, Operator>[] opers = base.snapshotOper();
-                for (int i = opers.length - 1; i >= 0; i--) {
-                    Operator oper = opers[i].value;
-                    if (!OperatorSearch.visibleOper(oper, en.store.user))
-                        continue;
-                    Object val = SpecialOper.operToColonSkel(oper.getType(), oper.getKey(),
-                            oper.getSource().getStore().user, en);
-                    res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
-                }
+                Operator[] opers = base.snapshotOper();
+                res = consOperators(opers, res, en);
             }
             store = store.parent;
+        }
+        return res;
+    }
+
+    /**
+     * <p>Collect and filter operator indicators.</p>
+     *
+     * @param opers The operators.
+     * @param res   The old predicate indicators.
+     * @param en    The engine.
+     * @return The new predicate indicators.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object consOperators(Operator[] opers, Object res,
+                                        Engine en)
+            throws EngineMessage {
+        for (int i = opers.length - 1; i >= 0; i--) {
+            Operator oper = opers[i];
+            if (!OperatorSearch.visibleOper(oper, en.store.user))
+                continue;
+            Object val = SpecialOper.operToColonSkel(oper.getType(), oper.getKey(),
+                    oper.getSource().getStore().user, en);
+            res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
     }
@@ -210,9 +243,9 @@ public final class SpecialOper extends AbstractSpecial {
         return op;
     }
 
-    /****************************************************************************/
-    /* High-Level Operator Property Access                                      */
-    /****************************************************************************/
+    /***********************************************************************/
+    /* High-Level Operator Property Access I                               */
+    /***********************************************************************/
 
     /**
      * <p>Create a prolog list for the properties of the given operator.</p>
@@ -261,6 +294,10 @@ public final class SpecialOper extends AbstractSpecial {
         return AbstractProperty.consArray(false, vals, en);
     }
 
+    /***********************************************************************/
+    /* High-Level Operator Property Access II                              */
+    /***********************************************************************/
+
     /**
      * <p>Reset an operator property.</p>
      * <p>Throws a domain error for undefined flags.</p>
@@ -299,9 +336,30 @@ public final class SpecialOper extends AbstractSpecial {
         setOperProp(prop, op, vals, en);
     }
 
-    /**************************************************************/
-    /* Properties Interface                                       */
-    /**************************************************************/
+    /***********************************************************************/
+    /* High-Level Operator Property Access III                             */
+    /***********************************************************************/
+
+    /**
+     * <p>Retrieve the operators for a property.</p>
+     *
+     * @param t  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     */
+    private static Object propertyToOperators(Object t, Display d,
+                                              Engine en)
+            throws EngineMessage {
+        StoreKey prop = Frame.callableToStoreKey(t);
+        Operator[] vals = idxPropOper(t, d, prop, en);
+        Object res = en.store.foyer.ATOM_NIL;
+        res = consOperators(vals, res, en);
+        return res;
+    }
+
+    /***********************************************************************/
+    /* Properties Interface                                                */
+    /***********************************************************************/
 
     // The property keys
     private static final StoreKey KEY_FULL_NAME = new StoreKey(OP_FULL_NAME, 1);
@@ -354,8 +412,8 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The values.
      * @throws EngineMessage Shit happends.
      */
-    public static Object[] getOperProp(Operator oper, StoreKey prop,
-                                       Engine en)
+    private static Object[] getOperProp(Operator oper, StoreKey prop,
+                                        Engine en)
             throws EngineMessage {
         if (KEY_FULL_NAME.equals(prop)) {
             Object val = new SkelAtom(oper.getKey());
@@ -413,11 +471,13 @@ public final class SpecialOper extends AbstractSpecial {
             }
         } else if (KEY_SYS_USAGE.equals(prop)) {
             AbstractSource src = oper.getScope();
+            if (src == null)
+                return AbstractBranch.FALSE_PROPERTY;
             if (!Clause.ancestorSource(src, en))
                 return AbstractBranch.FALSE_PROPERTY;
             return new Object[]{new TermCompound(new SkelCompound(
                     new SkelAtom(SpecialOper.OP_SYS_USAGE),
-                    new SkelAtom(oper.getScope().getPath())))};
+                    new SkelAtom(src.getPath())))};
         } else if (KEY_SYS_PORTRAY.equals(prop)) {
             String portray = oper.getPortray();
             if (portray != null) {
@@ -452,8 +512,8 @@ public final class SpecialOper extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happends.
      */
-    public static void setOperProp(StoreKey prop, Operator op,
-                                   Object[] vals, Engine en)
+    private static void setOperProp(StoreKey prop, Operator op,
+                                    Object[] vals, Engine en)
             throws EngineMessage {
         try {
             if (KEY_FULL_NAME.equals(prop)) {
@@ -596,6 +656,47 @@ public final class SpecialOper extends AbstractSpecial {
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));
+        }
+    }
+
+    /**
+     * <p>Retrieve operators for a property.</p>
+     *
+     * @param t    The value skeleton.
+     * @param d    The value display.
+     * @param prop The property.
+     * @param en   The engine.
+     * @return The operators, or null.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Operator[] idxPropOper(Object t, Display d,
+                                         StoreKey prop, Engine en)
+            throws EngineMessage {
+        if (KEY_SYS_USAGE.equals(prop)) {
+            Object[] temp = ((SkelCompound) t).args;
+            String fun = SpecialUniv.derefAndCastString(temp[0], d);
+            AbstractSource source = en.store.getSource(fun);
+            if (source == null)
+                return SpecialOper.FALSE_OPERS;
+            Operator[] snapshot = source.snapshotOpersInv();
+            ListArray<Operator> res = null;
+            for (int i = 0; i < snapshot.length; i++) {
+                Operator oper = snapshot[i];
+                if (!Clause.ancestorSource(oper.getSource(), en))
+                    continue;
+                if (res == null)
+                    res = new ListArray<Operator>();
+                res.add(oper);
+            }
+            if (res == null)
+                return SpecialOper.FALSE_OPERS;
+            Operator[] vals = new Operator[res.size()];
+            res.toArray(vals);
+            return vals;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
         }
     }
 

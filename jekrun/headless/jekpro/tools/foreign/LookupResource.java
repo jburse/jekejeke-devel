@@ -6,7 +6,7 @@ import jekpro.model.builtin.Tracking;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -62,7 +62,7 @@ public final class LookupResource {
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findResource(String relpath, AbstractStore store)
+    public static String findResource(String relpath, Store store)
             throws IOException {
         AbstractBranch branch = RelativeURIstoRoots(relpath, store);
         if (branch != null) {
@@ -100,7 +100,7 @@ public final class LookupResource {
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -117,7 +117,7 @@ public final class LookupResource {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -177,7 +177,7 @@ public final class LookupResource {
      * @param store The store.
      * @return The branch, or null.
      */
-    public static AbstractBranch RelativeURIstoRoots(String path, AbstractStore store) {
+    public static AbstractBranch RelativeURIstoRoots(String path, Store store) {
         /* for the capabilities */
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -207,7 +207,7 @@ public final class LookupResource {
      * @param store The store.
      * @return The branch, or null.
      */
-    public static AbstractBranch AbsoluteURIstoRoots(String path, AbstractStore store) {
+    public static AbstractBranch AbsoluteURIstoRoots(String path, Store store) {
         /* for the capabilities */
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -243,10 +243,10 @@ public final class LookupResource {
      * @return The relative variant or null.
      * @throws EngineMessage Shit happens.
      */
-    public static String unfindResourcePaths(String path, AbstractStore store)
+    public static String unfindResourcePaths(String path, Store store)
             throws EngineMessage {
         // parent success
-        AbstractStore parent = store.parent;
+        Store parent = store.parent;
         if (parent != null) {
             String res = unfindResourcePaths(path, parent);
             if (res != null)
@@ -284,7 +284,7 @@ public final class LookupResource {
      * @return True if path belongs to class paths, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean hasSourceFile(String path, AbstractStore store)
+    public static boolean hasSourceFile(String path, Store store)
             throws EngineMessage {
         // check paths
         String[] cps = store.snapshotClassPaths();

@@ -5,9 +5,9 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.FileResource;
 import jekpro.model.pretty.PrologWriter;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.Resource;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
@@ -316,7 +316,7 @@ public final class EngineMessage extends Exception {
      * @param store The store.
      * @return The message text.
      */
-    public String toString(AbstractStore store) {
+    public String toString(Store store) {
         try {
             Locale locale = store.foyer.locale;
             Properties error = getErrorLang(locale, store);
@@ -839,11 +839,11 @@ public final class EngineMessage extends Exception {
      * @return The properties file union.
      * @throws IOException Shit happens.
      */
-    public static Properties getErrorLang(Locale locale, AbstractStore start)
+    public static Properties getErrorLang(Locale locale, Store start)
             throws IOException {
         PropertiesWithImport res = new PropertiesWithImport();
         String locstr = "_" + locale;
-        AbstractStore store = start;
+        Store store = start;
         while (store != null) {
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int j = 0; j < sources.length; j++) {
@@ -872,7 +872,7 @@ public final class EngineMessage extends Exception {
      * @param key The source key.
      * @return The properties cache, or null.
      */
-    public static HashMap<String, Properties> getCache(String key, AbstractStore store) {
+    public static HashMap<String, Properties> getCache(String key, Store store) {
         AbstractSource src = store.getSource(key);
         if (!(src instanceof FileResource))
             return null;

@@ -134,7 +134,7 @@ public final class SpecialSession extends AbstractSpecial {
                 ref = en.display;
                 Frame frame = en.visor.ref;
                 Display ref2 = (frame != null ? frame.getDisplay() : null);
-                Clause def = (frame != null ? frame.getClause() : null);
+                Clause def = (frame != null ? frame.getContSkel().getClause() : null);
                 en.skel = namedToAssoc((def != null ? def.vars : null), ref2, en.store);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
@@ -351,7 +351,7 @@ public final class SpecialSession extends AbstractSpecial {
                         en.display = Display.DISPLAY_CONST;
                         en.contskel = r;
                         en.contdisplay = u;
-                        en.invokeIgnoreChecked();
+                        en.invokeChecked();
                         if (en.number != snap) {
                             String action = askSessionAction(en);
                             if (action == null) {
@@ -368,7 +368,7 @@ public final class SpecialSession extends AbstractSpecial {
                                     if (parseAction(action, src, en)) {
                                         en.contskel = r;
                                         en.contdisplay = u;
-                                        en.invokeIgnoreChecked();
+                                        en.invokeChecked();
                                     } else {
                                         found = false;
                                     }
@@ -705,7 +705,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @return The Prolog association list.
      */
     private static Object namedToAssoc(Named[] vars, Display d,
-                                       AbstractStore store) {
+                                       Store store) {
         Object end = store.foyer.ATOM_NIL;
         if (vars == null)
             return end;

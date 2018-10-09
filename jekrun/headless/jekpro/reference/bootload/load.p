@@ -316,17 +316,13 @@ listing :-
  * evaluable functions and predicates that match the pattern I. Only
  * non-automatic evaluable functions and predicates are listed.
  */
-% listing(-Indicator)
+% listing(+Indicator)
 listing(I) :-
-   ground(I),
-   sys_listing_check(I, U),
-   sys_listing_user(U),
-   sys_show_base(U),
-   sys_listing_show(I, U), fail.
+   ground(I), !,
+   sys_listing2(I).
 listing(I) :-
-   sys_not(ground(I)),
-   bagof(I, (  sys_listing_match(I, U),
-               sys_listing_user(U)), B),
+   bagof(I, (  sys_listing_user(U),
+               sys_listing_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
    sys_listing_show(I, U), fail.
@@ -334,62 +330,87 @@ listing(_).
 :- set_predicate_property(listing/1, visible(public)).
 :- set_predicate_property(listing/1, sys_notrace).
 
-% sys_listing_user(+Source)
-sys_listing_user(U) :-
-   source_property(U, sys_capability(_)), !, fail.
-sys_listing_user(_).
+% listing(+Indicator)
+sys_listing2(I) :-
+   sys_listing_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_show_base(U),
+   sys_listing_show(I, U), fail.
+sys_listing2(_).
+:- set_predicate_property(sys_listing2/1, visible(private)).
+
+/**
+ * sys_listing_user(S):
+ * The predicate succeeds for each user source S.
+ */
+sys_listing_user(S) :-
+   current_source(S),
+   sys_listing_user_chk(S).
 :- set_predicate_property(sys_listing_user/1, visible(public)).
 
-% sys_listing_check(+Indicator, -Source)
-sys_listing_check(infix(I), U) :- !,
-   sys_syntax_property_chk(infix(I), sys_usage/1, R),
+/**
+ * sys_listing_user_chk(S):
+ * If S is a user source then the predicate succeeds.
+ */
+% sys_listing_user_chk(+Source)
+sys_listing_user_chk(S) :-
+   source_property(S, sys_capability(_)), !, fail.
+sys_listing_user_chk(_).
+:- set_predicate_property(sys_listing_user_chk/1, visible(public)).
+
+/**
+ * sys_listing_item_chk(I, U):
+ * If I is a listable indicator then the predicate
+ * succeeds for each usage source U.
+ */
+% sys_listing_item_chk(+Indicator, -Source)
+sys_listing_item_chk(I, U) :-
+   sys_oper_indicator(I), !,
+   sys_syntax_property_chk(I, sys_usage/1, R),
    sys_member(sys_usage(U), R).
-sys_listing_check(prefix(I), U) :- !,
-   sys_syntax_property_chk(prefix(I), sys_usage/1, R),
-   sys_member(sys_usage(U), R).
-sys_listing_check(postfix(I), U) :- !,
-   sys_syntax_property_chk(postfix(I), sys_usage/1, R),
-   sys_member(sys_usage(U), R).
-sys_listing_check(I, U) :-
+sys_listing_item_chk(I, U) :-
    sys_provable_property_chk(I, automatic/0, []),
    sys_provable_property_chk(I, sys_usage/1, R),
    sys_member(sys_usage(U), R).
-:- set_predicate_property(sys_listing_check/2, visible(private)).
+:- set_predicate_property(sys_listing_item_chk/2, visible(private)).
 
+/**
+ * sys_listing_item_idx(I, U):
+ * If U is a usage source then the predicate succceeds
+ * for each listable indicator I.
+ */
+% sys_listing_item_idx(+Source, -Indicator)
+sys_listing_item_idx(U, I) :-
+   sys_syntax_property_idx(sys_usage(U), L),
+   sys_member(I, L).
+sys_listing_item_idx(U, I) :-
+   sys_provable_property_idx(sys_usage(U), L),
+   sys_member(I, L),
+   sys_provable_property_chk(I, automatic/0, []).
+:- set_predicate_property(sys_listing_item_idx/2, visible(private)).
+
+/**
+ * sys_listing_show(I, U):
+ * The predicate succeeds in showing the usage source U
+ * slice of the listable indicator I.
+ */
 % sys_listing_show(+Indicator, +Source)
-sys_listing_show(infix(I), U) :- !,
-   sys_show_syntax_source(infix(I), U).
-sys_listing_show(prefix(I), U) :- !,
-   sys_show_syntax_source(prefix(I), U).
-sys_listing_show(postfix(I), U) :- !,
-   sys_show_syntax_source(postfix(I), U).
+sys_listing_show(I, U) :-
+   sys_oper_indicator(I), !,
+   sys_show_syntax_source(I, U).
 sys_listing_show(I, U) :-
    sys_show_provable_source(I, U).
 :- set_predicate_property(sys_listing_show/2, visible(private)).
 
-% sys_listing_match(-Indicator, -Source)
-sys_listing_match(infix(I), U) :-
-   sys_current_syntax(L),
-   sys_member(infix(I), L),
-   sys_syntax_property_chk(infix(I), sys_usage/1, R),
-   sys_member(sys_usage(U), R).
-sys_listing_match(prefix(I), U) :-
-   sys_current_syntax(L),
-   sys_member(prefix(I), L),
-   sys_syntax_property_chk(prefix(I), sys_usage/1, R),
-   sys_member(sys_usage(U), R).
-sys_listing_match(postfix(I), U) :-
-   sys_current_syntax(L),
-   sys_member(postfix(I), L),
-   sys_syntax_property_chk(postfix(I), sys_usage/1, R),
-   sys_member(sys_usage(U), R).
-sys_listing_match(I, U) :-
-   sys_current_provable(L),
-   sys_member(I, L),
-   sys_provable_property_chk(I, automatic/0, []),
-   sys_provable_property_chk(I, sys_usage/1, R),
-   sys_member(sys_usage(U), R).
-:- set_predicate_property(sys_listing_match/2, visible(private)).
+/**
+ * sys_oper_indicator(I):
+ * The predicate succeeds when I is an operator indicator.
+ */
+% sys_oper_indicator(+Indicator)
+sys_oper_indicator(infix(_)).
+sys_oper_indicator(prefix(_)).
+sys_oper_indicator(postfix(_)).
+:- set_predicate_property(sys_oper_indicator/1, visible(private)).
 
 % also used by automatic.p in debugger
 :- special(sys_show_provable_source/2, 'SpecialLoad', 3).
@@ -402,22 +423,6 @@ sys_listing_match(I, U) :-
 :- special(sys_show_base/1, 'SpecialLoad', 5).
 :- set_predicate_property(sys_show_base/1, visible(public)).
 
-% move from provable.p in debugger
-:- special(sys_current_provable/1, 'SpecialLoad', 6).
-:- set_predicate_property(sys_current_provable/1, visible(public)).
-
-% move from provable.p in debugger
-:- special(sys_provable_property_chk/3, 'SpecialLoad', 7).
-:- set_predicate_property(sys_provable_property_chk/3, visible(public)).
-
-% move from syntax.p in debugger
-:- special(sys_current_syntax/1, 'SpecialLoad', 8).
-:- set_predicate_property(sys_current_syntax/1, visible(public)).
-
-% move from syntax.p in debugger
-:- special(sys_syntax_property_chk/3, 'SpecialLoad', 9).
-:- set_predicate_property(sys_syntax_property_chk/3, visible(public)).
-
 /****************************************************************/
 /* Resource Handling                                            */
 /****************************************************************/
@@ -429,4 +434,4 @@ sys_listing_match(I, U) :-
  * unregistered when its call-site relative source is unloaded.
  */
 % sys_register_file(+Pin)
-:- special(sys_register_file/1, 'SpecialLoad', 10).
+:- special(sys_register_file/1, 'SpecialLoad', 6).

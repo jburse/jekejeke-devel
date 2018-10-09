@@ -173,23 +173,11 @@ sys_make_oper(yfx, N, infix(N)).
  */
 % current_oper(-Indicator)
 current_oper(I) :-
-   var(I), !,
+   ground(I), !,
+   sys_current_oper_chk(I).
+current_oper(I) :-
    sys_current_oper(L),
    sys_member(I, L).
-current_oper(postfix(I)) :-
-   var(I), !,
-   sys_current_oper(L),
-   sys_member(postfix(I), L).
-current_oper(prefix(I)) :-
-   var(I), !,
-   sys_current_oper(L),
-   sys_member(prefix(I), L).
-current_oper(infix(I)) :-
-   var(I), !,
-   sys_current_oper(L),
-   sys_member(infix(I), L).
-current_oper(I) :-
-   sys_current_oper_chk(I).
 :- set_predicate_property(current_oper/1, visible(public)).
 
 :- special(sys_current_oper/1, 'SpecialOper', 2).
@@ -210,6 +198,10 @@ oper_property(I, R) :-
    sys_oper_property(I, P),
    sys_member(R, P).
 oper_property(I, R) :-
+   var(I), !,
+   sys_oper_property_idx(R, P),
+   sys_member(I, P).
+oper_property(I, R) :-
    functor(R, F, A),
    sys_oper_property_chk(I, F/A, P),
    sys_member(R, P).
@@ -221,20 +213,23 @@ oper_property(I, R) :-
 :- special(sys_oper_property_chk/3, 'SpecialOper', 5).
 :- set_predicate_property(sys_oper_property_chk/3, visible(private)).
 
+:- special(sys_oper_property_idx/2, 'SpecialOper', 6).
+:- set_predicate_property(sys_oper_property_idx/2, visible(private)).
+
 /**
  * set_oper_property(I, P):
  * The predicate assigns the property P to the operator I.
  */
 % set_oper_property(+Indicator, +Property)
 % already defined in special
-% :- special(set_oper_property/2, 'SpecialOper', 6).
+% :- special(set_oper_property/2, 'SpecialOper', 7).
 
 /**
  * reset_oper_property(I, P):
  * The predicate de-assigns the property P from the operator I.
  */
 % reset_oper_property(+Indicator, +Property)
-:- special(reset_oper_property/2, 'SpecialOper', 7).
+:- special(reset_oper_property/2, 'SpecialOper', 8).
 :- set_predicate_property(reset_oper_property/2, visible(public)).
 
 % first defined in special.p

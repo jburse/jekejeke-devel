@@ -5,10 +5,8 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.StoreChild;
-import jekpro.model.pretty.StoreElder;
 import jekpro.tools.call.*;
 import jekpro.tools.foreign.LookupResource;
 import matula.util.data.MapEntry;
@@ -96,7 +94,7 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Knowledgebase extends AbstractRecognizer {
-    private final AbstractStore store;
+    private final Store store;
 
     public static final String OP_ON = AbstractFlag.OP_ON;
     public static final String OP_OFF = AbstractFlag.OP_OFF;
@@ -115,7 +113,7 @@ public class Knowledgebase extends AbstractRecognizer {
         Lobby l = new Lobby(k);
         Foyer foyer = (Foyer) l.getFoyer();
 
-        store = new StoreElder(foyer);
+        store = foyer.createStore();
         store.proxy = this;
     }
 
@@ -129,7 +127,7 @@ public class Knowledgebase extends AbstractRecognizer {
         Lobby l = new Lobby(k);
         Foyer foyer = (Foyer) l.getFoyer();
 
-        store = new StoreElder(foyer, c);
+        store = foyer.createStore(c);
         store.proxy = this;
     }
 
@@ -139,9 +137,9 @@ public class Knowledgebase extends AbstractRecognizer {
      * @param p The parent.
      */
     public Knowledgebase(Knowledgebase p) {
-        AbstractStore parent = (AbstractStore) p.getStore();
+        Store parent = (Store) p.getStore();
 
-        store = new StoreChild(parent);
+        store = parent.createStore();
         store.proxy = this;
     }
 
@@ -160,7 +158,7 @@ public class Knowledgebase extends AbstractRecognizer {
      * @return The parent.
      */
     public final Knowledgebase getParent() {
-        AbstractStore parent = store.parent;
+        Store parent = store.parent;
         return (parent != null ? (Knowledgebase) parent.proxy : null);
     }
 
@@ -317,7 +315,7 @@ public class Knowledgebase extends AbstractRecognizer {
      */
     public final Capability stringToCapability(String name)
             throws InterpreterMessage {
-        AbstractStore store = (AbstractStore) getStore();
+        Store store = (Store) getStore();
         try {
             AbstractBranch branch = store.foyer.getFactory().stringToBranch(name, store.loader);
             return (Capability) branch.proxy;

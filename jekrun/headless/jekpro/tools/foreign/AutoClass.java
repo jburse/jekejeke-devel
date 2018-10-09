@@ -402,7 +402,7 @@ public final class AutoClass extends AbstractAuto {
                 arity, en, true);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPR);
-        pick.addDef(src, Predicate.MASK_TRCK_VSPR);
+        pick.addDef(src, Predicate.MASK_TRCK_VSPR, en);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);

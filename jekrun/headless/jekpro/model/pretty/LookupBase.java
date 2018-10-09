@@ -175,7 +175,7 @@ public final class LookupBase {
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -192,7 +192,7 @@ public final class LookupBase {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -245,7 +245,7 @@ public final class LookupBase {
 
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -264,7 +264,7 @@ public final class LookupBase {
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {

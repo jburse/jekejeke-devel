@@ -9,7 +9,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -160,7 +160,7 @@ public final class SpecialPred extends AbstractSpecial {
      */
     private static Object currentPredicates(Engine en)
             throws EngineMessage {
-        AbstractStore store = en.store;
+        Store store = en.store;
         Object res = en.store.foyer.ATOM_NIL;
         while (store != null) {
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
@@ -387,7 +387,7 @@ public final class SpecialPred extends AbstractSpecial {
     /**************************************************************/
 
     /**
-     * <p>Retrieve the predicates to a property.</p>
+     * <p>Retrieve the predicates for a property.</p>
      *
      * @param t  The value skeleton.
      * @param d  The value display.
@@ -448,7 +448,6 @@ public final class SpecialPred extends AbstractSpecial {
      */
     private static void defineStatic(Predicate pick, Engine en)
             throws EngineMessage {
-        Predicate.checkUnsealed(pick, en);
         AbstractDelegate fun = AbstractDefined.promoteStatic(pick, en.store);
         if ((fun.subflags & AbstractDefined.MASK_DEFI_STAT) != 0)
             return;

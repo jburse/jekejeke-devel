@@ -3,10 +3,9 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.Operator;
 import jekpro.reference.reflect.SpecialOper;
-import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -128,17 +127,16 @@ public final class OperatorSearch {
      * @param key    The operator name.
      * @param type   The operator type.
      * @param scope  The call-site, non-null.
-     * @param pos    The position, can be null.
      * @param base   The lookup base, non-null.
+     * @param en     The engine.
      * @param create The no create flag.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
     private static Operator performLookupDefined(String key, int type,
                                                  AbstractSource scope,
-                                                 PositionKey pos,
                                                  AbstractSource base,
-                                                 boolean create)
+                                                 Engine en, boolean create)
             throws InterruptedException, EngineMessage {
         String n;
         if (!CacheFunctor.isQuali(key)) {
@@ -155,11 +153,11 @@ public final class OperatorSearch {
             if (!Branch.OP_USER.equals(s)) {
                 /* create name%oper */
                 s = CacheFunctor.composeQuali(s, n);
-                return (create ? base.defineOper(type, s, scope, pos) :
+                return (create ? base.defineOper(type, s, scope, en) :
                         base.getOper(type, s));
             } else {
                 /* create oper */
-                return (create ? defineOperUser(type, n, scope, pos, scope.getStore()) :
+                return (create ? defineOperUser(type, n, scope, en) :
                         getOperUser(type, n, scope.getStore()));
             }
         } finally {
@@ -442,7 +440,7 @@ public final class OperatorSearch {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             AbstractSource base = performBase(sa.fun, src, en);
             Operator oper = performLookupDefined(sa.fun, type, src,
-                    sa.getPosition(), base, create);
+                    base, en, create);
             if (oper != null && OperatorSearch.visibleOper(oper, src))
                 return oper;
             if (create)
@@ -469,7 +467,7 @@ public final class OperatorSearch {
      * @return The operator or null,
      */
     public static Operator getOperUser(int type, String fun,
-                                       AbstractStore store) {
+                                       Store store) {
         while (store != null) {
             Operator oper = store.user.getOper(type, fun);
             if (oper != null)
@@ -485,17 +483,19 @@ public final class OperatorSearch {
      * @param type  The type.
      * @param fun   The name.
      * @param scope The call-site, not null.
-     * @param pos   The position, can be null.
-     * @param store The store.
+     * @param en    The engine.
      * @return The operator.
+     * @throws EngineMessage Shit happens.
      */
-    public static Operator defineOperUser(int type, String fun,
-                                          AbstractSource scope,
-                                          PositionKey pos,
-                                          AbstractStore store) {
+    private static Operator defineOperUser(int type, String fun,
+                                           AbstractSource scope,
+                                           Engine en)
+            throws EngineMessage {
+        Store store = scope.getStore();
         Operator oper = getOperUser(type, fun, store.parent);
         if (oper == null)
-            oper = store.user.defineOper(type, fun, scope, pos);
+            oper = store.user.checkOper(type, fun, scope);
+        oper.addDef(scope, en);
         return oper;
     }
 

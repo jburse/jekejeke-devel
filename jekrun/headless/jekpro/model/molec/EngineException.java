@@ -201,7 +201,7 @@ public final class EngineException extends Exception {
             SkelCompound back = null;
             Frame.skipNoTrace(r, u, en);
             /* fetch pred_file_line, pred and pred_error */
-            while (en.display != null && k < en.visor.getMaxStack()) {
+            while (en.display != null && k < en.store.getMaxStack()) {
                 r = (Intermediate) en.skel;
                 u = (DisplayClause) en.display;
                 SpecialBody.callGoal(r, u, en);

@@ -4,8 +4,7 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
-import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.Store;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
@@ -138,13 +137,11 @@ public final class CachePredicate extends AbstractCache {
             s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 String s1 = CacheFunctor.composeQuali(s, n);
-                StoreKey sk = new StoreKey(s1, arity);
-                Predicate pick = base.getRoutine(sk);
+                Predicate pick = base.getRoutine(arity, s1);
                 if (pick != null)
                     return pick;
             } else if (f) {
-                StoreKey sk = new StoreKey(n, arity);
-                Predicate pick = getRoutineUser(sk, base.getStore());
+                Predicate pick = getRoutineUser(arity, n, base.getStore());
                 if (pick != null)
                     return pick;
             }
@@ -155,11 +152,9 @@ public final class CachePredicate extends AbstractCache {
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
             return pick;
-        if (!Branch.OP_USER.equals(s) || !f) {
+        if (!Branch.OP_USER.equals(s) || !f)
             /* find pred */
-            StoreKey sk = new StoreKey(n, arity);
-            return getRoutineUser(sk, base.getStore());
-        }
+            return getRoutineUser(arity, n, base.getStore());
         return null;
     }
 
@@ -170,6 +165,7 @@ public final class CachePredicate extends AbstractCache {
      * @param arity  The predicate length.
      * @param scope  The call-site, non null.
      * @param base   The base.
+     * @param en     The engine.
      * @param create The create flag.
      * @return The resolved name.
      * @throws EngineMessage        Shit happens.
@@ -178,7 +174,7 @@ public final class CachePredicate extends AbstractCache {
     private static Predicate performLookupDefined(SkelAtom sa, int arity,
                                                   AbstractSource scope,
                                                   AbstractSource base,
-                                                  boolean create)
+                                                  Engine en, boolean create)
             throws InterruptedException, EngineMessage {
         String n;
         if (!(sa instanceof SkelAtomQuali)) {
@@ -195,16 +191,14 @@ public final class CachePredicate extends AbstractCache {
             if (!Branch.OP_USER.equals(s)) {
                 /* create name%pred */
                 s = CacheFunctor.composeQuali(s, n);
-                StoreKey sk = new StoreKey(s, arity);
                 return (create ?
-                        base.defineRoutine(sk, scope) :
-                        base.getRoutine(sk));
+                        base.defineRoutine(arity, s, scope, en) :
+                        base.getRoutine(arity, s));
             } else {
                 /* create pred */
-                StoreKey sk = new StoreKey(n, arity);
                 return (create ?
-                        defineRoutineUser(sk, scope, scope.getStore()) :
-                        getRoutineUser(sk, scope.getStore()));
+                        defineRoutineUser(arity, n, scope, en) :
+                        getRoutineUser(arity, n, scope.getStore()));
             }
         } finally {
             base.getRead().release();
@@ -246,11 +240,9 @@ public final class CachePredicate extends AbstractCache {
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
             return pick;
-        if (!Branch.OP_USER.equals(s)) {
+        if (!Branch.OP_USER.equals(s))
             /* find pred */
-            StoreKey sk = new StoreKey(n, arity);
-            return getRoutineUser(sk, base.getStore());
-        }
+            return getRoutineUser(arity, n, base.getStore());
         return null;
     }
 
@@ -326,8 +318,7 @@ public final class CachePredicate extends AbstractCache {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
-                    StoreKey sk = new StoreKey(s, arity);
-                    Predicate pick = base.getRoutine(sk);
+                    Predicate pick = base.getRoutine(arity, s);
                     if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
@@ -376,8 +367,7 @@ public final class CachePredicate extends AbstractCache {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
-                    StoreKey sk = new StoreKey(s, arity);
-                    Predicate pick = base.getRoutine(sk);
+                    Predicate pick = base.getRoutine(arity, s);
                     if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
@@ -426,8 +416,7 @@ public final class CachePredicate extends AbstractCache {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
                     s = CacheFunctor.composeQuali(s, fun);
-                    StoreKey sk = new StoreKey(s, arity);
-                    Predicate pick = base.getRoutine(sk);
+                    Predicate pick = base.getRoutine(arity, s);
                     if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
@@ -562,7 +551,8 @@ public final class CachePredicate extends AbstractCache {
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                     AbstractSource base = performBase(sa, src, en);
                     Object basevers = base.importvers;
-                    Predicate pick = performLookupDefined(sa, arity, src, base, create);
+                    Predicate pick = performLookupDefined(sa, arity,
+                            src, base, en, create);
                     CachePredicate cp;
                     if (pick != null) {
                         cp = new CachePredicate();
@@ -598,7 +588,8 @@ public final class CachePredicate extends AbstractCache {
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                             AbstractSource base = performBase(sa, src, en);
                             Object basevers = base.importvers;
-                            pick = performLookupDefined(sa, arity, src, base, create);
+                            pick = performLookupDefined(sa, arity,
+                                    src, base, en, create);
                             /* update if found, otherwise remove */
                             if (pick != null) {
                                 cp.pick = pick;
@@ -641,14 +632,15 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Retrieve predicate for the given store key.</p>
      *
-     * @param sk    The store key.
+     * @param arity The arity.
+     * @param fun   The name.
      * @param store The store, can be null.
      * @return The predicate or null.
      */
-    public static Predicate getRoutineUser(StoreKey sk,
-                                           AbstractStore store) {
+    public static Predicate getRoutineUser(int arity, String fun,
+                                           Store store) {
         while (store != null) {
-            Predicate pick = store.user.getRoutine(sk);
+            Predicate pick = store.user.getRoutine(arity, fun);
             if (pick != null)
                 return pick;
             store = store.parent;
@@ -659,18 +651,22 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Define a predicate.</p>
      *
-     * @param sk    The store key.
+     * @param arity The arity.
+     * @param fun   The name.
      * @param scope The call-site, not nulll.
-     * @param store The store.
+     * @param en    The engine.
      * @return The predicate.
+     * @throws EngineMessage Shit happens.
      */
-    public static Predicate defineRoutineUser(StoreKey sk,
-                                              AbstractSource scope,
-                                              AbstractStore store) {
-        Predicate pick = getRoutineUser(sk, store.parent);
+    private static Predicate defineRoutineUser(int arity, String fun,
+                                               AbstractSource scope,
+                                               Engine en)
+            throws EngineMessage {
+        Store store = scope.getStore();
+        Predicate pick = getRoutineUser(arity, fun, store.parent);
         if (pick == null)
-            pick = store.user.checkRoutine(sk, scope);
-        pick.defineUsage(scope);
+            pick = store.user.checkRoutine(arity, fun, scope);
+        pick.usagePredicate(scope, en);
         return pick;
     }
 

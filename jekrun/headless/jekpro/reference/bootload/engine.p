@@ -182,7 +182,7 @@ end_module :-
    set_prolog_flag(sys_last_pred, null).
 
 :- private sys_module_action/2.
-:- special(sys_module_action/2, 'SpecialLoad', 11).
+:- special(sys_module_action/2, 'SpecialLoad', 7).
 
 :- private sys_peek_stack/1.
-:- special(sys_peek_stack/1, 'SpecialLoad', 12).
+:- special(sys_peek_stack/1, 'SpecialLoad', 8).

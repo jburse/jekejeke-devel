@@ -195,6 +195,28 @@ public class AssocArray<K, V>
         kvs[2 * i + 1] = e;
     }
 
+    /**
+     * <p>Copy the hash map values to an array.</p>
+     *
+     * @param target The value array.
+     */
+    public final void toArrayValues(V[] target) {
+        toArrayValues(target, 0);
+    }
+
+    /**
+     * <p>Copy the hash map entries to an array.</p>
+     *
+     * @param target The value array.
+     * @param pos    The start index.
+     */
+    public final void toArrayValues(V[] target, int pos) {
+        for (int i = 0; i < size; i++) {
+            target[pos] = getValue(i);
+            pos++;
+        }
+    }
+
     /***************************************************************/
     /* Find Family                                                 */
     /***************************************************************/

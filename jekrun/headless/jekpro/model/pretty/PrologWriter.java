@@ -282,7 +282,7 @@ public class PrologWriter {
      *
      * @param store The store.
      */
-    public void setWriteUtil(AbstractStore store) {
+    public void setWriteUtil(Store store) {
         utildouble = (byte) store.foyer.getUtilDouble();
         utilback = (byte) store.foyer.getUtilBack();
         utilsingle = (byte) store.foyer.getUtilSingle();

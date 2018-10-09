@@ -5,7 +5,7 @@ import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractRuntime;
@@ -51,7 +51,7 @@ public final class LookupBinary {
      * @param store   The store.
      * @return The class, or null.
      */
-    public static Class keyToClass(String relpath, AbstractStore store) {
+    public static Class keyToClass(String relpath, Store store) {
         AbstractBranch branch = LookupResource.RelativeURIstoRoots(relpath, store);
         if (branch != null) {
             Object obj = store.foyer.getCanonCache(relpath);
@@ -96,7 +96,7 @@ public final class LookupBinary {
 
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -130,7 +130,7 @@ public final class LookupBinary {
 
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {

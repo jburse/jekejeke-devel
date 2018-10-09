@@ -174,7 +174,7 @@ public final class SpecialVars extends AbstractSpecial {
                     ref = en.display;
                     Frame frame = en.visor.ref;
                     Display ref2 = (frame != null ? frame.getDisplay() : null);
-                    Clause def = (frame != null ? frame.getClause() : null);
+                    Clause def = (frame != null ? frame.getContSkel().getClause() : null);
                     MapHashLink<Object, NamedDistance> print =
                             Named.namedToMap((def != null ? def.vars : null), ref2, en);
                     mapToAssoc(print, en);

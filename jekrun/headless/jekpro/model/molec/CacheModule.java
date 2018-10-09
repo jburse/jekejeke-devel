@@ -3,8 +3,8 @@ package jekpro.model.molec;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
 import jekpro.model.pretty.SourceLocal;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.foreign.LookupBinary;
@@ -242,7 +242,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -260,7 +260,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -401,7 +401,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system imported .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -421,7 +421,7 @@ public final class CacheModule extends AbstractCache {
 
         /* system library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             while (store != null) {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
@@ -549,7 +549,7 @@ public final class CacheModule extends AbstractCache {
     public static void notifyFixvers(AbstractSource src, int f) {
         if (f != 0) {
             if (Branch.OP_SYSTEM.equals(src.getPath())) {
-                AbstractStore store = src.getStore();
+                Store store = src.getStore();
                 store.foyer.notifyFixvers(store);
             } else {
                 Object o = new Object();

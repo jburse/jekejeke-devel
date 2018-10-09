@@ -246,7 +246,7 @@ public abstract class AbstractAuto extends AbstractSource {
                 arity, en, true);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPU);
-        pick.addDef(src, Predicate.MASK_TRCK_VSPU);
+        pick.addDef(src, Predicate.MASK_TRCK_VSPU, en);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);
@@ -276,7 +276,7 @@ public abstract class AbstractAuto extends AbstractSource {
         }
         if (over == null || !CachePredicate.visiblePred(over, src))
             return null;
-        pick.addDef(src, Predicate.MASK_TRCK_OVRD);
+        pick.addDef(src, Predicate.MASK_TRCK_OVRD, en);
         return over;
     }
 
