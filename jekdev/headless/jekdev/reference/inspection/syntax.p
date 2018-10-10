@@ -57,7 +57,7 @@ current_syntax(I) :-
    sys_current_syntax(L),
    sys_member(I, L).
 
-% already defined in load.p of runtime
+% already defined in body.p of runtime
 % :- private sys_current_syntax/1.
 % :- special(sys_current_syntax/1, 'SpecialSyntax', 0).
 
@@ -76,6 +76,10 @@ syntax_property(I, R) :-
    sys_syntax_property(I, P),
    sys_member(R, P).
 syntax_property(I, R) :-
+   var(I), !,
+   sys_syntax_property_idx(R, P),
+   sys_member(I, P).
+syntax_property(I, R) :-
    functor(R, F, A),
    sys_syntax_property_chk(I, F/A, P),
    sys_member(R, P).
@@ -83,9 +87,13 @@ syntax_property(I, R) :-
 :- private sys_syntax_property/2.
 :- special(sys_syntax_property/2, 'SpecialSyntax', 2).
 
-% already defined in load.p of runtime
+% already defined in body.p of runtime
 % :- private sys_syntax_property_chk/3.
 % :- special(sys_syntax_property_chk/3, 'SpecialSyntax', 3).
+
+% already defined in body.p of runtime
+% :- private sys_syntax_property_idx/2.
+% :- special(sys_syntax_property_idx/2, 'SpecialSyntax', 4).
 
 /**
  * set_syntax_property(O, Q):
@@ -94,7 +102,7 @@ syntax_property(I, R) :-
  */
 % set_syntax_property(+Oper, +Property)
 :- public set_syntax_property/2.
-:- special(set_syntax_property/2, 'SpecialSyntax', 4).
+:- special(set_syntax_property/2, 'SpecialSyntax', 5).
 
 /**
  * reset_syntax_property(O, Q):
@@ -103,4 +111,4 @@ syntax_property(I, R) :-
  */
 % reset_syntax_property(+Oper, +Property)
 :- public reset_syntax_property/2.
-:- special(reset_syntax_property/2, 'SpecialSyntax', 5).
+:- special(reset_syntax_property/2, 'SpecialSyntax', 6).

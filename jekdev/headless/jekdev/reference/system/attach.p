@@ -1,5 +1,5 @@
 /**
- * Trace level spy & break points.
+ * This module provide engine debugger attachment.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -50,7 +50,7 @@
 
 /**
  * tspy(P):
- * The predicate adds the predicates P to the engine spy points.
+ * The predicate adds the predicate P to the engine spy points.
  */
 % tspy(+Indicator)
 :- public tspy/1.

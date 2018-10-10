@@ -57,7 +57,7 @@ public final class SpecialProvable extends AbstractSpecial {
     private final static int SPECIAL_SYS_CURRENT_PROVABLE_CHK = 1;
     private final static int SPECIAL_SYS_PROVABLE_PROPERTY = 2;
     /* private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 3; */
-    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 4;
+    /* private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 4; */
     private final static int SPECIAL_SET_PROVABLE_PROPERTY = 5;
     private final static int SPECIAL_RESET_PROVABLE_PROPERTY = 6;
     private final static int SPECIAL_SYS_CALLABLE_PROPERTY = 7;
@@ -91,14 +91,14 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_PROVABLE_CHK:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = SpecialLoad.indicatorToProvable(temp[0], ref, en);
+                Predicate pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialLoad.indicatorToProvable(temp[0], ref, en);
+                pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 boolean multi = SpecialPred.predicateToProperties(pick, en);
@@ -108,22 +108,10 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (multi)
                     d.remTab(en);
                 return en.getNext();
-            case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unifyTerm(temp[1], ref,
-                        SpecialProvable.propertyToProvables(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
             case SPECIAL_SET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialLoad.indicatorToProvable(temp[0], ref, en);
+                pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
@@ -134,7 +122,7 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_RESET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialLoad.indicatorToProvable(temp[0], ref, en);
+                pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
@@ -378,27 +366,6 @@ public final class SpecialProvable extends AbstractSpecial {
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
                 StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-    }
-
-    /**************************************************************/
-    /* High-Level Provable Property Access III                    */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve the predicates to a property.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
-     */
-    private static Object propertyToProvables(Object t, Display d,
-                                              Engine en)
-            throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
-        Predicate[] vals = SpecialPred.idxPropPred(t, d, prop, en);
-        Object res = en.store.foyer.ATOM_NIL;
-        res = SpecialLoad.consProvables(vals, res, en);
-        return res;
     }
 
 }

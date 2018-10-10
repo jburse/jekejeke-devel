@@ -120,23 +120,28 @@ friendly :-
  * user predicate P. For a list of the intermediate instructions see
  * the full API documentation.
  */
-% friendly(+Pattern)
+% friendly(+Indicator)
 :- public friendly/1.
 friendly(I) :-
-   ground(I),
-   sys_intermediate_check(I, U),
-   sys_listing_user(U),
-   sys_intermediate_base(U),
-   sys_friendly(I, U), fail.
+   ground(I), !,
+   friendly2(I).
 friendly(I) :-
-   \+ ground(I),
-   bagof(I, (  sys_intermediate_match(I, U),
-               sys_listing_user(U)), B),
+   bagof(I, (  sys_listing_user(U),
+               sys_intermediate_item_idx(U, I)), B),
    sys_intermediate_base(U),
    sys_member(I, B),
    sys_friendly(I, U), fail.
 friendly(_).
 :- set_predicate_property(friendly/1, sys_notrace).
+
+% friendly2(+Indicator)
+:- private friendly2/1.
+friendly2(I) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_intermediate_base(U),
+   sys_friendly(I, U), fail.
+friendly2(_).
 
 :- private sys_intermediate_base/1.
 :- special(sys_intermediate_base/1, 'SpecialFriendly', 0).
@@ -160,35 +165,50 @@ instrumented :-
  * Works like the predicate friendly/1 except that the debugger
  * instrumented variant of the clause is shown.
  */
-% instrumented(+Pattern)
+% instrumented(+Indicator)
 :- public instrumented/1.
 instrumented(I) :-
-   ground(I),
-   sys_intermediate_check(I, U),
-   sys_listing_user(U),
-   sys_intermediate_base(U),
-   sys_instrumented(I, U), fail.
+   ground(I), !,
+   instrumented2(I).
 instrumented(I) :-
-   \+ ground(I),
-   bagof(I, (  sys_intermediate_match(I, U),
-               sys_listing_user(U)), B),
+   bagof(I, (  sys_listing_user(U),
+               sys_intermediate_item_idx(U, I)), B),
    sys_intermediate_base(U),
    sys_member(I, B),
    sys_instrumented(I, U), fail.
 instrumented(_).
 :- set_predicate_property(instrumented/1, sys_notrace).
 
+% instrumented2(+Indicator)
+:- private instrumented2/1.
+instrumented2(I) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_intermediate_base(U),
+   sys_instrumented(I, U), fail.
+instrumented2(_).
+
 :- private sys_instrumented/2.
 :- special(sys_instrumented/2, 'SpecialFriendly', 2).
 
-:- private sys_intermediate_check/2.
-sys_intermediate_check(I, U) :-
+/**
+ * sys_intermediate_item_chk(I, U):
+ * If I is a intermediate indicator then the predicate
+ * succeeds for each usage source U.
+ */
+% sys_intermediate_item_chk(+Indicator, -Source)
+:- private sys_intermediate_item_chk/2.
+sys_intermediate_item_chk(I, U) :-
    \+ provable_property(I, built_in),
    provable_property(I, sys_usage(U)).
 
-:- private sys_intermediate_match/2.
-sys_intermediate_match(I, U) :-
-   current_provable(I),
-   \+ provable_property(I, built_in),
-   provable_property(I, sys_usage(U)).
-
+/**
+ * sys_intermediate_item_idx(I, U):
+ * If U is a usage source then the predicate succceeds
+ * for each intermediate indicator I.
+ */
+% sys_intermediate_item_idx(+Source, -Indicator)
+:- private sys_intermediate_item_idx/2.
+sys_intermediate_item_idx(U, I) :-
+   provable_property(I, sys_usage(U)),
+   \+ provable_property(I, built_in).

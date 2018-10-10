@@ -78,7 +78,7 @@ current_provable(I) :-
    sys_current_provable(L),
    sys_member(I, L).
 
-% already defined in load.p of runtime
+% already defined in body.p of runtime
 % :- private sys_current_provable/1.
 % :- special(sys_current_provable/1, 'SpecialProvable', 0).
 
@@ -108,12 +108,13 @@ provable_property(I, R) :-
 :- private sys_provable_property/2.
 :- special(sys_provable_property/2, 'SpecialProvable', 2).
 
-% already defined in load.p of runtime
+% already defined in body.p of runtime
 % :- private sys_provable_property_chk/3.
 % :- special(sys_provable_property_chk/3, 'SpecialProvable', 3).
 
-:- private sys_provable_property_idx/2.
-:- special(sys_provable_property_idx/2, 'SpecialProvable', 4).
+% already defined in body.p of runtime
+% :- private sys_provable_property_idx/2.
+% :- special(sys_provable_property_idx/2, 'SpecialProvable', 4).
 
 /**
  * set_provable_property(I, Q):

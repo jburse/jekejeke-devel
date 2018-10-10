@@ -98,13 +98,13 @@ generated :-
 generated(I) :-
    ground(I),
    sys_automatic_check(I, U),
-   sys_listing_user(U),
+   sys_listing_user_chk(U),
    sys_show_base(U),
    sys_show_provable_source(I, U), fail.
 generated(I) :-
    sys_not(ground(I)),
    bagof(I, (  sys_automatic_match(I, U),
-               sys_listing_user(U)), B),
+               sys_listing_user_chk(U)), B),
    sys_show_base(U),
    sys_member(I, B),
    sys_show_provable_source(I, U), fail.

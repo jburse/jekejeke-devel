@@ -124,9 +124,9 @@ public final class FlagTrace extends AbstractFlag {
                 frame = en.visor.ref;
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_CLOAK:
-                return AbstractFlag.switchToAtom((en.visor.flags & SupervisorTrace.MASK_VISOR_NOFLG) == 0);
+                return AbstractFlag.switchToAtom((en.visor.flags & SupervisorTrace.MASK_VISOR_NOFL) == 0);
             case FLAG_SYS_MAX_STACK:
-                return Integer.valueOf(en.visor.getMaxStack());
+                return Integer.valueOf(en.store.getMaxStack());
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -188,7 +188,7 @@ public final class FlagTrace extends AbstractFlag {
                     Number num = SpecialEval.derefAndCastInteger(m, d);
                     SpecialEval.checkNotLessThanZero(num);
                     int n = SpecialEval.castIntValue(num);
-                    en.visor.setMaxStack(n);
+                    en.store.setMaxStack(n);
                     return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");

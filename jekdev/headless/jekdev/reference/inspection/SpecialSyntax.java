@@ -1,13 +1,18 @@
 package jekdev.reference.inspection;
 
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Frame;
+import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -42,11 +47,13 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSyntax extends AbstractSpecial {
+    /* private final static int SPECIAL_SYS_CURRENT_SYNTAX = 0; */
     private final static int SPECIAL_SYS_CURRENT_SYNTAX_CHK = 1;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY = 2;
-
-    private final static int SPECIAL_SET_SYNTAX_PROPERTY = 4;
-    private final static int SPECIAL_RESET_SYNTAX_PROPERTY = 5;
+    /* private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 3; */
+    /* private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 4; */
+    private final static int SPECIAL_SET_SYNTAX_PROPERTY = 5;
+    private final static int SPECIAL_RESET_SYNTAX_PROPERTY = 6;
 
     /**
      * <p>Create a syntax direct access builtin.</p>
@@ -74,14 +81,14 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Operator op = SpecialLoad.operToSyntax(temp[0], ref, en);
+                Operator op = SpecialBody.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialLoad.operToSyntax(temp[0], ref, en);
+                op = SpecialBody.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
                 boolean multi = SpecialOper.operToProperties(op, en);
@@ -94,7 +101,7 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialLoad.operToSyntax(temp[0], ref, en);
+                op = SpecialBody.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
@@ -105,7 +112,7 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_RESET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialLoad.operToSyntax(temp[0], ref, en);
+                op = SpecialBody.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;

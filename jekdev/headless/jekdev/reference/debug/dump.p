@@ -123,4 +123,4 @@ dump(_).
 :- private sys_dump_user/1.
 sys_dump_user(I) :-
    provable_property(I, sys_usage(U)),
-   sys_listing_user(U), !.
+   sys_listing_user_chk(U), !.

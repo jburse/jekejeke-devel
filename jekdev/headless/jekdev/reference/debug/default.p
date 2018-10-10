@@ -168,7 +168,7 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
 
 /**
  * spy(P):
- * The predicate adds the predicates P to the spy points.
+ * The predicate adds the predicate P to the spy points.
  */
 % spy(+Indicator)
 :- public spy/1.
@@ -176,7 +176,7 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
 
 /**
  * nospy(P):
- * The predicate removes the predicates P from the spy points.
+ * The predicate removes the predicate P from the spy points.
  */
 % nospy(+Indicator)
 :- public nospy/1.
