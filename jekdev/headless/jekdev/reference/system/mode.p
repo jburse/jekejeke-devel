@@ -74,8 +74,9 @@
 :- set_predicate_property(sys_in/0, sys_nowakeup).
 :- set_predicate_property(sys_in/0, sys_nostack).
 sys_in :-
-   sys_port(0), !, sys_in2.
-sys_in.
+   sys_notrace_chk(0), !.
+sys_in :-
+   sys_port_show(0), sys_in2.
 
 :- private sys_in2/0.
 :- static sys_in2/0.
@@ -84,7 +85,7 @@ sys_in.
 :- set_predicate_property(sys_in2/0, sys_nostack).
 sys_in2.
 sys_in2 :-
-   sys_port(1), fail.
+   sys_port_show(1), fail.
 
 /******************************************************************/
 /* sys_out/0                                                      */
@@ -98,8 +99,9 @@ sys_in2 :-
 :- set_predicate_property(sys_out/0, sys_nowakeup).
 :- set_predicate_property(sys_out/0, sys_nostack).
 sys_out :-
-   sys_port(2), !, sys_out2.
-sys_out.
+   sys_notrace_chk(2), !.
+sys_out :-
+   sys_port_show(2), sys_out2.
 
 :- private sys_out2/0.
 :- static sys_out2/0.
@@ -108,7 +110,7 @@ sys_out.
 :- set_predicate_property(sys_out2/0, sys_nostack).
 sys_out2.
 sys_out2 :-
-   sys_port(3), fail.
+   sys_port_show(3), fail.
 
 /******************************************************************/
 /* sys_at/0                                                       */
@@ -122,8 +124,9 @@ sys_out2 :-
 :- set_predicate_property(sys_at/0, sys_nowakeup).
 :- set_predicate_property(sys_at/0, sys_nostack).
 sys_at :-
-   sys_port(4), !, sys_at2.
-sys_at.
+   sys_notrace_chk(4), !.
+sys_at :-
+   sys_port_show(4), sys_at2.
 
 :- private sys_at2/0.
 :- static sys_at2/0.
@@ -132,7 +135,13 @@ sys_at.
 :- set_predicate_property(sys_at2/0, sys_nostack).
 sys_at2.
 sys_at2 :-
-   sys_port(5), fail.
+   sys_port_show(5), fail.
 
-:- private sys_port/1.
-:- special(sys_port/1, 'SpecialMode', 1).
+:- private sys_notrace_chk/1.
+:- special(sys_notrace_chk/1, 'SpecialMode', 1).
+
+:- private sys_deter_chk/1.
+:- special(sys_deter_chk/1, 'SpecialMode', 2).
+
+:- private sys_port_show/1.
+:- special(sys_port_show/1, 'SpecialMode', 3).

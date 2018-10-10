@@ -292,14 +292,15 @@ public final class AutoClass extends AbstractAuto {
                         AbstractMember del = dels[i];
                         SkelCompound goal = makeGoal(del, over, args, i);
                         if (i != dels.length - 1) {
-                            goal = new SkelCompound(new SkelAtom(","), new SkelAtom("!"), goal);
-                            Object[] closures = del.getTests();
+                            goal = new SkelCompound(new SkelAtom(",", this),
+                                    new SkelAtom("!", this), goal);
+                            Object[] closures = del.getTests(this);
                             for (int j = args.length - 1; j >= 0; j--) {
                                 Object closure = closures[j];
                                 if (closure == null)
                                     continue;
                                 SkelCompound test = makeTest(closure, args[j]);
-                                goal = new SkelCompound(new SkelAtom(","), test, goal);
+                                goal = new SkelCompound(new SkelAtom(",", this), test, goal);
                             }
                         }
                         Object molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);
@@ -347,7 +348,7 @@ public final class AutoClass extends AbstractAuto {
                 String fun = del.getFun() + OP_VARIANT + i;
                 expr = new SkelCompound(new SkelAtom(fun, this), args1);
             }
-            goal = new SkelCompound(new SkelAtom("is"), args[args.length - 1], expr);
+            goal = new SkelCompound(new SkelAtom("is", this), args[args.length - 1], expr);
         } else {
             if (!del.getDeclaringClass().equals(getAuto())) {
                 String fun = over.getFun();

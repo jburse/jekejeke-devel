@@ -1,5 +1,6 @@
 package jekpro.tools.term;
 
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 
 import java.math.BigDecimal;
@@ -99,6 +100,28 @@ public final class TermAtomic extends AbstractTerm {
      */
     public Object getValue() {
         return (skel instanceof SkelAtom ? ((SkelAtom) skel).fun : skel);
+    }
+
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
+
+    /**
+     * <p>Retrieve the skeleton.</p>
+     *
+     * @return The skeleton.
+     */
+    public Object getSkel() {
+        return skel;
+    }
+
+    /**
+     * <p>Retrieve the display.</p>
+     *
+     * @return The display.
+     */
+    public Display getDisplay() {
+        return Display.DISPLAY_CONST;
     }
 
     /**

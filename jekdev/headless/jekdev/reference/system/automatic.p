@@ -94,31 +94,44 @@ generated :-
  */
 % generated(-Indicator)
 :- public generated/1.
-:- set_predicate_property(generated/1, sys_notrace).
 generated(I) :-
-   ground(I),
-   sys_automatic_check(I, U),
-   sys_listing_user_chk(U),
-   sys_show_base(U),
-   sys_show_provable_source(I, U), fail.
+   ground(I), !,
+   generated2(I).
 generated(I) :-
-   sys_not(ground(I)),
-   bagof(I, (  sys_automatic_match(I, U),
-               sys_listing_user_chk(U)), B),
+   bagof(I, (  sys_listing_user(U),
+               sys_automatic_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
    sys_show_provable_source(I, U), fail.
 generated(_).
+:- set_predicate_property(generated/1, sys_notrace).
 
-% sys_automatic_check(+Indicator, -Source)
-:- private sys_automatic_check/2.
-sys_automatic_check(I, U) :-
+:- private generated2/1.
+generated2(I) :-
+   sys_automatic_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_show_base(U),
+   sys_show_provable_source(I, U), fail.
+generated2(_).
+
+/**
+ * sys_automatic_item_chk(I, U):
+ * If I is a automatic indicator then the predicate
+ * succeeds for each usage source U.
+ */
+% sys_automatic_item_chk(+Indicator, -Source)
+:- private sys_automatic_item_chk/2.
+sys_automatic_item_chk(I, U) :-
    provable_property(I, automatic),
    provable_property(I, sys_usage(U)).
 
-% sys_automatic_match(-Indicator, -Source)
-:- private sys_automatic_match/2.
-sys_automatic_match(I, U) :-
-   current_provable(I),
-   provable_property(I, automatic),
-   provable_property(I, sys_usage(U)).
+/**
+ * sys_automatic_item_idx(I, U):
+ * If U is a usage source then the predicate succceeds
+ * for each automatic indicator I.
+ */
+% sys_automatic_item_idx(+Source, -Indicator)
+:- private sys_automatic_item_idx/2.
+sys_automatic_item_idx(U, I) :-
+   provable_property(I, sys_usage(U)),
+   provable_property(I, automatic).

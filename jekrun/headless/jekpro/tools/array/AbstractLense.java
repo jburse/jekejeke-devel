@@ -296,6 +296,7 @@ public abstract class AbstractLense extends AbstractDelegate {
                 case Types.TYPE_REF:
                 case Types.TYPE_OBJECT:
                 case Types.TYPE_TERM:
+                case Types.TYPE_ATOMIC:
                     k++;
                     break;
                 case Types.TYPE_INTERPRETER:

@@ -112,7 +112,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                opts.makeUnload(sa.scope, sa.fun, en);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                opts.makeUnload(source, sa.fun, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_IMPORT_FILE:
                 temp = ((SkelCompound) en.skel).args;
@@ -129,7 +130,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 Predicate pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = en.store.getSource(sa.fun);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
                 if (pick.getDef(source) == null)
@@ -154,7 +156,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 Operator oper = SpecialBody.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(oper, temp[0], ref);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = en.store.getSource(sa.fun);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
                 if (oper.getScope() != source)
@@ -177,7 +180,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                source = en.store.getSource(sa.fun);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
                 obj = en.visor.curoutput;
@@ -214,7 +218,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 AbstractSource src = en.visor.peekStack();
                 if (src == null || !en.unifyTerm(temp[0], ref,
-                        new SkelAtom(src.getPath()), Display.DISPLAY_CONST))
+                        src.getPathAtom(), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             default:
@@ -260,7 +264,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     continue;
                 Object[] vals = SpecialPred.getPropPred(pick, prop, en);
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
-                    vals = selectFirst(vals, new SkelAtom((source != null ? source.getPath() : "")));
+                    vals = selectFirst(vals, source.getPathAtom());
                 } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0) {
                     vals = projectFirst(vals);
                 } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {

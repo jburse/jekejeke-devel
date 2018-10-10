@@ -76,6 +76,28 @@ public final class TermVar extends AbstractTerm {
         marker = new MutableBit().setBit(true);
     }
 
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
+
+    /**
+     * <p>Retrieve the skeleton.</p>
+     *
+     * @return The skeleton.
+     */
+    public Object getSkel() {
+        return skel;
+    }
+
+    /**
+     * <p>Retrieve the display.</p>
+     *
+     * @return The display.
+     */
+    public Display getDisplay() {
+        return display;
+    }
+
     /**
      * <p>Compute the hash.</p>
      *

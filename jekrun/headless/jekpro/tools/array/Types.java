@@ -76,8 +76,9 @@ public final class Types {
     public static final int TYPE_REF = 22;
     public static final int TYPE_OBJECT = 23;
     public static final int TYPE_TERM = 24;
-    public static final int TYPE_INTERPRETER = 25;
-    public static final int TYPE_CALLOUT = 26;
+    public static final int TYPE_ATOMIC = 25;
+    public static final int TYPE_INTERPRETER = 26;
+    public static final int TYPE_CALLOUT = 27;
 
     /******************************************************************/
     /* Evaluable Types                                                */
@@ -137,7 +138,7 @@ public final class Types {
         Types.typepred.put(TermVar.class, Integer.valueOf(Types.TYPE_OBJECT));
         Types.typepred.put(TermCompound.class, Integer.valueOf(Types.TYPE_OBJECT));
         Types.typepred.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
-        Types.typepred.put(TermAtomic.class, Integer.valueOf(Types.TYPE_TERM));
+        Types.typepred.put(TermAtomic.class, Integer.valueOf(Types.TYPE_ATOMIC));
         Types.typepred.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
         Types.typepred.put(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
     }
@@ -225,6 +226,7 @@ public final class Types {
                 case Types.TYPE_REF:
                 case Types.TYPE_OBJECT:
                 case Types.TYPE_TERM:
+                case Types.TYPE_ATOMIC:
                     return res;
                 default:
                     throw new IllegalArgumentException("illegal type");
@@ -325,6 +327,19 @@ public final class Types {
                         d = b.display;
                     }
                     return AbstractTerm.createTermWrapped(t, d);
+                case Types.TYPE_ATOMIC:
+                    while (t instanceof SkelVar &&
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
+                        t = b.skel;
+                        d = b.display;
+                    }
+                    if (!(t instanceof SkelVar) && !(t instanceof SkelCompound)) {
+                        return AbstractTerm.createTermWrapped(t, d);
+                    } else {
+                        EngineMessage.checkInstantiated(t);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_ATOMIC, t), d);
+                    }
                 default:
                     throw new IllegalArgumentException("illegal type");
             }
@@ -427,6 +442,7 @@ public final class Types {
             case Types.TYPE_REF:
             case Types.TYPE_OBJECT:
             case Types.TYPE_TERM:
+            case Types.TYPE_ATOMIC:
                 return true;
             default:
                 throw new IllegalArgumentException("illegal return type");

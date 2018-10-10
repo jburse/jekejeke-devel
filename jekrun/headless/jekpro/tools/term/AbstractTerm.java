@@ -142,14 +142,10 @@ public abstract class AbstractTerm {
      * @return The skeleton.
      */
     public static Object getSkel(Object t) {
-        if (t instanceof TermVar) {
-            return ((TermVar) t).skel;
-        } else if (t instanceof TermCompound) {
-            return ((TermCompound) t).skel;
+        if (t instanceof AbstractTerm) {
+            return ((AbstractTerm)t).getSkel();
         } else if (t instanceof String) {
             return new SkelAtom((String) t);
-        } else if (t instanceof TermAtomic) {
-            return ((TermAtomic) t).skel;
         } else {
             return t;
         }
@@ -163,14 +159,30 @@ public abstract class AbstractTerm {
      * @return The display.
      */
     public static Display getDisplay(Object t) {
-        if (t instanceof TermVar) {
-            return ((TermVar) t).display;
-        } else if (t instanceof TermCompound) {
-            return ((TermCompound) t).display;
+        if (t instanceof AbstractTerm) {
+            return ((AbstractTerm)t).getDisplay();
         } else {
             return Display.DISPLAY_CONST;
         }
     }
+
+    /************************************************************/
+    /* Variation Points                                         */
+    /************************************************************/
+
+    /**
+     * <p>Retrieve the skeleton.</p>
+     *
+     * @return The skeleton.
+     */
+    public abstract Object getSkel();
+
+    /**
+     * <p>Retrieve the display.</p>
+     *
+     * @return The display.
+     */
+    public abstract Display getDisplay();
 
     /************************************************************/
     /* Experimental Multi                                       */

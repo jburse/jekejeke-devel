@@ -103,24 +103,42 @@ dump :-
 % dump(+Pattern)
 :- public dump/1.
 dump(I) :-
-   ground(I),
-   \+ provable_property(I, built_in),
-   sys_dump_user(I),
-   sys_dump(I), fail.
+   ground(I), !,
+   dump2(I).
 dump(I) :-
-   \+ ground(I),
-   current_provable(I),
+   sys_dump_item_idx(I),
    \+ provable_property(I, built_in),
-   sys_dump_user(I),
    sys_dump(I), fail.
 dump(_).
 :- set_predicate_property(dump/1, sys_notrace).
 
+:- private dump2/1.
+dump2(I) :-
+   \+ provable_property(I, built_in),
+   sys_dump_item_chk(I),
+   sys_dump(I), fail.
+dump2(_).
+
 :- private sys_dump/1.
 :- special(sys_dump/1, 'SpecialDump', 0).
 
-% sys_dump_user(+Indicator)
-:- private sys_dump_user/1.
-sys_dump_user(I) :-
+/**
+ * sys_dump_item_chk(I):
+ * If I is a dump indicator then the predicate succeeds.
+ */
+% sys_dump_item_chk(+Indicator)
+:- private sys_dump_item_chk/1.
+sys_dump_item_chk(I) :-
    provable_property(I, sys_usage(U)),
    sys_listing_user_chk(U), !.
+
+/**
+ * sys_dump_item_idx(I):
+ * The predicate succeeds for each dump indicator I.
+ */
+% sys_dump_item_idx(-Indicator)
+:- private sys_dump_item_idx/1.
+sys_dump_item_idx(I) :-
+   setof(I, U^(  sys_listing_user(U),
+                 provable_property(I, sys_usage(U))), B),
+   sys_member(I, B).

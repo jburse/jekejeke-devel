@@ -1,5 +1,6 @@
 package jekpro.tools.foreign;
 
+import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -121,6 +122,8 @@ final class Score {
                 return MAX_SCORE - 1;
             case Types.TYPE_TERM:
                 return MAX_SCORE - 2;
+            case Types.TYPE_ATOMIC:
+                return MAX_SCORE - 3;
             default:
                 throw new IllegalArgumentException("illegal type");
         }
@@ -133,57 +136,59 @@ final class Score {
      * @param clazz The class.
      * @return The test closure.
      */
-    static Object getTest(int typ, Class clazz) {
+    static Object getTest(int typ, Class clazz, AbstractSource scope) {
         switch (typ) {
             case Types.TYPE_PRIMBOOL:
-                return new SkelAtom("sys_boolean");
+                return new SkelAtom("sys_boolean", scope);
             case Types.TYPE_PRIMBYTE:
-                return new SkelAtom("sys_integer8");
+                return new SkelAtom("sys_integer8", scope);
             case Types.TYPE_PRIMCHAR:
-                return new SkelAtom("sys_char16");
+                return new SkelAtom("sys_char16", scope);
             case Types.TYPE_PRIMSHORT:
-                return new SkelAtom("sys_integer16");
+                return new SkelAtom("sys_integer16", scope);
             case Types.TYPE_PRIMINT:
-                return new SkelAtom("sys_integer32");
+                return new SkelAtom("sys_integer32", scope);
             case Types.TYPE_PRIMLONG:
-                return new SkelAtom("sys_integer64");
+                return new SkelAtom("sys_integer64", scope);
             case Types.TYPE_PRIMFLOAT:
-                return new SkelAtom("sys_integer32_or_float32");
+                return new SkelAtom("sys_integer32_or_float32", scope);
             case Types.TYPE_PRIMDOUBLE:
-                return new SkelAtom("sys_integer64_or_float");
+                return new SkelAtom("sys_integer64_or_float", scope);
 
             case Types.TYPE_BOOL:
-                return new SkelAtom("sys_boolean");
+                return new SkelAtom("sys_boolean", scope);
             case Types.TYPE_BYTE:
-                return new SkelAtom("sys_integer8");
+                return new SkelAtom("sys_integer8", scope);
             case Types.TYPE_CHAR:
-                return new SkelAtom("sys_char16");
+                return new SkelAtom("sys_char16", scope);
             case Types.TYPE_SHORT:
-                return new SkelAtom("sys_integer16_and_not_integer8");
+                return new SkelAtom("sys_integer16_and_not_integer8", scope);
             case Types.TYPE_INTEGER:
-                return new SkelAtom("sys_integer32_and_not_integer16");
+                return new SkelAtom("sys_integer32_and_not_integer16", scope);
             case Types.TYPE_LONG:
-                return new SkelAtom("sys_integer64_and_not_integer32");
+                return new SkelAtom("sys_integer64_and_not_integer32", scope);
             case Types.TYPE_BIG_INTEGER:
-                return new SkelAtom("sys_integer_and_not_integer64");
+                return new SkelAtom("sys_integer_and_not_integer64", scope);
             case Types.TYPE_FLOAT:
-                return new SkelAtom("float32");
+                return new SkelAtom("float32", scope);
             case Types.TYPE_DOUBLE:
-                return new SkelAtom("float64");
+                return new SkelAtom("float64", scope);
             case Types.TYPE_BIG_DECIMAL:
-                return new SkelAtom("decimal");
+                return new SkelAtom("decimal", scope);
             case Types.TYPE_NUMBER:
-                return new SkelAtom("number");
+                return new SkelAtom("number", scope);
 
             case Types.TYPE_STRING:
-                return new SkelAtom("atom");
+                return new SkelAtom("atom", scope);
             case Types.TYPE_CHARSEQ:
-                return new SkelCompound(new SkelAtom("sys_atom_or_type_of"), clazz);
+                return new SkelCompound(new SkelAtom("sys_atom_or_type_of", scope), clazz);
             case Types.TYPE_REF:
-                return new SkelCompound(new SkelAtom("sys_type_of"), clazz);
+                return new SkelCompound(new SkelAtom("sys_type_of", scope), clazz);
             case Types.TYPE_OBJECT:
             case Types.TYPE_TERM:
                 return null;
+            case Types.TYPE_ATOMIC:
+                return new SkelAtom("atomic", scope);
             default:
                 throw new IllegalArgumentException("illegal type");
         }

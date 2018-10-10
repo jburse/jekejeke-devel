@@ -8,11 +8,10 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.LookupBase;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Lobby;
-import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
@@ -107,16 +106,18 @@ public final class ForeignPath {
      * @throws IOException        IO Error.
      */
     public static String sysFindPrefix(Interpreter inter,
-                                       String path, String key,
+                                       String path, TermAtomic key,
                                        Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Engine engine = (Engine) inter.getEngine();
         AbstractSource scope;
         try {
-            if (!"".equals(key)) {
-                scope = engine.store.getSource(key);
-                AbstractSource.checkExistentSource(scope, key);
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
+            if (!"".equals(sa.fun)) {
+                scope = (sa.scope != null ? sa.scope : engine.store.user);
+                scope = scope.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(scope, sa);
             } else {
                 scope = engine.store.user;
             }
@@ -138,17 +139,19 @@ public final class ForeignPath {
      * @throws IOException        IO Error.
      */
     public static Object sysUnfindPrefix(Interpreter inter,
-                                         String path, String key,
+                                         String path, TermAtomic key,
                                          Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Object res;
         Engine engine = (Engine) inter.getEngine();
         try {
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
             AbstractSource scope;
-            if (!"".equals(key)) {
-                scope = engine.store.getSource(key);
-                AbstractSource.checkExistentSource(scope, key);
+            if (!"".equals(sa.fun)) {
+                scope = (sa.scope != null ? sa.scope : engine.store.user);
+                scope = scope.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(scope, sa);
             } else {
                 scope = engine.store.user;
             }
@@ -170,16 +173,18 @@ public final class ForeignPath {
      * @throws InterpreterMessage Shit happens.
      */
     public static String sysFindKey(Interpreter inter,
-                                    String path, String key,
+                                    String path, TermAtomic key,
                                     Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Engine engine = (Engine) inter.getEngine();
         AbstractSource scope;
         try {
-            if (!"".equals(key)) {
-                scope = engine.store.getSource(key);
-                AbstractSource.checkExistentSource(scope, key);
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
+            if (!"".equals(sa.fun)) {
+                scope = (sa.scope != null ? sa.scope : engine.store.user);
+                scope = scope.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(scope, sa);
             } else {
                 scope = engine.store.user;
             }
@@ -200,7 +205,7 @@ public final class ForeignPath {
      * @throws InterpreterMessage Shit happens.
      */
     public static Object sysUnfindKey(Interpreter inter,
-                                      String path, String key,
+                                      String path, TermAtomic key,
                                       Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
@@ -208,9 +213,11 @@ public final class ForeignPath {
         Engine engine = (Engine) inter.getEngine();
         try {
             AbstractSource scope;
-            if (!"".equals(key)) {
-                scope = engine.store.getSource(key);
-                AbstractSource.checkExistentSource(scope, key);
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
+            if (!"".equals(sa.fun)) {
+                scope = (sa.scope != null ? sa.scope : engine.store.user);
+                scope = scope.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(scope, sa);
             } else {
                 scope = engine.store.user;
             }

@@ -477,7 +477,7 @@ public final class SpecialOper extends AbstractSpecial {
                 return AbstractBranch.FALSE_PROPERTY;
             return new Object[]{new TermCompound(new SkelCompound(
                     new SkelAtom(SpecialOper.OP_SYS_USAGE),
-                    new SkelAtom(src.getPath())))};
+                    src.getPathAtom()))};
         } else if (KEY_SYS_PORTRAY.equals(prop)) {
             String portray = oper.getPortray();
             if (portray != null) {
@@ -674,8 +674,9 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         if (KEY_SYS_USAGE.equals(prop)) {
             Object[] temp = ((SkelCompound) t).args;
-            String fun = SpecialUniv.derefAndCastString(temp[0], d);
-            AbstractSource source = en.store.getSource(fun);
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], d);
+            AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
+            source = source.getStore().getSource(sa.fun);
             if (source == null)
                 return SpecialOper.FALSE_OPERS;
             Operator[] snapshot = source.snapshotOpersInv();

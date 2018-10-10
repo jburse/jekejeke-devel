@@ -4,6 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
@@ -103,13 +104,13 @@ abstract class AbstractMember extends AbstractLense
      *
      * @return The test closures.
      */
-    public Object[] getTests() {
+    public Object[] getTests(AbstractSource scope) {
         Class[] paras = getParameterTypes();
         int n = getArity();
         Object[] t = (n != 0 ? new Object[n] : VOID_ARGS);
         int k = 0;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            t[k] = Score.getTest(encodeobj, getDeclaringClass());
+            t[k] = Score.getTest(encodeobj, getDeclaringClass(), scope);
             k++;
         }
         for (int i = 0; i < encodeparas.length; i++) {
@@ -119,7 +120,7 @@ abstract class AbstractMember extends AbstractLense
             } else if (typ == Types.TYPE_CALLOUT) {
                 /* do nothing */
             } else {
-                t[k] = Score.getTest(typ, paras[i]);
+                t[k] = Score.getTest(typ, paras[i], scope);
                 k++;
             }
         }
