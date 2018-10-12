@@ -68,6 +68,11 @@
 /*   fail: 1                                                      */
 /******************************************************************/
 
+/**
+ * sys_in:
+ * This instrumentation hook should succeed. It is called
+ * before a goal is called everytime a goal is called.
+ */
 :- public sys_in/0.
 :- static sys_in/0.
 :- set_predicate_property(sys_in/0, sys_noinstrument).
@@ -93,6 +98,11 @@ sys_in2 :-
 /*   redo: 3                                                      */
 /******************************************************************/
 
+/**
+ * sys_out:
+ * This instrumentation hook should succeed. It is called
+ * after a goal exits everytime a goal exits.
+ */
 :- public sys_out/0.
 :- static sys_out/0.
 :- set_predicate_property(sys_out/0, sys_noinstrument).
@@ -108,6 +118,8 @@ sys_out :-
 :- set_predicate_property(sys_out2/0, sys_noinstrument).
 :- set_predicate_property(sys_out2/0, sys_nowakeup).
 :- set_predicate_property(sys_out2/0, sys_nostack).
+sys_out2 :-
+   sys_goal_chk(3), !, sys_goal_cut.
 sys_out2.
 sys_out2 :-
    sys_port_show(3), fail.
@@ -118,6 +130,12 @@ sys_out2 :-
 /*   chop: 5                                                      */
 /******************************************************************/
 
+/**
+ * sys_at:
+ * This instrumentation hook should succeeds. It is called
+ * after a head unification succeeds and before the attribute
+ * variable unify hooks are called.
+ */
 :- public sys_at/0.
 :- static sys_at/0.
 :- set_predicate_property(sys_at/0, sys_noinstrument).
@@ -133,15 +151,51 @@ sys_at :-
 :- set_predicate_property(sys_at2/0, sys_noinstrument).
 :- set_predicate_property(sys_at2/0, sys_nowakeup).
 :- set_predicate_property(sys_at2/0, sys_nostack).
+sys_at2 :-
+   sys_clause_chk(5), !.
 sys_at2.
 sys_at2 :-
    sys_port_show(5), fail.
 
+/**
+ * sys_notrace_chk(P):
+ * The predicate succeeds when the debugged goal for port
+ * P is called from a sys_notrace source or has itself
+ * a sys_notrace predicate.
+ */
+% sys_notrace_chk(+Integer)
 :- private sys_notrace_chk/1.
 :- special(sys_notrace_chk/1, 'SpecialMode', 1).
 
-:- private sys_deter_chk/1.
-:- special(sys_deter_chk/1, 'SpecialMode', 2).
-
+/**
+ * sys_port_show(P):
+ * The predicate succeeds when the debugged goal for port P
+ * should not be traced according to the debug mode, the spy
+ * points or the break points. Otherwise the predicate calls
+ * the trace goal user hook.
+ */
 :- private sys_port_show/1.
-:- special(sys_port_show/1, 'SpecialMode', 3).
+:- special(sys_port_show/1, 'SpecialMode', 2).
+
+/**
+ * sys_goal_chk(P):
+ * The predicate succeeds when the previous choice point is
+ * a choice point for the call instrumentation of port P.
+ */
+:- private sys_goal_chk/1.
+:- special(sys_goal_chk/1, 'SpecialMode', 3).
+
+/**
+ * sys_goal_cut:
+ * The predicate succeeds in removing the current choice point.
+ */
+:- private sys_goal_cut/0.
+:- special(sys_goal_cut/0, 'SpecialMode', 4).
+
+/**
+ * sys_clause_chk(P):
+ * The predicate succeeds when the previous choice point
+ * is not a choice point for the current clause of port P.
+ */
+:- private sys_clause_chk/1.
+:- special(sys_clause_chk/1, 'SpecialMode', 5).

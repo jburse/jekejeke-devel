@@ -69,17 +69,28 @@ current_syntax(I) :-
  * The predicate succeeds for the properties Q of the syntax operator O. The
  * predicate will also try to access invisible syntax operators.
  */
-% syntax_property(-Oper, -Property)
+% syntax_property(+-Oper, -+Property)
 :- public syntax_property/2.
 syntax_property(I, R) :-
+   ground(I), !,
+   syntax_property2(I, R).
+syntax_property(I, R) :-
    var(R), !,
+   sys_current_syntax(L),
+   sys_member(I, L),
    sys_syntax_property(I, P),
    sys_member(R, P).
 syntax_property(I, R) :-
-   var(I), !,
    sys_syntax_property_idx(R, P),
    sys_member(I, P).
-syntax_property(I, R) :-
+
+% syntax_property2(+Oper, -Property)
+:- private syntax_property2/2.
+syntax_property2(I, R) :-
+   var(R), !,
+   sys_syntax_property(I, P),
+   sys_member(R, P).
+syntax_property2(I, R) :-
    functor(R, F, A),
    sys_syntax_property_chk(I, F/A, P),
    sys_member(R, P).

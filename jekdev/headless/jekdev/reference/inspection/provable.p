@@ -90,17 +90,28 @@ current_provable(I) :-
  * The predicate succeeds for the properties Q of the predicate I. The predicate
  * will also try to access invisible predicates.
  */
-% provable_property(-Indicator, -Property)
+% provable_property(+-Indicator, -+Property)
 :- public provable_property/2.
 provable_property(I, R) :-
+   ground(I), !,
+   provable_property2(I, R).
+provable_property(I, R) :-
    var(R), !,
+   sys_current_provable(L),
+   sys_member(I, L),
    sys_provable_property(I, P),
    sys_member(R, P).
 provable_property(I, R) :-
-   var(I), !,
    sys_provable_property_idx(R, P),
    sys_member(I, P).
-provable_property(I, R) :-
+
+% provable_property2(+Indicator, -Property)
+:- private provable_property2/2.
+provable_property2(I, R) :-
+   var(R), !,
+   sys_provable_property(I, P),
+   sys_member(R, P).
+provable_property2(I, R) :-
    functor(R, F, A),
    sys_provable_property_chk(I, F/A, P),
    sys_member(R, P).
