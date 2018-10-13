@@ -56,6 +56,7 @@
 
 :- use_module(library(experiment/simp)).
 :- use_module(library(inspection/provable)).
+:- use_module(library(stream/console)).
 
 /***********************************************************************/
 /* Debugging Mode                                                      */
@@ -163,8 +164,27 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
  */
 % debugging
 :- public debugging/0.
-:- special(debugging/0, 'SpecialDefault', 0).
-:- set_predicate_property(debugging/0, sys_notrace).
+debugging :-
+   current_prolog_flag(debug, X),
+   ttywrite_term((:-set_prolog_flag(debug,X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+debugging :-
+   current_prolog_flag(sys_visible, X),
+   ttywrite_term((:-visible(X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+debugging :-
+   current_prolog_flag(sys_leash, X),
+   ttywrite_term((:-leash(X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+debugging :-
+   spying(X),
+   ttywrite_term((:-spy(X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+debugging :-
+   breaking(X, Y),
+   ttywrite_term((:-break(X,Y)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+debugging.
 
 /**
  * spy(P):
@@ -172,7 +192,7 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
  */
 % spy(+Indicator)
 :- public spy/1.
-:- special(spy/1, 'SpecialDefault', 1).
+:- special(spy/1, 'SpecialDefault', 0).
 
 /**
  * nospy(P):
@@ -180,13 +200,27 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
  */
 % nospy(+Indicator)
 :- public nospy/1.
-:- special(nospy/1, 'SpecialDefault', 2).
+:- special(nospy/1, 'SpecialDefault', 1).
+
+/**
+ * spying(P):
+ * The predicate succeeds in P for every spy point.
+ */
+% spying(-Indicator)
+:- public spying/1.
+spying(I) :-
+   sys_spying(L),
+   sys_member(I, L).
+
+% sys_spying(-List)
+:- private sys_spying/1.
+:- special(sys_spying/1, 'SpecialDefault', 2).
 
 /**
  * break(F, L):
  * The predicate adds the file F and the line number L to the break points.
  */
-% break(+Atom, +Integer)
+% break(+Callable, +Integer)
 :- public break/2.
 break(P, L) :-
    absolute_file_name(P, Q),
@@ -200,7 +234,7 @@ break(P, L) :-
  * nobreak(F, L):
  * The predicate removes the file F and the line number L from the break points.
  */
-% nobreak(+Atom, +Integer)
+% nobreak(+Callable, +Integer)
 :- public nobreak/2.
 nobreak(P, L) :-
    absolute_file_name(P, Q),
@@ -209,6 +243,22 @@ nobreak(P, L) :-
 % sys_nobreak(+Pin, +Integer)
 :- private sys_nobreak/2.
 :- special(sys_nobreak/2, 'SpecialDefault', 4).
+
+/**
+ * breaking(F, L):
+ * For every break point the predicate succeeds
+ * with the file F and the line number L.
+ */
+% breaking(-Callable, -Integer)
+:- public breaking/2.
+breaking(P, L) :-
+   sys_breaking(R),
+   sys_member(Q-L, R),
+   absolute_file_name(P, Q).
+
+% sys_breaking(+List)
+:- private sys_breaking/1.
+:- special(sys_breaking/1, 'SpecialDefault', 5).
 
 /*******************************************************************************/
 /* Debugger Hooks                                                              */
@@ -227,4 +277,4 @@ sys_repose_goal(P-H, Q-K, C) :-
  */
 % sys_trace(+Atom, +Frame)
 :- public sys_trace/2.
-:- special(sys_trace/2, 'SpecialDefault', 5).
+:- special(sys_trace/2, 'SpecialDefault', 6).

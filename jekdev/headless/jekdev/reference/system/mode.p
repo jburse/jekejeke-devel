@@ -1,20 +1,14 @@
 /**
- * The programming interface allows mode changes from a secondary
- * thread. The secondary thread acts as a controller of the primary
- * thread. By changing the mode it controls the behav-iour of the
- * primary thread. A typical example of a secondary thread is the
- * user interface event thread. The primary threads are then the
- * console window Prolog threads. The secondary thread can then
- * for example start tracing a console window Prolog thread by
- * changing into an appropriate mode.
+ * The Prolog interpreter activates the goals of the debug clause
+ * fork in case some debug mode is set. The Prolog flag sys_cloak
+ * allows temporarily disabling any debug mode for a Prolog
+ * interpreter. The predicate sys_ignore/1 will run a goal with
+ * this flag set.
  *
- * The normal flow allows that mode changes can happen at any
- * time. Their effect is also not delimited to the call port of
- * a predicate or to an interrupted blocking operation. This is
- * not very problematic except when inside a trace handler. A mode
- * change might cause an undesired invocation of the trace handler.
- * The system predicate sys_ignore/1 allows calling a goal with
- * the mode cloak mask temporarily set off.
+ * The debug clause fork is pickled with the instrumentation built-ins
+ * sys_in/0, sys_out/0 and sys_at/0. The end-user is not supposed to
+ * use them. They need to have public access so that they can be called
+ * from any clause fork.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -71,7 +65,7 @@
 /**
  * sys_in:
  * This instrumentation hook should succeed. It is called
- * before a goal is called everytime a goal is called.
+ * before a goal is called every time a goal is called.
  */
 :- public sys_in/0.
 :- static sys_in/0.
@@ -101,7 +95,7 @@ sys_in2 :-
 /**
  * sys_out:
  * This instrumentation hook should succeed. It is called
- * after a goal exits everytime a goal exits.
+ * after a goal exits every time a goal exits.
  */
 :- public sys_out/0.
 :- static sys_out/0.
