@@ -12,7 +12,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;

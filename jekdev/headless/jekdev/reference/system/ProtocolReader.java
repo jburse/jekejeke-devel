@@ -91,7 +91,7 @@ public final class ProtocolReader extends FilterReader {
      * @param off  The offset.
      * @param len  The maximum.
      * @return The effective or -1.
-     * @throws IOException
+     * @throws IOException Shit happens.
      */
     public int read(char[] cbuf, int off, int len) throws IOException {
         int n = super.read(cbuf, off, len);

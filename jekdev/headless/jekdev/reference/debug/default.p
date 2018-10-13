@@ -63,14 +63,13 @@
 /***********************************************************************/
 
 /**
- * nodebug:
- * The predicate switches to the off mode.
+ * debug:
+ * The predicate switches to the debug mode.
  */
-:- public nodebug/0.
-nodebug :-
-   set_prolog_flag(sys_skip_frame, null),
-   set_prolog_flag(debug, off).
-:- set_predicate_property(nodebug/0, sys_notrace).
+:- public debug/0.
+debug :-
+   set_prolog_flag(debug, on).
+:- set_predicate_property(debug/0, sys_notrace).
 
 /**
  * trace:
@@ -78,7 +77,6 @@ nodebug :-
  */
 :- public trace/0.
 trace :-
-   set_prolog_flag(sys_skip_frame, null),
    set_prolog_flag(debug, step_in).
 :- set_predicate_property(trace/0, sys_notrace).
 
@@ -88,7 +86,6 @@ trace :-
  */
 :- public skip/0.
 skip :-
-   set_prolog_flag(sys_skip_frame, null),
    set_prolog_flag(debug, step_over).
 :- set_predicate_property(skip/0, sys_notrace).
 
@@ -98,27 +95,24 @@ skip :-
  */
 :- public out/0.
 out :-
-   set_prolog_flag(sys_skip_frame, null),
    set_prolog_flag(debug, step_out).
 :- set_predicate_property(out/0, sys_notrace).
 
 /**
- * debug:
- * The predicate switches to the debug mode.
+ * nodebug:
+ * The predicate switches to the off mode.
  */
-:- public debug/0.
-debug :-
-   set_prolog_flag(sys_skip_frame, null),
-   set_prolog_flag(debug, on).
-:- set_predicate_property(debug/0, sys_notrace).
+:- public nodebug/0.
+nodebug :-
+   set_prolog_flag(debug, off).
+:- set_predicate_property(nodebug/0, sys_notrace).
 
 /**
  * leash(L):
  * Leash the ports that are listed in L, unleash the ports that are
  * not listed in L. When prompted, unleashed ports do not await user
- * interaction but simply continue.
- * The mnemonics that work for the predicate are listed in the API
- * documentation.
+ * interaction but simply continue. The mnemonics that work for the
+ " predicate are listed in the API documentation.
  */
 % leash(+AtomOrList)
 :- public leash/1.
@@ -146,7 +140,7 @@ visible(Flags) :-
 :- set_predicate_property(visible/1, sys_notrace).
 
 % sys_name_flags(+Atom, -List)
-:- private sys_name_flags/2.
+:- public sys_name_flags/2.
 sys_name_flags(off, []).
 sys_name_flags(loose, [call]).
 sys_name_flags(half, [call,redo]).
@@ -185,6 +179,7 @@ debugging :-
    ttywrite_term((:-break(X,Y)), [quoted(true),context(0)]),
    ttywrite('.'), ttynl, fail.
 debugging.
+:- set_predicate_property(debugging/0, sys_notrace).
 
 /**
  * spy(P):

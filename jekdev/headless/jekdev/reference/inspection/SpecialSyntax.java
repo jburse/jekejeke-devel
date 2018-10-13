@@ -3,16 +3,11 @@ package jekdev.reference.inspection;
 import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
-import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Operator;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
-import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
 
 /**

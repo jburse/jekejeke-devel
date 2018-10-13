@@ -50,6 +50,9 @@ public final class FlagTrace extends AbstractFlag {
     public final static String OP_FLAG_DEBUG = "debug"; /* ISO */
     public final static String OP_FLAG_SYS_LEASH = "sys_leash";
     public final static String OP_FLAG_SYS_VISIBLE = "sys_visible";
+    public final static String OP_FLAG_SYS_TDEBUG = "sys_tdebug";
+    public final static String OP_FLAG_SYS_TLEASH = "sys_tleash";
+    public final static String OP_FLAG_SYS_TVISIBLE = "sys_tvisible";
     public final static String OP_FLAG_SYS_CLAUSE_INSTRUMENT = "sys_clause_instrument";
     public final static String OP_FLAG_SYS_HEAD_WAKEUP = "sys_head_wakeup";
     public final static String OP_FLAG_SYS_SKIP_FRAME = "sys_skip_frame";
@@ -61,12 +64,15 @@ public final class FlagTrace extends AbstractFlag {
     private static final int FLAG_DEBUG = 1;
     private static final int FLAG_SYS_LEASH = 2;
     private static final int FLAG_SYS_VISIBLE = 3;
-    private static final int FLAG_SYS_CLAUSE_INSTRUMENT = 4;
-    private static final int FLAG_SYS_HEAD_WAKEUP = 5;
-    private static final int FLAG_SYS_SKIP_FRAME = 6;
-    private static final int FLAG_SYS_QUERY_FRAME = 7;
-    private static final int FLAG_SYS_CLOAK = 8;
-    private static final int FLAG_SYS_MAX_STACK = 9;
+    private static final int FLAG_SYS_TDEBUG = 4;
+    private static final int FLAG_SYS_TLEASH = 5;
+    private static final int FLAG_SYS_TVISIBLE = 6;
+    private static final int FLAG_SYS_CLAUSE_INSTRUMENT = 7;
+    private static final int FLAG_SYS_HEAD_WAKEUP = 8;
+    private static final int FLAG_SYS_SKIP_FRAME = 9;
+    private static final int FLAG_SYS_QUERY_FRAME = 10;
+    private static final int FLAG_SYS_CLOAK = 11;
+    private static final int FLAG_SYS_MAX_STACK = 12;
 
     /**
      * <p>Create a flag.</p>
@@ -88,6 +94,9 @@ public final class FlagTrace extends AbstractFlag {
         prologflags.add(OP_FLAG_DEBUG, new FlagTrace(FLAG_DEBUG));
         prologflags.add(OP_FLAG_SYS_LEASH, new FlagTrace(FLAG_SYS_LEASH));
         prologflags.add(OP_FLAG_SYS_VISIBLE, new FlagTrace(FLAG_SYS_VISIBLE));
+        prologflags.add(OP_FLAG_SYS_TDEBUG, new FlagTrace(FLAG_SYS_TDEBUG));
+        prologflags.add(OP_FLAG_SYS_TLEASH, new FlagTrace(FLAG_SYS_TLEASH));
+        prologflags.add(OP_FLAG_SYS_TVISIBLE, new FlagTrace(FLAG_SYS_TVISIBLE));
         prologflags.add(OP_FLAG_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
         prologflags.add(OP_FLAG_SYS_HEAD_WAKEUP, new FlagTrace(FLAG_SYS_HEAD_WAKEUP));
         prologflags.add(OP_FLAG_SYS_SKIP_FRAME, new FlagTrace(FLAG_SYS_SKIP_FRAME));
@@ -108,11 +117,17 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_UNKNOWN:
                 return new SkelAtom(ReadOpts.OP_VALUE_ERROR);
             case FLAG_DEBUG:
-                return SpecialDefault.modeToAtom(en.visor.flags & SupervisorTrace.MASK_VISOR_MODE);
+                return SpecialDefault.modeToAtom(((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_DEBG);
             case FLAG_SYS_LEASH:
-                return SpecialDefault.portsToList(en.store, en.visor.flags >> 16);
+                return SpecialDefault.portsToList(en, ((StoreTrace)en.store).flags >> 16);
             case FLAG_SYS_VISIBLE:
-                return SpecialDefault.portsToList(en.store, en.visor.flags >> 24);
+                return SpecialDefault.portsToList(en, ((StoreTrace)en.store).flags >> 24);
+            case FLAG_SYS_TDEBUG:
+                return SpecialDefault.modeToAtom(en.visor.flags & SpecialDefault.MASK_MODE_DEBG);
+            case FLAG_SYS_TLEASH:
+                return SpecialDefault.portsToList(en, en.visor.flags >> 16);
+            case FLAG_SYS_TVISIBLE:
+                return SpecialDefault.portsToList(en, en.visor.flags >> 24);
             case FLAG_SYS_CLAUSE_INSTRUMENT:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NIST) == 0);
             case FLAG_SYS_HEAD_WAKEUP:
@@ -124,7 +139,7 @@ public final class FlagTrace extends AbstractFlag {
                 frame = en.visor.ref;
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_CLOAK:
-                return AbstractFlag.switchToAtom((en.visor.flags & SupervisorTrace.MASK_VISOR_NOFL) == 0);
+                return AbstractFlag.switchToAtom((en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0);
             case FLAG_SYS_MAX_STACK:
                 return Integer.valueOf(en.store.getMaxStack());
             default:
@@ -149,13 +164,22 @@ public final class FlagTrace extends AbstractFlag {
                     /* */
                     return false;
                 case FLAG_DEBUG:
-                    ((SupervisorTrace) en.visor).setMode(SpecialDefault.atomToMode(m, d));
+                    ((StoreTrace) en.store).setMode(SpecialDefault.atomToMode(m, d));
                     return true;
                 case FLAG_SYS_LEASH:
-                    ((SupervisorTrace) en.visor).setLeash(SpecialDefault.listToPorts(m, d) << 16);
+                    ((StoreTrace) en.store).setLeash(SpecialDefault.listToPorts(m, d) << 16);
                     return true;
                 case FLAG_SYS_VISIBLE:
-                    ((SupervisorTrace) en.visor).setVisible(SpecialDefault.listToPorts(m, d) << 24);
+                    ((StoreTrace) en.store).setVisible(SpecialDefault.listToPorts(m, d) << 24);
+                    return true;
+                case FLAG_SYS_TDEBUG:
+                    ((SupervisorTrace) en.visor).setThreadMode(SpecialDefault.atomToMode(m, d));
+                    return true;
+                case FLAG_SYS_TLEASH:
+                    ((SupervisorTrace) en.visor).setThreadLeash(SpecialDefault.listToPorts(m, d) << 16);
+                    return true;
+                case FLAG_SYS_TVISIBLE:
+                    ((SupervisorTrace) en.visor).setThreadVisible(SpecialDefault.listToPorts(m, d) << 24);
                     return true;
                 case FLAG_SYS_CLAUSE_INSTRUMENT:
                     if (AbstractFlag.atomToSwitch(m, d)) {

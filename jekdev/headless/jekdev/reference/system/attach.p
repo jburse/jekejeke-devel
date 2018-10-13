@@ -45,7 +45,88 @@
 :- use_module(library(stream/console)).
 
 /***********************************************************************/
-/* Spy & Break Points                                                  */
+/* Thead Debugging Mode                                                */
+/***********************************************************************/
+
+/**
+ * tdebug:
+ * The predicate switches the engine to the debug mode.
+ */
+:- public tdebug/0.
+tdebug :-
+   set_prolog_flag(sys_tdebug, on).
+:- set_predicate_property(tdebug/0, sys_notrace).
+
+/**
+ * ttrace:
+ * The predicate switches the engine to the step in mode.
+ */
+:- public ttrace/0.
+ttrace :-
+   set_prolog_flag(sys_tdebug, step_in).
+:- set_predicate_property(ttrace/0, sys_notrace).
+
+/**
+ * tskip:
+ * The predicate switches the engine to the skip mode.
+ */
+:- public tskip/0.
+tskip :-
+   set_prolog_flag(sys_tdebug, step_over).
+:- set_predicate_property(tskip/0, sys_notrace).
+
+/**
+ * tout:
+ * The predicate switchesthe engine  to the out mode.
+ */
+:- public tout/0.
+tout :-
+   set_prolog_flag(sys_tdebug, step_out).
+:- set_predicate_property(tout/0, sys_notrace).
+
+/**
+ * tnodebug:
+ * The predicate switches the engine to the off mode.
+ */
+:- public tnodebug/0.
+tnodebug :-
+   set_prolog_flag(sys_tdebug, off).
+:- set_predicate_property(tnodebug/0, sys_notrace).
+
+/**
+ * tleash(L):
+ * Leash the ports of the engine that are listed in L, unleash the
+ * of the engine ports that are not listed in L. When prompted,
+ * unleashed ports do not await user interaction but simply continue.
+ * The predicate accepts the same mnemonics as the predicate leash/1.
+ */
+% tleash(+AtomOrList)
+:- public tleash/1.
+tleash(Name) :-
+   sys_name_flags(Name, Flags), !,
+   set_prolog_flag(sys_tleash, Flags).
+tleash(Flags) :-
+   set_prolog_flag(sys_tleash, Flags).
+:- set_predicate_property(leash/1, sys_notrace).
+
+/**
+ * visible(L):
+ * Show the ports of the engine that are listed in L, hide the ports
+ * of the engine that are not listed in L. When traced, hidden ports
+ * are not prompted but simply continue. The predicate accepts the same
+ * mnemonics as the predicate leash/1.
+ */
+% tvisible(+AtomOrList)
+:- public tvisible/1.
+tvisible(Name) :-
+   sys_name_flags(Name, Flags), !,
+   set_prolog_flag(sys_tvisible, Flags).
+tvisible(Flags) :-
+   set_prolog_flag(sys_tvisible, Flags).
+:- set_predicate_property(visible/1, sys_notrace).
+
+/***********************************************************************/
+/* Thread Spy & Break Points                                           */
 /***********************************************************************/
 
 /**
@@ -55,6 +136,18 @@
 % tdebugging
 :- public tdebugging/0.
 tdebugging :-
+   current_prolog_flag(sys_tdebug, X),
+   ttywrite_term((:-set_prolog_flag(sys_tdebug,X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+tdebugging :-
+   current_prolog_flag(sys_tvisible, X),
+   ttywrite_term((:-tvisible(X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+tdebugging :-
+   current_prolog_flag(sys_tleash, X),
+   ttywrite_term((:-tleash(X)), [quoted(true),context(0)]),
+   ttywrite('.'), ttynl, fail.
+tdebugging :-
    tspying(X),
    ttywrite_term((:-tspy(X)), [quoted(true),context(0)]),
    ttywrite('.'), ttynl, fail.
@@ -63,6 +156,7 @@ tdebugging :-
    ttywrite_term((:-tbreak(X,Y)), [quoted(true),context(0)]),
    ttywrite('.'), ttynl, fail.
 tdebugging.
+:- set_predicate_property(tdebugging/0, sys_notrace).
 
 /**
  * tspy(P):
