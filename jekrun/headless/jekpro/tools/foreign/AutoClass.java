@@ -1,7 +1,6 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -15,6 +14,7 @@ import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
@@ -281,7 +281,7 @@ public final class AutoClass extends AbstractAuto {
                 Predicate over = makeOverride(sa, pick, en);
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
-                    SpecialSpecial.definePredicate(pick, del, en);
+                    Predicate.definePredicate(pick, del, en);
                     Predicate.checkPredicateDecl(pick, sa, en);
                 } else {
                     for (int i = 0; i < dels.length; i++) {
@@ -314,7 +314,7 @@ public final class AutoClass extends AbstractAuto {
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
                         virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                         pick = makePrivate(sa, sk.getArity(), virt, en);
-                        SpecialSpecial.definePredicate(pick, del, en);
+                        Predicate.definePredicate(pick, del, en);
                         Predicate.checkPredicateDecl(pick, sa, en);
                     }
                 }
@@ -395,8 +395,8 @@ public final class AutoClass extends AbstractAuto {
      * @param en    The interpreter.
      */
     private static Predicate makePrivate(SkelAtom sa, int arity,
-                                  boolean virt,
-                                  Engine en)
+                                         boolean virt,
+                                         Engine en)
             throws EngineException, EngineMessage {
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
@@ -569,7 +569,7 @@ public final class AutoClass extends AbstractAuto {
             } else {
                 en.skel = EngineMessage.domainError(
                         AbstractFactory.OP_DOMAIN_FOREIGN_EXCEPTION,
-                        SpecialSpecial.classToName(ret));
+                        SpecialForeign.classToName(ret));
                 return false;
             }
         }
@@ -654,19 +654,19 @@ public final class AutoClass extends AbstractAuto {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_ACCESS,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
-                    SpecialSpecial.constructorToCallable(
+                    SpecialForeign.constructorToCallable(
                             con.getParameterTypes())));
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
-                    SpecialSpecial.constructorToCallable(
+                    SpecialForeign.constructorToCallable(
                             con.getParameterTypes())));
         } catch (InstantiationException e) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_NEW,
                     EngineMessage.OP_PERMISSION_CLASS,
-                    SpecialSpecial.classToName(con.getDeclaringClass())));
+                    SpecialForeign.classToName(con.getDeclaringClass())));
         } catch (NoClassDefFoundError x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_LINK,

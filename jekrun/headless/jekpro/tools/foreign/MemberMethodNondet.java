@@ -1,9 +1,8 @@
 package jekpro.tools.foreign;
 
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractBind;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -119,7 +118,7 @@ final class MemberMethodNondet extends AbstractMember {
         CallOut co = new CallOut();
         AbstractBind mark = en.bind;
         Object temp = en.skel;
-        Display ref = en.display;
+        BindCount[] ref = en.display;
         Object obj;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
             obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
@@ -137,7 +136,7 @@ final class MemberMethodNondet extends AbstractMember {
             }
             if (res == null)
                 return false;
-            Display d = AbstractTerm.getDisplay(res);
+            BindCount[] d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) temp).args[
                                     ((SkelCompound) temp).args.length - 1], ref,
@@ -146,10 +145,10 @@ final class MemberMethodNondet extends AbstractMember {
                     return false;
 
                 if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
-                    en.skel = null;
+                    en.fault = null;
                     en.releaseBind(mark);
-                    if (en.skel != null)
-                        throw (EngineException) en.skel;
+                    if (en.fault != null)
+                        throw en.fault;
                 }
                 co.flags &= ~CallOut.MASK_CALL_FIRST;
 
@@ -159,7 +158,7 @@ final class MemberMethodNondet extends AbstractMember {
             } else {
                 Object check = AbstractTerm.getMarker(res);
                 if (check != null && ((MutableBit) check).getBit()) {
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                     ((MutableBit) check).setBit(false);
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
@@ -216,7 +215,7 @@ final class MemberMethodNondet extends AbstractMember {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(MemberMethodDet.OP_FOREIGN),
-                SpecialSpecial.classToName(method.getDeclaringClass(),
+                SpecialForeign.classToName(method.getDeclaringClass(),
                         source, en),
                 SpecialForeign.methodToCallable(method.getName(),
                         method.getParameterTypes(), source, en));

@@ -3,8 +3,6 @@ package jekpro.tools.call;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.proxy.FlagAPI;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Lobby;
 
 /**
  * This class represents the base for all toolkits. Each toolkit predefines

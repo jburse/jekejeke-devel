@@ -1,11 +1,13 @@
 package jekpro.tools.term;
 
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 
 import java.io.StringWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>
@@ -39,7 +41,7 @@ import java.io.StringWriter;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSkel {
-    public static Object VOID_OBJ = new Object();
+    public final static Object VOID_OBJ = new Object();
 
     /**
      * <p>Return a string of a skeleton.</p>
@@ -49,7 +51,7 @@ public abstract class AbstractSkel {
     public String toString() {
         try {
             StringWriter sw = new StringWriter();
-            PrologWriter.toString(this, Display.DISPLAY_CONST, sw, 0, null);
+            PrologWriter.toString(this, BindCount.DISPLAY_CONST, sw, 0, null);
             return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
@@ -57,5 +59,6 @@ public abstract class AbstractSkel {
             throw new RuntimeException("shouldn't happen", x);
         }
     }
+
 
 }

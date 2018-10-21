@@ -1,11 +1,11 @@
 package jekpro.tools.foreign;
 
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.*;
 
@@ -115,7 +115,7 @@ final class MemberConstructor extends AbstractMember {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         Object temp = en.skel;
-        Display ref = en.display;
+        BindCount[] ref = en.display;
         Object[] args = convertArgs(temp, ref, en, null);
         Object res = AutoClass.invokeNew(constructor, args);
         if ((subflags & MASK_METH_FUNC) != 0) {
@@ -125,7 +125,7 @@ final class MemberConstructor extends AbstractMember {
         }
         if (res == null)
             return false;
-        Display d = AbstractTerm.getDisplay(res);
+        BindCount[] d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
@@ -133,7 +133,7 @@ final class MemberConstructor extends AbstractMember {
             return false;
         Object check = AbstractTerm.getMarker(res);
         if (check != null && ((MutableBit) check).getBit()) {
-            d.remTab(en);
+            BindCount.remTab(d, en);
             ((MutableBit) check).setBit(false);
         }
         return en.getNext();
@@ -176,8 +176,8 @@ final class MemberConstructor extends AbstractMember {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_CONSTRUCTOR),
-                SpecialSpecial.classToName(constructor.getDeclaringClass(), source, en),
-                SpecialSpecial.constructorToCallable(
+                SpecialForeign.classToName(constructor.getDeclaringClass(), source, en),
+                SpecialForeign.constructorToCallable(
                         constructor.getParameterTypes(), source, en));
     }
 
@@ -191,7 +191,7 @@ final class MemberConstructor extends AbstractMember {
      * @return The name guess, or null.
      */
     public String getFun() {
-        return SpecialSpecial.OP_NAME_CONSTRUCTOR;
+        return SpecialForeign.OP_NAME_CONSTRUCTOR;
     }
 
     /**

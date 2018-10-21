@@ -2,7 +2,7 @@ package jekpro.tools.proxy;
 
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.LoadOpts;
@@ -193,7 +193,8 @@ public final class FlagAPI extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en) throws EngineMessage {
+    public boolean setFlag(Object m, BindCount[] d, Engine en)
+            throws EngineMessage {
         switch (id) {
             case FLAG_SYS_MASK:
                 en.visor.setMask(AbstractFlag.atomToSwitch(m, d));

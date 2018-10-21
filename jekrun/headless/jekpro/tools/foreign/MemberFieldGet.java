@@ -1,8 +1,7 @@
 package jekpro.tools.foreign;
 
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -116,7 +115,7 @@ final class MemberFieldGet extends AbstractMember {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         Object temp = en.skel;
-        Display ref = en.display;
+        BindCount[] ref = en.display;
         Object obj;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
             obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
@@ -131,7 +130,7 @@ final class MemberFieldGet extends AbstractMember {
         }
         if (res == null)
             return false;
-        Display d = AbstractTerm.getDisplay(res);
+        BindCount[] d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
@@ -139,7 +138,7 @@ final class MemberFieldGet extends AbstractMember {
             return false;
         Object check = AbstractTerm.getMarker(res);
         if (check != null && ((MutableBit) check).getBit()) {
-            d.remTab(en);
+            BindCount.remTab(d, en);
             ((MutableBit) check).setBit(false);
         }
         return en.getNext();
@@ -182,7 +181,7 @@ final class MemberFieldGet extends AbstractMember {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_GETTER),
-                SpecialSpecial.classToName(field.getDeclaringClass(), source, en),
+                SpecialForeign.classToName(field.getDeclaringClass(), source, en),
                 new SkelAtom(field.getName()));
     }
 

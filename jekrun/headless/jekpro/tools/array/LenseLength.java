@@ -1,8 +1,7 @@
 package jekpro.tools.array;
 
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
@@ -116,7 +115,7 @@ final class LenseLength extends AbstractLense {
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
-        Display ref = en.display;
+        BindCount[] ref = en.display;
         Object obj;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
             obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
@@ -124,7 +123,7 @@ final class LenseLength extends AbstractLense {
             obj = null;
         }
         en.skel = Integer.valueOf(getLength(obj));
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
         return false;
     }
 
@@ -143,7 +142,7 @@ final class LenseLength extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz)));
+                    SpecialForeign.classToName(clazz)));
         }
     }
 
@@ -184,7 +183,7 @@ final class LenseLength extends AbstractLense {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_LENGTH),
-                SpecialSpecial.classToName(clazz, source, en));
+                SpecialForeign.classToName(clazz, source, en));
     }
 
     /***************************************************************/

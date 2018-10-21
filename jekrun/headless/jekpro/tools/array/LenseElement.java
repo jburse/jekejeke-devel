@@ -1,12 +1,13 @@
 package jekpro.tools.array;
 
-import jekpro.model.builtin.SpecialSpecial;
+import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.term.*;
 
 import java.lang.reflect.Array;
@@ -85,7 +86,7 @@ final class LenseElement extends AbstractLense {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return SpecialSpecial.SIG_INT;
+        return SpecialModel.SIG_INT;
     }
 
     /**
@@ -116,7 +117,7 @@ final class LenseElement extends AbstractLense {
             throws EngineException, EngineMessage {
         try {
             Object temp = en.skel;
-            Display ref = en.display;
+            BindCount[] ref = en.display;
             Object obj;
             if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
                 obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
@@ -134,14 +135,14 @@ final class LenseElement extends AbstractLense {
             }
             if (res == null)
                 return false;
-            Display d = AbstractTerm.getDisplay(res);
+            BindCount[] d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) temp).args[2], ref,
                             AbstractTerm.getSkel(res), d))
                 return false;
             Object check = AbstractTerm.getMarker(res);
             if (check != null && ((MutableBit) check).getBit()) {
-                d.remTab(en);
+                BindCount.remTab(d, en);
                 ((MutableBit) check).setBit(false);
             }
             return en.getNext();
@@ -167,12 +168,12 @@ final class LenseElement extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_GETTER,
-                    SpecialSpecial.classToName(clazz)));
+                    SpecialForeign.classToName(clazz)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_INDEX,
-                    SpecialSpecial.classToName(clazz)));
+                    SpecialForeign.classToName(clazz)));
         }
     }
 
@@ -213,7 +214,7 @@ final class LenseElement extends AbstractLense {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_ELEMENT),
-                SpecialSpecial.classToName(clazz, source, en));
+                SpecialForeign.classToName(clazz, source, en));
     }
 
     /***************************************************************/

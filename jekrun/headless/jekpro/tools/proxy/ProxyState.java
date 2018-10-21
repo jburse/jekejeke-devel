@@ -36,7 +36,7 @@ import java.lang.reflect.Method;
  */
 public final class ProxyState implements InvocationHandler {
     private final ProxyHandler handler;
-    private Object[] template;
+    private final Object[] template;
 
     /**
      * <p>Create a data by a handler.</p>

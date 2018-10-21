@@ -6,8 +6,8 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import matula.comp.sharik.AbstractFramework;
 import matula.util.data.MapHash;
 

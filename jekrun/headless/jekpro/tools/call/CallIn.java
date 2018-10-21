@@ -284,12 +284,13 @@ public final class CallIn {
         snap = en.number;
         try {
             boolean multi = en.wrapGoal();
-            Display ref = en.display;
+            BindCount[] ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause();
+            ref2.bind = BindCount.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, ref, en);
             if (multi)
-                ref.remTab(en);
+                BindCount.remTab(ref, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -303,28 +304,28 @@ public final class CallIn {
         } catch (EngineMessage x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.skel = new EngineException(x, EngineException.fetchStack(en));
+            en.fault = new EngineException(x, EngineException.fetchStack(en));
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
-            throw new InterpreterException((EngineException) en.skel);
+            throw new InterpreterException(en.fault);
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.skel = x;
+            en.fault = x;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
-            throw new InterpreterException((EngineException) en.skel);
+            throw new InterpreterException(en.fault);
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.skel = null;
+        en.fault = null;
         en.releaseBind(mark);
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
-        if (en.skel != null)
-            throw new InterpreterException((EngineException) en.skel);
+        if (en.fault != null)
+            throw new InterpreterException(en.fault);
         return false;
     }
 
@@ -352,20 +353,20 @@ public final class CallIn {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.skel = x;
+            en.fault = x;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
-            throw new InterpreterException((EngineException) en.skel);
+            throw new InterpreterException(en.fault);
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.skel = null;
+        en.fault = null;
         en.releaseBind(mark);
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
-        if (en.skel != null)
-            throw new InterpreterException((EngineException) en.skel);
+        if (en.fault != null)
+            throw new InterpreterException(en.fault);
         return false;
     }
 
@@ -379,14 +380,14 @@ public final class CallIn {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
-        en.skel = null;
-        en.display = null;
+        en.window = null;
+        en.fault = null;
         en.cutChoices(snap);
         en.releaseBind(mark);
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
-        if (en.skel != null)
-            throw new InterpreterException((EngineException) en.skel);
+        if (en.fault != null)
+            throw new InterpreterException(en.fault);
     }
 
     /************************************************************/
@@ -404,21 +405,17 @@ public final class CallIn {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
-        try {
-            en.skel = null;
-            en.display = null;
-            en.cutChoices(snap);
-            if (en.skel != null)
-                throw (EngineException) en.skel;
-        } catch (EngineException x) {
-            en.skel = x;
+
+        en.window = null;
+        en.fault = null;
+        en.cutChoices(snap);
+        if (en.fault != null)
             en.releaseBind(mark);
-            en.visor.setFence(backthread);
-            en.visor.setInuse(backuse);
-            throw new InterpreterException((EngineException) en.skel);
-        }
+
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
+        if (en.fault != null)
+            throw new InterpreterException(en.fault);
     }
 
     /**
@@ -432,14 +429,16 @@ public final class CallIn {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
-        en.skel = (e != null ? (EngineException) e.getException() : null);
-        en.display = null;
+
+        en.window = null;
+        en.fault = (e != null ? (EngineException) e.getException() : null);
         en.cutChoices(snap);
         en.releaseBind(mark);
+
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
-        if (en.skel != null)
-            return new InterpreterException((EngineException) en.skel);
+        if (en.fault != null)
+            return new InterpreterException(en.fault);
         return null;
     }
 

@@ -2,7 +2,7 @@ package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
@@ -217,7 +217,7 @@ public final class Interpreter implements Comparator<Object> {
      */
     public Object getProperty(String flag) {
         Object res = ForeignEngine.getFlag(flag, engine);
-        return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
+        return (res != null ? AbstractTerm.createTerm(res, BindCount.DISPLAY_CONST) : null);
     }
 
     /**
@@ -351,7 +351,7 @@ public final class Interpreter implements Comparator<Object> {
         if (val == null)
             return null;
         int size = rd.getGensym();
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new MutableBit().setBit(true));
@@ -419,7 +419,7 @@ public final class Interpreter implements Comparator<Object> {
         if (val == null)
             return null;
         int size = rd.getGensym();
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         try {
             if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), val, ref, en, rd))

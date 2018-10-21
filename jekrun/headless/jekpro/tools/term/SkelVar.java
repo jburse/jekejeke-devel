@@ -1,8 +1,8 @@
 package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindSerno;
-import jekpro.model.molec.Display;
 
 /**
  * <p>This class provides variable skeletons.</p>
@@ -116,7 +116,7 @@ public final class SkelVar extends AbstractSkel
      * @param d The display.
      * @return The hash code.
      */
-    public int hashCode(Display d) {
+    public int hashCode(BindCount[] d) {
         return d.hashCode() * 31 + hashCode();
     }
 
@@ -127,11 +127,13 @@ public final class SkelVar extends AbstractSkel
      * @param en  The engine, or null.
      * @return The serial number.
      */
-    public int getValue(Display ref, Engine en) {
+    public int getValue(BindCount[] ref, Engine en) {
         if (en != null) {
-            if (ref.serno == -1)
-                BindSerno.bindSerno(ref, en);
-            return ref.serno + id;
+            BindCount bc = ref[id];
+            int i = bc.serno;
+            if (i == -1)
+                i = BindSerno.bindSerno(bc, en);
+            return i;
         } else {
             return id;
         }

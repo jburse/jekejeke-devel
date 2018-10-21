@@ -1,8 +1,8 @@
 package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -53,7 +53,7 @@ import jekpro.tools.call.Interpreter;
  */
 public final class TermVar extends AbstractTerm {
     final SkelVar skel;
-    final Display display;
+    final BindCount[] display;
     Object marker;
 
     /**
@@ -62,7 +62,7 @@ public final class TermVar extends AbstractTerm {
      * @param s The var skel.
      * @param d The var display.
      */
-    TermVar(SkelVar s, Display d) {
+    TermVar(SkelVar s, BindCount[] d) {
         skel = s;
         display = d;
     }
@@ -72,7 +72,7 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        display = new Display(1);
+        display = BindCount.newBind(1);
         marker = new MutableBit().setBit(true);
     }
 
@@ -94,7 +94,7 @@ public final class TermVar extends AbstractTerm {
      *
      * @return The display.
      */
-    public Display getDisplay() {
+    public BindCount[] getDisplay() {
         return display;
     }
 
@@ -140,10 +140,10 @@ public final class TermVar extends AbstractTerm {
      */
     public Object deref() {
         Object t = skel;
-        Display d = display;
+        BindCount[] d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d.bind[((SkelVar) t).id]).display != null) {
+                (b = d[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -161,10 +161,10 @@ public final class TermVar extends AbstractTerm {
      */
     public AbstractTerm derefWrapped() {
         Object t = skel;
-        Display d = display;
+        BindCount[] d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d.bind[((SkelVar) t).id]).display != null) {
+                (b = d[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }

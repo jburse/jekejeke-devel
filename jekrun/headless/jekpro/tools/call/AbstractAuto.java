@@ -239,7 +239,7 @@ public abstract class AbstractAuto extends AbstractSource {
      * @param en    The interpreter.
      */
     public static Predicate makePublic(SkelAtom sa, int arity,
-                                boolean virt, Engine en)
+                                       boolean virt, Engine en)
             throws EngineException, EngineMessage {
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,

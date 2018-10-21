@@ -3,7 +3,7 @@ package jekpro.tools.term;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractBind;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
@@ -81,7 +81,7 @@ public abstract class AbstractTerm {
      * @param d The display.
      * @return The term.
      */
-    public static Object createTerm(Object m, Display d) {
+    public static Object createTerm(Object m, BindCount[] d) {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
@@ -103,7 +103,7 @@ public abstract class AbstractTerm {
      * @param d The display.
      * @return The term.
      */
-    public static AbstractTerm createTermWrapped(Object m, Display d) {
+    public static AbstractTerm createTermWrapped(Object m, BindCount[] d) {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
@@ -124,7 +124,7 @@ public abstract class AbstractTerm {
      * @param d The display.
      * @return The molec.
      */
-    public static Object createMolec(Object m, Display d) {
+    public static Object createMolec(Object m, BindCount[] d) {
         if (m instanceof SkelVar) {
             return new TermVar((SkelVar) m, d);
         } else if (m instanceof SkelCompound) {
@@ -143,7 +143,7 @@ public abstract class AbstractTerm {
      */
     public static Object getSkel(Object t) {
         if (t instanceof AbstractTerm) {
-            return ((AbstractTerm)t).getSkel();
+            return ((AbstractTerm) t).getSkel();
         } else if (t instanceof String) {
             return new SkelAtom((String) t);
         } else {
@@ -158,11 +158,11 @@ public abstract class AbstractTerm {
      * @param t The term, not null.
      * @return The display.
      */
-    public static Display getDisplay(Object t) {
+    public static BindCount[] getDisplay(Object t) {
         if (t instanceof AbstractTerm) {
-            return ((AbstractTerm)t).getDisplay();
+            return ((AbstractTerm) t).getDisplay();
         } else {
-            return Display.DISPLAY_CONST;
+            return BindCount.DISPLAY_CONST;
         }
     }
 
@@ -182,7 +182,7 @@ public abstract class AbstractTerm {
      *
      * @return The display.
      */
-    public abstract Display getDisplay();
+    public abstract BindCount[] getDisplay();
 
     /************************************************************/
     /* Experimental Multi                                       */
@@ -315,18 +315,14 @@ public abstract class AbstractTerm {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
-        try {
-            en.skel = null;
-            en.releaseBind(mark);
-            if (en.skel != null)
-                throw (EngineException) en.skel;
-        } catch (EngineException x) {
-            en.visor.setFence(backthread);
-            en.visor.setInuse(backuse);
-            throw new InterpreterException(x);
-        }
+
+        en.fault = null;
+        en.releaseBind(mark);
+
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
+        if (en.fault != null)
+            throw new InterpreterException(en.fault);
     }
 
     /**
@@ -342,7 +338,7 @@ public abstract class AbstractTerm {
             return t;
         /* common lane */
         Object m = AbstractTerm.getSkel(t);
-        Display d = AbstractTerm.getDisplay(t);
+        BindCount[] d = AbstractTerm.getDisplay(t);
 
         Engine en = (Engine) inter.getEngine();
         EngineCopy ec = en.enginecopy;
@@ -355,8 +351,8 @@ public abstract class AbstractTerm {
         ec.vars = null;
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
-        int size = Display.displaySize(val);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        int size = EngineCopy.displaySize(val);
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         Object res = AbstractTerm.createTerm(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new MutableBit().setBit(true));
@@ -373,7 +369,7 @@ public abstract class AbstractTerm {
     public static AbstractTerm copyTermWrapped(Interpreter inter, Object t) {
         /* common lane */
         Object m = AbstractTerm.getSkel(t);
-        Display d = AbstractTerm.getDisplay(t);
+        BindCount[] d = AbstractTerm.getDisplay(t);
 
         Engine en = (Engine) inter.getEngine();
         EngineCopy ec = en.enginecopy;
@@ -386,8 +382,8 @@ public abstract class AbstractTerm {
         ec.vars = null;
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
-        int size = Display.displaySize(val);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        int size = EngineCopy.displaySize(val);
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new MutableBit().setBit(true));
@@ -404,7 +400,7 @@ public abstract class AbstractTerm {
     public static Object copyMolec(Interpreter inter, Object t) {
         /* common lane */
         Object m = AbstractTerm.getSkel(t);
-        Display d = AbstractTerm.getDisplay(t);
+        BindCount[] d = AbstractTerm.getDisplay(t);
 
         Engine en = (Engine) inter.getEngine();
         EngineCopy ec = en.enginecopy;
@@ -417,8 +413,8 @@ public abstract class AbstractTerm {
         ec.vars = null;
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
-        int size = Display.displaySize(val);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        int size = EngineCopy.displaySize(val);
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         Object res = AbstractTerm.createMolec(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new MutableBit().setBit(true));

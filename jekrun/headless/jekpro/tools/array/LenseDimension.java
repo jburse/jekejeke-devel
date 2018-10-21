@@ -1,12 +1,13 @@
 package jekpro.tools.array;
 
-import jekpro.model.builtin.SpecialSpecial;
+import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -86,7 +87,7 @@ final class LenseDimension extends AbstractLense {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return SpecialSpecial.SIG_INT;
+        return SpecialModel.SIG_INT;
     }
 
     /**
@@ -117,12 +118,12 @@ final class LenseDimension extends AbstractLense {
             throws EngineException, EngineMessage {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
-            Display ref = en.display;
+            BindCount[] ref = en.display;
             Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
             SpecialEval.checkNotLessThanZero(num);
             int size = SpecialEval.castIntValue(num);
             Object val = newInstance(size);
-            if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+            if (!en.unifyTerm(temp[1], ref, val, BindCount.DISPLAY_CONST))
                 return false;
             return en.getNext();
         } catch (ClassCastException x) {
@@ -146,7 +147,7 @@ final class LenseDimension extends AbstractLense {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
                     AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
-                    SpecialSpecial.classToName(clazz)));
+                    SpecialForeign.classToName(clazz)));
         }
     }
 
@@ -187,7 +188,7 @@ final class LenseDimension extends AbstractLense {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_DIMENSION),
-                SpecialSpecial.classToName(clazz, source, en));
+                SpecialForeign.classToName(clazz, source, en));
     }
 
     /***************************************************************/
@@ -200,7 +201,7 @@ final class LenseDimension extends AbstractLense {
      * @return The name guess, or null.
      */
     public String getFun() {
-        return SpecialSpecial.OP_NAME_CONSTRUCTOR;
+        return SpecialForeign.OP_NAME_CONSTRUCTOR;
     }
 
     /**

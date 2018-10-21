@@ -83,20 +83,20 @@ final class ChoiceForeign extends AbstractChoice {
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
         if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
-            en.skel = null;
+            en.fault = null;
             en.releaseBind(mark);
-            if (en.skel != null)
-                throw (EngineException) en.skel;
+            if (en.fault != null)
+                throw en.fault;
         }
 
         Goal ir = (Goal) goalskel;
         Object term = ir.goal;
-        Display ref = goaldisplay;
+        BindCount[] ref = goaldisplay.bind;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b1;
             while (term instanceof SkelVar &&
-                    (b1 = ref.bind[((SkelVar) term).id]).display != null) {
+                    (b1 = ref[((SkelVar) term).id]).display != null) {
                 term = b1.skel;
                 ref = b1.display;
             }
@@ -116,7 +116,7 @@ final class ChoiceForeign extends AbstractChoice {
             }
             if (res == null)
                 return false;
-            Display d = AbstractTerm.getDisplay(res);
+            BindCount[] d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) term).args[
                                     ((SkelCompound) term).args.length - 1], ref,
@@ -125,15 +125,15 @@ final class ChoiceForeign extends AbstractChoice {
                     return false;
 
                 if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
-                    en.skel = null;
+                    en.fault = null;
                     en.releaseBind(mark);
-                    if (en.skel != null)
-                        throw (EngineException) en.skel;
+                    if (en.fault != null)
+                        throw en.fault;
                 }
             } else {
                 Object check = AbstractTerm.getMarker(res);
                 if (check != null && ((MutableBit) check).getBit()) {
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                     ((MutableBit) check).setBit(false);
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
@@ -165,13 +165,15 @@ final class ChoiceForeign extends AbstractChoice {
         if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0)
             return;
 
+        /* backup sliding window */
+        DisplayClause back = en.window;
+
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
-        DisplayClause back = (DisplayClause) en.display;
         if (en.skel != null) {
-            co.setException(new InterpreterException((EngineException) en.skel));
+            co.setException(new InterpreterException(en.fault));
         } else {
             co.setException(null);
         }
@@ -180,30 +182,32 @@ final class ChoiceForeign extends AbstractChoice {
             co.flags |= CallOut.MASK_CALL_CLEAN;
             AbstractMember.invokeMethod(del.method, obj, args);
             InterpreterException ie = co.getException();
-            en.skel = (ie != null ? (EngineException) ie.getException() : null);
+            en.fault = (ie != null ? (EngineException) ie.getException() : null);
         } catch (EngineException x) {
             InterpreterException ie = co.getException();
-            en.skel = (ie != null ? (EngineException) ie.getException() : null);
-            if (en.skel != null) {
-                en.skel = new EngineException((EngineException) en.skel, x);
+            en.fault = (ie != null ? (EngineException) ie.getException() : null);
+            if (en.fault != null) {
+                en.fault = new EngineException(en.fault, x);
             } else {
-                en.skel = x;
+                en.fault = x;
             }
         } catch (EngineMessage y) {
             InterpreterException ie = co.getException();
-            en.skel = (ie != null ? (EngineException) ie.getException() : null);
+            en.fault = (ie != null ? (EngineException) ie.getException() : null);
             EngineException x = new EngineException(y, EngineException.fetchStack(en));
-            if (en.skel != null) {
-                en.skel = new EngineException((EngineException) en.skel, x);
+            if (en.fault != null) {
+                en.fault = new EngineException(en.fault, x);
             } else {
-                en.skel = x;
+                en.fault = x;
             }
         }
 
-        /* stack and sliding window */
+        /* restore continuation */
         en.contskel = r;
         en.contdisplay = u;
-        en.display = back;
+
+        /* restore sliding window */
+        en.window = back;
     }
 
 }

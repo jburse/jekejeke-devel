@@ -1,7 +1,6 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.EngineException;
@@ -10,6 +9,7 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapEntry;
@@ -170,7 +170,7 @@ public final class AutoArray extends AbstractAuto {
                 Predicate over = makeOverride(sa, pick, en);
                 if (over != null)
                     throw new IllegalArgumentException("indicator clash");
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 Predicate.checkPredicateDecl(pick, sa, en);
             } catch (EngineException x) {
                 if (SpecialLoad.systemConsultBreak(x, en, rec))
@@ -200,7 +200,7 @@ public final class AutoArray extends AbstractAuto {
         if (!c.isArray()) {
             en.skel = EngineMessage.domainError(
                     AbstractFactory.OP_DOMAIN_FOREIGN_ARRAY,
-                    SpecialSpecial.classToName(c));
+                    SpecialForeign.classToName(c));
             return false;
         }
         AbstractLense del;

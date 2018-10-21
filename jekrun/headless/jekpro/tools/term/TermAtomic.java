@@ -1,6 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 
 import java.math.BigDecimal;
@@ -120,8 +120,8 @@ public final class TermAtomic extends AbstractTerm {
      *
      * @return The display.
      */
-    public Display getDisplay() {
-        return Display.DISPLAY_CONST;
+    public BindCount[] getDisplay() {
+        return BindCount.DISPLAY_CONST;
     }
 
     /**

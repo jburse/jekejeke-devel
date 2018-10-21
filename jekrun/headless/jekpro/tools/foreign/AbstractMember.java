@@ -1,7 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -142,7 +142,7 @@ abstract class AbstractMember extends AbstractLense
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    final Object[] computeAndConvertArgs(Object temp, Display ref,
+    final Object[] computeAndConvertArgs(Object temp, BindCount[] ref,
                                          Engine en)
             throws EngineMessage, EngineException {
         Object[] args = (encodeparas.length != 0 ?
@@ -174,7 +174,7 @@ abstract class AbstractMember extends AbstractLense
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      */
-    final Object[] convertArgs(Object temp, Display ref, Engine en, CallOut co)
+    final Object[] convertArgs(Object temp, BindCount[] ref, Engine en, CallOut co)
             throws EngineMessage {
         Object[] args = (encodeparas.length != 0 ?
                 new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
