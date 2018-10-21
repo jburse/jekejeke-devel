@@ -7,6 +7,7 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
+import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
@@ -125,7 +126,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_PROVABLE_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Predicate pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
+                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
@@ -151,7 +152,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Operator oper = SpecialBody.operToSyntax(temp[0], ref, en);
+                Operator oper = SpecialOper.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(oper, temp[0], ref);
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);

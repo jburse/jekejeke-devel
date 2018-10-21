@@ -13,8 +13,8 @@
  * ^D
  * ?- listing.
  * p :-
- *     q(A),
- *     call(A).
+ *     q(X),
+ *     call(X).
  *
  * Body conversion is also in effect when goals are executed, either
  * directly or deferred via meta-arguments. The body conversion can
@@ -124,31 +124,3 @@ A, B :- A, B.                                          % Proto
 :- special(call/1, 'SpecialBody', 0).
 :- set_predicate_property(call/1, (meta_predicate call(0))).
 :- set_predicate_property(call/1, visible(public)).
-
-/**********************************************************/
-/* Moved From Debugger                                    */
-/**********************************************************/
-
-% moved from provable.p in debugger
-:- special(sys_current_provable/1, 'SpecialBody', 1).
-:- set_predicate_property(sys_current_provable/1, visible(public)).
-
-% moved from provable.p in debugger
-:- special(sys_provable_property_chk/3, 'SpecialBody', 2).
-:- set_predicate_property(sys_provable_property_chk/3, visible(public)).
-
-% moved from provable.p in debugger
-:- special(sys_provable_property_idx/2, 'SpecialBody', 3).
-:- set_predicate_property(sys_provable_property_idx/2, visible(public)).
-
-% moved from syntax.p in debugger
-:- special(sys_current_syntax/1, 'SpecialBody', 4).
-:- set_predicate_property(sys_current_syntax/1, visible(public)).
-
-% moved from syntax.p in debugger
-:- special(sys_syntax_property_chk/3, 'SpecialBody', 5).
-:- set_predicate_property(sys_syntax_property_chk/3, visible(public)).
-
-% moved from syntax.p in debugger
-:- special(sys_syntax_property_idx/2, 'SpecialBody', 6).
-:- set_predicate_property(sys_syntax_property_idx/2, visible(public)).

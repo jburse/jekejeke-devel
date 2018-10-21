@@ -268,3 +268,15 @@ sys_declaration_indicator(op(_,_,Z), _) :-
    throw(error(instantiation_error,_)).
 sys_declaration_indicator(op(_,M,Z), I) :-
    sys_make_oper(M, Z, I).
+
+/**********************************************************/
+/* Moved From Debugger                                    */
+/**********************************************************/
+
+% moved from syntax.p in debugger
+:- special(sys_syntax_property_chk/3, 'SpecialOper', 9).
+:- set_predicate_property(sys_syntax_property_chk/3, visible(public)).
+
+% moved from syntax.p in debugger
+:- special(sys_syntax_property_idx/2, 'SpecialOper', 10).
+:- set_predicate_property(sys_syntax_property_idx/2, visible(public)).

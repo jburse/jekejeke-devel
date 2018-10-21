@@ -116,10 +116,10 @@ current_predicate(I) :-
    sys_member(I, L).
 :- set_predicate_property(current_predicate/1, visible(public)).
 
-:- special(sys_current_predicate/1, 'SpecialPred', 5).
+:- special(sys_current_predicate/1, 'SpecialPred', 1).
 :- set_predicate_property(sys_current_predicate/1, visible(private)).
 
-:- special(sys_current_predicate_chk/1, 'SpecialPred', 6).
+:- special(sys_current_predicate_chk/1, 'SpecialPred', 2).
 :- set_predicate_property(sys_current_predicate_chk/1, visible(private)).
 
 /**
@@ -152,13 +152,13 @@ sys_predicate_property2(I, R) :-
    sys_member(R, P).
 :- set_predicate_property(sys_predicate_property2/2, visible(private)).
 
-:- special(sys_predicate_property/2, 'SpecialPred', 7).
+:- special(sys_predicate_property/2, 'SpecialPred', 3).
 :- set_predicate_property(sys_predicate_property/2, visible(private)).
 
-:- special(sys_predicate_property_chk/3, 'SpecialPred', 8).
+:- special(sys_predicate_property_chk/3, 'SpecialPred', 4).
 :- set_predicate_property(sys_predicate_property_chk/3, visible(private)).
 
-:- special(sys_predicate_property_idx/2, 'SpecialPred', 9).
+:- special(sys_predicate_property_idx/2, 'SpecialPred', 5).
 :- set_predicate_property(sys_predicate_property_idx/2, visible(private)).
 
 /**
@@ -167,7 +167,7 @@ sys_predicate_property2(I, R) :-
  */
 % set_predicate_property(+Indicator, +Property)
 % already defined in special
-% :- special(set_predicate_property/2, 'SpecialPred', 8).
+% :- special(set_predicate_property/2, 'SpecialPred', 6).
 % :- set_predicate_property(set_predicate_property/2, visible(public)).
 
 /**
@@ -176,7 +176,7 @@ sys_predicate_property2(I, R) :-
  */
 % reset_predicate_property(+Indicator, +Property)
 % already defined in special
-% :- special(reset_predicate_property/2, 'SpecialPred', 9).
+% :- special(reset_predicate_property/2, 'SpecialPred', 7).
 % :- set_predicate_property(reset_predicate_property/2, visible(public)).
 
 % first defined in special.p
@@ -220,3 +220,15 @@ sys_make_indicator2(F/A, G, B) :- !,
 sys_make_indicator2(I, _, _) :-
    throw(error(type_error(predicate_indicator,I),_)).
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).
+
+/**********************************************************/
+/* Moved From Debugger                                    */
+/**********************************************************/
+
+% moved from provable.p in debugger
+:- special(sys_provable_property_chk/3, 'SpecialPred', 8).
+:- set_predicate_property(sys_provable_property_chk/3, visible(public)).
+
+% moved from provable.p in debugger
+:- special(sys_provable_property_idx/2, 'SpecialPred', 9).
+:- set_predicate_property(sys_provable_property_idx/2, visible(public)).

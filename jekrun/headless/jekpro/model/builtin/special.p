@@ -1,51 +1,42 @@
 /**
- * The interface of special built-ins is currently not published.
- * They are needed when low-level behaviour is desired coupled
- * with high performance, which could not be gained by using a
- * foreign Java predicate or Prolog clauses. It is possible to
- * register predicates and evaluable functions as special built-ins
- * via the predicates special/3 and special_eval/3. A predicate
- * indicator, the service class and the service number has
- * to be specified.
+ * It is possible to register predicates and evaluable functions
+ * as special built-ins via the built-in special/3. A predicate
+ * indicator, the service class and the service number has to
+ * be specified. While registering the Prolog interpreter will
+ * automatically create an instance of the service class with
+ * the given service number parameter.
  *
+ * Syntax:
  * directive --> "special(" indicator "," module "," integer ")".
- *
- * static_flag --> "true" | "false".
  *
  * Example:
  * :- special(foo/1, 'FooAPI', 7). % is a special predicate directive.
  *
- * An evaluable function f/n is identified by a predicate indicator f/n+1,
- * meaning the arity has to be increased by one. To ease the end-user
- * the Jekejeke Prolog system automatically implements for each predicate
- * bridging to an evaluable function, and for each evaluable function
- * tunnelling to a predicate.
+ * An evaluable function f/n is identified by a predicate indicator
+ * f/n+1. To ease the end-user the Prolog system automatically
+ * implements for each predicate bridging to an evaluable function,
+ * and for each evaluable function tunnelling to a predicate.
  *
  * Bridging, predicate as evaluable function:
  * X is p(Y1,..,Yn) :-
- *    Z1 is Y1, .., Zn is Yn,
- *    p(Z1, .., Zn, X), !, value(X).
+ *    Z1 is Y1, .., Zn is Yn, p(Z1, .., Zn, X), !.
  * _ is p(_,..,_):-
  *    throw(error(evaluation_error(partial_function),_)).
  *
  * Tunnelling, evaluable function as predicate:
  * f(Y1, .., Yn, X) :-
- *    value(Y1), .., value(Yn),
  *    X is f(Y1,..,Yn).
  *
  * During bridging the arguments are evaluated and then the corresponding
  * predicate is called with an additional last argument for the result.
  * If the corresponding predicate succeeds its choice points are removed.
  * If the corresponding predicate fails or if the result is not a value
- * an error is issued. During tunnelling the arguments are first checked.
- * If an argument is not a value an error is issued. Otherwise the
- * corresponding evaluable function is called.
+ * an error is issued.
  *
- * The bridging and tunnelling is further controlled by the virtual property
+ * The bridging is further controlled by the virtual property
  * of a predicate. If a predicate has this property the first argument Y1
  * gets special treatment. During bridging this argument will not be
- * evaluated and during tunnelling this argument will not be checked.
- * This is useful for predicates that pass as the first argument the
+ * evaluated. This is useful for predicates that pass as the first argument the
  * receiver object. The directive virtual/1 can be used to set the virtual
  * property of a predicate.
  *

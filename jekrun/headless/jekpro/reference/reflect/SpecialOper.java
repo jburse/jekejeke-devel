@@ -62,6 +62,8 @@ public final class SpecialOper extends AbstractSpecial {
     private final static int SPECIAL_SYS_OPER_PROPERTY_IDX = 6;
     /* private final static int SPECIAL_SET_OPER_PROPERTY = 7; */
     private final static int SPECIAL_RESET_OPER_PROPERTY = 8;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 9;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 10;
 
     public final static Operator[] FALSE_OPERS = new Operator[]{};
 
@@ -180,6 +182,32 @@ public final class SpecialOper extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 removeOperProp(en.skel, en.display, oper, en);
                 return en.getNextRaw();
+            case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                oper = operToSyntax(temp[0], ref, en);
+                if (oper == null)
+                    return false;
+                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                multi = SpecialOper.operToProperty(prop, oper, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                    return false;
+                if (multi)
+                    BindCount.remTab(d, en);
+                return en.getNext();
+            case SPECIAL_SYS_SYNTAX_PROPERTY_IDX:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                if (!en.unifyTerm(temp[1], ref,
+                        propertyToSyntax(en.skel, en.display, en),
+                        BindCount.DISPLAY_CONST))
+                    return false;
+                return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -960,9 +988,9 @@ public final class SpecialOper extends AbstractSpecial {
         return new SkelCompound(new SkelAtom(optype), key);
     }
 
-    /*************************************************************************/
-    /* Level Conversions                                                     */
-    /*************************************************************************/
+    /**********************************************************/
+    /* Level Conversions                                      */
+    /**********************************************************/
 
     /**
      * <p>Check the operator level.</p>
@@ -975,6 +1003,72 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_OPERATOR_PRIORITY,
                     Integer.valueOf(level)));
+    }
+
+    /**********************************************************/
+    /* Moved From Debugger                                    */
+    /**********************************************************/
+
+    /**
+     * <p>Lookup an operator from a compound.</p>
+     *
+     * @param t  The compound skeleton.
+     * @param d  The compound display.
+     * @param en The engine copy.
+     * @return The operator or null.
+     * @throws EngineMessage Shit happends.
+     */
+    public static Operator operToSyntax(Object t, BindCount[] d, Engine en)
+            throws EngineMessage {
+        int type = colonToOper(t, d, en);
+        String fun = ((SkelAtom) en.skel).fun;
+        if (!CacheFunctor.isQuali(fun)) {
+            return OperatorSearch.getOperUser(type, fun, en.store);
+        } else {
+            String s = CacheFunctor.sepModule(fun);
+            AbstractSource base = AbstractSource.getModule(s, en.store);
+            if (base == null)
+                return null;
+            return base.getOper(type, fun);
+        }
+    }
+
+    /**
+     * <p>Retrieve the operators for a property.</p>
+     *
+     * @param t  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     */
+    private static Object propertyToSyntax(Object t, BindCount[] d,
+                                          Engine en)
+            throws EngineMessage {
+        StoreKey prop = Frame.callableToStoreKey(t);
+        Operator[] vals = idxPropOper(t, d, prop, en);
+        Object res = en.store.foyer.ATOM_NIL;
+        res = consSyntax(vals, res, en);
+        return res;
+    }
+
+    /**
+     * <p>Collect and filter operator indicators.</p>
+     *
+     * @param opers The operators.
+     * @param res   The old predicate indicators.
+     * @param en    The engine.
+     * @return The new predicate indicators.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object consSyntax(Operator[] opers, Object res,
+                                    Engine en)
+            throws EngineMessage {
+        for (int i = opers.length - 1; i >= 0; i--) {
+            Operator oper = opers[i];
+            Object val = operToColonSkel(oper.getType(), oper.getKey(),
+                    oper.getSource().getStore().user, en);
+            res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
+        }
+        return res;
     }
 
 }

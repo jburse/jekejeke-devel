@@ -50,11 +50,15 @@ import matula.util.data.MapEntry;
  */
 public final class SpecialPred extends AbstractSpecial {
     private final static int SPECIAL_SYS_ENSURE_SHARED_STATIC = 0;
-    private final static int SPECIAL_SYS_CURRENT_PREDICATE = 5;
-    private final static int SPECIAL_SYS_CURRENT_PREDICATE_CHK = 6;
-    private final static int SPECIAL_SYS_PREDICATE_PROPERTY = 7;
-    private final static int SPECIAL_SYS_PREDICATE_PROPERTY_CHK = 8;
-    private final static int SPECIAL_SYS_PREDICATE_PROPERTY_IDX = 9;
+    private final static int SPECIAL_SYS_CURRENT_PREDICATE = 1;
+    private final static int SPECIAL_SYS_CURRENT_PREDICATE_CHK = 2;
+    private final static int SPECIAL_SYS_PREDICATE_PROPERTY = 3;
+    private final static int SPECIAL_SYS_PREDICATE_PROPERTY_CHK = 4;
+    private final static int SPECIAL_SYS_PREDICATE_PROPERTY_IDX = 5;
+    /* private final static int SPECIAL_SYS_SET_PREDICATE_PROPERTY = 6; */
+    /* private final static int SPECIAL_SYS_RESET_PREDICATE_PROPERTY = 7; */
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 8;
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 9;
 
     /**
      * <p>Create a pred special.</p>
@@ -136,6 +140,32 @@ public final class SpecialPred extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         SpecialPred.propertyToPredicates(en.skel, en.display, en),
+                        BindCount.DISPLAY_CONST))
+                    return false;
+                return en.getNext();
+            case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = indicatorToProvable(temp[0], ref, en);
+                if (pick == null)
+                    return false;
+                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                multi = SpecialPred.predicateToProperty(pick, prop, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                    return false;
+                if (multi)
+                    BindCount.remTab(d, en);
+                return en.getNext();
+            case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                if (!en.unifyTerm(temp[1], ref,
+                        propertyToProvables(en.skel, en.display, en),
                         BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
@@ -458,6 +488,74 @@ public final class SpecialPred extends AbstractSpecial {
                 SpecialQuali.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
+    }
+
+    /**********************************************************/
+    /* Moved From Debugger                                    */
+    /**********************************************************/
+
+    /**
+     * <p>Get predicate by indicator.</p>
+     *
+     * @param t  The skel of the compound.
+     * @param d  The display of the compound.
+     * @param en The engine.
+     * @return The predicate.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Predicate indicatorToProvable(Object t, BindCount[] d, Engine en)
+            throws EngineMessage {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        AbstractSource base;
+        if (!CacheFunctor.isQuali(sa.fun)) {
+            return CachePredicate.getRoutineUser(arity.intValue(), sa.fun, en.store);
+        } else {
+            String s = CacheFunctor.sepModule(sa.fun);
+            base = AbstractSource.getModule(s, en.store);
+            if (base == null)
+                return null;
+            return base.getRoutine(arity.intValue(), sa.fun);
+        }
+    }
+
+    /**
+     * <p>Retrieve the predicates to a property.</p>
+     *
+     * @param t  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     */
+    private static Object propertyToProvables(Object t, BindCount[] d,
+                                             Engine en)
+            throws EngineMessage {
+        StoreKey prop = Frame.callableToStoreKey(t);
+        Predicate[] vals = idxPropPred(t, d, prop, en);
+        Object res = en.store.foyer.ATOM_NIL;
+        res = consProvables(vals, res, en);
+        return res;
+    }
+
+    /**
+     * <p>Collect predicate indicators.</p>
+     *
+     * @param preds The predicates.
+     * @param res   The old predicate indicators.
+     * @param en    The engine.
+     * @return The new predicate indicators.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object consProvables(Predicate[] preds, Object res,
+                                       Engine en)
+            throws EngineMessage {
+        for (int i = preds.length - 1; i >= 0; i--) {
+            Predicate pick = preds[i];
+            Object val = SpecialQuali.indicatorToColonSkel(
+                    pick.getFun(), pick.getSource().getStore().user,
+                    pick.getArity(), en);
+            res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
+        }
+        return res;
     }
 
 }
