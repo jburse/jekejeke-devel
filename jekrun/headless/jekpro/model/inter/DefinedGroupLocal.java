@@ -1,6 +1,6 @@
 package jekpro.model.inter;
 
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -116,7 +116,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    final Clause[] definedClauses(Object m, Display d, Engine en)
+    final Clause[] definedClauses(Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         LocalBlocking ep = defineLocalBlocking(en);
         try {

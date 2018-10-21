@@ -105,7 +105,7 @@ public final class NamedDistance {
         int count = 0;
         BindVar b;
         while (en.skel instanceof SkelVar &&
-                (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
+                (b = en.display[((SkelVar) en.skel).id]).display != null) {
             en.skel = b.skel;
             en.display = b.display;
             count++;

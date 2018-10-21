@@ -1,7 +1,7 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -71,7 +71,7 @@ public abstract class AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public abstract boolean setFlag(Object m, Display d, Engine en)
+    public abstract boolean setFlag(Object m, BindCount[] d, Engine en)
             throws EngineMessage;
 
     /************************************************************/
@@ -87,7 +87,7 @@ public abstract class AbstractFlag {
      * @return The switch value.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean atomToSwitch(Object m, Display d)
+    public static boolean atomToSwitch(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_ON)) {

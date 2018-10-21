@@ -4,7 +4,7 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -120,7 +120,7 @@ public final class WriteOpts {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public void decodeWriteOptions(Object t, Display d, Engine en)
+    public void decodeWriteOptions(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         try {
             en.skel = t;
@@ -264,9 +264,11 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_SOURCE)) {
-                    String fun = SpecialUniv.derefAndCastString(((SkelCompound) en.skel).args[0], en.display);
-                    AbstractSource src = en.store.getSource(fun);
-                    AbstractSource.checkExistentSource(src, fun);
+                    SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(
+                            ((SkelCompound) en.skel).args[0], en.display);
+                    AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+                    src = src.getStore().getSource(sa.fun);
+                    AbstractSource.checkExistentSource(src, sa);
                     source = src;
                 } else {
                     EngineMessage.checkInstantiated(en.skel);
@@ -326,7 +328,7 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean atomToBool(Object m, Display d)
+    public static boolean atomToBool(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(Foyer.OP_TRUE)) {
@@ -353,7 +355,7 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToFormat(Object m, Display d)
+    private static int atomToFormat(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
@@ -385,7 +387,7 @@ public final class WriteOpts {
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int termToAnno(Object m, Display d, Engine en)
+    public static int termToAnno(Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -461,7 +463,7 @@ public final class WriteOpts {
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToWritePart(Object m, Display d)
+    public static int atomToWritePart(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
@@ -493,7 +495,7 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToOperand(Object m, Display d, Engine en)
+    private static int atomToOperand(Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_OPERAND_NONE)) {

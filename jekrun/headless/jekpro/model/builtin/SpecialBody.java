@@ -9,10 +9,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.Operator;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialQuali;
@@ -23,7 +20,7 @@ import jekpro.tools.term.SkelCompound;
 import matula.util.data.MapEntry;
 
 /**
- * <p>Provides built-in predicates for body access.</p>
+ * <p>Provides built-in predicates for body conversion.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -54,22 +51,18 @@ import matula.util.data.MapEntry;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialBody extends AbstractSpecial {
-    private final static int SPECIAL_SYS_NEUTRAL_PREDICATE = 0;
-    private final static int SPECIAL_SYS_NEUTRAL_OPER = 1;
-    private final static int SPECIAL_SYS_SET_CONTEXT_PROPERTY = 2;
-    private final static int SPECIAL_SYS_REPLACE_SITE = 4;
-    private final static int SPECIAL_SYS_PARENT_GOAL = 5;
-    private final static int SPECIAL_SYS_CURRENT_PROVABLE = 6;
-    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 7;
-    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 8;
-    private final static int SPECIAL_SYS_CURRENT_SYNTAX = 9;
-    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 10;
-    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 11;
+    private final static int SPECIAL_CALL = 0;
+    private final static int SPECIAL_SYS_CURRENT_PROVABLE = 1;
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 2;
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 3;
+    private final static int SPECIAL_SYS_CURRENT_SYNTAX = 4;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 5;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 6;
 
 //    private final static int SPECIAL_WRAP_GOAL = 4;
 
     /**
-     * <p>Create a predicate special.</p>
+     * <p>Create a body special.</p>
      *
      * @param i The id of the special.
      */
@@ -91,74 +84,29 @@ public final class SpecialBody extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         switch (id) {
-            case SPECIAL_SYS_NEUTRAL_PREDICATE:
+            case SPECIAL_CALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                return en.getNextRaw();
-            case SPECIAL_SYS_NEUTRAL_OPER:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Operator.operToOperatorDefined(temp[0], ref, en, true);
-                return en.getNextRaw();
-            case SPECIAL_SYS_SET_CONTEXT_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[2];
+                BindCount[] ref = en.display;
+                en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                Object t = en.skel;
-                Display d = en.display;
-
-                String key = SpecialUniv.derefAndCastString(temp[1], ref);
-                AbstractSource scope;
-                if (!"".equals(key)) {
-                    scope = en.store.getSource(key);
-                    AbstractSource.checkExistentSource(scope, key);
-                } else {
-                    scope = null;
-                }
-
-                t = SpecialBody.replaceContext(t, scope);
-                if (!en.unifyTerm(temp[0], ref, t, d))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_REPLACE_SITE:
-                temp = ((SkelCompound) en.skel).args;
+                boolean multi = en.wrapGoal();
                 ref = en.display;
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                t = en.skel;
-                d = en.display;
-
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SkelAtom sa = callableToName(en.skel);
-
-                t = SpecialBody.replaceSite(t, sa, en);
-                if (!en.unifyTerm(temp[0], ref, t, d))
-                    return false;
-                return en.getNext();
-            case SPECIAL_SYS_PARENT_GOAL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                DisplayClause u = en.contdisplay;
-                if (u.goaldisplay == null)
-                    return false;
-                callGoal(u.goalskel, u.goaldisplay, en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
-                    return false;
-                return en.getNext();
+                Clause clause = en.store.foyer.CLAUSE_CONT;
+                DisplayClause ref2 = new DisplayClause();
+                ref2.bind = BindCount.newBindClause(clause.dispsize);
+                ref2.addArgument(en.skel, ref, en);
+                if (multi)
+                    BindCount.remTab(ref, en);
+                ref2.setEngine(en);
+                en.contskel = clause.getNextRaw(en);
+                en.contdisplay = ref2;
+                return true;
             case SPECIAL_SYS_CURRENT_PROVABLE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        SpecialBody.currentProvables(en), Display.DISPLAY_CONST))
+                        SpecialBody.currentProvables(en), BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
@@ -168,12 +116,12 @@ public final class SpecialBody extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                boolean multi = SpecialPred.predicateToProperty(pick, prop, en);
-                d = en.display;
+                multi = SpecialPred.predicateToProperty(pick, prop, en);
+                BindCount[] d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -184,14 +132,14 @@ public final class SpecialBody extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         propertyToProvables(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                        BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_SYNTAX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        SpecialBody.currentSyntax(en), Display.DISPLAY_CONST))
+                        SpecialBody.currentSyntax(en), BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
@@ -206,7 +154,7 @@ public final class SpecialBody extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_SYNTAX_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -217,7 +165,7 @@ public final class SpecialBody extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         propertyToSyntax(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                        BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             /*
@@ -246,103 +194,22 @@ public final class SpecialBody extends AbstractSpecial {
     /*************************************************************/
 
     /**
-     * <p>Set the context of a callable to another context.</p>
+     * <p>Create a new atom for a given site.</p>
      *
-     * @param t     The skeleton of the callable.
-     * @param scope The context, or null.
-     * @return The new callable.
-     */
-    private static Object replaceContext(Object t, AbstractSource scope) {
-        SkelAtom sa = callableToName(t);
-
-        SkelAtom sa3 = new SkelAtom(sa.fun, scope);
-
-        return callableFromName(t, sa3);
-    }
-
-    /**
-     * <p>Set the site of a callable to another site.</p>
-     *
-     * @param t   The skeleton of the callable.
-     * @param sa2 The call-site, not null.
+     * @param fun The name of the atom.
      * @param en  The engine.
-     * @return The new callable.
+     * @param sa2 The call-site, or null.
+     * @return The new atom.
      */
-    private static Object replaceSite(Object t, SkelAtom sa2, Engine en) {
+    public static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
         AbstractSource scope = (sa2 != null ? sa2.scope : null);
         PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
 
-        SkelAtom sa = callableToName(t);
-
         int m = (pos != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        SkelAtom sa3 = en.store.foyer.createAtom(sa.fun, scope, m);
-        sa3.setPosition(pos);
+        sa2 = en.store.foyer.createAtom(fun, scope, m);
+        sa2.setPosition(pos);
 
-        return callableFromName(t, sa3);
-    }
-
-    /**
-     * <p>Determine the goal of a frame.</p>
-     * <p>The result is return in skel and display.</p>
-     *
-     * @param r  The frame skeleton.
-     * @param u  The continuation display.
-     * @param en The engine.
-     */
-    public static void callGoal(Intermediate r, DisplayClause u, Engine en) {
-        if (r instanceof Goal) {
-            Goal cont = (Goal) r;
-            en.skel = cont.goal;
-            en.display = u;
-            if ((cont.flags & Goal.MASK_GOAL_NAKE) != 0)
-                en.deref();
-        } else if (r instanceof Clause) {
-            callGoal(u.goalskel, u.goaldisplay, en);
-            Clause clause = (Clause) r;
-            SkelAtom sa = callableToName(clause.head);
-            en.skel = replaceSite(en.skel, sa, en);
-        } else {
-            en.skel = null;
-            en.display = null;
-        }
-    }
-
-    /*************************************************************/
-    /* Frame Access & Modification                               */
-    /*************************************************************/
-
-    /**
-     * <p>Retrieve the principal name.</p>
-     *
-     * @param t The goal skeleton.
-     * @return The name, or null.
-     */
-    public static SkelAtom callableToName(Object t) {
-        if (t instanceof SkelCompound) {
-            return ((SkelCompound) t).sym;
-        } else if (t instanceof SkelAtom) {
-            return (SkelAtom) t;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * <p>Replace the name of a callable.</p>
-     *
-     * @param t2 The callable.
-     * @param sa The new name.
-     * @return The new callable.
-     */
-    public static Object callableFromName(Object t2, SkelAtom sa) {
-        if (t2 instanceof SkelCompound) {
-            SkelCompound sc = (SkelCompound) t2;
-            return new SkelCompound(sa, sc.args, sc.var);
-        } else if (t2 instanceof SkelAtom) {
-            return sa;
-        } else {
-            throw new IllegalArgumentException("not a callable");
-        }
+        return sa2;
     }
 
     /**************************************************************/
@@ -358,7 +225,7 @@ public final class SpecialBody extends AbstractSpecial {
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
-    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
+    public static Predicate indicatorToProvable(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         Integer arity = SpecialQuali.colonToIndicator(t, d, en);
         SkelAtom sa = (SkelAtom) en.skel;
@@ -434,7 +301,7 @@ public final class SpecialBody extends AbstractSpecial {
      * @param d  The value display.
      * @param en The engine.
      */
-    private static Object propertyToProvables(Object t, Display d,
+    private static Object propertyToProvables(Object t, BindCount[] d,
                                               Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -457,7 +324,7 @@ public final class SpecialBody extends AbstractSpecial {
      * @return The operator or null.
      * @throws EngineMessage Shit happends.
      */
-    public static Operator operToSyntax(Object t, Display d, Engine en)
+    public static Operator operToSyntax(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         int type = SpecialOper.colonToOper(t, d, en);
         String fun = ((SkelAtom) en.skel).fun;
@@ -531,7 +398,7 @@ public final class SpecialBody extends AbstractSpecial {
      * @param d  The value display.
      * @param en The engine.
      */
-    private static Object propertyToSyntax(Object t, Display d,
+    private static Object propertyToSyntax(Object t, BindCount[] d,
                                            Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);

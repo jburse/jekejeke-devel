@@ -1,6 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
@@ -235,7 +236,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         Object t = en.skel;
-        Display d = en.display;
+        BindCount[] d = en.display;
         Clause[] list = definedClauses(t, d, en);
         int at = 0;
 
@@ -245,19 +246,21 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
         AbstractBind mark = en.bind;
         Clause clause;
-        DisplayClause ref = null;
+        BindCount[] ref = null;
+        int lastalloc;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
             if (ref == null) {
-                ref = new DisplayClause(clause.dispsize);
+                ref = BindCount.newBindClause(clause.dispsize);
             } else {
-                ref.setSize(clause.dispsize);
+                ref = BindCount.setSizeClause(clause.dispsize, ref);
             }
-            if (clause.intargs == null ||
-                    (AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
+            lastalloc = (clause.intargs != null ?
+                    AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                             ((SkelCompound) clause.head).args, ref,
-                            clause.intargs, en)))
+                            clause.intargs, en) : 0);
+            if (lastalloc != -1)
                 break;
 
             /* end of cursor */
@@ -265,26 +268,29 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 return false;
 
             /* undo bindings */
-            en.skel = null;
+            en.fault = null;
             en.releaseBind(mark);
-            if (en.skel != null)
-                throw (EngineException) en.skel;
+            if (en.fault != null)
+                throw en.fault;
         }
         DisplayClause u = en.contdisplay;
-        ref.number = en.number;
-        ref.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : en.number);
-        ref.goalskel = en.contskel;
-        ref.goaldisplay = u;
+        DisplayClause dc = new DisplayClause();
+        dc.bind = ref;
+        dc.lastalloc = lastalloc;
+        dc.number = en.number;
+        dc.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : dc);
+        dc.goalskel = en.contskel;
+        dc.goaldisplay = u;
 
         if (at != list.length ||
                 (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
             /* create choice point */
-            en.choices = new ChoiceDefined(en.choices, at, list, ref, mark);
+            en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
             en.number++;
-            ref.flags |= DisplayClause.MASK_DPCL_MORE;
+            dc.flags |= DisplayClause.MASK_DPCL_MORE;
         }
         en.contskel = clause;
-        en.contdisplay = ref;
+        en.contdisplay = dc;
         return en.getNext();
     }
 
@@ -300,35 +306,26 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return True if the unification was successful, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifyDefined(Object[] t1, Display ref,
-                                Object[] t2, DisplayClause ref2,
-                                int[] arr,
-                                Engine en)
+    static int unifyDefined(Object[] t1, BindCount[] ref,
+                            Object[] t2, BindCount[] ref2,
+                            int[] arr,
+                            Engine en)
             throws EngineException {
+        int k = 0;
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
             if (n < 0) {
                 if (n != Integer.MIN_VALUE)
-                    if (!en.unifyTerm(t1[i], ref, t1[-n - 1], ref))
-                        return false;
+                    if (!en.unifyTerm(t1[-n - 1], ref, t1[i], ref))
+                        return -1;
             } else {
-                int j = ref2.lastalloc;
-                if (j < n) {
-                    do {
-                        BindCount b = ref2.bind[j];
-                        if (b == null) {
-                            b = new BindCount();
-                            ref2.bind[j] = b;
-                        }
-                        j++;
-                    } while (j < n);
-                    ref2.lastalloc = j;
-                }
+                if (k < n)
+                    k = Engine.newBind(k, n, ref2);
                 if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
-                    return false;
+                    return -1;
             }
         }
-        return true;
+        return k;
     }
 
     /*************************************************************/
@@ -352,7 +349,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en The engine.
      * @return The clauses, or null.
      */
-    abstract Clause[] definedClauses(Object m, Display d, Engine en)
+    abstract Clause[] definedClauses(Object m, BindCount[] d, Engine en)
             throws EngineMessage;
 
     /**
@@ -419,10 +416,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public static void enhanceKnowledgebase(int flags, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.skel = temp[0];
-        en.display = ref;
-        en.deref();
+        BindCount[] ref = en.display;
         EngineCopy ec = en.enginecopy;
         if (ec == null) {
             ec = new EngineCopy();
@@ -430,7 +424,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         }
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyTermAndWrap(en.skel, en.display, en);
+        Object molec = ec.copyTermAndWrap(temp[0], ref, en);
         Named[] vars = null;
         if ((flags & OPT_ARGS_ASOP) != 0)
             vars = Named.decodeAssertOptions(temp[1], ref, en, ec);
@@ -461,11 +455,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public static boolean searchKnowledgebase(int flags, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
+        BindCount[] ref = en.display;
         /* detect head and body */
         SpecialQuali.colonToCallable(temp[0], ref, true, en);
         Object head = en.skel;
-        Display refhead = en.display;
+        BindCount[] refhead = en.display;
 
         /* check predicate existence and visibility */
         CachePredicate cp = Frame.callableToPredicate(head, en);
@@ -517,8 +511,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @throws EngineException Shit happens.
      */
     public boolean searchFirst(int flags,
-                               Object head, Display refhead,
-                               Object[] temp, Display ref,
+                               Object head, BindCount[] refhead,
+                               Object[] temp, BindCount[] ref,
                                Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
@@ -530,14 +524,14 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
         AbstractBind mark = en.bind;
         Clause clause;
-        Display ref1 = null;
+        BindCount[] ref1 = null;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
             if (ref1 == null) {
-                ref1 = new Display(clause.size);
+                ref1 = BindCount.newBind(clause.size);
             } else {
-                ref1.setSize(clause.size);
+                ref1 = BindCount.setSize(clause.size, ref1);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
@@ -547,10 +541,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
                     if ((flags & OPT_RSLT_FRME) != 0) {
                         Frame frame = new Frame(clause, ref1);
                         if (en.unifyTerm(temp[2], ref,
-                                frame, Display.DISPLAY_CONST)) {
+                                frame, BindCount.DISPLAY_CONST)) {
                             if ((flags & OPT_RSLT_CREF) != 0) {
                                 if (en.unifyTerm(temp[3], ref,
-                                        clause, Display.DISPLAY_CONST))
+                                        clause, BindCount.DISPLAY_CONST))
                                     break;
                             } else {
                                 break;
@@ -558,7 +552,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                         }
                     } else if ((flags & OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(temp[2], ref,
-                                clause, Display.DISPLAY_CONST))
+                                clause, BindCount.DISPLAY_CONST))
                             break;
                     } else {
                         break;
@@ -571,13 +565,13 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 return false;
 
             /* undo bindings */
-            en.skel = null;
+            en.fault = null;
             en.releaseBind(mark);
-            if (en.skel != null)
-                throw (EngineException) en.skel;
+            if (en.fault != null)
+                throw en.fault;
         }
         if (clause.size != 0)
-            ref1.remTab(en);
+            BindCount.remTab(ref1, en);
 
         if (at != list.length ||
                 (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
@@ -601,8 +595,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return True if the unification succeeds, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifyArgs(Object[] t1, Display ref,
-                             Object[] t2, Display ref2,
+    static boolean unifyArgs(Object[] t1, BindCount[] ref,
+                             Object[] t2, BindCount[] ref2,
                              Engine en)
             throws EngineException {
         for (int i = 0; i < t2.length; i++)

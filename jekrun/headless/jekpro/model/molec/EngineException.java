@@ -1,7 +1,6 @@
 package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.pretty.Foyer;
@@ -101,7 +100,7 @@ public final class EngineException extends Exception {
      * @param t The exception skeleton.
      * @param d The exception display.
      */
-    public EngineException(Object t, Display d) {
+    public EngineException(Object t, BindCount[] d) {
         EngineCopy ec = new EngineCopy();
         template = ec.copyTerm(t, d);
     }
@@ -166,12 +165,12 @@ public final class EngineException extends Exception {
         }
         list.add(m);
         /* copy second */
-        int size = Display.displaySize(e2.getTemplate());
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        int size = EngineCopy.displaySize(e2.getTemplate());
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         m = eb.copyTerm(e2.getTemplate(), ref);
         /* copy cause chain */
-        size = Display.displaySize(e1.getTemplate());
-        ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        size = EngineCopy.displaySize(e1.getTemplate());
+        ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         for (int i = list.size() - 1; i >= 0; i--) {
             m = new SkelCompound(new SkelAtom(OP_CAUSE),
                     eb.copyTerm(list.get(i), ref), m);
@@ -195,17 +194,30 @@ public final class EngineException extends Exception {
      */
     public static Object fetchStack(Engine en) {
         try {
-            Intermediate r = en.contskel;
-            DisplayClause u = en.contdisplay;
+            DisplayClause u;
+            boolean first;
+            if (Frame.isNoTrace(en.contskel, en.contdisplay, en)) {
+                u = Frame.skipNoTrace(en.contdisplay, en);
+                first = false;
+            } else {
+                u = null;
+                first = true;
+            }
             int k = 0;
             SkelCompound back = null;
-            Frame.skipNoTrace(r, u, en);
-            /* fetch pred_file_line, pred and pred_error */
-            while (en.display != null && k < en.store.getMaxStack()) {
-                r = (Intermediate) en.skel;
-                u = (DisplayClause) en.display;
-                SpecialBody.callGoal(r, u, en);
-                SkelAtom sa = SpecialBody.callableToName(en.skel);
+            /* iterator and fetch pred_file_line, pred and pred_error */
+            while ((u != null | first) && k < en.store.getMaxStack()) {
+                Intermediate r;
+                if (first) {
+                    r = en.contskel;
+                    u = en.contdisplay;
+                    first = false;
+                } else {
+                    r = u.goalskel;
+                    u = u.goaldisplay;
+                }
+                Frame.callGoal(r, u, en);
+                SkelAtom sa = Frame.callableToName(en.skel);
                 Object val;
                 if (sa != null) {
                     int arity = Frame.callableToArity(en.skel);
@@ -223,14 +235,19 @@ public final class EngineException extends Exception {
                 }
                 back = new SkelCompound(en.store.foyer.ATOM_CONS, val, back);
                 k++;
-                Frame.skipNoTrace(u.goalskel, u.goaldisplay, en);
+                u = Frame.skipNoTrace(u, en);
             }
             k = 0;
-            /* count pred_more */
-            while (en.display != null) {
-                u = (DisplayClause) en.display;
+            /* count and fetch pred_more */
+            while (u != null | first) {
+                if (first) {
+                    u = en.contdisplay;
+                    first = false;
+                } else {
+                    u = u.goaldisplay;
+                }
                 k++;
-                Frame.skipNoTrace(u.goalskel, u.goaldisplay, en);
+                u = Frame.skipNoTrace(u, en);
             }
             if (k != 0) {
                 Object val = new SkelCompound(new SkelAtom(OP_PRED_MORE), Integer.valueOf(k));
@@ -303,8 +320,8 @@ public final class EngineException extends Exception {
      */
     public String getMessage() {
         try {
-            int size = Display.displaySize(template);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            int size = EngineCopy.displaySize(template);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
             return errorMake(template, ref, null, null, null);
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
@@ -327,8 +344,8 @@ public final class EngineException extends Exception {
             throws IOException, EngineException, EngineMessage {
         Locale locale = en.store.foyer.locale;
         Properties lang = EngineMessage.getErrorLang(locale, en.store);
-        int size = Display.displaySize(template);
-        Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+        int size = EngineCopy.displaySize(template);
+        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         return errorMake(template, ref, locale, lang, en);
     }
 
@@ -349,8 +366,8 @@ public final class EngineException extends Exception {
         try {
             Locale locale = en.store.foyer.locale;
             Properties lang = EngineMessage.getErrorLang(locale, en.store);
-            int size = Display.displaySize(template);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            int size = EngineCopy.displaySize(template);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
             EngineException.printStackTrace(wr, template, ref, locale, lang, en);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -371,8 +388,8 @@ public final class EngineException extends Exception {
         try {
             Locale locale = en.store.foyer.locale;
             Properties lang = EngineMessage.getErrorLang(locale, en.store);
-            int size = Display.displaySize(template);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            int size = EngineCopy.displaySize(template);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
             EngineException.printStackTrace(wr, template, ref, locale, lang, en);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -399,14 +416,14 @@ public final class EngineException extends Exception {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static String errorMake(Object term, Display ref,
+    public static String errorMake(Object term, BindCount[] ref,
                                    Locale locale, Properties prop,
                                    Engine en)
             throws EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;
             while (term instanceof SkelVar &&
-                    (b = ref.bind[((SkelVar) term).id]).display != null) {
+                    (b = ref[((SkelVar) term).id]).display != null) {
                 term = b.skel;
                 ref = b.display;
             }
@@ -462,14 +479,14 @@ public final class EngineException extends Exception {
      * @throws IOException   IO error.
      * @throws EngineMessage Not a number.
      */
-    public static void printStackTrace(Writer wr, Object term, Display ref,
+    public static void printStackTrace(Writer wr, Object term, BindCount[] ref,
                                        Locale locale, Properties prop,
                                        Engine en)
             throws IOException, EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;
             while (term instanceof SkelVar &&
-                    (b = ref.bind[((SkelVar) term).id]).display != null) {
+                    (b = ref[((SkelVar) term).id]).display != null) {
                 term = b.skel;
                 ref = b.display;
             }
@@ -525,14 +542,14 @@ public final class EngineException extends Exception {
      * @throws IOException   IO error.
      * @throws EngineMessage Not a number.
      */
-    private static void printContext(Writer wr, Object term, Display ref,
+    private static void printContext(Writer wr, Object term, BindCount[] ref,
                                      Locale locale, Properties prop,
                                      Engine en)
             throws IOException, EngineMessage, EngineException {
         for (; ; ) {
             BindVar b;
             while (term instanceof SkelVar &&
-                    (b = ref.bind[((SkelVar) term).id]).display != null) {
+                    (b = ref[((SkelVar) term).id]).display != null) {
                 term = b.skel;
                 ref = b.display;
             }
@@ -580,8 +597,8 @@ public final class EngineException extends Exception {
                 ((SkelCompound) m).args.length == 2 &&
                 ((SkelCompound) m).sym.fun.equals(fun)) {
             Object o = ((SkelCompound) m).args[0];
-            int size = Display.displaySize(m);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            int size = EngineCopy.displaySize(m);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
             return new EngineMessage(o, ref);
         } else if (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 2 &&
@@ -591,8 +608,8 @@ public final class EngineException extends Exception {
                     ((SkelCompound) m).args.length == 2 &&
                     ((SkelCompound) m).sym.fun.equals(fun)) {
                 Object o = ((SkelCompound) m).args[0];
-                int size = Display.displaySize(m);
-                Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+                int size = EngineCopy.displaySize(m);
+                BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
                 return new EngineMessage(o, ref);
             }
         }
@@ -614,8 +631,8 @@ public final class EngineException extends Exception {
                 ((SkelCompound) m).args.length == 2 &&
                 OP_CAUSE.equals(((SkelCompound) m).sym.fun)) {
             Object o = ((SkelCompound) m).args[ARG_SECONDARY];
-            int size = Display.displaySize(m);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            int size = EngineCopy.displaySize(m);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
             return new EngineException(o, ref);
         }
         return null;

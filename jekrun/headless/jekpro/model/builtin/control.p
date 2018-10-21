@@ -1,4 +1,11 @@
 /**
+ * The backtracking control flow can be modified by the cut (!)/0.
+ * The cut will remove the choice points from the head to the cut,
+ * including a head choice point. Common programming patterns
+ * involving the cut are provided in the forms of the predicate
+ * once/1 and (\+)/1. Both predicates will remove any backtracking
+ * from the goal argument.
+ *
  * The interpreter has the capability to interrupt its normal flow
  * by exception handling. An interruption happens when an exception
  * is thrown or when a signal is raised. An exception can be an
@@ -19,16 +26,7 @@
  * the variable with the current stack trace. The predicate catch/1
  * can be used to catch a thrown exception. The predicate will not
  * catch reserved exceptions. Currently system errors are the only
- * reserved exceptions. System errors are used when interrupting the
- * execution of the interpreter.
- *
- * The predicate try_call_finally/3 will execute a preamble and a
- * postscript for a goal. The postscript is executed even when a
- * possibly reserved exception is thrown. The variant call_finally/2
- * doesn't take a preamble. The behaviour of these predicates is
- * different from setup_call_cleanup/3 in that they execute the
- * postscript and preamble multiple times and in that they don’t
- * react on events in the continuation.
+ * reserved exceptions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -50,6 +48,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -58,6 +61,9 @@
    set_source_property(C, use_package(foreign(jekpro/model/builtin))).
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
+
+:- sys_op(900, fy, \+).
+:- set_oper_property(prefix(\+), visible(public)).
 
 /******************************************************************/
 /* Basic Control                                                  */
@@ -71,11 +77,9 @@
 % fail
 :- special(fail/0, 'SpecialControl', 0).
 :- set_predicate_property(fail/0, visible(public)).
-:- set_predicate_property(fail/0, sys_notrace).
 % false
 :- special(false/0, 'SpecialControl', 0).
 :- set_predicate_property(false/0, visible(public)).
-:- set_predicate_property(false/0, sys_notrace).
 
 /**
  * true: [ISO 7.8.1]
@@ -84,11 +88,9 @@
 % true
 :- special(true/0, 'SpecialControl', 1).
 :- set_predicate_property(true/0, visible(public)).
-:- set_predicate_property(true/0, sys_notrace).
 % otherwise
 :- special(otherwise/0, 'SpecialControl', 1).
 :- set_predicate_property(otherwise/0, visible(public)).
-:- set_predicate_property(otherwise/0, sys_notrace).
 
 /**
  * !: [ISO 7.8.4]
@@ -99,10 +101,30 @@
 % !
 :- special(!/0, 'SpecialControl', 2).
 :- set_predicate_property(!/0, visible(public)).
-:- set_predicate_property(!/0, sys_notrace).
+
+/**
+ * once(A): [ISO 8.15.2]
+ * The predicate succeeds once if A succeeds. Otherwise,
+ * the predicate fails.
+ */
+% once(+Goal)
+once(X) :- X, !.
+:- set_predicate_property(once/1, (meta_predicate once(0))).
+:- set_predicate_property(once/1, visible(public)).
+
+/**
+ * \+ A: [ISO 8.15.1]
+ * When A succeeds, then the predicate fails. Otherwise,
+ * the predicate succeeds.
+ */
+% \+(+Goal)
+\+ X :- X, !, fail.
+\+ _.
+:- set_predicate_property((\+)/1, (meta_predicate\+0)).
+:- set_predicate_property((\+)/1, visible(public)).
 
 /******************************************************************/
-/* Throw Catch                                                    */
+/* Throw                                                          */
 /******************************************************************/
 
 /**
@@ -125,7 +147,6 @@ throw(warning(M,T)) :-
 throw(B) :-
    sys_raise(B).
 :- set_predicate_property(throw/1, visible(public)).
-:- set_predicate_property(throw/1, sys_notrace).
 
 /**
  * sys_fetch_stack(T):
@@ -143,19 +164,22 @@ throw(B) :-
 :- special(sys_raise/1, 'SpecialControl', 4).
 :- set_predicate_property(sys_raise/1, visible(public)).
 
+/******************************************************************/
+/* Catch                                                          */
+/******************************************************************/
+
 /**
  * catch(A, E, B): [ISO 7.8.9]
  * The predicate succeeds whenever A succeeds. When an exception is thrown
  * during the execution of A, this exception is non-reserved and this exception
- * unifies with E then the predicate succeeds whenever B succeeds. Otherwise
- * this exception is re-thrown.
+ * unifies with E then the predicate succeeds whenever B succeeds. Otherwise,
+ * the exception is re-thrown.
  */
 % catch(+Goal, +Pattern, +Goal)
 catch(A, E, B) :-
    sys_trap(A, F, sys_handle_ball(F, E, B)).
 :- set_predicate_property(catch/3, visible(public)).
 :- set_predicate_property(catch/3, (meta_predicate catch(0,?,0))).
-:- set_predicate_property(catch/3, sys_notrace).
 
 /**
  * sys_handle_ball(F, E, B):
@@ -190,63 +214,10 @@ sys_reserved_ball(cause(E,_)) :-
  * sys_trap(A, E, B):
  * The predicate succeeds whenever A succeeds. When an exception is
  * thrown during the execution of A and this exception unifies with E
- * then the predicate succeeds whenever B succeeds. Otherwise this
+ * then the predicate succeeds whenever B succeeds. Otherwise, the
  * exception is re-thrown.
  */
 % sys_trap(+Goal, +Pattern, +Goal)
 :- special(sys_trap/3, 'SpecialControl', 5).
 :- set_predicate_property(sys_trap/3, visible(public)).
 :- set_predicate_property(sys_trap/3, (meta_predicate sys_trap(0,?,0))).
-
-/******************************************************************/
-/* Try Finally                                                    */
-/******************************************************************/
-
-/**
- * try_call_finally(S, G, T):
- * The predicate succeeds whenever G succeeds. Calling S on the
- * call and redo port, and calling T on the exit, fail and exception
- * port. The predicate can also handle reserved exception.
- */
-% try_call_finally(+Goal, +Goal, +Goal)
-try_call_finally(S, G, T) :-
-   sys_or_fail(S, T),
-   sys_trap(G, E, sys_before_ball(T, E)),
-   sys_or_fail(T, S).
-:- set_predicate_property(try_call_finally/3, visible(public)).
-:- set_predicate_property(try_call_finally/3, (meta_predicate try_call_finally(0,0,0))).
-:- set_predicate_property(try_call_finally/3, sys_notrace).
-
-% sys_or_fail(+Goal, +Goal)
-sys_or_fail(S, _) :-
-   call(S).
-sys_or_fail(_, T) :-
-   call(T), fail.
-:- set_predicate_property(sys_or_fail/2, visible(private)).
-
-% sys_before_ball(+Goal, +Term)
-sys_before_ball(T, E) :-
-   call(T),
-   sys_raise(E).
-:- set_predicate_property(sys_before_ball/2, visible(private)).
-
-/**
- * call_finally(G, T):
- * The predicate succeeds whenever G succeeds. Calling T on the
- * exit, fail and exception port. The predicate can also handle
- * reserved exception.
- */
-% call_finally(+Goal, +Goal)
-call_finally(G, T) :-
-   sys_or_fail(T),
-   sys_trap(G, E, sys_before_ball(T, E)),
-   call(T).
-:- set_predicate_property(call_finally/2, visible(public)).
-:- set_predicate_property(call_finally/2, (meta_predicate call_finally(0,0))).
-:- set_predicate_property(call_finally/2, sys_notrace).
-
-% sys_or_fail(+Goal)
-sys_or_fail(_).
-sys_or_fail(T) :-
-   call(T), fail.
-:- set_predicate_property(sys_or_fail/1, visible(private)).

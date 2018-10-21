@@ -4,7 +4,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
@@ -94,7 +94,7 @@ public final class ReadOpts {
      * @param d The parameters display.
      * @throws EngineMessage Shit happens.
      */
-    public void decodeReadParameter(Object t, Display d, Engine en)
+    public void decodeReadParameter(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -154,10 +154,11 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SOURCE)) {
-                String fun = SpecialUniv.derefAndCastString(
+                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(
                         ((SkelCompound) en.skel).args[0], en.display);
-                AbstractSource src = en.store.getSource(fun);
-                AbstractSource.checkExistentSource(src, fun);
+                AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+                src = src.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(src, sa);
                 source = src;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -219,8 +220,8 @@ public final class ReadOpts {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public static boolean decodeReadOptions(Object t, Display d,
-                                            Object t2, Display d2,
+    public static boolean decodeReadOptions(Object t, BindCount[] d,
+                                            Object t2, BindCount[] d2,
                                             Engine en,
                                             PrologReader rd)
             throws EngineMessage, EngineException {
@@ -276,7 +277,7 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
-                        Integer.valueOf(rd.getClauseStart()), Display.DISPLAY_CONST))
+                        Integer.valueOf(rd.getClauseStart()), BindCount.DISPLAY_CONST))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -353,7 +354,7 @@ public final class ReadOpts {
      * @return The util value.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToUtil(Object m, Display d)
+    public static int atomToUtil(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_VALUE_ERROR)) {
@@ -403,7 +404,7 @@ public final class ReadOpts {
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToReadPart(Object m, Display d)
+    public static int atomToReadPart(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {

@@ -1,8 +1,8 @@
 package jekpro.model.inter;
 
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -108,7 +108,7 @@ public abstract class AbstractSpecial extends AbstractDelegate {
     public Object toSpec(AbstractSource source, Engine en)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom("special"),
-                SpecialSpecial.classToName(getClass(), source, en),
+                SpecialForeign.classToName(getClass(), source, en),
                 Integer.valueOf(id));
     }
 

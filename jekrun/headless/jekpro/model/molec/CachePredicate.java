@@ -47,41 +47,9 @@ public final class CachePredicate extends AbstractCache {
     public static final int MASK_PRED_STBL = 0x00000002;
 
     public Predicate pick;
+    public int flags;
     AbstractSource base;
     Object basevers;
-    public int flags;
-
-    /************************************************************************/
-    /* Lookup Utilities                                                     */
-    /************************************************************************/
-
-    /**
-     * <p>Check whether the found predicate is a stable one.</p>
-     *
-     * @param fun  The predicate name.
-     * @param base The base.
-     * @param pick The predicate.
-     * @return True if the predicate is stable, otherwise false.
-     */
-    private static boolean isStable(String fun,
-                                    AbstractSource base,
-                                    Predicate pick) {
-        String n;
-        if (!CacheFunctor.isQuali(fun)) {
-            n = fun;
-        } else {
-            n = CacheFunctor.sepName(fun);
-        }
-        String s = base.getFullName();
-        if (!Branch.OP_USER.equals(s)) {
-            /* check name%pred */
-            s = CacheFunctor.composeQuali(s, n);
-            return pick.getFun().equals(s);
-        } else {
-            /* check pred */
-            return pick.getFun().equals(n);
-        }
-    }
 
     /*********************************************************************/
     /* Lookup Predicates                                                 */
@@ -465,15 +433,13 @@ public final class CachePredicate extends AbstractCache {
                     /* cache if found */
                     CachePredicate cp;
                     if (pick != null) {
-                        cp = new CachePredicate();
-                        cp.pick = pick;
-                        cp.base = base;
                         int flags = 0;
                         if (CachePredicate.visiblePred(pick, src))
                             flags |= MASK_PRED_VISI;
-                        if (pick.getDef(src) != null && isStable(sa.fun, base, pick))
-                            flags |= MASK_PRED_STBL;
+                        cp = new CachePredicate();
+                        cp.pick = pick;
                         cp.flags = flags;
+                        cp.base = base;
                         cp.basevers = basevers;
                         /* add to cache */
                         if (back == null) {
@@ -498,14 +464,12 @@ public final class CachePredicate extends AbstractCache {
                             pick = performLookup(sa, arity, base);
                             /* update if found, otherwise remove */
                             if (pick != null) {
-                                cp.pick = pick;
-                                cp.base = base;
                                 int flags = 0;
                                 if (CachePredicate.visiblePred(pick, src))
                                     flags |= MASK_PRED_VISI;
-                                if (pick.getDef(src) != null && isStable(sa.fun, base, pick))
-                                    flags |= MASK_PRED_STBL;
+                                cp.pick = pick;
                                 cp.flags = flags;
+                                cp.base = base;
                                 cp.basevers = basevers;
                             } else {
                                 /* remove from cache */
@@ -553,15 +517,18 @@ public final class CachePredicate extends AbstractCache {
                     Object basevers = base.importvers;
                     Predicate pick = performLookupDefined(sa, arity,
                             src, base, en, create);
+                    /* cache if found */
                     CachePredicate cp;
                     if (pick != null) {
-                        cp = new CachePredicate();
-                        cp.pick = pick;
-                        cp.base = base;
-                        int flags = MASK_PRED_STBL;
+                        int flags = 0;
                         if (CachePredicate.visiblePred(pick, src))
                             flags |= MASK_PRED_VISI;
+                        if (create)
+                            flags |= MASK_PRED_STBL;
+                        cp = new CachePredicate();
+                        cp.pick = pick;
                         cp.flags = flags;
+                        cp.base = base;
                         cp.basevers = basevers;
                         /* add to cache */
                         if (back == null) {
@@ -592,12 +559,14 @@ public final class CachePredicate extends AbstractCache {
                                     src, base, en, create);
                             /* update if found, otherwise remove */
                             if (pick != null) {
-                                cp.pick = pick;
-                                cp.base = base;
-                                int flags = MASK_PRED_STBL;
+                                int flags = 0;
                                 if (CachePredicate.visiblePred(pick, src))
                                     flags |= MASK_PRED_VISI;
+                                if (create)
+                                    flags |= MASK_PRED_STBL;
+                                cp.pick = pick;
                                 cp.flags = flags;
+                                cp.base = base;
                                 cp.basevers = basevers;
                             } else {
                                 /* remove from cache */

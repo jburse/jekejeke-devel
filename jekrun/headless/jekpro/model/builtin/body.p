@@ -17,7 +17,7 @@
  *     call(A).
  *
  * Body conversion is also in effect when goals are executed, either
- * directly or deferred via me-ta-arguments. The body conversion can
+ * directly or deferred via meta-arguments. The body conversion can
  * be switched off via the flag sys_body_convert. The flag only affects
  * the body conversion for the Prolog session queries, for the Prolog
  * text clauses and for the Prolog text directives. The dynamic clause
@@ -51,6 +51,11 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
@@ -60,73 +65,90 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-/**
- * sys_neutral_predicate(I):
- * If no predicate has yet been defined for the predicate indicator I,
- * defines a corresponding neutral predicate.
- */
-% sys_neutral_predicate(+Indicator)
-:- special(sys_neutral_predicate/1, 'SpecialBody', 0).
-:- set_predicate_property(sys_neutral_predicate/1, visible(public)).
+% already defined in special.p
+% :- public prefix(':-').
+% :- op(1200, fx, :-).
+
+% already defined in special.p
+% :- public infix(':-').
+% :- op(1200, xfx, :-).
+
+% already defined in special.p
+% :- public infix(',').
+% :- op(1000, xfy, ',').
+% :- set_oper_property(infix(','), nspl).
 
 /**
- * sys_neutral_oper(I):
- * If no syntax operator has yet been defined for the syntax operator
- * indicator I, defines a corresponding neutral syntax operator.
+ * :- A:
+ * The predicate cannot be executed and exists only to configure
+ * the body conversion table.
  */
-% sys_neutral_oper(+Indicator)
-:- special(sys_neutral_oper/1, 'SpecialBody', 1).
-:- set_predicate_property(sys_neutral_oper/1, visible(public)).
+% :- +Goal
+(:- _) :-
+   throw(error(existence_error(body,(:-)/1),_)).
+:- set_predicate_property((:-)/1, visible(public)).
+:- set_predicate_property((:-)/1, (meta_predicate (:- -1))).
+:- set_predicate_property((:-)/1, sys_rule).
 
 /**
- * sys_context_property(C, Q):
- * The predicate succeeds for the context property Q of the callable C.
+ * A :- B:
+ * The predicate cannot be executed and exists only to configure
+ * the body conversion table.
  */
-% sys_contex_property(+Callable, -Atom)
-% natively defined in SpecialSpecial
+% +Term :- +Goal
+(_ :- _) :-
+   throw(error(existence_error(body,(:-)/2),_)).
+:- set_predicate_property((:-)/2, visible(public)).
+:- set_predicate_property((:-)/2, (meta_predicate (0:- -1))).
+:- set_predicate_property((:-)/2, sys_rule).
 
 /**
- * sys_set_context_property(B, Q, A):
- * The predicate succeeds for a new callable B which is a clone of
- * the callable A with the context property Q.
+ * A, B: [ISO 7.8.5]
+ * The predicate succeeds whenever A and B succeed. Both goal
+ * arguments A and B are cut transparent.
  */
-% sys_set_context_property(-Callable, +Atom, +Callable)
-:- special(sys_set_context_property/3, 'SpecialBody', 2).
-:- set_predicate_property(sys_set_context_property/3, visible(public)).
+% (+Goal, +Goal)
+A, B :- A, B.                                          % Proto
+:- set_predicate_property(','/2, (meta_predicate 0,0)).
+:- set_predicate_property(','/2, sys_body).
+:- set_predicate_property(','/2, sys_nobarrier).
+:- set_predicate_property(','/2, visible(public)).
+:- set_predicate_property(','/2, sys_notrace).
 
 /**
- * sys_replace_site(B, Q, A):
- * The predicate succeeds for a new callable B which is a clone of
- * the callable A with all the site properties of the callable Q.
+ * call(A): [ÍSO 7.8.3]
+ * The predicate succeeds whenever A succeeds. The goal argument
+ * A is converted before calling.
  */
-% sys_replace_site(-Term, +Term, +Term)
-:- special(sys_replace_site/3, 'SpecialBody', 4).
-:- set_predicate_property(sys_replace_site/3, visible(public)).
+% call(+Goal)
+:- special(call/1, 'SpecialBody', 0).
+:- set_predicate_property(call/1, (meta_predicate call(0))).
+:- set_predicate_property(call/1, visible(public)).
 
-/**
- * sys_parent_goal(B):
- * The predicate succeeds in B with the call parent of the current clause.
- */
-% sys_parent_goal(-Term)
-:- special(sys_parent_goal/1, 'SpecialBody', 5).
-:- set_predicate_property(sys_parent_goal/1, visible(public)).
+/**********************************************************/
+/* Moved From Debugger                                    */
+/**********************************************************/
 
-/**
- * sys_declaration_indicator(D, I):
- * The predicate succeeds with the indicator I for the declaration D.
- * The predicate is multifile and can be extended by further clauses.
- */
-% sys_declaration_indicator(+Declaration, -Indicator).
-:- sys_neutral_predicate(sys_declaration_indicator/2).
-:- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_context_property(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
-:- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_context_property(here, C),
-   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
+% moved from provable.p in debugger
+:- special(sys_current_provable/1, 'SpecialBody', 1).
+:- set_predicate_property(sys_current_provable/1, visible(public)).
 
-sys_declaration_indicator(special(I,_,_), I).
-sys_declaration_indicator(set_predicate_property(I,_), I).
-sys_declaration_indicator(reset_predicate_property(I,_), I).
-sys_declaration_indicator((virtual D), I) :-
-   sys_declaration_indicator(D, I).
+% moved from provable.p in debugger
+:- special(sys_provable_property_chk/3, 'SpecialBody', 2).
+:- set_predicate_property(sys_provable_property_chk/3, visible(public)).
+
+% moved from provable.p in debugger
+:- special(sys_provable_property_idx/2, 'SpecialBody', 3).
+:- set_predicate_property(sys_provable_property_idx/2, visible(public)).
+
+% moved from syntax.p in debugger
+:- special(sys_current_syntax/1, 'SpecialBody', 4).
+:- set_predicate_property(sys_current_syntax/1, visible(public)).
+
+% moved from syntax.p in debugger
+:- special(sys_syntax_property_chk/3, 'SpecialBody', 5).
+:- set_predicate_property(sys_syntax_property_chk/3, visible(public)).
+
+% moved from syntax.p in debugger
+:- special(sys_syntax_property_idx/2, 'SpecialBody', 6).
+:- set_predicate_property(sys_syntax_property_idx/2, visible(public)).

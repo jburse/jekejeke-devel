@@ -43,7 +43,7 @@ public final class EngineWrap {
     public final static int MASK_WRAP_CHNG = 0x00000002;
 
     public int countvar;
-    public Display last;
+    public BindCount[] last;
     public int flags;
 
     /**************************************************************************/
@@ -58,19 +58,19 @@ public final class EngineWrap {
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Shit happens.
      */
-    public void countGoal(Object t, Display d,
+    public void countGoal(Object t, BindCount[] d,
                           Engine en)
             throws EngineMessage, EngineException {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display != null) {
+                if ((b = d[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
                 }
                 countvar++;
-                if (last == Display.DISPLAY_CONST) {
+                if (last == BindCount.DISPLAY_CONST) {
                     last = d;
                 } else if (last != d) {
                     flags |= MASK_WRAP_MLTI;
@@ -102,7 +102,7 @@ public final class EngineWrap {
                     }
                 } else if (sc.var != null) {
                     countvar++;
-                    if (last == Display.DISPLAY_CONST) {
+                    if (last == BindCount.DISPLAY_CONST) {
                         last = d;
                     } else if (last != d) {
                         flags |= MASK_WRAP_MLTI;
@@ -130,19 +130,19 @@ public final class EngineWrap {
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Shit happens.
      */
-    private void countTerm(Object t, Display d,
+    private void countTerm(Object t, BindCount[] d,
                            Engine en)
             throws EngineMessage, EngineException {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display != null) {
+                if ((b = d[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
                 }
                 countvar++;
-                if (last == Display.DISPLAY_CONST) {
+                if (last == BindCount.DISPLAY_CONST) {
                     last = d;
                 } else if (last != d) {
                     flags |= MASK_WRAP_MLTI;
@@ -173,7 +173,7 @@ public final class EngineWrap {
                     }
                 } else if (sc.var != null) {
                     countvar++;
-                    if (last == Display.DISPLAY_CONST) {
+                    if (last == BindCount.DISPLAY_CONST) {
                         last = d;
                     } else if (last != d) {
                         flags |= MASK_WRAP_MLTI;
@@ -195,17 +195,17 @@ public final class EngineWrap {
      * @param t The term skel.
      * @param d The term display.
      */
-    private void countRest(Object t, Display d) {
+    private void countRest(Object t, BindCount[] d) {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display != null) {
+                if ((b = d[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
                 }
                 countvar++;
-                if (last == Display.DISPLAY_CONST) {
+                if (last == BindCount.DISPLAY_CONST) {
                     last = d;
                 } else if (last != d) {
                     flags |= MASK_WRAP_MLTI;
@@ -215,7 +215,7 @@ public final class EngineWrap {
                 SkelCompound sc = (SkelCompound) t;
                 if (sc.var != null) {
                     countvar++;
-                    if (last == Display.DISPLAY_CONST) {
+                    if (last == BindCount.DISPLAY_CONST) {
                         last = d;
                     } else if (last != d) {
                         flags |= MASK_WRAP_MLTI;
@@ -246,14 +246,14 @@ public final class EngineWrap {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public Object replaceGoalAndWrap(Object t, Display d,
+    public Object replaceGoalAndWrap(Object t, BindCount[] d,
                                      Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display != null) {
+                if ((b = d[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -261,10 +261,10 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last[sv.id].bindVar(t, d, en);
                     t = sv;
                 }
-                t = new SkelCompound(new SkelAtom(Branch.OP_CALL), t);
+                t = new SkelCompound(new SkelAtom(Branch.OP_CALL, en.store.getRootSystem()), t);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -297,7 +297,7 @@ public final class EngineWrap {
                 } else if ((flags & MASK_WRAP_MLTI) != 0 && sc.var != null) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last[sv.id].bindVar(t, d, en);
                     t = sv;
                     break;
                 } else {
@@ -331,14 +331,14 @@ public final class EngineWrap {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private Object replaceTermAndWrap(Object t, Display d,
+    private Object replaceTermAndWrap(Object t, BindCount[] d,
                                       Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display != null) {
+                if ((b = d[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -346,7 +346,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last[sv.id].bindVar(t, d, en);
                     t = sv;
                 }
                 break;
@@ -381,7 +381,7 @@ public final class EngineWrap {
                 } else if ((flags & MASK_WRAP_MLTI) != 0 && sc.var != null) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last[sv.id].bindVar(t, d, en);
                     t = sv;
                     break;
                 } else {
@@ -413,11 +413,11 @@ public final class EngineWrap {
      * @param en The engine.
      * @return The new rest skeleton.
      */
-    private Object replaceRest(Object t, Display d, Engine en) {
+    private Object replaceRest(Object t, BindCount[] d, Engine en) {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display != null) {
+                if ((b = d[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -425,7 +425,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last[sv.id].bindVar(t, d, en);
                     t = sv;
                 }
                 break;
@@ -434,7 +434,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0 && sc.var != null) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last[sv.id].bindVar(t, d, en);
                     t = sv;
                     break;
                 } else {

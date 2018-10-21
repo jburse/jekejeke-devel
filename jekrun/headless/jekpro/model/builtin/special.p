@@ -69,10 +69,17 @@
  * The library can be distributed as part of your applications and libraries
  * for execution provided this comment remains unchanged.
  *
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ *
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- sys_context_property(here, C),
+   set_source_property(C, use_package(foreign(jekpro/model/builtin))).
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
@@ -86,23 +93,9 @@
 
 :- sys_op(400, yfx, /).
 :- set_oper_property(infix(/), visible(public)).
-:- set_oper_property(infix(/), nspl).
-:- set_oper_property(infix(/), nspr).
 
 :- sys_op(1150, fy, virtual).
 :- set_oper_property(prefix(virtual), visible(public)).
-
-(_ :- _) :-
-   throw(error(existence_error(body,(:-)/2),_)).
-:- set_predicate_property((:-)/2, visible(public)).
-:- set_predicate_property((:-)/2, (meta_predicate (0:- -1))).
-:- set_predicate_property((:-)/2, sys_rule).
-
-(:- _) :-
-   throw(error(existence_error(body,(:-)/1),_)).
-:- set_predicate_property((:-)/1, visible(public)).
-:- set_predicate_property((:-)/1, (meta_predicate (:- -1))).
-:- set_predicate_property((:-)/1, sys_rule).
 
 /**
  * special(I, C, K):
@@ -114,7 +107,14 @@
 special(I, C, K) :-
    sys_special(I, C, K),
    sys_check_style_predicate(I).
+
+:- special(set_predicate_property/2, 'SpecialSpecial', 0).
+:- set_predicate_property(set_predicate_property/2, visible(public)).
+
 :- set_predicate_property(special/3, visible(public)).
+
+:- special(reset_predicate_property/2, 'SpecialSpecial', 1).
+:- set_predicate_property(reset_predicate_property/2, visible(public)).
 
 :- reset_predicate_property(sys_special/3, visible(public)).
 :- set_predicate_property(sys_special/3, visible(private)).
@@ -146,3 +146,32 @@ sys_virtual(I) :-
    sys_neutral_predicate(I),
    set_predicate_property(I, virtual).
 :- set_predicate_property(sys_virtual/1, visible(private)).
+
+/**
+ * sys_neutral_predicate(I):
+ * If no predicate has yet been defined for the predicate indicator I,
+ * defines a corresponding neutral predicate.
+ */
+% sys_neutral_predicate(+Indicator)
+:- special(sys_neutral_predicate/1, 'SpecialSpecial', 5).
+:- set_predicate_property(sys_neutral_predicate/1, visible(public)).
+
+/**
+ * sys_declaration_indicator(D, I):
+ * The predicate succeeds with the indicator I for the declaration D.
+ * The predicate is multifile and can be extended by further clauses.
+ */
+% sys_declaration_indicator(+Declaration, -Indicator).
+:- sys_neutral_predicate(sys_declaration_indicator/2).
+:- set_predicate_property(sys_declaration_indicator/2, visible(public)).
+:- sys_context_property(here, C),
+   set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
+:- set_predicate_property(sys_declaration_indicator/2, multifile).
+:- sys_context_property(here, C),
+   set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
+
+sys_declaration_indicator(special(I,_,_), I).
+sys_declaration_indicator(set_predicate_property(I,_), I).
+sys_declaration_indicator(reset_predicate_property(I,_), I).
+sys_declaration_indicator((virtual D), I) :-
+   sys_declaration_indicator(D, I).

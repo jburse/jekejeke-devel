@@ -627,7 +627,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeAtom(SkelAtom sa, Display ref,
+    protected void writeAtom(SkelAtom sa, BindCount[] ref,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
@@ -882,7 +882,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writePostfix(Operator op, SkelCompound sc, Display ref,
+    protected void writePostfix(Operator op, SkelCompound sc, BindCount[] ref,
                                 CachePredicate cp, Object[] decl,
                                 int backshift, int backspez, int backoffset,
                                 Object mod, SkelAtom nsa)
@@ -945,7 +945,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeAtomicOrVar(Object term, Display ref,
+    protected void writeAtomicOrVar(Object term, BindCount[] ref,
                                     Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (term instanceof SkelAtom) {
@@ -1012,7 +1012,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeSet(SkelCompound sc, Display ref,
+    protected void writeSet(SkelCompound sc, BindCount[] ref,
                             Object mod, SkelAtom nsa)
             throws IOException, EngineException, EngineMessage {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
@@ -1044,7 +1044,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeList(SkelCompound sc, Display ref,
+    protected void writeList(SkelCompound sc, BindCount[] ref,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
@@ -1119,7 +1119,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeCompound(SkelCompound sc, Display ref,
+    protected void writeCompound(SkelCompound sc, BindCount[] ref,
                                  Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
@@ -1183,7 +1183,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeIndex(SkelCompound sc, Display ref,
+    protected void writeIndex(SkelCompound sc, BindCount[] ref,
                               CachePredicate cp, Object[] decl,
                               int backshift, int backspez, int backoffset,
                               Object mod, SkelAtom nsa)
@@ -1238,7 +1238,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeStruct(SkelCompound sc, Display ref,
+    protected void writeStruct(SkelCompound sc, BindCount[] ref,
                                CachePredicate cp, Object[] decl,
                                int backshift, int backspez, int backoffset,
                                Object mod, SkelAtom nsa)
@@ -1281,7 +1281,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public final void write(Object term, Display ref, int level,
+    public final void write(Object term, BindCount[] ref, int level,
                             Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null) {
@@ -1485,7 +1485,7 @@ public class PrologWriter {
      * @param ref  The argument display.
      * @return True if the argument is a simple, otherwise false.
      */
-    private boolean isSimple(Object term, Display ref) {
+    private boolean isSimple(Object term, BindCount[] ref) {
         if (engine != null) {
             engine.skel = term;
             engine.display = ref;
@@ -1508,7 +1508,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    private Operator isOperSimple(Object term, Display ref,
+    private Operator isOperSimple(Object term, BindCount[] ref,
                                   Object mod, SkelAtom nsa)
             throws EngineMessage, EngineException {
         if (engine == null)
@@ -1604,7 +1604,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void unparsePeriod(SkelAtom sa, Object t, Display ref)
+    protected void unparsePeriod(SkelAtom sa, Object t, BindCount[] ref)
             throws IOException, EngineMessage, EngineException {
         write(t, ref, lev, null, null);
         safeSpace(".");
@@ -1620,7 +1620,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public void unparseStatement(Object t, Display ref)
+    public void unparseStatement(Object t, BindCount[] ref)
             throws EngineMessage, EngineException {
         try {
             toff = 0;
@@ -1684,7 +1684,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public static void toString(Object t, Display ref, Writer wr, int flags,
+    public static void toString(Object t, BindCount[] ref, Writer wr, int flags,
                                 Engine en)
             throws EngineMessage, EngineException {
         PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);

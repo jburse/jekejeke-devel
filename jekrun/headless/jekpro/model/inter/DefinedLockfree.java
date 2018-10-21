@@ -1,7 +1,6 @@
 package jekpro.model.inter;
 
-import jekpro.model.builtin.SpecialBody;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -46,7 +45,7 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DefinedLockfree extends AbstractDefined {
-    private Bouquet cr = new Bouquet();
+    private final Bouquet cr = new Bouquet();
 
     /**
      * <p>Create a lockfree delegate.</p>
@@ -71,7 +70,7 @@ final class DefinedLockfree extends AbstractDefined {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
-            SkelAtom sa = SpecialBody.callableToName(clause.head);
+            SkelAtom sa = Frame.callableToName(clause.head);
             if (scope == sa.scope)
                 retractClause(clause, null);
         }
@@ -107,7 +106,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param d  The goal display.
      * @param en The engine.
      */
-    final Clause[] definedClauses(Object m, Display d, Engine en) {
+    final Clause[] definedClauses(Object m, BindCount[] d, Engine en) {
         Bouquet temp = cr;
         InterfaceClauses set = temp.set;
         if (set != null && set.size() != 1 &&
