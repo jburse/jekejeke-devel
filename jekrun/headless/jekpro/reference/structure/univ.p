@@ -47,8 +47,9 @@
 
 :- module(user, []).
 
-:- public infix(=).
-:- op(700, xfx, =).
+% already defined in member.p
+% :- public infix(=).
+% :- op(700, xfx, =).
 
 :- public infix(=..).
 :- op(700, xfx, =..).
@@ -116,8 +117,9 @@ T =.. L :-
  * The predicate succeeds when X and Y unify, no occurs check is performed.
  */
 % +Term = +Term
-:- public = /2.
-:- special(= /2, 'SpecialUniv', 3).
+% already defined in member.p
+% :- public (=)/2.
+% :- special((=)/2, 'SpecialUniv', 3).
 
 /**
  * unify_with_occurs_check(X, Y): [ISO 8.2.2]

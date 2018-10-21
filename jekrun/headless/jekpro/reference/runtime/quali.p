@@ -403,3 +403,12 @@ sys_get_module_test(O, M) :-
 % sys_get_class(+Ref, -Ref)
 :- private sys_get_class/2.
 :- special(sys_get_class/2, 'SpecialQuali', 2).
+
+/**
+ * sys_replace_site(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A with all the site properties of the callable Q.
+ */
+% sys_replace_site(-Term, +Term, +Term)
+:- public sys_replace_site/3.
+:- special(sys_replace_site/3, 'SpecialQuali', 3).

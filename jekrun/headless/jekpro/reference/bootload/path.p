@@ -81,6 +81,8 @@
 :- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/tools/call))).
 :- sys_context_property(here, C),
+   set_source_property(C, use_package(foreign(jekpro/tools/term))).
+:- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(matula/util/system))).
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
@@ -362,11 +364,11 @@ sys_absolute_file_name4(Path, C, library(Slash)) :- !,
 :- set_predicate_property(sys_is_relative_uri/1, visible(private)).
 
 :- foreign(sys_unfind_key/4, 'ForeignPath',
-      sysUnfindKey('Interpreter','String','String','Object')).
+      sysUnfindKey('Interpreter','String','TermAtomic','Object')).
 :- set_predicate_property(sys_unfind_key/4, visible(private)).
 
 :- foreign(sys_unfind_prefix/4, 'ForeignPath',
-      sysUnfindPrefix('Interpreter','String','String','Object')).
+      sysUnfindPrefix('Interpreter','String','TermAtomic','Object')).
 :- set_predicate_property(sys_unfind_prefix/4, visible(private)).
 
 /****************************************************************/
@@ -390,11 +392,11 @@ sys_absolute_resource_name(Slash, Pin) :-
 :- set_predicate_property(sys_absolute_resource_name/2, visible(private)).
 
 :- foreign(sys_find_prefix/4, 'ForeignPath',
-      sysFindPrefix('Interpreter','String','String','Object')).
+      sysFindPrefix('Interpreter','String','TermAtomic','Object')).
 :- set_predicate_property(sys_find_prefix/4, visible(private)).
 
 :- foreign(sys_find_key/4, 'ForeignPath',
-      sysFindKey('Interpreter','String','String','Object')).
+      sysFindKey('Interpreter','String','TermAtomic','Object')).
 :- set_predicate_property(sys_find_key/4, visible(private)).
 
 /****************************************************************/
@@ -432,7 +434,7 @@ sys_path_to_atom1(../Name, Path) :- !,
    sys_atom_concat(../, Name, Path).
 sys_path_to_atom1(X, Path) :-
    sys_atom(X), !,
-   sys_eq(X, Path).
+   X = Path.
 sys_path_to_atom1(X, _) :-
    throw(error(type_error(path,X),_)).
 :- set_predicate_property(sys_path_to_atom1/2, visible(private)).
@@ -445,9 +447,9 @@ sys_path_to_atom2(Path, {Dir}) :-
 sys_path_to_atom2(Path, Dir/Name) :-
    last_sub_atom(Path, Before, _, After, /),
    sub_atom(Path, 0, Before, X),
-   sys_not(sys_eq(X,..)),
-   sys_not(sys_eq(X,../..)),
-   sys_not(sys_eq(X,../../..)), !,
+   \+ X = ..,
+   \+ X = ../..,
+   \+ X = ../../.., !,
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Path, ../../../Name) :-

@@ -5,10 +5,7 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
-import jekpro.model.molec.OperatorSearch;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
@@ -56,7 +53,8 @@ import matula.util.data.MapEntry;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialOper extends AbstractSpecial {
-    /* private final static int SPECIAL_SYS_OP = 0; */
+    private final static int SPECIAL_SYS_NEUTRAL_OPER = 0;
+    private final static int SPECIAL_SYS_CHECK_STYLE_OPER = 1;
     private final static int SPECIAL_SYS_CURRENT_OPER = 2;
     private final static int SPECIAL_SYS_CURRENT_OPER_CHK = 3;
     private final static int SPECIAL_SYS_OPER_PROPERTY = 4;
@@ -105,46 +103,59 @@ public final class SpecialOper extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
+            case SPECIAL_SYS_NEUTRAL_OPER:
+                Object[]  temp = ((SkelCompound) en.skel).args;
+                BindCount[] ref = en.display;
+                Operator.operToOperatorDefined(temp[0], ref, en, true);
+                return en.getNextRaw();
+            case SPECIAL_SYS_CHECK_STYLE_OPER:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                Operator oper = SpecialOper.operToOperator(temp[0], ref, en);
+                SkelAtom sa = (SkelAtom) en.skel;
+                Operator.checkExistentOperator(oper, temp[0], ref);
+                Operator.checkOperDecl(oper, sa, en);
+                return en.getNextRaw();
             case SPECIAL_SYS_CURRENT_OPER:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        currentOpers(en), Display.DISPLAY_CONST))
+                        currentOpers(en), BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_OPER_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Operator op = operToOperator(temp[0], ref, en);
-                if (op == null)
+                oper = operToOperator(temp[0], ref, en);
+                if (oper == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = operToOperator(temp[0], ref, en);
-                if (op == null)
+                oper = operToOperator(temp[0], ref, en);
+                if (oper == null)
                     return false;
-                boolean multi = operToProperties(op, en);
-                Display d = en.display;
+                boolean multi = operToProperties(oper, en);
+                BindCount[] d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = operToOperator(temp[0], ref, en);
-                if (op == null)
+                oper = operToOperator(temp[0], ref, en);
+                if (oper == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = operToProperty(prop, op, en);
+                multi = operToProperty(prop, oper, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -155,19 +166,19 @@ public final class SpecialOper extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         SpecialOper.propertyToOperators(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                        BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_RESET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = operToOperator(temp[0], ref, en);
-                Operator.checkExistentOperator(op, temp[0], ref);
+                oper = operToOperator(temp[0], ref, en);
+                Operator.checkExistentOperator(oper, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                removeOperProp(en.skel, en.display, op, en);
+                removeOperProp(en.skel, en.display, oper, en);
                 return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -233,7 +244,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The operator.
      * @throws EngineMessage Shit happends.
      */
-    public static Operator operToOperator(Object t, Display d,
+    public static Operator operToOperator(Object t, BindCount[] d,
                                           Engine en)
             throws EngineMessage, EngineException {
         int type = colonToOper(t, d, en);
@@ -260,13 +271,13 @@ public final class SpecialOper extends AbstractSpecial {
                                            Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
         boolean multi = false;
         StoreKey[] keys = listOperProp();
         for (int j = keys.length - 1; j >= 0; j--) {
             StoreKey key = keys[j];
             Object t = en.skel;
-            Display d = en.display;
+            BindCount[] d = en.display;
             Object[] vals = getOperProp(op, key, en);
             en.skel = t;
             en.display = d;
@@ -290,7 +301,7 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         Object[] vals = getOperProp(op, key, en);
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
         return AbstractProperty.consArray(false, vals, en);
     }
 
@@ -308,7 +319,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void removeOperProp(Object t, Display d, Operator op,
+    public static void removeOperProp(Object t, BindCount[] d, Operator op,
                                       Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -327,7 +338,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void addOperProp(Object t, Display d, Operator op,
+    public static void addOperProp(Object t, BindCount[] d, Operator op,
                                    Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -347,7 +358,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param d  The value display.
      * @param en The engine.
      */
-    private static Object propertyToOperators(Object t, Display d,
+    private static Object propertyToOperators(Object t, BindCount[] d,
                                               Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -373,7 +384,7 @@ public final class SpecialOper extends AbstractSpecial {
     private static final StoreKey KEY_SYS_PORTRAY = new StoreKey(OP_SYS_PORTRAY, 1);
     private static final StoreKey KEY_SYS_ALIAS = new StoreKey(OP_SYS_ALIAS, 1);
 
-    private static StoreKey[] OP_OPER_PROPS = {
+    private final static StoreKey[] OP_OPER_PROPS = {
             KEY_NSPL,
             KEY_NSPR,
             KEY_VISIBLE,
@@ -669,7 +680,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The operators, or null.
      * @throws EngineMessage Shit happens.
      */
-    public static Operator[] idxPropOper(Object t, Display d,
+    public static Operator[] idxPropOper(Object t, BindCount[] d,
                                          StoreKey prop, Engine en)
             throws EngineMessage {
         if (KEY_SYS_USAGE.equals(prop)) {
@@ -837,7 +848,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The type.
      * @throws EngineMessage Shit happends.
      */
-    public static int colonToOper(Object t, Display d, Engine en)
+    public static int colonToOper(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         int type = opToType(t, d, en);
         SpecialQuali.colonToCallable(en.skel, en.display, false, en);
@@ -861,7 +872,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The type.
      * @throws EngineMessage Shit happends.
      */
-    public static int opToType(Object t, Display d, Engine en)
+    public static int opToType(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;

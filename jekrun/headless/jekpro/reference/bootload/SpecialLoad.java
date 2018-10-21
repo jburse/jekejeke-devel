@@ -1,11 +1,9 @@
 package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.*;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Predicate;
+import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
@@ -99,7 +97,7 @@ public final class SpecialLoad extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_LOAD_FILE:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 LoadOpts opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
@@ -218,7 +216,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 ref = en.display;
                 AbstractSource src = en.visor.peekStack();
                 if (src == null || !en.unifyTerm(temp[0], ref,
-                        src.getPathAtom(), Display.DISPLAY_CONST))
+                        src.getPathAtom(), BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             default:
@@ -287,7 +285,7 @@ public final class SpecialLoad extends AbstractSpecial {
                         }
                         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                        pw.unparseStatement(decl, Display.DISPLAY_CONST);
+                        pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
                         SpecialLoad.flushWriter(pw.getWriter());
                     }
                 }
@@ -301,7 +299,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) fun).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = SpecialBody.callableToName(clause.head);
+            SkelAtom sa = Frame.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             if (modifiers != null) {
@@ -311,7 +309,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 modifiers = null;
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                 decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                pw.unparseStatement(decl, Display.DISPLAY_CONST);
+                pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
                 SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
@@ -333,7 +331,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Object decl = oper.operatorToCompound(en.store);
         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-        pw.unparseStatement(decl, Display.DISPLAY_CONST);
+        pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
         SpecialLoad.flushWriter(pw.getWriter());
     }
 
@@ -361,7 +359,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     new SkelAtom(Foyer.OP_NIL));
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-            pw.unparseStatement(decl, Display.DISPLAY_CONST);
+            pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
             SpecialLoad.flushWriter(pw.getWriter());
         }
 
@@ -531,7 +529,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Object[] newvals = new Object[vals.length];
         for (int i = 0; i < vals.length; i++) {
             Object val = pick.del.toSpec(source, en);
-            newvals[i] = AbstractTerm.createMolec(val, Display.DISPLAY_CONST);
+            newvals[i] = AbstractTerm.createMolec(val, BindCount.DISPLAY_CONST);
         }
         return newvals;
     }
@@ -665,13 +663,13 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public static Display showClause(PrologWriter pw, Object t, Named[] vars,
-                                     Engine en, int flags)
+    public static BindCount[] showClause(PrologWriter pw, Object t, Named[] vars,
+                                         Engine en, int flags)
             throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
                 ((flags & MASK_SHOW_NRBD) != 0)) {
-            int size = Display.displaySize(t);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
+            int size = EngineCopy.displaySize(t);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
             EngineVars ev = new EngineVars();
             if ((flags & MASK_SHOW_NANO) != 0) {
                 ev.varInclude(t, ref);
@@ -688,17 +686,18 @@ public final class SpecialLoad extends AbstractSpecial {
         }
         AbstractBind mark = en.bind;
         int snap = en.number;
-        int size = Display.displaySize(t);
+        int size = EngineCopy.displaySize(t);
         SkelVar var = SkelVar.valueOf(size);
-        Display dc = new Display(size + 1);
+        BindCount[] dc = BindCount.newBind(size + 1);
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, var);
-        t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
+        t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause(clause.dispsize);
+            DisplayClause ref = new DisplayClause();
+            ref.bind = BindCount.newBindClause(clause.dispsize);
             ref.addArgument(t, dc, en);
             ref.setEngine(en);
             en.contskel = clause.getNextRaw(en);
@@ -709,24 +708,24 @@ public final class SpecialLoad extends AbstractSpecial {
         } catch (EngineMessage x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.skel = new EngineException(x, EngineException.fetchStack(en));
+            en.fault = new EngineException(x, EngineException.fetchStack(en));
             en.releaseBind(mark);
-            throw (EngineException) en.skel;
+            throw en.fault;
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.skel = x;
+            en.fault = x;
             en.releaseBind(mark);
-            throw (EngineException) en.skel;
+            throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.skel = null;
-        en.display = null;
+        en.window = null;
+        en.fault = null;
         en.cutChoices(snap);
         try {
-            if (en.skel != null)
-                throw (EngineException) en.skel;
+            if (en.fault != null)
+                throw en.fault;
             EngineVars ev = new EngineVars();
             if ((flags & MASK_SHOW_NANO) != 0) {
                 ev.varInclude(var, dc);
@@ -740,18 +739,18 @@ public final class SpecialLoad extends AbstractSpecial {
             pw.unparseStatement(t, dc);
             SpecialLoad.flushWriter(pw.getWriter());
         } catch (EngineMessage y) {
-            en.skel = new EngineException(y, EngineException.fetchStack(en));
+            en.fault = new EngineException(y, EngineException.fetchStack(en));
             en.releaseBind(mark);
-            throw (EngineException) en.skel;
+            throw en.fault;
         } catch (EngineException x) {
-            en.skel = x;
+            en.fault = x;
             en.releaseBind(mark);
-            throw (EngineException) en.skel;
+            throw en.fault;
         }
-        en.skel = null;
+        en.fault = null;
         en.releaseBind(mark);
-        if (en.skel != null)
-            throw (EngineException) en.skel;
+        if (en.fault != null)
+            throw en.fault;
         return dc;
     }
 

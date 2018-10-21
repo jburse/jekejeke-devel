@@ -1,9 +1,8 @@
 package jekpro.reference.structure;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindSerno;
-import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.AbstractTerm;
@@ -13,6 +12,8 @@ import jekpro.tools.term.SkelVar;
 import matula.util.regex.IgnoreCase;
 import matula.util.wire.XSelectFormat;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Locale;
@@ -49,6 +50,15 @@ import java.util.Locale;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class EngineLexical implements Comparator<Object> {
+    /* the lexical compare categories */
+    public final static int CMP_TYPE_VAR = 0;
+    public final static int CMP_TYPE_DECIMAL = 1;
+    public final static int CMP_TYPE_FLOAT = 2;
+    public final static int CMP_TYPE_INTEGER = 3;
+    public final static int CMP_TYPE_REF = 4;
+    public final static int CMP_TYPE_ATOM = 5;
+    public final static int CMP_TYPE_COMPOUND = 6;
+
     private final Engine engine;
     private final Comparator cmp;
 
@@ -70,9 +80,34 @@ public final class EngineLexical implements Comparator<Object> {
      * @param m2 The second molec.
      * @return The comparison result.
      */
-    public int compare(Object m1, Object m2) throws ArithmeticException {
+    public final int compare(Object m1, Object m2) throws ArithmeticException {
         return localeCompareTerm(AbstractTerm.getSkel(m1), AbstractTerm.getDisplay(m1),
                 AbstractTerm.getSkel(m2), AbstractTerm.getDisplay(m2));
+    }
+
+    /**
+     * <p>Determine the compare type class of a prolog term. The
+     * prolog term should be already dereferenced.</P>
+     *
+     * @param a The prolog term.
+     * @return The type.
+     */
+    static int cmpType(Object a) {
+        if (a instanceof SkelVar) {
+            return CMP_TYPE_VAR;
+        } else if (a instanceof SkelCompound) {
+            return CMP_TYPE_COMPOUND;
+        } else if (a instanceof SkelAtom) {
+            return CMP_TYPE_ATOM;
+        } else if (a instanceof Integer || a instanceof BigInteger) {
+            return CMP_TYPE_INTEGER;
+        } else if (a instanceof Float || a instanceof Double) {
+            return CMP_TYPE_FLOAT;
+        } else if (a instanceof Long || a instanceof BigDecimal) {
+            return CMP_TYPE_DECIMAL;
+        } else {
+            return CMP_TYPE_REF;
+        }
     }
 
     /**
@@ -87,46 +122,48 @@ public final class EngineLexical implements Comparator<Object> {
      * @param d2   The display of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
-    public int localeCompareTerm(Object alfa, Display d1,
-                                 Object beta, Display d2)
+    public final int localeCompareTerm(Object alfa, BindCount[] d1,
+                                       Object beta, BindCount[] d2)
             throws ArithmeticException {
         for (; ; ) {
-            BindVar b1;
+            BindCount b1;
             while (alfa instanceof SkelVar &&
-                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    (b1 = d1[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
-            int i = SpecialLexical.cmpType(alfa);
+            int i = EngineLexical.cmpType(alfa);
             while (beta instanceof SkelVar &&
-                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
+                    (b1 = d2[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
-            int k = i - SpecialLexical.cmpType(beta);
+            int k = i - EngineLexical.cmpType(beta);
             if (k != 0) return k;
             switch (i) {
-                case SpecialLexical.CMP_TYPE_VAR:
-                    if (d1.serno == -1)
-                        BindSerno.bindSerno(d1, engine);
-                    if (d2.serno == -1)
-                        BindSerno.bindSerno(d2, engine);
-                    k = d1.serno - d2.serno;
-                    if (k != 0) return k;
-                    return ((SkelVar) alfa).compareTo((SkelVar) beta);
-                case SpecialLexical.CMP_TYPE_DECIMAL:
+                case CMP_TYPE_VAR:
+                    b1 = d1[((SkelVar) alfa).id];
+                    i = b1.serno;
+                    if (i == -1)
+                        i = BindSerno.bindSerno(b1, engine);
+                    b1 = d2[((SkelVar) beta).id];
+                    k = b1.serno;
+                    if (k == -1)
+                        k = BindSerno.bindSerno(b1, engine);
+                    return i - k;
+                case CMP_TYPE_DECIMAL:
                     return SpecialLexical.compareDecimalLexical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_FLOAT:
+                case CMP_TYPE_FLOAT:
                     return SpecialLexical.compareFloatLexical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_INTEGER:
+                case CMP_TYPE_INTEGER:
                     return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_REF:
+                case CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);
                     throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case SpecialLexical.CMP_TYPE_ATOM:
+                case CMP_TYPE_ATOM:
                     return ((SkelAtom) alfa).compareTo(((SkelAtom) beta), cmp);
-                case SpecialLexical.CMP_TYPE_COMPOUND:
+                case CMP_TYPE_COMPOUND:
                     Object[] t1 = ((SkelCompound) alfa).args;
                     Object[] t2 = ((SkelCompound) beta).args;
                     k = t1.length - t2.length;
@@ -155,7 +192,7 @@ public final class EngineLexical implements Comparator<Object> {
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */
-    public static Comparator comparatorAtom(Object m, Display d)
+    public static Comparator comparatorAtom(Object m, BindCount[] d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if ("IGNORE_CASE".equals(fun)) {

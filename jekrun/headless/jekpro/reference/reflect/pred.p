@@ -126,20 +126,31 @@ current_predicate(I) :-
  * predicate_property(P, Q):
  * The predicate succeeds for the properties Q of the predicate P.
  */
-% predicate_property(-Indicator, -Property)
+% predicate_property(+-Indicator, -+Property)
+predicate_property(I, R) :-
+   ground(I), !,
+   sys_predicate_property2(I, R).
 predicate_property(I, R) :-
    var(R), !,
+   sys_current_predicate(L),
+   sys_member(I, L),
    sys_predicate_property(I, P),
    sys_member(R, P).
 predicate_property(I, R) :-
-   var(I), !,
    sys_predicate_property_idx(R, P),
    sys_member(I, P).
-predicate_property(I, R) :-
+:- set_predicate_property(predicate_property/2, visible(public)).
+
+% sys_predicate_property2(+Indicator, -Property)
+sys_predicate_property2(I, R) :-
+   var(R), !,
+   sys_predicate_property(I, P),
+   sys_member(R, P).
+sys_predicate_property2(I, R) :-
    functor(R, F, A),
    sys_predicate_property_chk(I, F/A, P),
    sys_member(R, P).
-:- set_predicate_property(predicate_property/2, visible(public)).
+:- set_predicate_property(sys_predicate_property2/2, visible(private)).
 
 :- special(sys_predicate_property/2, 'SpecialPred', 7).
 :- set_predicate_property(sys_predicate_property/2, visible(private)).
@@ -189,7 +200,7 @@ sys_make_indicator(F, A, I) :-
    var(F), !,
    sys_make_indicator2(I, F, A).
 sys_make_indicator(K, A, J) :-
-   sys_eq(K, M:F), !,
+   K = M:F, !,
    sys_make_indicator(F, A, I),
    sys_replace_site(J, K, M:I).
 sys_make_indicator(F, A, F/A).
@@ -200,12 +211,12 @@ sys_make_indicator2(I, _, _) :-
    var(I),
    throw(error(instantiation_error,_)).
 sys_make_indicator2(J, K, A) :-
-   sys_eq(J, M:I), !,
+   J = M:I, !,
    sys_make_indicator2(I, F, A),
    sys_replace_site(K, J, M:F).
 sys_make_indicator2(F/A, G, B) :- !,
-   sys_eq(F, G),
-   sys_eq(A, B).
+   F = G,
+   A = B.
 sys_make_indicator2(I, _, _) :-
    throw(error(type_error(predicate_indicator,I),_)).
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).

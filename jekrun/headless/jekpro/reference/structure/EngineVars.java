@@ -1,8 +1,8 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
 import jekpro.model.pretty.NamedDistance;
 import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.AbstractTerm;
@@ -58,7 +58,7 @@ public final class EngineVars {
      * @param t The term skel.
      * @param d The term display.
      */
-    public void varInclude(Object t, Display d) {
+    public void varInclude(Object t, BindCount[] d) {
         for (; ; ) {
             Object var = EngineCopy.getVar(t);
             if (var == null)
@@ -71,7 +71,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindVar b = d[v.id];
                     if (b.display != null) {
                         varInclude(b.skel, b.display);
                     } else {
@@ -87,7 +87,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindVar b = d[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;
@@ -114,7 +114,7 @@ public final class EngineVars {
      * @param t The term skel.
      * @param d The term display.
      */
-    public void varExclude(Object t, Display d) {
+    public void varExclude(Object t, BindCount[] d) {
         for (; ; ) {
             Object var = EngineCopy.getVar(t);
             if (var == null)
@@ -127,7 +127,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindVar b = d[v.id];
                     if (b.display != null) {
                         varExclude(b.skel, b.display);
                     } else {
@@ -141,7 +141,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindVar b = d[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;
@@ -166,12 +166,12 @@ public final class EngineVars {
      * @param t The term skel.
      * @param d The term display.
      */
-    public void singsOf(Object t, Display d) {
+    public void singsOf(Object t, BindCount[] d) {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d.bind[v.id]).display != null) {
+                if ((b = d[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -219,7 +219,7 @@ public final class EngineVars {
      * @param d The term display.
      * @return True if the term is acyclic, otherwise false.
      */
-    public boolean isAcyclic(Object t, Display d) {
+    public boolean isAcyclic(Object t, BindCount[] d) {
         int undo = 0;
         for (; ; ) {
             Object var = EngineCopy.getVar(t);
@@ -233,7 +233,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindVar b = d[v.id];
                     if (b.display != null) {
                         Object key = AbstractTerm.createMolec(v, d);
                         if (vars == null) {
@@ -253,7 +253,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindVar b = d[v.id];
             if (b.display != null) {
                 Object key = AbstractTerm.createMolec(v, d);
                 if (vars == null) {

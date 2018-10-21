@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -70,19 +70,19 @@ public final class EvaluableCompare extends AbstractSpecial {
         switch (id) {
             case EVALUABLE_MIN:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 boolean multi = en.computeExpr(temp[0], ref);
-                Display d = en.display;
+                BindCount[] d = en.display;
                 Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 en.skel = min(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
+                en.display = BindCount.DISPLAY_CONST;
                 return false;
             case EVALUABLE_MAX:
                 temp = ((SkelCompound) en.skel).args;
@@ -91,14 +91,14 @@ public final class EvaluableCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 en.skel = max(alfa, beta);
-                en.display = Display.DISPLAY_CONST;
+                en.display = BindCount.DISPLAY_CONST;
                 return false;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -119,15 +119,15 @@ public final class EvaluableCompare extends AbstractSpecial {
      * @return The minimum of the two numbers.
      */
     private static Number min(Number m, Number n) {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 if (SpecialCompare.compareIntegerArithmetical(m, n) > 0) {
                     return n;
                 } else {
                     return m;
                 }
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();
                 if (x > y) {
@@ -136,7 +136,7 @@ public final class EvaluableCompare extends AbstractSpecial {
                 }
                 return (m instanceof Float ? m :
                         TermAtomic.makeFloat(x));
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double a = m.doubleValue();
                 double b = n.doubleValue();
                 if (a > b) {
@@ -145,8 +145,8 @@ public final class EvaluableCompare extends AbstractSpecial {
                 }
                 return (m instanceof Double ? m :
                         TermAtomic.makeDouble(a));
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal u = TermAtomic.widenBigDecimal(m);
                 BigDecimal v = TermAtomic.widenBigDecimal(n);
                 if (u.compareTo(v) > 0) {
@@ -168,15 +168,15 @@ public final class EvaluableCompare extends AbstractSpecial {
      * @return The minimum of the two numbers.
      */
     private static Number max(Number m, Number n) {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 if (SpecialCompare.compareIntegerArithmetical(m, n) < 0) {
                     return n;
                 } else {
                     return m;
                 }
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();
                 if (x < y) {
@@ -185,7 +185,7 @@ public final class EvaluableCompare extends AbstractSpecial {
                 }
                 return (m instanceof Float ? m :
                         TermAtomic.makeFloat(x));
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double a = m.doubleValue();
                 double b = n.doubleValue();
                 if (a < b) {
@@ -194,8 +194,8 @@ public final class EvaluableCompare extends AbstractSpecial {
                 }
                 return (m instanceof Double ? m :
                         TermAtomic.makeDouble(a));
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal u = TermAtomic.widenBigDecimal(m);
                 BigDecimal v = TermAtomic.widenBigDecimal(n);
                 if (u.compareTo(v) < 0) {

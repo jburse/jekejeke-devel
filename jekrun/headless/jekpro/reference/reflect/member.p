@@ -33,6 +33,9 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
+:- sys_op(700, xfx, =).
+:- set_oper_property(infix(=), visible(public)).
+
 /*************************************************************************/
 /* List Helper                                                           */
 /*************************************************************************/
@@ -59,41 +62,24 @@ sys_oneof2([X|Y], Z, [W|T], W) :-
    sys_oneof2(Y, Z, T, X).
 :- set_predicate_property(sys_oneof2/4, visible(private)).
 
-/*************************************************************************/
-/* Logic Helper                                                          */
-/*************************************************************************/
-
-% sys_and(+Goal, +Goal)
-sys_and(X, Y) :- X, Y.
-:- set_predicate_property(sys_and/2, visible(public)).
-
-% sys_once(+Goal)
-sys_once(X) :- X, !.
-:- set_predicate_property(sys_once/1, visible(public)).
-
-% sys_not(+Goal)
-sys_not(X) :- X, !, fail.
-sys_not(_).
-:- set_predicate_property(sys_not/1, visible(public)).
-
-% sys_eq(+Term, +Term)
-sys_eq(X, X).
-:- set_predicate_property(sys_eq/2, visible(public)).
+% =(+Term, +Term)
+:- special(= /2, 'SpecialMember', 0).
+:- set_predicate_property(= /2, visible(public)).
 
 /*************************************************************************/
 /* Univ Helper                                                           */
 /*************************************************************************/
 
 % var(+Term)
-:- special(var/1, 'SpecialMember', 0).
+:- special(var/1, 'SpecialMember', 1).
 :- set_predicate_property(var/1, visible(public)).
 
 % nonvar(+Term)
-:- special(nonvar/1, 'SpecialMember', 1).
+:- special(nonvar/1, 'SpecialMember', 2).
 :- set_predicate_property(nonvar/1, visible(public)).
 
 % ground(+Term)
-:- special(ground/1, 'SpecialMember', 2).
+:- special(ground/1, 'SpecialMember', 3).
 :- set_predicate_property(ground/1, visible(public)).
 
 % functor(+-Term, -+Atomic, -+Integer)
@@ -104,8 +90,8 @@ functor(T, F, A) :-
    sys_term_to_functor(T, F, A).
 :- set_predicate_property(functor/3, visible(public)).
 
-:- special(sys_functor_to_term/3, 'SpecialMember', 3).
+:- special(sys_functor_to_term/3, 'SpecialMember', 4).
 :- set_predicate_property(sys_functor_to_term/3, visible(private)).
 
-:- special(sys_term_to_functor/3, 'SpecialMember', 4).
+:- special(sys_term_to_functor/3, 'SpecialMember', 5).
 :- set_predicate_property(sys_term_to_functor/3, visible(private)).

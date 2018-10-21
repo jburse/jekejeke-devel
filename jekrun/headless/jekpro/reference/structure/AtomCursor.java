@@ -34,11 +34,11 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class AtomCursor implements Enumeration<Integer> {
-    private String str;
+    private final String str;
     private int cfrom;
     private int from;
-    private int to;
-    private boolean forward;
+    private final int to;
+    private final boolean forward;
 
     /**
      * <p>Create a new atom cursor.</p>

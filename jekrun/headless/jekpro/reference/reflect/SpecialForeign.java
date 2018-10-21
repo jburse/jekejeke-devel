@@ -1,19 +1,21 @@
 package jekpro.reference.reflect;
 
-import jekpro.model.builtin.SpecialSpecial;
+import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.rope.Clause;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.system.AbstractRuntime;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -53,6 +55,8 @@ import java.lang.reflect.Method;
 public final class SpecialForeign extends AbstractSpecial {
     public final static Class[] VOID_TYPES = new Class[0];
 
+    public final static String OP_NAME_CONSTRUCTOR = "new";
+
     private final static int SPECIAL_SYS_FOREIGN = 0;
     private final static int SPECIAL_SYS_FOREIGN_CONSTRUCTOR = 1;
     private final static int SPECIAL_SYS_FOREIGN_GETTER = 2;
@@ -85,11 +89,11 @@ public final class SpecialForeign extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_FOREIGN:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 Integer arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                Class clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                Class clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 String name = SpecialForeign.methodName(temp[2], ref, en);
-                if (SpecialSpecial.OP_NAME_CONSTRUCTOR.equals(name))
+                if (OP_NAME_CONSTRUCTOR.equals(name))
                     throw new EngineMessage(EngineMessage.typeError(
                             EngineMessage.OP_TYPE_METHOD, temp[2]), ref);
                 Class[] paras = SpecialForeign.formalParameters(temp[2], ref, en);
@@ -103,19 +107,19 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_CONSTRUCTOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialForeign.methodName(temp[2], ref, en);
-                if (!SpecialSpecial.OP_NAME_CONSTRUCTOR.equals(name))
+                if (!OP_NAME_CONSTRUCTOR.equals(name))
                     throw new EngineMessage(EngineMessage.typeError(
                             EngineMessage.OP_TYPE_CONSTRUCTOR, temp[2]), ref);
                 paras = SpecialForeign.formalParameters(temp[2], ref, en);
-                Constructor cstr = SpecialSpecial.getDeclaredConstructor(clazz, paras);
+                Constructor cstr = getDeclaredConstructor(clazz, paras);
                 if (!en.store.foyer.getFactory().createConstructor(cstr, en))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
@@ -125,13 +129,13 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_GETTER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_PRED))
@@ -143,13 +147,13 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_SETTER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_SET))
@@ -161,13 +165,13 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_FUN:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialForeign.methodName(temp[2], ref, en);
                 paras = SpecialForeign.formalParameters(temp[2], ref, en);
                 mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
@@ -180,13 +184,13 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_CONST:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
+                clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_EVAL))
@@ -198,7 +202,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
-                SpecialSpecial.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -218,7 +222,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @return The method name.
      * @throws EngineMessage Validation error.
      */
-    private static String methodName(Object t, Display d, Engine en)
+    private static String methodName(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -247,7 +251,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @return The formal parameters.
      * @throws EngineMessage Validation error.
      */
-    private static Class[] formalParameters(Object t, Display d, Engine en)
+    private static Class[] formalParameters(Object t, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -260,7 +264,7 @@ public final class SpecialForeign extends AbstractSpecial {
             SkelCompound sc = (SkelCompound) t;
             Class[] paras = new Class[sc.args.length];
             for (int i = 0; i < paras.length; i++)
-                paras[i] = SpecialSpecial.nameToClass(sc.args[i], d, en);
+                paras[i] = SpecialModel.nameToClass(sc.args[i], d, en);
             return paras;
         } else {
             EngineMessage.checkInstantiated(t);
@@ -319,6 +323,85 @@ public final class SpecialForeign extends AbstractSpecial {
         }
     }
 
+
+    /**
+     * <p>Retrieve a declared constructor.</p>
+     *
+     * @param decl  The declaring class.
+     * @param paras The formal parameters.
+     * @return The constructor.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Constructor getDeclaredConstructor(Class decl,
+                                                     Class[] paras)
+            throws EngineMessage {
+        try {
+            return decl.getDeclaredConstructor(paras);
+        } catch (NoSuchMethodException x) {
+            throw new EngineMessage(EngineMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_CONSTRUCTOR,
+                    constructorToCallable(paras)));
+        } catch (NoClassDefFoundError x) {
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_LINK,
+                    EngineMessage.OP_PERMISSION_CLASS,
+                    new SkelAtom(x.getMessage())));
+        }
+    }
+
+    /*************************************************************/
+    /* Unreflect I                                               */
+    /*************************************************************/
+
+    /**
+     * <p>Method to callable.</p>
+     *
+     * @param name  The name.
+     * @param paras The parameters.
+     * @return The callable.
+     */
+    public static Object methodToCallable(String name, Class[] paras) {
+        SkelAtom help = new SkelAtom(name);
+        if (paras.length == 0)
+            return help;
+        Object[] args = new Object[paras.length];
+        for (int i = 0; i < paras.length; i++)
+            args[i] = classToName(paras[i]);
+        return new SkelCompound(help, args);
+    }
+
+
+    /**
+     * <p>Method to callable.</p>
+     *
+     * @param paras The parameter types.
+     * @return The callable.
+     */
+    public static Object constructorToCallable(Class[] paras) {
+        SkelAtom help = new SkelAtom(OP_NAME_CONSTRUCTOR);
+        if (paras.length == 0)
+            return help;
+        Object[] args = new Object[paras.length];
+        for (int i = 0; i < paras.length; i++)
+            args[i] = classToName(paras[i]);
+        return new SkelCompound(help, args);
+    }
+
+    /**
+     * <p>A class back to a structured path.</p>
+     *
+     * @param clazz The class.
+     * @return The class.
+     */
+    public static Object classToName(Class clazz) {
+        String fun = AbstractRuntime.classToString(clazz);
+        return Clause.packageToSlashSkel(fun, null);
+    }
+
+    /*************************************************************/
+    /* Unreflect II                                              */
+    /*************************************************************/
+
     /**
      * <p>Method to callable.</p>
      *
@@ -337,25 +420,45 @@ public final class SpecialForeign extends AbstractSpecial {
             return help;
         Object[] args = new Object[paras.length];
         for (int i = 0; i < paras.length; i++)
-            args[i] = SpecialSpecial.classToName(paras[i], source, en);
+            args[i] = classToName(paras[i], source, en);
         return new SkelCompound(help, args);
     }
 
     /**
      * <p>Method to callable.</p>
      *
-     * @param name  The name.
-     * @param paras The parameters.
+     * @param paras  The parameter types.
+     * @param source The source.
+     * @param en     The engine.
      * @return The callable.
      */
-    public static Object methodToCallable(String name, Class[] paras) {
-        SkelAtom help = new SkelAtom(name);
+    public static Object constructorToCallable(Class[] paras,
+                                               AbstractSource source,
+                                               Engine en)
+            throws EngineMessage {
+        SkelAtom help = new SkelAtom(OP_NAME_CONSTRUCTOR);
         if (paras.length == 0)
             return help;
         Object[] args = new Object[paras.length];
         for (int i = 0; i < paras.length; i++)
-            args[i] = SpecialSpecial.classToName(paras[i]);
+            args[i] = classToName(paras[i], source, en);
         return new SkelCompound(help, args);
+    }
+
+    /**
+     * <p>A class back to a structured path.</p>
+     *
+     * @param clazz  The class.
+     * @param source The source.
+     * @param en     The engine.
+     * @return The class.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object classToName(Class clazz, AbstractSource source,
+                                     Engine en)
+            throws EngineMessage {
+        String fun = AbstractRuntime.classToString(clazz);
+        return Clause.moduleToSlashSkel(fun, source, en);
     }
 
 }

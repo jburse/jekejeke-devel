@@ -79,12 +79,13 @@ ensure_loaded(Path) :-
    var(Path),
    throw(error(instantiation_error,_)).
 ensure_loaded(X) :-
-   sys_eq(X, user), !,
+   X = user, !,
    sys_import_file(X, []).
 ensure_loaded(Path) :-
    absolute_file_name(Path, Pin),
    sys_load_file(Pin, [condition(on),sys_link(use_module)]).
 :- set_predicate_property(ensure_loaded/1, visible(public)).
+:- set_predicate_property(ensure_loaded/1, sys_notrace).
 
 /**
  * consult(R):
@@ -105,6 +106,7 @@ consult(Path) :-
    absolute_file_name(Path, Pin),
    sys_load_file(Pin, [sys_link(use_module)]).
 :- set_predicate_property(consult/1, visible(public)).
+:- set_predicate_property(consult/1, sys_notrace).
 
 /**
  * unload_file(R):
@@ -115,6 +117,7 @@ unload_file(Path) :-
    absolute_file_name(Path, Pin),
    sys_detach_file(Pin, [sys_link(reexport)]).
 :- set_predicate_property(unload_file/1, visible(public)).
+:- set_predicate_property(unload_file/1, sys_notrace).
 
 /**
  * [S1, ..., Sm]:
@@ -135,12 +138,12 @@ unload_file(Path) :-
 [Path|Y] :-
    ensure_loaded(Path),
    call(Y).
-:- set_predicate_property('.'/2, sys_notrace).
 :- set_predicate_property('.'/2, visible(public)).
+:- set_predicate_property('.'/2, sys_notrace).
 
 [].
-:- set_predicate_property([]/0, sys_notrace).
 :- set_predicate_property([]/0, visible(public)).
+:- set_predicate_property([]/0, sys_notrace).
 
 /**
  * make:
@@ -151,6 +154,7 @@ make :-
    sys_set_context_property(U, '', user),
    sys_load_file(U, [condition(on)]).
 :- set_predicate_property(make/0, visible(public)).
+:- set_predicate_property(make/0, sys_notrace).
 
 /**
  * rebuild:
@@ -161,6 +165,7 @@ rebuild :-
    sys_set_context_property(U, '', user),
    sys_load_file(U, []).
 :- set_predicate_property(rebuild/0, visible(public)).
+:- set_predicate_property(rebuild/0, sys_notrace).
 
 /**
  * include(R): [ISO 7.4.2.7]
@@ -268,9 +273,9 @@ sys_multifile(D) :-
 sys_multifile(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
-   sys_once(sys_and(predicate_property(I,sys_usage(D)),
-               sys_not(sys_eq(C,D)))),
-   sys_not(predicate_property(I,sys_multifile(D))),
+   once((  predicate_property(I, sys_usage(D)),
+           \+ C = D)),
+   \+ predicate_property(I, sys_multifile(D)),
    throw(error(permission_error(promote,multifile,I),_)).
 sys_multifile(I) :-
    sys_make_indicator(J, _, I),
@@ -375,7 +380,7 @@ sys_listing_item_chk(I, U) :-
 :- set_predicate_property(sys_listing_item_chk/2, visible(private)).
 
 /**
- * sys_listing_item_idx(I, U):
+ * sys_listing_item_idx(U, I):
  * If U is a usage source then the predicate succceeds
  * for each listable indicator I.
  */

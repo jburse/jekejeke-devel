@@ -164,3 +164,23 @@ current_module(M) :-
 
 :- special(sys_current_module_chk/1, 'SpecialSource', 6).
 :- set_predicate_property(sys_current_module_chk/1, visible(private)).
+
+/****************************************************************/
+/* Context Property                                             */
+/****************************************************************/
+
+/**
+ * sys_context_property(C, Q):
+ * The predicate succeeds for the context property Q of the callable C.
+ */
+% natively bootstrapped by SpecialModel
+% sys_contex_property(+Callable, -Atom)
+
+/**
+ * sys_set_context_property(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A with the context property Q.
+ */
+% sys_set_context_property(-Callable, +Atom, +Callable)
+:- special(sys_set_context_property/3, 'SpecialSource', 8).
+:- set_predicate_property(sys_set_context_property/3, visible(public)).

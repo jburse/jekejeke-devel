@@ -3,10 +3,8 @@ package jekpro.reference.reflect;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
+import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -45,11 +43,12 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialMember extends AbstractSpecial {
-    private final static int SPECIAL_VAR = 0;
-    private final static int SPECIAL_NONVAR = 1;
-    private final static int SPECIAL_GROUND = 2;
-    private final static int SPECIAL_SYS_FUNCTOR_TO_TERM = 3;
-    private final static int SPECIAL_SYS_TERM_TO_FUNCTOR = 4;
+    private final static int SPECIAL_UNIFY = 0;
+    private final static int SPECIAL_VAR = 1;
+    private final static int SPECIAL_NONVAR = 2;
+    private final static int SPECIAL_GROUND = 3;
+    private final static int SPECIAL_SYS_FUNCTOR_TO_TERM = 4;
+    private final static int SPECIAL_SYS_TERM_TO_FUNCTOR = 5;
 
     /**
      * <p>Create a zygote special.</p>
@@ -75,9 +74,15 @@ public final class SpecialMember extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case SPECIAL_VAR:
+                case SPECIAL_UNIFY:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
+                    if (!en.unifyTerm(temp[1], ref, temp[0], ref))
+                        return false;
+                    return en.getNext();
+                case SPECIAL_VAR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
                     if (!isVar(temp[0], ref))
                         return false;
                     return en.getNextRaw();
@@ -100,15 +105,15 @@ public final class SpecialMember extends AbstractSpecial {
                     SpecialEval.checkNotLessThanZero(num);
                     int arity = SpecialEval.castIntValue(num);
 
+                    BindCount[] d;
                     boolean multi;
-                    Display d;
                     if (arity != 0) {
                         SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                         SkelVar[] vars = SkelVar.valueOfArray(arity);
                         Object[] args = new Object[arity];
                         System.arraycopy(vars, 0, args, 0, arity);
                         en.skel = new SkelCompound(sa, args, (arity > 1 ? vars : vars[0]));
-                        d = new Display(arity);
+                        d = BindCount.newBind(arity);
                         multi = true;
                     } else {
                         en.skel = temp[0];
@@ -121,13 +126,13 @@ public final class SpecialMember extends AbstractSpecial {
                             throw new EngineMessage(EngineMessage.typeError(
                                     EngineMessage.OP_TYPE_ATOMIC, en.skel), en.display);
                         }
-                        d = Display.DISPLAY_CONST;
+                        d = BindCount.DISPLAY_CONST;
                         multi = false;
                     }
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_SYS_TERM_TO_FUNCTOR:
                     temp = ((SkelCompound) en.skel).args;
@@ -147,7 +152,7 @@ public final class SpecialMember extends AbstractSpecial {
                     }
                     if (!en.unifyTerm(temp[1], ref, obj, en.display))
                         return false;
-                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, num, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:
@@ -166,12 +171,12 @@ public final class SpecialMember extends AbstractSpecial {
      * @param d1   The term display.
      * @return True if a variable, otherwise false.
      */
-    private static boolean isVar(Object alfa, Display d1) {
+    private static boolean isVar(Object alfa, BindCount[] d1) {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
                 // combined check and deref
                 BindVar b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                if ((b1 = d1[((SkelVar) alfa).id]).display != null) {
                     alfa = b1.skel;
                     d1 = b1.display;
                     continue;
@@ -191,7 +196,7 @@ public final class SpecialMember extends AbstractSpecial {
      * @param d The term display.
      * @return True if the term is ground, otherwise false.
      */
-    private static boolean isGround(Object t, Display d) {
+    private static boolean isGround(Object t, BindCount[] d) {
         for (; ; ) {
             Object var = EngineCopy.getVar(t);
             if (var == null)
@@ -204,7 +209,7 @@ public final class SpecialMember extends AbstractSpecial {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindVar b = d[v.id];
                     if (b.display != null) {
                         if (!isGround(b.skel, b.display))
                             return false;
@@ -214,7 +219,7 @@ public final class SpecialMember extends AbstractSpecial {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindVar b = d[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;

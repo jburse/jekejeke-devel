@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -50,12 +50,12 @@ public final class SpecialCompare extends AbstractSpecial {
     private final static int SPECIAL_COMPARE_GR = 4;
     private final static int SPECIAL_COMPARE_GQ = 5;
 
-    public static final int CATEGORY_INTEGER = 0;
-    public static final int CATEGORY_BIG_INTEGER = 1;
-    public static final int CATEGORY_FLOAT = 2;
-    public static final int CATEGORY_DOUBLE = 3;
-    public static final int CATEGORY_LONG = 4;
-    public static final int CATEGORY_BIG_DECIMAL = 5;
+    public static final int NUM_INTEGER = 0;
+    public static final int NUM_BIG_INTEGER = 1;
+    public static final int NUM_FLOAT = 2;
+    public static final int NUM_DOUBLE = 3;
+    public static final int NUM_LONG = 4;
+    public static final int NUM_BIG_DECIMAL = 5;
 
     public final static double EPSILON = Math.ulp(1.0);
 
@@ -85,17 +85,17 @@ public final class SpecialCompare extends AbstractSpecial {
         switch (id) {
             case SPECIAL_COMPARE_EQ:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 boolean multi = en.computeExpr(temp[0], ref);
-                Display d = en.display;
+                BindCount[] d = en.display;
                 Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 if (!SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
@@ -106,12 +106,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 if (SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
@@ -122,12 +122,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
                 return en.getNextRaw();
@@ -138,12 +138,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
                 return en.getNextRaw();
@@ -154,12 +154,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return en.getNextRaw();
@@ -170,12 +170,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
                 return en.getNextRaw();
@@ -196,19 +196,18 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return True if they are equal, false otherwise.
-     * @throws EngineMessage Shit happens.
      */
-    public static boolean testEq(Number m, Number n) throws EngineMessage {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+    public static boolean testEq(Number m, Number n) {
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 return m.equals(n);
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 return m.floatValue() == n.floatValue();
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 return m.doubleValue() == n.doubleValue();
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 return TermAtomic.widenBigDecimal(m).compareTo(
                         TermAtomic.widenBigDecimal(n)) == 0;
             default:
@@ -224,24 +223,24 @@ public final class SpecialCompare extends AbstractSpecial {
      * @return <0 m < n,  0 m == m, >0 m > n.
      */
     public static int computeCmp(Number m, Number n) {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 return compareIntegerArithmetical(m, n);
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();
                 if (x < y) return -1;
                 if (x == y) return 0;
                 return 1;
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double a = m.doubleValue();
                 double b = n.doubleValue();
                 if (a < b) return -1;
                 if (a == b) return 0;
                 return 1;
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 return TermAtomic.widenBigDecimal(m).compareTo(
                         TermAtomic.widenBigDecimal(n));
             default:
@@ -255,19 +254,19 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param m The Prolog number.
      * @return The category.
      */
-    public static int category(Number m) {
+    public static int numType(Number m) {
         if (m instanceof Integer) {
-            return SpecialCompare.CATEGORY_INTEGER;
+            return SpecialCompare.NUM_INTEGER;
         } else if (m instanceof BigInteger) {
-            return SpecialCompare.CATEGORY_BIG_INTEGER;
+            return SpecialCompare.NUM_BIG_INTEGER;
         } else if (m instanceof Float) {
-            return SpecialCompare.CATEGORY_FLOAT;
+            return SpecialCompare.NUM_FLOAT;
         } else if (m instanceof Double) {
-            return SpecialCompare.CATEGORY_DOUBLE;
+            return SpecialCompare.NUM_DOUBLE;
         } else if (m instanceof Long) {
-            return SpecialCompare.CATEGORY_LONG;
+            return SpecialCompare.NUM_LONG;
         } else if (m instanceof BigDecimal) {
-            return SpecialCompare.CATEGORY_BIG_DECIMAL;
+            return SpecialCompare.NUM_BIG_DECIMAL;
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }

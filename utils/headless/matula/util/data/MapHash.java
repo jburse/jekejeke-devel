@@ -87,11 +87,11 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
 
         int i = index(e.key);
 
+        e.prev = null;
         MapHashEntry<K, V> g = table[i];
         if (g != null)
             g.prev = e;
         e.next = g;
-        e.prev = null;
         table[i] = e;
 
         size++;
@@ -122,15 +122,15 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
 
         int i = index(e.key);
 
-        MapHashEntry<K, V> g = e.next;
         MapHashEntry<K, V> h = e.prev;
-        if (g != null)
-            g.prev = h;
+        MapHashEntry<K, V> g = e.next;
         if (h != null) {
             h.next = g;
         } else {
             table[i] = g;
         }
+        if (g != null)
+            g.prev = h;
 
         size--;
     }

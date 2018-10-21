@@ -96,9 +96,9 @@ sys_meta_predicate(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
-   sys_once(sys_and(predicate_property(I,sys_usage(D)),
-               sys_not(sys_eq(C,D)))),
-   sys_not(predicate_property(I,sys_meta_predicate(D))),
+   once((  predicate_property(I, sys_usage(D)),
+           \+ C = D)),
+   \+ predicate_property(I, sys_meta_predicate(D)),
    throw(error(permission_error(promote,meta_predicate,I),_)).
 sys_meta_predicate(P) :-
    sys_functor(P, F, A),
@@ -133,9 +133,9 @@ sys_meta_function(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
-   sys_once(sys_and(predicate_property(I,sys_usage(D)),
-               sys_not(sys_eq(C,D)))),
-   sys_not(predicate_property(I,sys_meta_function(D))),
+   once((  predicate_property(I, sys_usage(D)),
+           \+ C = D)),
+   \+ predicate_property(I, sys_meta_function(D)),
    throw(error(permission_error(promote,meta_function,I),_)).
 sys_meta_function(P) :-
    sys_functor(P, F, A),

@@ -4,10 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
@@ -84,7 +81,7 @@ public final class SpecialPred extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_ENSURE_SHARED_STATIC:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
                 SpecialPred.defineStatic(pick, en);
                 return en.getNextRaw();
@@ -93,7 +90,7 @@ public final class SpecialPred extends AbstractSpecial {
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
                         SpecialPred.currentPredicates(en),
-                        Display.DISPLAY_CONST))
+                        BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_PREDICATE_CHK:
@@ -110,11 +107,11 @@ public final class SpecialPred extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 boolean multi = SpecialPred.predicateToProperties(pick, en);
-                Display d = en.display;
+                BindCount[] d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -128,7 +125,7 @@ public final class SpecialPred extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_PREDICATE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -139,7 +136,7 @@ public final class SpecialPred extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         SpecialPred.propertyToPredicates(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                        BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             default:
@@ -148,7 +145,7 @@ public final class SpecialPred extends AbstractSpecial {
     }
 
     /**************************************************************/
-    /* Predicate Enumeration & Lookup                             */
+    /* Predicate Enumeration                                      */
     /**************************************************************/
 
     /**
@@ -198,6 +195,10 @@ public final class SpecialPred extends AbstractSpecial {
         return res;
     }
 
+    /**************************************************************/
+    /* Predicate Enumeration                                      */
+    /**************************************************************/
+
     /**
      * <p>Get a predicate by indicator.</p>
      *
@@ -208,7 +209,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static Predicate indicatorToPredicate(Object t, Display d,
+    public static Predicate indicatorToPredicate(Object t, BindCount[] d,
                                                  Engine en)
             throws EngineMessage, EngineException {
         Integer arity = SpecialQuali.colonToIndicator(t, d, en);
@@ -238,7 +239,7 @@ public final class SpecialPred extends AbstractSpecial {
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
         boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
@@ -250,7 +251,7 @@ public final class SpecialPred extends AbstractSpecial {
             for (int j = props.length - 1; j >= 0; j--) {
                 AbstractProperty prop = props[j];
                 Object t = en.skel;
-                Display d = en.display;
+                BindCount[] d = en.display;
                 Object[] vals = getPropPred(pick, prop, en);
                 en.skel = t;
                 en.display = d;
@@ -275,7 +276,7 @@ public final class SpecialPred extends AbstractSpecial {
             throws EngineMessage {
         Object[] vals = getPropPred(pred, prop, en);
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
         return AbstractProperty.consArray(false, vals, en);
     }
 
@@ -324,7 +325,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void addPredProp(Object t, Display d, Predicate pred,
+    public static void addPredProp(Object t, BindCount[] d, Predicate pred,
                                    Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -343,7 +344,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void removePredProp(Object t, Display d, Predicate pred,
+    public static void removePredProp(Object t, BindCount[] d, Predicate pred,
                                       Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -393,7 +394,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param d  The value display.
      * @param en The engine.
      */
-    private static Object propertyToPredicates(Object t, Display d,
+    private static Object propertyToPredicates(Object t, BindCount[] d,
                                                Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
@@ -415,7 +416,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    public static Predicate[] idxPropPred(Object t, Display d, StoreKey prop,
+    public static Predicate[] idxPropPred(Object t, BindCount[] d, StoreKey prop,
                                           Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot =

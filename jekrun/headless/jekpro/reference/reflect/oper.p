@@ -129,9 +129,17 @@ sys_oper2(I, L, M) :-
    sys_check_style_oper(I).
 :- set_predicate_property(sys_oper2/3, visible(private)).
 
-% already defined in special
-% :- special(sys_op/3, 'SpecialOper', 0).
-% :- reset_predicate_property(sys_op/3, visible(public)).
+/**
+ * sys_neutral_oper(I):
+ * If no syntax operator has yet been defined for the syntax operator
+ * indicator I, defines a corresponding neutral syntax operator.
+ */
+% sys_neutral_oper(+Indicator)
+:- special(sys_neutral_oper/1, 'SpecialOper', 0).
+:- set_predicate_property(sys_neutral_oper/1, visible(public)).
+
+:- special(sys_check_style_oper/1, 'SpecialOper', 1).
+:- set_predicate_property(sys_check_style_oper/1, visible(private)).
 
 /**
  * current_op(L, M, O): [ISO 8.14.4]
@@ -192,20 +200,31 @@ current_oper(I) :-
  * following operator properties are supported. For a list of properties
  * see the API documentation.
  */
-% oper_property(+Indicator, -Property)
+% oper_property(+-Indicator, -+Property)
+oper_property(I, R) :-
+   ground(I), !,
+   sys_oper_property2(I, R).
 oper_property(I, R) :-
    var(R), !,
+   sys_current_oper(L),
+   sys_member(I, L),
    sys_oper_property(I, P),
    sys_member(R, P).
 oper_property(I, R) :-
-   var(I), !,
    sys_oper_property_idx(R, P),
    sys_member(I, P).
-oper_property(I, R) :-
+:- set_predicate_property(oper_property/2, visible(public)).
+
+% sys_oper_property2(+Indicator, -Property)
+sys_oper_property2(I, R) :-
+   var(R), !,
+   sys_oper_property(I, P),
+   sys_member(R, P).
+sys_oper_property2(I, R) :-
    functor(R, F, A),
    sys_oper_property_chk(I, F/A, P),
    sys_member(R, P).
-:- set_predicate_property(oper_property/2, visible(public)).
+:- set_predicate_property(sys_oper_property2/2, visible(private)).
 
 :- special(sys_oper_property/2, 'SpecialOper', 4).
 :- set_predicate_property(sys_oper_property/2, visible(private)).
@@ -221,7 +240,7 @@ oper_property(I, R) :-
  * The predicate assigns the property P to the operator I.
  */
 % set_oper_property(+Indicator, +Property)
-% already defined in special
+% natively bootstrapped by SpecialModel
 % :- special(set_oper_property/2, 'SpecialOper', 7).
 
 /**

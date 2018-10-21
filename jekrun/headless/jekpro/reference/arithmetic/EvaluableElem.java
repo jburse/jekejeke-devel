@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -81,14 +81,14 @@ public final class EvaluableElem extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_MINUS:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    Display d = en.display;
+                    BindCount[] d = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = neg(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_PLUS:
                     temp = ((SkelCompound) en.skel).args;
@@ -97,9 +97,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = alfa;
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_ABS:
                     temp = ((SkelCompound) en.skel).args;
@@ -108,9 +108,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = abs(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SIGN:
                     temp = ((SkelCompound) en.skel).args;
@@ -119,9 +119,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = sign(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_FLOAT:
                     temp = ((SkelCompound) en.skel).args;
@@ -130,10 +130,10 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = (alfa instanceof Double ? alfa :
                             TermAtomic.makeDouble(alfa.doubleValue()));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_DECIMAL:
                     temp = ((SkelCompound) en.skel).args;
@@ -142,9 +142,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = decimal(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_FLOAT32:
                     temp = ((SkelCompound) en.skel).args;
@@ -153,10 +153,10 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = (alfa instanceof Float ? alfa :
                             TermAtomic.makeFloat(alfa.floatValue()));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_ADD:
                     temp = ((SkelCompound) en.skel).args;
@@ -165,14 +165,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = add(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SUB:
                     temp = ((SkelCompound) en.skel).args;
@@ -181,14 +181,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = sub(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_MUL:
                     temp = ((SkelCompound) en.skel).args;
@@ -197,14 +197,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = mul(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SLASH:
                     temp = ((SkelCompound) en.skel).args;
@@ -213,14 +213,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = TermAtomic.makeDouble(slash(alfa, beta));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
@@ -229,16 +229,16 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     SpecialEval.checkNotLessThanZero(beta);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = intPow(alfa, x);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -386,21 +386,21 @@ public final class EvaluableElem extends AbstractSpecial {
      * @throws ArithmeticException Not a Prolog number.
      */
     public static Number add(Number m, Number n) throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 return TermAtomic.normBigInteger(
                         TermAtomic.widenBigInteger(m).add(
                                 TermAtomic.widenBigInteger(n)));
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 return TermAtomic.makeFloat(m.floatValue() +
                         n.floatValue());
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 return TermAtomic.makeDouble(m.doubleValue() +
                         n.doubleValue());
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
                         TermAtomic.widenBigDecimal(m).add(
                                 TermAtomic.widenBigDecimal(n)));
@@ -418,21 +418,21 @@ public final class EvaluableElem extends AbstractSpecial {
      * @throws ArithmeticException Not a Prolog number.
      */
     private static Number sub(Number m, Number n) throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 return TermAtomic.normBigInteger(
                         TermAtomic.widenBigInteger(m).subtract(
                                 TermAtomic.widenBigInteger(n)));
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 return TermAtomic.makeFloat(m.floatValue() -
                         n.floatValue());
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 return TermAtomic.makeDouble(m.doubleValue() -
                         n.doubleValue());
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
                         TermAtomic.widenBigDecimal(m).subtract(
                                 TermAtomic.widenBigDecimal(n)));
@@ -450,21 +450,21 @@ public final class EvaluableElem extends AbstractSpecial {
      * @throws ArithmeticException Not a Prolog number.
      */
     private static Number mul(Number m, Number n) throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(m), SpecialCompare.category(n))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
+            case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 return TermAtomic.normBigInteger(
                         TermAtomic.widenBigInteger(m).multiply(
                                 TermAtomic.widenBigInteger(n)));
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 return TermAtomic.makeFloat(m.floatValue() *
                         n.floatValue());
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 return TermAtomic.makeDouble(m.doubleValue() *
                         n.doubleValue());
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 return TermAtomic.normBigDecimal(
                         TermAtomic.widenBigDecimal(m).multiply(
                                 TermAtomic.widenBigDecimal(n)));

@@ -206,6 +206,7 @@ foreign_const(I, C, M) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
+
 sys_declaration_indicator(foreign(I,_,_), I).
 sys_declaration_indicator(foreign_constructor(I,_,_), I).
 sys_declaration_indicator(foreign_getter(I,_,_), I).

@@ -150,7 +150,6 @@ sys_declaration_indicator((thread_local I), I).
 % clause(-Term, -Goal)
 :- public clause/2.
 :- meta_predicate clause(-1,0).
-:- set_predicate_property(clause/2, sys_noexpand).
 :- special(clause/2, 'SpecialDynamic', 2).
 
 /**
@@ -161,30 +160,24 @@ sys_declaration_indicator((thread_local I), I).
 % retract(-Term)
 :- public retract/1.
 :- meta_predicate retract(-1).
-:- set_predicate_property(retract/1, sys_noexpand).
-retract(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-retract((H :- B)) :- !,
-   clause_ref(H, B, R),
-   evict_ref(R).
-retract(H) :-
-   clause_ref(H, true, R),
-   evict_ref(R).
+retract(C) :-
+   clause_ref(C, R),
+   retract2(R).
 
-:- private evict_ref/1.
-evict_ref(R) :-
+% retract2(+Ref)
+:- private retract2/1.
+retract2(R) :-
    erase_ref(R), !.
-evict_ref(_).
+retract2(_).
 
 /**
  * retractall(H): [Corr.2 8.9.5]
  * The predicate succeeds and removes the user clauses that match
  * the head H. The head predicate must be dynamic or thread local.
  */
+% retractall(+Term)
 :- public retractall/1.
 :- meta_predicate retractall(-1).
-:- set_predicate_property(retractall/1, sys_noexpand).
 retractall(H) :-
    clause_ref(H, _, R),
    erase_ref(R), fail.

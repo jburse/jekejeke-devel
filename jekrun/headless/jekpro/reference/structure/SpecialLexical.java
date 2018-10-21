@@ -54,18 +54,9 @@ public final class SpecialLexical extends AbstractSpecial {
     private final static int SPECIAL_LOCALE_COMPARE = 7;
 
     /* the syntactic equality categories */
-    private final static int EQ_TYPE_VAR = 0;
-    private final static int EQ_TYPE_ATOMIC = 1;
-    private final static int EQ_TYPE_COMPOUND = 2;
-
-    /* the lexical compare categories */
-    public final static int CMP_TYPE_VAR = 0;
-    public final static int CMP_TYPE_DECIMAL = 1;
-    public final static int CMP_TYPE_FLOAT = 2;
-    public final static int CMP_TYPE_INTEGER = 3;
-    public final static int CMP_TYPE_REF = 4;
-    public final static int CMP_TYPE_ATOM = 5;
-    public final static int CMP_TYPE_COMPOUND = 6;
+    public final static int EQ_TYPE_VAR = 0;
+    public final static int EQ_TYPE_ATOMIC = 1;
+    public final static int EQ_TYPE_COMPOUND = 2;
 
     /**
      * <p>Create an compare special.</p>
@@ -93,7 +84,7 @@ public final class SpecialLexical extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_LEX_EQ:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     if (!equalTerm(temp[0], ref, temp[1], ref))
                         return false;
                     return en.getNextRaw();
@@ -136,17 +127,16 @@ public final class SpecialLexical extends AbstractSpecial {
                     ref = en.display;
                     Object witmolec = SpecialLexical.comparisonAtom(
                             SpecialLexical.compareTerm(temp[1], ref, temp[2], ref, en), en);
-                    if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[0], ref, witmolec, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
-                    witmolec = SpecialLexical.comparisonAtom(
-                            new EngineLexical(cmp, en)
-                                    .localeCompareTerm(temp[2], ref, temp[3], ref), en);
-                    if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
+                    witmolec = SpecialLexical.comparisonAtom(new EngineLexical(cmp, en)
+                            .localeCompareTerm(temp[2], ref, temp[3], ref), en);
+                    if (!en.unifyTerm(temp[1], ref, witmolec, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:
@@ -179,6 +169,23 @@ public final class SpecialLexical extends AbstractSpecial {
     /**********************************************************/
 
     /**
+     * <p>Determine the eq type class of a prolog term. The
+     * prolog term should be already dereferenced.</P>
+     *
+     * @param a The prolog term.
+     * @return The type.
+     */
+    private static int eqType(Object a) {
+        if (a instanceof SkelVar) {
+            return EQ_TYPE_VAR;
+        } else if (a instanceof SkelCompound) {
+            return EQ_TYPE_COMPOUND;
+        } else {
+            return EQ_TYPE_ATOMIC;
+        }
+    }
+
+    /**
      * <p>Check two terms for lexical equivalence.</p>
      * <p>Teil recursive solution.</p>
      *
@@ -188,22 +195,22 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param d2   The display of the second term.
      * @return True if they are lexically equal, otherwise false.
      */
-    public static boolean equalTerm(Object alfa, Display d1,
-                                    Object beta, Display d2) {
+    public static boolean equalTerm(Object alfa, BindCount[] d1,
+                                    Object beta, BindCount[] d2) {
         for (; ; ) {
             BindVar b1;
             while (alfa instanceof SkelVar &&
-                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    (b1 = d1[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
-            int k = SpecialLexical.eqType(alfa);
+            int k = eqType(alfa);
             while (beta instanceof SkelVar &&
-                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
+                    (b1 = d2[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
-            if (k != SpecialLexical.eqType(beta))
+            if (k != eqType(beta))
                 return false;
             switch (k) {
                 case EQ_TYPE_VAR:
@@ -231,23 +238,6 @@ public final class SpecialLexical extends AbstractSpecial {
         }
     }
 
-    /**
-     * <p>Determine the eq type class of a prolog term. The
-     * prolog term should be already dereferenced.</P>
-     *
-     * @param a The prolog term.
-     * @return The type.
-     */
-    private static int eqType(Object a) {
-        if (a instanceof SkelVar) {
-            return EQ_TYPE_VAR;
-        } else if (!(a instanceof SkelCompound)) {
-            return EQ_TYPE_ATOMIC;
-        } else {
-            return EQ_TYPE_COMPOUND;
-        }
-    }
-
     /**********************************************************/
     /* Comparison Function                                    */
     /**********************************************************/
@@ -265,46 +255,48 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param en   The engine.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
-    public static int compareTerm(Object alfa, Display d1,
-                                  Object beta, Display d2, Engine en)
+    public static int compareTerm(Object alfa, BindCount[] d1,
+                                  Object beta, BindCount[] d2, Engine en)
             throws ArithmeticException {
         for (; ; ) {
-            BindVar b1;
+            BindCount b1;
             while (alfa instanceof SkelVar &&
-                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    (b1 = d1[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
-            int i = cmpType(alfa);
+            int i = EngineLexical.cmpType(alfa);
             while (beta instanceof SkelVar &&
-                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
+                    (b1 = d2[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
-            int k = i - cmpType(beta);
+            int k = i - EngineLexical.cmpType(beta);
             if (k != 0) return k;
             switch (i) {
-                case CMP_TYPE_VAR:
-                    if (d1.serno == -1)
-                        BindSerno.bindSerno(d1, en);
-                    if (d2.serno == -1)
-                        BindSerno.bindSerno(d2, en);
-                    k = d1.serno - d2.serno;
-                    if (k != 0) return k;
-                    return ((SkelVar) alfa).compareTo((SkelVar) beta);
-                case CMP_TYPE_DECIMAL:
+                case EngineLexical.CMP_TYPE_VAR:
+                    b1 = d1[((SkelVar) alfa).id];
+                    i = b1.serno;
+                    if (i == -1)
+                        i = BindSerno.bindSerno(b1, en);
+                    b1 = d2[((SkelVar) beta).id];
+                    k = b1.serno;
+                    if (k == -1)
+                        k = BindSerno.bindSerno(b1, en);
+                    return i - k;
+                case EngineLexical.CMP_TYPE_DECIMAL:
                     return compareDecimalLexical(alfa, beta);
-                case CMP_TYPE_FLOAT:
+                case EngineLexical.CMP_TYPE_FLOAT:
                     return compareFloatLexical(alfa, beta);
-                case CMP_TYPE_INTEGER:
+                case EngineLexical.CMP_TYPE_INTEGER:
                     return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case CMP_TYPE_REF:
+                case EngineLexical.CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);
                     throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case CMP_TYPE_ATOM:
+                case EngineLexical.CMP_TYPE_ATOM:
                     return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
-                case CMP_TYPE_COMPOUND:
+                case EngineLexical.CMP_TYPE_COMPOUND:
                     Object[] t1 = ((SkelCompound) alfa).args;
                     Object[] t2 = ((SkelCompound) beta).args;
                     k = t1.length - t2.length;
@@ -322,31 +314,6 @@ public final class SpecialLexical extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException("unknown type");
             }
-        }
-    }
-
-    /**
-     * <p>Determine the compare type class of a prolog term. The
-     * prolog term should be already dereferenced.</P>
-     *
-     * @param a The prolog term.
-     * @return The type.
-     */
-    public static int cmpType(Object a) {
-        if (a instanceof SkelVar) {
-            return CMP_TYPE_VAR;
-        } else if (a instanceof SkelCompound) {
-            return CMP_TYPE_COMPOUND;
-        } else if (a instanceof SkelAtom) {
-            return CMP_TYPE_ATOM;
-        } else if (a instanceof Integer || a instanceof BigInteger) {
-            return CMP_TYPE_INTEGER;
-        } else if (a instanceof Float || a instanceof Double) {
-            return CMP_TYPE_FLOAT;
-        } else if (a instanceof Long || a instanceof BigDecimal) {
-            return CMP_TYPE_DECIMAL;
-        } else {
-            return CMP_TYPE_REF;
         }
     }
 

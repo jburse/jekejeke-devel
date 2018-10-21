@@ -5,8 +5,8 @@ import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -94,16 +94,16 @@ public final class SpecialVars extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_TERM_VARIABLES:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     EngineVars ev = new EngineVars();
                     ev.varInclude(temp[0], ref);
                     boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                            Display.DISPLAY_CONST, ev.vars, en);
-                    Display d = en.display;
+                            BindCount.DISPLAY_CONST, ev.vars, en);
+                    BindCount[] d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_TERM_VARIABLES_DIFF:
                     temp = ((SkelCompound) en.skel).args;
@@ -115,7 +115,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_SYS_TERM_SINGELTONS:
                     temp = ((SkelCompound) en.skel).args;
@@ -123,12 +123,12 @@ public final class SpecialVars extends AbstractSpecial {
                     ev = new EngineVars();
                     ev.singsOf(temp[0], ref);
                     multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                            Display.DISPLAY_CONST, ev.anon, en);
+                            BindCount.DISPLAY_CONST, ev.anon, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_SYS_GOAL_KERNEL:
                     temp = ((SkelCompound) en.skel).args;
@@ -143,12 +143,12 @@ public final class SpecialVars extends AbstractSpecial {
                     ev = new EngineVars();
                     SpecialVars.goalGlobals(temp[0], ref, ev);
                     multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                            Display.DISPLAY_CONST, ev.vars, en);
+                            BindCount.DISPLAY_CONST, ev.vars, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_NUMBERVARS:
                     temp = ((SkelCompound) en.skel).args;
@@ -159,7 +159,7 @@ public final class SpecialVars extends AbstractSpecial {
                     num = SpecialVars.numberVars(temp[0], ref, (Integer) num, en);
                     if (num == null)
                         return false;
-                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, num, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_SYS_NUMBER_VARIABLES:
@@ -173,7 +173,7 @@ public final class SpecialVars extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Frame frame = en.visor.ref;
-                    Display ref2 = (frame != null ? frame.getDisplay() : null);
+                    BindCount[] ref2 = (frame != null ? frame.getDisplayClause().bind : null);
                     Clause def = (frame != null ? frame.getContSkel().getClause() : null);
                     MapHashLink<Object, NamedDistance> print =
                             Named.namedToMap((def != null ? def.vars : null), ref2, en);
@@ -209,10 +209,10 @@ public final class SpecialVars extends AbstractSpecial {
      * @param d  The goal display.
      * @param en The engine.
      */
-    private static void goalKernel(Object t, Display d, Engine en) {
+    private static void goalKernel(Object t, BindCount[] d, Engine en) {
         while (t instanceof SkelVar) {
             BindVar b;
-            if ((b = d.bind[((SkelVar) t).id]).display == null)
+            if ((b = d[((SkelVar) t).id]).display == null)
                 break;
             t = b.skel;
             d = b.display;
@@ -224,7 +224,7 @@ public final class SpecialVars extends AbstractSpecial {
             t = sc.args[1];
             while (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d.bind[((SkelVar) t).id]).display == null)
+                if ((b = d[((SkelVar) t).id]).display == null)
                     break;
                 t = b.skel;
                 d = b.display;
@@ -241,10 +241,10 @@ public final class SpecialVars extends AbstractSpecial {
      * @param t The goal skeleton.
      * @param d The goal display.
      */
-    private static void goalGlobals(Object t, Display d, EngineVars ev) {
+    private static void goalGlobals(Object t, BindCount[] d, EngineVars ev) {
         while (t instanceof SkelVar) {
             BindVar b;
-            if ((b = d.bind[((SkelVar) t).id]).display == null)
+            if ((b = d[((SkelVar) t).id]).display == null)
                 return;
             t = b.skel;
             d = b.display;
@@ -275,7 +275,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The end number or null.
      * @throws EngineException Shit happens.
      */
-    private static Integer numberVars(Object m, Display d, Integer val,
+    private static Integer numberVars(Object m, BindCount[] d, Integer val,
                                       Engine en)
             throws EngineException {
         for (; ; ) {
@@ -290,27 +290,27 @@ public final class SpecialVars extends AbstractSpecial {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindVar b = d[v.id];
                     if (b.display != null) {
                         val = numberVars(b.skel, b.display, val, en);
                         if (val == null)
                             return null;
                     } else {
                         Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
-                        if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
+                        if (!en.unifyTerm(v, d, t, BindCount.DISPLAY_CONST))
                             return null;
                         val = Integer.valueOf(val.intValue() + 1);
                     }
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindVar b = d[v.id];
             if (b.display != null) {
                 m = b.skel;
                 d = b.display;
             } else {
                 Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
-                if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
+                if (!en.unifyTerm(v, d, t, BindCount.DISPLAY_CONST))
                     return null;
                 return Integer.valueOf(val.intValue() + 1);
             }
@@ -326,7 +326,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void numberVariables(Object[] temp, Display ref,
+    private static void numberVariables(Object[] temp, BindCount[] ref,
                                         Engine en)
             throws EngineMessage {
         SetHashLink<Object> mvs2 = arrayToSet(temp[0], ref, en);
@@ -346,7 +346,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The variable list.
      * @throws EngineMessage Shit happens.
      */
-    private static SetHashLink<Object> arrayToSet(Object t, Display d,
+    private static SetHashLink<Object> arrayToSet(Object t, BindCount[] d,
                                                   Engine en)
             throws EngineMessage {
         SetHashLink<Object> set = null;
@@ -396,7 +396,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The print map.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<Object, NamedDistance> assocToMap(Object t, Display d,
+    public static MapHashLink<Object, NamedDistance> assocToMap(Object t, BindCount[] d,
                                                                 Engine en)
             throws EngineMessage {
         MapHashLink<Object, NamedDistance> print = null;
@@ -421,7 +421,7 @@ public final class SpecialVars extends AbstractSpecial {
                         en.skel), en.display);
             }
             Object[] mc2 = ((SkelCompound) en.skel).args;
-            Display d2 = en.display;
+            BindCount[] d2 = en.display;
             en.skel = mc2[1];
             int distance = NamedDistance.derefCount(en);
             if (en.skel instanceof SkelVar) {
@@ -457,16 +457,16 @@ public final class SpecialVars extends AbstractSpecial {
     public static void mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
                                   Engine en) {
         int countvar = 0;
-        Display last = Display.DISPLAY_CONST;
+        BindCount[] last = BindCount.DISPLAY_CONST;
         boolean multi = false;
         for (MapEntry<Object, NamedDistance> entry =
              (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             Object t = AbstractTerm.getSkel(entry.key);
             if (EngineCopy.getVar(t) != null) {
-                Display d = AbstractTerm.getDisplay(entry.key);
+                BindCount[] d = AbstractTerm.getDisplay(entry.key);
                 countvar++;
-                if (last == Display.DISPLAY_CONST) {
+                if (last == BindCount.DISPLAY_CONST) {
                     last = d;
                 } else if (last != d) {
                     multi = true;
@@ -474,7 +474,7 @@ public final class SpecialVars extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(countvar);
+            last = BindCount.newBind(countvar);
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
         for (MapEntry<Object, NamedDistance> entry =
@@ -483,10 +483,10 @@ public final class SpecialVars extends AbstractSpecial {
             Object t = AbstractTerm.getSkel(entry.key);
             Object val;
             if (multi && EngineCopy.getVar(t) != null) {
-                Display d = AbstractTerm.getDisplay(entry.key);
+                BindCount[] d = AbstractTerm.getDisplay(entry.key);
                 SkelVar var = SkelVar.valueOf(countvar);
                 countvar++;
-                last.bind[var.id].bindVar(t, d, en);
+                last[var.id].bindVar(t, d, en);
                 val = var;
             } else {
                 val = t;

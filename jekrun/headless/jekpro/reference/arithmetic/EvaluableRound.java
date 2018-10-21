@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -78,14 +78,14 @@ public final class EvaluableRound extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_INTEGER:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    Display d = en.display;
+                    BindCount[] d = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = integer(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_TRUNCATE:
                     temp = ((SkelCompound) en.skel).args;
@@ -94,9 +94,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = truncate(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_FLOOR:
                     temp = ((SkelCompound) en.skel).args;
@@ -105,9 +105,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = floor(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_CEILING:
                     temp = ((SkelCompound) en.skel).args;
@@ -116,9 +116,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = ceiling(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_ROUND:
                     temp = ((SkelCompound) en.skel).args;
@@ -127,9 +127,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = round(alfa);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SLASH_SLASH:
                     temp = ((SkelCompound) en.skel).args;
@@ -138,14 +138,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = slashSlash(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_REM:
                     temp = ((SkelCompound) en.skel).args;
@@ -154,14 +154,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = rem(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_DIV:
                     temp = ((SkelCompound) en.skel).args;
@@ -170,14 +170,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = div(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_MOD:
                     temp = ((SkelCompound) en.skel).args;
@@ -186,14 +186,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = mod(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -390,20 +390,20 @@ public final class EvaluableRound extends AbstractSpecial {
      */
     private static Number slashSlash(Number a, Number b)
             throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
+            case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger((long) a.intValue() / u);
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).divide(p));
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
@@ -414,7 +414,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.normBigInteger(new BigDecimal(g).toBigInteger());
                 }
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
@@ -425,8 +425,8 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.normBigInteger(new BigDecimal(e).toBigInteger());
                 }
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.signum() == 0)
                     throw new ArithmeticException(
@@ -451,8 +451,8 @@ public final class EvaluableRound extends AbstractSpecial {
      * @throws ArithmeticException Shit happens.
      */
     private static Number div(Number a, Number b) {
-        switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
+            case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
                 if (u == 0)
                     throw new ArithmeticException(
@@ -465,7 +465,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.normBigInteger((long) v / u);
                 }
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
@@ -480,7 +480,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.normBigInteger(q.divide(p));
                 }
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
@@ -492,7 +492,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     return TermAtomic.normBigInteger(new BigDecimal(g).setScale(0,
                             BigDecimal.ROUND_FLOOR).unscaledValue());
                 }
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
@@ -504,8 +504,8 @@ public final class EvaluableRound extends AbstractSpecial {
                     return TermAtomic.normBigInteger(new BigDecimal(e).setScale(0,
                             BigDecimal.ROUND_FLOOR).unscaledValue());
                 }
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.signum() == 0)
                     throw new ArithmeticException(
@@ -530,33 +530,33 @@ public final class EvaluableRound extends AbstractSpecial {
      * @throws ArithmeticException Shit happens.
      */
     private static Number rem(Number a, Number b) throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
+            case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger((long) a.intValue() % u);
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(p));
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.makeFloat(a.floatValue() % f);
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.makeDouble(a.doubleValue() % d);
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.signum() == 0)
                     throw new ArithmeticException(
@@ -582,8 +582,8 @@ public final class EvaluableRound extends AbstractSpecial {
      * @throws ArithmeticException Shit happens.
      */
     private static Number mod(Number a, Number b) throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
+            case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
                 if (u == 0)
                     throw new ArithmeticException(
@@ -599,7 +599,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.normBigInteger((long) v % u);
                 }
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
@@ -615,7 +615,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.normBigInteger(q.remainder(p));
                 }
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
@@ -631,7 +631,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.makeFloat(g % f);
                 }
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
@@ -647,8 +647,8 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else {
                     return TermAtomic.makeDouble(e % d);
                 }
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.signum() == 0)
                     throw new ArithmeticException(

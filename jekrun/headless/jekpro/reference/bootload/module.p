@@ -139,7 +139,7 @@ module(N, _) :-
    var(N),
    throw(error(instantiation_error,_)).
 module(N, L) :-
-   sys_eq(N, user), !,
+   N = user, !,
    sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    (public L).
@@ -182,6 +182,7 @@ use_module(Slash) :-
    absolute_file_name(Slash, Pin),
    sys_load_file(Pin, [condition(on),sys_link(use_module)]).
 :- set_predicate_property(use_module/1, visible(public)).
+:- set_predicate_property(use_module/1, sys_notrace).
 
 /**
  * reexport(R):
@@ -305,9 +306,9 @@ sys_public(postfix(X)) :- !,
 sys_public(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
-   sys_once(sys_and(predicate_property(I,sys_usage(D)),
-               sys_not(sys_eq(C,D)))),
-   sys_not(predicate_property(I,sys_public(D))),
+   once((  predicate_property(I, sys_usage(D)),
+           \+ C = D)),
+   \+ predicate_property(I, sys_public(D)),
    throw(error(permission_error(promote,public,I),_)).
 sys_public(I) :-
    sys_make_indicator(F, _, I),

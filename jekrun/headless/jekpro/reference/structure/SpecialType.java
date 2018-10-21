@@ -2,7 +2,7 @@ package jekpro.reference.structure;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -77,7 +77,7 @@ public final class SpecialType extends AbstractSpecial {
         switch (id) {
             case SPECIAL_INTEGER:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
