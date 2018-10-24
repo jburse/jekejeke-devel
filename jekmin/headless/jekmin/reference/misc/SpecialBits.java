@@ -2,7 +2,7 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
@@ -68,7 +68,7 @@ public final class SpecialBits extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_TESTBIT:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     Number alfa = SpecialEval.derefAndCastInteger(temp[0], ref);
                     SpecialEval.checkNotLessThanZero(alfa);
                     int k = SpecialEval.castIntValue(alfa);

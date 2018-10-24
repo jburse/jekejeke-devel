@@ -2,7 +2,7 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -75,14 +75,14 @@ public final class SupplementBits extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_BITCOUNT:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    Display d = en.display;
+                    BindCount[] d = en.display;
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = Integer.valueOf(bitCount(alfa));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_BITLENGTH:
                     temp = ((SkelCompound) en.skel).args;
@@ -91,9 +91,9 @@ public final class SupplementBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = Integer.valueOf(bitLength(alfa));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_LOWESTSETBIT:
                     temp = ((SkelCompound) en.skel).args;
@@ -102,9 +102,9 @@ public final class SupplementBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = Integer.valueOf(lowestSetBit(alfa));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SETBIT:
                     temp = ((SkelCompound) en.skel).args;
@@ -113,16 +113,16 @@ public final class SupplementBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     int x = SpecialEval.castIntValue(alfa);
                     en.skel = setBit(x, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_CLEARBIT:
                     temp = ((SkelCompound) en.skel).args;
@@ -131,16 +131,16 @@ public final class SupplementBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     x = SpecialEval.castIntValue(alfa);
                     en.skel = clearBit(x, beta);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);

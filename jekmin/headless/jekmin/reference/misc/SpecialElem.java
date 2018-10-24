@@ -2,7 +2,7 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
@@ -72,13 +72,13 @@ public final class SpecialElem extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_DIVMOD:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     Number beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     Number[] res = divMod(alfa, beta);
-                    if (!en.unifyTerm(temp[2], ref, res[0], Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, res[0], BindCount.DISPLAY_CONST))
                         return false;
-                    if (!en.unifyTerm(temp[3], ref, res[1], Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[3], ref, res[1], BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:
@@ -110,8 +110,8 @@ public final class SpecialElem extends AbstractSpecial {
      */
     private static Number[] divMod(Number a, Number b)
             throws ArithmeticException {
-        switch (Math.max(SpecialCompare.category(a), SpecialCompare.category(b))) {
-            case SpecialCompare.CATEGORY_INTEGER:
+        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
+            case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
                 if (u == 0)
                     throw new ArithmeticException(
@@ -120,7 +120,7 @@ public final class SpecialElem extends AbstractSpecial {
                 res[0] = TermAtomic.normBigInteger((long) a.intValue() / u);
                 res[1] = TermAtomic.normBigInteger((long) a.intValue() % u);
                 return res;
-            case SpecialCompare.CATEGORY_BIG_INTEGER:
+            case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
@@ -130,7 +130,7 @@ public final class SpecialElem extends AbstractSpecial {
                 res[0] = TermAtomic.normBigInteger(res2[0]);
                 res[1] = TermAtomic.normBigInteger(res2[1]);
                 return res;
-            case SpecialCompare.CATEGORY_FLOAT:
+            case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
@@ -145,7 +145,7 @@ public final class SpecialElem extends AbstractSpecial {
                 }
                 res[1] = TermAtomic.makeFloat(g1 % f);
                 return res;
-            case SpecialCompare.CATEGORY_DOUBLE:
+            case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
@@ -160,8 +160,8 @@ public final class SpecialElem extends AbstractSpecial {
                 }
                 res[1] = TermAtomic.makeDouble(e1 % d);
                 return res;
-            case SpecialCompare.CATEGORY_LONG:
-            case SpecialCompare.CATEGORY_BIG_DECIMAL:
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
                 if (h.signum() == 0)
                     throw new ArithmeticException(
