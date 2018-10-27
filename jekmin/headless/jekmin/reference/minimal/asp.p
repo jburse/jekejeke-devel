@@ -35,54 +35,50 @@
 :- package(library(jekmin/reference/minimal)).
 
 :- module(asp, []).
-:- use_module(library(minimal/delta)).
+:- reexport(library(minimal/delta)).
 
 /**
- * choice(A, B):
- * choice(A, B, G):
- * The construct does A and then B before further solving or only A
- * before further solving or it does B before further solving.
+ * choose(L):
+ * choose(L, G):
+ * The construct posts each from L before further solving.
  */
-% choice(+Goal, +Goal)
-:- public choice/2.
-choice(A, B) :- A,
-   choice2(B).
-choice(_, B) :- B.
+% choose(+List)
+:- public choose/1.
+choose(L) :-
+   sys_least_one(L), !.
+choose([A|L]) :-
+   choose2(L, A).
 
-% choice2(+Goal)
-:- private choice2/1.
-choice2(B) :- B.
-choice2(_).
-
-% choice(+Goal, +Goal, +Goal)
-:- public choice/3.
-choice(A, B, G) :-
-   call(A, choice2(B,G)).
-choice(_, B, G) :-
-   call(B, G).
-
-% choice2(+Goal, +Goal)
-:- private choice2/2.
-choice2(B, G) :-
-   call(B, G).
-choice2(_, G) :- G.
-
-/**
- * post_absent(A):
- * post_absent(A, G):
- * The construct posts A if A is absent.
- */
-% post_absent(+Term)
-:- public post_absent/1.
-post_absent(A) :-
-   clause(A, true), !.
-post_absent(A) :-
+% choose2(+List, +Term)
+:- private choose2/2.
+choose2([], A) :- !,
    post(A).
+choose2([_|_], A) :-
+   post(A).
+choose2([A|L], _) :-
+   choose2(L, A).
 
-% post_absent(+Term, +Goal)
-:- public post_absent/2.
-post_absent(A, G) :-
-   clause(A, true), !, G.
-post_absent(A, G) :-
+% choose(+List, +Goal)
+:- public choose/2.
+:- meta_predicate choose(?,0).
+choose(L, G) :-
+   sys_least_one(L), !, G.
+choose([A|L], G) :-
+   choose2(L, A, G).
+
+% choose2(+List, +Term, +Goal)
+:- private choose2/3.
+:- meta_predicate choose2(?,-1,0).
+choose2([], A, G) :- !,
    post(A, G).
+choose2([_|_], A, G) :-
+   post(A, G).
+choose2([A|L], _, G) :-
+   choose2(L, A, G).
 
+% sys_least_one(+List)
+:- private sys_least_one/1.
+sys_least_one([A|_]) :-
+   clause(A, true), !.
+sys_least_one([_|L]) :-
+   sys_least_one(L).
