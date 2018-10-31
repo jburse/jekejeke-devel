@@ -4,8 +4,12 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.*;
-import jekpro.model.molec.Display;
+import jekpro.model.builtin.SpecialBody;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Frame;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
@@ -14,6 +18,7 @@ import jekpro.model.rope.Named;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -88,11 +93,11 @@ public final class SpecialRef extends AbstractSpecial {
         switch (id) {
             case SPECIAL_ASSERTABLE_REF:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 Clause clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
                 if (!en.unifyTerm(temp[1], ref,
-                        clause, Display.DISPLAY_CONST))
+                        clause, BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_ASSUMABLE_REF:
@@ -101,7 +106,7 @@ public final class SpecialRef extends AbstractSpecial {
                 clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_THLC |
                         AbstractDefined.OPT_CHCK_ASSE, en);
                 if (!en.unifyTerm(temp[1], ref,
-                        clause, Display.DISPLAY_CONST))
+                        clause, BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_RECORDA_REF:
@@ -130,11 +135,11 @@ public final class SpecialRef extends AbstractSpecial {
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 boolean multi = ptr.clauseRef(en);
-                Display d = en.display;
+                BindCount[] d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_CLAUSE_REF:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
@@ -144,18 +149,24 @@ public final class SpecialRef extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                SpecialRef.refToProperties(ptr, en);
-                if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                multi = SpecialRef.refToProperties(ptr, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
+                if (multi)
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SYS_REF_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
-                SpecialRef.refToProperty(sk, ptr, en);
-                if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
+                multi = SpecialRef.refToProperty(sk, ptr, en);
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
+                if (multi)
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -202,14 +213,10 @@ public final class SpecialRef extends AbstractSpecial {
      * @return True if the ptr ref could be unified.
      * @throws EngineMessage Shit happens.
      */
-    private static Clause compileClause(int flags,
-                                        Engine en)
+    private static Clause compileClause(int flags, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        en.skel = temp[0];
-        en.display = ref;
-        en.deref();
+        BindCount[] ref = en.display;
         EngineCopy ec = en.enginecopy;
         if (ec == null) {
             ec = new EngineCopy();
@@ -217,17 +224,13 @@ public final class SpecialRef extends AbstractSpecial {
         }
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyTermAndWrap(en.skel, en.display, en);
+        Object molec = ec.copyTermAndWrap(temp[0], ref, en);
         Named[] vars = null;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0)
             vars = Named.decodeAssertOptions(temp[2], ref, en, ec);
         ec.vars = null;
-        Object head = PreClause.clauseToHead(molec, en);
-        Predicate pick = AbstractDefined.determineDefined(head, flags, en);
-        Clause clause = AbstractDefined.determineClause(pick, flags, en);
+        Clause clause = PreClause.determineCompiled(flags, molec, en);
         clause.vars = vars;
-        clause.head = head;
-        clause.analyzeBody(molec, en);
         return clause;
     }
 
@@ -242,13 +245,15 @@ public final class SpecialRef extends AbstractSpecial {
      *
      * @param ptr The reference.
      * @param en  The engine.
+     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static void refToProperties(InterfaceReference ptr, Engine en)
+    private static boolean refToProperties(InterfaceReference ptr, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
+        boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -259,13 +264,14 @@ public final class SpecialRef extends AbstractSpecial {
             for (int j = props.length - 1; j >= 0; j--) {
                 StoreKey prop = props[j];
                 Object t = en.skel;
-                Display d = en.display;
+                BindCount[] d = en.display;
                 Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
                 en.skel = t;
                 en.display = d;
-                AbstractProperty.consArray(vals, en);
+                multi = AbstractProperty.consArray(multi, vals, en);
             }
         }
+        return multi;
     }
 
     /**
@@ -275,15 +281,16 @@ public final class SpecialRef extends AbstractSpecial {
      * @param prop The property.
      * @param ptr  The ptr.
      * @param en   The engine.
+     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static void refToProperty(StoreKey prop,
-                                      InterfaceReference ptr, Engine en)
+    private static boolean refToProperty(StoreKey prop,
+                                         InterfaceReference ptr, Engine en)
             throws EngineMessage {
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        AbstractProperty.consArray(vals, en);
+        en.display = BindCount.DISPLAY_CONST;
+        return AbstractProperty.consArray(false, vals, en);
     }
 
     /**
@@ -296,7 +303,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void addRefProp(Object temp, Display ref,
+    private static void addRefProp(Object temp, BindCount[] ref,
                                    InterfaceReference ptr, Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(temp);
@@ -315,7 +322,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void removeRefProp(Object temp, Display ref,
+    private static void removeRefProp(Object temp, BindCount[] ref,
                                       InterfaceReference ptr, Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(temp);
@@ -399,7 +406,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @return The ptr.
      * @throws EngineMessage Shit happens.
      */
-    public static InterfaceReference derefAndCastPtr(Object m, Display d)
+    public static InterfaceReference derefAndCastPtr(Object m, BindCount[] d)
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRef(m, d);
         if (m instanceof InterfaceReference) {

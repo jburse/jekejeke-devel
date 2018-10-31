@@ -1,6 +1,5 @@
 package jekpro.frequent.stream;
 
-import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -8,14 +7,11 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermCompound;
 import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -61,7 +57,7 @@ public final class ForeignConsole {
      *
      * @param obj The reader.
      * @return The line.
-     * @throws IOException        IO error.
+     * @throws IOException IO error.
      */
     public static String sysReadLine(Reader obj)
             throws IOException {

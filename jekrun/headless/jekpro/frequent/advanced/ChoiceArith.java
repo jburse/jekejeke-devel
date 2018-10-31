@@ -86,19 +86,19 @@ final class ChoiceArith extends AbstractChoice {
         /* undo bindings */
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
-        en.skel = null;
+        en.fault = null;
         en.releaseBind(mark);
-        if (en.skel != null)
-            throw (EngineException) en.skel;
+        if (en.fault != null)
+            throw en.fault;
 
         Goal ir = goalskel;
         Object t = ir.goal;
-        Display d = goaldisplay;
+        BindCount[] d = goaldisplay.bind;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b1;
             while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                    (b1 = d[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
                 d = b1.display;
             }
@@ -113,7 +113,7 @@ final class ChoiceArith extends AbstractChoice {
 
                 int res = SpecialCompare.computeCmp(cur, num2);
                 while (res <= 0) {
-                    if (en.unifyTerm(temp[2], d, cur, Display.DISPLAY_CONST)) {
+                    if (en.unifyTerm(temp[2], d, cur, BindCount.DISPLAY_CONST)) {
                         if (res != 0) {
                             /* reuse choice point */
                             en.choices = this;
@@ -123,10 +123,10 @@ final class ChoiceArith extends AbstractChoice {
                     }
 
                     /* undo bindings */
-                    en.skel = null;
+                    en.fault = null;
                     en.releaseBind(mark);
-                    if (en.skel != null)
-                        throw (EngineException) en.skel;
+                    if (en.fault != null)
+                        throw en.fault;
 
                     cur = EvaluableElem.add(cur, Integer.valueOf(1));
                     res = SpecialCompare.computeCmp(cur, num2);
@@ -136,7 +136,7 @@ final class ChoiceArith extends AbstractChoice {
                 cur = EvaluableElem.add(cur, Integer.valueOf(1));
 
                 while (true) {
-                    if (en.unifyTerm(temp[1], d, cur, Display.DISPLAY_CONST)) {
+                    if (en.unifyTerm(temp[1], d, cur, BindCount.DISPLAY_CONST)) {
                         /* reuse choice point */
                         en.choices = this;
                         en.number++;
@@ -144,10 +144,10 @@ final class ChoiceArith extends AbstractChoice {
                     }
 
                     /* undo bindings */
-                    en.skel = null;
+                    en.fault = null;
                     en.releaseBind(mark);
-                    if (en.skel != null)
-                        throw (EngineException) en.skel;
+                    if (en.fault != null)
+                        throw en.fault;
 
                     cur = EvaluableElem.add(cur, Integer.valueOf(1));
                 }

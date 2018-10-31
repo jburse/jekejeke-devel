@@ -2,7 +2,7 @@ package jekpro.frequent.basic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractSkel;
@@ -66,7 +66,7 @@ public final class SpecialScore extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_TYPE_OF:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
+                BindCount[] ref = en.display;
                 Object m = SpecialUniv.derefAndCastRef(temp[0], ref);
                 if (!(m instanceof Class))
                     throw new EngineMessage(EngineMessage.domainError(

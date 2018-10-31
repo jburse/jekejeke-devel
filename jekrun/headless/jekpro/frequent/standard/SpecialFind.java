@@ -5,12 +5,8 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.TermVar;
 import matula.util.data.ListArray;
-import matula.util.data.SetEntry;
-import matula.util.data.SetHashLink;
 
 /**
  * <p>Provides built-in predicates for the module bags.</p>
@@ -45,7 +41,8 @@ import matula.util.data.SetHashLink;
  */
 public final class SpecialFind extends AbstractSpecial {
     private final static int SPECIAL_FINDALL = 0;
-    private final static int SPECIAL_COPY_TERM = 1;
+    private final static int SPECIAL_FINDALL_END = 1;
+    private final static int SPECIAL_COPY_TERM = 2;
 
     /**
      * <p>Create a set special.</p>
@@ -72,13 +69,42 @@ public final class SpecialFind extends AbstractSpecial {
         switch (id) {
             case SPECIAL_FINDALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                boolean multi = SpecialFind.findAll(temp, ref, en);
-                Display d = en.display;
+                BindCount[] ref = en.display;
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                ListArray<Object> list = iterFindAll(temp[0], ref, en);
+
+                en.skel = en.store.foyer.ATOM_NIL;
+                en.display = BindCount.DISPLAY_CONST;
+                boolean multi = SpecialFind.createList(list, en);
+
+                BindCount[] d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
+                return en.getNext();
+            case SPECIAL_FINDALL_END:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                list = iterFindAll(temp[0], ref, en);
+
+                en.skel = temp[3];
+                en.display = ref;
+                en.deref();
+                multi = SpecialFind.createList(list, en);
+
+                d = en.display;
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                    return false;
+                if (multi)
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
@@ -91,12 +117,12 @@ public final class SpecialFind extends AbstractSpecial {
                 ec.vars = null;
                 Object temp2 = ec.copyTerm(temp[0], ref);
                 ec.vars = null;
-                int size = Display.displaySize(temp2);
-                Display ref2 = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-                if (!en.unifyTerm(temp[1], ref, temp2, ref2))
+                int size = EngineCopy.displaySize(temp2);
+                d = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+                if (!en.unifyTerm(temp[1], ref, temp2, d))
                     return false;
                 if (size != 0)
-                    ref2.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -108,26 +134,6 @@ public final class SpecialFind extends AbstractSpecial {
     /************************************************************************/
 
     /**
-     * <p>Findall solutions.</p>
-     * <p>Result is returned in skel and display of the engine.</p>
-     *
-     * @param temp The goal skel.
-     * @param ref  The goal display.
-     * @param en   The engine.
-     * @return True if new display is returned, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    private static boolean findAll(Object[] temp, Display ref,
-                                   Engine en)
-            throws EngineException {
-        en.skel = temp[1];
-        en.display = ref;
-        en.deref();
-        ListArray<Object> list = iterFindAll(temp[0], ref, en);
-        return SpecialFind.createList(list, en);
-    }
-
-    /**
      * <p>Find all solutions.</p>
      * <p>The goal is passed in skel and display of the engine.</p>
      *
@@ -137,7 +143,7 @@ public final class SpecialFind extends AbstractSpecial {
      * @return The list of solutions.
      * @throws EngineException Shit happens.
      */
-    private static ListArray<Object> iterFindAll(Object t2, Display d2,
+    private static ListArray<Object> iterFindAll(Object t2, BindCount[] d2,
                                                  Engine en)
             throws EngineException {
         Intermediate r = en.contskel;
@@ -147,12 +153,13 @@ public final class SpecialFind extends AbstractSpecial {
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
-            Display ref = en.display;
+            BindCount[] ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause();
+            ref2.bind = BindCount.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, en.display, en);
             if (multi)
-                ref.remTab(en);
+                BindCount.remTab(ref, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -182,15 +189,16 @@ public final class SpecialFind extends AbstractSpecial {
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.skel = null;
+        en.fault = null;
         en.releaseBind(mark);
-        if (en.skel != null)
-            throw (EngineException) en.skel;
+        if (en.fault != null)
+            throw en.fault;
         return temp;
     }
 
     /**
      * <p>Create the result list.</p>
+     * <p>The end is passed in skel and display of the engine.</p>
      * <p>Result is returned in skel and display of the engine.</p>
      *
      * @param temp The list of solutions.
@@ -198,23 +206,22 @@ public final class SpecialFind extends AbstractSpecial {
      * @return True if new display is returned, otherwise false.
      */
     private static boolean createList(ListArray<Object> temp, Engine en) {
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
         boolean multi = false;
         if (temp == null)
             return multi;
         for (int i = temp.size() - 1; i >= 0; i--) {
-            Object t4 = en.skel;
-            Display d2 = en.display;
+            Object t = en.skel;
+            BindCount[] d = en.display;
             boolean ext = multi;
             Object val = temp.get(i);
-            int size = Display.displaySize(val);
-            Display ref = (size != 0 ? new Display(size) : Display.DISPLAY_CONST);
-            multi = pairValue(en.store.foyer.CELL_CONS, val, ref, t4, d2, en);
+            int size = EngineCopy.displaySize(val);
+            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                    val, ref, t, d, en);
             if (multi && ext)
-                d2.remTab(en);
+                BindCount.remTab(d, en);
             if (multi && (size != 0))
-                ref.remTab(en);
+                BindCount.remTab(ref, en);
             multi = (multi || ext || (size != 0));
         }
         return multi;
@@ -232,8 +239,8 @@ public final class SpecialFind extends AbstractSpecial {
      * @return True if new display is returned, otherwise false.
      */
     public static boolean pairValue(SkelCompound sc,
-                                    Object t2, Display d2,
-                                    Object t, Display d, Engine en) {
+                                    Object t2, BindCount[] d2,
+                                    Object t, BindCount[] d, Engine en) {
         Object v2 = EngineCopy.getVar(t2);
         Object v = EngineCopy.getVar(t);
         if (v2 == null) {
@@ -251,51 +258,12 @@ public final class SpecialFind extends AbstractSpecial {
             en.display = d2;
             return false;
         } else {
-            Display d3 = new Display(2);
-            d3.bind[0].bindVar(t2, d2, en);
-            d3.bind[1].bindVar(t, d, en);
+            BindCount[] d3 = BindCount.newBind(2);
+            d3[0].bindVar(t2, d2, en);
+            d3[1].bindVar(t, d, en);
             en.skel = sc;
             en.display = d3;
             return true;
-        }
-    }
-
-    /******************************************************************/
-    /* Shelved Cons Value                                             */
-    /******************************************************************/
-
-    /**
-     * <p>Cons the value to the given term.</p>
-     * <p>The result is returned in skeleton and display.</p>
-     *
-     * @param t2 The term skeleton.
-     * @param d2 The term display.
-     * @param t  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     */
-    public static void consValue(Object t2, Display d2,
-                                 Object t, Display d, Engine en) {
-        Object v2 = EngineCopy.getVar(t2);
-        Object v = EngineCopy.getVar(t);
-        if (v2 == null) {
-            Object[] args = new Object[2];
-            args[0] = t2;
-            args[1] = t;
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, args, v);
-            en.display = d;
-        } else if (v == null) {
-            Object[] args = new Object[2];
-            args[0] = t2;
-            args[1] = t;
-            en.skel = new SkelCompound(en.store.foyer.ATOM_CONS, args, v2);
-            en.display = d2;
-        } else {
-            Display d3 = new Display(2);
-            d3.bind[0].bindVar(t2, d2, en);
-            d3.bind[1].bindVar(t, d, en);
-            en.skel = en.store.foyer.CELL_CONS;
-            en.display = d3;
         }
     }
 

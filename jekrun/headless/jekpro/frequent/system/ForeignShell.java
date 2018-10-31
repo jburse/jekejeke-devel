@@ -4,9 +4,7 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * <p>The foreign predicates for the module system/shell.</p>

@@ -439,7 +439,7 @@ sys_path_to_atom2(Path, Dir/Name) :-
    last_sub_atom(Path, Before, _, After, /),
    sub_atom(Path, 0, Before, X),
    \+ X = ..,
-   \+ last_sub_atom(X, _, _, /..), !,
+   \+ last_sub_atom(X, _, 0, /..), !,
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Path, ../Dir) :-

@@ -4,6 +4,8 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -63,6 +65,24 @@ public final class EngineCopy {
         }
     }
 
+    /**
+     * <p>Determine the display size.</p>
+     * <p>Beware, works only for the root copy and not for sub terms.</p>
+     *
+     * @param m The skeleton.
+     * @return The display size.
+     */
+    public static int displaySize(Object m) {
+        Object var = getVar(m);
+        if (var == null)
+            return 0;
+        if (var instanceof SkelVar) {
+            return 1;
+        } else {
+            return ((SkelVar[]) var).length;
+        }
+    }
+
     /*******************************************************/
     /* Ordinary Copy                                       */
     /*******************************************************/
@@ -76,13 +96,13 @@ public final class EngineCopy {
      * @param d The term display.
      * @return A copy of the term.
      */
-    public final Object copyTerm(Object t, Display d) {
+    public final Object copyTerm(Object t, BindCount[] d) {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d.bind[v.id]).display != null) {
+                if ((b = d[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -124,8 +144,8 @@ public final class EngineCopy {
      * @param d The old variable display.
      * @return The new variable.
      */
-    private SkelVar getVarValue(SkelVar v, Display d) {
-        BindCount key = d.bind[v.id];
+    private SkelVar getVarValue(SkelVar v, BindCount[] d) {
+        BindCount key = d[v.id];
         if (vars == null) {
             vars = new MapHash<BindCount, SkelVar>();
             v = null;
@@ -142,6 +162,7 @@ public final class EngineCopy {
     /**************************************************************************/
     /* Body Conversion Assert                                                 */
     /**************************************************************************/
+
     /**
      * <p>Copy the goal and wrap naked calls.</p>
      * <p>Implements the following rules:</p>
@@ -155,14 +176,14 @@ public final class EngineCopy {
      * </pre>
      * <p>Tail recursive implementation.</p>
      *
-     * @param t  The goal skel.
-     * @param d  The goal display.
-     * @param en The engine.
+     * @param t   The goal skel.
+     * @param d   The goal display.
+     * @param en  The engine.
      * @return A copy of the goal with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
-    public final Object copyGoalAndWrap(Object t, Display d,
+    public final Object copyGoalAndWrap(Object t, BindCount[] d,
                                         Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -170,13 +191,13 @@ public final class EngineCopy {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d.bind[v.id]).display != null) {
+                if ((b = d[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
                 }
-                t = getVarNew(v,d);
-                t = new SkelCompound(new SkelAtom(Branch.OP_CALL), t);
+                t = getVarNew(v, d);
+                t = new SkelCompound(new SkelAtom(Branch.OP_CALL, en.store.getRootSystem()), t);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -247,14 +268,14 @@ public final class EngineCopy {
      * </pre>
      * <p>Tail recursive implementation.</p>
      *
-     * @param t  The term skel.
-     * @param d  The term display.
-     * @param en The engine.
+     * @param t   The term skel.
+     * @param d   The term display.
+     * @param en  The engine.
      * @return A copy of the goal with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
-    public final Object copyTermAndWrap(Object t, Display d,
+    public final Object copyTermAndWrap(Object t, BindCount[] d,
                                         Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -262,12 +283,12 @@ public final class EngineCopy {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d.bind[v.id]).display != null) {
+                if ((b = d[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
                 }
-                t = getVarNew(v,d);
+                t = getVarNew(v, d);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -335,18 +356,18 @@ public final class EngineCopy {
      * @param d The term display.
      * @return A copy of the term.
      */
-    public final Object copyRest(Object t, Display d) {
+    public final Object copyRest(Object t, BindCount[] d) {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d.bind[v.id]).display != null) {
+                if ((b = d[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
                 }
-                t = getVarNew(v,d);
+                t = getVarNew(v, d);
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
@@ -383,8 +404,8 @@ public final class EngineCopy {
      * @param d The old variable display.
      * @return The new variable.
      */
-    private SkelVar getVarNew(SkelVar v, Display d) {
-        BindCount key = d.bind[v.id];
+    private SkelVar getVarNew(SkelVar v, BindCount[] d) {
+        BindCount key = d[v.id];
         if (vars == null) {
             vars = new MapHash<BindCount, SkelVar>();
             v = null;
@@ -394,13 +415,13 @@ public final class EngineCopy {
         if (v == null) {
             v = new SkelVar(vars.size);
             vars.add(key, v);
-            if ((flags & MASK_COPY_SINGL)!=0) {
+            if ((flags & MASK_COPY_SINGL) != 0) {
                 if (anon == null)
                     anon = new MapHash<BindCount, SkelVar>();
                 anon.add(key, v);
             }
         } else {
-            if ((flags & MASK_COPY_SINGL)!=0) {
+            if ((flags & MASK_COPY_SINGL) != 0) {
                 if (anon != null) {
                     anon.remove(key);
                     if (anon.size == 0)

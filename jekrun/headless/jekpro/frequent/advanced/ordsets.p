@@ -82,7 +82,7 @@ ord_difference([X|Y], [Z|T], R) :-
    ord_difference(Y, T, R).
 ord_difference([X|Y], [_|T], R) :-
    ord_difference([X|Y], T, R).
-ord_difference([], _, []).
+ord_difference([], _, []) :- !.
 ord_difference(X, [], X).
 
 /**
@@ -99,7 +99,7 @@ ord_intersection([X|Y], [Z|T], [X|R]) :-
    ord_intersection(Y, T, R).
 ord_intersection([X|Y], [_|T], R) :-
    ord_intersection([X|Y], T, R).
-ord_intersection([], _, []).
+ord_intersection([], _, []) :- !.
 ord_intersection(_, [], []).
 
 /**
@@ -116,7 +116,7 @@ ord_union([X|Y], [Z|T], [X|R]) :-
    ord_union(Y, T, R).
 ord_union([X|Y], [Z|T], [Z|R]) :-
    ord_union([X|Y], T, R).
-ord_union([], X, X).
+ord_union([], X, X) :- !.
 ord_union(X, [], X).
 
 /**

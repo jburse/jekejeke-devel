@@ -88,6 +88,11 @@
 :- module(user, []).
 :- use_module(library(experiment/simp)).
 
+:- public sys_cond/2.
+:- meta_function sys_cond(?,0).
+sys_cond(_, _) :-
+   throw(error(existence_error(body,sys_cond/2),_)).
+
 :- public unit/0.
 unit :-
    throw(error(existence_error(body,unit/0),_)).
@@ -97,11 +102,6 @@ unit :-
 _ /\ _ :-
    throw(error(existence_error(body,/\ /2),_)).
 :- set_predicate_property(/\ /2, sys_rule).
-
-:- public sys_cond/2.
-:- meta_function sys_cond(?,0).
-sys_cond(_, _) :-
-   throw(error(existence_error(body,sys_cond/2),_)).
 
 /*******************************************************/
 /* Unpack & Pack                                       */

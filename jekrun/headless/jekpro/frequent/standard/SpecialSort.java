@@ -2,8 +2,8 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -85,13 +85,13 @@ public final class SpecialSort extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_SORT:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     boolean multi = SpecialSort.sort(en, temp[0], ref, en);
-                    Display d = en.display;
+                    BindCount[] d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_SYS_DISTINCT:
                     temp = ((SkelCompound) en.skel).args;
@@ -101,7 +101,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
@@ -111,7 +111,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_SYS_KEYGROUP:
                     temp = ((SkelCompound) en.skel).args;
@@ -121,13 +121,13 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_HASH_CODE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
-                    if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[1], ref, val, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_SYS_GROUND:
@@ -143,7 +143,7 @@ public final class SpecialSort extends AbstractSpecial {
                     val = SpecialEval.derefAndCastInteger(temp[1], ref);
                     val = Integer.valueOf(termHash(temp[0], ref,
                             SpecialEval.castIntValue(val), 0));
-                    if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, val, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_LOCALE_SORT:
@@ -155,7 +155,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 case SPECIAL_LOCALE_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
@@ -166,7 +166,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                         return false;
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     return en.getNext();
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -190,12 +190,12 @@ public final class SpecialSort extends AbstractSpecial {
      * @param en The engine.
      */
     private static boolean sort(Comparator<Object> c,
-                                Object m, Display d, Engine en)
+                                Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         AbstractSet<Object> set = new SetTree<Object>(c);
         SpecialSort.sortSet(set, m, d, en);
         return createSet(en.store.foyer.ATOM_NIL,
-                Display.DISPLAY_CONST, set, en);
+                BindCount.DISPLAY_CONST, set, en);
     }
 
     /**
@@ -205,12 +205,12 @@ public final class SpecialSort extends AbstractSpecial {
      * @param d  The display.
      * @param en The engine.
      */
-    private static boolean distinct(Object m, Display d, Engine en)
+    private static boolean distinct(Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         AbstractSet<Object> set = new SetHashLink<Object>();
         SpecialSort.sortSet(set, m, d, en);
         return createSet(en.store.foyer.ATOM_NIL,
-                Display.DISPLAY_CONST, set, en);
+                BindCount.DISPLAY_CONST, set, en);
     }
 
     /**
@@ -223,7 +223,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void sortSet(AbstractSet<Object> set,
-                                Object m, Display d, Engine en)
+                                Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -269,7 +269,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @param set The abstract map.
      * @param en  The engine.
      */
-    public static <T> boolean createSet(Object t4, Display d2,
+    public static <T> boolean createSet(Object t4, BindCount[] d2,
                                         AbstractSet<T> set, Engine en) {
         en.skel = t4;
         en.display = d2;
@@ -283,11 +283,11 @@ public final class SpecialSort extends AbstractSpecial {
             boolean ext = multi;
             T elem = entry.key;
             Object val = AbstractTerm.getSkel(elem);
-            Display ref = AbstractTerm.getDisplay(elem);
+            BindCount[] ref = AbstractTerm.getDisplay(elem);
             multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t4, d2, en);
             if (multi && ext)
-                d2.remTab(en);
+                BindCount.remTab(d2, en);
             multi = (multi || ext);
         }
         return multi;
@@ -307,7 +307,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @param en The engine.
      */
     private static boolean keySort(Comparator<Object> c,
-                                   Object m, Display d, Engine en)
+                                   Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(c);
         SpecialSort.sortMap(map, m, d, en);
@@ -322,7 +322,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @param d  The display.
      * @param en The engine.
      */
-    private static boolean keyGroup(Object m, Display d, Engine en)
+    private static boolean keyGroup(Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         AbstractMap<Object, ListArray<Object>> map = new MapHashLink<Object, ListArray<Object>>();
         SpecialSort.sortMap(map, m, d, en);
@@ -339,7 +339,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void sortMap(AbstractMap<Object, ListArray<Object>> map,
-                                Object m, Display d, Engine en)
+                                Object m, BindCount[] d, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -354,7 +354,7 @@ public final class SpecialSort extends AbstractSpecial {
             en.display = d;
             en.deref();
             Object m2 = en.skel;
-            Display d2 = en.display;
+            BindCount[] d2 = en.display;
             if (m2 instanceof SkelCompound &&
                     ((SkelCompound) m2).args.length == 2 &&
                     ((SkelCompound) m2).sym.fun.equals(Foyer.OP_SUB)) {
@@ -410,21 +410,21 @@ public final class SpecialSort extends AbstractSpecial {
     private static <K, V> boolean createMap(AbstractMap<K, ListArray<V>> map,
                                             Engine en) {
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
+        en.display = BindCount.DISPLAY_CONST;
         boolean multi = false;
         for (MapEntry<K, ListArray<V>> entry = map.getLastEntry();
              entry != null; entry = map.predecessor(entry)) {
             K elem2 = entry.key;
             Object val2 = AbstractTerm.getSkel(elem2);
-            Display ref2 = AbstractTerm.getDisplay(elem2);
+            BindCount[] ref2 = AbstractTerm.getDisplay(elem2);
             ListArray<V> list = entry.value;
             for (int i = list.size() - 1; i >= 0; i--) {
                 Object t4 = en.skel;
-                Display d2 = en.display;
+                BindCount[] d2 = en.display;
                 boolean ext = multi;
                 V elem = list.get(i);
                 Object val = AbstractTerm.getSkel(elem);
-                Display ref = AbstractTerm.getDisplay(elem);
+                BindCount[] ref = AbstractTerm.getDisplay(elem);
                 boolean ext2 = SpecialFind.pairValue(en.store.foyer.CELL_SUB,
                         val2, ref2, val, ref, en);
                 val = en.skel;
@@ -432,9 +432,9 @@ public final class SpecialSort extends AbstractSpecial {
                 multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
                         val, ref, t4, d2, en);
                 if (multi && ext)
-                    d2.remTab(en);
+                    BindCount.remTab(d2, en);
                 if (multi && ext2)
-                    ref.remTab(en);
+                    BindCount.remTab(ref, en);
                 multi = (multi || ext || ext2);
             }
         }
@@ -454,11 +454,11 @@ public final class SpecialSort extends AbstractSpecial {
      * @param res The preceding hash.
      * @return The hash value.
      */
-    public static int hashCode(Object t, Display d, int res) {
+    public static int hashCode(Object t, BindCount[] d, int res) {
         for (; ; ) {
             BindVar b1;
             while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                    (b1 = d[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
                 d = b1.display;
             }
@@ -485,13 +485,13 @@ public final class SpecialSort extends AbstractSpecial {
      * @param depth The requested depth.
      * @return True if ground up to depth, otherwise false.
      */
-    private static boolean termGround(Object t, Display d, int depth) {
+    private static boolean termGround(Object t, BindCount[] d, int depth) {
         for (; ; ) {
             if (depth == 0)
                 return true;
             BindVar b1;
             while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                    (b1 = d[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
                 d = b1.display;
             }
@@ -519,13 +519,13 @@ public final class SpecialSort extends AbstractSpecial {
      * @param res   The preceding hash.
      * @return The hash value.
      */
-    private static int termHash(Object t, Display d, int depth, int res) {
+    private static int termHash(Object t, BindCount[] d, int depth, int res) {
         for (; ; ) {
             if (depth == 0)
                 return res;
             BindVar b1;
             while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                    (b1 = d[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
                 d = b1.display;
             }

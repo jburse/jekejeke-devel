@@ -106,7 +106,6 @@
  */
 :- public compiled_ref/2.
 :- meta_predicate compiled_ref(?,-1).
-:- set_predicate_property(compiled_ref/2, sys_noexpand).
 :- special(compiled_ref/2, 'SpecialRef', 5).
 
 /**
@@ -118,8 +117,23 @@
 % clause_ref(-Term, -Goal, -Ref)
 :- public clause_ref/3.
 :- meta_predicate clause_ref(-1,0,?).
-:- set_predicate_property(clause_ref/3, sys_noexpand).
 :- special(clause_ref/3, 'SpecialRef', 6).
+
+/**
+ * clause_ref(C, R):
+ * The predicate succeeds with the user clauses that match
+ * C and the clause reference R of the user clause. The
+ * head predicate must be dynamic or thread local.
+ */
+:- public clause_ref/2.
+:- meta_predicate clause_ref(-1,?).
+clause_ref(C, _) :-
+   var(C),
+   throw(error(instantiation_error,_)).
+clause_ref((H :- B), R) :- !,
+   clause_ref(H, B, R).
+clause_ref(H, R) :-
+   clause_ref(H, true, R).
 
 /**
  * ref_property(R, P):

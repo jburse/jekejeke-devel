@@ -1,15 +1,12 @@
 package jekpro.frequent.basic;
 
-import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CacheSubclass;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.AbstractStore;
+import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.proxy.InterfaceSlots;
 import jekpro.tools.proxy.ProxyHandler;
@@ -86,11 +83,11 @@ public final class SpecialProxy extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_SYS_PROXY_HANDLER:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                     SkelAtom sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
-                    if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_SYS_PROXY_STATE:
@@ -102,7 +99,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
                     obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
-                    if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, obj, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
@@ -143,8 +140,8 @@ public final class SpecialProxy extends AbstractSpecial {
         if (InterfaceSlots.class.isAssignableFrom(clazz))
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROXY,
-                    SpecialSpecial.constructorToCallable(new Class[]{})));
-        Constructor constr = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INVOKE);
+                    SpecialForeign.constructorToCallable(new Class[]{})));
+        Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
         return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{handler});
     }
 
@@ -164,8 +161,8 @@ public final class SpecialProxy extends AbstractSpecial {
         if (!InterfaceSlots.class.isAssignableFrom(clazz))
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROXY,
-                    SpecialSpecial.constructorToCallable(new Class[]{Integer.TYPE})));
-        Constructor constr = SpecialSpecial.getDeclaredConstructor(clazz, SIG_INVOKE);
+                    SpecialForeign.constructorToCallable(new Class[]{Integer.TYPE})));
+        Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
         ProxyState state = handler.createState(size);
         return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{state});
     }
@@ -182,7 +179,7 @@ public final class SpecialProxy extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_CREATE,
                     EngineMessage.OP_PERMISSION_PROXY,
-                    new SkelAtom(scope.getPath())));
+                    scope.getPathAtom()));
         InterfaceProxyable proxable = (InterfaceProxyable) scope;
         ProxyHandler handler = proxable.getHandler();
         if (handler != null)
@@ -230,7 +227,7 @@ public final class SpecialProxy extends AbstractSpecial {
     public static SkelAtom classOrProxyName(Object obj, Engine en) {
         if (obj instanceof Class) {
             Class clazz = (Class) obj;
-            AbstractStore store = inChain(clazz.getClassLoader(), en);
+            Store store = inChain(clazz.getClassLoader(), en);
             if (store == null)
                 return null;
             String s1 = AbstractRuntime.classToString(clazz);
@@ -238,7 +235,7 @@ public final class SpecialProxy extends AbstractSpecial {
         }
         if (obj instanceof AbstractSource) {
             AbstractSource src = (AbstractSource) obj;
-            AbstractStore store = src.getStore();
+            Store store = src.getStore();
             String s1 = src.getFullName();
             return new SkelAtom(s1, store.user);
         }
@@ -251,10 +248,10 @@ public final class SpecialProxy extends AbstractSpecial {
      * @param what The class loader.
      * @param en   The engine.
      */
-    private static AbstractStore inChain(ClassLoader what, Engine en) {
-        AbstractStore[] stores = en.store.foyer.snapshotStores();
+    private static Store inChain(ClassLoader what, Engine en) {
+        Store[] stores = en.store.foyer.snapshotStores();
         for (int i = 0; i < stores.length; i++) {
-            AbstractStore store = stores[i];
+            Store store = stores[i];
             ClassLoader stop = (store.parent != null ? store.parent.loader : null);
             if (AbstractRuntime.inChain(store.loader, stop, what))
                 return store;

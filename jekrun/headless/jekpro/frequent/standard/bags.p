@@ -168,14 +168,20 @@ sys_run_values_rest(P, _, [], P).
 
 /**
  * findall(T, G, L): [ISO 8.10.1]
+ * findall(T, G, L, R):
  * The predicate first finds all the solutions to the goal G, whereby
  * collecting copies of the template T in a list. The predicate then
  * succeeds when L unifies with the list.
  */
-% findall(+Goal, +Template, -List)
+% findall(+Template, +Goal, -List)
 :- public findall/3.
 :- meta_predicate findall(?,0,?).
 :- special(findall/3, 'SpecialFind', 0).
+
+% findall(+Template, +Goal, -List, +List)
+:- public findall/4.
+:- meta_predicate findall(?,0,?,?).
+:- special(findall/4, 'SpecialFind', 1).
 
 /**
  * forall(A,B): [N208 8.10.4]
@@ -198,4 +204,4 @@ forall(A, B) :-
  */
 % copy_term(+Term, -Term)
 :- public copy_term/2.
-:- special(copy_term/2, 'SpecialFind', 1).
+:- special(copy_term/2, 'SpecialFind', 2).

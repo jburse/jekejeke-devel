@@ -86,16 +86,16 @@ simplify_term(T, T).
 
 /* Predefined term simplifications */
 /* (/\)/2 flattening */
-term_simplification(_ /\ A, _) :-
+simp:term_simplification(_ /\ A, _) :-
    var(A), !, fail.
-term_simplification(C /\ unit, C).
-term_simplification(A /\
-                    (  B /\ C), J) :-
+simp:term_simplification(C /\ unit, C).
+simp:term_simplification(A /\
+                         (  B /\ C), J) :-
    simplify_term(A /\ B, H),
    simplify_term(H /\ C, J).
-term_simplification(A /\ _, _) :-
+simp:term_simplification(A /\ _, _) :-
    var(A), !, fail.
-term_simplification(unit /\ C, C).
+simp:term_simplification(unit /\ C, C).
 
 /* (:-)/2 flattening */
 term_simplification((A :- _), _) :-
@@ -139,19 +139,25 @@ simplify_goal(G, G).
 goal_simplification((  A, _), _) :-
    var(A), !, fail.
 goal_simplification((  true, C), C).
-goal_simplification((  (  A, B), C), J) :-
-   simplify_goal((  B, C), H),
-   simplify_goal((  A, H), J).
 goal_simplification((  _, A), _) :-
    var(A), !, fail.
 goal_simplification((  C, true), C).
+goal_simplification((  U, C), J) :-
+   U = (A,B),
+   sys_replace_site(P, U, (B,C)),
+   simplify_goal(P, H),
+   sys_replace_site(Q, U, (A,H)),
+   simplify_goal(Q, J).
 
 /* (;)/2 flattening */
 goal_simplification((  A; _), _) :-
    var(A), !, fail.
-goal_simplification((  (  A; B); C), J) :-
-   simplify_goal((  B; C), H),
-   simplify_goal((  A; H), J).
+goal_simplification((  U; C), J) :-
+   U = (A;B),
+   sys_replace_site(P, U, (B;C)),
+   simplify_goal(P, H),
+   sys_replace_site(Q, U, (A;H)),
+   simplify_goal(Q, J).
 
 /*******************************************************/
 /* Rest Simplify                                       */

@@ -62,8 +62,8 @@ public interface InterfaceReference {
      * <p>The result is returned in the skeleton and display.</p>
      *
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
      * @return True if new display is returned, otherwise false.
+     * @throws EngineMessage Shit happens.
      */
     boolean clauseRef(Engine en)
             throws EngineMessage;

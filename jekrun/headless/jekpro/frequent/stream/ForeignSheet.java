@@ -1,15 +1,13 @@
 package jekpro.frequent.stream;
 
 import jekpro.frequent.system.DomOpts;
-import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.format.DomElement;
 import matula.util.format.AbstractDom;
+import matula.util.format.DomElement;
 import matula.util.format.DomWriter;
 import matula.util.regex.ScannerError;
-import matula.util.system.OpenOpts;
 import matula.util.transform.*;
 
 import java.io.IOException;
@@ -52,12 +50,12 @@ public final class ForeignSheet {
     /**
      * <p>Digest an XSD schema.</p>
      *
-     * @param inter   The interpreter.
-     * @param xs The XSD schema.
-     * @param de The DOM element.
-     * @throws InterpreterMessage Validation error.
+     * @param inter The interpreter.
+     * @param xs    The XSD schema.
+     * @param de    The DOM element.
+     * @throws InterpreterMessage   Validation error.
      * @throws InterpreterException Syntax error.
-     * @throws IOException IO error.
+     * @throws IOException          IO error.
      */
     public static void sysXsdDigest(Interpreter inter,
                                     XSDSchema xs, DomElement de)

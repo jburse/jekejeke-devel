@@ -132,7 +132,7 @@ random(M, N) :-
       sysRandomNext('Random','Number')).
 
 /****************************************************************/
-/* Conter Object                                                */
+/* Counter Object                                               */
 /****************************************************************/
 
 /**
@@ -152,3 +152,36 @@ random(M, N) :-
 :- public counter_next/2.
 :- virtual counter_next/2.
 :- foreign(counter_next/2, 'Counter', next).
+
+/****************************************************************/
+/* Advanced Predicates                                          */
+/****************************************************************/
+
+/**
+ * random_permutation(L, R):
+ * The predicate succeeds in R with a random permutation of L.
+ */
+% random_permutation(+List, -List)
+:- public random_permutation/2.
+random_permutation(L, R) :-
+   add_random_keys(L, H),
+   keysort(H, J),
+   remove_keys(J, R).
+
+% add_random_keys(+List, -Pairs)
+:- private add_random_keys/2.
+add_random_keys(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+add_random_keys([X|L], [K-X|R]) :- !,
+   K is random,
+   add_random_keys(L, R).
+add_random_keys([], []) :- !.
+add_random_keys(X, _) :-
+   throw(error(type_error(list,X),_)).
+
+% remove_keys(+Pairs, -List)
+:- private remove_keys/2.
+remove_keys([_-X|L], [X|R]) :-
+   remove_keys(L, R).
+remove_keys([], []).
