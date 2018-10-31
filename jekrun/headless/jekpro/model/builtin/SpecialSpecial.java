@@ -3,7 +3,10 @@ package jekpro.model.builtin;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindCount;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
 
@@ -94,7 +97,8 @@ public final class SpecialSpecial extends AbstractSpecial {
                 case SPECIAL_SYS_NEUTRAL_PREDICATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                    Predicate.indicatorToPredicateDefined(temp[0],
+                            ref, en, CachePredicate.MASK_CACH_CRTE);
                     return en.getNextRaw();
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

@@ -2,7 +2,10 @@ package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.*;
+import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.Branch;
+import jekpro.model.builtin.PropertyIndicator;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
@@ -64,9 +67,9 @@ public final class SpecialLoad extends AbstractSpecial {
     private final static int SPECIAL_SYS_SHOW_PROVABLE_SOURCE = 3;
     private final static int SPECIAL_SYS_SHOW_SYNTAX_SOURCE = 4;
     private final static int SPECIAL_SYS_SHOW_BASE = 5;
-    private final static int SPECIAL_SYS_REGISTER_FILE = 6;
-    private final static int SPECIAL_SYS_MODULE_ACTION = 7;
-    private final static int SPECIAL_SYS_PEEK_STACK = 8;
+    private final static int SPECIAL_SYS_HAS_CLAUSE = 6;
+    private final static int SPECIAL_SYS_SHORT_BASE = 7;
+    private final static int SPECIAL_SYS_REGISTER_FILE = 8;
 
     public static final int MASK_SHOW_NANO = 0x00000001;
     public static final int MASK_SHOW_NRBD = 0x00000002;
@@ -126,8 +129,11 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_PROVABLE_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
+
                 Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                if (pick == null)
+                    return false;
+
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 source = source.getStore().getSource(sa.fun);
@@ -135,6 +141,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     return false;
                 if (pick.getDef(source) == null)
                     return false;
+
                 Object obj = en.visor.curoutput;
                 FactoryAPI.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
@@ -153,7 +160,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Operator oper = SpecialOper.operToSyntax(temp[0], ref, en);
-                Operator.checkExistentSyntax(oper, temp[0], ref);
+                if (oper == null)
+                    return false;
+
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 source = source.getStore().getSource(sa.fun);
@@ -178,14 +187,17 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
+
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
+
                 obj = en.visor.curoutput;
                 FactoryAPI.checkTextWrite(obj);
                 wr = (Writer) obj;
+
                 pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en.store);
                 pw.setSource(en.store.user);
@@ -197,29 +209,48 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.listBase(pw, source, en);
                 newLineFlush(wr);
                 return en.getNextRaw();
+            case SPECIAL_SYS_HAS_CLAUSE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                if (pick == null)
+                    return false;
+
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+                if (pick.getDef(source) == null)
+                    return false;
+
+                if (!hasClause(pick, source, en))
+                    return false;
+                return en.getNextRaw();
+            case SPECIAL_SYS_SHORT_BASE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+
+                obj = en.visor.curoutput;
+                FactoryAPI.checkTextWrite(obj);
+                wr = (Writer) obj;
+
+                AbstractSource.showShortName(wr, source);
+                newLineFlush(wr);
+                return en.getNextRaw();
             case SPECIAL_SYS_REGISTER_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return en.getNextRaw();
-            case SPECIAL_SYS_MODULE_ACTION:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                LoadForce opts2 = new LoadForce();
-                opts2.decodeLoadForce(temp[1], ref, en);
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                opts2.makeForce(source, sa.fun, en);
-                return en.getNextRaw();
-            case SPECIAL_SYS_PEEK_STACK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                AbstractSource src = en.visor.peekStack();
-                if (src == null || !en.unifyTerm(temp[0], ref,
-                        src.getPathAtom(), BindCount.DISPLAY_CONST))
-                    return false;
-                return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -256,7 +287,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_HIDE) != 0)
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_NOCL) != 0 &&
-                        !noClause(pick, en))
+                        hasClause(pick, source, en))
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
                         sameVisible(source, pick, en))
@@ -465,16 +496,29 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
-     * <p>Check whether the predicate is defined and has no clauses.</p>
+     * <p>Check whether the predicate has some clauses.</p>
      *
-     * @param pick The predicate.
-     * @return True if the predicate has no clauses, otherwise false.
+     * @param pick   The predicate.
+     * @param source The scope.
+     * @param en     The engine.
+     * @return True if the predicate has some clauses, otherwise false.
+     * @throws EngineMessage Shit happens.
      */
-    private static boolean noClause(Predicate pick, Engine en) {
+    private static boolean hasClause(Predicate pick, AbstractSource source,
+                                     Engine en)
+            throws EngineMessage {
         AbstractDelegate fun = pick.del;
         if (!(fun instanceof AbstractDefined))
             return false;
-        return ((AbstractDefined) fun).lengthClauses(en) == 0;
+        Clause[] list = ((AbstractDefined) fun).listClauses(en);
+        for (int i = 0; i < list.length; i++) {
+            Clause clause = list[i];
+            SkelAtom sa = Frame.callableToName(clause.head);
+            if (source != sa.scope)
+                continue;
+            return true;
+        }
+        return false;
     }
 
     /**

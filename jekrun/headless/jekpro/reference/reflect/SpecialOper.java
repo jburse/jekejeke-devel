@@ -106,7 +106,7 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_SYS_NEUTRAL_OPER:
-                Object[]  temp = ((SkelCompound) en.skel).args;
+                Object[] temp = ((SkelCompound) en.skel).args;
                 BindCount[] ref = en.display;
                 Operator.operToOperatorDefined(temp[0], ref, en, true);
                 return en.getNextRaw();
@@ -1041,7 +1041,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param en The engine.
      */
     private static Object propertyToSyntax(Object t, BindCount[] d,
-                                          Engine en)
+                                           Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
         Operator[] vals = idxPropOper(t, d, prop, en);

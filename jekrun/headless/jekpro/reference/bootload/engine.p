@@ -61,6 +61,7 @@
 
 :- use_package(foreign(jekpro/reference/bootload)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/tools/term)).
 
 :- module(user, []).
 :- use_module(library(stream/console)).
@@ -182,7 +183,9 @@ end_module :-
    set_prolog_flag(sys_last_pred, null).
 
 :- private sys_module_action/2.
-:- special(sys_module_action/2, 'SpecialLoad', 7).
+:- foreign(sys_module_action/2, 'ForeignEngine',
+      sysModuleAction('Interpreter','TermAtomic','Object')).
 
 :- private sys_peek_stack/1.
-:- special(sys_peek_stack/1, 'SpecialLoad', 8).
+:- foreign(sys_peek_stack/1, 'ForeignEngine',
+      sysPeekStack('Interpreter')).

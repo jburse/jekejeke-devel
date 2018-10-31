@@ -82,6 +82,9 @@
 :- op(1150, fy, public).
 :- set_oper_property(prefix(public), visible(public)).
 
+:- op(1150, fy, override).
+:- set_oper_property(prefix(override), visible(public)).
+
 /*************************************************************/
 /* Source Properties                                         */
 /*************************************************************/

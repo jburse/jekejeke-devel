@@ -86,7 +86,8 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_ENSURE_SHARED_STATIC:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 BindCount[] ref = en.display;
-                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialPred.defineStatic(pick, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_CURRENT_PREDICATE:
@@ -527,7 +528,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param en The engine.
      */
     private static Object propertyToProvables(Object t, BindCount[] d,
-                                             Engine en)
+                                              Engine en)
             throws EngineMessage {
         StoreKey prop = Frame.callableToStoreKey(t);
         Predicate[] vals = idxPropPred(t, d, prop, en);

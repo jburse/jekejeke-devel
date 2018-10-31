@@ -56,12 +56,14 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- op(1150, fy, override).
-:- set_oper_property(prefix(override), visible(public)).
-:- op(1150, fy, multifile).
-:- set_oper_property(prefix(multifile), visible(public)).
 :- op(1150, fy, discontiguous).
 :- set_oper_property(prefix(discontiguous), visible(public)).
+
+:- op(1150, fy, sys_notrace).
+:- set_oper_property(prefix(sys_notrace), visible(public)).
+
+:- op(1150, fy, multifile).
+:- set_oper_property(prefix(multifile), visible(public)).
 
 /***************************************************************/
 /* Consult Predicates                                          */
@@ -217,7 +219,7 @@ include(Path) :-
 
 /**
  * discontiguous I, ...: [ISO 7.4.2.3]
- * The predicate sets the predicate indicator I to discontinuous.
+ * The predicate sets the predicate indicator I to discontiguous.
  */
 % discontiguous(+Indicators)
 discontiguous [P|Q] :- !,
@@ -245,6 +247,35 @@ sys_discontiguous(I) :-
    sys_neutral_predicate(I),
    set_predicate_property(I, (discontiguous C)).
 :- set_predicate_property(sys_discontiguous/1, visible(private)).
+
+/**
+ * sys_notrace P, ...:
+ * The predicate sets the predicate P to sys_notrace.
+ */
+% sys_notrace +Indicators
+sys_notrace [P|Q] :- !,
+   sys_sys_notrace(P),
+   (sys_notrace Q).
+sys_notrace P,Q :- !,
+   sys_sys_notrace(P),
+   (sys_notrace Q).
+sys_notrace [] :- !.
+sys_notrace P :-
+   sys_sys_notrace(P).
+:- set_predicate_property((sys_notrace)/1, visible(public)).
+
+% sys_sys_notrace(+Indicator)
+sys_sys_notrace(V) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+sys_sys_notrace(D) :-
+   sys_declaration_indicator(D, I), !,
+   sys_sys_notrace(I),
+   call(D).
+sys_sys_notrace(I) :-
+   sys_neutral_predicate(I),
+   set_predicate_property(I, sys_notrace).
+:- set_predicate_property(sys_sys_notrace/1, visible(private)).
 
 /**
  * multifile I, ...:
@@ -296,6 +327,8 @@ sys_multifile(I) :-
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator((discontiguous D), I) :-
    sys_declaration_indicator(D, I).
+sys_declaration_indicator((sys_notrace D), I) :-
+   sys_declaration_indicator(D, I).
 sys_declaration_indicator((multifile D), I) :-
    sys_declaration_indicator(D, I).
 
@@ -339,7 +372,8 @@ listing(_).
 sys_listing2(I) :-
    sys_listing_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_show_base(U),
+   sys_listing_has_clause(I, U),
+   sys_short_base(U),
    sys_listing_show(I, U), fail.
 sys_listing2(_).
 :- set_predicate_property(sys_listing2/1, visible(private)).
@@ -395,6 +429,22 @@ sys_listing_item_idx(U, I) :-
 :- set_predicate_property(sys_listing_item_idx/2, visible(private)).
 
 /**
+ * sys_listing_has_clause(I, U):
+ * The predicate succeeds if the listable indicator I
+ * has listable clauses.
+ */
+% sys_listing_has_clause(+Indicator, +Source)
+sys_listing_has_clause(I, _) :-
+   sys_oper_indicator(I), !.
+sys_listing_has_clause(I, _) :-
+   predicate_property(I, built_in), !.
+sys_listing_has_clause(I, _) :-
+   predicate_property(I, static), !.
+sys_listing_has_clause(I, U) :-
+   sys_has_clause(I, U).
+:- set_predicate_property(sys_listing_has_clause/2, visible(public)).
+
+/**
  * sys_listing_show(I, U):
  * The predicate succeeds in showing the usage source U
  * slice of the listable indicator I.
@@ -417,16 +467,20 @@ sys_oper_indicator(prefix(_)).
 sys_oper_indicator(postfix(_)).
 :- set_predicate_property(sys_oper_indicator/1, visible(private)).
 
-% also used by automatic.p in debugger
 :- special(sys_show_provable_source/2, 'SpecialLoad', 3).
 :- set_predicate_property(sys_show_provable_source/2, visible(public)).
 
 :- special(sys_show_syntax_source/2, 'SpecialLoad', 4).
-:- set_predicate_property(sys_show_syntax_source/2, visible(public)).
+:- set_predicate_property(sys_show_syntax_source/2, visible(private)).
 
-% also used by automatic.p in debugger
 :- special(sys_show_base/1, 'SpecialLoad', 5).
 :- set_predicate_property(sys_show_base/1, visible(public)).
+
+:- special(sys_has_clause/2, 'SpecialLoad', 6).
+:- set_predicate_property(sys_has_clause/2, visible(private)).
+
+:- special(sys_short_base/1, 'SpecialLoad', 7).
+:- set_predicate_property(sys_short_base/1, visible(public)).
 
 /****************************************************************/
 /* Resource Handling                                            */
@@ -439,4 +493,4 @@ sys_oper_indicator(postfix(_)).
  * unregistered when its call-site relative source is unloaded.
  */
 % sys_register_file(+Pin)
-:- special(sys_register_file/1, 'SpecialLoad', 6).
+:- special(sys_register_file/1, 'SpecialLoad', 8).

@@ -5,6 +5,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -106,7 +107,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_CONSTRUCTOR:
@@ -128,7 +130,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_GETTER:
@@ -146,7 +149,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_SETTER:
@@ -164,7 +168,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_FUN:
@@ -183,7 +188,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_FOREIGN_CONST:
@@ -201,7 +207,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, true);
+                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
                 return en.getNextRaw();
             default:

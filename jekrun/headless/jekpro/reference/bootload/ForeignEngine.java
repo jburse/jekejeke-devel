@@ -5,16 +5,19 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
+import jekpro.model.rope.LoadForce;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.FactoryAPI;
-import jekpro.tools.term.Lobby;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
@@ -58,7 +61,6 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignEngine {
-    private final static int MAX_UNSIGNED_BYTE = 255;
 
     /**
      * <p>Retrieve the list of flags.</p>
@@ -294,6 +296,52 @@ public final class ForeignEngine {
         Locale locale = en.store.foyer.locale;
         Properties descr = brand.getDescriptionLang(locale);
         return descr.getProperty("company");
+    }
+
+    /*************************************************************/
+    /* Locale Modules                                            */
+    /*************************************************************/
+
+    /**
+     * <p>Performe a module action.</p>
+     *
+     * @param inter The interpreter.
+     * @param obj   The source name.
+     * @param opt   The option list.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void sysModuleAction(Interpreter inter,
+                                       TermAtomic obj, Object opt)
+            throws InterpreterMessage, InterpreterException {
+        try {
+            Engine engine = (Engine) inter.getEngine();
+            LoadForce opts2 = new LoadForce();
+            opts2.decodeLoadForce(
+                    AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), engine);
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(
+                    AbstractTerm.getSkel(obj),
+                    AbstractTerm.getDisplay(obj));
+            AbstractSource source = (sa.scope != null ? sa.scope : engine.store.user);
+            opts2.makeForce(source, sa.fun, engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
+    }
+
+    /**
+     * <p>Retrieve the top of the module stack.</p>
+     *
+     * @param inter The interpreter.
+     * @return The top of the module stack, or null.
+     */
+    public static TermAtomic sysPeekStack(Interpreter inter) {
+        Engine engine = (Engine) inter.getEngine();
+        AbstractSource src = engine.visor.peekStack();
+        return (src != null ? new TermAtomic(src.getPathAtom()) : null);
     }
 
 }

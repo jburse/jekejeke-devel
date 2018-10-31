@@ -87,14 +87,8 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(400, fx, ../).
+:- sys_op(200, fy, ../).
 :- set_oper_property(prefix(../), visible(public)).
-
-:- sys_op(400, fx, ../../).
-:- set_oper_property(prefix(../../), visible(public)).
-
-:- sys_op(400, fx, ../../../).
-:- set_oper_property(prefix(../../../), visible(public)).
 
 /****************************************************************/
 /* Class Path Modification & Access                             */
@@ -426,12 +420,9 @@ sys_path_to_atom1(Dir/Name, Path) :- !,
    sys_path_to_atom1(Dir, Y),
    sys_atom_concat(Y, /, H),
    sys_atom_concat(H, Name, Path).
-sys_path_to_atom1(../../../Name, Path) :- !,
-   sys_atom_concat(../../../, Name, Path).
-sys_path_to_atom1(../../Name, Path) :- !,
-   sys_atom_concat(../../, Name, Path).
-sys_path_to_atom1(../Name, Path) :- !,
-   sys_atom_concat(../, Name, Path).
+sys_path_to_atom1(../Dir, Path) :- !,
+   sys_path_to_atom1(Dir, Y),
+   sys_atom_concat(../, Y, Path).
 sys_path_to_atom1(X, Path) :-
    sys_atom(X), !,
    X = Path.
@@ -448,18 +439,12 @@ sys_path_to_atom2(Path, Dir/Name) :-
    last_sub_atom(Path, Before, _, After, /),
    sub_atom(Path, 0, Before, X),
    \+ X = ..,
-   \+ X = ../..,
-   \+ X = ../../.., !,
+   \+ last_sub_atom(X, _, _, /..), !,
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
-sys_path_to_atom2(Path, ../../../Name) :-
-   sub_atom(Path, 0, _, After, ../../../), !,
-   last_sub_atom(Path, After, 0, Name).
-sys_path_to_atom2(Path, ../../Name) :-
-   sub_atom(Path, 0, _, After, ../../), !,
-   last_sub_atom(Path, After, 0, Name).
-sys_path_to_atom2(Path, ../Name) :-
+sys_path_to_atom2(Path, ../Dir) :-
    sub_atom(Path, 0, _, After, ../), !,
-   last_sub_atom(Path, After, 0, Name).
+   last_sub_atom(Path, After, 0, X),
+   sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Atom, Atom).
 :- set_predicate_property(sys_path_to_atom2/2, visible(private)).

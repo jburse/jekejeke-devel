@@ -243,7 +243,7 @@ public abstract class AbstractAuto extends AbstractSource {
             throws EngineException, EngineMessage {
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
-                arity, en, true);
+                arity, en, CachePredicate.MASK_CACH_CRTE);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPU);
         pick.addDef(src, Predicate.MASK_TRCK_VSPU, en);
