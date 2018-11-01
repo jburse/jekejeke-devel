@@ -2,7 +2,7 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 
 /**
  * <p>Provides some constants.</p>
@@ -65,11 +65,11 @@ public class SpecialHelper extends AbstractSpecial {
         switch (id) {
             case EVALUABLE_LOG2:
                 en.skel = DOUBLE_LOG2;
-                en.display = Display.DISPLAY_CONST;
+                en.display = BindCount.DISPLAY_CONST;
                 return false;
             case EVALUABLE_LOG10:
                 en.skel = DOUBLE_LOG10;
-                en.display = Display.DISPLAY_CONST;
+                en.display = BindCount.DISPLAY_CONST;
                 return false;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);

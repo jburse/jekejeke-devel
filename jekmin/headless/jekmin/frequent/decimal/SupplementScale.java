@@ -2,7 +2,7 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -79,14 +79,14 @@ public class SupplementScale extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_SCALE:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    Display ref = en.display;
+                    BindCount[] ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    Display d = en.display;
+                    BindCount[] d = en.display;
                     Number alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = Integer.valueOf(TermAtomic.scale(alfa));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_UNSCALED_VALUE:
                     temp = ((SkelCompound) en.skel).args;
@@ -95,9 +95,9 @@ public class SupplementScale extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_NEW_DECIMAL:
                     temp = ((SkelCompound) en.skel).args;
@@ -106,15 +106,15 @@ public class SupplementScale extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = newDecimal(alfa, x);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_PRECISION:
                     temp = ((SkelCompound) en.skel).args;
@@ -123,9 +123,9 @@ public class SupplementScale extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = Integer.valueOf(precision(alfa));
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_REQUESTED:
                     temp = ((SkelCompound) en.skel).args;
@@ -134,9 +134,9 @@ public class SupplementScale extends AbstractSpecial {
                     d = en.display;
                     MathContext mc = SpecialArith.derefAndCastContext(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     en.skel = Integer.valueOf(mc.getPrecision());
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_NEW_CONTEXT:
                     temp = ((SkelCompound) en.skel).args;
@@ -145,11 +145,11 @@ public class SupplementScale extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        d.remTab(en);
+                        BindCount.remTab(d, en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     x = SpecialEval.castIntValue(alfa);
                     en.skel = newContext(x);
-                    en.display = Display.DISPLAY_CONST;
+                    en.display = BindCount.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
