@@ -1,20 +1,23 @@
 /**
- * A call back can replace the default debugger prompt. The instrumented
- * code of a clause automatically checks for debugging conditions.
- * The typical conditions are those from debug mode or trace mode
- * described in the previous section. When the corresponding condition
- * is met, the interface part of the debugger will be invoked. In
- * particular the interpreter will then call the system
+ * A call back can replace the default debugger user interface. The
+ * instrumented code of a clause automatically checks for debugging
+ * conditions. The typical conditions are those from debug mode, spy
+ * points and break points described in the previous section. When the
+ * corresponding condition is met, the interpreter will call the
  * predicate trace_goal/2.
  *
  * The system predicate trace_goal/2 is customizable by the end-user
  * via additional rules for the multi-file predicate goal_tracing/2.
  * If the additional multi-file rules fail, the system predicate will
- * invoke the default debugger user interface. The default debugger
- * user interface will use the system predicate expose_goal/3 to apply
- * some cosmetics before ports or ancestors are displayed. This
- * predicate is customizable by the end-user via additional rules for
- * the multi-file predicate goal_exposing/3.
+ * invoke the default debugger user interface. The behaviour of the
+ * default debugger user interface can be further configured by the
+ * predicate leash/1.
+ *
+ * Predicates that have the sys_notrace predicate property set can also
+ * meet some condition, but are not display by the default debugger user
+ * interface. A couple of predicates that resemble commands, e.g.
+ * listing/1, trace/1, etc., have the sys_notrace predicate property
+ * by set, so that they do not clutter interactive debugging.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -45,11 +48,14 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- use_package(foreign(jekdev/reference/debug)).
+
 :- module(user, []).
 
 /**
  * goal_tracing(P, F):
- * The predicate can be used to define a custom debugger user interface.
+ * The predicate can be used to define a custom debugger call back
+ * for the port P and the frame F.
  */
 :- public goal_tracing/2.
 :- multifile goal_tracing/2.
@@ -57,7 +63,7 @@
 
 /**
  * trace_goal(P, F):
- * The system predicate invokes the debugger user interface for
+ * The predicate invokes the current debugger call back for
  * the port P and the frame F.
  */
 % trace_goal(+Port, +Frame)
@@ -66,23 +72,30 @@ trace_goal(P, F) :-
    goal_tracing(P, F), !.
 trace_goal(P, F) :-
    sys_trace(P, F).
-:- set_predicate_property(trace_goal/2, sys_notrace).
 
 /**
- * goal_exposing(I, O, C):
- * The predicate can be used to define a custom port and goal cosmetics.
+ * leash(L):
+ * Leash the ports that are listed in L, unleash the ports that are
+ * not listed in L. When prompted, unleashed ports do not await user
+ * interaction but simply continue. The predicate accepts the same
+ * mnemonics as the predicate visible/1.
  */
-:- public goal_exposing/3.
-:- multifile goal_exposing/3.
-:- static goal_exposing/3.
+% leash(+AtomOrList)
+:- public leash/1.
+leash(Name) :-
+   var(Name),
+   throw(error(instantiation_error,_)).
+leash(Name) :-
+   sys_name_flags(Name, Flags), !,
+   set_prolog_flag(sys_leash, Flags).
+leash(Flags) :-
+   set_prolog_flag(sys_leash, Flags).
+:- set_predicate_property(leash/1, sys_notrace).
 
 /**
- * expose_goal(I, O, C):
- * The predicate applies port and goal cosmetics to I and unifies the
- * result with O. The desired context unifies with C.
+ * sys_trace(P, F):
+ * The default trace hook.
  */
-% expose_goal(+PortGoal, -PortGoal, -Context)
-:- public expose_goal/3.
-expose_goal(I, O, C) :-
-   goal_exposing(I, O, C), !.
-expose_goal(P-I, P-I, 0).
+% sys_trace(+Atom, +Frame)
+:- private sys_trace/2.
+:- special(sys_trace/2, 'SpecialDefault', 6).

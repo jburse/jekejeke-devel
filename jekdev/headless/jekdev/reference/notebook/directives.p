@@ -41,6 +41,7 @@
  */
 
 :- package(library(jekdev/reference/notebook)).
+:- use_package(foreign(jekdev/reference/notebook)).
 
 :- module(directives, []).
 :- use_module(library(stream/console)).
@@ -60,6 +61,14 @@ notebook :-
    sys_parent_goal(G),
    sys_context_property(G, C),
    set_source_property(C, sys_source_annotation((makedot|filler))).
+
+/**
+ * sys_parent_goal(B):
+ * The predicate succeeds in B with the call parent of the current clause.
+ */
+% sys_parent_goal(-Term)
+:- public sys_parent_goal/1.
+:- special(sys_parent_goal/1, 'SpecialDirectives', 0).
 
 /**
  * ?- G:

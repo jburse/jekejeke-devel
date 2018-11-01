@@ -57,9 +57,8 @@ current_syntax(I) :-
    sys_current_syntax(L),
    sys_member(I, L).
 
-% already defined in body.p of runtime
-% :- private sys_current_syntax/1.
-% :- special(sys_current_syntax/1, 'SpecialSyntax', 0).
+:- private sys_current_syntax/1.
+:- special(sys_current_syntax/1, 'SpecialSyntax', 0).
 
 :- private sys_current_syntax_chk/1.
 :- special(sys_current_syntax_chk/1, 'SpecialSyntax', 1).

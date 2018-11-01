@@ -110,7 +110,7 @@ generated(_).
 generated2(I) :-
    sys_automatic_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_show_base(U),
+   sys_short_base(U),
    sys_show_provable_source(I, U), fail.
 generated2(_).
 

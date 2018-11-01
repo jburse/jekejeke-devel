@@ -50,7 +50,7 @@
 
 /**
  * tdebug:
- * The predicate switches the engine to the debug mode.
+ * The predicate switches the engine to the on mode.
  */
 :- public tdebug/0.
 tdebug :-
@@ -68,7 +68,7 @@ ttrace :-
 
 /**
  * tskip:
- * The predicate switches the engine to the skip mode.
+ * The predicate switches the engine to the step over mode.
  */
 :- public tskip/0.
 tskip :-
@@ -77,7 +77,7 @@ tskip :-
 
 /**
  * tout:
- * The predicate switchesthe engine  to the out mode.
+ * The predicate switches the engine to the step out mode.
  */
 :- public tout/0.
 tout :-
@@ -98,10 +98,13 @@ tnodebug :-
  * Leash the ports of the engine that are listed in L, unleash the
  * of the engine ports that are not listed in L. When prompted,
  * unleashed ports do not await user interaction but simply continue.
- * The predicate accepts the same mnemonics as the predicate leash/1.
+ * The predicate accepts the same mnemonics as the predicate visible/1.
  */
 % tleash(+AtomOrList)
 :- public tleash/1.
+tleash(Name) :-
+   var(Name),
+   throw(error(instantiation_error,_)).
 tleash(Name) :-
    sys_name_flags(Name, Flags), !,
    set_prolog_flag(sys_tleash, Flags).
@@ -110,14 +113,17 @@ tleash(Flags) :-
 :- set_predicate_property(leash/1, sys_notrace).
 
 /**
- * visible(L):
+ * tvisible(L):
  * Show the ports of the engine that are listed in L, hide the ports
- * of the engine that are not listed in L. When traced, hidden ports
- * are not prompted but simply continue. The predicate accepts the same
- * mnemonics as the predicate leash/1.
+ * of the engine that are not listed in L. In debug mode, hidden ports
+ * are not further debugged but simply continue. The predicate accepts
+ * the same mnemonics as the predicate visible/1.
  */
 % tvisible(+AtomOrList)
 :- public tvisible/1.
+tvisible(Name) :-
+   var(Name),
+   throw(error(instantiation_error,_)).
 tvisible(Name) :-
    sys_name_flags(Name, Flags), !,
    set_prolog_flag(sys_tvisible, Flags).
@@ -165,6 +171,7 @@ tdebugging.
 % tspy(+Indicator)
 :- public tspy/1.
 :- special(tspy/1, 'SpecialAttach', 0).
+:- set_predicate_property(tspy/1, sys_notrace).
 
 /**
  * tnospy(P):
@@ -173,6 +180,7 @@ tdebugging.
 % nospy(+Indicator)
 :- public tnospy/1.
 :- special(tnospy/1, 'SpecialAttach', 1).
+:- set_predicate_property(tnospy/1, sys_notrace).
 
 /**
  * tspying(P):
@@ -197,6 +205,7 @@ tspying(I) :-
 tbreak(P, L) :-
    absolute_file_name(P, Q),
    sys_tbreak(Q, L).
+:- set_predicate_property(tbreak/2, sys_notrace).
 
 % sys_tbreak(+Pin, +Integer)
 :- private sys_tbreak/2.
@@ -211,6 +220,7 @@ tbreak(P, L) :-
 tnobreak(P, L) :-
    absolute_file_name(P, Q),
    sys_tnobreak(Q, L).
+:- set_predicate_property(tnobreak/2, sys_notrace).
 
 % sys_tnobreak(+Pin, +Integer)
 :- private sys_tnobreak/2.

@@ -120,3 +120,31 @@ redirect_output(O) :-
 fetch_output(D) :-
    current_output(T),
    memory_get(T, D).
+
+/**
+ * try_call_finally(S, G, T):
+ * The predicate succeeds whenever G succeeds. Calling S on the
+ * call and redo port, and calling T on the exit, fail and exception
+ * port. The predicate can also handle reserved exception.
+ */
+% try_call_finally(+Goal, +Goal, +Goal)
+:- private try_call_finally/3.
+:- meta_predicate try_call_finally(0,0,0).
+try_call_finally(S, G, T) :-
+   sys_or_fail(S, T),
+   sys_trap(G, E, sys_before_ball(T, E)),
+   sys_or_fail(T, S).
+
+% sys_or_fail(+Goal, +Goal)
+:- private sys_or_fail/2.
+:- meta_predicate sys_or_fail(0,0).
+sys_or_fail(S, _) :- S.
+sys_or_fail(_, T) :- T, fail.
+:- set_predicate_property(sys_or_fail/2, visible(private)).
+
+% sys_before_ball(+Goal, +Term)
+:- private sys_before_ball/2.
+:- meta_predicate sys_before_ball(0,?).
+sys_before_ball(T, E) :- T,
+   sys_raise(E).
+:- set_predicate_property(sys_before_ball/2, visible(private)).

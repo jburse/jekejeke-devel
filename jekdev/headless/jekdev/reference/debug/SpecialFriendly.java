@@ -4,11 +4,8 @@ import jekdev.model.bugger.ClauseTrace;
 import jekdev.model.bugger.GoalTrace;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.SpecialBody;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Predicate;
-import jekpro.model.molec.Display;
+import jekpro.model.inter.*;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -19,6 +16,7 @@ import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.SkelAtom;
@@ -62,9 +60,8 @@ import java.io.Writer;
 public final class SpecialFriendly extends AbstractSpecial {
     private final static int MASK_FRIEND_DEBUG = 0x00000001;
 
-    private final static int SPECIAL_SYS_INTERMEDIATE_BASE = 0;
-    private final static int SPECIAL_SYS_FRIENDLY = 1;
-    private final static int SPECIAL_SYS_INSTRUMENTED = 2;
+    private final static int SPECIAL_SYS_FRIENDLY = 0;
+    private final static int SPECIAL_SYS_INSTRUMENTED = 1;
 
     private final static String CODE_NEW_BIND = " new_bind";
     private final static String CODE_DISPOSE_BIND = " dispose_bind";
@@ -105,36 +102,24 @@ public final class SpecialFriendly extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_INTERMEDIATE_BASE:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                AbstractSource source = (sa.scope!=null?sa.scope:en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                Object obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
-                Writer wr = (Writer) obj;
-                /* show source short name */
-                AbstractSource.showShortName(wr, source);
-                SpecialLoad.newLineFlush(wr);
-                return en.getNextRaw();
             case SPECIAL_SYS_FRIENDLY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Predicate pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope!=null?sa.scope:en.store.user);
+                Object[] temp = ((SkelCompound) en.skel).args;
+                BindCount[] ref = en.display;
+                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                if (pick==null)
+                    return false;
+
+                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                AbstractSource source = (sa.scope!=null?sa.scope:en.store.user);
                 source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
                 if (pick.getDef(source) == null)
                     return false;
-                obj = en.visor.curoutput;
+
+                Object obj = en.visor.curoutput;
                 FactoryAPI.checkTextWrite(obj);
-                wr = (Writer) obj;
+                Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en.store);
                 pw.setSource(en.store.user);
@@ -143,11 +128,14 @@ public final class SpecialFriendly extends AbstractSpecial {
                 SpecialFriendly.intermediatePredicate(pw, pick, source, 0, en);
                 SpecialLoad.newLineFlush(wr);
                 return en.getNextRaw();
+
             case SPECIAL_SYS_INSTRUMENTED:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialBody.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                if (pick==null)
+                    return false;
+
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 source = (sa.scope!=null?sa.scope:en.store.user);
                 source = source.getStore().getSource(sa.fun);
@@ -192,14 +180,14 @@ public final class SpecialFriendly extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = SpecialBody.callableToName(clause.head);
+            SkelAtom sa = Frame.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setOffset(-1);
-            Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
+            BindCount[] ref = SpecialLoad.showClause(pw, t, clause.vars, en,
                     SpecialLoad.MASK_SHOW_NANO + SpecialLoad.MASK_SHOW_NRBD);
             pw.setFlags(PrologWriter.FLAG_QUOT);
             pw.setSpez(PrologWriter.SPEZ_META);
@@ -247,7 +235,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws IOException IO error.
      */
     private static int intermediateNewBind(Object t, int lastalloc, int endalloc,
-                                           PrologWriter pw, Display ref,
+                                           PrologWriter pw, BindCount[] ref,
                                            int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
@@ -296,7 +284,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      */
     private static int intermediateDisposeBind(Object t, int lastgc, int endgc,
                                                Clause clause,
-                                               PrologWriter pw, Display ref,
+                                               PrologWriter pw, BindCount[] ref,
                                                int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
@@ -329,7 +317,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws IOException IO error.
      */
     private static int intermediateCallGoal(Goal body,
-                                            PrologWriter pw, Display ref,
+                                            PrologWriter pw, BindCount[] ref,
                                             int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
@@ -365,7 +353,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage IO error.
      */
     private static void intermediateClause(PrologWriter pw, Object t,
-                                           Clause clause, Display ref,
+                                           Clause clause, BindCount[] ref,
                                            int flags)
             throws EngineMessage, EngineException {
         try {

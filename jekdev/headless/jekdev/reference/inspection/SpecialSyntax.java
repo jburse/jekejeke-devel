@@ -3,12 +3,16 @@ package jekdev.reference.inspection;
 import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.Operator;
 import jekpro.reference.reflect.SpecialOper;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
+import matula.util.data.MapEntry;
 
 /**
  * <p>This module provides built-ins for direct operator access.</p>
@@ -42,7 +46,7 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSyntax extends AbstractSpecial {
-    /* private final static int SPECIAL_SYS_CURRENT_SYNTAX = 0; */
+    private final static int SPECIAL_SYS_CURRENT_SYNTAX = 0;
     private final static int SPECIAL_SYS_CURRENT_SYNTAX_CHK = 1;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY = 2;
     /* private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 3; */
@@ -73,30 +77,37 @@ public final class SpecialSyntax extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
+            case SPECIAL_SYS_CURRENT_SYNTAX:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                Operator op = SpecialBody.operToSyntax(temp[0], ref, en);
+                BindCount[] ref = en.display;
+                if (!en.unifyTerm(temp[0], ref,
+                        SpecialSyntax.currentSyntax(en), BindCount.DISPLAY_CONST))
+                    return false;
+                return en.getNext();
+            case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                Operator op = SpecialOper.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialBody.operToSyntax(temp[0], ref, en);
+                op = SpecialOper.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
                 boolean multi = SpecialOper.operToProperties(op, en);
-                Display d = en.display;
+                BindCount[] d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    d.remTab(en);
+                    BindCount.remTab(d, en);
                 return en.getNext();
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialBody.operToSyntax(temp[0], ref, en);
+                op = SpecialOper.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
@@ -107,7 +118,7 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_RESET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialBody.operToSyntax(temp[0], ref, en);
+                op = SpecialOper.operToSyntax(temp[0], ref, en);
                 Operator.checkExistentSyntax(op, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
@@ -118,6 +129,33 @@ public final class SpecialSyntax extends AbstractSpecial {
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
+    }
+
+    /**************************************************************/
+    /* Syntax Enumeration                                         */
+    /**************************************************************/
+
+    /**
+     * <p>Create a prolog list with the directly accessible syntax operators.</p>
+     *
+     * @param en The engine.
+     * @return The prolog list of the directly accessible syntax operators.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object currentSyntax(Engine en)
+            throws EngineMessage {
+        Store store = en.store;
+        Object res = en.store.foyer.ATOM_NIL;
+        while (store != null) {
+            MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
+            for (int j = sources.length - 1; j >= 0; j--) {
+                AbstractSource base = sources[j].value;
+                Operator[] opers = base.snapshotOper();
+                res = SpecialOper.consSyntax(opers, res, en);
+            }
+            store = store.parent;
+        }
+        return res;
     }
 
 }

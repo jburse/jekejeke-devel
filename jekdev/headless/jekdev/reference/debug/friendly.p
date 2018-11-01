@@ -128,7 +128,7 @@ friendly(I) :-
 friendly(I) :-
    bagof(I, (  sys_listing_user(U),
                sys_intermediate_item_idx(U, I)), B),
-   sys_intermediate_base(U),
+   sys_show_base(U),
    sys_member(I, B),
    sys_friendly(I, U), fail.
 friendly(_).
@@ -139,15 +139,13 @@ friendly(_).
 friendly2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_intermediate_base(U),
+   sys_listing_has_clause(I, U),
+   sys_short_base(U),
    sys_friendly(I, U), fail.
 friendly2(_).
 
-:- private sys_intermediate_base/1.
-:- special(sys_intermediate_base/1, 'SpecialFriendly', 0).
-
 :- private sys_friendly/2.
-:- special(sys_friendly/2, 'SpecialFriendly', 1).
+:- special(sys_friendly/2, 'SpecialFriendly', 0).
 
 /**
  * instrumented:
@@ -173,7 +171,7 @@ instrumented(I) :-
 instrumented(I) :-
    bagof(I, (  sys_listing_user(U),
                sys_intermediate_item_idx(U, I)), B),
-   sys_intermediate_base(U),
+   sys_show_base(U),
    sys_member(I, B),
    sys_instrumented(I, U), fail.
 instrumented(_).
@@ -184,12 +182,13 @@ instrumented(_).
 instrumented2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_intermediate_base(U),
+   sys_listing_has_clause(I, U),
+   sys_short_base(U),
    sys_instrumented(I, U), fail.
 instrumented2(_).
 
 :- private sys_instrumented/2.
-:- special(sys_instrumented/2, 'SpecialFriendly', 2).
+:- special(sys_instrumented/2, 'SpecialFriendly', 1).
 
 /**
  * sys_intermediate_item_chk(I, U):

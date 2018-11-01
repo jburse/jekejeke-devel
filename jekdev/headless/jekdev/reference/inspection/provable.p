@@ -78,9 +78,8 @@ current_provable(I) :-
    sys_current_provable(L),
    sys_member(I, L).
 
-% already defined in body.p of runtime
-% :- private sys_current_provable/1.
-% :- special(sys_current_provable/1, 'SpecialProvable', 0).
+:- private sys_current_provable/1.
+:- special(sys_current_provable/1, 'SpecialProvable', 0).
 
 :- private sys_current_provable_chk/1.
 :- special(sys_current_provable_chk/1, 'SpecialProvable', 1).

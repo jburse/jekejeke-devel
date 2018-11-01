@@ -46,15 +46,13 @@
 /**
  * sys_ignore(A):
  * The predicate succeeds whenever A succeeds. The goal A is invoked
- * with the mode cloak temporarily set to off.
+ * with the mode cloak temporarily set to on.
  */
 % sys_ignore(+Goal)
 :- public sys_ignore/1.
 :- meta_predicate sys_ignore(0).
 :- special(sys_ignore/1, 'SpecialMode', 0).
 :- set_predicate_property(sys_ignore/1, sys_notrace).
-
-% The instrumentation hooks
 
 /******************************************************************/
 /* sys_in/0                                                       */
@@ -113,6 +111,8 @@ sys_out :-
 :- set_predicate_property(sys_out2/0, sys_nowakeup).
 :- set_predicate_property(sys_out2/0, sys_nostack).
 sys_out2 :-
+   sys_cut_chk(3), !.
+sys_out2 :-
    sys_goal_chk(3), !, sys_goal_cut.
 sys_out2.
 sys_out2 :-
@@ -126,7 +126,7 @@ sys_out2 :-
 
 /**
  * sys_at:
- * This instrumentation hook should succeeds. It is called
+ * This instrumentation hook should succeed. It is called
  * after a head unification succeeds and before the attribute
  * variable unify hooks are called.
  */
@@ -172,19 +172,27 @@ sys_at2 :-
 :- special(sys_port_show/1, 'SpecialMode', 2).
 
 /**
+ * sys_cut_chk(P):
+ * The predicate succeeds when there are no previous
+ * choice points in the current clause of port P.
+ */
+:- private sys_cut_chk/1.
+:- special(sys_cut_chk/1, 'SpecialMode', 3).
+
+/**
  * sys_goal_chk(P):
  * The predicate succeeds when the previous choice point is
- * a choice point for the call instrumentation of port P.
+ * a choice point of the call instrumentation of port P.
  */
 :- private sys_goal_chk/1.
-:- special(sys_goal_chk/1, 'SpecialMode', 3).
+:- special(sys_goal_chk/1, 'SpecialMode', 4).
 
 /**
  * sys_goal_cut:
  * The predicate succeeds in removing the current choice point.
  */
 :- private sys_goal_cut/0.
-:- special(sys_goal_cut/0, 'SpecialMode', 4).
+:- special(sys_goal_cut/0, 'SpecialMode', 5).
 
 /**
  * sys_clause_chk(P):
@@ -192,4 +200,4 @@ sys_at2 :-
  * is not a choice point for the current clause of port P.
  */
 :- private sys_clause_chk/1.
-:- special(sys_clause_chk/1, 'SpecialMode', 5).
+:- special(sys_clause_chk/1, 'SpecialMode', 6).

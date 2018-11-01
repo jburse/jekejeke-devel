@@ -1,10 +1,9 @@
 /**
- * We can distinguish a couple of debugging modes. In any debugging
- * mode the goals in the body of a clause will be decorated by port
- * hooks. Depending on the debugging mode the hooks will check a
- * certain condition and when this condition is met the current
- * goal is shown. Whether the interpreter will also prompt the end-user
- * depends on the current leash mode. The debugging modes are:
+ * We can distinguish a couple of debugging modes. In any debugging mode
+ * the instrumented fork of a clause will be executed. Depending on
+ * the debugging mode the instrumentation will check a certain
+ * condition and when this condition is met the current execution
+ * is suspended and a callback is called. The debugging modes are:
  *
  * Mode:       Condition:
  * off         Run until paused or aborted
@@ -12,6 +11,20 @@
  * step_over   Run until predicate is executed
  * step_out    Run until parent predicate is executed
  * on          Run until next spy or break point
+ *
+ * When the current goal is shown additional information about the
+ * debugging mode, the invoca-tion depth and the current port is shown
+ * as well. Last call optimization is currently defunct while debugging,
+ * the invocation depth is therefore larger than usual. The information
+ * is provided in the following format on the display console:
+ *
+ * <mode><depth><port> <goal> ?
+ *
+ * -: The debug mode is off
+ *  : The debug mode is step in
+ * =: The debug mode is step over
+ * >: The debug mode is step out
+ * *: The debug mode is on
  *
  * Predicates that have the sys_notrace predicate property set are
  * ignored in any debugging mode. A couple of predicates that
@@ -54,7 +67,6 @@
 
 :- module(user, []).
 
-:- use_module(library(experiment/simp)).
 :- use_module(library(inspection/provable)).
 :- use_module(library(stream/console)).
 
@@ -64,7 +76,7 @@
 
 /**
  * debug:
- * The predicate switches to the debug mode.
+ * The predicate switches to the on mode.
  */
 :- public debug/0.
 debug :-
@@ -82,7 +94,7 @@ trace :-
 
 /**
  * skip:
- * The predicate switches to the skip mode.
+ * The predicate switches to the step over mode.
  */
 :- public skip/0.
 skip :-
@@ -91,7 +103,7 @@ skip :-
 
 /**
  * out:
- * The predicate switches to the out mode.
+ * The predicate switches to the step out mode.
  */
 :- public out/0.
 out :-
@@ -108,30 +120,16 @@ nodebug :-
 :- set_predicate_property(nodebug/0, sys_notrace).
 
 /**
- * leash(L):
- * Leash the ports that are listed in L, unleash the ports that are
- * not listed in L. When prompted, unleashed ports do not await user
- * interaction but simply continue. The mnemonics that work for the
- " predicate are listed in the API documentation.
- */
-% leash(+AtomOrList)
-:- public leash/1.
-leash(Name) :-
-   sys_name_flags(Name, Flags), !,
-   set_prolog_flag(sys_leash, Flags).
-leash(Flags) :-
-   set_prolog_flag(sys_leash, Flags).
-:- set_predicate_property(leash/1, sys_notrace).
-
-/**
  * visible(L):
  * Show the ports that are listed in L, hide the ports that are not
- * listed in L. When traced, hidden ports are not prompted but simply
- * continue. The predicate accepts the same mnemonics as the
- * predicate leash/1.
+ * listed in L. In debug mode, hidden ports are not further debugged
+ * but simply continue. The following mnemonics work for the predicate.
  */
 % visible(+AtomOrList)
 :- public visible/1.
+visible(Name) :-
+   var(Name),
+   throw(error(instantiation_error,_)).
 visible(Name) :-
    sys_name_flags(Name, Flags), !,
    set_prolog_flag(sys_visible, Flags).
@@ -188,6 +186,7 @@ debugging.
 % spy(+Indicator)
 :- public spy/1.
 :- special(spy/1, 'SpecialDefault', 0).
+:- set_predicate_property(spy/1, sys_notrace).
 
 /**
  * nospy(P):
@@ -196,6 +195,7 @@ debugging.
 % nospy(+Indicator)
 :- public nospy/1.
 :- special(nospy/1, 'SpecialDefault', 1).
+:- set_predicate_property(nospy/1, sys_notrace).
 
 /**
  * spying(P):
@@ -220,6 +220,7 @@ spying(I) :-
 break(P, L) :-
    absolute_file_name(P, Q),
    sys_break(Q, L).
+:- set_predicate_property(break/2, sys_notrace).
 
 % sys_break(+Pin, +Integer)
 :- private sys_break/2.
@@ -234,6 +235,7 @@ break(P, L) :-
 nobreak(P, L) :-
    absolute_file_name(P, Q),
    sys_nobreak(Q, L).
+:- set_predicate_property(nobreak/2, sys_notrace).
 
 % sys_nobreak(+Pin, +Integer)
 :- private sys_nobreak/2.
@@ -254,22 +256,3 @@ breaking(P, L) :-
 % sys_breaking(+List)
 :- private sys_breaking/1.
 :- special(sys_breaking/1, 'SpecialDefault', 5).
-
-/*******************************************************************************/
-/* Debugger Hooks                                                              */
-/*******************************************************************************/
-
-% The cosmetics hook
-% sys_repose_goal(+PortGoal, -PortGoal, -Context)
-:- public sys_repose_goal/3.
-sys_repose_goal(P-H, Q-K, C) :-
-   expose_goal(P-H, Q-J, C),
-   rebuild_goal_arg(C, J, K).
-
-/**
- * sys_trace(P, F):
- * The default trace hook.
- */
-% sys_trace(+Atom, +Frame)
-:- public sys_trace/2.
-:- special(sys_trace/2, 'SpecialDefault', 6).
