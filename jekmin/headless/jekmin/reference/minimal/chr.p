@@ -19,7 +19,8 @@
  *
  * A current restriction is that the resulting forward chaining rules
  * should produce ground facts. Further, the semantics is logical
- * and not chronological as in the usual CHR implementations.
+ * and not chronological as in the usual CHR implementations. Our
+ * implementation is not based on attribute variables as in [9].
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

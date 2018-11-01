@@ -1,7 +1,34 @@
 /**
- * This module provides some choice operators. Although the operators
- * are just goals, they are not supposed to be used in the condition
- * part of a forward chaining rule, rather in the action part.
+ * This module provides some choice operators for answer set
+ * programming via forward chaining. Since we use the (:-)/2
+ * operator already for backward chaining rules, the operator
+ * (<=)/2 form the module "delta" needs to be used to write
+ * answer set programming rules. Take this example:
+ *
+ * Example:
+ * :- p, q, r.
+ * {p,r}.
+ * {q} :- p.
+ * {r} :- p.
+ *
+ * This would need to be written as follows. For answer set
+ * programming constraints a forward chaining rule with a fail
+ * action is suggested. Further answer set programming ordinary
+ * facts and disjunctive facts need a start condition such as "init",
+ * which can then be used to produce an anwser set:
+ *
+ * Example:
+ * fail <= posted('p'), posted('q'), posted('r').
+ * choose(['p','r']) <= posted(init).
+ * choose(['q']) <= posted('p').
+ * choose(['r']) <= posted('p').
+ * ?- post(init).
+ *
+ * Our approach to answer set programming allows explicit mixing of
+ * forward chaining and backward chaining in that a forward chaining
+ * rule allows backward chaining goals in its condition part. The
+ * only predicate that this module currently provides is a choose/1
+ * operator that allows satisfiability search.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,12 +62,15 @@
 :- package(library(jekmin/reference/minimal)).
 
 :- module(asp, []).
+:- use_module(library(basic/random)).
 :- reexport(library(minimal/delta)).
 
 /**
  * choose(L):
  * choose(L, G):
- * The construct posts each from L before further solving.
+ * If a positive literal from L is already satisfied, the construct
+ * does nothing before further solving. Otherwise, the construct posts
+ * each positive literal from L in input order before further solving.
  */
 % choose(+List)
 :- public choose/1.
@@ -76,6 +106,11 @@ choose2([_|_], A, G) :-
 choose2([A|L], _, G) :-
    choose2(L, A, G).
 
+/**
+ * sys_last_one(L):
+ * The predicate succeeds when at least one positive literal
+ * from L already exists in the forward store.
+ */
 % sys_least_one(+List)
 :- private sys_least_one/1.
 sys_least_one([A|_]) :-

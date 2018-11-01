@@ -437,14 +437,14 @@ tree_zero(N, _, N).
 :- public gen_index/2.
 gen_index(K, R) :-
    clause_ref(cache_index(K, H), true, V), !,
-   sys_retire_ref(V),
+   withdrawz_ref(V),
    W is H+1,
    assumable_ref(cache_index(K, W), U),
-   sys_assume_ref(U),
+   depositz_ref(U),
    R = W.
 gen_index(K, R) :-
    assumable_ref(cache_index(K, 1), U),
-   sys_assume_ref(U),
+   depositz_ref(U),
    R = 1.
 
 /*****************************************************************/
@@ -467,7 +467,7 @@ var_map_new(X, R) :-
    sys_freeze_var(H, J),
    H = wrap(X),
    assumable_ref(cache_var(Y, J), U),
-   sys_assume_ref(U),
+   depositz_ref(U),
    put_attr(X, tree, var_index(Y)),
    R = Y.
 

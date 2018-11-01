@@ -84,7 +84,7 @@ put_attr(V, K, W) :-
    sys_freeze_var(H, F),
    H = wrap(W),
    sys_compile_hook(V, attr(K, F), R),
-   sys_assume_ref(R).
+   depositz_ref(R).
 
 /**
  * get_attr(V, K, W):
@@ -113,7 +113,7 @@ del_attr(_, _) :-
 :- private del_attr2/2.
 del_attr2(V, K) :-
    sys_clause_hook(V, attr(K, _), R), !,
-   sys_retire_ref(R).
+   withdrawz_ref(R).
 del_attr2(_, _).
 
 /**************************************************************/
@@ -130,7 +130,7 @@ del_attr2(_, _).
 :- private attr/4.
 attr(K, F, _, T) :-
    sys_melt_var(F, wrap(W)),
-   sys_assume_cont(K:attr_unify_hook(W,T)).
+   sys_assume_cont(K:attr_unify_hook(W, T)).
 
 /**
  * sys_current_eq(V, H):

@@ -92,7 +92,7 @@ sys_hook_neq(S, _, _) :-
 :- meta_predicate sys_retire_hooks(?,2).
 sys_retire_hooks([V|L], H) :-
    sys_clause_hook(V, H, K),
-   sys_retire_ref(K),
+   withdrawz_ref(K),
    sys_retire_hooks(L, H).
 sys_retire_hooks([], _).
 
@@ -178,7 +178,7 @@ neq(_, _).
 :- private sys_assume_hooks/2.
 sys_assume_hooks([V|L], H) :-
    sys_compile_hook(V, H, K),
-   sys_assume_ref(K),
+   depositz_ref(K),
    sys_assume_hooks(L, H).
 sys_assume_hooks([], _).
 

@@ -1,9 +1,10 @@
 /**
  * Clauses and attribute variable hooks are identified by their reference
- * data type. The predicate sys_assume_ref/1 will assume the given clause
- * or hook for the duration of the continuation, whereas the predicate
- * sys_retire_ref/1 will retire the given clause or hook for the
- * duration of the continuation.
+ * data type. The predicates deposita_ref/1 respectively depositz_ref/1
+ * will assume the given clause or hook for the duration of the
+ * continuation, whereas the predicate withdrawa_ref/1 respectively
+ * withdrawz_ref/1 will retire the given clause or hook for the duration
+ * of the continuation.
  *
  * Example:
  * hook(V, T) :-
@@ -65,46 +66,78 @@
 /***************************************************************/
 
 /**
- * sys_assume_ref(R):
+ * deposita_ref(R):
+ * The predicate temporarily inserts the clause or hook referenced
+ * by R at the top for the duration of the continuation
+ */
+% deposita_ref(+Ref)
+:- public deposita_ref/1.
+deposita_ref(V) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+deposita_ref([R|L]) :- !,
+   deposita_ref(R),
+   deposita_ref(L).
+deposita_ref([]) :- !.
+deposita_ref(R) :-
+   sys_atomic((  recorda_ref(R),
+                 sys_unbind(erase_ref(R)))).
+
+/**
+ * depositz_ref(R):
  * The predicate temporarily inserts the clause or hook referenced
  * by R at the bottom for the duration of the continuation
  */
-% sys_assume_ref(+Ref)
-:- public sys_assume_ref/1.
-sys_assume_ref(V) :-
+% depositz_ref(+Ref)
+:- public depositz_ref/1.
+depositz_ref(V) :-
    var(V),
    throw(error(instantiation_error,_)).
-sys_assume_ref([R|L]) :- !,
-   sys_assume_ref(L),
-   sys_assume_ref(R).
-sys_assume_ref([]) :- !.
-sys_assume_ref(R) :-
+depositz_ref([R|L]) :- !,
+   depositz_ref(R),
+   depositz_ref(L).
+depositz_ref([]) :- !.
+depositz_ref(R) :-
    sys_atomic((  recordz_ref(R),
-                 sys_unbind(erase_ref(R)))), !.
-sys_assume_ref(R) :-
-   compiled_ref(R, Q),
-   throw(error(permission_error(add,assume,Q),_)).
+                 sys_unbind(erase_ref(R)))).
 
 /**
- * sys_retire_ref(R):
+ * withdrawa_ref(R):
  * The predicate temporarily removes the clause or hook referenced
- * by R for the duration of the continuation.
+ * by R for the duration of the continuation. The undo will
+ * happen at the top.
  */
-% sys_retire_ref(+Ref)
-:- public sys_retire_ref/1.
-sys_retire_ref(V) :-
+% withdrawa_ref(+Ref)
+:- public withdrawa_ref/1.
+withdrawa_ref(V) :-
    var(V),
    throw(error(instantiation_error,_)).
-sys_retire_ref([R|L]) :- !,
-   sys_retire_ref(R),
-   sys_retire_ref(L).
-sys_retire_ref([]) :- !.
-sys_retire_ref(R) :-
+withdrawa_ref([R|L]) :- !,
+   withdrawz_ref(L),
+   withdrawz_ref(R).
+withdrawa_ref([]) :- !.
+withdrawa_ref(R) :-
    sys_atomic((  erase_ref(R),
-                 sys_unbind(recordz_ref(R)))), !.
-sys_retire_ref(R) :-
-   compiled_ref(R, Q),
-   throw(error(permission_error(remove,assume,Q),_)).
+                 sys_unbind(recorda_ref(R)))).
+
+/**
+ * withdrawz_ref(R):
+ * The predicate temporarily removes the clause or hook referenced
+ * by R for the duration of the continuation. The undo will
+ * happen at the top.
+ */
+% withdrawz_ref(+Ref)
+:- public withdrawz_ref/1.
+withdrawz_ref(V) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+withdrawz_ref([R|L]) :- !,
+   withdrawz_ref(L),
+   withdrawz_ref(R).
+withdrawz_ref([]) :- !.
+withdrawz_ref(R) :-
+   sys_atomic((  erase_ref(R),
+                 sys_unbind(recordz_ref(R)))).
 
 /***************************************************************/
 /* Attribute Variables                                         */
@@ -124,9 +157,9 @@ sys_ensure_hook(V, H, G) :-
    call(G).
 sys_ensure_hook(V, H, G) :-
    sys_compile_hook(V, H, K),
-   sys_assume_ref(K),
+   depositz_ref(K),
    call(G),
-   sys_retire_ref(K).
+   withdrawz_ref(K).
 
 /**
  * sys_ensure_hook(A, H):
@@ -141,7 +174,7 @@ sys_ensure_hook(V, H) :-
    sys_clause_hook(V, H, _), !.
 sys_ensure_hook(V, H) :-
    sys_compile_hook(V, H, K),
-   sys_assume_ref(K).
+   depositz_ref(K).
 
 /***************************************************************/
 /* Continuation Queue                                          */
@@ -153,6 +186,7 @@ sys_ensure_hook(V, H) :-
  */
 % sys_assume_cont(+Term)
 :- public sys_assume_cont/1.
+:- meta_predicate sys_assume_cont(0).
 sys_assume_cont(G) :-
    sys_atomic((  cont_push(G),
                  sys_unbind(cont_pop))).

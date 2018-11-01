@@ -68,13 +68,11 @@
 :- module(clpfd, []).
 :- use_module(library(basic/lists)).
 :- use_module(library(minimal/assume)).
-:- use_module(library(minimal/hypo)).
 :- use_module(library(minimal/delta)).
 :- use_module(library(misc/struc)).
 :- use_module(library(misc/elem)).
 :- use_module(library(experiment/surrogate)).
 :- use_module(library(experiment/trail)).
-:- use_module(library(experiment/ref)).
 :- use_module(library(experiment/attr)).
 :- use_module(helper).
 :- reexport(linform).
@@ -98,11 +96,11 @@ sys_hook_mul(V, W) :-
    var(W), !,
    sys_freeze_var(V, R),
    sys_fresh_var(W, S),
-   sys_assume_cont(<= +sys_var_mul(R,S)).
+   sys_assume_cont(post(sys_var_mul(R, S))).
 sys_hook_mul(V, T) :-
    integer(T), !,
    sys_freeze_var(V, R),
-   sys_assume_cont(<= +sys_const_mul(R,T)).
+   sys_assume_cont(post(sys_const_mul(R, T))).
 sys_hook_mul(_, T) :-
    throw(error(type_error(integer,T),_)).
 
@@ -113,8 +111,8 @@ sys_hook_mul(_, T) :-
 :- private sys_var_mul/3.
 
 /* Union Find */
-unit <=
-   = sys_var_mul(_, _).
+true
+<= phaseout_posted(sys_var_mul(_, _)).
 
 % sys_const_mul(+Wrap, +Integer)
 % sys_const_mul(X, C) = X = C
@@ -123,8 +121,8 @@ unit <=
 :- private sys_const_mul/3.
 
 /* Constant Elimination */
-unit <=
-   = sys_const_mul(_, _).
+true
+<= phaseout_posted(sys_const_mul(_, _)).
 
 % sys_mulv(+Wrap, +Wrap, +Warp)
 % sys_mulv(X, Y, Z), X*Y = Z
@@ -136,155 +134,155 @@ unit <=
 :- private sys_mulv_ord/4.
 
 /* Special Case */
-+ sys_sqrv(X, Y) <=
-   = sys_mulv(X, X, Y), !.
-+ sys_impv(X, Y) <=
-   = sys_mulv(X, Y, X), !.
-+ sys_impv(X, Y) <=
-   = sys_mulv(Y, X, X), !.
+post(sys_sqrv(X, Y))
+<= phaseout_posted(sys_mulv(X, X, Y)), !.
+post(sys_impv(X, Y))
+<= phaseout_posted(sys_mulv(X, Y, X)), !.
+post(sys_impv(X, Y))
+<= phaseout_posted(sys_mulv(Y, X, X)), !.
 /* Order Arguments */
-+ sys_mulv_ord(X, Y, Z) <=
-   = sys_mulv(X, Y, Z),
-   {X @< Y}, !.
-+ sys_mulv_ord(X, Y, Z) <=
-   = sys_mulv(Y, X, Z).
+post(sys_mulv_ord(X, Y, Z))
+<= phaseout_posted(sys_mulv(X, Y, Z)),
+   X @< Y, !.
+post(sys_mulv_ord(X, Y, Z))
+<= phaseout_posted(sys_mulv(Y, X, Z)).
 
 /* Mul & Mul Intersection */
-sys_melt_join(T, Z) <=
-   = sys_mulv_ord(X, Y, Z),
+sys_melt_join(T, Z)
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
    sys_mulv_ord(X, Y, T), !.
-sys_melt_const(Z, C) <=
-   = sys_mulv_ord(X, Y, Z),
+sys_melt_const(Z, C)
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
    sys_mulc_ord(X, Y, C), !.
 /* Union Find */
-+ sys_mulv(T, Y, Z) <=
-   = sys_mulv_ord(X, Y, Z),
-   {sys_bound_var(X),
-    sys_melt_var(X, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
-+ sys_mulv(X, T, Z) <=
-   = sys_mulv_ord(X, Y, Z),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
-+ sys_mulv(X, Y, T) <=
-   = sys_mulv_ord(X, Y, Z),
-   {sys_bound_var(Z),
-    sys_melt_var(Z, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
+post(sys_mulv(T, Y, Z))
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_var(X),
+   sys_melt_var(X, H),
+   var(H), !,
+   sys_fresh_var(H, T).
+post(sys_mulv(X, T, Z))
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, H),
+   var(H), !,
+   sys_fresh_var(H, T).
+post(sys_mulv(X, Y, T))
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_var(Z),
+   sys_melt_var(Z, H),
+   var(H), !,
+   sys_fresh_var(H, T).
 /* Constant Elimination */
-+ sys_lin(L, 0) <=
-   = sys_mulv_ord(X, Y, Z),
-   {sys_bound_var(X),
-    sys_melt_var(X, C),
-    integer(C)}, !,
-   {sys_make_prod(C, Y, [], H),
-    sys_add_prod(H, [-1*Z], L)}.
-+ sys_lin(L, 0) <=
-   = sys_mulv_ord(X, Y, Z),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, C),
-    integer(C)}, !,
-   {sys_make_prod(C, X, [], H),
-    sys_add_prod(H, [-1*Z], L)}.
-+ sys_mulc_ord(X, Y, C) <=
-   = sys_mulv_ord(X, Y, Z),
-   {sys_bound_var(Z),
-    sys_melt_var(Z, C),
-    integer(C)}, !.
+post(sys_lin(L, 0))
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_var(X),
+   sys_melt_var(X, C),
+   integer(C), !,
+   sys_make_prod(C, Y, [], H),
+   sys_add_prod(H, [-1*Z], L).
+post(sys_lin(L, 0))
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, C),
+   integer(C), !,
+   sys_make_prod(C, X, [], H),
+   sys_add_prod(H, [-1*Z], L).
+post(sys_mulc_ord(X, Y, C))
+<= phaseout_posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_var(Z),
+   sys_melt_var(Z, C),
+   integer(C), !.
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_mul) /\
-sys_melt_hook(Y, sys_hook_mul) /\
-sys_melt_hook(Z, sys_hook_mul) <=
-   + sys_mulv_ord(X, Y, Z).
+sys_melt_hook(X, sys_hook_mul),
+sys_melt_hook(Y, sys_hook_mul),
+sys_melt_hook(Z, sys_hook_mul)
+<= posted(sys_mulv_ord(X, Y, Z)).
 /* Set Diffusion, Directed, Bounds */
-+ (intset:sys_in(Z, [S], S)) <=
-   + sys_mulv_ord(X, Y, Z),
-   {Z @> Y}, !,
-   {sys_bound_factor(X, R),
-    sys_bound_factor(Y, T),
-    sys_cross_range(R, T, S),
-    S \== ...}.
-+ (intset:sys_in(Y, L, S)) <=
-   + sys_mulv_ord(X, Y, Z),
-   {sys_bound_factor(Z, R),
-    sys_bound_divisor(X, T),
-    (  sys_slash_range(R, T, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
+post(intset:sys_in(Z, [S], S))
+<= posted(sys_mulv_ord(X, Y, Z)),
+   Z @> Y, !,
+   sys_bound_factor(X, R),
+   sys_bound_factor(Y, T),
+   sys_cross_range(R, T, S),
+   S \== ... .
+post(intset:sys_in(Y, L, S))
+<= posted(sys_mulv_ord(X, Y, Z)),
+   sys_bound_factor(Z, R),
+   sys_bound_divisor(X, T),
+   (  sys_slash_range(R, T, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
 /* Variable Rename */
-+ sys_mulv(T, Y, Z) <=
-   + sys_var_mul(X, T),
-   - sys_mulv_ord(X, Y, Z).
-+ sys_mulv(X, T, Z) <=
-   + sys_var_mul(Y, T),
-   - sys_mulv_ord(X, Y, Z),
-   {Y \== X}.
-+ sys_mulv(X, Y, T) <=
-   + sys_var_mul(Z, T),
-   - sys_mulv_ord(X, Y, Z),
-   {Z \== X,
-    Z \== Y}.
+post(sys_mulv(T, Y, Z))
+<= posted(sys_var_mul(X, T)),
+   phaseout(sys_mulv_ord(X, Y, Z)).
+post(sys_mulv(X, T, Z))
+<= posted(sys_var_mul(Y, T)),
+   phaseout(sys_mulv_ord(X, Y, Z)),
+   Y \== X.
+post(sys_mulv(X, Y, T))
+<= posted(sys_var_mul(Z, T)),
+   phaseout(sys_mulv_ord(X, Y, Z)),
+   Z \== X,
+   Z \== Y.
 /* Constant Backpropagation */
-+ sys_lin(L, 0) <=
-   + sys_const_mul(X, C),
-   - sys_mulv_ord(X, Y, Z),
-   {sys_make_prod(C, Y, [], H),
-    sys_add_prod(H, [-1*Z], L)}.
-+ sys_lin(L, 0) <=
-   + sys_const_mul(Y, C),
-   - sys_mulv_ord(X, Y, Z),
-   {Y \== X,
-    sys_make_prod(C, X, [], H),
-    sys_add_prod(H, [-1*Z], L)}.
-+ sys_mulc_ord(X, Y, C) <=
-   + sys_const_mul(Z, C),
-   - sys_mulv_ord(X, Y, Z),
-   {Z \== X,
-    Z \== Y}.
+post(sys_lin(L, 0))
+<= posted(sys_const_mul(X, C)),
+   phaseout(sys_mulv_ord(X, Y, Z)),
+   sys_make_prod(C, Y, [], H),
+   sys_add_prod(H, [-1*Z], L).
+post(sys_lin(L, 0))
+<= posted(sys_const_mul(Y, C)),
+   phaseout(sys_mulv_ord(X, Y, Z)),
+   Y \== X,
+   sys_make_prod(C, X, [], H),
+   sys_add_prod(H, [-1*Z], L).
+post(sys_mulc_ord(X, Y, C))
+<= posted(sys_const_mul(Z, C)),
+   phaseout(sys_mulv_ord(X, Y, Z)),
+   Z \== X,
+   Z \== Y.
 /* Set Update, Directed, Bounds */
-+ (intset:sys_in(Z, [S], S)) <=
-   + (intset:sys_in(X, _, R)),
-   {R \== ...},
+post(intset:sys_in(Z, [S], S))
+<= posted(intset:sys_in(X, _, R)),
+   R \== ...,
    sys_mulv_ord(X, Y, Z),
-   {Z @> Y,
-    sys_bound_factor(Y, T),
-    sys_cross_range(R, T, S),
-    S \== ...}.
-+ (intset:sys_in(Z, [S], S)) <=
-   + (intset:sys_in(Y, _, R)),
-   {R \== ...},
+   Z @> Y,
+   sys_bound_factor(Y, T),
+   sys_cross_range(R, T, S),
+   S \== ... .
+post(intset:sys_in(Z, [S], S))
+<= posted(intset:sys_in(Y, _, R)),
+   R \== ...,
    sys_mulv_ord(X, Y, Z),
-   {Z @> Y,
-    sys_bound_factor(X, T),
-    sys_cross_range(R, T, S),
-    S \== ...}.
-+ (intset:sys_in(Y, L, S)) <=
-   + (intset:sys_in(Z, _, R)),
-   {R \== ...},
+   Z @> Y,
+   sys_bound_factor(X, T),
+   sys_cross_range(R, T, S),
+   S \== ... .
+post(intset:sys_in(Y, L, S))
+<= posted(intset:sys_in(Z, _, R)),
+   R \== ...,
    sys_mulv_ord(X, Y, Z),
-   {Z @=< Y,
-    sys_bound_divisor(X, T),
-    (  sys_slash_range(R, T, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
-+ (intset:sys_in(Y, L, S)) <=
-   + (intset:sys_in(X, _, R)),
+   Z @=< Y,
+   sys_bound_divisor(X, T),
+   (  sys_slash_range(R, T, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
+post(intset:sys_in(Y, L, S))
+<= posted(intset:sys_in(X, _, R)),
    sys_mulv_ord(X, Y, Z),
-   {Z @=< Y,
-    sys_bound_factor(Z, T),
-    (  sys_slash_range(T, R, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
+   Z @=< Y,
+   sys_bound_factor(Z, T),
+   (  sys_slash_range(T, R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
 
 % sys_mulc(+Wrap, +Wrap, +Integer)
 % sys_mulc(X,Y,C), X*Y = C
@@ -296,92 +294,92 @@ sys_melt_hook(Z, sys_hook_mul) <=
 :- private sys_mulc_ord/4.
 
 /* Special Case */
-+ sys_sqrc(X, C) <=
-   = sys_mulc(X, X, C), !.
+post(sys_sqrc(X, C))
+<= phaseout_posted(sys_mulc(X, X, C)), !.
 /* Order Arguments */
-+ sys_mulc_ord(X, Y, C) <=
-   = sys_mulc(X, Y, C),
-   {X @< Y}, !.
-+ sys_mulc_ord(X, Y, C) <=
-   = sys_mulc(Y, X, C).
+post(sys_mulc_ord(X, Y, C))
+<= phaseout_posted(sys_mulc(X, Y, C)),
+   X @< Y, !.
+post(sys_mulc_ord(X, Y, C))
+<= phaseout_posted(sys_mulc(Y, X, C)).
 
 /* Mul & Mul Intersection */
-sys_melt_const(T, C) <=
-   = sys_mulc_ord(X, Y, C),
+sys_melt_const(T, C)
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
    sys_mulv_ord(X, Y, T), !.
-zero <=
-   = sys_mulc_ord(X, Y, C),
+fail
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
    sys_mulc_ord(X, Y, D),
-   {C \== D}, !.
-unit <=
-   = sys_mulc_ord(X, Y, C),
+   C \== D, !.
+true
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
    sys_mulc_ord(X, Y, C), !.
 /* Union Find */
-+ sys_mulc(Z, Y, C) <=
-   = sys_mulc_ord(X, Y, C),
-   {sys_bound_var(X),
-    sys_melt_var(X, H),
-    var(H)}, !,
-   {sys_fresh_var(H, Z)}.
-+ sys_mulc(X, Z, C) <=
-   = sys_mulc_ord(X, Y, C),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, H),
-    var(H)}, !,
-   {sys_fresh_var(H, Z)}.
+post(sys_mulc(Z, Y, C))
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
+   sys_bound_var(X),
+   sys_melt_var(X, H),
+   var(H), !,
+   sys_fresh_var(H, Z).
+post(sys_mulc(X, Z, C))
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, H),
+   var(H), !,
+   sys_fresh_var(H, Z).
 /* Constant Elimination */
-+ sys_lin(L, C) <=
-   = sys_mulc_ord(X, Y, C),
-   {sys_bound_var(X),
-    sys_melt_var(X, D),
-    integer(D)}, !,
-   {sys_make_prod(D, Y, [], L)}.
-+ sys_lin(L, C) <=
-   = sys_mulc_ord(X, Y, C),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, D),
-    integer(D)}, !,
-   {sys_make_prod(D, X, [], L)}.
+post(sys_lin(L, C))
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
+   sys_bound_var(X),
+   sys_melt_var(X, D),
+   integer(D), !,
+   sys_make_prod(D, Y, [], L).
+post(sys_lin(L, C))
+<= phaseout_posted(sys_mulc_ord(X, Y, C)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, D),
+   integer(D), !,
+   sys_make_prod(D, X, [], L).
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_mul) /\
-sys_melt_hook(Y, sys_hook_mul) <=
-   + sys_mulc_ord(X, Y, _).
+sys_melt_hook(X, sys_hook_mul),
+sys_melt_hook(Y, sys_hook_mul)
+<= posted(sys_mulc_ord(X, Y, _)).
 /* Set Diffusion, Directed, Bounds */
-+ (intset:sys_in(Y, L, S)) <=
-   + sys_mulc_ord(X, Y, C),
-   {sys_bound_divisor(X, R),
-    (  sys_slash_range(C, R, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
+post(intset:sys_in(Y, L, S))
+<= posted(sys_mulc_ord(X, Y, C)),
+   sys_bound_divisor(X, R),
+   (  sys_slash_range(C, R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
 /* Variable Rename */
-+ sys_mulc(Z, Y, C) <=
-   + sys_var_mul(X, Z),
-   - sys_mulc_ord(X, Y, C).
-+ sys_mulc(X, Z, C) <=
-   + sys_var_mul(Y, Z),
-   - sys_mulc_ord(X, Y, C),
-   {Y \== X}.
+post(sys_mulc(Z, Y, C))
+<= posted(sys_var_mul(X, Z)),
+   phaseout(sys_mulc_ord(X, Y, C)).
+post(sys_mulc(X, Z, C))
+<= posted(sys_var_mul(Y, Z)),
+   phaseout(sys_mulc_ord(X, Y, C)),
+   Y \== X.
 /* Constant Backpropagation */
-+ sys_lin(L, C) <=
-   + sys_const_mul(X, S),
-   - sys_mulc_ord(X, Y, C),
-   {sys_make_prod(S, Y, [], L)}.
-+ sys_lin(L, C) <=
-   + sys_const_mul(Y, S),
-   - sys_mulc_ord(X, Y, C),
-   {Y \== X,
-    sys_make_prod(S, X, [], L)}.
+post(sys_lin(L, C))
+<= posted(sys_const_mul(X, S)),
+   phaseout(sys_mulc_ord(X, Y, C)),
+   sys_make_prod(S, Y, [], L).
+post(sys_lin(L, C))
+<= posted(sys_const_mul(Y, S)),
+   phaseout(sys_mulc_ord(X, Y, C)),
+   Y \== X,
+   sys_make_prod(S, X, [], L).
 /* Set Update, Directed, Bounds */
-+ (intset:sys_in(Y, L, S)) <=
-   + (intset:sys_in(X, _, R)),
+post(intset:sys_in(Y, L, S))
+<= posted(intset:sys_in(X, _, R)),
    sys_mulc_ord(X, Y, C),
-   {sys_slash_range(C, R, S)
- -> S \== ...,
-    L = [S]
- ;  L = [],
-    S = ...}.
+   (  sys_slash_range(C, R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
 
 % residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
@@ -435,11 +433,11 @@ sys_hook_spez(V, W) :-
    var(W), !,
    sys_freeze_var(V, R),
    sys_fresh_var(W, S),
-   sys_assume_cont(<= +sys_var_spez(R,S)).
+   sys_assume_cont(post(sys_var_spez(R, S))).
 sys_hook_spez(V, T) :-
    integer(T), !,
    sys_freeze_var(V, R),
-   sys_assume_cont(<= +sys_const_spez(R,T)).
+   sys_assume_cont(post(sys_const_spez(R, T))).
 sys_hook_spez(_, T) :-
    throw(error(type_error(integer,T),_)).
 
@@ -450,8 +448,8 @@ sys_hook_spez(_, T) :-
 :- private sys_var_spez/3.
 
 /* Union Find */
-unit <=
-   = sys_var_spez(_, _).
+true
+<= phaseout_posted(sys_var_spez(_, _)).
 
 % sys_const_spez(+Wrap, +Integer)
 % sys_const_spez(X, C) = X = C
@@ -460,8 +458,8 @@ unit <=
 :- private sys_const_spez/3.
 
 /* Constant Elimination */
-unit <=
-   = sys_const_spez(_, _).
+true
+<= phaseout_posted(sys_const_spez(_, _)).
 
 % sys_sqrv(+Wrap, +Wrap)
 % sys_sqrv(X,Y), X*X = Y
@@ -469,88 +467,88 @@ unit <=
 :- thread_local sys_sqrv/2.
 :- private sys_sqrv/3.
 /* Special Case */
-+ (intset:sys_in(X, [0..1], 0..1)) <=
-   = sys_sqrv(X, X), !.
+post(intset:sys_in(X, [0..1], 0..1))
+<= phaseout_posted(sys_sqrv(X, X)), !.
 /* Sqr & Sqr Intersection */
-sys_melt_join(T, Z) <=
-   = sys_sqrv(X, Z),
+sys_melt_join(T, Z)
+<= phaseout_posted(sys_sqrv(X, Z)),
    sys_sqrv(X, T), !.
 /* Union Find */
-+ sys_sqrv(T, Y) <=
-   = sys_sqrv(X, Y),
-   {sys_bound_var(X),
-    sys_melt_var(X, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
-+ sys_sqrv(X, T) <=
-   = sys_sqrv(X, Y),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
+post(sys_sqrv(T, Y))
+<= phaseout_posted(sys_sqrv(X, Y)),
+   sys_bound_var(X),
+   sys_melt_var(X, H),
+   var(H), !,
+   sys_fresh_var(H, T).
+post(sys_sqrv(X, T))
+<= phaseout_posted(sys_sqrv(X, Y)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, H),
+   var(H), !,
+   sys_fresh_var(H, T).
 /* Constant Elimination */
-sys_melt_const(Y, D) <=
-   = sys_sqrv(X, Y),
-   {sys_bound_var(X),
-    sys_melt_var(X, C),
-    integer(C)}, !,
-   {D is C*C}.
-+ sys_sqrc(X, C) <=
-   = sys_sqrv(X, Y),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, C),
-    integer(C)}, !.
+sys_melt_const(Y, D)
+<= phaseout_posted(sys_sqrv(X, Y)),
+   sys_bound_var(X),
+   sys_melt_var(X, C),
+   integer(C), !,
+   D is C*C.
+post(sys_sqrc(X, C))
+<= phaseout_posted(sys_sqrv(X, Y)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, C),
+   integer(C), !.
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_spez) /\
-sys_melt_hook(Y, sys_hook_spez) <=
-   + sys_sqrv(X, Y).
+sys_melt_hook(X, sys_hook_spez),
+sys_melt_hook(Y, sys_hook_spez)
+<= posted(sys_sqrv(X, Y)).
 /* Set Diffusion, Directed, Bounds */
-+ (intset:sys_in(X, L, S)) <=
-   + sys_sqrv(X, Y),
-   {X @>= Y}, !,
-   {sys_bound_factor(Y, R),
-    (  sys_root_range(R, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
-+ (intset:sys_in(Y, [S], S)) <=
-   + sys_sqrv(X, Y),
-   {sys_bound_divisor(X, R),
-    sys_square_range(R, S)}.
+post(intset:sys_in(X, L, S))
+<= posted(sys_sqrv(X, Y)),
+   X @>= Y, !,
+   sys_bound_factor(Y, R),
+   (  sys_root_range(R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
+post(intset:sys_in(Y, [S], S))
+<= posted(sys_sqrv(X, Y)),
+   sys_bound_divisor(X, R),
+   sys_square_range(R, S).
 /* Variable Rename */
-+ sys_sqrv(T, Y) <=
-   + sys_var_spez(X, T),
-   - sys_sqrv(X, Y).
-+ sys_sqrv(X, T) <=
-   + sys_var_spez(Y, T),
-   - sys_sqrv(X, Y),
-   {Y \== X}.
+post(sys_sqrv(T, Y))
+<= posted(sys_var_spez(X, T)),
+   phaseout(sys_sqrv(X, Y)).
+post(sys_sqrv(X, T))
+<= posted(sys_var_spez(Y, T)),
+   phaseout(sys_sqrv(X, Y)),
+   Y \== X.
 /* Constant Backpropagation */
-sys_melt_const(Y, D) <=
-   + sys_const_spez(X, C),
-   - sys_sqrv(X, Y),
-   {D is C*C}.
-+ sys_sqrc(X, C) <=
-   + sys_const_spez(Y, C),
-   - sys_sqrv(X, Y),
-   {Y \== X}.
+sys_melt_const(Y, D)
+<= posted(sys_const_spez(X, C)),
+   phaseout(sys_sqrv(X, Y)),
+   D is C*C.
+post(sys_sqrc(X, C))
+<= posted(sys_const_spez(Y, C)),
+   phaseout(sys_sqrv(X, Y)),
+   Y \== X.
 /* Set Update, Directed, Bounds */
-+ (intset:sys_in(X, L, S)) <=
-   + (intset:sys_in(Y, _, R)),
-   {R \== ...},
+post(intset:sys_in(X, L, S))
+<= posted(intset:sys_in(Y, _, R)),
+   R \== ...,
    sys_sqrv(X, Y),
-   {X @>= Y,
-    (  sys_root_range(R, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
-+ (intset:sys_in(Y, [S], S)) <=
-   + (intset:sys_in(X, _, R)),
+   X @>= Y,
+   (  sys_root_range(R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
+post(intset:sys_in(Y, [S], S))
+<= posted(intset:sys_in(X, _, R)),
    sys_sqrv(X, Y),
-   {X @< Y,
-    sys_square_range(R, S)}.
+   X @< Y,
+   sys_square_range(R, S).
 
 % sys_sqrc(+Wrap, +Integer)
 % sys_sqrc(X,C), X*X = C
@@ -558,18 +556,18 @@ sys_melt_const(Y, D) <=
 :- thread_local sys_sqrc/2.
 :- private sys_sqrc/3.
 % Special Case
-sys_melt_const(X, 0) <=
-   = sys_sqrc(X, 0), !.
-zero <=
-   = sys_sqrc(_, C),
-   {C < 0}, !.
-+ (intset:sys_in(X, [H,D], H..D)) <=
-   = sys_sqrc(X, C),
-   {sqrtrem(C, D, R),
-    R =:= 0,
-    H is -D}, !.
-zero <=
-   = sys_sqrc(_, _).
+sys_melt_const(X, 0)
+<= phaseout_posted(sys_sqrc(X, 0)), !.
+fail
+<= phaseout_posted(sys_sqrc(_, C)),
+   C < 0, !.
+post(intset:sys_in(X, [H,D], H..D))
+<= phaseout_posted(sys_sqrc(X, C)),
+   sqrtrem(C, D, R),
+   R =:= 0,
+   H is -D, !.
+fail
+<= phaseout_posted(sys_sqrc(_, _)).
 
 % sys_impv(+Wrap, +Wrap)
 % sys_impv(X,Y), X*Y = X
@@ -577,85 +575,85 @@ zero <=
 :- thread_local sys_impv/2.
 :- private sys_impv/3.
 /* Special Case */
-+ (intset:sys_in(X, [0..1], 0..1)) <=
-   = sys_impv(X, X), !.
+post(intset:sys_in(X, [0..1], 0..1))
+<= phaseout_posted(sys_impv(X, X)), !.
 /* Union Find */
-+ sys_impv(T, Y) <=
-   = sys_impv(X, Y),
-   {sys_bound_var(X),
-    sys_melt_var(X, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
-+ sys_impv(X, T) <=
-   = sys_impv(X, Y),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
+post(sys_impv(T, Y))
+<= phaseout_posted(sys_impv(X, Y)),
+   sys_bound_var(X),
+   sys_melt_var(X, H),
+   var(H), !,
+   sys_fresh_var(H, T).
+post(sys_impv(X, T))
+<= phaseout_posted(sys_impv(X, Y)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, H),
+   var(H), !,
+   sys_fresh_var(H, T).
 /* Constant Elimination */
-+ sys_lin(L, C) <=
-   = sys_impv(X, Y),
-   {sys_bound_var(X),
-    sys_melt_var(X, C),
-    integer(C)}, !,
-   {sys_make_prod(C, Y, [], L)}.
-+ sys_lin(L, 0) <=
-   = sys_impv(X, Y),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, C),
-    integer(C)}, !,
-   {D is C-1,
-    sys_make_prod(D, X, [], L)}.
+post(sys_lin(L, C))
+<= phaseout_posted(sys_impv(X, Y)),
+   sys_bound_var(X),
+   sys_melt_var(X, C),
+   integer(C), !,
+   sys_make_prod(C, Y, [], L).
+post(sys_lin(L, 0))
+<= phaseout_posted(sys_impv(X, Y)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, C),
+   integer(C), !,
+   D is C-1,
+   sys_make_prod(D, X, [], L).
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_spez) /\
-sys_melt_hook(Y, sys_hook_spez) <=
-   + sys_impv(X, Y).
+sys_melt_hook(X, sys_hook_spez),
+sys_melt_hook(Y, sys_hook_spez)
+<= posted(sys_impv(X, Y)).
 /* Set Diffusion, Directed, Bounds */
-+ (intset:sys_in(X, [S], S)) <=
-   + sys_impv(X, Y),
-   {X @>= Y}, !,
-   {sys_bound_factor(Y, R),
-    sys_prem_range(R, S),
-    S \== ...}.
-+ (intset:sys_in(Y, [S], S)) <=
-   + sys_impv(X, Y),
-   {sys_bound_factor(X, R),
-    sys_conc_range(R, S),
-    S \== ...}.
+post(intset:sys_in(X, [S], S))
+<= posted(sys_impv(X, Y)),
+   X @>= Y, !,
+   sys_bound_factor(Y, R),
+   sys_prem_range(R, S),
+   S \== ... .
+post(intset:sys_in(Y, [S], S))
+<= posted(sys_impv(X, Y)),
+   sys_bound_factor(X, R),
+   sys_conc_range(R, S),
+   S \== ... .
 /* Variable Rename */
-+ sys_impv(T, Y) <=
-   + sys_var_spez(X, T),
-   - sys_impv(X, Y).
-+ sys_impv(X, T) <=
-   + sys_var_spez(Y, T),
-   - sys_impv(X, Y),
-   {Y \== X}.
+post(sys_impv(T, Y))
+<= posted(sys_var_spez(X, T)),
+   phaseout(sys_impv(X, Y)).
+post(sys_impv(X, T))
+<= posted(sys_var_spez(Y, T)),
+   phaseout(sys_impv(X, Y)),
+   Y \== X.
 /* Constant Backpropagation */
-+ sys_lin(L, C) <=
-   + sys_const_spez(X, C),
-   - sys_impv(X, Y),
-   {sys_make_prod(C, Y, [], L)}.
-+ sys_lin(L, 0) <=
-   + sys_const_spez(Y, C),
-   - sys_impv(X, Y),
-   {Y \== X,
-    D is C-1,
-    sys_make_prod(D, X, [], L)}.
+post(sys_lin(L, C))
+<= posted(sys_const_spez(X, C)),
+   phaseout(sys_impv(X, Y)),
+   sys_make_prod(C, Y, [], L).
+post(sys_lin(L, 0))
+<= posted(sys_const_spez(Y, C)),
+   phaseout(sys_impv(X, Y)),
+   Y \== X,
+   D is C-1,
+   sys_make_prod(D, X, [], L).
 /* Set Update, Directed, Bounds */
-+ (intset:sys_in(X, [S], S)) <=
-   + (intset:sys_in(Y, _, R)),
-   {R \== ...},
+post(intset:sys_in(X, [S], S))
+<= posted(intset:sys_in(Y, _, R)),
+   R \== ...,
    sys_impv(X, Y),
-   {X @>= Y,
-    sys_prem_range(R, S),
-    S \== ...}.
-+ (intset:sys_in(Y, [S], S)) <=
-   + (intset:sys_in(X, _, R)),
-   {R \== ...},
+   X @>= Y,
+   sys_prem_range(R, S),
+   S \== ... .
+post(intset:sys_in(Y, [S], S))
+<= posted(intset:sys_in(X, _, R)),
+   R \== ...,
    sys_impv(X, Y),
-   {X @< Y,
-    sys_conc_range(R, S),
-    S \== ...}.
+   X @< Y,
+   sys_conc_range(R, S),
+   S \== ... .
 
 % residue:sys_current_eq(+Var, -Goal)
 residue:sys_current_eq(V, sqrv(X,Y)) :-
@@ -701,11 +699,11 @@ sys_hook_abs(V, W) :-
    var(W), !,
    sys_freeze_var(V, R),
    sys_fresh_var(W, S),
-   sys_assume_cont(<= +sys_var_abs(R,S)).
+   sys_assume_cont(post(sys_var_abs(R, S))).
 sys_hook_abs(V, T) :-
    integer(T), !,
    sys_freeze_var(V, R),
-   sys_assume_cont(<= +sys_const_abs(R,T)).
+   sys_assume_cont(post(sys_const_abs(R, T))).
 sys_hook_abs(_, T) :-
    throw(error(type_error(integer,T),_)).
 
@@ -716,8 +714,8 @@ sys_hook_abs(_, T) :-
 :- private sys_var_abs/3.
 
 /* Union Find */
-unit <=
-   = sys_var_abs(_, _).
+true
+<= phaseout_posted(sys_var_abs(_, _)).
 
 % sys_const_abs(+Wrap, +Integer)
 % sys_const_abs(X, C) = X = C
@@ -726,96 +724,96 @@ unit <=
 :- private sys_const_abs/3.
 
 /* Constant Elimination */
-unit <=
-   = sys_const_abs(_, _).
+true
+<= phaseout_posted(sys_const_abs(_, _)).
 
 % sys_absv(+Wrap, +Wrap)
 % sys_absv(X,Y), abs(X) = Y
 :- multifile sys_absv/2.
 :- thread_local sys_absv/2.
 /* Special Case */
-+ (intset:sys_in(X, [0...], 0...)) <=
-   = sys_absv(X, X), !.
+post(intset:sys_in(X, [0...], 0...))
+<= phaseout_posted(sys_absv(X, X)), !.
 /* Abs & Abs Intersection */
-sys_melt_join(T, Z) <=
-   = sys_absv(X, Z),
+sys_melt_join(T, Z)
+<= phaseout_posted(sys_absv(X, Z)),
    sys_absv(X, T), !.
 /* Union Find */
-+ sys_absv(T, Y) <=
-   = sys_absv(X, Y),
-   {sys_bound_var(X),
-    sys_melt_var(X, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
-+ sys_absv(X, T) <=
-   = sys_absv(X, Y),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, H),
-    var(H)}, !,
-   {sys_fresh_var(H, T)}.
+post(sys_absv(T, Y))
+<= phaseout_posted(sys_absv(X, Y)),
+   sys_bound_var(X),
+   sys_melt_var(X, H),
+   var(H), !,
+   sys_fresh_var(H, T).
+post(sys_absv(X, T))
+<= phaseout_posted(sys_absv(X, Y)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, H),
+   var(H), !,
+   sys_fresh_var(H, T).
 /* Constant Elimination */
-sys_melt_const(Y, D) <=
-   = sys_absv(X, Y),
-   {sys_bound_var(X),
-    sys_melt_var(X, C),
-    integer(C)}, !,
-   {D is abs(C)}.
-+ sys_absc(X, C) <=
-   = sys_absv(X, Y),
-   {sys_bound_var(Y),
-    sys_melt_var(Y, C),
-    integer(C)}, !.
+sys_melt_const(Y, D)
+<= phaseout_posted(sys_absv(X, Y)),
+   sys_bound_var(X),
+   sys_melt_var(X, C),
+   integer(C), !,
+   D is abs(C).
+post(sys_absc(X, C))
+<= phaseout_posted(sys_absv(X, Y)),
+   sys_bound_var(Y),
+   sys_melt_var(Y, C),
+   integer(C), !.
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_abs) /\
-sys_melt_hook(Y, sys_hook_abs) <=
-   + sys_absv(X, Y).
+sys_melt_hook(X, sys_hook_abs),
+sys_melt_hook(Y, sys_hook_abs)
+<= posted(sys_absv(X, Y)).
 /* Set Diffusion, Directed, Bounds */
-+ (intset:sys_in(X, L, S)) <=
-   + sys_absv(X, Y),
-   {X @>= Y}, !,
-   {sys_bound_factor(Y, R),
-    (  sys_invabs_range(R, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
-+ (intset:sys_in(Y, [S], S)) <=
-   + sys_absv(X, Y),
-   {sys_bound_divisor(X, R),
-    sys_abs_range(R, S)}.
+post(intset:sys_in(X, L, S))
+<= posted(sys_absv(X, Y)),
+   X @>= Y, !,
+   sys_bound_factor(Y, R),
+   (  sys_invabs_range(R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
+post(intset:sys_in(Y, [S], S))
+<= posted(sys_absv(X, Y)),
+   sys_bound_divisor(X, R),
+   sys_abs_range(R, S).
 /* Variable Rename */
-+ sys_absv(T, Y) <=
-   + sys_var_abs(X, T),
-   - sys_absv(X, Y).
-+ sys_absv(X, T) <=
-   + sys_var_abs(Y, T),
-   - sys_absv(X, Y),
-   {Y \== X}.
+post(sys_absv(T, Y))
+<= posted(sys_var_abs(X, T)),
+   phaseout(sys_absv(X, Y)).
+post(sys_absv(X, T))
+<= posted(sys_var_abs(Y, T)),
+   phaseout(sys_absv(X, Y)),
+   Y \== X.
 /* Constant Backpropagation */
-sys_melt_const(Y, D) <=
-   + sys_const_abs(X, C),
-   - sys_absv(X, Y),
-   {D is abs(C)}.
-+ sys_absc(X, C) <=
-   + sys_const_abs(Y, C),
-   - sys_absv(X, Y),
-   {Y \== X}.
+sys_melt_const(Y, D)
+<= posted(sys_const_abs(X, C)),
+   phaseout(sys_absv(X, Y)),
+   D is abs(C).
+post(sys_absc(X, C))
+<= posted(sys_const_abs(Y, C)),
+   phaseout(sys_absv(X, Y)),
+   Y \== X.
 /* Set Update, Directed, Bounds */
-+ (intset:sys_in(X, L, S)) <=
-   + (intset:sys_in(Y, _, R)),
-   {R \== ...},
+post(intset:sys_in(X, L, S))
+<= posted(intset:sys_in(Y, _, R)),
+   R \== ...,
    sys_absv(X, Y),
-   {X @>= Y,
-    (  sys_invabs_range(R, S)
-    -> S \== ...,
-       L = [S]
-    ;  L = [],
-       S = ...)}.
-+ (intset:sys_in(Y, [S], S)) <=
-   + (intset:sys_in(X, _, R)),
+   X @>= Y,
+   (  sys_invabs_range(R, S)
+   -> S \== ...,
+      L = [S]
+   ;  L = [],
+      S = ...).
+post(intset:sys_in(Y, [S], S))
+<= posted(intset:sys_in(X, _, R)),
    sys_absv(X, Y),
-   {X @< Y,
-    sys_abs_range(R, S)}.
+   X @< Y,
+   sys_abs_range(R, S).
 
 % sys_absc(+Wrap, +Integer)
 % sys_absc(X,C), abs(X) = C
@@ -823,14 +821,14 @@ sys_melt_const(Y, D) <=
 :- thread_local sys_absc/2.
 :- private sys_absc/3.
 % Special Case
-sys_melt_const(X, 0) <=
-   = sys_absc(X, 0), !.
-zero <=
-   = sys_absc(_, C),
-   {C < 0}, !.
-+ (intset:sys_in(X, [H,C], H..C)) <=
-   = sys_absc(X, C),
-   {H is -C}.
+sys_melt_const(X, 0)
+<= phaseout_posted(sys_absc(X, 0)), !.
+fail
+<= phaseout_posted(sys_absc(_, C)),
+   C < 0, !.
+post(intset:sys_in(X, [H,C], H..C))
+<= phaseout_posted(sys_absc(X, C)),
+   H is -C.
 
 % residue:sys_current_eq(+Var, -Goal)
 residue:sys_current_eq(V, absv(X,Y)) :-

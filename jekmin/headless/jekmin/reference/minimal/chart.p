@@ -3,42 +3,40 @@
  * (DCGs) in a forward manner. The ordinary DCG rules of Jekejeke Prolog
  * are not suitable for this purpose since they model terminals by
  * [T|O] = I. We therefore provide special chart DCG rules as part of
- * Jekejeke Minilog which model terminals by ‘D’(T,I), O is I+1. Chart
- * DCG rules are identified by the (==>)/2 operator:
+ * which model terminals by ‘D’(T,I,O). Chart DCG rules are identified
+ * by the (==:)/2 operator:
  *
- * P ==> Q.      % chart DCG rule with forward chaining.
+ * P ==: Q.      % chart DCG rule.
  *
  * Chart DCG rules do currently not allow for push backs. The term
  * expansion augments the head and body by two additional parameters
  * that are to represent the sentence position before and after the
  * parsing. A predicate identifier p/n will thus be turned into a
- * predicate identifier p/n+2. Further the DCG chart operator (==>)/2
+ * predicate identifier p/n+2. Further the DCG chart operator (==:)/2
  * is replaced by the forward chaining operator (<=)/2:
  *
- * chart(P, I, O) <= sys_sys_chart(Q, I, O).
+ * chart_post(P, I, O) <= chart_posted(Q, I, O).
  *
- * The term expansion will then go to work and tackle the head, whereas
- * the goal expansion will tackle the body. Compared to ordinary DCG
- * rules, the chart DCG rules support fewer cnstructs. For example we
- * do not yet support the conditional (->)/2 and the higher order calls
- * call/n. On the other hand we already support the grammar negation (\+)/1
- * and the forward chaining annotation (+)/1 is automatically placed:
+ * The expansion will then go to work and tackle the head and the body.
+ * Compared to ordinary DCG rules, the chart DCG rules support fewer
+ * constructs. For example we do not yet support the conditional (->)/2
+ * and the higher order calls call/n. On the other hand the look-ahead
+ * negation (\+) is already supported.
  *
- * Let’s consider the following example chart DCG rule:
+ * Let us consider the following example chart DCG rule:
  *
- * p(X) ==> "a", q(X), {r(X)}.  % chart DCG rule
+ * p(X) ==: "a", q(X), {r(X)}.  % chart DCG rule
  *
  * As an intermediate results the chart DCG rule will be turned into:
  *
- * +p(X, I, O) <= +'D'(97, I), {H is I+1}, q(X, H, O), {r(X)}.
+ * post(p(X, I, O)) <= posted('D'(97, I, H)), q(X, H, O), r(X).
  *
  * The above rule will then be turned into a delta computation for the
- * predicate ’D’/2. In general only the first literal of a DCG chart rule
+ * predicate ’D’/3. In general only the first literal of a DCG chart rule
  * will be translated into a delta computation rule, improving efficiency.
- * The chart/3 construct can also be used in hypothetical queries to
- * generate the ‘D’/2 facts for a given sentence or in ordinary backward
- * chaining query the result of parsing. See the palindrom example
- * for more details.
+ * The words/3 construct can be used to generate the ‘D’/3 facts and the
+ * chart/3 construct can be used to query the result of parsing. See the
+ * palindrom example for more details.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -72,29 +70,37 @@
 :- package(library(jekmin/reference/minimal)).
 
 :- module(chart, []).
-:- use_module(library(minimal/hypo)).
-:- use_module(library(minimal/delta)).
+:- reexport(library(minimal/delta)).
 
-:- public infix(==>).
-:- op(1200, xfx, ==>).
+:- public infix(==:).
+:- op(1200, xfx, ==:).
 
 /**********************************************************/
-/* Goal Rewriting I                                       */
+/* Word Posting                                           */
 /**********************************************************/
 
 /**
- * chart(A, I, O):
- * Succeeds when the index I starts with the phrase A giving the remainder O.
+ * words([A1, ..., An], I, O):
+ * words([A1, ..., An], I, O, G):
+ * Post the words A1,..,An from index I to index O before further solving.
  */
-% chart(+Phrase, +Pos, +Pos)
-:- public chart/3.
-:- meta_predicate chart(2,?,?).
-chart(P, _, _) :-
-   sys_var(P),
+% words(+List, +Integer, -Integer)
+:- public words/3.
+words(L, _, _) :-
+   var(L),
    throw(error(instantiation_error,_)).
-chart(P, I, O) :-
-   expand_goal(sys_chart(P, I, O), Q),
+words(L, I, O) :-
+   expand_goal(words(L, I, O), Q),
    call(Q).
+
+% words(+List, +Integer, -Integer, +Goal)
+:- public words/4.
+words(L, _, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+words(L, I, O, G) :-
+   expand_goal(words(L, I, O), Q),
+   call(Q, G).
 
 % user:goal_expansion(+Goal, -Goal)
 :- public user:goal_expansion/2.
@@ -102,159 +108,179 @@ chart(P, I, O) :-
 :- meta_predicate user:goal_expansion(0,0).
 :- discontiguous user:goal_expansion/2.
 
-/**
- * chart(A, O):
- * Succeeds when the first index starts with the phrase A giving the remainder O.
- */
-% chart(+Goal, -Integer)
-:- public chart/2.
-:- meta_predicate chart(2,?).
-chart(_, _) :-
-   throw(error(existence_error(body,chart/2),_)).
-
-user:goal_expansion(chart(P, N), chart(P, 0, N)).
-user:goal_expansion(chart(P, _, _), _) :-
-   sys_var(P), !, fail.
-user:goal_expansion(chart((A, B), I, O), (  chart(A, I, H),
-                                            chart(B, H, O))).
-user:goal_expansion(chart(P, _, _), P) :-
-   P = fail.
-user:goal_expansion(chart({A}, I, I), A).
-user:goal_expansion(chart(U, I, I), Q) :-
-   U = (\+A),
-   sys_replace_site(Q, U, \+chart(A,I,_)).
-user:goal_expansion(chart(P, I, I), P) :-
-   P = !.
-user:goal_expansion(chart([], I, I), true).
-user:goal_expansion(chart(U, I, O), (  Q,
-                                       H is I+1,
-                                       chart(B, H, O))) :-
+user:goal_expansion(words(L, _, _), _) :-
+   var(L), !, fail.
+user:goal_expansion(words([], I, I), true).
+user:goal_expansion(words(U, I, O), (  words(B, H, O), G)) :-
    U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I)).
+   H is I+1,
+   sys_replace_site(Q, U, 'D'(A,I,H)),
+   sys_replace_site(G, Q, post(Q)).
+
+/**********************************************************/
+/* Chart Checking                                         */
+/**********************************************************/
+
+/**
+ * chart(A, I, O):
+ * Succeeds when there is a phrase A from index I to index O.
+ */
+% chart(+Phrase, +Integer, -Integer)
+:- public chart/3.
+:- meta_predicate chart(2,?,?).
+chart(P, _, _) :-
+   sys_var(P),
+   throw(error(instantiation_error,_)).
+chart(P, I, O) :-
+   expand_goal(chart(P, I, O), Q),
+   call(Q).
+
+/**********************************************************/
+/* Goal Rewriting Steadfast                               */
+/**********************************************************/
+
+/**
+ * P:
+ * The non-terminal P is checked.
+ */
+user:goal_expansion(chart(P, I, O), chart(P, I, O)) :-
+   sys_var(P).
+user:goal_expansion(chart(P, I, O), R) :-
+   chart_expansion(P, I, O, R).
 user:goal_expansion(chart(P, I, O), Q) :-
    sys_modext_args(P, I, O, Q).
 
-/**********************************************************/
-/* Goal Rewriting II                                      */
-/**********************************************************/
-
-:- public sys_sys_chart/3.
-:- meta_predicate sys_sys_chart(2,?,?).
-sys_sys_chart(_, _, _) :-
-   throw(error(existence_error(body,sys_sys_chart/3),_)).
-user:goal_expansion(sys_sys_chart(P, _, _), _) :-
-   sys_var(P), !, fail.
-user:goal_expansion(sys_sys_chart((A, B), I, O), (  sys_sys_chart(A, I, H),
-                                                    sys_chart(B, H, O))).
-user:goal_expansion(sys_sys_chart(U, I, O), (  + Q,
-                                               {H is I+1},
-                                               sys_chart(B, H, O))) :-
-   U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I)).
-user:goal_expansion(sys_sys_chart(P, I, O), + Q) :-
-   sys_modext_args(P, I, O, Q).
-
-:- public sys_chart/3.
-:- meta_predicate sys_chart(2,?,?).
-sys_chart(_, _, _) :-
-   throw(error(existence_error(body,sys_chart/3),_)).
-
-% sys_chart(+Goal, +Integer, -Integer)
-user:goal_expansion(sys_chart(P, _, _), _) :-
-   sys_var(P), !, fail.
+/**
+ * chart_expansion(A, I, O, G)
+ * Succeeds when the phrase A extended by the input I and the
+ * output O results in the steadfast goal G.
+ */
+% chart_expansion(+Phrase, +List, -List, -Goal)
+:- private chart_expansion/4.
+:- meta_predicate chart_expansion(2,?,?,0).
+:- discontiguous chart_expansion/4.
+:- set_predicate_property(chart_expansion/4, sys_noexpand).
 
 /**
  * fail:
- * The grammar connective fails.
+ * The grammar fails.
  */
-user:goal_expansion(sys_chart(P, _, _), P) :-
+chart_expansion(P, _, _, P) :-
    P = fail.
 
 /**
  * A, B:
- * The predicate reacts when either A or B react, and the other
- * succeeds, or when both react. The predicate succeeds when A
- * and B succeed. The output of A is conjoined with the input of B.
+ * The output of A is conjoined with the input of B.
  */
-user:goal_expansion(sys_chart((A, B), I, O), (  sys_chart(A, I, H),
-                                                sys_chart(B, H, O))).
+chart_expansion((A, B), I, O, (  chart(A, I, H),
+                                 sys_chart(B, H, O))) :-
+   sys_var(A).
+chart_expansion((U, B), I, O, (  P,
+                                 chart(B, I, O))) :-
+   chart_barrier(U, I, P).
+chart_expansion((A, B), I, O, (  chart(A, I, H),
+                                 sys_chart(B, H, O))).
 
 /**
- * {A}:
- * The grammar connective succeeds whenever the goal argument A succeeds.
- * The goal argument A is cut transparent and not chart translated.
+ * A; B:
+ * The grammar succeeds when A succeeds or when B succeeds.
  */
-user:goal_expansion(sys_chart({A}, I, I), {A}).
-
-/**
- * \+ A:
- * When A succeeds, then the predicate fails. Otherwise the predicate
- * succeeds. The second argument is left loose.
- */
-user:goal_expansion(sys_chart(U, I, I), Q) :-
-   U = (\+A),
-   sys_replace_site(Q, U, {\+chart(A,I,_)}).
-
-/**
- * !:
- * The grammar connective removes pending choice and then succeeds once.
- */
-user:goal_expansion(sys_chart(P, I, I), P) :-
-   P = !.
+chart_expansion((A; B), I, O, (  chart(A, I, O)
+                              ;  chart(B, I, O))).
 
 /**
  * [A1, ..., An]:
- * The grammar connective denotes terminals A1, ..., An that can arrive.
+ * The terminals A1, ..., An are checked.
  */
-user:goal_expansion(sys_chart([], I, I), true).
-user:goal_expansion(sys_chart(U, I, O), (  Q,
-                                           {H is I+1},
-                                           sys_chart(B, H, O))) :-
+chart_expansion(U, I, O, Q) :-
+   U = [],
+   sys_replace_site(Q, U, I=O).
+chart_expansion(U, I, O, (  Q,
+                            sys_chart(B, H, O))) :-
    U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I)).
+   sys_replace_site(Q, U, 'D'(A,I,H)).
+
+chart_expansion(U, I, O, (  P, Q)) :-
+   chart_barrier(U, I, P),
+   sys_replace_site(Q, U, I=O).
+
+:- private chart_barrier/3.
+:- meta_predicate chart_barrier(2,?,0).
+:- discontiguous chart_barrier/3.
+:- set_predicate_property(chart_barrier/3, sys_noexpand).
 
 /**
- * P:
- * The literal is a fact that can arrive. The literal is augmented
- * by two arguments.
+ * !:
+ * The choice points are removed.
  */
+chart_barrier(U, _, U) :-
+   U = !.
+
+/**
+ * {A}:
+ * The auxiliary condition is checked.
+ */
+chart_barrier({A}, _, A).
+
+/**
+ * \+ A:
+ * The negation of A is checked. The output of A is left loose.
+ */
+chart_barrier(U, I, Q) :-
+   U = (\+A),
+   sys_replace_site(Q, U, {\+chart(A,I,_)}).
+
+/**********************************************************/
+/* Goal Rewriting Non-Steadfast                           */
+/**********************************************************/
+
+:- private sys_chart/3.
+:- meta_predicate sys_chart(2,?,?).
+sys_chart(_, _, _) :-
+   throw(error(existence_error(body,sys_chart/3),_)).
+
+user:goal_expansion(sys_chart(P, I, O), chart(P, I, O)) :-
+   sys_var(P).
+user:goal_expansion(sys_chart(P, I, O), R) :-
+   sys_chart_expansion(P, I, O, R).
 user:goal_expansion(sys_chart(P, I, O), Q) :-
    sys_modext_args(P, I, O, Q).
 
-/**********************************************************/
-/* Term Rewriting                                         */
-/**********************************************************/
-
-% hypo: =>(+Rule, +Goal)
-:- public hypo: => /2.
-:- multifile hypo: => /2.
-:- meta_predicate hypo:(-1=>0).
-
 /**
- * chart(A, I, O):
- * Assumes that the phrase A starting with index I gives the remainder O.
+ * sys_chart_expansion(A, I, O, G)
+ * Succeeds when the phrase A extended by the input I and the
+ * output O results in the not-necessarily steadfast goal G.
  */
-% chart(+Term, +Integer, -Integer)
-hypo:(chart(P, _, _) => _) :-
-   sys_var(P),
-   throw(error(instantiation_error,_)).
-hypo:(chart(P, I, O) => G) :- !,
-   expand_term(chart(P, I, O), Q), Q => G.
+% sys_chart_expansion(+Grammar, +List, -List, -Goal)
+:- private sys_chart_expansion/4.
+:- meta_predicate sys_chart_expansion(2,?,?,0).
+:- set_predicate_property(sys_chart_expansion/4, sys_noexpand).
+sys_chart_expansion(P, _, _, P) :-
+   P = fail.
+sys_chart_expansion((A, B), I, O, (  sys_chart(A, I, H),
+                                     sys_chart(B, H, O))) :-
+   sys_var(A).
+sys_chart_expansion((U, B), I, O, (  P,
+                                     chart(B, I, O))) :-
+   chart_barrier(U, I, P).
+sys_chart_expansion((A, B), I, O, (  sys_chart(A, I, H),
+                                     sys_chart(B, H, O))).
+sys_chart_expansion((A; B), I, O, (  chart(A, I, O)
+                                  ;  chart(B, I, O))).
+sys_chart_expansion(U, I, I, Q) :-
+   U = [],
+   sys_replace_site(Q, U, true).
+sys_chart_expansion(U, I, O, (  Q,
+                                sys_chart(B, H, O))) :-
+   U = [A|B],
+   sys_replace_site(Q, U, 'D'(A,I,H)).
+sys_chart_expansion(U, I, O, (  P, Q)) :-
+   chart_barrier(U, I, P),
+   sys_replace_site(Q, U, I=O).
 
-% hypo:post_impl(+Term)
-:- public hypo:(<=)/1.
-:- multifile hypo:(<=)/1.
-:- meta_predicate hypo:(<= -1).
-hypo:(<= chart(P, _, _)) :-
-   sys_var(P),
-   throw(error(instantiation_error,_)).
-hypo:(<= chart(P, I, O)) :- !,
-   expand_term(chart(P, I, O), Q),
-   <= Q.
-
-:- public hypo:hypo_abnormal/1.
-:- multifile hypo:hypo_abnormal/1.
-hypo:hypo_abnormal(chart(_,_,_)).
+/**********************************************************/
+/* Chart DCG Rule                                         */
+/**********************************************************/
 
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
@@ -263,41 +289,52 @@ hypo:hypo_abnormal(chart(_,_,_)).
 :- discontiguous user:term_expansion/2.
 
 /**
- * chart(A, O):
- * Assumes that the phrase A starting with the first index gives the remainder O.
+ * H ==: B:
+ * Chart DCG rule with chart head H and chart body B.
  */
-% chart(+Term, -Integer)
-user:term_expansion(chart(P, N), chart(P, 0, N)).
-user:term_expansion(chart(P, _, _), _) :-
-   sys_var(P), !, fail.
+:- public ==: /2.
+:- meta_predicate (-3==: -3).
+(  _ ==: _) :-
+   throw(error(existence_error(body,==: /2),_)).
+
+user:term_expansion((  P ==: A), (  chart_post(P, I, O)
+                                 <= chart_posted(A, I, O))).
 
 /**
- * [A1, ..., An]:
- * The grammar connective directly assumes the terminals A1, ..., An.
+ * chart_post(H, I, O):
+ * This predicate cannot be executed. It only serves as a goal
+ * expansion wrapper, that generates the post head of a chart rule.
  */
-user:term_expansion(chart([], I, I), unit).
-user:term_expansion(chart(U, I, O), chart(B, H, O) /\
-                                    + Q) :-
+:- private chart_post/3.
+:- meta_predicate chart_post(2,?,?).
+chart_post(_, _, _) :-
+   throw(error(existence_error(body,chart_post/3),_)).
+
+user:goal_expansion(chart_post(P, I, O), H) :-
+   sys_modext_args(P, I, O, Q),
+   sys_replace_site(H, Q, post(Q)).
+
+/**
+ * chart_posted(B, I, O):
+ * This predicate cannot be executed. It only serves as a goal
+ * expansion wrapper, that generates the posted body of a chart rule.
+ */
+:- private chart_posted/3.
+:- meta_predicate chart_posted(2,?,?).
+chart_posted(_, _, _) :-
+   throw(error(existence_error(body,chart_posted/3),_)).
+
+user:goal_expansion(chart_posted(P, _, _), _) :-
+   sys_var(P),
+   throw(error(instantiation_error,_)).
+user:goal_expansion(chart_posted((A, B), I, O), (  chart_posted(A, I, H),
+                                                   sys_chart(B, H, O))).
+user:goal_expansion(chart_posted((A; B), I, O), (  chart_posted(A, I, O)
+                                                ;  chart_posted(B, I, O))).
+user:goal_expansion(chart_posted(U, I, O), (  posted(Q),
+                                              sys_chart(B, H, O))) :-
    U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I)),
-   H is I+1.
-
-/**
- * P:
- * The literal P is directly assumed. The literal is augmented by two arguments.
- */
-user:term_expansion(chart(P, I, O), + Q) :-
+   sys_replace_site(Q, U, 'D'(A,I,H)).
+user:goal_expansion(chart_posted(P, I, O), posted(Q)) :-
    sys_modext_args(P, I, O, Q).
 
-/**
- * H ==> B:
- * The construct defines a forward chart rule with chart head H and
- * chart body B.
- */
-:- public ==> /2.
-:- meta_predicate (2==> -3).
-(_ ==> _) :-
-   throw(error(existence_error(body,==> /2),_)).
-
-user:term_expansion((P ==> A), (chart(P, I, O) <=
-                                  sys_sys_chart(A, I, O))).

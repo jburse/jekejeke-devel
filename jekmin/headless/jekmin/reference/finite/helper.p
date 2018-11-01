@@ -36,7 +36,6 @@
 
 :- module(helper, []).
 :- use_module(library(minimal/assume)).
-:- use_module(library(minimal/hypo)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
 
@@ -44,21 +43,12 @@
 /* Post Extensions                                        */
 /**********************************************************/
 
-% <= +Term
-:- public hypo:(<=)/1.
-:- multifile hypo:(<=)/1.
-:- meta_predicate hypo:(<= -1).
-:- discontiguous hypo:(<=)/1.
-
 /**
  * sys_melt_const(S, C):
  * Unwrap the variable S and unify it with the constant C.
  */
 :- public sys_melt_const/2.
-sys_melt_const(_, _) :-
-   throw(error(existence_error(body,sys_melt_const/2),_)).
-
-hypo:(<= sys_melt_const(S, C)) :- !,
+sys_melt_const(S, C) :-
    sys_melt_var(S, C).
 
 /**
@@ -66,10 +56,7 @@ hypo:(<= sys_melt_const(S, C)) :- !,
  * Unwrap the variables S and T and unify them.
  */
 :- public sys_melt_join/2.
-sys_melt_join(_, _) :-
-   throw(error(existence_error(body,sys_melt_join/2),_)).
-
-hypo:(<= sys_melt_join(S, T)) :- !,
+sys_melt_join(S, T) :-
    sys_melt_var(S, U),
    sys_melt_var(T, U).
 
@@ -78,20 +65,9 @@ hypo:(<= sys_melt_join(S, T)) :- !,
  * Unwrap the variable X and give the hook H to it.
  */
 :- public sys_melt_hook/2.
-sys_melt_hook(_, _) :-
-   throw(error(existence_error(body,sys_melt_hook/2),_)).
-
-hypo:(<= sys_melt_hook(X, H)) :- !,
+sys_melt_hook(X, H) :-
    sys_melt_var(X, A),
    sys_ensure_hook(A, H).
-
-% hypo_abnormal(+Term)
-:- public hypo:hypo_abnormal/1.
-:- multifile hypo:hypo_abnormal/1.
-:- discontiguous hypo:hypo_abnormal/1.
-hypo:hypo_abnormal(sys_melt_join(_,_)).
-hypo:hypo_abnormal(sys_melt_const(_,_)).
-hypo:hypo_abnormal(sys_melt_hook(_,_)).
 
 /**
  * sys_fresh_var(X, B):

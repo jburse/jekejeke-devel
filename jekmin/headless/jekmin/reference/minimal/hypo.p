@@ -1,36 +1,33 @@
 /**
- * This Jekejeke Minlog module provides a couple of connectives for
- * hypothetical reasoning. Hypothetical reasoning provides a new logical
- * operator (=>)/2 for embedded implication. This logical operator takes a
- * construct of the left side which is assumed and goal on the right side
- * which is executed. The predicate (<=)/1 is a variant of the predicate
- * (=>)/2 where the continuation is invoked after assuming the construct.
- * The general forms are:
+ * This module provides a couple of primitives for hypothetical
+ * reasoning. The primitives come in two flavours. The first
+ * flavour is the continuation variant where the effect of the
+ * primitive persists for the continuation. The second flavour
+ * is the temporary variant where the effect of the primitive
+ * only persist for the duration of a given goal.
  *
- * C => G     % Embedded Implication.
- * <= C       % Continuation Variant.
+ * <verb>(<arguments>)               % Continuation Variant
+ * <verb>(<arguments>, <goal>)       % Temporary Variant
  *
- * The way the interpreter proceeds when assuming the construct C depends on
- * the used constructs. We currently support the backward chaining escape
- * {}/1, the retract (-)/1, the conjunction (/\)/2, the verum unit/0 and the
- * falsum zero/0. If none of these constructs is encountered the construct
- * can be either a fact or a rule, which will be assumed. New head predicates
- * will be assumed thread locale. Based on the scope and for performance reasons
- * inter-clausal variables in facts or rules are currently not supported:
+ * Since the temporary variant uses an additional goal argument,
+ * given the continuation variant the temporary variant can be easily
+ * invoked with the help of call/2. The clause primitives are
+ * implemented with the help of clause references and the module
+ * assume. The other primitives extend some logical meta-predicates to
+ * the temporary variant.
  *
  * Examples:
- * ?- p => p.
+ * ?- assumez(p), p.
  * Yes
- * ?- p => ((q :- p) => q).
- * Yes
+ * ?- assumez(p), retire(p), p.
+ * No
  *
- * The predicates (=>)/2 and (<=)/1 can be extended by the end-user by
- * adding new clauses to these predicates. The end-user needs to extend
- * the predicate hypo_abnormal/1 as well, by patterns for the newly supported
- * constructs. The construct (-)/1 can be extended by the end-user by adding
- * new clauses to the predicates (=>)/2 and (<=)/1. The end-user needs to
- * extend the predicate minus_abnormal/1 as well, by patterns for the
- * newly supported retract.
+ * The continuation variants of true/1, fail/1, (',')/3 and (;)/3 are
+ * already defined in the runtime library. By default the assume
+ * predicate will create a thread local predicate, if the predicate of
+ * the head of the given clause was not yet defined. Further the retire
+ * predicate will silently fail if the predicate of the head of the given
+ * clause was not yet defined.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -61,165 +58,169 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-% :- current_prolog_flag(sys_context, X), reset_source_property(X, sys_notrace).
-
 :- package(library(jekmin/reference/minimal)).
+:- use_package(library(jekpro/frequent/experiment)).
 
 :- module(hypo, []).
 :- use_module(library(minimal/assume)).
 :- use_module(library(experiment/ref)).
-:- use_module(library(experiment/trail)).
-
-:- public infix(=>).
-:- op(700, xfx, =>).
-
-:- public prefix(<=).
-:- op(700, fx, <=).
-
-/********************************************************/
-/* Embedded Implication                                 */
-/********************************************************/
-
-/**
- * {A}:
- * The goal A is checked via backward chaining.
- */
-:- public => /2.
-:- multifile => /2.
-:- discontiguous => /2.
-:- meta_predicate -1=>0.
-:- set_predicate_property(=> /2, sys_notrace).
-
-A => _ :-
-   var(A),
-   throw(error(instantiation_error,_)).
-{A} => B :- !, A, B.
-
-/**
- * -P:
- * The construct retires P.
- */
-:- public (-)/1.
-:- meta_predicate -0.
-- _ :-
-   throw(error(existence_error(body,(-)/1),_)).
-
-- A => _ :-
-   var(A),
-   throw(error(instantiation_error,_)).
-- A => B :-
-   \+ minus_abnormal(A), !,
-   clause_ref(A, true, R),
-   sys_retire_ref(R), B,
-   sys_assume_ref(R).
-
-/**
- * P /\ Q:
- * The construct assumes P and then Q before solving.
- */
-% already defined in expand.p
-% :- public (/\)/2.
-% :- meta_predicate /\(0,0).
-% /\(_,_) :- throw(error(existence_error(body, (/\)/2), _)).
-% :- set_predicate_property((/\)/2, sys_rule).
-
-A /\ B => C :- !, A =>
-      (B => C).
-
-/**
- * unit:
- * The construct does nothing before further solving.
- */
-% already defined in expand.p
-% :- public unit/0.
-% unit :- throw(error(existence_error(body, unit/0), _)).
-
-unit => A :- !, A.
-
-/**
- * zero:
- * The construct prevents further solving.
- */
-:- public zero/0.
-zero :-
-   throw(error(existence_error(body,zero/0),_)).
-
-zero => _ :- !, fail.
-
-/**
- * C => G:
- * The predicate temporarily assumes the construct C while
- * solving the goal G. The predicate succeeds whenever the
- * construct C and then the goal G succeed. The predicate is
- * multi-file and can be extended by the end-user.
- */
-% +Rule => +Goal
-A => B :-
-   \+ hypo_abnormal(A), !,
-   assumable_ref(A, R),
-   sys_assume_ref(R), B,
-   sys_retire_ref(R).
-
-/**
- * hypo_abnormal(A):
- * The predicate succeeds for those constructs A that are extended
- * in (=>)/2 or (<=)/1. The predicate is multi-file and can be
- * extended by the end-user.
- */
-% hypo_abnormal(+Term)
-:- public hypo_abnormal/1.
-:- multifile hypo_abnormal/1.
-hypo_abnormal({_}).
-hypo_abnormal(-_).
-hypo_abnormal(_/\_).
-hypo_abnormal(unit).
-hypo_abnormal(zero).
-
-/**
- * minus_abnormal(A):
- * The predicate succeeds for those retracts A that are extended
- * in the (-)/1 construct. The predicate is multi-file and can be
- * extended by the end-user.
- */
-% minus_abnormal(+Term)
-:- public minus_abnormal/1.
-:- multifile minus_abnormal/1.
-:- static minus_abnormal/1.
+:- use_module(library(experiment/simp)).
 
 /********************************************************/
 /* Continuation Variant                                 */
 /********************************************************/
 
-:- public (<=)/1.
-:- multifile (<=)/1.
-:- meta_predicate <= -1.
-:- set_predicate_property((<=)/1, sys_notrace).
-<= A :-
-   var(A),
-   throw(error(instantiation_error,_)).
-<= {A} :- !, A.
-<= - A :-
-   var(A),
-   throw(error(instantiation_error,_)).
-<= - A :-
-   \+ minus_abnormal(A), !,
-   clause_ref(A, true, R),
-   sys_retire_ref(R).
-<= A /\ B :- !,
-   <= A,
-   <= B.
-<= unit :- !.
-<= zero :- !, fail.
+/**
+ * true(G):
+ * The construct does nothing before further solving.
+ */
+% already defined in control.p
+% :- public true/0.
+% true.
+
+% true(+Goal)
+:- public true/1.
+:- meta_predicate true(0).
+true(G) :- G.
 
 /**
- * <= C:
- * The predicate temporarily assumes the construct C while
- * solving the continuation. The predicate succeeds whenever
- * the construct C succeeds. The predicate is multi-file and
- * can be extended by the end-user.
+ * fail(G):
+ * The construct prevents further solving.
  */
-% <= +Rule
-<= A :-
-   \+ hypo_abnormal(A), !,
-   assumable_ref(A, R),
-   sys_assume_ref(R).
+% already defined in control.p
+% :- public fail/0.
+% :- static fail/0.
+
+% fail(+Goal)
+:- public fail/1.
+:- meta_predicate fail(0).
+:- static fail/1.
+
+/**
+ * assumea(C):
+ * assumea(C, G):
+ * The construct assumes the clause C at the top before further solving.
+ */
+% assumea(+Term)
+:- public assumea/1.
+:- meta_predicate assumea(-1).
+assumea(C) :-
+   assumable_ref(C, R),
+   deposita_ref(R).
+
+% assumea(+Term, +Goal)
+:- public assumea/2.
+:- meta_predicate assumea(-1,0).
+assumea(C, G) :-
+   assumable_ref(C, R),
+   deposita_ref(R), G,
+   withdrawa_ref(R).
+
+/**
+ * assumez(C):
+ * assumez(C, G):
+ * The construct assumes the clause C at the bottom before further solving.
+ */
+% assumez(+Term)
+:- public assumez/1.
+:- meta_predicate assumez(-1).
+assumez(C) :-
+   assumable_ref(C, R),
+   depositz_ref(R).
+
+% assumez(+Term, +Goal)
+:- public assumez/2.
+:- meta_predicate assumez(-1,0).
+assumez(C, G) :-
+   assumable_ref(C, R),
+   depositz_ref(R), G,
+   withdrawz_ref(R).
+
+/**
+ * retire(C):
+ * retire(C, G):
+ * The construct retires the clause P before further solving.
+ * Need not preserve the input order.
+ */
+% retire(-Term)
+:- public retire/1.
+:- meta_predicate retire(-1).
+retire(C) :-
+   clause_ref(C, R),
+   retire2(R).
+
+% retire2(+Ref)
+:- private retire2/1.
+retire2(R) :-
+   withdrawz_ref(R), !.
+retire2(_).
+
+% retire(-Term, +Goal)
+:- public retire/2.
+:- meta_predicate retire(-1,0).
+retire(C, G) :-
+   clause_ref(C, R),
+   retire2(R, G).
+
+% retire2(+Ref, +Goal)
+:- private retire2/2.
+:- meta_predicate retire2(?,0).
+retire2(R, G) :-
+   withdrawz_ref(R), !, G,
+   depositz_ref(R).
+retire2(_, G) :- G.
+
+/**
+ * retireall(H):
+ * retireall(H, G):
+ * The construct retires all the clauses with head H before further solving.
+ * Need not preserve the input order.
+ */
+% retireall(+Term)
+:- public retireall/1.
+:- meta_predicate retireall(-1).
+retireall(H) :-
+   findall(R, clause_ref(H, _, R), L),
+   withdrawz_ref(L).
+
+% retireall(+Term, +Goal)
+:- public retireall/2.
+:- meta_predicate retireall(-1,0).
+retireall(H, G) :-
+   findall(R, clause_ref(H, _, R), L),
+   withdrawz_ref(L), G,
+   depositz_ref(L).
+
+/**
+ * ','(A, B, G):
+ * The construct does P and then Q before further solving.
+ */
+% already defined in logic.p
+% :- public (',')/2.
+% :- meta_predicate [(0,0)].
+% A, B :- A, B.
+
+% ','(+Goal, +Goal, +Goal)
+:- public ','/3.
+:- meta_predicate ','(0,0,0).
+','(A, B, G) :-
+   call(A, call(B,G)).
+
+/**
+ * ;(A, B, G):
+ * The construct does A before further solving or
+ * it does B before further solving.
+ */
+% already defined in logic.p
+% :- public (;)/2.
+% :- meta_predicate (0;0).
+% A; _ :- A.
+% _; B :- B.
+
+% ;(+Goal, +Goal, +Goal)
+:- public ;/3.
+:- meta_predicate ;(0,0,0).
+;(A, _, G) :-
+   call(A, G).
+;(_, B, G) :-
+   call(B, G).

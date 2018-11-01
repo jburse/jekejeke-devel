@@ -119,7 +119,7 @@ indomain(X) :-
 % sys_retire_set(+Wrap, -Set)
 :- private sys_retire_set/2.
 sys_retire_set(B, S) :-
-   <= - sys_in(B, S, _), !.
+   retire(sys_in(B, S, _)), !.
 sys_retire_set(_, [...]).
 
 /**********************************************************/

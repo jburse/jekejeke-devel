@@ -86,7 +86,7 @@ put_atts(V, K, W) :-
    sys_freeze_var(H, F),
    H = wrap(W),
    sys_compile_hook(V, atts(K, F), R),
-   sys_assume_ref(R).
+   depositz_ref(R).
 
 /**
  * get_atts(V, K, W):
@@ -115,7 +115,7 @@ del_atts(_, _) :-
 :- private del_atts2/2.
 del_atts2(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
-   sys_retire_ref(R).
+   withdrawz_ref(R).
 del_atts2(_, _).
 
 /**************************************************************/

@@ -67,7 +67,7 @@
 :- private sys_hook_freeze/3.
 sys_hook_freeze(R, V, _) :-
    sys_melt_var(R, sys_data_freeze(G)),
-   sys_assume_cont(freeze(V,G)).
+   sys_assume_cont(freeze(V, G)).
 
 /**
  * sys_hook_when(R, _, _):
@@ -76,8 +76,8 @@ sys_hook_freeze(R, V, _) :-
 :- private sys_hook_when/3.
 sys_hook_when(R, _, _) :-
    sys_melt_var(R, sys_data_when(L,C,G)),
-   sys_retire_ref(L),
-   sys_assume_cont(when(C,G)).
+   withdrawz_ref(L),
+   sys_assume_cont(when(C, G)).
 
 /********************************************************/
 /* Constraint Projection                                */
@@ -129,7 +129,7 @@ freeze(V, G) :-
    sys_freeze_var(W, R),
    W = sys_data_freeze(G),
    sys_compile_hook(V, sys_hook_freeze(R), K),
-   sys_assume_ref(K).
+   depositz_ref(K).
 freeze(_, G) :-
    call(G).
 
@@ -148,7 +148,7 @@ when(C, G) :-
    W = sys_data_when(N,D,G),
    term_variables(D, M),
    sys_compile_hooks(M, R, N),
-   sys_assume_ref(N).
+   depositz_ref(N).
 when(_, G) :- G.
 
 % sys_compile_hooks(+List, +Ref, -List)

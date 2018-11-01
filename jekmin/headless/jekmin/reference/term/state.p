@@ -57,7 +57,7 @@ b_setval(K, W) :-
    sys_freeze_var(H, F),
    H = wrap(W),
    assumable_ref(state(K, F), R),
-   sys_assume_ref(R).
+   depositz_ref(R).
 
 /**
  * nb_current(K, W):
@@ -86,5 +86,5 @@ b_delete(_) :-
 :- private b_delete2/1.
 b_delete2(K) :-
    clause_ref(state(K, _), true, R), !,
-   sys_retire_ref(R).
+   withdrawz_ref(R).
 b_delete2(_).
