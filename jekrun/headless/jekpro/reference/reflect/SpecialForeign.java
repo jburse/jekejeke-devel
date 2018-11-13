@@ -9,7 +9,7 @@ import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Clause;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
@@ -402,7 +402,7 @@ public final class SpecialForeign extends AbstractSpecial {
      */
     public static Object classToName(Class clazz) {
         String fun = AbstractRuntime.classToString(clazz);
-        return Clause.packageToSlashSkel(fun, null);
+        return SpecialDynamic.packageToSlashSkel(fun, null);
     }
 
     /*************************************************************/
@@ -465,7 +465,7 @@ public final class SpecialForeign extends AbstractSpecial {
                                      Engine en)
             throws EngineMessage {
         String fun = AbstractRuntime.classToString(clazz);
-        return Clause.moduleToSlashSkel(fun, source, en);
+        return SpecialDynamic.moduleToSlashSkel(fun, source, en);
     }
 
 }

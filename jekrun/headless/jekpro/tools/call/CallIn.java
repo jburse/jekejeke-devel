@@ -274,7 +274,7 @@ public final class CallIn {
             throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         en.skel = AbstractTerm.getSkel(goal);
@@ -286,7 +286,7 @@ public final class CallIn {
             boolean multi = en.wrapGoal();
             BindCount[] ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
+            Display ref2 = new Display();
             ref2.bind = BindCount.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, ref, en);
             if (multi)
@@ -339,7 +339,7 @@ public final class CallIn {
     private boolean unfoldNext() throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {

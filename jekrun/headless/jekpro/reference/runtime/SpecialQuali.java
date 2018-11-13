@@ -101,7 +101,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause();
+                Display ref2 = new Display();
                 ref2.bind = BindCount.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi)
@@ -130,7 +130,7 @@ public final class SpecialQuali extends AbstractSpecial {
                     BindCount.remTab(d2, en);
                 ref = en.display;
                 clause = en.store.foyer.CLAUSE_CONT;
-                ref2 = new DisplayClause();
+                ref2 = new Display();
                 ref2.bind = BindCount.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
@@ -479,7 +479,7 @@ public final class SpecialQuali extends AbstractSpecial {
         Object s;
         if (sa instanceof SkelAtomQuali) {
             SkelAtom mod = ((SkelAtomQuali) sa).getModule();
-            s = Clause.moduleToSlashSkel(mod.fun, mod.scope, en);
+            s = SpecialDynamic.moduleToSlashSkel(mod.fun, mod.scope, en);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
             sa2.setPosition(sa.getPosition());
@@ -513,7 +513,7 @@ public final class SpecialQuali extends AbstractSpecial {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
             String mod = CacheFunctor.sepModule(fun);
-            s = Clause.moduleToSlashSkel(mod, scope, en);
+            s = SpecialDynamic.moduleToSlashSkel(mod, scope, en);
             SkelAtom sa2 = new SkelAtom(OP_COLON, scope);
 
             Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,

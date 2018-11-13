@@ -5,7 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.BindCount;
-import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -284,12 +284,12 @@ public abstract class AbstractDelegate {
     private static void invokeOther(Engine en)
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         int snap = en.number;
         boolean multi = en.wrapGoal();
         BindCount[] ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        DisplayClause ref2 = new DisplayClause();
+        Display ref2 = new Display();
         ref2.bind = BindCount.newBindClause(clause.dispsize);
         ref2.addArgument(en.skel, ref, en);
         if (multi)

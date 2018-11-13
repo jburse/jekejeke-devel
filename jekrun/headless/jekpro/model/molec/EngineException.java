@@ -194,7 +194,7 @@ public final class EngineException extends Exception {
      */
     public static Object fetchStack(Engine en) {
         try {
-            DisplayClause u;
+            Display u;
             boolean first;
             if (Frame.isNoTrace(en.contskel, en.contdisplay, en)) {
                 u = Frame.skipNoTrace(en.contdisplay, en);

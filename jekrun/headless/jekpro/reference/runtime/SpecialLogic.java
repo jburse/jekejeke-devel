@@ -1,19 +1,15 @@
-package jekpro.model.builtin;
+package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
- * <p>Provides built-in predicates for body conversion.</p>
+ * <p>Provides built-in predicates for logic predicates.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,17 +39,17 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialBody extends AbstractSpecial {
-    private final static int SPECIAL_CALL = 0;
-
-//    private final static int SPECIAL_WRAP_GOAL = 4;
+public final class SpecialLogic extends AbstractSpecial {
+    private final static int SPECIAL_SYS_LOCAL_CUT = 0;
+    private final static int SPECIAL_SYS_SOFT_LOCAL_CUT = 1;
+    private final static int SPECIAL_SYS_SAFE = 2;
 
     /**
-     * <p>Create a body special.</p>
+     * <p>Create a logic special.</p>
      *
      * @param i The id of the special.
      */
-    public SpecialBody(int i) {
+    public SpecialLogic(int i) {
         super(i);
     }
 
@@ -66,72 +62,50 @@ public final class SpecialBody extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         switch (id) {
-            case SPECIAL_CALL:
+            case SPECIAL_SYS_LOCAL_CUT:
+                Display u = en.contdisplay;
+                en.window = u;
+                en.fault = null;
+                en.cutChoices(u.number);
+                en.window = null;
+                if (en.fault != null)
+                    throw en.fault;
+                return en.getNextRaw();
+            case SPECIAL_SYS_SOFT_LOCAL_CUT:
+                u = en.contdisplay;
+                if ((((u.flags & Display.MASK_DPCL_MORE) != 0) ?
+                        u.number + 1 : u.number) >= en.number) {
+                    en.window = u;
+                    en.fault = null;
+                    en.cutChoices(u.number);
+                    en.window = null;
+                    if (en.fault != null)
+                        throw en.fault;
+                } else {
+                    u.flags |= Display.MASK_DPCL_SOFT;
+                }
+                return en.getNextRaw();
+            case SPECIAL_SYS_SAFE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 BindCount[] ref = en.display;
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                boolean multi = en.wrapGoal();
-                ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 Display ref2 = new Display();
                 ref2.bind = BindCount.newBindClause(clause.dispsize);
-                ref2.addArgument(en.skel, ref, en);
-                if (multi)
-                    BindCount.remTab(ref, en);
+                ref2.addArgument(en.skel, en.display, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
                 return true;
-            /*
-            case SPECIAL_WRAP_GOAL:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                en.wrapGoalSite();
-                if (en.unifyTerm(en.skel,en.display,temp[1],ref,r,u)) {
-                    en.skel = r.getNext(en);
-                    en.display = u;
-                    return true;
-                }
-                return false;
-            */
             default:
-                throw new IllegalArgumentException(
-                        AbstractSpecial.OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
-
-    /*************************************************************/
-    /* Replace Context & Site                                    */
-    /*************************************************************/
-
-    /**
-     * <p>Create a new atom for a given site.</p>
-     *
-     * @param fun The name of the atom.
-     * @param en  The engine.
-     * @param sa2 The call-site, or null.
-     * @return The new atom.
-     */
-    public static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
-        AbstractSource scope = (sa2 != null ? sa2.scope : null);
-        PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
-
-        int m = (pos != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        sa2 = en.store.foyer.createAtom(fun, scope, m);
-        sa2.setPosition(pos);
-
-        return sa2;
-    }
-
 
 }

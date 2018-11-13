@@ -6,7 +6,6 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
@@ -78,21 +77,13 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_TRUE:
                 return en.getNextRaw();
             case SPECIAL_CUT:
-                DisplayClause ref2 = en.contdisplay;
-                if ((en.store.foyer.getBits() & Foyer.MASK_STORE_NCHC) == 0) {
-                    en.window = ref2;
-                    en.fault = null;
-                    en.cutChoices(ref2.prune.number);
-                    en.window = null;
-                    if (en.fault != null)
-                        throw en.fault;
-                } else {
-                    /* create choice point */
-                    Goal r = (Goal) en.contskel;
-                    ref2 = en.contdisplay;
-                    en.choices = new ChoiceCut(en.choices, r, ref2, 0);
-                    en.number++;
-                }
+                Display ref2 = en.contdisplay;
+                en.window = ref2;
+                en.fault = null;
+                en.cutChoices(ref2.prune.number);
+                en.window = null;
+                if (en.fault != null)
+                    throw en.fault;
                 return en.getNextRaw();
             case SPECIAL_SYS_FETCH_STACK:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -129,14 +120,14 @@ public final class SpecialControl extends AbstractSpecial {
     private boolean invokeTrap(Engine en)
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         AbstractBind mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
             BindCount[] ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
+            Display ref2 = new Display();
             ref2.bind = BindCount.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, ref, en);
             if (multi)
@@ -181,7 +172,7 @@ public final class SpecialControl extends AbstractSpecial {
     public static boolean handleException(Engine en)
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         EngineException y = en.fault;
         Frame.callGoal(r, u, en);
         Object[] temp = ((SkelCompound) en.skel).args;

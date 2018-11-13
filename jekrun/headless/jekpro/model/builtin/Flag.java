@@ -54,30 +54,29 @@ public final class Flag extends AbstractFlag {
     public final static String OP_FLAG_SINGLE_QUOTES = "single_quotes";
     public final static String OP_FLAG_SYS_ACT_STATUS = "sys_act_status";
 
-    private static final int FLAG_SYS_CHOICE_POINT = 0;
-    private static final int FLAG_SYS_BODY_VARIABLE = 1;
-    private static final int FLAG_SYS_STACK_FRAME = 2;
-    private static final int FLAG_SYS_HEAD_VARIABLE = 3;
-    private static final int FLAG_SYS_BODY_CONVERT = 4;
-    private static final int FLAG_SYS_CLAUSE_EXPAND = 5;
-    private static final int FLAG_SYS_CLAUSE_INDEX = 6;
-    private static final int FLAG_BOUNDED = 7;
-    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 8;
-    private static final int FLAG_CHAR_CONVERSION = 9;
-    private static final int FLAG_MAX_ARITY = 10;
-    private static final int FLAG_DOUBLE_QUOTES = 11;
-    private static final int FLAG_BACK_QUOTES = 12;
-    private static final int FLAG_MAX_CODE = 13;
-    private static final int FLAG_SYS_BREAK_LEVEL = 14;
-    private static final int FLAG_SYS_LAST_PRED = 15;
-    private static final int FLAG_SYS_ACT_STATUS = 16;
-    private static final int FLAG_SINGLE_QUOTES = 17;
-    private static final int FLAG_SYS_VARIABLES = 18;
-    private static final int FLAG_SYS_CHOICES = 19;
-    private static final int FLAG_DIALECT = 20;
-    private static final int FLAG_VERSION_DATA = 21;
-    private static final int FLAG_SYS_RANDOM = 22;
-    private static final int FLAG_SYS_TIMEOUT = 23;
+    private static final int FLAG_SYS_BODY_VARIABLE = 0;
+    private static final int FLAG_SYS_STACK_FRAME = 1;
+    private static final int FLAG_SYS_HEAD_VARIABLE = 2;
+    private static final int FLAG_SYS_BODY_CONVERT = 3;
+    private static final int FLAG_SYS_CLAUSE_EXPAND = 4;
+    private static final int FLAG_SYS_CLAUSE_INDEX = 5;
+    private static final int FLAG_BOUNDED = 6;
+    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 7;
+    private static final int FLAG_CHAR_CONVERSION = 8;
+    private static final int FLAG_MAX_ARITY = 9;
+    private static final int FLAG_DOUBLE_QUOTES = 10;
+    private static final int FLAG_BACK_QUOTES = 11;
+    private static final int FLAG_MAX_CODE = 12;
+    private static final int FLAG_SYS_BREAK_LEVEL = 13;
+    private static final int FLAG_SYS_LAST_PRED = 14;
+    private static final int FLAG_SYS_ACT_STATUS = 15;
+    private static final int FLAG_SINGLE_QUOTES = 16;
+    private static final int FLAG_SYS_VARIABLES = 17;
+    private static final int FLAG_SYS_CHOICES = 18;
+    private static final int FLAG_DIALECT = 19;
+    private static final int FLAG_VERSION_DATA = 20;
+    private static final int FLAG_SYS_RANDOM = 21;
+    private static final int FLAG_SYS_TIMEOUT = 22;
 
     /**
      * <p>Create a flag.</p>
@@ -95,7 +94,6 @@ public final class Flag extends AbstractFlag {
      */
     static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.add("sys_choice_point", new Flag(FLAG_SYS_CHOICE_POINT));
         prologflags.add("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
         prologflags.add("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
         prologflags.add("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
@@ -130,8 +128,6 @@ public final class Flag extends AbstractFlag {
      */
     public Object getFlag(Engine en) {
         switch (id) {
-            case FLAG_SYS_CHOICE_POINT:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NCHC) == 0);
             case FLAG_SYS_BODY_VARIABLE:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
@@ -221,13 +217,6 @@ public final class Flag extends AbstractFlag {
             throws EngineMessage {
         try {
             switch (id) {
-                case FLAG_SYS_CHOICE_POINT:
-                    if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NCHC);
-                    } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NCHC);
-                    }
-                    return true;
                 case FLAG_SYS_BODY_VARIABLE:
                     if (AbstractFlag.atomToSwitch(m, d)) {
                         en.store.foyer.resetBit(Foyer.MASK_STORE_NBDY);

@@ -45,7 +45,7 @@ import jekpro.tools.term.SkelVar;
 final class ChoiceArith extends AbstractChoice {
     private Number cur;
     private final Goal goalskel;
-    private final DisplayClause goaldisplay;
+    private final Display goaldisplay;
     private final AbstractBind mark;
     private final int id;
 
@@ -56,7 +56,7 @@ final class ChoiceArith extends AbstractChoice {
      * @param m The mark.
      */
     ChoiceArith(AbstractChoice n,
-                Number c, Goal r, DisplayClause u,
+                Number c, Goal r, Display u,
                 AbstractBind m,
                 int i) {
         super(n);

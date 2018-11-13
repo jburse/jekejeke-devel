@@ -3,7 +3,7 @@ package jekpro.frequent.standard;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
-import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Clause;
@@ -99,7 +99,7 @@ public final class SpecialApply extends AbstractSpecial {
                     BindCount.remTab(d, en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause();
+                Display ref2 = new Display();
                 ref2.bind = BindCount.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)

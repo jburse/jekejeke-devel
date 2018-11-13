@@ -738,10 +738,10 @@ public final class SpecialLoad extends AbstractSpecial {
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause();
+            Display ref = new Display();
             ref.bind = BindCount.newBindClause(clause.dispsize);
             ref.addArgument(t, dc, en);
             ref.setEngine(en);

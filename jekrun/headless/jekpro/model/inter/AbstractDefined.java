@@ -71,7 +71,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_NBDY = 0x00001000;
     public final static int MASK_DEFI_NLST = 0x00002000;
     public final static int MASK_DEFI_NHED = 0x00004000;
-    public final static int MASK_DEFI_NCHC = 0x00008000;
 
     /* predicate check flags */
     public final static int OPT_CHCK_MASK = 0x0000000F;
@@ -116,8 +115,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
             subflags |= AbstractDefined.MASK_DEFI_NLST;
         if ((flags & Foyer.MASK_STORE_NHED) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NHED;
-        if ((flags & Foyer.MASK_STORE_NCHC) != 0)
-            subflags |= AbstractDefined.MASK_DEFI_NCHC;
         if ((flags & Foyer.MASK_STORE_NIST) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NIST;
         if ((flags & Foyer.MASK_STORE_NHWK) != 0)
@@ -272,8 +269,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (en.fault != null)
                 throw en.fault;
         }
-        DisplayClause u = en.contdisplay;
-        DisplayClause dc = new DisplayClause();
+        Display u = en.contdisplay;
+        Display dc = new Display();
         dc.bind = ref;
         dc.lastalloc = lastalloc;
         dc.number = en.number;
@@ -281,12 +278,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
         dc.goalskel = en.contskel;
         dc.goaldisplay = u;
 
-        if (at != list.length ||
-                (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
+        if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
             en.number++;
-            dc.flags |= DisplayClause.MASK_DPCL_MORE;
+            dc.flags |= Display.MASK_DPCL_MORE;
         }
         en.contskel = clause;
         en.contdisplay = dc;
@@ -572,8 +568,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (clause.size != 0)
             BindCount.remTab(ref1, en);
 
-        if (at != list.length ||
-                (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
+        if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceInspect(en.choices, at, list,
                     flags, (Goal) en.contskel, en.contdisplay,

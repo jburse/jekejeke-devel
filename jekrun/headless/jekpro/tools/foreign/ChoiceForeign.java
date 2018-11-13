@@ -53,7 +53,7 @@ final class ChoiceForeign extends AbstractChoice {
     Object[] args;
     AbstractBind mark;
     Intermediate goalskel;
-    DisplayClause goaldisplay;
+    Display goaldisplay;
 
     /**
      * <p>Creata choice foreign.</p>
@@ -166,10 +166,10 @@ final class ChoiceForeign extends AbstractChoice {
             return;
 
         /* backup sliding window */
-        DisplayClause back = en.window;
+        Display back = en.window;
 
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        Display u = en.contdisplay;
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
         if (en.skel != null) {

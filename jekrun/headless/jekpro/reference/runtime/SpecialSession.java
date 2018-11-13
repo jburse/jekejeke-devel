@@ -133,7 +133,7 @@ public final class SpecialSession extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Frame frame = en.visor.ref;
-                BindCount[] ref2 = (frame != null ? frame.getDisplayClause().bind : null);
+                BindCount[] ref2 = (frame != null ? frame.getContDisplay().bind : null);
                 Clause def = (frame != null ? frame.getContSkel().getClause() : null);
                 en.skel = namedToAssoc((def != null ? def.vars : null), ref2, en.store);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
@@ -266,7 +266,7 @@ public final class SpecialSession extends AbstractSpecial {
             String s = src.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 wr.write("(");
-                Object res = Clause.moduleToSlashSkel(s, en.store.user, en);
+                Object res = SpecialDynamic.moduleToSlashSkel(s, en.store.user, en);
                 PrologWriter.toString(res, BindCount.DISPLAY_CONST, wr, 0, en);
                 wr.write(") ");
             }
@@ -333,12 +333,12 @@ public final class SpecialSession extends AbstractSpecial {
                 clause.analyzeBody(pre.molec, en);
 
                 Intermediate r = en.contskel;
-                DisplayClause u = en.contdisplay;
+                Display u = en.contdisplay;
                 AbstractBind mark = en.bind;
                 int snap = en.number;
                 Frame backref = en.visor.ref;
                 try {
-                    DisplayClause ref = new DisplayClause();
+                    Display ref = new Display();
                     ref.bind = BindCount.newBindClause(clause.dispsize);
                     en.visor.ref = new Frame(clause, ref);
                     ref.setEngine(en);
@@ -452,7 +452,7 @@ public final class SpecialSession extends AbstractSpecial {
             en.fault = null;
         } else {
             Intermediate r = en.contskel;
-            DisplayClause u = en.contdisplay;
+            Display u = en.contdisplay;
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
             SkelAtom sa = new SkelAtom("expand_goal", en.store.getRootSystem());
             Clause clause = en.store.foyer.createClause(AbstractDefined.MASK_DEFI_NBDY |
@@ -465,9 +465,9 @@ public final class SpecialSession extends AbstractSpecial {
 
             int snap = en.number;
             Frame backref = en.visor.ref;
-            DisplayClause ref;
+            Display ref;
             try {
-                ref = new DisplayClause();
+                ref = new Display();
                 ref.bind = BindCount.newBindClause(clause.dispsize);
                 en.visor.ref = new Frame(clause, ref);
                 ref.setEngine(en);

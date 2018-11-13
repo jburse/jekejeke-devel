@@ -173,7 +173,7 @@ public final class SpecialVars extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Frame frame = en.visor.ref;
-                    BindCount[] ref2 = (frame != null ? frame.getDisplayClause().bind : null);
+                    BindCount[] ref2 = (frame != null ? frame.getContDisplay().bind : null);
                     Clause def = (frame != null ? frame.getContSkel().getClause() : null);
                     MapHashLink<Object, NamedDistance> print =
                             Named.namedToMap((def != null ? def.vars : null), ref2, en);

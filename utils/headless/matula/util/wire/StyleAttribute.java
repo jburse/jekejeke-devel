@@ -1,15 +1,16 @@
-package matula.util.system;
+package matula.util.wire;
 
 import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
+import matula.util.system.MimeHeader;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
 
 /**
- * <p>The class supports mime headers.</p>
+ * <p>The class supports style attributes.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,49 +40,26 @@ import java.io.StringReader;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class MimeHeader {
+public final class StyleAttribute {
     private static final String ERROR_NAME_MISSING = "name missing";
-    private static final String ERROR_SLASH_MISSING = "/ missing";
-    private static final String ERROR_EQUAL_MISSING = "= missing";
+    private static final String ERROR_COLON_MISSING = ": missing";
     private static final String ERROR_VALUE_MISSING = "value missing";
     private static final String ERROR_SUPERFLOUS_TOKEN = "superflous token";
 
-    public static final String MIME_CHARSET = "charset";
-
-    private String type = "";
-    private String subtype = "";
     private AssocArray<String, String> kvs = new AssocArray<String, String>();
 
     /**
-     * <p>Create a mime header from a string.</p>
+     * <p>Create a style attribute from a string.</p>
      *
      * @param s The string.
      * @throws ScannerError Shit happens.
      */
-    public MimeHeader(String s) throws ScannerError {
+    public StyleAttribute(String s) throws ScannerError {
         try {
             parse(s);
         } catch (IOException x) {
             throw new RuntimeException("internal error", x);
         }
-    }
-
-    /**
-     * <p>Retrieve the type.</p>
-     *
-     * @return The type.
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * <p>Retrieve the sub type.</p>
-     *
-     * @return The sub type.
-     */
-    public String getSubType() {
-        return subtype;
     }
 
     /**
@@ -116,14 +94,14 @@ public final class MimeHeader {
     }
 
     /*******************************************************************/
-    /* Decode Mime Type                                                */
+    /* Decode Style Attribute                                          */
     /*******************************************************************/
 
     /**
-     * <p>Parse a mime header.</p>
+     * <p>Parse a style attribute.</p>
      * <p>Quote translation is automatically done by the stream tokenizer.</p>
      *
-     * @param s The mime header.
+     * @param s The style attribute.
      * @throws IOException  IO error.
      * @throws ScannerError Shit happens.
      */
@@ -139,40 +117,33 @@ public final class MimeHeader {
         st.wordChars('+', '+');
         st.wordChars('!', '!');
         st.whitespaceChars(0, ' ');
-        st.quoteChar('"');
+        st.quoteChar('\'');
         st.nextToken();
-        if (st.ttype != StreamTokenizer.TT_WORD)
-            throw new ScannerError(ERROR_NAME_MISSING, -1);
-        type = st.sval;
-        st.nextToken();
-        if (st.ttype != '/')
-            throw new ScannerError(ERROR_SLASH_MISSING, -1);
-        st.nextToken();
-        if (st.ttype != StreamTokenizer.TT_WORD)
-            throw new ScannerError(ERROR_NAME_MISSING, -1);
-        subtype = st.sval;
-        st.nextToken();
-        while (st.ttype == ';') {
-            st.nextToken();
+        for (;;) {
             String a;
             if (st.ttype != StreamTokenizer.TT_WORD)
                 throw new ScannerError(ERROR_NAME_MISSING, -1);
             a = st.sval;
             st.nextToken();
-            if (st.ttype != '=')
-                throw new ScannerError(ERROR_EQUAL_MISSING, -1);
+            if (st.ttype != ':')
+                throw new ScannerError(ERROR_COLON_MISSING, -1);
             st.nextToken();
             String v;
             if (st.ttype == StreamTokenizer.TT_WORD) {
                 v = st.sval;
                 st.nextToken();
-            } else if (st.ttype == '"') {
+            } else if (st.ttype == '\'') {
                 v = st.sval;
                 st.nextToken();
             } else {
                 throw new ScannerError(ERROR_VALUE_MISSING, -1);
             }
             kvs.add(a, v);
+            if (st.ttype == ';') {
+                st.nextToken();
+            } else {
+                break;
+            }
         }
         if (st.ttype != StreamTokenizer.TT_EOF)
             throw new ScannerError(ERROR_SUPERFLOUS_TOKEN, -1);
@@ -183,7 +154,7 @@ public final class MimeHeader {
     /*******************************************************************/
 
     /**
-     * <p>Convert a mime header back to a string.</p>
+     * <p>Convert a style attribute back to a string.</p>
      * <p>The order of the attribute value pairs is preserved.</p>
      * <p>The case of the attributes and the values is preserved.</p>
      *
@@ -191,18 +162,16 @@ public final class MimeHeader {
      */
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append(type);
-        buf.append("/");
-        buf.append(subtype);
         for (int i = 0; i < kvs.size(); i++) {
-            buf.append("; ");
+            if (i!=0)
+                buf.append("; ");
             buf.append(kvs.getKey(i));
-            buf.append("=");
+            buf.append(": ");
             String v = kvs.getValue(i);
             if (needsQuote(v)) {
-                buf.append('"');
+                buf.append('\'');
                 buf.append(quoteString(v));
-                buf.append('"');
+                buf.append('\'');
             } else {
                 buf.append(v);
             }
@@ -220,8 +189,8 @@ public final class MimeHeader {
         int n = s.length();
         for (int i = 0; i < n; i++) {
             char ch = s.charAt(i);
-            if (ch == '\\' || ch == '"' ||
-                    ch == '/' || ch == '=' || ch == ';')
+            if (ch == '\\' || ch == '\'' ||
+                    ch == ':' || ch == ';')
                 return true;
         }
         return false;
@@ -238,7 +207,7 @@ public final class MimeHeader {
         int n = s.length();
         for (int i = 0; i < n; i++) {
             char ch = s.charAt(i);
-            if (ch == '\\' || ch == '"') {
+            if (ch == '\\' || ch == '\'') {
                 if (buf == null)
                     buf = new StringBuilder(s.substring(0, i));
                 buf.append('\\');
@@ -260,11 +229,11 @@ public final class MimeHeader {
      */
     /*
     public static void main(String[] args) throws ScannerError {
-        String str = "text/plain; charset=UTF-8";
+        String str = "height: 3.7em; width: 12.8em";
         System.out.println("str=" + str);
 
-        MimeHeader mime = new MimeHeader(str);
-        System.out.println("mime(str)=" + mime);
+        StyleAttribute sa = new StyleAttribute(str);
+        System.out.println("sa(str)=" + sa);
     }
     */
 

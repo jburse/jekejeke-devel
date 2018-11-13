@@ -110,8 +110,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        DisplayClause u = en.contdisplay;
-        DisplayClause dc = new DisplayClause();
+        Display u = en.contdisplay;
+        Display dc = new Display();
         dc.bind = ref;
         dc.lastalloc = lastalloc;
         dc.number = en.number;
@@ -126,12 +126,11 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             nextat++;
         }
 
-        if (nextat != list.length ||
-                (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
+        if (nextat != list.length) {
             /* create choice point */
             en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark, nextat);
             en.number++;
-            dc.flags |= DisplayClause.MASK_DPCL_MORE;
+            dc.flags |= Display.MASK_DPCL_MORE;
         }
         en.contskel = clause;
         en.contdisplay = dc;
@@ -230,8 +229,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             at++;
         }
 
-        if (at != list.length ||
-                (clause.flags & Clause.MASK_CLAUSE_NCHC) != 0) {
+        if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceInspectMultifile(en.choices, at, list,
                     flags, (Goal) en.contskel, en.contdisplay,

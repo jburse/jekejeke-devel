@@ -12,6 +12,7 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
@@ -940,7 +941,7 @@ public final class SpecialOper extends AbstractSpecial {
      */
     public static Object operToColonSkel(int type, SkelAtom sa, Engine en)
             throws EngineMessage {
-        Object s = Clause.callableToColonSkel(sa, en);
+        Object s = SpecialDynamic.callableToColonSkel(sa, en);
 
         return typeToOpSkel(s, type);
     }
@@ -958,7 +959,7 @@ public final class SpecialOper extends AbstractSpecial {
     public static Object operToColonSkel(int type, String fun,
                                          AbstractSource scope, Engine en)
             throws EngineMessage {
-        Object s = Clause.callableToColonSkel(new SkelAtom(fun), scope, en);
+        Object s = SpecialDynamic.callableToColonSkel(new SkelAtom(fun), scope, en);
 
         return typeToOpSkel(s, type);
     }
