@@ -14,6 +14,7 @@ import matula.util.regex.ScannerError;
 import matula.util.system.*;
 
 import java.io.*;
+import java.net.Socket;
 
 /**
  * The foreign predicates for the module stream.
@@ -87,6 +88,45 @@ public final class ForeignStream {
     /****************************************************************/
     /* Stream Control                                               */
     /****************************************************************/
+
+    /**
+     * <p>Open the stream from the given socket, mode and options.</p>
+     *
+     * @param inter The call-in.
+     * @param sock   The socket.
+     * @param mode  The mode.
+     * @param opt   The options.
+     * @return The created stream, or null if not modified.
+     * @throws IOException        IO error.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static Object sysDuplex(Interpreter inter, Socket sock,
+                                   String mode, Object opt)
+            throws InterpreterMessage, IOException {
+        try {
+            int modecode = atomToMode(mode);
+            OpenDuplex options = decodeOpenDuplex(modecode, opt);
+            switch (modecode) {
+                case MODE_READ:
+                    return options.openRead(inter.getKnowledgebase(), sock);
+                case MODE_WRITE:
+                    return options.openWrite(sock);
+                default:
+                    throw new IllegalArgumentException("illegal mode");
+            }
+        } catch (IllegalArgumentException x) {
+            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                    ForeignStream.OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK,
+                    new TermCompound(ForeignStream.OP_REPOSITION,
+                            Foyer.OP_TRUE)));
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(InterpreterMessage.licenseError(
+                    x.getError()));
+        } catch (ScannerError x) {
+            throw new InterpreterMessage(InterpreterMessage.syntaxError(
+                    x.getError()));
+        }
+    }
 
     /**
      * <p>Open the stream with the given address, mode and options.</p>
@@ -467,6 +507,81 @@ public final class ForeignStream {
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
+        }
+    }
+
+    /**
+     * <p>Decode the duplex options.</p>
+     *
+     * @param mode The mode.
+     * @param opt  The open options term.
+     * @return The open options.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static OpenDuplex decodeOpenDuplex(int mode, Object opt)
+            throws InterpreterMessage {
+        try {
+            OpenDuplex res = new OpenDuplex();
+            while (opt instanceof TermCompound &&
+                    ((TermCompound) opt).getArity() == 2 &&
+                    ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
+                Object temp = ((TermCompound) opt).getArg(0);
+                if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_ENCODING)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    String fun = InterpreterMessage.castString(help);
+                    res.setEncoding(fun);
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    if (atomToType(help)) {
+                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                    } else {
+                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                    }
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
+                    Object help = ((TermCompound) temp).getArg(0);
+                    Number num = InterpreterMessage.castInteger(help);
+                    SpecialEval.checkNotLessThanZero(num);
+                    int size = SpecialEval.castIntValue(num);
+                    res.setBuffer(size);
+                } else if (temp instanceof TermCompound &&
+                        ((TermCompound) temp).getArity() == 1 &&
+                        ((TermCompound) temp).getFunctor().equals(OP_NEWLINE)) {
+                    switch (mode) {
+                        case MODE_READ:
+                            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                                    OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK, temp));
+                        case MODE_WRITE:
+                            Object help = ((TermCompound) temp).getArg(0);
+                            String newline = InterpreterMessage.castString(help);
+                            res.setNewLine(newline);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("illegal mode");
+                    }
+                } else {
+                    InterpreterMessage.checkInstantiated(temp);
+                    throw new InterpreterMessage(InterpreterMessage.domainError(
+                            OP_OPEN_OPTION, temp));
+                }
+                opt = ((TermCompound) opt).getArg(1);
+            }
+            if (opt.equals(Foyer.OP_NIL)) {
+                /* */
+            } else {
+                InterpreterMessage.checkInstantiated(opt);
+                throw new InterpreterMessage(InterpreterMessage.typeError(
+                        InterpreterMessage.OP_TYPE_LIST, opt));
+            }
+            return res;
+        } catch (ClassCastException x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.representationError(x.getMessage()));
         }
     }
 

@@ -13,6 +13,13 @@ import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * <p>This class represent the stream open options.</p>
+ * <p>The following flags are supported:</p
+ * <ul>
+ *     <li><b>MASK_OPEN_RPOS:</b> Random access file.</li>
+ *     <li><b>MASK_OPEN_NOBR:</b> Don't detect a BOM.</li>
+ *     <li><b>MASK_OPEN_BOMW:</b> Write a BOM.</li>
+ * </ul>
+ * <p>For text stream, if no encoding is specified, UTF-8 is used.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -42,44 +49,18 @@ import java.nio.charset.UnsupportedCharsetException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class OpenOpts extends OpenCheck {
-    public static final int MASK_OPEN_NOBR = 0x00000010;
-    public static final int MASK_OPEN_BINR = 0x00000020;
-    public static final int MASK_OPEN_RPOS = 0x00000040;
-    public static final int MASK_OPEN_BOMW = 0x00000080;
+public final class OpenOpts extends OpenDuplex {
+    public static final int MASK_OPEN_RPOS = 0x00000100;
+    public static final int MASK_OPEN_NOBR = 0x00000200;
+    public static final int MASK_OPEN_BOMW = 0x00000400;
 
     private static final String ENC_UTF_16BE = "UTF-16BE";
     private static final String ENC_UTF_16LE = "UTF-16LE";
     private static final String ENC_UTF_8 = "UTF-8";
 
-    public static final String UNIX_NEWLINE = "\n";
-    public static final String MAC_NEWLINE = "\r";
-    public static final String WINDOWS_NEWLINE = "\r\n";
-
-    private String encoding;
     private long ifmodifiedsince;
     private String ifnonematch = "";
-    private int buffer = 8192;
     private String newline = OpenOpts.UNIX_NEWLINE;
-
-
-    /**
-     * <p>Set the character set encoding.</p>
-     *
-     * @param c The character set encoding.
-     */
-    public void setEncoding(String c) {
-        encoding = c;
-    }
-
-    /**
-     * <p>Retrieve the character set encoding.</p>
-     *
-     * @return The character set encoding, or null.
-     */
-    private String getEncoding() {
-        return encoding;
-    }
 
     /**
      * <p>Retrieve the if-modified-since date.</p>
@@ -117,42 +98,6 @@ public final class OpenOpts extends OpenCheck {
         ifnonematch = i;
     }
 
-    /**
-     * <p>Retrieve the buffer size.</p>
-     *
-     * @return The buffer size.
-     */
-    private int getBuffer() {
-        return buffer;
-    }
-
-    /**
-     * <p>Set the buffer size.</p>
-     *
-     * @param b The buffer size.
-     */
-    public void setBuffer(int b) {
-        buffer = b;
-    }
-
-    /**
-     * <p>Retrieve the new line string.</p>
-     *
-     * @return The new line string.
-     */
-    public String getNewLine() {
-        return newline;
-    }
-
-    /**
-     * <p>Set the new line string.</p>
-     *
-     * @param n The new line string.
-     */
-    public void setNewLine(String n) {
-        newline = n;
-    }
-
     /*************************************************************************/
     /* Opening Stream from Options                                           */
     /*************************************************************************/
@@ -165,6 +110,7 @@ public final class OpenOpts extends OpenCheck {
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
      * @throws LicenseError             Decryption error.
+     * @throws ScannerError             Parsing error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openRead(AbstractRecognizer know, String adr2)

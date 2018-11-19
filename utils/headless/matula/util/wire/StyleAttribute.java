@@ -4,6 +4,7 @@ import matula.util.data.AssocArray;
 import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 import matula.util.system.MimeHeader;
+import qa.info.cust.bean.TidyComment;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -220,6 +221,27 @@ public final class StyleAttribute {
         if (buf != null)
             return buf.toString();
         return s;
+    }
+
+    /*******************************************************************/
+    /* Number Helper                                                   */
+    /*******************************************************************/
+
+    /**
+     * <p>Convert em to pixel.</p>
+     * <p>We assume 1 em = 12 pixel.</p>
+     *
+     * @param val The em value.
+     * @return The pixel value.
+     * @throws ScannerError Shit happens.
+     * @throws NumberFormatException Shit happens.
+     */
+    public static int emToPixel(String val)
+            throws ScannerError, NumberFormatException {
+        if (!val.endsWith("em"))
+            throw new ScannerError(TidyComment.ERROR_ILLEGAL_VALUE);
+        val = val.substring(0, val.length() - 2);
+        return (int) (Float.parseFloat(val) * 12 + 0.5f);
     }
 
     /**
