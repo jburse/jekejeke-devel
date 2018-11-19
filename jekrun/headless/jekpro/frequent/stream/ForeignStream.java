@@ -130,15 +130,15 @@ public final class ForeignStream {
     }
 
     /**
-     * <p>Close the stream with the given option.</p>
+     * <p>Close the closeable with the given option.</p>
      *
-     * @param str The stream.
+     * @param str The closeable.
      * @param opt The options.
      * @throws InterpreterMessage Validation error.
      * @throws IOException        IO error.
      * @throws InterpreterMessage Validation error.
      */
-    public static void sysClose(Object str, Object opt)
+    public static void sysClose(Closeable str, Object opt)
             throws InterpreterMessage, IOException {
         if (opt.equals(Foyer.OP_NIL)) {
             /* */
@@ -147,18 +147,7 @@ public final class ForeignStream {
             throw new InterpreterMessage(InterpreterMessage.typeError(
                     InterpreterMessage.OP_TYPE_LIST, opt));
         }
-        if (str instanceof Reader) {
-            ((Reader) str).close();
-        } else if (str instanceof Writer) {
-            ((Writer) str).close();
-        } else if (str instanceof InputStream) {
-            ((InputStream) str).close();
-        } else if (str instanceof OutputStream) {
-            ((OutputStream) str).close();
-        } else {
-            throw new InterpreterMessage(
-                    InterpreterMessage.domainError("stream", str));
-        }
+        str.close();
     }
 
     /**

@@ -48,6 +48,7 @@
 
 :- use_package(foreign(jekpro/frequent/stream)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(java/io)).
 
 :- module(user, []).
 
@@ -153,7 +154,7 @@ open(Path, Mode, Stream) :-
 /**
  * close(S): [ISO 8.11.6]
  * close(S, O): [ISO 8.11.6]
- * The unary predicate closes the stream S. The binary predicate
+ * The unary predicate closes the closeable S. The binary predicate
  * additionally recognizes the following close options. For a list
  * of options see the API documentation.
  */
@@ -174,7 +175,7 @@ close(Stream) :-
 
 :- private sys_close/2.
 :- foreign(sys_close/2, 'ForeignStream',
-      sysClose('Object','Object')).
+      sysClose('Closeable','Object')).
 
 /**
  * stream_property(S, P): [ISO 8.11.8]
