@@ -49,6 +49,7 @@
 :- use_package(foreign(jekpro/frequent/stream)).
 :- use_package(foreign(jekpro/tools/call)).
 :- use_package(foreign(java/io)).
+:- use_package(foreign(java/net)).
 
 :- module(user, []).
 
@@ -134,10 +135,17 @@ set_error(Stream) :-
 :- public open/4.
 open(Path, Mode, Stream, Opt) :-
    sys_oneof(Opt, alias(Alias), Opt2), !,
-   absolute_file_name(Path, Pin, [access(Mode)]),
-   sys_open(Pin, Mode, Opt2, Stream),
+   open2(Path, Mode, Stream, Opt2),
    sys_put_alias(Alias, Stream).
 open(Path, Mode, Stream, Opt) :-
+   open2(Path, Mode, Stream, Opt).
+
+% open2(+Path, +Mode, -Stream, +Opt)
+:- private open2/4.
+open2(Path, Mode, Stream, Opt) :-
+   reference(Path), !,
+   sys_duplex(Path, Mode, Opt, Stream).
+open2(Path, Mode, Stream, Opt) :-
    absolute_file_name(Path, Pin, [access(Mode)]),
    sys_open(Pin, Mode, Opt, Stream).
 
@@ -145,6 +153,11 @@ open(Path, Mode, Stream, Opt) :-
 :- public open/3.
 open(Path, Mode, Stream) :-
    open(Path, Mode, Stream, []).
+
+% sys_duplex(+Pin, +Mode, +Options, -Stream)
+:- private sys_duplex/4.
+:- foreign(sys_duplex/4, 'ForeignStream',
+      sysDuplex('Interpreter','Socket','String','Object')).
 
 % sys_open(+Pin, +Mode, +Options, -Stream)
 :- private sys_open/4.
