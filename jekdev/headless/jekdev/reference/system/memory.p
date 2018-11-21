@@ -6,11 +6,11 @@
  * memory_get/2.
  *
  * Example:
- * ?- memory_write([], S), write(S, foo), memory_get(S, atom(A)).
+ * ?- memory_write([], S), write(S, foo), memory_get(S, A).
  * S = 0r1479d830,
  * A = foo
  *
- * ?- memory_read(atom('foo.\n'), [], S), read(S, T).
+ * ?- memory_read('foo.\n', [], S), read(S, T).
  * S = 0r28100c13,
  * T = foo
  *

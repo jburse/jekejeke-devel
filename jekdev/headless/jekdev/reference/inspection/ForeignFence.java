@@ -31,6 +31,6 @@ package jekdev.reference.inspection;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ForeignFence {
+public final class ForeignFence {
 
 }

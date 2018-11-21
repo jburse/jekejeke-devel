@@ -10,6 +10,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -88,7 +89,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                obj = Clause.moduleToSlashSkel(sa.fun, sa.scope, en);
+                obj = SpecialDynamic.moduleToSlashSkel(sa.fun, sa.scope, en);
                 if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
                     return false;
                 return en.getNext();
@@ -109,7 +110,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 sa = Frame.callableToName(en.skel);
-                obj = Clause.callableToColonSkel(en.skel, (sa != null ? sa.scope : null), en);
+                obj = SpecialDynamic.callableToColonSkel(en.skel, (sa != null ? sa.scope : null), en);
                 if (!en.unifyTerm(temp[1], ref, obj, en.display))
                     return false;
                 return en.getNext();

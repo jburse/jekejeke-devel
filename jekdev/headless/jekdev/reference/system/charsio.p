@@ -71,15 +71,16 @@ with_output_to(atom(A), G) :- !,
    try_call_finally(
       redirect_output([]),
       (  G,
-         fetch_output(atom(A))),
+         fetch_output(A)),
       set_output(S)).
 with_output_to(bytes(L), G) :- !,
    current_output(S),
    try_call_finally(
       redirect_output([type(binary)]),
       (  G,
-         fetch_output(bytes(L))),
-      set_output(S)).
+         fetch_output(B)),
+      set_output(S)),
+   block_bytes(B, L).
 
 /**
   * with_input_from(C, G):
@@ -92,14 +93,15 @@ with_output_to(bytes(L), G) :- !,
 :- meta_predicate with_input_from(?,0).
 with_input_from(atom(A), G) :- !,
    current_input(S),
-   memory_read(atom(A), [], T),
+   memory_read(A, [], T),
    try_call_finally(
       set_input(T),
       G,
       set_input(S)).
 with_input_from(bytes(L), G) :- !,
    current_input(S),
-   memory_read(bytes(L), [type(binary)], T),
+   block_bytes(B, L),
+   memory_read(B, [type(binary)], T),
    try_call_finally(
       set_input(T),
       G,

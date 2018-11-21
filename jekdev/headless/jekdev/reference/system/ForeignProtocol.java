@@ -38,7 +38,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ForeignProtocol {
+public final class ForeignProtocol {
 
     /**
      * <p>Retrieve the protocol writer of a stream.</p>

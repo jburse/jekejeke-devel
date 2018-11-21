@@ -2,12 +2,13 @@ package jekdev.reference.system;
 
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.pretty.Foyer;
-import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 
 /**
@@ -41,9 +42,8 @@ import java.io.StringWriter;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class ForeignMemory {
-    private final static String OP_ATOM = "atom";
-    private final static String OP_BYTES = "bytes";
+public final class ForeignMemory {
+    public static final int MASK_OPEN_BINR = 0x00000001;
 
     /**
      * <p>Open a memory read stream.
@@ -54,24 +54,20 @@ public class ForeignMemory {
      */
     public static Object sysMemoryRead(Object data, Object opt)
             throws InterpreterMessage {
-        MemoryOpts options = new MemoryOpts();
-        options.decodeOpenOptions(opt);
-        if (data instanceof TermCompound &&
-                ((TermCompound) data).getArity() == 1 &&
-                ((TermCompound) data).getFunctor().equals(OP_ATOM)) {
-            Object help = ((TermCompound) data).getArg(0);
-            options.setAtom(InterpreterMessage.castString(help));
-        } else if (data instanceof TermCompound &&
-                ((TermCompound) data).getArity() == 1 &&
-                ((TermCompound) data).getFunctor().equals(OP_BYTES)) {
-            Object help = ((TermCompound) data).getArg(0);
-            options.setBytes(castBytes(help));
+        int flags= decodeOpenOptions(opt);
+        if ((flags & MASK_OPEN_BINR) != 0) {
+            byte[] buf;
+            if (data instanceof byte[]) {
+                buf = (byte[]) data;
+            } else {
+                InterpreterMessage.checkInstantiated(data);
+                throw new InterpreterMessage(InterpreterMessage.typeError("bytes", data));
+            }
+            return new ByteArrayInputStream(buf);
         } else {
-            InterpreterMessage.checkInstantiated(data);
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    ForeignStream.OP_OPEN_OPTION, data));
+            String str = InterpreterMessage.castString(data);
+            return new StringReader(str);
         }
-        return options.openRead();
     }
 
     /**
@@ -83,9 +79,12 @@ public class ForeignMemory {
      */
     public static Object sysMemoryWrite(Object opt)
             throws InterpreterMessage {
-        MemoryOpts options = new MemoryOpts();
-        options.decodeOpenOptions(opt);
-        return options.openWrite();
+        int flags= decodeOpenOptions(opt);
+        if ((flags & MASK_OPEN_BINR) != 0) {
+            return new ByteArrayOutputStream();
+        } else {
+            return new StringWriter();
+        }
     }
 
     /**
@@ -98,100 +97,53 @@ public class ForeignMemory {
     public static Object sysMemoryGet(Object str)
             throws InterpreterMessage {
         if (str instanceof StringWriter) {
-            return new TermCompound(OP_ATOM, str.toString());
+            return str.toString();
         } else if (str instanceof ByteArrayOutputStream) {
-            byte[] buf = ((ByteArrayOutputStream) str).toByteArray();
-            Object res = Knowledgebase.OP_NIL;
-            for (int i = buf.length - 1; i >= 0; i--) {
-                res = new TermCompound(Knowledgebase.OP_CONS,
-                        Integer.valueOf(buf[i] & 0xFF), res);
-            }
-            return new TermCompound(OP_BYTES, res);
+            return ((ByteArrayOutputStream) str).toByteArray();
         } else {
             throw new InterpreterMessage(
                     InterpreterMessage.domainError("stream", str));
         }
     }
 
-    /****************************************************************/
-    /* Open Options                                                 */
-    /****************************************************************/
-
     /**
-     * <p>Cast a term to bytes.</p>
+     * <p>Decode the memory options.</p>
      *
-     * @param data The term.
-     * @return The bytes.
+     * @param opt The memory options term.
      * @throws InterpreterMessage Validation error.
      */
-    private static byte[] castBytes(Object data)
+    static int decodeOpenOptions(Object opt)
             throws InterpreterMessage {
-        int len = bytesLength(data);
-        byte[] buf = new byte[len];
-        bytesFill(data, buf);
-        return buf;
-    }
-
-    /**
-     * <p>Determine the length of the bytes.</p>
-     *
-     * @param help The bytes.
-     * @return The length.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static int bytesLength(Object help)
-            throws InterpreterMessage {
-        int len = 0;
-        while (help instanceof TermCompound &&
-                ((TermCompound) help).getArity() == 2 &&
-                ((TermCompound) help).getFunctor().equals(
+        int flags = 0;
+        while (opt instanceof TermCompound &&
+                ((TermCompound) opt).getArity() == 2 &&
+                ((TermCompound) opt).getFunctor().equals(
                         Knowledgebase.OP_CONS)) {
-            len++;
-            help = ((TermCompound) help).getArg(1);
+            Object temp = ((TermCompound) opt).getArg(0);
+            if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_TYPE)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                if (ForeignStream.atomToType(help)) {
+                    flags |= MASK_OPEN_BINR;
+                } else {
+                    flags &= ~MASK_OPEN_BINR;
+                }
+            } else {
+                InterpreterMessage.checkInstantiated(temp);
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        ForeignStream.OP_OPEN_OPTION, temp));
+            }
+            opt = ((TermCompound) opt).getArg(1);
         }
-        if (help.equals(Foyer.OP_NIL)) {
+        if (opt.equals(Foyer.OP_NIL)) {
             /* */
         } else {
-            InterpreterMessage.checkInstantiated(help);
+            InterpreterMessage.checkInstantiated(opt);
             throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, help));
+                    InterpreterMessage.OP_TYPE_LIST, opt));
         }
-        return len;
-    }
-
-    /**
-     * <p>Fill the data of the bytes.</p>
-     *
-     * @param help The bytes.
-     * @param buf  The buffer.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static void bytesFill(Object help, byte[] buf)
-            throws InterpreterMessage {
-        try {
-            int pos = 0;
-            while (help instanceof TermCompound &&
-                    ((TermCompound) help).getArity() == 2 &&
-                    ((TermCompound) help).getFunctor().equals(
-                            Knowledgebase.OP_CONS)) {
-                Object temp = ((TermCompound) help).getArg(0);
-                Number num = InterpreterMessage.castInteger(temp);
-                int n = SpecialEval.castOctet(num);
-                buf[pos] = (byte) n;
-                pos++;
-                help = ((TermCompound) help).getArg(1);
-            }
-            if (help.equals(Foyer.OP_NIL)) {
-                /* */
-            } else {
-                InterpreterMessage.checkInstantiated(help);
-                throw new InterpreterMessage(InterpreterMessage.typeError(
-                        InterpreterMessage.OP_TYPE_LIST, help));
-            }
-        } catch (ClassCastException x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.representationError(x.getMessage()));
-        }
+        return flags;
     }
 
 }
