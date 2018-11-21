@@ -95,6 +95,182 @@ public final class DomWriter {
         return control;
     }
 
+    /****************************************************************/
+    /* Store API                                                    */
+    /****************************************************************/
+
+    /**
+     * <p>Store this dom node.</p>
+     * <p>Not synchronized, uses cursors.</p>
+     *
+     * @param writer  The writer.
+     * @param node    The dom node.
+     * @param comment The comment
+     * @param mask    The return mask.
+     * @throws IOException Shit happens.
+     */
+    public static void store(Writer writer, AbstractDom node,
+                             String comment, int mask)
+            throws IOException {
+        DomWriter dw = new DomWriter();
+        dw.setWriter(writer);
+        dw.setMask(mask);
+        if (comment != null && !"".equals(comment))
+            dw.writeComment(comment);
+        if ((mask & AbstractDom.MASK_LIST) != 0) {
+            DomElement elem = (DomElement) node;
+            AbstractDom[] nodes = elem.snapshotNodes();
+            dw.storeNodes(nodes);
+        } else {
+            dw.storeNode(node);
+        }
+        dw.flush();
+    }
+
+    /**
+     * <p>Store this dom node.</p>
+     * <p>Not synchronized, uses cursors.</p>
+     *
+     * @param writer  The writer.
+     * @param node    The dom node.
+     * @param comment The comment
+     * @param mask    The return mask.
+     * @param control The control.
+     * @throws IOException Shit happens.
+     */
+    public static void store(Writer writer, AbstractDom node,
+                             String comment, int mask,
+                             MapHash<String, Integer> control)
+            throws IOException {
+        DomWriter dw = new DomWriter();
+        dw.setWriter(writer);
+        dw.setMask(mask);
+        dw.setControl(control);
+        if (comment != null && !"".equals(comment))
+            dw.writeComment(comment);
+        if ((mask & AbstractDom.MASK_LIST) != 0) {
+            DomElement elem = (DomElement) node;
+            AbstractDom[] nodes = elem.snapshotNodes();
+            dw.storeNodes(nodes);
+        } else {
+            dw.storeNode(node);
+        }
+        dw.flush();
+    }
+
+    /****************************************************************/
+    /* Store Methods                                                */
+    /****************************************************************/
+
+    /**
+     * <p>Store the childeren.</p>
+     *
+     * @param nodes The nodes.
+     * @throws IOException Shit happens.
+     */
+    public void storeNodes(AbstractDom[] nodes)
+            throws IOException {
+        for (int i = 0; i < nodes.length; i++) {
+            AbstractDom node = nodes[i];
+            if ((getMask() & AbstractDom.MASK_TEXT) != 0) {
+                storeNode(node);
+            } else {
+                writeIndent();
+                storeNode(node);
+                write("\n");
+            }
+        }
+    }
+
+    /**
+     * <p>Store this dom node.</p>
+     * <p>Not synchronized, uses cursors.</p>
+     *
+     * @param node The dom node.
+     * @throws IOException Shit happens.
+     */
+    void storeNode(AbstractDom node)
+            throws IOException {
+        if (node instanceof DomText) {
+            DomText dt = (DomText) node;
+            copyText(dt.getData());
+        } else {
+            DomElement de = (DomElement) node;
+            int backmask = getMask();
+            if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                    (backmask & AbstractDom.MASK_STRP) != 0) &&
+                    AbstractDom.getControl(getControl(), de.getName()) == AbstractDom.TYPE_ANY) {
+                int mask = backmask;
+                mask |= AbstractDom.MASK_TEXT;
+                mask &= ~AbstractDom.MASK_STRP;
+                setMask(mask);
+                try {
+                    storeNode2(de);
+                    setMask(backmask);
+                } catch (IOException x) {
+                    setMask(backmask);
+                    throw x;
+                }
+            } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                    (backmask & AbstractDom.MASK_STRP) == 0) &&
+                    AbstractDom.getControl(getControl(), de.getName()) == AbstractDom.TYPE_TEXT) {
+                int mask = backmask;
+                mask |= AbstractDom.MASK_TEXT;
+                mask |= AbstractDom.MASK_STRP;
+                setMask(mask);
+                try {
+                    storeNode2(de);
+                    setMask(backmask);
+                } catch (IOException x) {
+                    setMask(backmask);
+                    throw x;
+                }
+            } else {
+                storeNode2(de);
+            }
+        }
+    }
+
+    /**
+     * <p>Store the childeren.</p>
+     *
+     * @param de The dom element.
+     * @throws IOException Shit happens.
+     */
+    private void storeNode2(DomElement de)
+            throws IOException {
+        boolean lastspace = ((getMask() & AbstractDom.MASK_LTSP) != 0);
+        AbstractDom[] nodes = de.snapshotNodes();
+        if (nodes.length == 0 &&
+                (AbstractDom.getControl(getControl(), de.getName()) == AbstractDom.TYPE_EMPTY)) {
+            copyStart(de);
+        } else if (nodes.length != 0 ||
+                (getMask() & AbstractDom.MASK_TEXT) != 0) {
+            copyStart(de);
+            if ((getMask() & AbstractDom.MASK_TEXT) != 0) {
+                storeNodes(nodes);
+            } else {
+                write("\n");
+                incIndent();
+                storeNodes(nodes);
+                decIndent();
+                writeIndent();
+            }
+            copyEnd(de);
+        } else {
+            copyEmpty(de);
+        }
+        if (lastspace) {
+            setMask(getMask() | AbstractDom.MASK_LTSP);
+        } else {
+            setMask(getMask() & ~AbstractDom.MASK_LTSP);
+        }
+    }
+
+    /****************************************************************/
+    /* Text Wrapping                                                */
+    /****************************************************************/
+
     /**
      * <p>Write a string.</p>
      *
@@ -193,7 +369,7 @@ public final class DomWriter {
     }
 
     /****************************************************************/
-    /* Tag Writing                                                  */
+    /* DomText Writing                                              */
     /****************************************************************/
 
     /**
@@ -286,7 +462,7 @@ public final class DomWriter {
     }
 
     /***************************************************************/
-    /* Tag Writing                                                 */
+    /* DomElement Writing                                          */
     /***************************************************************/
 
     /**
@@ -326,12 +502,11 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     private void copyAttributes(DomElement de) throws IOException {
-        String[] attrs = de.snapshotAttrs();
+        AbstractDom[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
-            String attr = attrs[i];
-            Object val = de.getAttrObj(attr);
-            if (val == null)
-                continue;
+            AbstractDom node = attrs[i];
+            String attr = node.getKey();
+            Object val = ((DomText) node).getDataObj();
             write(" ", true);
             write(attr);
             if (!"".equals(val)) {

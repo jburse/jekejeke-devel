@@ -451,7 +451,7 @@ public final class XSLSheetTransform extends XSLSheet {
             return;
         if (val instanceof DomElement) {
             AbstractDom[] nodes = ((DomElement) val).snapshotNodes();
-            DomElement.storeNodes(dw, nodes);
+            dw.storeNodes(nodes);
         } else {
             if (val instanceof String) {
                 dw.copyText((String) val);

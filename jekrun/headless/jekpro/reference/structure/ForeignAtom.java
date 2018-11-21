@@ -14,6 +14,7 @@ import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
 import matula.util.regex.ScannerToken;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -106,7 +107,7 @@ public final class ForeignAtom {
      * @throws InterpreterMessage Validation error.
      */
     public static String sysListToAtom(Object list, int rep)
-            throws ClassCastException, InterpreterMessage {
+            throws InterpreterMessage {
         StringBuilder buf = new StringBuilder();
         while (list instanceof TermCompound &&
                 ((TermCompound) list).getArity() == 2 &&
@@ -597,76 +598,30 @@ public final class ForeignAtom {
      *
      * @param obj The list of bytes.
      * @return The byte block.
-     * @throws InterpreterMessage Conversion problem.
+     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
      */
     public static byte[] sysBytesToBlock(Object obj)
-            throws InterpreterMessage {
-        int len = bytesLength(obj);
-        byte[] buf = new byte[len];
-        bytesFill(obj, buf);
-        return buf;
-    }
-
-    /**
-     * <p>Determine the length of the list of bytes.</p>
-     *
-     * @param obj The list of bytes.
-     * @return The length.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static int bytesLength(Object obj)
-            throws InterpreterMessage {
-        int len = 0;
+            throws ClassCastException, InterpreterMessage {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
         while (obj instanceof TermCompound &&
                 ((TermCompound) obj).getArity() == 2 &&
                 ((TermCompound) obj).getFunctor().equals(
                         Knowledgebase.OP_CONS)) {
-            len++;
+            Object temp = ((TermCompound) obj).getArg(0);
+            Number num = InterpreterMessage.castInteger(temp);
+            int n = SpecialEval.castOctet(num);
+            buf.write(n);
             obj = ((TermCompound) obj).getArg(1);
         }
-        if (obj.equals(Foyer.OP_NIL)) {
+        if (obj.equals(Knowledgebase.OP_NIL)) {
             /* */
         } else {
             InterpreterMessage.checkInstantiated(obj);
             throw new InterpreterMessage(InterpreterMessage.typeError(
                     InterpreterMessage.OP_TYPE_LIST, obj));
         }
-        return len;
-    }
-
-    /**
-     * <p>Fill the byte block with the list of bytes.</p>
-     *
-     * @param obj  The list of bytes.
-     * @param data The byte block.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static void bytesFill(Object obj, byte[] data)
-            throws InterpreterMessage {
-        try {
-            int pos = 0;
-            while (obj instanceof TermCompound &&
-                    ((TermCompound) obj).getArity() == 2 &&
-                    ((TermCompound) obj).getFunctor().equals(
-                            Knowledgebase.OP_CONS)) {
-                Object temp = ((TermCompound) obj).getArg(0);
-                Number num = InterpreterMessage.castInteger(temp);
-                int n = SpecialEval.castOctet(num);
-                data[pos] = (byte) n;
-                pos++;
-                obj = ((TermCompound) obj).getArg(1);
-            }
-            if (obj.equals(Foyer.OP_NIL)) {
-                /* */
-            } else {
-                InterpreterMessage.checkInstantiated(obj);
-                throw new InterpreterMessage(InterpreterMessage.typeError(
-                        InterpreterMessage.OP_TYPE_LIST, obj));
-            }
-        } catch (ClassCastException x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.representationError(x.getMessage()));
-        }
+        return buf.toByteArray();
     }
 
     /**

@@ -1,10 +1,13 @@
 package matula.util.format;
 
+import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
+import matula.util.system.ForeignXml;
 import matula.util.system.OpenOpts;
 
 import java.io.IOException;
+import java.io.Reader;
 
 /**
  * <p>This class provides a dom reader.</p>
@@ -38,6 +41,15 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomReader extends XmlScanner<XmlMachine> {
+    private static final String DOM_MISSING_TEXT = "dom_missing_text";
+
+    private static final String DOM_MISSING_ELEM = "dom_missing_elem";
+    private static final String DOM_ILLEGAL_VALUE = "dom_illegal_value";
+    private static final String DOM_CLOSED_EMPTY = "dom_closed_empty";
+    private static final String DOM_MISSING_END = "dom_missing_end";
+    private static final String DOM_UNEXPECTED_ATTR = "dom_unexpected_attr";
+    private static final String DOM_MISMATCHED_END = "dom_mismatched_end";
+
     private static final String DOM_NONE_WHITESPACE = "dom_none_whitespace";
     private static final String DOM_UNBALANCED_COMMENT = "dom_unbalanced_comment";
     private static final String DOM_UNBALANCED_PROCINSTR = "dom_unbalanced_procinstr";
@@ -91,6 +103,288 @@ public final class DomReader extends XmlScanner<XmlMachine> {
     DomReader() {
         super(new XmlMachine());
     }
+
+    /**********************************************************/
+    /* Load API                                               */
+    /**********************************************************/
+
+
+    /**
+     * <p>Load this dom node.</p>
+     * <p>Not synchronized, uses cut-over.</p>
+     *
+     * @param reader The input stream.
+     * @param node   The dom node.
+     * @param mask   The return mask.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    public static void load(Reader reader, AbstractDom node, int mask)
+            throws IOException, ScannerError {
+        DomReader dr = new DomReader();
+        dr.setReader(reader);
+        dr.setMask(mask);
+        if ((mask & AbstractDom.MASK_LIST) != 0) {
+            DomElement de = (DomElement) node;
+            ListArray<AbstractDom> cs = dr.loadNodes();
+            de.setChildrenFast(cs);
+        } else {
+            dr.nextTagOrText();
+            dr.loadNode(node);
+        }
+        dr.checkEof();
+    }
+
+    /**
+     * <p>Load this dom node.</p>
+     * <p>Not synchronized, uses cut-over.</p>
+     *
+     * @param reader  The input stream.
+     * @param node    The dom node.
+     * @param mask    The return mask.
+     * @param control The tag control.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    public static void load(Reader reader, AbstractDom node, int mask,
+                            MapHash<String, Integer> control)
+            throws IOException, ScannerError {
+        DomReader dr = new DomReader();
+        dr.setReader(reader);
+        dr.setMask(mask);
+        dr.setControl(control);
+        if ((mask & AbstractDom.MASK_LIST) != 0) {
+            DomElement de = (DomElement) node;
+            ListArray<AbstractDom> cs = dr.loadNodes();
+            de.setChildrenFast(cs);
+        } else {
+            dr.nextTagOrText();
+            dr.loadNode(node);
+        }
+        dr.checkEof();
+    }
+
+    /**********************************************************/
+    /* Load Methods                                           */
+    /**********************************************************/
+
+    /**
+     * <p>Load the children.</p>
+     *
+     * @return The children.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    private ListArray<AbstractDom> loadNodes()
+            throws IOException, ScannerError {
+        nextTagOrText();
+        ListArray<AbstractDom> res = null;
+        for (; ; ) {
+            switch (getRes()) {
+                case XmlMachine.RES_TEXT:
+                    DomText dt = new DomText();
+                    loadNode(dt);
+                    if (res == null)
+                        res = new ListArray<AbstractDom>();
+                    res.add(dt);
+                    break;
+                case XmlMachine.RES_TAG:
+                    String temp = getType();
+                    if (temp.length() > 0 &&
+                            temp.charAt(0) == XmlMachine.CHAR_SLASH)
+                        return res;
+                    DomElement dh = new DomElement();
+                    loadNode(dh);
+                    if (res == null)
+                        res = new ListArray<AbstractDom>();
+                    res.add(dh);
+                    break;
+                case XmlMachine.RES_EOF:
+                    return res;
+                default:
+                    throw new IllegalArgumentException("illegal res");
+            }
+        }
+    }
+
+    /**
+     * <p>Load a dom node.</p>
+     * <p>Not synchronized, uses cut-over.</p>
+     *
+     * @param node The dom node.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    private void loadNode(AbstractDom node)
+            throws IOException, ScannerError {
+        if (node instanceof DomText) {
+            DomText dt = (DomText) node;
+            switch (getRes()) {
+                case XmlMachine.RES_TEXT:
+                    dt.setData(ForeignXml.sysTextUnescape(getTextStrip()));
+                    nextTagOrText();
+                    break;
+                case XmlMachine.RES_TAG:
+                    throw new ScannerError(DOM_MISSING_TEXT, OpenOpts.getOffset(getReader()));
+                case XmlMachine.RES_EOF:
+                    throw new ScannerError(DOM_MISSING_TEXT, OpenOpts.getOffset(getReader()));
+                default:
+                    throw new IllegalArgumentException("illegal res");
+            }
+        } else {
+            DomElement de = (DomElement) node;
+            switch (getRes()) {
+                case XmlMachine.RES_TEXT:
+                    throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(getReader()));
+                case XmlMachine.RES_TAG:
+                    boolean lastspace = ((getMask() & AbstractDom.MASK_LTSP) != 0);
+                    String type = getType();
+                    if (type.length() > 0 &&
+                            type.charAt(0) == XmlMachine.CHAR_SLASH)
+                        throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(getReader()));
+                    boolean closed = checkClosed();
+                    ListArray<AbstractDom> newattrs = null;
+                    for (int i = 0; i < getAttrCount(); i++) {
+                        String valstr = getValueStripAt(i);
+                        Object val;
+                        if (XmlMachine.isQuoted(valstr) || "".equals(valstr)) {
+                            val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
+                        } else if (XmlMachine.isNumber(valstr)) {
+                            try {
+                                val = Long.valueOf(valstr);
+                            } catch (NumberFormatException x) {
+                                throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(getReader()));
+                            }
+                        } else {
+                            throw new ScannerError(DOM_ILLEGAL_VALUE, OpenOpts.getOffset(getReader()));
+                        }
+                        if (newattrs == null)
+                            newattrs = new ListArray<AbstractDom>();
+                        DomText dt=new DomText();
+                        dt.setKey(getAttr(i));
+                        dt.setDataObj(val);
+                        newattrs.add(dt);
+                    }
+                    boolean empty = (AbstractDom.getControl(getControl(), type) == AbstractDom.TYPE_EMPTY);
+                    ListArray<AbstractDom> newchildren;
+                    if (!closed && !empty) {
+                        int backmask = getMask();
+                        if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                                (backmask & AbstractDom.MASK_STRP) != 0) &&
+                                AbstractDom.getControl(getControl(), type) == AbstractDom.TYPE_ANY) {
+                            int mask = backmask;
+                            mask |= AbstractDom.MASK_TEXT;
+                            mask &= ~AbstractDom.MASK_STRP;
+                            setMask(mask);
+                            try {
+                                newchildren = loadNodes();
+                                setMask(backmask);
+                            } catch (IOException x) {
+                                setMask(backmask);
+                                throw x;
+                            } catch (ScannerError x) {
+                                setMask(backmask);
+                                throw x;
+                            }
+                        } else if (((backmask & AbstractDom.MASK_TEXT) == 0 ||
+                                (backmask & AbstractDom.MASK_STRP) == 0) &&
+                                AbstractDom.getControl(getControl(), type) == AbstractDom.TYPE_TEXT) {
+                            int mask = backmask;
+                            mask |= AbstractDom.MASK_TEXT;
+                            mask |= AbstractDom.MASK_STRP;
+                            setMask(mask);
+                            try {
+                                newchildren = loadNodes();
+                                setMask(backmask);
+                            } catch (IOException x) {
+                                setMask(backmask);
+                                throw x;
+                            } catch (ScannerError x) {
+                                setMask(backmask);
+                                throw x;
+                            }
+                        } else {
+                            newchildren = loadNodes();
+                        }
+                        checkEnd(type);
+                    } else {
+                        if (closed && empty)
+                            throw new ScannerError(DOM_CLOSED_EMPTY, -1);
+                        newchildren = null;
+                        nextTagOrText();
+                    }
+                    de.setName(type);
+                    de.setAttrsFast(newattrs);
+                    de.setChildrenFast(newchildren);
+                    if (lastspace) {
+                        setMask(getMask() | AbstractDom.MASK_LTSP);
+                    } else {
+                        setMask(getMask() & ~AbstractDom.MASK_LTSP);
+                    }
+                    break;
+                case XmlMachine.RES_EOF:
+                    throw new ScannerError(DOM_MISSING_ELEM, OpenOpts.getOffset(getReader()));
+                default:
+                    throw new IllegalArgumentException("illegal res");
+            }
+        }
+    }
+
+    /**
+     * <p>Check whether the actual tag is closed.</p>
+     * <p>As a side effect the tag is validated.</p>
+     * <p>As a side effect the tag is made open.</p
+     *
+     * @return True of the tag is closed, otherwise false.
+     */
+    private boolean checkClosed() {
+        int n = getAttrCount();
+        if (n != 0 &&
+                "".equals(getValueAt(n - 1)) &&
+                getAttr(n - 1).length() == 1 &&
+                getAttr(n - 1).charAt(0) == XmlMachine.CHAR_SLASH) {
+            removeAttrValue(n - 1);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the actual tag is an end tag.</p>
+     * <p>As a side effect a correct tag is consumed.</p>
+     *
+     * @param type The type.
+     * @throws IOException  IO error.
+     * @throws ScannerError Syntax error.
+     */
+    public void checkEnd(String type)
+            throws ScannerError, IOException {
+        switch (getRes()) {
+            case XmlMachine.RES_TEXT:
+                throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(getReader()));
+            case XmlMachine.RES_TAG:
+                String temp = getType();
+                if (temp.length() == 0 ||
+                        temp.charAt(0) != XmlMachine.CHAR_SLASH)
+                    throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(getReader()));
+                if (getAttrCount() != 0)
+                    throw new ScannerError(DOM_UNEXPECTED_ATTR, OpenOpts.getOffset(getReader()));
+                temp = temp.substring(1);
+                if (!type.equals(temp))
+                    throw new ScannerError(DOM_MISMATCHED_END, OpenOpts.getOffset(getReader()));
+                nextTagOrText();
+                break;
+            case XmlMachine.RES_EOF:
+                throw new ScannerError(DOM_MISSING_END, OpenOpts.getOffset(getReader()));
+            default:
+                throw new IllegalArgumentException("illegal res");
+        }
+    }
+
+    /**********************************************************/
+    /* Text & Element Reading                                 */
+    /**********************************************************/
 
     /**
      * <p>Get the next tag.</p>

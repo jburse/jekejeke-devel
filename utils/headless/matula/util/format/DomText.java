@@ -1,13 +1,7 @@
 package matula.util.format;
 
-import matula.util.regex.ScannerError;
-import matula.util.system.ForeignXml;
-import matula.util.system.OpenOpts;
-
-import java.io.IOException;
-
 /**
- * <p>This class provides a dom element.</p>
+ * <p>This class provides a dom text.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -38,60 +32,62 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DomText extends AbstractDom {
-    static final String DOM_MISSING_TEXT = "dom_missing_text";
+    private Object data;
 
-    private String data = XmlMachine.VALUE_EMPTY;
+    /**
+     * <p>Retrieve the string data.</p>
+     *
+     * @return The string data.
+     */
+    public String getData() {
+        return (String) getDataObj();
+    }
+
+    /**
+     * <p>Retrieve the long data.</p>
+     *
+     * @return The long data.
+     */
+    public long getDataLong() {
+        return ((Long) getDataObj()).longValue();
+    }
 
     /**
      * <p>Retrieve the data.</p>
      *
      * @return The data.
      */
-    public String getData() {
+    public Object getDataObj() {
         return data;
+    }
+
+    /**
+     * <p>Set the string data.</p>
+     *
+     * @param val The string data.
+     */
+    public void setData(String val) {
+        setDataObj(val);
+    }
+
+    /**
+     * <p>Set the long data.</p>
+     *
+     * @param val The long data.
+     */
+    public void setDataLong(long val) {
+        setDataObj(Long.valueOf(val));
     }
 
     /**
      * <p>Set the data.</p>
      *
-     * @param d The data.
+     * @param val The data.
      */
-    public void setData(String d) {
-        if (data == null)
+    public void setDataObj(Object val) {
+        if (val == null)
             throw new NullPointerException("data missing");
-        data = d;
-    }
-
-    /**
-     * <p>Load a dom text.</p>
-     *
-     * @param dr The dom reader.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
-     */
-    void loadNode(DomReader dr) throws IOException, ScannerError {
-        switch (dr.getRes()) {
-            case XmlMachine.RES_TEXT:
-                data = ForeignXml.sysTextUnescape(dr.getTextStrip());
-                dr.nextTagOrText();
-                break;
-            case XmlMachine.RES_TAG:
-                throw new ScannerError(DOM_MISSING_TEXT, OpenOpts.getOffset(dr.getReader()));
-            case XmlMachine.RES_EOF:
-                throw new ScannerError(DOM_MISSING_TEXT, OpenOpts.getOffset(dr.getReader()));
-            default:
-                throw new IllegalArgumentException("illegal res");
-        }
-    }
-
-    /**
-     * <p>Store this dom text.</p>
-     *
-     * @param dw The dom writer.
-     * @throws IOException Shit happens.
-     */
-    void storeNode(DomWriter dw) throws IOException {
-        dw.copyText(data);
+        data = val;
     }
 
 }

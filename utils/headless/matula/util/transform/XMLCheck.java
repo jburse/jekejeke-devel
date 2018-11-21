@@ -180,11 +180,18 @@ public final class XMLCheck {
      */
     private void checkAttributes(DomElement de, XSDDeclElem xe)
             throws ValidationError {
-        String[] attrs = de.snapshotAttrs();
+        AbstractDom[] attrs = de.snapshotAttrs();
         for (int i = 0; i < attrs.length; i++) {
-            String attr = attrs[i];
+            AbstractDom node = attrs[i];
+            String attr = node.getKey();
+            if (!(node instanceof DomText)) {
+                String name = de.getName();
+                String key = name + "." + attr;
+                throw new ValidationError(DATA_ILLEGAL_VALUE,
+                        key + " (" + getSchema().getName() + ")");
+            }
             XSDDeclAttr xa = schema.getDeclAttr(de.getName(), attr);
-            checkType(de, attr, xa);
+            checkType(de, (DomText) node, attr, xa);
         }
         checkMandatory(de, xe);
     }
@@ -197,15 +204,13 @@ public final class XMLCheck {
      * @param xa   The XSD schema attribute declaration.
      * @throws ValidationError Check error.
      */
-    private void checkType(DomElement de, String attr, XSDDeclAttr xa)
+    private void checkType(DomElement de, DomText node, String attr, XSDDeclAttr xa)
             throws ValidationError {
         switch (xa.getType()) {
             case XSDDeclAttr.TYPE_PRIMITIVE:
                 break;
             case XSDDeclAttr.TYPE_STRING:
-                Object val = de.getAttrObj(attr);
-                if (val == null)
-                    break;
+                Object val = node.getDataObj();
                 if (!(val instanceof String)) {
                     String name = de.getName();
                     String key = name + "." + attr;
@@ -214,9 +219,7 @@ public final class XMLCheck {
                 }
                 break;
             case XSDDeclAttr.TYPE_INTEGER:
-                val = de.getAttrObj(attr);
-                if (val == null)
-                    break;
+                val = node.getDataObj();
                 if (!(val instanceof Long)) {
                     String name = de.getName();
                     String key = name + "." + attr;

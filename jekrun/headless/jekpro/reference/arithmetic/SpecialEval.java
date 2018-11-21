@@ -173,7 +173,7 @@ public final class SpecialEval extends AbstractSpecial {
      * <p>This check must be preceded by an integer check.</p>
      *
      * @param n The number, either Integer or BigInteger.
-     * @throws ClassCastException Shit happens.
+     * @throws ClassCastException Validation error.
      */
     public static void checkNotLessThanZero(Number n)
             throws ClassCastException {

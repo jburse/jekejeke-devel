@@ -1,15 +1,9 @@
 package matula.util.format;
 
-import matula.util.data.ListArray;
 import matula.util.data.MapHash;
-import matula.util.regex.ScannerError;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 
 /**
- * <p>This class provides a dom node.</p>
+ * <p>This class provides an abstract dom node.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -55,7 +49,8 @@ public abstract class AbstractDom
     public static final int TYPE_ANY = 2; /* enable text and disable strip */
     public static final int TYPE_TEXT = 3; /* enable text and enable strip */
 
-    DomElement parent;
+    private DomElement parent;
+    private String key;
 
     /**
      * <p>Retrieve the parent.</p>
@@ -72,141 +67,40 @@ public abstract class AbstractDom
      * @param p The parent.
      */
     public void setParent(DomElement p) {
+        if (p == null)
+            throw new NullPointerException("parent missing");
         parent = p;
     }
 
-    /*****************************************************/
-    /* Properties Like Lifecycle                         */
-    /*****************************************************/
-
     /**
-     * <p>Load this dom node.</p>
-     * <p>Not synchronized, uses cut-over.</p>
+     * <p>Retrieve the key name.</p>
      *
-     * @param reader The input stream.
-     * @param mask   The return mask.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @return The key name.
      */
-    public void load(Reader reader, int mask)
-            throws IOException, ScannerError {
-        DomReader dr = new DomReader();
-        dr.setReader(reader);
-        dr.setMask(mask);
-        if ((mask & MASK_LIST) != 0) {
-            DomElement de = (DomElement) this;
-            ListArray<AbstractDom> cs = DomElement.loadNodes(dr);
-            de.setChildrenFast(cs);
-        } else {
-            dr.nextTagOrText();
-            loadNode(dr);
-        }
-        dr.checkEof();
+    public String getKey() {
+        return key;
     }
 
     /**
-     * <p>Load this dom node.</p>
-     * <p>Not synchronized, uses cut-over.</p>
+     * <p>Set the key name.</p>
      *
-     * @param reader  The input stream.
-     * @param mask    The return mask.
-     * @param control The tag control.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
+     * @param k The key name.
      */
-    public void load(Reader reader, int mask,
-                     MapHash<String, Integer> control)
-            throws IOException, ScannerError {
-        DomReader dr = new DomReader();
-        dr.setReader(reader);
-        dr.setMask(mask);
-        dr.setControl(control);
-        if ((mask & MASK_LIST) != 0) {
-            DomElement de = (DomElement) this;
-            ListArray<AbstractDom> cs = DomElement.loadNodes(dr);
-            de.setChildrenFast(cs);
-        } else {
-            dr.nextTagOrText();
-            loadNode(dr);
-        }
-        dr.checkEof();
-    }
-
-
-    /**
-     * <p>Store this dom node.</p>
-     * <p>Not synchronized, uses cursors.</p>
-     *
-     * @param writer  The writer.
-     * @param comment The comment
-     * @param mask    The return mask.
-     * @throws IOException Shit happens.
-     */
-    public void store(Writer writer, String comment, int mask)
-            throws IOException {
-        DomWriter dw = new DomWriter();
-        dw.setWriter(writer);
-        dw.setMask(mask);
-        if (comment != null && !"".equals(comment))
-            dw.writeComment(comment);
-        if ((mask & MASK_LIST) != 0) {
-            DomElement elem = (DomElement) this;
-            AbstractDom[] nodes = elem.snapshotNodes();
-            DomElement.storeNodes(dw, nodes);
-        } else {
-            storeNode(dw);
-        }
-        dw.flush();
+    public void setKey(String k) {
+        if (k == null)
+            throw new NullPointerException("key missing");
+        key = k;
     }
 
     /**
-     * <p>Store this dom node.</p>
-     * <p>Not synchronized, uses cursors.</p>
+     * <p>Check the key.</p>
      *
-     * @param writer  The writer.
-     * @param comment The comment
-     * @param mask    The return mask.
-     * @throws IOException Shit happens.
+     * @param n The key.
+     * @return True if the key matches, otherwise false.
      */
-    public void store(Writer writer, String comment, int mask,
-                      MapHash<String, Integer> control)
-            throws IOException {
-        DomWriter dw = new DomWriter();
-        dw.setWriter(writer);
-        dw.setMask(mask);
-        dw.setControl(control);
-        if (comment != null && !"".equals(comment))
-            dw.writeComment(comment);
-        if ((mask & MASK_LIST) != 0) {
-            DomElement elem = (DomElement) this;
-            AbstractDom[] nodes = elem.snapshotNodes();
-            DomElement.storeNodes(dw, nodes);
-        } else {
-            storeNode(dw);
-        }
-        dw.flush();
+    public boolean isKey(String n) {
+        return (key != null ? key.equalsIgnoreCase(n) : null == n);
     }
-
-    /**
-     * <p>Load a dom node.</p>
-     * <p>Not synchronized, uses cut-over.</p>
-     *
-     * @param dr The dom reader.
-     * @throws IOException  IO error.
-     * @throws ScannerError Syntax error.
-     */
-    abstract void loadNode(DomReader dr)
-            throws IOException, ScannerError;
-
-    /**
-     * <p>Store this dom node.</p>
-     * <p>Not synchronized, uses cursors.</p>
-     *
-     * @param dw The dom writer.
-     * @throws IOException Shit happens.
-     */
-    abstract void storeNode(DomWriter dw)
-            throws IOException;
 
     /***************************************************************/
     /* Object Protocol                                             */

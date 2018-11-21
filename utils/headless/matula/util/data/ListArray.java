@@ -161,13 +161,21 @@ public class ListArray<E> extends AbstractList<E> {
      *
      * @param i The index.
      */
-    public void remove(int i) {
+    public void removeEntry(int i) {
         int k = size - i - 1;
         if (k > 0)
             System.arraycopy(table, i + 1, table, i, k);
         table[--size] = null;
-        if (size < table.length / 4 && table.length / 2 > MIN_SIZE)
-            resize(table.length / 2);
+    }
+
+    /**
+     * <p>Remove an element at a position.</p>
+     *
+     * @param i The index.
+     */
+    public void remove(int i) {
+        removeEntry(i);
+        resize();
     }
 
     /**

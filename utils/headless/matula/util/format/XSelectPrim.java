@@ -192,7 +192,7 @@ public final class XSelectPrim extends XSelect {
                     int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
                     try {
                         sr.write("\"");
-                        ((DomElement) val).store(sr, null, mask);
+                        DomWriter.store(sr, (DomElement) val, null, mask);
                         sr.write("\"");
                     } catch (IOException x) {
                         throw new RuntimeException("internal error", x);
