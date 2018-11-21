@@ -6,7 +6,6 @@ import matula.util.regex.ScannerError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -101,8 +100,7 @@ public final class ForeignCache {
                             state = STATE_FAILED;
                             prop.put(ATTR_STATE, state);
                         } catch (IOException x) {
-                            if (x instanceof InterruptedIOException &&
-                                    !(x instanceof SocketTimeoutException)) {
+                            if (OpenCheck.isInterrupt(x)) {
                                 throw x;
                             } else {
                                 state = STATE_FAILED;
@@ -140,8 +138,7 @@ public final class ForeignCache {
             try {
                 ok = OpenCheck.DEFAULT_CHECK.checkHead(key);
             } catch (IOException x) {
-                if (x instanceof InterruptedIOException &&
-                        !(x instanceof SocketTimeoutException)) {
+                if (OpenCheck.isInterrupt(x)) {
                     throw x;
                 } else {
                     ok = false;

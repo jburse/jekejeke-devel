@@ -127,7 +127,7 @@ set_error(Stream) :-
  * open(P, M, S): [ISO 8.11.5.4]
  * open(P, M, S, O): [ISO 8.11.5.4]
  * The ternary predicate succeeds when S unifies with the new stream
- * associated with the path P and the access mode M (read, write or
+ * associated with the path or socket P and the access mode M (read, write or
  * append). The quaternary predicate additionally recognizes the following
  * open options. For a list of options see the API documentation.
  */

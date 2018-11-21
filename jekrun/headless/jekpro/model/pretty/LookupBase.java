@@ -9,8 +9,6 @@ import matula.util.system.ForeignUri;
 import matula.util.system.OpenCheck;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.SocketTimeoutException;
 
 /**
  * <p>Concerned with the lookup of binaries/text, escpecially files and URLs</p>
@@ -112,8 +110,7 @@ public final class LookupBase {
         try {
             ok = OpenCheck.DEFAULT_CHECK.checkHead(path);
         } catch (IOException x) {
-            if (x instanceof InterruptedIOException &&
-                    !(x instanceof SocketTimeoutException)) {
+            if (OpenCheck.isInterrupt(x)) {
                 throw x;
             } else {
                 ok = false;

@@ -1,10 +1,9 @@
 package matula.util.system;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.*;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.FileLockInterruptionException;
 
 /**
  * <p>This class represent the stream check options.</p>
@@ -174,6 +173,26 @@ public class OpenCheck {
             return null;
         } catch (SocketException x) {
             return null;
+        }
+    }
+
+    /**
+     * <p>Check whether I/O exception is an interrupt.</p>
+     *
+     * @param x The I/O exception.
+     * @return True if the I/O exception is an interrupt, otherwise false.
+     */
+    public static boolean isInterrupt(IOException x) {
+        if (x instanceof SocketTimeoutException) {
+            return false;
+        } else if (x instanceof InterruptedIOException) {
+            return true;
+        } else if (x instanceof FileLockInterruptionException) {
+            return true;
+        } else if (x instanceof ClosedByInterruptException) {
+            return true;
+        } else {
+            return false;
         }
     }
 

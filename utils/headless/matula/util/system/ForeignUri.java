@@ -2,10 +2,8 @@ package matula.util.system;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.nio.charset.CharacterCodingException;
 
 /**
@@ -529,8 +527,7 @@ public final class ForeignUri {
             try {
                 res = OpenCheck.DEFAULT_CHECK.checkRedirect(adr);
             } catch (IOException x) {
-                if (x instanceof InterruptedIOException &&
-                        !(x instanceof SocketTimeoutException)) {
+                if (OpenCheck.isInterrupt(x)) {
                     throw x;
                 } else {
                     res = null;

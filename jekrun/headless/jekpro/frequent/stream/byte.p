@@ -45,7 +45,7 @@
 :- module(user, []).
 
 /****************************************************************/
-/* Byte I/O                                                     */
+/* Single Byte I/O                                              */
 /****************************************************************/
 
 /**
@@ -71,7 +71,8 @@ put_byte(Stream, Byte) :-
    sys_put_byte(Stream, Byte).
 
 :- private sys_put_byte/2.
-:- foreign(sys_put_byte/2, 'ForeignByte', sysPutByte('OutputStream','Integer')).
+:- foreign(sys_put_byte/2, 'ForeignByte',
+      sysPutByte('OutputStream','Integer')).
 
 /**
  * get_byte(B): [ISO 8.13.1]
@@ -128,6 +129,10 @@ peek_byte(Stream, Byte) :-
 :- foreign(sys_peek_byte/2, 'ForeignByte',
       sysPeekByte('InputStream')).
 
+/****************************************************************/
+/* Byte & Char I/O                                              */
+/****************************************************************/
+
 /**
  * flush_output: [ISO 8.11.7]
  * flush_output(S): [ISO 8.11.7]
@@ -178,3 +183,51 @@ at_end_of_stream(Stream) :-
 :- private sys_at_end_of_stream/1.
 :- foreign(sys_at_end_of_stream/1, 'ForeignByte',
       sysAtEndOfStream('Object')).
+
+/****************************************************************/
+/* Block Byte I/O                                               */
+/****************************************************************/
+
+/**
+ * read_block(L, B):
+ * read_block(I, L, B):
+ * The predicate succeeds in a block B in reading maximally L bytes from I.
+ */
+:- public read_block/2.
+read_block(Length, Block) :-
+   current_input(Stream),
+   sys_read_block(Stream, Length, Block).
+
+:- public read_block/3.
+read_block(Alias, Length, Block) :-
+   atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_read_block(Stream, Length, Block).
+read_block(Stream, Length, Block) :-
+   sys_read_block(Stream, Length, Block).
+
+:- private sys_read_block/3.
+:- foreign(sys_read_block/3, 'ForeignByte',
+      sysReadBlock('InputStream',int)).
+
+/**
+ * write_block(B):
+ * write_block(O, B):
+ * The predicate succeeds in writing the byte block B to O.
+ */
+:- public write_block/1.
+write_block(Block) :-
+   current_output(Stream),
+   sys_write_block(Stream, Block).
+
+:- public write_block/2.
+write_block(Alias, Block) :-
+   atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_write_block(Stream, Block).
+write_block(Stream, Block) :-
+   sys_write_block(Stream, Block).
+
+:- private sys_write_block/2.
+:- foreign(sys_write_block/2, 'ForeignByte',
+      sysWriteBlock('OutputStream',{byte})).

@@ -42,7 +42,9 @@
  */
 
 :- package(library(jekpro/frequent/misc)).
+:- use_package(foreign(jekpro/frequent/misc)).
 :- use_package(foreign(java/net)).
+:- use_package(foreign(java/io)).
 
 :- module(socket, []).
 
@@ -51,20 +53,19 @@
  * The predicate succeeds in S with a new server socket for port P.
  */
 :- public server_new/2.
-:- foreign_constructor(server_new/2, 'ServerSocket', new(int)).
+:- foreign(server_new/2, 'ForeignSocket', sysServerNew(int)).
 
 /**
  * server_accept(S, H):
  * The predicate succeeds in H with a new session socket from server socket S.
  */
 :- public server_accept/2.
-:- virtual server_accept/2.
-:- foreign(server_accept/2, 'ServerSocket', accept).
+:- foreign(server_accept/2, 'ForeignSocket', sysServerAccept('ServerSocket')).
 
 /**
  * client_new(H, P, C):
  * The predicate succeeds in C with a new client socket for host H and port P.
  */
 :- public client_new/3.
-:- foreign_constructor(client_new/3, 'Socket', new('String',int)).
+:- foreign(client_new/3, 'ForeignSocket', sysClientNew('String',int)).
 

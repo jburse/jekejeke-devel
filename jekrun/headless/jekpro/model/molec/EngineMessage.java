@@ -15,6 +15,7 @@ import matula.util.data.MapEntry;
 import matula.util.regex.ScannerToken;
 import matula.util.system.AbstractRecognizer;
 import matula.util.system.ForeignCache;
+import matula.util.system.OpenCheck;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.PropertiesWithImport;
 
@@ -25,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileLockInterruptionException;
 import java.nio.charset.CharacterCodingException;
 import java.util.*;
@@ -538,13 +540,11 @@ public final class EngineMessage extends Exception {
      * @return The engine message.
      */
     public static EngineMessage mapIOException(IOException x) {
-        if (x instanceof SocketTimeoutException) {
+        if (OpenCheck.isInterrupt(x)) {
+            return (EngineMessage) AbstractLivestock.sysThreadClear();
+        } else if (x instanceof SocketTimeoutException) {
             return new EngineMessage(EngineMessage.resourceError(
                     EngineMessage.OP_RESOURCE_SOCKET_TIMEOUT));
-        } else if (x instanceof InterruptedIOException) {
-            return (EngineMessage) AbstractLivestock.sysThreadClear();
-        } else if (x instanceof FileLockInterruptionException) {
-            return (EngineMessage) AbstractLivestock.sysThreadClear();
         } else if (x instanceof UnsupportedEncodingException) {
             return new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_ENCODING,

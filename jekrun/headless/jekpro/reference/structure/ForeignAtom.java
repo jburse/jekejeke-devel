@@ -588,4 +588,101 @@ public final class ForeignAtom {
         return inter.unparseTerm(Interpreter.FLAG_QUOTED, t);
     }
 
+    /****************************************************************/
+    /* Block Bytes Conversion                                       */
+    /****************************************************************/
+
+    /**
+     * <p>Convert a list of bytes to a byte block.</p>
+     *
+     * @param obj The list of bytes.
+     * @return The byte block.
+     * @throws InterpreterMessage Conversion problem.
+     */
+    public static byte[] sysBytesToBlock(Object obj)
+            throws InterpreterMessage {
+        int len = bytesLength(obj);
+        byte[] buf = new byte[len];
+        bytesFill(obj, buf);
+        return buf;
+    }
+
+    /**
+     * <p>Determine the length of the list of bytes.</p>
+     *
+     * @param obj The list of bytes.
+     * @return The length.
+     * @throws InterpreterMessage Validation error.
+     */
+    private static int bytesLength(Object obj)
+            throws InterpreterMessage {
+        int len = 0;
+        while (obj instanceof TermCompound &&
+                ((TermCompound) obj).getArity() == 2 &&
+                ((TermCompound) obj).getFunctor().equals(
+                        Knowledgebase.OP_CONS)) {
+            len++;
+            obj = ((TermCompound) obj).getArg(1);
+        }
+        if (obj.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            InterpreterMessage.checkInstantiated(obj);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, obj));
+        }
+        return len;
+    }
+
+    /**
+     * <p>Fill the byte block with the list of bytes.</p>
+     *
+     * @param obj  The list of bytes.
+     * @param data The byte block.
+     * @throws InterpreterMessage Validation error.
+     */
+    private static void bytesFill(Object obj, byte[] data)
+            throws InterpreterMessage {
+        try {
+            int pos = 0;
+            while (obj instanceof TermCompound &&
+                    ((TermCompound) obj).getArity() == 2 &&
+                    ((TermCompound) obj).getFunctor().equals(
+                            Knowledgebase.OP_CONS)) {
+                Object temp = ((TermCompound) obj).getArg(0);
+                Number num = InterpreterMessage.castInteger(temp);
+                int n = SpecialEval.castOctet(num);
+                data[pos] = (byte) n;
+                pos++;
+                obj = ((TermCompound) obj).getArg(1);
+            }
+            if (obj.equals(Foyer.OP_NIL)) {
+                /* */
+            } else {
+                InterpreterMessage.checkInstantiated(obj);
+                throw new InterpreterMessage(InterpreterMessage.typeError(
+                        InterpreterMessage.OP_TYPE_LIST, obj));
+            }
+        } catch (ClassCastException x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.representationError(x.getMessage()));
+        }
+    }
+
+    /**
+     * <p>Convert a byte block to a list of bytes.</p>
+     *
+     * @param inter The interpreter.
+     * @param data  The byte block.
+     * @return The list of bytes.
+     */
+    public static Object sysBlockToBytes(Interpreter inter, byte[] data) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Object res = lobby.ATOM_NIL;
+        for (int i = data.length - 1; i >= 0; i--)
+            res = new TermCompound(lobby.ATOM_CONS,
+                    Integer.valueOf(data[i] & 0xFF), res);
+        return res;
+    }
+
 }
