@@ -1,7 +1,6 @@
-package matula.util.format;
+package matula.util.transform;
 
-import matula.util.data.MapHash;
-import matula.util.regex.ScannerError;
+import matula.util.format.*;
 import matula.util.system.ForeignXml;
 
 import java.io.IOException;
@@ -9,7 +8,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 /**
- * <p>This class provides a dom writer.</p>
+ * <p>This class provides an XML writer.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,124 +38,13 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DomWriter {
+public final class XmlWriter extends AbstractWriter {
     private static final int INDENT_INCREMENT = 4;
     private static final int LINE_WIDTH = 75;
 
-    private Writer writer;
-    private int mask;
-    private MapHash<String, Integer> control;
-    private int indent;
     private int pos;
     private String pending;
-
-    /**
-     * <p>Set the writer.</p>
-     *
-     * @param w The writer.
-     */
-    public void setWriter(Writer w) {
-        writer = w;
-    }
-
-    /**
-     * <p>Set the return mask.</p>
-     *
-     * @param r The return mask.
-     */
-    public void setMask(int r) {
-        mask = r;
-    }
-
-    /**
-     * <p>Retrieve the return mask.</p>
-     *
-     * @return The return mask.
-     */
-    public int getMask() {
-        return mask;
-    }
-
-    /**
-     * <p>Set the tag control.</p>
-     *
-     * @param c The tag control.
-     */
-    public void setControl(MapHash<String, Integer> c) {
-        control = c;
-    }
-
-    /**
-     * <p>Retrieve the tag control.</p>
-     *
-     * @return The tag control.
-     */
-    public MapHash<String, Integer> getControl() {
-        return control;
-    }
-
-    /****************************************************************/
-    /* Store API                                                    */
-    /****************************************************************/
-
-    /**
-     * <p>Store this dom node.</p>
-     * <p>Not synchronized, uses cursors.</p>
-     *
-     * @param writer  The writer.
-     * @param node    The dom node.
-     * @param comment The comment
-     * @param mask    The return mask.
-     * @throws IOException Shit happens.
-     */
-    public static void store(Writer writer, AbstractDom node,
-                             String comment, int mask)
-            throws IOException {
-        DomWriter dw = new DomWriter();
-        dw.setWriter(writer);
-        dw.setMask(mask);
-        if (comment != null && !"".equals(comment))
-            dw.writeComment(comment);
-        if ((mask & AbstractDom.MASK_LIST) != 0) {
-            DomElement elem = (DomElement) node;
-            AbstractDom[] nodes = elem.snapshotNodes();
-            dw.storeNodes(nodes);
-        } else {
-            dw.storeNode(node);
-        }
-        dw.flush();
-    }
-
-    /**
-     * <p>Store this dom node.</p>
-     * <p>Not synchronized, uses cursors.</p>
-     *
-     * @param writer  The writer.
-     * @param node    The dom node.
-     * @param comment The comment
-     * @param mask    The return mask.
-     * @param control The control.
-     * @throws IOException Shit happens.
-     */
-    public static void store(Writer writer, AbstractDom node,
-                             String comment, int mask,
-                             MapHash<String, Integer> control)
-            throws IOException {
-        DomWriter dw = new DomWriter();
-        dw.setWriter(writer);
-        dw.setMask(mask);
-        dw.setControl(control);
-        if (comment != null && !"".equals(comment))
-            dw.writeComment(comment);
-        if ((mask & AbstractDom.MASK_LIST) != 0) {
-            DomElement elem = (DomElement) node;
-            AbstractDom[] nodes = elem.snapshotNodes();
-            dw.storeNodes(nodes);
-        } else {
-            dw.storeNode(node);
-        }
-        dw.flush();
-    }
+    private int indent;
 
     /****************************************************************/
     /* Store Methods                                                */
@@ -189,7 +77,7 @@ public final class DomWriter {
      * @param node The dom node.
      * @throws IOException Shit happens.
      */
-    void storeNode(AbstractDom node)
+    public void storeNode(AbstractDom node)
             throws IOException {
         if (node instanceof DomText) {
             DomText dt = (DomText) node;
@@ -304,33 +192,36 @@ public final class DomWriter {
         for (int i = 0; i < len; i++) {
             char ch = str.charAt(i);
             if (wrap && ch == XmlMachine.CHAR_SPACE) {
+                Writer wr = getWriter();
                 if (k < 0) {
-                    writer.write(pending, pending.length() + k, -k);
-                    writer.write(str, 0, i);
+                    wr.write(pending, pending.length() + k, -k);
+                    wr.write(str, 0, i);
                 } else {
-                    writer.write(str, k, i - k);
+                    wr.write(str, k, i - k);
                 }
                 k = i;
                 hasspace = true;
                 pos++;
             } else if (ch == '\n') {
+                Writer wr = getWriter();
                 if (k < 0) {
-                    writer.write(pending, pending.length() + k, -k);
-                    writer.write(str, 0, i + 1);
+                    wr.write(pending, pending.length() + k, -k);
+                    wr.write(str, 0, i + 1);
                 } else {
-                    writer.write(str, k, i + 1 - k);
+                    wr.write(str, k, i + 1 - k);
                 }
                 k = i + 1;
                 pos = 0;
                 hasspace = false;
             } else if (hasspace && pos >= LINE_WIDTH) {
-                if ((mask & AbstractDom.MASK_PLIN) == 0)
+                if ((getMask() & AbstractDom.MASK_PLIN) == 0)
                     incIndent();
-                writer.write("\n");
+                Writer wr = getWriter();
+                wr.write("\n");
                 k++;
                 writeIndent();
                 pos = indent + i + 1 - k;
-                if ((mask & AbstractDom.MASK_PLIN) == 0)
+                if ((getMask() & AbstractDom.MASK_PLIN) == 0)
                     decIndent();
                 hasspace = false;
             } else {
@@ -347,11 +238,12 @@ public final class DomWriter {
             }
             pending = sw.toString();
         } else {
+            Writer wr = getWriter();
             if (k < 0) {
-                writer.write(pending, pending.length() + k, -k);
-                writer.write(str, 0, len);
+                wr.write(pending, pending.length() + k, -k);
+                wr.write(str, 0, len);
             } else {
-                writer.write(str, k, len - k);
+                wr.write(str, k, len - k);
             }
             pending = null;
         }
@@ -363,9 +255,10 @@ public final class DomWriter {
      * @throws IOException Shit happens.
      */
     public void flush() throws IOException {
+        Writer wr = getWriter();
         if (pending != null)
-            writer.write(pending);
-        writer.flush();
+            wr.write(pending);
+        wr.flush();
     }
 
     /****************************************************************/
@@ -380,12 +273,12 @@ public final class DomWriter {
      */
     public void copyText(String data) throws IOException {
         boolean wrap;
-        if ((mask & AbstractDom.MASK_STRP) != 0) {
+        if ((getMask() & AbstractDom.MASK_STRP) != 0) {
             wrap = true;
         } else {
             wrap = false;
         }
-        if ((mask & AbstractDom.MASK_PLIN) == 0)
+        if ((getMask() & AbstractDom.MASK_PLIN) == 0)
             data = sysTextEscapeUnstrip(data, 0, data.length(), wrap);
         write(data, wrap);
     }
@@ -403,7 +296,7 @@ public final class DomWriter {
                                         int end, boolean wrap) {
         /* we keep buf = null as long as no character was escaped */
         int back = begin;
-        boolean lastspace = ((mask & AbstractDom.MASK_LTSP) != 0);
+        boolean lastspace = ((getMask() & AbstractDom.MASK_LTSP) != 0);
         StringBuilder buf = null;
         while (begin < end) {
             int ch = s.codePointAt(begin);
@@ -432,9 +325,9 @@ public final class DomWriter {
             begin += Character.charCount(ch);
         }
         if (lastspace) {
-            mask |= AbstractDom.MASK_LTSP;
+            setMask(getMask() | AbstractDom.MASK_LTSP);
         } else {
-            mask &= ~AbstractDom.MASK_LTSP;
+            setMask(getMask() & ~AbstractDom.MASK_LTSP);
         }
         if (buf == null)
             return s.substring(back, end);
@@ -472,7 +365,7 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     public void copyEmpty(DomElement de) throws IOException {
-        if ((mask & AbstractDom.MASK_PLIN) != 0)
+        if ((getMask() & AbstractDom.MASK_PLIN) != 0)
             return;
         write("<");
         write(de.getName());
@@ -487,7 +380,7 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     public void copyStart(DomElement de) throws IOException {
-        if ((mask & AbstractDom.MASK_PLIN) != 0)
+        if ((getMask() & AbstractDom.MASK_PLIN) != 0)
             return;
         write("<");
         write(de.getName());
@@ -530,7 +423,7 @@ public final class DomWriter {
      */
     public void copyEnd(DomElement de)
             throws IOException {
-        if ((mask & AbstractDom.MASK_PLIN) != 0)
+        if ((getMask() & AbstractDom.MASK_PLIN) != 0)
             return;
         write("</");
         write(de.getName());
@@ -548,9 +441,10 @@ public final class DomWriter {
      */
     public void writeComment(String comment)
             throws IOException {
-        writer.write("<!-- ");
-        writer.write(ForeignXml.sysTextEscape(comment));
-        writer.write(" -->\n");
+        Writer wr = getWriter();
+        wr.write("<!-- ");
+        wr.write(ForeignXml.sysTextEscape(comment));
+        wr.write(" -->\n");
     }
 
     /**
@@ -573,54 +467,11 @@ public final class DomWriter {
      * @throws IOException IO error.
      */
     public void writeIndent() throws IOException {
+        Writer wr = getWriter();
         for (int i = 0; i < indent; i++) {
             pos++;
-            writer.write(" ");
+            wr.write(" ");
         }
     }
-
-    /**
-     * <p>Some test cases.</p>
-     *
-     * @param args The arguments.
-     * @throws IOException  Shit happens.
-     * @throws ScannerError Shit happens.
-     */
-    /*
-    public static void main(String[] args)
-            throws IOException, ScannerError {
-        String text = "<foo bar='123'/>  <foo bar='456'/>";
-        StringReader sr = new StringReader(text);
-        DomElement de = new DomElement();
-        de.load(sr, AbstractDom.MASK_LIST);
-        PrintWriter pw = new PrintWriter(System.out);
-        de.store(pw, null, AbstractDom.MASK_LIST);
-        pw.println();
-
-        text = "<foo>123</foo>  <foo>456</foo>";
-        MapHash<String, Integer> control = new MapHash<String, Integer>();
-        control.add("foo", Integer.valueOf(AbstractDom.TYPE_ANY));
-        sr = new StringReader(text);
-        de = new DomElement();
-        de.load(sr, AbstractDom.MASK_LIST, control);
-        de.store(pw, null, AbstractDom.MASK_LIST, control);
-        pw.println();
-
-        MapHash<String, Integer> control = new MapHash<String, Integer>();
-        control.add("p", Integer.valueOf(AbstractDom.TYPE_TEXT));
-        control.add("img", Integer.valueOf(AbstractDom.TYPE_EMPTY));
-
-        File file = new File("D:\\Tablespace\\Config2\\usrtab\\logtab\\richdoc.html");
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(file), "UTF-8"));
-        DomElement de = new DomElement();
-        de.load(reader, AbstractDom.MASK_LIST, control);
-
-        PrintWriter pw = new PrintWriter(System.out);
-        de.store(pw, null, AbstractDom.MASK_LIST, control);
-        pw.println();
-    }
-    */
 
 }

@@ -44,6 +44,8 @@ public abstract class AbstractDom
     public static final int MASK_LTSP = 0x00000010; /* last read or write was space */
     public static final int MASK_PLIN = 0x00000020; /* write suppress tags and entities */
 
+    public static final int MASK_JSON = 0x00000100; /* format is JSON */
+
     public static final int TYPE_NONE = 0;
     public static final int TYPE_EMPTY = 1; /* disable list */
     public static final int TYPE_ANY = 2; /* enable text and disable strip */

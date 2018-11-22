@@ -29,7 +29,7 @@ package matula.util.format;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class XmlMachineRange {
+public final class XmlMachineRange {
     private int off;
     private int len;
 
@@ -49,7 +49,7 @@ final class XmlMachineRange {
      *
      * @return The offset.
      */
-    int getOff() {
+    public int getOff() {
         return off;
     }
 
@@ -58,7 +58,7 @@ final class XmlMachineRange {
      *
      * @return The length.
      */
-    int getLen() {
+    public int getLen() {
         return len;
     }
 

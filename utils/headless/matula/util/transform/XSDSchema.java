@@ -5,7 +5,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
-import matula.util.format.DomReader;
+import matula.util.format.AbstractReader;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
 
@@ -81,7 +81,7 @@ public final class XSDSchema {
             DomElement schema = new DomElement();
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(in, ForeignUri.ENCODING_UTF8));
-            DomReader.load(reader, schema, AbstractDom.MASK_LIST);
+            AbstractReader.load(reader, schema, AbstractDom.MASK_LIST);
             reader.close();
 
             meta.traverseElements(schema, 0);

@@ -45,7 +45,7 @@ public final class XSLSheetTransform extends XSLSheet {
 
     private MapHash<String, Object> variables;
     private DomElement data;
-    private DomWriter dw = new DomWriter();
+    private XmlWriter dw = new XmlWriter();
 
     /**
      * <p>Set the variables.</p>§
@@ -70,7 +70,7 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @return The dom writer.
      */
-    public DomWriter getWriter() {
+    public XmlWriter getWriter() {
         return dw;
     }
 
@@ -79,7 +79,7 @@ public final class XSLSheetTransform extends XSLSheet {
      *
      * @param w The dom writer.
      */
-    public void setWriter(DomWriter w) {
+    public void setWriter(XmlWriter w) {
         dw = w;
     }
 
@@ -638,7 +638,7 @@ public final class XSLSheetTransform extends XSLSheet {
     public static void main(String[] args)
             throws IOException, ScannerError, ValidationError {
         PrintWriter pw = new PrintWriter(System.out);
-        DomWriter dw = new DomWriter();
+        AbstractWriter dw = new AbstractWriter();
         dw.setMask(AbstractDom.MASK_TEXT);
         dw.setWriter(pw);
 

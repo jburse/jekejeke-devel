@@ -617,7 +617,7 @@ public abstract class XPathRead {
             StringReader sr = new StringReader(cnst);
             DomElement de = new DomElement();
             int mask = AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
-            DomReader.load(sr, de, mask);
+            AbstractReader.load(sr, de, mask);
             res = new XSelectPrim(de, XSelectPrim.SELE_PRIM_CONST);
         } else if (st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(XSelectPrim.OP_NULL)) {
             st.nextToken();

@@ -2,7 +2,7 @@ package matula.util.transform;
 
 import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
-import matula.util.format.DomReader;
+import matula.util.format.AbstractReader;
 import matula.util.format.XPathOrder;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
@@ -92,7 +92,7 @@ public abstract class XSLSheet {
             DomElement schema = new DomElement();
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(in, ForeignUri.ENCODING_UTF8));
-            DomReader.load(reader, schema, AbstractDom.MASK_LIST);
+            AbstractReader.load(reader, schema, AbstractDom.MASK_LIST);
             reader.close();
 
             meta.digestElements(schema);
@@ -216,7 +216,7 @@ public abstract class XSLSheet {
         System.out.println("XSL template package ok");
 
         PrintWriter pw = new PrintWriter(System.out);
-        DomWriter dw = new DomWriter();
+        AbstractWriter dw = new AbstractWriter();
         dw.setMask(AbstractDom.MASK_TEXT);
         dw.setWriter(pw);
 

@@ -77,7 +77,7 @@ public final class DomElement extends AbstractDom {
      *
      * @param as The key-value pairs.
      */
-    void setAttrsFast(ListArray<AbstractDom> as) {
+    public void setAttrsFast(ListArray<AbstractDom> as) {
         if (as != null) {
             for (int i = 0; i < as.size(); i++) {
                 AbstractDom node = as.get(i);
@@ -95,7 +95,7 @@ public final class DomElement extends AbstractDom {
      *
      * @param cs The children or null.
      */
-    void setChildrenFast(ListArray<AbstractDom> cs) {
+    public void setChildrenFast(ListArray<AbstractDom> cs) {
         if (cs != null) {
             for (int i = 0; i < cs.size(); i++) {
                 AbstractDom node = cs.get(i);
