@@ -1,4 +1,11 @@
 /**
+ * The module provides access and modification of a DOM model. The DOM
+ * model is generalized so that it can be used to store both XML and
+ * JSON. This is done in that a text done can hold not only strings,
+ * but also other scalar data such as numbers. Further, the attribute
+ * axis of DOM element can also hold other DOM elements than
+ * only scalar data.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties

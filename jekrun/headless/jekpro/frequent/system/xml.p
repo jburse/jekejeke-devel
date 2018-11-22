@@ -11,31 +11,11 @@
  * ?- text_escape(X, '&amp;lt;abc&amp;gt;').
  * X = '&lt;abc&gt;'
  *
- * The rest of the predicates deal with reading/writing a DOM model
- * and accessing/modifying a DOM model. When reading/writing a DOM
- * model the retain flag indicates whether only tags (0) or tags and
- * text (1) should be read or written. A DOM model is referenced by a
- * Prolog reference data type and automatically reclaimed by the Java GC.
- *
- * Examples:
- * ?- open('data.html', read, S), elem_new(D),
- *    node_load(D, S, []), close(S), assertz(my_data(D)).
- * S = 0r22126bf,
- * D = 0r682136cf
- * ?- my_data(D), current_output(S), node_store(D, S, '', []).
- * &lt;parent foo=123&gt;
- *     &lt;child bar="alfa"/&gt;
- *     &lt;child bar="beta"/&gt;
- * &lt;/parent&gt;
- * &lt;parent foo=456/&gt;
- * D = 0r682136cf,
- * S = 0r3fc82f6e
- *
- * The predicates elem_attr/2 and elem_child/2 return their results by
- * backtracking and they use a logical cursor. The DOM model is thus
- * similarly accessed as the facts and rules from a Prolog knowledge base.
- * It is also supported that the DOM model is accessed and modified
- * concurrently by multiple threads.
+ * The rest of the predicates deal with reading/writing a DOM model.
+ * The predicate node_load/4 can be used to load a DOM model from a
+ * stream. The loading requires an already existing DOM node, which
+ * is then overwritten. The predicate node_store/4 can be used to store
+ * a DOM model to a stream.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
