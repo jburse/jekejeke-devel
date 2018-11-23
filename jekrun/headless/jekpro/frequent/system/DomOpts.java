@@ -73,7 +73,6 @@ public class DomOpts {
     private String context;
     private String comment;
 
-
     /**
      * <p>Retrieve the mask.</p>
      *

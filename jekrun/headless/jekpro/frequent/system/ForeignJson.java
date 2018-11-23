@@ -7,6 +7,7 @@ import jekpro.tools.term.PositionKey;
 import matula.util.format.AbstractDom;
 import matula.util.format.AbstractReader;
 import matula.util.format.AbstractWriter;
+import matula.util.format.DomElement;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
@@ -48,24 +49,24 @@ import java.io.Writer;
 public final class ForeignJson {
 
     /*******************************************************************/
-    /* Node Access & Modification                                      */
+    /* Node Read & Write                                               */
     /*******************************************************************/
 
     /**
-     * <p>Load a DOM node.</p>
+     * <p>Read a DOM node.</p>
      *
      * @param inter  The interpreter.
      * @param reader The reader.
-     * @param node   The dom node.
      * @param opts   The DOM options.
+     * @param node   The DOM node.
      * @throws InterpreterMessage   Validation error.
      * @throws IOException          IO error.
      * @throws InterpreterException Syntax error.
      */
-    public static void sysNodeLoad(Interpreter inter,
-                                   Reader reader,
-                                   AbstractDom node,
-                                   Object opts)
+    public static void sysNodeRead(Interpreter inter,
+                                          Reader reader,
+                                          Object opts,
+                                          AbstractDom node)
             throws InterpreterMessage, IOException, InterpreterException {
         DomOpts res = DomOpts.decodeDomOpts(opts);
         try {
@@ -86,17 +87,17 @@ public final class ForeignJson {
     }
 
     /**
-     * <p>Store a DOM node.</p>
+     * <p>Write a DOM node.</p>
      *
-     * @param writer  The writer.
-     * @param node    The dom node.
-     * @param opts    The DOM options.
+     * @param writer The writer.
+     * @param opts   The DOM options.
+     * @param node   The DOM node.
      * @throws InterpreterMessage Validation error.
      * @throws IOException        IO error.
      */
-    public static void sysNodeStore(Writer writer,
-                                    AbstractDom node,
-                                    Object opts)
+    public static void sysNodeWrite(Writer writer,
+                                    Object opts,
+                                    AbstractDom node)
             throws InterpreterMessage, IOException {
         DomOpts res = DomOpts.decodeDomOpts(opts);
         AbstractWriter.store(writer, node, res.getComment(),

@@ -48,6 +48,8 @@ public final class JsonReader extends AbstractReader {
     public final static CodeType JSON_CODETYPE = new CodeType();
     public final static CompLang JSON_COMPLANG = new CompLang();
 
+    public final static String JSON_DUPLICATE_KEY = "json_duplicate_key";
+
     public final static String JSON_KEY_MISSING = "json_key_missing";
     public final static String JSON_COLON_MISSING = "json_colon_missing";
     public final static String JSON_ELEMENT_MISSING = "json_element_missing";
@@ -134,6 +136,9 @@ public final class JsonReader extends AbstractReader {
                             st.getHint(), st.getTokenOffset());
                     key = CompLang.resolveEscape(key, st.getHint(), true,
                             st.getTokenOffset(), JSON_CODETYPE);
+                    if (res!=null && DomElement.indexAttr(res, key)!=-1)
+                        throw new ScannerError(JSON_DUPLICATE_KEY,
+                                st.getTokenOffset());
                     nextTagOrText();
                     if (st.getHint() != 0 ||
                             !OP_COLON.equals(st.getData()))

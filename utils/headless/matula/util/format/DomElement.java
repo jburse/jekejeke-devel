@@ -275,7 +275,7 @@ public final class DomElement extends AbstractDom {
      * @param n The attribute name.
      * @return The DOM text index, or -1.
      */
-    private static int indexAttr(ListArray<AbstractDom> l, String n) {
+    public static int indexAttr(ListArray<AbstractDom> l, String n) {
         int m = l.size();
         for (int i = 0; i < m; i++) {
             AbstractDom node = l.get(i);
