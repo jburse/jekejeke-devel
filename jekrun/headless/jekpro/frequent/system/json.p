@@ -246,6 +246,80 @@ xml_get_data(_, _) :-
 /* XML Internalize                                             */
 /***************************************************************/
 
+% xml_set_term(+Value, -Node)
+:- private xml_set_term/2.
+xml_set_term(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+xml_set_term(X, N) :-
+   atom(X), !,
+   text_new(N),
+   text_set_data(N, X).
+xml_set_term(element(D,L,R), N) :- !,
+   elem_new(N),
+   elem_set_name(N, D),
+   xml_set_object(L, N),
+   xml_set_array(R, N).
+xml_set_term(_, _) :-
+   throw(error(syntax_error(dom_missing_elem),_)).
+
+% xml_set_object(+Object, +Node)
+:- private xml_set_object/2.
+xml_set_object(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+xml_set_object([], _) :- !.
+xml_set_object([A|B], N) :- !,
+   xml_set_pair(A, N, H),
+   node_get_key(H, K),
+   elem_set_attr(N, K, H),
+   xml_set_object(B, N).
+xml_set_object(_, _) :-
+   throw(error(syntax_error(dom_missing_end),_)).
+
+% xml_set_array(+Array, +Node)
+:- private xml_set_array/2.
+xml_set_array(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+xml_set_array([], _) :- !.
+xml_set_array([A|B], N) :- !,
+   xml_set_term(A, H),
+   elem_add_node(N, H),
+   xml_set_array(B, N).
+xml_set_array(_, _) :-
+   throw(error(syntax_error(dom_missing_end),_)).
+
+% xml_set_pair(+Pair, +Node, -Node)
+:- private xml_set_pair/3.
+xml_set_pair(X, _, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+xml_set_pair(X-_, H, _) :-
+   elem_get_attr(H, X, _),
+   throw(error(syntax_error(xml_duplicate_attr),_)).
+xml_set_pair(X-Y, _, N) :- !,
+   xml_set_attr(Y, N),
+   node_set_key(N, X).
+xml_set_pair(_, _, _) :-
+   throw(error(syntax_error(xml_illegal_attr),_)).
+
+% xml_set_attr(+Value, -Node)
+:- private xml_set_attr/2.
+xml_set_attr(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+xml_set_attr(X, N) :-
+   atom(X), !,
+   text_new(N),
+   text_set_data(N, X).
+xml_set_attr(X, N) :-
+   number(X), !,
+   text_new(N),
+   text_set_data(N, X).
+xml_set_attr(_, _) :-
+   throw(error(syntax_error(dom_illegal_value),_)).
+
 /***************************************************************/
 /* JSON Externalize                                            */
 /***************************************************************/

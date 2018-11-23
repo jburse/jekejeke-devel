@@ -9,6 +9,8 @@ import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
 import matula.util.format.DomText;
 
+import java.math.BigInteger;
+
 /**
  * <p>The foreign predicates for the module experiment/dom.</p>
  * <p/>
@@ -89,17 +91,21 @@ public final class ForeignDom {
     public static Object sysGetData(DomText text) {
         Object val = text.getDataObj();
         if (!(val instanceof String)) {
-            return TermAtomic.normBigInteger(((Long) val).longValue());
-        } else {
-            return val;
+            if (!(val instanceof Long)) {
+                val = (TermAtomic.guardDouble(((Double) val).doubleValue()) ? val :
+                        TermAtomic.ZERO_DOUBLE);
+            } else {
+                val = TermAtomic.normBigInteger(((Long) val).longValue());
+            }
         }
+        return val;
     }
 
     /**
      * <p>Set the data of a text element.</p>
      *
      * @param text The text element.
-     * @param val The Prolog data.
+     * @param val  The Prolog data.
      * @throws ClassCastException Validation error.
      * @throws InterpreterMessage Validation error.
      */
@@ -107,11 +113,14 @@ public final class ForeignDom {
             throws ClassCastException, InterpreterMessage {
         if (!(val instanceof String)) {
             Number num = InterpreterMessage.castNumber(val);
-            long x = SpecialEval.castLongValue(num);
-            text.setDataLong(x);
-        } else {
-            text.setData((String) val);
+            if (!(val instanceof Integer) && !(val instanceof BigInteger)) {
+                val = (num instanceof Double ? num :
+                        TermAtomic.makeDouble(num.doubleValue()));
+            } else {
+                val = Long.valueOf(SpecialEval.castLongValue(num));
+            }
         }
+        text.setDataObj(val);
     }
 
     /*******************************************************************/

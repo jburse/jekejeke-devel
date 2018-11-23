@@ -404,12 +404,12 @@ public final class XmlWriter extends AbstractWriter {
             write(attr);
             if (!"".equals(val)) {
                 write("=");
-                if (val instanceof String) {
+                if (!(val instanceof String)) {
+                    write(val.toString());
+                } else {
                     write("\"");
                     copyText((String) val);
                     write("\"");
-                } else {
-                    write(Long.toString(((Long) val).longValue()));
                 }
             }
         }

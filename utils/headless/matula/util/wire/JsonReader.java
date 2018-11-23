@@ -9,6 +9,7 @@ import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
 import matula.util.regex.ScannerToken;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -49,6 +50,7 @@ public final class JsonReader extends AbstractReader {
     public final static CompLang JSON_COMPLANG = new CompLang();
 
     public final static String JSON_DUPLICATE_KEY = "json_duplicate_key";
+    public static final String JSON_ILLEGAL_VALUE = "json_illegal_value";
 
     public final static String JSON_KEY_MISSING = "json_key_missing";
     public final static String JSON_COLON_MISSING = "json_colon_missing";
@@ -136,7 +138,7 @@ public final class JsonReader extends AbstractReader {
                             st.getHint(), st.getTokenOffset());
                     key = CompLang.resolveEscape(key, st.getHint(), true,
                             st.getTokenOffset(), JSON_CODETYPE);
-                    if (res!=null && DomElement.indexAttr(res, key)!=-1)
+                    if (res != null && DomElement.indexAttr(res, key) != -1)
                         throw new ScannerError(JSON_DUPLICATE_KEY,
                                 st.getTokenOffset());
                     nextTagOrText();
@@ -193,31 +195,42 @@ public final class JsonReader extends AbstractReader {
     public void loadNode(AbstractDom node)
             throws IOException, ScannerError {
         if (node instanceof DomText) {
-            DomText dt = (DomText) node;
+            Object val;
             if (st.getHint() != 0) {
                 String res = JSON_CODETYPE.resolveDouble(st.getData(),
                         st.getHint(), st.getTokenOffset());
                 res = CompLang.resolveEscape(res, st.getHint(), true,
                         st.getTokenOffset(), JSON_CODETYPE);
-                dt.setData(res);
+                val = res;
             } else {
-                long res;
+                String valstr;
                 if ("-".equals(st.getData())) {
                     nextTagOrText();
-                    res = Long.parseLong("-" + st.getData());
+                    valstr = "-" + st.getData();
                 } else {
-                    res = Long.parseLong(st.getData());
+                    valstr = st.getData();
                 }
-                dt.setDataLong(res);
+                try {
+                    if (valstr.indexOf('.') != -1) {
+                        val = Double.valueOf(valstr);
+                    } else {
+                        val = Long.valueOf(valstr);
+                    }
+                } catch (NumberFormatException x) {
+                    throw new ScannerError(JSON_ILLEGAL_VALUE,
+                            OpenOpts.getOffset(st.getTokenOffset()));
+                }
             }
+            DomText dt = (DomText) node;
+            dt.setDataObj(val);
         } else {
-            DomElement de = (DomElement) node;
             if (OP_LBRACKET.equals(st.getData())) {
                 ListArray<AbstractDom> newchildren = loadNodes(false);
                 if (st.getHint() != 0 ||
                         !OP_RBRACKET.equals(st.getData()))
                     throw new ScannerError(JSON_UNBLANCED_ARRAY,
                             st.getTokenOffset());
+                DomElement de = (DomElement) node;
                 de.setName(JsonWriter.JSON_ARRAY);
                 de.setChildrenFast(newchildren);
             } else {
@@ -226,6 +239,7 @@ public final class JsonReader extends AbstractReader {
                         !OP_RBRACE.equals(st.getData()))
                     throw new ScannerError(JSON_UNBLANCED_OBJECT,
                             st.getTokenOffset());
+                DomElement de = (DomElement) node;
                 de.setName(JsonWriter.JSON_OBJECT);
                 de.setAttrsFast(newattrs);
             }

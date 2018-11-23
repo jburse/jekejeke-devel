@@ -163,7 +163,11 @@ public final class XmlReader extends AbstractReader {
                             val = ForeignXml.sysTextUnescape(XmlMachine.stripValue(valstr));
                         } else if (XmlMachine.isNumber(valstr)) {
                             try {
-                                val = Long.valueOf(valstr);
+                                if (valstr.indexOf('.') != -1) {
+                                    val = Double.valueOf(valstr);
+                                } else {
+                                    val = Long.valueOf(valstr);
+                                }
                             } catch (NumberFormatException x) {
                                 throw new ScannerError(DOM_ILLEGAL_VALUE,
                                         OpenOpts.getOffset(scanner.getReader()));

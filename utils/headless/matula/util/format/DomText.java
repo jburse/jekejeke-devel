@@ -1,7 +1,9 @@
 package matula.util.format;
 
 /**
- * <p>This class provides a dom text.</p>
+ * <p>This class provides a dom text. This node is used for scalar
+ * values. The currently supported scalar values are String, Long,
+ * Double and Boolean.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,7 +42,7 @@ public final class DomText extends AbstractDom {
      * @return The string data.
      */
     public String getData() {
-        return (String) getDataObj();
+        return (String) data;
     }
 
     /**
@@ -49,7 +51,25 @@ public final class DomText extends AbstractDom {
      * @return The long data.
      */
     public long getDataLong() {
-        return ((Long) getDataObj()).longValue();
+        return ((Long) data).longValue();
+    }
+
+    /**
+     * <p>Retrieve the double data.</p>
+     *
+     * @return The double data.
+     */
+    public double getDataDouble() {
+        return ((Double) data).doubleValue();
+    }
+
+    /**
+     * <p>Retrieve the boolean data.</p>
+     *
+     * @return The boolean data.
+     */
+    public boolean getDataBoolean() {
+        return ((Boolean)data).booleanValue();
     }
 
     /**
@@ -67,7 +87,9 @@ public final class DomText extends AbstractDom {
      * @param val The string data.
      */
     public void setData(String val) {
-        setDataObj(val);
+        if (val == null)
+            throw new NullPointerException("data missing");
+        data = val;
     }
 
     /**
@@ -76,7 +98,26 @@ public final class DomText extends AbstractDom {
      * @param val The long data.
      */
     public void setDataLong(long val) {
-        setDataObj(Long.valueOf(val));
+        data = Long.valueOf(val);
+    }
+
+    /**
+     * <p>Set the double data.</p>
+     *
+     * @param val The double data.
+     */
+    public void setDataDouble(double val) {
+        data = Double.valueOf(val);
+    }
+
+
+    /**
+     * <p>Set the boolean data.</p>
+     *
+     * @param val The boolean data.
+     */
+    public void setDataBoolean(boolean val) {
+        data = Boolean.valueOf(val);
     }
 
     /**

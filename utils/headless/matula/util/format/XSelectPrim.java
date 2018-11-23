@@ -199,14 +199,14 @@ public final class XSelectPrim extends XSelect {
                     }
                     return sr.toString();
                 } else {
-                    if (val instanceof String) {
+                    if (!(val instanceof String)) {
+                        return val.toString();
+                    } else {
                         buf = new StringBuilder();
                         buf.append("\'");
                         buf.append((String) val);
                         buf.append("\'");
                         return buf.toString();
-                    } else {
-                        return Long.toString(((Long) val).longValue());
                     }
                 }
             case SELE_PRIM_CHILD:

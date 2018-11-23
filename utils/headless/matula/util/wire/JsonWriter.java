@@ -119,7 +119,7 @@ public final class JsonWriter extends AbstractWriter {
             throws IOException {
         Writer wr = getWriter();
         if (!(data instanceof String)) {
-            wr.write(Long.toString(((Long) data).longValue()));
+            wr.write(data.toString());
         } else {
             wr.write("\"");
             wr.write((String) data);
