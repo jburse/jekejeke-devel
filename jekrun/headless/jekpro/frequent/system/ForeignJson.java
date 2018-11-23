@@ -15,7 +15,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 /**
- * <p>The foreign predicates for the module system/xml.</p>
+ * <p>The foreign predicates for the module system/json.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -52,23 +52,25 @@ public final class ForeignJson {
     /*******************************************************************/
 
     /**
-     * <p>Load a dom node.</p>
+     * <p>Load a DOM node.</p>
      *
      * @param inter  The interpreter.
-     * @param node   The dom node.
      * @param reader The reader.
+     * @param node   The dom node.
      * @param opts   The DOM options.
      * @throws InterpreterMessage   Validation error.
      * @throws IOException          IO error.
      * @throws InterpreterException Syntax error.
      */
     public static void sysNodeLoad(Interpreter inter,
-                                   AbstractDom node, Reader reader,
+                                   Reader reader,
+                                   AbstractDom node,
                                    Object opts)
             throws InterpreterMessage, IOException, InterpreterException {
         DomOpts res = DomOpts.decodeDomOpts(opts);
         try {
-            AbstractReader.load(reader, node, res.getMask(), res.getControl());
+            AbstractReader.load(reader, node,
+                    res.getMask(), res.getControl());
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
             InterpreterMessage x = new InterpreterMessage(
@@ -84,20 +86,21 @@ public final class ForeignJson {
     }
 
     /**
-     * <p>Store a dom node.</p>
+     * <p>Store a DOM node.</p>
      *
-     * @param node    The dom node.
      * @param writer  The writer.
-     * @param comment The comment.
+     * @param node    The dom node.
      * @param opts    The DOM options.
      * @throws InterpreterMessage Validation error.
      * @throws IOException        IO error.
      */
-    public static void sysNodeStore(AbstractDom node, Writer writer,
-                                    String comment, Object opts)
+    public static void sysNodeStore(Writer writer,
+                                    AbstractDom node,
+                                    Object opts)
             throws InterpreterMessage, IOException {
         DomOpts res = DomOpts.decodeDomOpts(opts);
-        AbstractWriter.store(writer, node, comment, res.getMask(), res.getControl());
+        AbstractWriter.store(writer, node, res.getComment(),
+                res.getMask(), res.getControl());
     }
 
 }

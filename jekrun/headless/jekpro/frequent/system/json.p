@@ -12,9 +12,9 @@
  * X = '&lt;abc&gt;'
  *
  * The rest of the predicates deal with reading/writing a DOM model.
- * The predicate node_load/4 can be used to load a DOM model from a
+ * The predicate node_load/[2,3] can be used to load a DOM model from a
  * stream. The loading requires an already existing DOM node, which
- * is then overwritten. The predicate node_store/4 can be used to store
+ * is then overwritten. The predicate node_store/[2,3] can be used to store
  * a DOM model to a stream.
  *
  * Warranty & Liability
@@ -54,7 +54,7 @@
 :- use_package(foreign(jekpro/tools/call)).
 :- use_package(library(matula/util/format)).
 
-:- module(xml, []).
+:- module(json, []).
 :- sys_load_resource(library(dom)).
 :- sys_add_resource(library(dom)).
 
@@ -89,24 +89,36 @@ text_escape(X, Y) :-
 /*******************************************************************/
 
 /**
- * node_load(D, S, O):
+ * node_load(S, N):
+ * node_load(S, N, O):
  * The predicate succeeds in loading the stream S into the DOM
- * node D with the DOM options O. For a list of options see
+ * node N with the DOM options O. For a list of options see
  * the API documentation.
  */
-% node_load(+AbstractDom, +Stream, +List)
+% node_load(+Stream, +AbstractDom)
+:- public node_load/2.
+node_load(S, N) :-
+   node_load(S, N, []).
+
+% node_load(+Stream, +AbstractDom, +List)
 :- public node_load/3.
 :- foreign(node_load/3, 'ForeignJson',
-      sysNodeLoad('Interpreter','AbstractDom','Reader','Object')).
+      sysNodeLoad('Interpreter','Reader','AbstractDom','Object')).
 
 /**
- * node_store(D, S, C, O):
- * The predicate succeeds in storing the DOM node D into the
- * stream S with comment C and the DOM options O. For a list of
+ * node_store(S, N):
+ * node_store(S, N, O):
+ * The predicate succeeds in storing the DOM node N into the
+ * stream S and the DOM options O. For a list of
  * options see the API documentation.
  */
-% node_store(+AbstractDom, +Stream, +Atom, +List)
-:- public node_store/4.
-:- foreign(node_store/4, 'ForeignJson',
-      sysNodeStore('AbstractDom','Writer','String','Object')).
+% node_store(+Stream, +AbstractDom)
+:- public node_store/2.
+node_store(S, N) :-
+   node_store(S, N, []).
+
+% node_store(+Stream, +AbstractDom, +List)
+:- public node_store/3.
+:- foreign(node_store/3, 'ForeignJson',
+      sysNodeStore('Writer','AbstractDom','Object')).
 

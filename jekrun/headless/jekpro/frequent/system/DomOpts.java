@@ -9,7 +9,7 @@ import matula.util.data.MapHash;
 import matula.util.format.AbstractDom;
 
 /**
- * <p>Helper for dom options.</p>
+ * <p>Helper for the DOM options.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -60,6 +60,7 @@ public class DomOpts {
     public final static String OP_TYPE = "type";
     public final static String OP_CONTEXT = "context";
     public final static String OP_FORMAT = "format";
+    public final static String OP_COMMENT = "comment";
 
     /* error terms */
     private final static String OP_DOM_OPTION = "dom_option";
@@ -70,6 +71,8 @@ public class DomOpts {
     private int mask;
     private MapHash<String, Integer> control;
     private String context;
+    private String comment;
+
 
     /**
      * <p>Retrieve the mask.</p>
@@ -126,6 +129,24 @@ public class DomOpts {
     }
 
     /**
+     * <p>Retrieve the comment.</p>
+     *
+     * @return The comment.
+     */
+    public String getComment() {
+        return comment;
+    }
+
+    /**
+     * <p>Set the comment.</p>
+     *
+     * @param c The comment.
+     */
+    public void setComment(String c) {
+        comment = c;
+    }
+
+    /**
      * <p>Decode the dom options.</p>
      *
      * @param opt The dom options term.
@@ -135,7 +156,7 @@ public class DomOpts {
     public static DomOpts decodeDomOpts(Object opt)
             throws InterpreterMessage {
         DomOpts res = new DomOpts();
-        res.setMask(AbstractDom.MASK_LIST);
+        res.setMask(AbstractDom.MASK_LIST + AbstractDom.MASK_JSON);
         res.setContext("");
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
@@ -177,6 +198,12 @@ public class DomOpts {
                 Object help = ((TermCompound) temp).getArg(0);
                 int flags = atomToFormat(help);
                 res.setMask((res.getMask() & ~AbstractDom.MASK_JSON) | flags);
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_COMMENT)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                String comment = InterpreterMessage.castString(help);
+                res.setComment(comment);
             } else {
                 InterpreterMessage.checkInstantiated(temp);
                 throw new InterpreterMessage(InterpreterMessage.domainError(
