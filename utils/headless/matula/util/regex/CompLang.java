@@ -37,16 +37,14 @@ public final class CompLang {
     public static final String OP_SYNTAX_ILLEGAL_LAYOUT = "illegal_layout";
     public static final String OP_SYNTAX_ILLEGAL_UNICODE = "illegal_unicode";
 
-    private String linecomment = "//";
-    private String blockcommentstart = "/*";
-    private String blockcommentend = "*/";
-    private int end = '.';
+    private String linecomment;
+    private String blockcommentstart;
+    private String blockcommentend;
 
     static {
         ISO_COMPLANG.setLineComment("%");
         ISO_COMPLANG.setBlockCommentStart("/*");
         ISO_COMPLANG.setBlockCommentEnd("*/");
-        ISO_COMPLANG.setEnd('.');
     }
 
     /**
@@ -101,24 +99,6 @@ public final class CompLang {
      */
     public String getBlockCommentEnd() {
         return blockcommentend;
-    }
-
-    /**
-     * <p>Retrieve the line end character.</p>
-     *
-     * @return The line end character.
-     */
-    public int getEnd() {
-        return end;
-    }
-
-    /**
-     * <p>Set the line end character.</p>
-     *
-     * @param e The line end character.
-     */
-    public void setEnd(int e) {
-        end = e;
     }
 
     /**

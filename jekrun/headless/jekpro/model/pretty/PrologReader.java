@@ -65,10 +65,10 @@ public class PrologReader {
     public final static String OP_BAR = "|";
     public final static String OP_LPAREN = "(";
     public final static String OP_RPAREN = ")";
-    public final static String OP_LBRACE = "{";
-    public final static String OP_RBRACE = "}";
     public final static String OP_LBRACKET = "[";
     public final static String OP_RBRACKET = "]";
+    public final static String OP_LBRACE = "{";
+    public final static String OP_RBRACE = "}";
 
     /* only read opts */
     public final static int FLAG_SING = 0x00001000;
@@ -467,7 +467,7 @@ public class PrologReader {
      * @throws IOException IO error.
      */
     private boolean isTemplate(String templ) throws IOException {
-        if (st.getHint() != 0 || !st.getData().equals(templ))
+        if (st.getHint() != 0 || !templ.equals(st.getData()))
             return false;
         if (OP_PERIOD.equals(templ) && !st.isTerminalSuffix())
             return false;
@@ -755,7 +755,7 @@ public class PrologReader {
     protected Object readNumber()
             throws ScannerError, IOException {
         Number num;
-        if (st.getHint() == 0 && Foyer.OP_SUB.equals(st.getData())) {
+        if (Foyer.OP_SUB.equals(st.getData())) {
             nextToken();
             num = ForeignAtom.toNumber(st.getData(), st.getTokenOffset(),
                     ForeignAtom.MASK_NUMB_USCR);
@@ -911,10 +911,10 @@ public class PrologReader {
      */
     protected final String readQuoted()
             throws ScannerError {
-        return CompLang.resolveEscape(
-                CodeType.ISO_CODETYPE.resolveDouble(st.getData(),
-                        st.getHint(), st.getTokenOffset()),
-                st.getHint(), true, st.getTokenOffset(), CodeType.ISO_CODETYPE);
+        String res = CodeType.ISO_CODETYPE.resolveDouble(st.getData(),
+                st.getHint(), st.getTokenOffset());
+        return CompLang.resolveEscape(res, st.getHint(), true,
+                st.getTokenOffset(), CodeType.ISO_CODETYPE);
     }
 
     /**

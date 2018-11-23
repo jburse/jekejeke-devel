@@ -219,7 +219,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException  IO error.
+     * @throws IOException  I/O Error.
      */
     private void nextString()
             throws ScannerError, IOException {
@@ -274,7 +274,7 @@ public final class ScannerToken {
      *
      * @param cont The continuation escape sequence flag.
      * @throws ScannerError Scanning problem.
-     * @throws IOException  IO error.
+     * @throws IOException  I/O Error.
      */
     private void nextChar(boolean cont)
             throws ScannerError, IOException {
@@ -340,7 +340,7 @@ public final class ScannerToken {
      * is based on the Java Character.isDigit(int,int) method.</p>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException  IO error.
+     * @throws IOException  I/O Error.
      */
     private void nextNumber()
             throws ScannerError, IOException {
@@ -449,7 +449,7 @@ public final class ScannerToken {
      * </pre>
      * <p>For underscore and digit see class CodeType.</p>
      *
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private void nextExponent()
             throws IOException {
@@ -501,7 +501,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @param stopeol The stop EOL flag.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private void nextLineComment(boolean stopeol)
             throws IOException {
@@ -536,7 +536,7 @@ public final class ScannerToken {
      * </pre>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException  IO error.
+     * @throws IOException  I/O Error.
      */
     private void nextBlockComment()
             throws ScannerError, IOException {
@@ -583,7 +583,7 @@ public final class ScannerToken {
      * <p>For whitespace and control see class CodeType.</p>
      *
      * @param stopeol The stop EOL flag.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private void nextFiller(boolean stopeol)
             throws IOException {
@@ -613,13 +613,22 @@ public final class ScannerToken {
     /*************************************************************/
 
     /**
+     * <p>Read the first character.</p>
+     *
+     * @throws IOException I/O Error.
+     */
+    public void firstChar() throws IOException {
+        ch = getCode();
+    }
+
+    /**
      * <p>Retrieve the first token.</p>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException  IO error.
+     * @throws IOException  I/O Error.
      */
     public void firstToken() throws ScannerError, IOException {
-        ch = getCode();
+        firstChar();
         nextToken();
     }
 
@@ -627,7 +636,7 @@ public final class ScannerToken {
      * <p>Advance to next token.</p>
      *
      * @throws ScannerError Scanning problem.
-     * @throws IOException  IO error.
+     * @throws IOException  I/O Error.
      */
     public void nextToken() throws ScannerError, IOException {
         buf.setLength(0);
@@ -722,7 +731,7 @@ public final class ScannerToken {
      * <p>Check whether we are at second of a terminal point.</p>
      *
      * @return True if we are at second of a terminal point, otherwise false.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     public boolean isTerminalSuffix()
             throws IOException {
@@ -741,7 +750,7 @@ public final class ScannerToken {
      * <p>Will consume or skip spaces.</p>
      * <p>Will consume or skip line comments.</p>
      *
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     public void nextTerminalSuffix()
             throws IOException {
@@ -797,7 +806,7 @@ public final class ScannerToken {
      * <p>Get a code from a text stream.</p>
      *
      * @return The read code point or -1.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private int getCode() throws IOException {
         int ch = reader.read();
@@ -823,7 +832,7 @@ public final class ScannerToken {
      * <p>Peek a code from a text stream.</p>
      *
      * @return The peeked code point or -1.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private int peekCode() throws IOException {
         reader.mark(2);
@@ -846,7 +855,7 @@ public final class ScannerToken {
     /**
      * <p>Push back the lock ahead character.</p>
      *
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     public void pushBack() throws IOException {
         int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 0);
@@ -862,7 +871,7 @@ public final class ScannerToken {
      *
      * @param s The string.
      * @return True if the stream starts with, otherwise false.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private boolean startsWith(String s)
             throws IOException {
@@ -879,7 +888,7 @@ public final class ScannerToken {
      * <p>Consume the stream started with a string.</p>
      *
      * @param s The string.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private void consumeStr(String s)
             throws IOException {
@@ -900,7 +909,7 @@ public final class ScannerToken {
      * <p>Skip the stream started with a strimng.</p>
      *
      * @param s The string.
-     * @throws IOException IO error.
+     * @throws IOException I/O Error.
      */
     private void skipStr(String s)
             throws IOException {
