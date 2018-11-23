@@ -6,7 +6,6 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import matula.util.format.AbstractDom;
 import matula.util.format.DomElement;
-import matula.util.format.DomWriter;
 import matula.util.regex.ScannerError;
 import matula.util.transform.*;
 
@@ -115,7 +114,7 @@ public final class ForeignSheet {
                                        String comment, Object opts)
             throws InterpreterMessage, IOException, InterpreterException, ParseException {
         SheetOpts res = SheetOpts.decodeSheetOpts(opts);
-        DomWriter dw = new DomWriter();
+        XmlWriter dw = new XmlWriter();
         dw.setWriter(writer);
         dw.setMask(res.getMask());
         dw.setControl(res.getControl());

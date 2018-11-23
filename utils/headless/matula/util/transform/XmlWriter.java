@@ -39,12 +39,10 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class XmlWriter extends AbstractWriter {
-    private static final int INDENT_INCREMENT = 4;
     private static final int LINE_WIDTH = 75;
 
     private int pos;
     private String pending;
-    private int indent;
 
     /****************************************************************/
     /* Store Methods                                                */
@@ -219,8 +217,8 @@ public final class XmlWriter extends AbstractWriter {
                 Writer wr = getWriter();
                 wr.write("\n");
                 k++;
+                pos = i + 1 - k;
                 writeIndent();
-                pos = indent + i + 1 - k;
                 if ((getMask() & AbstractDom.MASK_PLIN) == 0)
                     decIndent();
                 hasspace = false;
@@ -271,7 +269,8 @@ public final class XmlWriter extends AbstractWriter {
      * @param data The text.
      * @throws IOException IO error.
      */
-    public void copyText(String data) throws IOException {
+    public void copyText(String data)
+            throws IOException {
         boolean wrap;
         if ((getMask() & AbstractDom.MASK_STRP) != 0) {
             wrap = true;
@@ -364,7 +363,8 @@ public final class XmlWriter extends AbstractWriter {
      * @param de The template dom element.
      * @throws IOException IO error.
      */
-    public void copyEmpty(DomElement de) throws IOException {
+    public void copyEmpty(DomElement de)
+            throws IOException {
         if ((getMask() & AbstractDom.MASK_PLIN) != 0)
             return;
         write("<");
@@ -431,7 +431,7 @@ public final class XmlWriter extends AbstractWriter {
     }
 
     /***************************************************************/
-    /* Comment & Indent                                            */
+    /* Comment                                                     */
     /***************************************************************/
 
     /**
@@ -447,19 +447,9 @@ public final class XmlWriter extends AbstractWriter {
         wr.write(" -->\n");
     }
 
-    /**
-     * <p>Increment the indent.</p>
-     */
-    public void incIndent() {
-        indent += INDENT_INCREMENT;
-    }
-
-    /**
-     * <p>Decrement the indent.</p>
-     */
-    public void decIndent() {
-        indent -= INDENT_INCREMENT;
-    }
+    /***************************************************************/
+    /* Indent                                                      */
+    /***************************************************************/
 
     /**
      * <p>Write the indent.</p>
@@ -468,10 +458,10 @@ public final class XmlWriter extends AbstractWriter {
      */
     public void writeIndent() throws IOException {
         Writer wr = getWriter();
-        for (int i = 0; i < indent; i++) {
-            pos++;
+        int n = getIndent();
+        for (int i = 0; i < n; i++)
             wr.write(" ");
-        }
+        pos += n;
     }
 
 }

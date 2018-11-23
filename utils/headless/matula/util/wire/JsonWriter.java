@@ -2,8 +2,12 @@ package matula.util.wire;
 
 import matula.util.format.AbstractDom;
 import matula.util.format.AbstractWriter;
+import matula.util.format.DomElement;
+import matula.util.format.DomText;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * <p>This class provides a JSON writer.</p>
@@ -37,6 +41,8 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class JsonWriter extends AbstractWriter {
+    public static String JSON_ARRAY = "array";
+    public static String JSON_OBJECT = "object";
 
     /****************************************************************/
     /* Store Methods                                                */
@@ -50,7 +56,21 @@ public final class JsonWriter extends AbstractWriter {
      */
     public void storeNodes(AbstractDom[] nodes)
             throws IOException {
-        /* t.b.d. */
+        for (int i = 0; i < nodes.length; i++) {
+            if (i != 0) {
+                Writer wr = getWriter();
+                wr.write(",\n");
+                writeIndent();
+            }
+            AbstractDom node = nodes[i];
+            String key = node.getKey();
+            if (key != null) {
+                copyScalar(key);
+                Writer wr = getWriter();
+                wr.write(": ");
+            }
+            storeNode(node);
+        }
     }
 
     /**
@@ -62,7 +82,104 @@ public final class JsonWriter extends AbstractWriter {
      */
     public void storeNode(AbstractDom node)
             throws IOException {
-        /* t.b.d. */
+        if (node instanceof DomText) {
+            DomText dt = (DomText) node;
+            copyScalar(dt.getDataObj());
+        } else {
+            DomElement de = (DomElement) node;
+            AbstractDom[] nodes;
+            if (de.isName(JSON_ARRAY)) {
+                nodes = de.snapshotNodes();
+            } else if (de.isName(JSON_OBJECT)) {
+                nodes = de.snapshotAttrs();
+            } else {
+                throw new IllegalArgumentException("illegal JSON");
+            }
+            if (nodes.length == 0) {
+                copyEmpty(de);
+            } else {
+                copyStart(de);
+                storeNodes(nodes);
+                copyEnd(de);
+            }
+        }
+    }
+
+    /****************************************************************/
+    /* DomText Writing                                              */
+    /****************************************************************/
+
+    /**
+     * <p>Copy the given scalar.</p>
+     *
+     * @param data The scalar.
+     * @throws IOException IO error.
+     */
+    public void copyScalar(Object data)
+            throws IOException {
+        Writer wr = getWriter();
+        if (!(data instanceof String)) {
+            wr.write(Long.toString(((Long) data).longValue()));
+        } else {
+            wr.write("\"");
+            wr.write((String) data);
+            wr.write("\"");
+        }
+    }
+
+    /***************************************************************/
+    /* DomElement Writing                                          */
+    /***************************************************************/
+
+    /**
+     * <p>Copy an empty dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException IO error.
+     */
+    public void copyEmpty(DomElement de)
+            throws IOException {
+        Writer wr = getWriter();
+        if (de.isName(JSON_ARRAY)) {
+            wr.write("[]");
+        } else {
+            wr.write("{}");
+        }
+    }
+
+    /**
+     * <p>Copy a start dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException IO error.
+     */
+    public void copyStart(DomElement de) throws IOException {
+        Writer wr = getWriter();
+        if (de.isName(JSON_ARRAY)) {
+            wr.write("[\n");
+        } else {
+            wr.write("{\n");
+        }
+        incIndent();
+        writeIndent();
+    }
+
+    /**
+     * <p>Copy an end dom element.</p>
+     *
+     * @param de The template dom element.
+     * @throws IOException IO error.
+     */
+    public void copyEnd(DomElement de) throws IOException {
+        decIndent();
+        Writer wr = getWriter();
+        wr.write("\n");
+        writeIndent();
+        if (de.isName(JSON_ARRAY)) {
+            wr.write("]");
+        } else {
+            wr.write("}");
+        }
     }
 
     /****************************************************************/
@@ -76,7 +193,8 @@ public final class JsonWriter extends AbstractWriter {
      */
     public void flush()
             throws IOException {
-        /* t.b.d. */
+        Writer wr = getWriter();
+        wr.flush();
     }
 
     /***************************************************************/
@@ -91,7 +209,48 @@ public final class JsonWriter extends AbstractWriter {
      */
     public void writeComment(String comment)
             throws IOException {
-        /* t.b.d. */
+        Writer wr = getWriter();
+        int i = 0;
+        int k = comment.indexOf('\n');
+        while (k != -1) {
+            wr.write("// ");
+            wr.write(comment, i, k + 1 - i);
+            i = k + 1;
+            k = comment.indexOf('\n', i);
+        }
+        wr.write("// ");
+        wr.write(comment, i, comment.length() - i);
+        wr.write("\n");
     }
+
+    /***************************************************************/
+    /* Indent                                                      */
+    /***************************************************************/
+
+    /**
+     * <p>Write the indent.</p>
+     *
+     * @throws IOException IO error.
+     */
+    public void writeIndent() throws IOException {
+        Writer wr = getWriter();
+        int n = getIndent();
+        for (int i = 0; i < n; i++)
+            wr.write(" ");
+    }
+
+    /**
+     * <p>Some tests.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String args[]) throws IOException {
+       JsonWriter jw=new JsonWriter();
+       jw.setWriter(new PrintWriter(System.out));
+       jw.writeComment("Line 1\nLine 2");
+       jw.flush();
+    }
+    */
 
 }

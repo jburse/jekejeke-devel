@@ -42,9 +42,12 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractWriter {
+    private static final int INDENT_INCREMENT = 4;
+
     private Writer writer;
     private int mask;
     private MapHash<String, Integer> control;
+    private int indent;
 
     /**
      * <p>Set the writer.</p>
@@ -98,6 +101,24 @@ public abstract class AbstractWriter {
      */
     public MapHash<String, Integer> getControl() {
         return control;
+    }
+
+    /**
+     * <p>Set the indent.</p>
+     *
+     * @param indent The indent.
+     */
+    public void setIndent(int indent) {
+        this.indent = indent;
+    }
+
+    /**
+     * <p>Retrieve the indent.</p>
+     *
+     * @return The indent.
+     */
+    public int getIndent() {
+        return indent;
     }
 
     /****************************************************************/
@@ -210,7 +231,7 @@ public abstract class AbstractWriter {
             throws IOException;
 
     /***************************************************************/
-    /* Comment & Indent                                            */
+    /* Comment                                                     */
     /***************************************************************/
 
     /**
@@ -222,6 +243,23 @@ public abstract class AbstractWriter {
     public abstract void writeComment(String comment)
             throws IOException;
 
+    /***************************************************************/
+    /* Indent                                                      */
+    /***************************************************************/
+
+    /**
+     * <p>Increment the indent.</p>
+     */
+    public void incIndent() {
+        indent += INDENT_INCREMENT;
+    }
+
+    /**
+     * <p>Decrement the indent.</p>
+     */
+    public void decIndent() {
+        indent -= INDENT_INCREMENT;
+    }
 
     /**
      * <p>Some test cases.</p>

@@ -51,13 +51,21 @@ public class DomOpts {
     private final static String OP_EMPTY = "empty";
     private final static String OP_ANY = "any";
 
+    /* format values */
+    private final static String OP_XML = "xml";
+    private final static String OP_JSON = "json";
+
     /* dom options */
     public final static String OP_ROOT = "root";
     public final static String OP_TYPE = "type";
     public final static String OP_CONTEXT = "context";
+    public final static String OP_FORMAT = "format";
 
     /* error terms */
     private final static String OP_DOM_OPTION = "dom_option";
+
+    public final static int MASK_ROOT =
+            AbstractDom.MASK_LIST + AbstractDom.MASK_TEXT;
 
     private int mask;
     private MapHash<String, Integer> control;
@@ -137,8 +145,8 @@ public class DomOpts {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_ROOT)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                int mask = atomToMask(help);
-                res.setMask(mask);
+                int flags = atomToRoot(help);
+                res.setMask((res.getMask() & ~DomOpts.MASK_ROOT) | flags);
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 2 &&
                     ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
@@ -163,6 +171,12 @@ public class DomOpts {
                 Object help = ((TermCompound) temp).getArg(0);
                 String context = InterpreterMessage.castString(help);
                 res.setContext(context);
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_FORMAT)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                int flags = atomToFormat(help);
+                res.setMask((res.getMask() & ~AbstractDom.MASK_JSON) | flags);
             } else {
                 InterpreterMessage.checkInstantiated(temp);
                 throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -181,14 +195,15 @@ public class DomOpts {
     }
 
     /**
-     * <p>Convert an atom to a mask. Will throw exception
-     * when the atom is not well formed.</p>
+     * <p>Convert an atom to a root value. Will throw exception
+     * when the root term is not well formed.</p>
      *
-     * @param t The mask term.
-     * @return The mask value.
+     * @param t The root term.
+     * @return The root value.
      * @throws InterpreterMessage Validation error.
      */
-    public static int atomToMask(Object t) throws InterpreterMessage {
+    public static int atomToRoot(Object t)
+            throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_TREE)) {
             return 0;
@@ -212,7 +227,8 @@ public class DomOpts {
      * @return The type value.
      * @throws InterpreterMessage Validation error.
      */
-    public static int atomToType(Object t) throws InterpreterMessage {
+    public static int atomToType(Object t)
+            throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
         if (val.equals(OP_NONE)) {
             return AbstractDom.TYPE_NONE;
@@ -220,6 +236,27 @@ public class DomOpts {
             return AbstractDom.TYPE_EMPTY;
         } else if (val.equals(OP_ANY)) {
             return AbstractDom.TYPE_ANY;
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a format value. Will throw exception
+     * when the format term is not well formed.</p>
+     *
+     * @param t The format term.
+     * @return The format value.
+     * @throws InterpreterMessage Validation error.
+     */
+    private static int atomToFormat(Object t)
+            throws InterpreterMessage {
+        String val = InterpreterMessage.castString(t);
+        if (val.equals(OP_XML)) {
+            return 0;
+        } else if (val.equals(OP_JSON)) {
+            return AbstractDom.MASK_JSON;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));

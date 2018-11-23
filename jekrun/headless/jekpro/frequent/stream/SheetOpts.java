@@ -88,8 +88,8 @@ class SheetOpts extends DomOpts {
                         ((TermCompound) temp).getArity() == 1 &&
                         ((TermCompound) temp).getFunctor().equals(DomOpts.OP_ROOT)) {
                     Object help = ((TermCompound) temp).getArg(0);
-                    int mask = DomOpts.atomToMask(help);
-                    res.setMask(mask);
+                    int flags = DomOpts.atomToRoot(help);
+                    res.setMask((res.getMask() & ~DomOpts.MASK_ROOT) | flags);
                 } else if (temp instanceof TermCompound &&
                         ((TermCompound) temp).getArity() == 2 &&
                         ((TermCompound) temp).getFunctor().equals(DomOpts.OP_TYPE)) {

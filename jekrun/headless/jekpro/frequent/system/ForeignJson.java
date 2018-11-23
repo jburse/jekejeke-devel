@@ -1,10 +1,12 @@
 package jekpro.frequent.system;
 
-import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.tools.call.*;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.TermAtomic;
-import matula.util.format.*;
+import matula.util.format.AbstractDom;
+import matula.util.format.AbstractReader;
+import matula.util.format.AbstractWriter;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
@@ -66,7 +68,7 @@ public final class ForeignJson {
             throws InterpreterMessage, IOException, InterpreterException {
         DomOpts res = DomOpts.decodeDomOpts(opts);
         try {
-            DomReader.load(reader, node, res.getMask(), res.getControl());
+            AbstractReader.load(reader, node, res.getMask(), res.getControl());
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
             InterpreterMessage x = new InterpreterMessage(
@@ -95,7 +97,7 @@ public final class ForeignJson {
                                     String comment, Object opts)
             throws InterpreterMessage, IOException {
         DomOpts res = DomOpts.decodeDomOpts(opts);
-        DomWriter.store(writer, node, comment, res.getMask(), res.getControl());
+        AbstractWriter.store(writer, node, comment, res.getMask(), res.getControl());
     }
 
 }
