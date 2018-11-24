@@ -54,7 +54,7 @@ public final class ForeignMemory {
      */
     public static Object sysMemoryRead(Object data, Object opt)
             throws InterpreterMessage {
-        int flags= decodeOpenOptions(opt);
+        int flags = decodeOpenOptions(opt);
         if ((flags & MASK_OPEN_BINR) != 0) {
             byte[] buf;
             if (data instanceof byte[]) {
@@ -79,7 +79,7 @@ public final class ForeignMemory {
      */
     public static Object sysMemoryWrite(Object opt)
             throws InterpreterMessage {
-        int flags= decodeOpenOptions(opt);
+        int flags = decodeOpenOptions(opt);
         if ((flags & MASK_OPEN_BINR) != 0) {
             return new ByteArrayOutputStream();
         } else {
@@ -112,7 +112,7 @@ public final class ForeignMemory {
      * @param opt The memory options term.
      * @throws InterpreterMessage Validation error.
      */
-    static int decodeOpenOptions(Object opt)
+    private static int decodeOpenOptions(Object opt)
             throws InterpreterMessage {
         int flags = 0;
         while (opt instanceof TermCompound &&
