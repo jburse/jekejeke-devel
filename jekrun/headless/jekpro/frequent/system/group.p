@@ -54,14 +54,14 @@
 /****************************************************************/
 
 /**
- * current_thread(G, T):
- * The predicate succeeds in T with the current threads
- * of the thread group G.
+ * group_thread(G, T):
+ * The predicate succeeds in T with the oldest thread
+ * of the thread group G if there is any. Otherwise the
+ * predicate fails.
  */
-% current_thread(+Group, -Thread)
-:- public current_thread/2.
-:- foreign(current_thread/2, 'ForeignGroup',
-      sysCurrentGroupThread('CallOut','ThreadGroup')).
+% group_thread(+Group, -Thread)
+:- public group_thread/2.
+:- foreign(group_thread/2, 'ForeignGroup', sysGroupThread('ThreadGroup')).
 
 /**
  * current_group_flag(G, K, V):

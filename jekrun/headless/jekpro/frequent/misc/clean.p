@@ -90,7 +90,7 @@ sys_group_clean(G) :-
 % sys_group_fini(+Group)
 :- private sys_group_fini/1.
 sys_group_fini(G) :-
-   current_thread(G, T), !,
+   group_thread(G, T), !,
    sys_thread_fini(T),
    sys_group_fini(G).
 sys_group_fini(_).
@@ -106,6 +106,18 @@ sys_thread_fini(T) :-
    thread_join(T).
 
 /**
+ * sys_thread_init(G, C):
+ * The predicate succeeds to create and start a new thread
+ * for a copy of the goal C in the group G.
+ */
+% sys_thread_init(+Group, +Goal)
+:- public sys_thread_init/2.
+:- meta_predicate sys_thread_init(?,0).
+sys_thread_init(G, C) :-
+   thread_new(G, C, I),
+   thread_start(I).
+
+/**
  * sys_thread_inits(G, C, N):
  * The predicate succeeds to create and start a new thread
  * for a copy of the goal C in the group G for as many as N times.
@@ -119,18 +131,6 @@ sys_thread_inits(G, C, N) :-
    sys_thread_init(G, C),
    M is N-1,
    sys_thread_inits(G, C, M).
-
-/**
- * sys_thread_init(G, C):
- * The predicate succeeds to create and start a new thread
- * for a copy of the goal C in the group G.
- */
-% sys_thread_init(+Group, +Goal)
-:- public sys_thread_init/2.
-:- meta_predicate sys_thread_init(?,0).
-sys_thread_init(G, C) :-
-   thread_new(G, C, I),
-   thread_start(I).
 
 /**********************************************************/
 /* Threads Listing                                        */
