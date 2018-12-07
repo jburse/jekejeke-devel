@@ -19,6 +19,12 @@
  * is done by aborting and joining the slave threads.
  *
  * Example:
+ * ?- threads.
+ * Thread       State           Group
+ * Thread-2     WAITING         main
+ * Thread-3     RUNNABLE        Group-1
+ * Thread-4     WAITING         Group-1
+ * Yes
  *
  * Further the predicate threads/0 allows listing all Prolog threads
  * currently known to the base knowledge base. The Prolog threads
@@ -65,55 +71,66 @@
 :- sys_load_resource(show).
 
 /**
- * sys_clean_thread(G):
- * The predicate succeeds to create and start a new thread for a
- * copy of the goal G, and also installs a clean-up handler to
- * cancel the thread.
+ * sys_group_clean(G):
+ * The predicate succeeds to create a new group G, and
+ * also installs a clean-up handler to cancel the threads
+ * of the group.
  */
-% sys_clean_thread(+Goal)
-:- public sys_clean_thread/1.
-:- meta_predicate sys_clean_thread(0).
-sys_clean_thread(G) :-
-   sys_atomic((  sys_thread_init(G, I),
-                 sys_cleanup(sys_thread_fini(I)))).
+% sys_group_clean(-Group)
+:- public sys_group_clean/1.
+:- meta_predicate sys_group_clean(?).
+sys_group_clean(G) :-
+   sys_atomic((  group_new(G),
+                 sys_cleanup(sys_group_fini(G)))).
 
 /**
- * sys_clean_threads(G, N):
- * The predicate succeeds to create and start N new threads for
- * copies of the goal G, and also installs clean-up handlers to
- * cancel the threads.
+ * sys_group_fini(G):
+ * The predicate succeeds to abort and join the group G.
  */
-% sys_clean_threads(+Goal, +Integer)
-:- public sys_clean_threads/2.
-:- meta_predicate sys_clean_threads(0,?).
-sys_clean_threads(_, 0) :- !.
-sys_clean_threads(G, N) :-
-   N > 0,
-   sys_clean_thread(G),
-   M is N-1,
-   sys_clean_threads(G, M).
+% sys_group_fini(+Group)
+:- private sys_group_fini/1.
+sys_group_fini(G) :-
+   current_thread(G, T), !,
+   sys_thread_fini(T),
+   sys_group_fini(G).
+sys_group_fini(_).
 
 /**
- * sys_thread_init(G, I):
- * The predicate succeeds to create and start a new thread I
- * for a copy of the goal G.
- */
-% sys_thread_init(+Goal, -Thread)
-:- private sys_thread_init/2.
-:- meta_predicate sys_thread_init(0,?).
-sys_thread_init(G, I) :-
-   thread_new(G, I),
-   thread_start(I).
-
-/**
- * sys_thread_fini(I):
- * The predicate succeeds to abort and join the thread I.
+ * sys_thread_fini(T):
+ * The predicate succeeds to abort and join the thread T.
  */
 % sys_thread_fini(+Thread)
 :- private sys_thread_fini/1.
-sys_thread_fini(I) :-
-   thread_abort(I, system_error(user_close)),
-   thread_join(I).
+sys_thread_fini(T) :-
+   thread_abort(T, system_error(user_close)),
+   thread_join(T).
+
+/**
+ * sys_thread_inits(G, C, N):
+ * The predicate succeeds to create and start a new thread
+ * for a copy of the goal C in the group G for as many as N times.
+ */
+% sys_thread_inits(+Group, +Goal, +Integer)
+:- public sys_thread_inits/3.
+:- meta_predicate sys_thread_inits(?,0,?).
+sys_thread_inits(_, _, 0) :- !.
+sys_thread_inits(G, C, N) :-
+   N > 0,
+   sys_thread_init(G, C),
+   M is N-1,
+   sys_thread_inits(G, C, M).
+
+/**
+ * sys_thread_init(G, C):
+ * The predicate succeeds to create and start a new thread
+ * for a copy of the goal C in the group G.
+ */
+% sys_thread_init(+Group, +Goal)
+:- public sys_thread_init/2.
+:- meta_predicate sys_thread_init(?,0).
+sys_thread_init(G, C) :-
+   thread_new(G, C, I),
+   thread_start(I).
 
 /**********************************************************/
 /* Threads Listing                                        */
@@ -121,7 +138,7 @@ sys_thread_fini(I) :-
 
 /**
  * threads:
- * The predicate displays the current threads statistics key value pairs.
+ * The predicate lists the current threads.
  */
 :- public threads/0.
 threads :- thread_show_keys,
@@ -147,13 +164,13 @@ thread_show_values(T) :-
 thread_show_values(_) :- ttynl.
 
 :- private sys_current_show_stat/1.
-sys_current_show_stat(sys_thread_id).
+sys_current_show_stat(sys_thread_name).
 sys_current_show_stat(sys_thread_state).
 sys_current_show_stat(sys_thread_group_name).
 
 :- private sys_get_show_stat/3.
-sys_get_show_stat(T, sys_thread_id, V) :-
-   current_thread_flag(T, sys_thread_id, V).
+sys_get_show_stat(T, sys_thread_name, V) :-
+   current_thread_flag(T, sys_thread_name, V).
 sys_get_show_stat(T, sys_thread_state, V) :-
    current_thread_flag(T, sys_thread_state, V).
 sys_get_show_stat(T, sys_thread_group_name, V) :-

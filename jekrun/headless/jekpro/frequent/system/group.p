@@ -38,8 +38,30 @@
 :- module(group, []).
 
 /****************************************************************/
+/* Group Creation                                               */
+/****************************************************************/
+
+/**
+ * group_new(G):
+ * The predicate succeeds for a new thread group G.
+ */
+% group_new(-Group)
+:- public group_new/1.
+:- foreign(group_new/1, 'ForeignGroup', sysGroupNew).
+
+/****************************************************************/
 /* Group Inspection                                             */
 /****************************************************************/
+
+/**
+ * current_thread(G, T):
+ * The predicate succeeds in T with the current threads
+ * of the thread group G.
+ */
+% current_thread(+Group, -Thread)
+:- public current_thread/2.
+:- foreign(current_thread/2, 'ForeignGroup',
+      sysCurrentGroupThread('CallOut','ThreadGroup')).
 
 /**
  * current_group_flag(G, K, V):

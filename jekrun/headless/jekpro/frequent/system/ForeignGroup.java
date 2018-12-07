@@ -3,7 +3,6 @@ package jekpro.frequent.system;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.TermAtomic;
 
 /**
  * The foreign predicates for the module system/group.
@@ -43,9 +42,71 @@ public final class ForeignGroup {
     private final static String[] OP_PROPS = {
             OP_SYS_GROUP_NAME};
 
+    /* For autonumbering anonymous groups. */
+    private static int groupInitNumber;
+
+    private static synchronized int nextGroupNum() {
+        return groupInitNumber++;
+    }
+
+    /****************************************************************/
+    /* Group Creation                                               */
+    /****************************************************************/
+
+    /**
+     * <p>Create a new annoymous thread group.</p>
+     *
+     * @return The new annonymous trhead group.
+     */
+    public static ThreadGroup sysGroupNew() {
+        ThreadGroup tg = new ThreadGroup("Group-" + nextGroupNum());
+        tg.setDaemon(true);
+        return tg;
+    }
+
     /****************************************************************/
     /* Group Inspection                                             */
     /****************************************************************/
+
+    /**
+     * <p>Retrieve the threads of a thread group.</p>
+     *
+     * @param co The call out.
+     * @param tg The thread group.
+     * @return The oldest thread or null.
+     */
+    public static Thread sysCurrentGroupThread(CallOut co, ThreadGroup tg) {
+        ArrayEnumeration<Thread> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<Thread>(snapshotThreads(tg));
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<Thread>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        Thread res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Compute a snapshot of the threads a thread group.</p>
+     *
+     * @param tg The thread group.
+     * @return The snapshot of the threads of the thread group.
+     */
+    private static Thread[] snapshotThreads(ThreadGroup tg) {
+        Thread[] threads = new Thread[4];
+        int num = tg.enumerate(threads, false);
+        while (num == threads.length) {
+            threads = new Thread[threads.length * 2];
+            num = tg.enumerate(threads, false);
+        }
+        Thread[] res = new Thread[num];
+        System.arraycopy(threads, 0, res, 0, num);
+        return res;
+    }
 
     /**
      * <p>Retrieve the known group properties.</p>

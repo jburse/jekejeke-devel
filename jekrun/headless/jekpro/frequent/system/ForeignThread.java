@@ -46,12 +46,12 @@ import java.io.BufferedWriter;
 public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
 
-    private final static String OP_SYS_THREAD_ID = "sys_thread_id";
+    private final static String OP_SYS_THREAD_NAME = "sys_thread_name";
     private final static String OP_SYS_THREAD_STATE = "sys_thread_state";
     private final static String OP_SYS_THREAD_GROUP = "sys_thread_group";
 
     private final static String[] OP_PROPS = {
-            OP_SYS_THREAD_ID,
+            OP_SYS_THREAD_NAME,
             OP_SYS_THREAD_STATE,
             OP_SYS_THREAD_GROUP};
 
@@ -70,6 +70,41 @@ public final class ForeignThread {
     public static Thread sysThreadNew(Interpreter inter, AbstractTerm t)
             throws InterpreterMessage {
         Object obj = AbstractTerm.copyMolec(inter, t);
+        final Interpreter inter2 = makeInterpreter(inter);
+        final CallIn callin = inter2.iterator(obj);
+        Thread thread = new Thread(makeRunnable(callin, inter2));
+        inter2.getController().setFence(thread);
+        return thread;
+    }
+
+    /**
+     * <p>Make a copy of the given term and create a thread
+     * running the term once.</p>
+     *
+     * @param inter The interpreter.
+     * @param tg    The thread group.
+     * @param t     The term.
+     * @return The new thread.
+     */
+    public static Thread sysThreadNew(Interpreter inter, ThreadGroup tg, AbstractTerm t)
+            throws InterpreterMessage {
+        Object obj = AbstractTerm.copyMolec(inter, t);
+        final Interpreter inter2 = makeInterpreter(inter);
+        final CallIn callin = inter2.iterator(obj);
+        Thread thread = new Thread(tg, makeRunnable(callin, inter2));
+        inter2.getController().setFence(thread);
+        return thread;
+    }
+
+    /**
+     * <p>Make an interpreter.</p>
+     *
+     * @param inter The old interpreter.
+     * @return The new interpreter.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public static Interpreter makeInterpreter(Interpreter inter)
+            throws InterpreterMessage {
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_DISP_INPUT);
         ConnectionReader cr;
@@ -104,9 +139,18 @@ public final class ForeignThread {
         inter2.setProperty(Toolkit.PROP_SYS_DISP_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_CUR_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_ATTACHED_TO, inter.getProperty(Toolkit.PROP_SYS_ATTACHED_TO));
-        final CallIn callin = inter2.iterator(obj);
+        return inter2;
+    }
 
-        Thread thread = new Thread(new Runnable() {
+    /**
+     * <p>Make a runnable for a thread.</p>
+     *
+     * @param callin The call-in.
+     * @param inter2 The interpreter.
+     * @return The runnable.
+     */
+    private static Runnable makeRunnable(final CallIn callin, final Interpreter inter2) {
+        return new Runnable() {
             public void run() {
                 try {
                     try {
@@ -125,9 +169,7 @@ public final class ForeignThread {
                 }
                 inter2.getController().setFence(null);
             }
-        });
-        inter2.getController().setFence(thread);
-        return thread;
+        };
     }
 
     /**
@@ -333,8 +375,8 @@ public final class ForeignThread {
      */
     public static Object sysGetThreadFlag(Thread t, String name)
             throws InterpreterMessage {
-        if (OP_SYS_THREAD_ID.equals(name)) {
-            return TermAtomic.normBigInteger(t.getId());
+        if (OP_SYS_THREAD_NAME.equals(name)) {
+            return t.getName();
         } else if (OP_SYS_THREAD_STATE.equals(name)) {
             return t.getState().name();
         } else if (OP_SYS_THREAD_GROUP.equals(name)) {
