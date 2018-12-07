@@ -1,6 +1,6 @@
 /**
  * A Prolog thread is simply a Java thread that executes a Prolog call-in.
- * The call-in can be cre-ated by the predicate thread_new/2 and the
+ * The call-in can be created by the predicate thread_new/2 and the
  * goal will be copied. The thread can then be started by the predicate
  * thread_start/1. A thread need not be explicitly destroyed, it will
  * automatically be reclaimed by the Java GC when not anymore used.
@@ -17,16 +17,12 @@
  * thread_abort/2 and thread_down/[2,3]. A thread can e killed by the
  * predicate thread_kill/1.
  *
- * The predicates thread_join/1 and thread_combine/[1,2] allow waiting for
- * the termination of a thread. The predicates will block, fail or timeout
- * when the thread is alive. Every thread can be joined and joining does
- * not retrieve an exit code and/or an exit Prolog term.
- *
- * Threads are not managed. Predicates are free to implement their own
- * choreography. There is only a management in that interpreters are
- * managed by the knowledge base. Currently if a knowledge base is finished
- * in-use interpreters are aborted. In the GUI environments this means that
- * zombie threads are aborted when the last console windows closes.
+ * The predicates thread_join/1 and thread_combine/[1,2] allow waiting
+ * for the termination of a thread. The predicates will block, fail or
+ * timeout when the thread is alive. Every thread can be joined and joining
+ * does not retrieve an exit code and/or an exit Prolog term. The predicates
+ * current_thread/1 and current_thread_flag/3 allow inspecting threads
+ * and their properties.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -81,6 +77,10 @@
 :- public thread_current/1.
 :- foreign(thread_current/1, 'Thread', currentThread).
 
+/****************************************************************/
+/* Thread Creation                                              */
+/****************************************************************/
+
 /**
  * thread_new(G, T):
  * The predicate succeeds for a new thread T on the
@@ -89,7 +89,8 @@
 % thread_new(+Goal, -Thread)
 :- public thread_new/2.
 :- meta_predicate thread_new(0,?).
-:- foreign(thread_new/2, 'ForeignThread', sysThreadNew('Interpreter','AbstractTerm')).
+:- foreign(thread_new/2, 'ForeignThread',
+      sysThreadNew('Interpreter','AbstractTerm')).
 
 /**
  * thread_start(T):
@@ -99,6 +100,10 @@
 :- public thread_start/1.
 :- virtual thread_start/1.
 :- foreign(thread_start/1, 'Thread', start).
+
+/****************************************************************/
+/* Thread Signalling                                            */
+/****************************************************************/
 
 /**
  * thread_abort(T, M):
@@ -127,6 +132,19 @@
 :- foreign(thread_down/3, 'ForeignThread', sysThreadDown('Thread','AbstractTerm',long)).
 
 /**
+ * thread_kill(T):
+ * The predicate succeeds for killing the thread T.
+ */
+% thread_kill(+Thread)
+:- public thread_kill/1.
+:- virtual thread_kill/1.
+:- foreign(thread_kill/1, 'Thread', stop).
+
+/****************************************************************/
+/* Thread Joining                                               */
+/****************************************************************/
+
+/**
  * thread_join(T):
  * The predicate succeeds when the thread T has terminated.
  */
@@ -150,14 +168,9 @@
 :- public thread_combine/2.
 :- foreign(thread_combine/2, 'ForeignThread', sysThreadCombine('Thread',long)).
 
-/**
- * thread_kill(T):
- * The predicate succeeds for killing the thread T.
- */
-% thread_kill(+Thread)
-:- public thread_kill/1.
-:- virtual thread_kill/1.
-:- foreign(thread_kill/1, 'Thread', stop).
+/****************************************************************/
+/* Thread Inspection                                            */
+/****************************************************************/
 
 /**
  * current_thread(T):
@@ -184,8 +197,10 @@ current_thread_flag(T, K, V) :-
 
 % sys_current_thread_flag(-Atom)
 :- private sys_current_thread_flag/1.
-:- foreign(sys_current_thread_flag/1, 'ForeignThread', sysCurrentThreadFlag('CallOut')).
+:- foreign(sys_current_thread_flag/1, 'ForeignThread',
+      sysCurrentThreadFlag('CallOut')).
 
 % sys_get_thread_flag(+Thread, +Atom, -Atomic)
 :- private sys_get_thread_flag/3.
-:- foreign(sys_get_thread_flag/3, 'ForeignThread', sysGetThreadFlag('Thread','String')).
+:- foreign(sys_get_thread_flag/3, 'ForeignThread',
+      sysGetThreadFlag('Thread','String')).

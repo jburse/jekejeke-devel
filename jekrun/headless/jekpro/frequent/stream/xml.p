@@ -40,13 +40,8 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- package(library(jekpro/frequent/system)).
+:- package(library(jekpro/frequent/stream)).
 :- use_package(foreign(matula/util/system)).
-:- use_package(foreign(matula/util/format)).
-:- use_package(foreign(java/io)).
-:- use_package(foreign(jekpro/frequent/system)).
-:- use_package(foreign(jekpro/tools/call)).
-:- use_package(library(matula/util/format)).
 
 :- module(xml, []).
 

@@ -48,10 +48,12 @@ public final class ForeignThread {
 
     private final static String OP_SYS_THREAD_ID = "sys_thread_id";
     private final static String OP_SYS_IS_ALIVE = "sys_is_alive";
+    private final static String OP_SYS_THREAD_GROUP = "sys_thread_group";
 
     private final static String[] OP_PROPS = {
             OP_SYS_THREAD_ID,
-            OP_SYS_IS_ALIVE};
+            OP_SYS_IS_ALIVE,
+            OP_SYS_THREAD_GROUP};
 
     /****************************************************************/
     /* Thread Creation                                              */
@@ -301,10 +303,10 @@ public final class ForeignThread {
     }
 
     /**
-     * <p>Retrieve the known properties.</p>
+     * <p>Retrieve the known thread properties.</p>
      *
      * @param co The call out.
-     * @return The known property.
+     * @return The known thread property.
      */
     public static String sysCurrentThreadFlag(CallOut co) {
         ArrayEnumeration<String> dc;
@@ -322,11 +324,11 @@ public final class ForeignThread {
     }
 
     /**
-     * <p>Retrieve a property.</p>
+     * <p>Retrieve a thread property.</p>
      *
      * @param t    The thread.
-     * @param name The property name.
-     * @return The value, or null.
+     * @param name The thread property name.
+     * @return The thread property value, or null.
      * @throws InterpreterMessage Validation error.
      */
     public static Object sysGetThreadFlag(Thread t, String name)
@@ -335,6 +337,8 @@ public final class ForeignThread {
             return TermAtomic.normBigInteger(t.getId());
         } else if (OP_SYS_IS_ALIVE.equals(name)) {
             return t.isAlive() ? "true" : "false";
+        } else if (OP_SYS_THREAD_GROUP.equals(name)) {
+            return t.getThreadGroup();
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
