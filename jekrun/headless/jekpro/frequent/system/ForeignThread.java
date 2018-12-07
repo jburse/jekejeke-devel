@@ -47,12 +47,12 @@ public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
 
     private final static String OP_SYS_THREAD_ID = "sys_thread_id";
-    private final static String OP_SYS_IS_ALIVE = "sys_is_alive";
+    private final static String OP_SYS_THREAD_STATE = "sys_thread_state";
     private final static String OP_SYS_THREAD_GROUP = "sys_thread_group";
 
     private final static String[] OP_PROPS = {
             OP_SYS_THREAD_ID,
-            OP_SYS_IS_ALIVE,
+            OP_SYS_THREAD_STATE,
             OP_SYS_THREAD_GROUP};
 
     /****************************************************************/
@@ -335,8 +335,8 @@ public final class ForeignThread {
             throws InterpreterMessage {
         if (OP_SYS_THREAD_ID.equals(name)) {
             return TermAtomic.normBigInteger(t.getId());
-        } else if (OP_SYS_IS_ALIVE.equals(name)) {
-            return t.isAlive() ? "true" : "false";
+        } else if (OP_SYS_THREAD_STATE.equals(name)) {
+            return t.getState().name();
         } else if (OP_SYS_THREAD_GROUP.equals(name)) {
             return t.getThreadGroup();
         } else {
@@ -389,5 +389,23 @@ public final class ForeignThread {
             return false;
         return contr.setMask(m);
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args No used.
+     */
+    /*
+    public static void main(String[] args) {
+        Thread thread = Thread.currentThread();
+        Thread.State state = thread.getState();
+        System.out.println("state.ordinal=" + state.ordinal());
+        System.out.println("state.name=" + state.name());
+
+        String str="TIMED_WAITING";
+        System.out.println("str="+str);
+        System.out.println("str.length="+str.length());
+    }
+    */
 
 }

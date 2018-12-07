@@ -18,6 +18,13 @@
  * in the continuation or a signal by another thread. Cancelling
  * is done by aborting and joining the slave threads.
  *
+ * Example:
+ *
+ * Further the predicate threads/0 allows listing all Prolog threads
+ * currently known to the base knowledge base. The Prolog threads
+ * are shown with their state and group. Currently the predicate also
+ * lists threads across different sub knowledge bases.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -50,7 +57,12 @@
 :- package(library(jekpro/frequent/misc)).
 
 :- module(clean, []).
+:- use_module(library(system/group)).
 :- use_module(library(system/thread)).
+:- use_module(library(stream/console)).
+:- use_module(library(system/locale)).
+:- use_module(library(misc/text)).
+:- sys_load_resource(show).
 
 /**
  * sys_clean_thread(G):
@@ -102,3 +114,48 @@ sys_thread_init(G, I) :-
 sys_thread_fini(I) :-
    thread_abort(I, system_error(user_close)),
    thread_join(I).
+
+/**********************************************************/
+/* Threads Listing                                        */
+/**********************************************************/
+
+/**
+ * threads:
+ * The predicate displays the current threads statistics key value pairs.
+ */
+:- public threads/0.
+threads :- thread_show_keys,
+   current_thread(T),
+   thread_show_values(T), fail.
+threads.
+
+:- private thread_show_keys/0.
+thread_show_keys :-
+   sys_get_lang(show, P),
+   sys_current_show_stat(K),
+   message_make(P, thread_show_key(K), M),
+   ttywrite(M), fail.
+thread_show_keys :- ttynl.
+
+:- private thread_show_values/1.
+thread_show_values(T) :-
+   sys_get_lang(show, P),
+   sys_current_show_stat(K),
+   sys_get_show_stat(T, K, V),
+   message_make(P, thread_show_value(K,V), M),
+   ttywrite(M), fail.
+thread_show_values(_) :- ttynl.
+
+:- private sys_current_show_stat/1.
+sys_current_show_stat(sys_thread_id).
+sys_current_show_stat(sys_thread_state).
+sys_current_show_stat(sys_thread_group_name).
+
+:- private sys_get_show_stat/3.
+sys_get_show_stat(T, sys_thread_id, V) :-
+   current_thread_flag(T, sys_thread_id, V).
+sys_get_show_stat(T, sys_thread_state, V) :-
+   current_thread_flag(T, sys_thread_state, V).
+sys_get_show_stat(T, sys_thread_group_name, V) :-
+   current_thread_flag(T, sys_thread_group, H),
+   current_group_flag(H, sys_group_name, V).

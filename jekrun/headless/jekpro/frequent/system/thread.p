@@ -1,9 +1,10 @@
 /**
- * A Prolog thread is simply a Java thread that executes a Prolog call-in.
- * The call-in can be created by the predicate thread_new/2 and the
- * goal will be copied. The thread can then be started by the predicate
- * thread_start/1. A thread need not be explicitly destroyed, it will
- * automatically be reclaimed by the Java GC when not anymore used.
+ * A Prolog thread is simply a Java thread that executes a Prolog
+ * call-in. The call-in can be created by the predicate thread_new/2
+ * and the goal will be copied. The thread can then be started by the
+ * predicate thread_start/1. A thread need not be explicitly destroyed,
+ * it will automatically be reclaimed by the Java GC when
+ * not anymore used.
  *
  * Examples:
  * ?- thread_new((between(0,10,X),write(X),write(' '),fail;
@@ -14,8 +15,10 @@
  * A new thread will share the knowledgebase and the display input/output
  * of the creating thread. On the other hand a new thread will have its
  * own thread local predicates. A thread can be aborted by the predicate
- * thread_abort/2 and thread_down/[2,3]. A thread can e killed by the
- * predicate thread_kill/1.
+ * thread_abort/2 and thread_down/[2,3]. A thread can be killed by the
+ * predicate thread_kill/1. The later predicate should only be used in
+ * emergency situation, since the receiving Prolog call-in will not be
+ * able to properly clean-up.
  *
  * The predicates thread_join/1 and thread_combine/[1,2] allow waiting
  * for the termination of a thread. The predicates will block, fail or
