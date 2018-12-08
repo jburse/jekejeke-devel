@@ -63,7 +63,8 @@
 :- module(distributed, []).
 :- use_module(library(advanced/arith)).
 :- use_module(library(misc/pipe)).
-:- use_module(library(misc/clean)).
+:- use_module(library(system/group)).
+:- use_module(library(system/thread)).
 
 /**
  * horde(V1^..Vn^T):
@@ -85,14 +86,15 @@ horde(T) :-
 horde(T, N) :-
    sys_goal_globals(T, J),
    sys_goal_kernel(T, S),
-   horde2(J, S, N).
+   sys_group_clean(Z),
+   horde2(Z, J, S, N).
 
-% horde2(+List, +Goal, +Integer)
-:- private horde2/3.
-:- meta_predicate horde2(?,0,?).
-horde2(J, S, N) :-
+% horde2(+Group, +List, +Goal, +Integer)
+:- private horde2/4.
+:- meta_predicate horde2(?,?,0,?).
+horde2(Z, J, S, N) :-
    pipe_new(N, B),
-   sys_clean_threads(sys_put_all(J, S, B, 1), N),
+   sys_thread_inits(Z, sys_put_all(J, S, B, 1), N),
    sys_take_all(J, B, N).
 
 /**
@@ -117,8 +119,9 @@ balance(P, N) :-
    sys_goal_kernel(P, (G,T)),
    term_variables(G, I),
    pipe_new(N, F),
-   sys_clean_thread(sys_put_all(I, G, F, N)),
-   horde2(J, (  sys_take_all(I, F, 1), T), N).
+   sys_group_clean(Z),
+   sys_thread_init(Z, sys_put_all(I, G, F, N)),
+   horde2(Z, J, (  sys_take_all(I, F, 1), T), N).
 
 /**
  * setup_balance(V1^..Vn^(S, G, T)):
@@ -142,9 +145,10 @@ setup_balance(Q, N) :-
    sys_goal_kernel(Q, (S,G,T)),
    term_variables(G, I),
    pipe_new(N, F),
-   sys_clean_thread(sys_put_all(I, G, F, N)),
-   horde2(J, (  S,
-                sys_take_all(I, F, 1), T), N).
+   sys_group_clean(Z),
+   sys_thread_init(Z, sys_put_all(I, G, F, N)),
+   horde2(Z, J, (  S,
+                   sys_take_all(I, F, 1), T), N).
 
 /**********************************************************/
 /* Pipe Utilities                                         */
@@ -192,3 +196,73 @@ sys_put_all2(_, _, Q, N) :-
    between(1, N, _),
    pipe_put(Q, no), fail.
 sys_put_all2(_, _, _, _).
+
+/**********************************************************/
+/* Group Utilities                                        */
+/**********************************************************/
+
+/**
+ * sys_group_clean(G):
+ * The predicate succeeds to create a new group G, and
+ * also installs a clean-up handler to cancel the threads
+ * of the group.
+ */
+% sys_group_clean(-Group)
+:- private sys_group_clean/1.
+:- meta_predicate sys_group_clean(?).
+sys_group_clean(G) :-
+   sys_atomic((  group_new(G),
+                 sys_cleanup(sys_group_fini(G)))).
+
+/**
+ * sys_group_fini(G):
+ * The predicate succeeds to abort and join the group G.
+ */
+% sys_group_fini(+Group)
+:- private sys_group_fini/1.
+sys_group_fini(G) :-
+   group_thread(G, T), !,
+   sys_thread_fini(T),
+   sys_group_fini(G).
+sys_group_fini(_).
+
+/**
+ * sys_thread_fini(T):
+ * The predicate succeeds to abort and join the thread T.
+ */
+% sys_thread_fini(+Thread)
+:- private sys_thread_fini/1.
+sys_thread_fini(T) :-
+   thread_abort(T, system_error(user_close)),
+   thread_join(T).
+
+/**********************************************************/
+/* Thread Utilities                                       */
+/**********************************************************/
+
+/**
+ * sys_thread_init(G, C):
+ * The predicate succeeds to create and start a new thread
+ * for a copy of the goal C in the group G.
+ */
+% sys_thread_init(+Group, +Goal)
+:- private sys_thread_init/2.
+:- meta_predicate sys_thread_init(?,0).
+sys_thread_init(G, C) :-
+   thread_new(G, C, I),
+   thread_start(I).
+
+/**
+ * sys_thread_inits(G, C, N):
+ * The predicate succeeds to create and start a new thread
+ * for a copy of the goal C in the group G for as many as N times.
+ */
+% sys_thread_inits(+Group, +Goal, +Integer)
+:- private sys_thread_inits/3.
+:- meta_predicate sys_thread_inits(?,0,?).
+sys_thread_inits(_, _, 0) :- !.
+sys_thread_inits(G, C, N) :-
+   N > 0,
+   sys_thread_init(G, C),
+   M is N-1,
+   sys_thread_inits(G, C, M).

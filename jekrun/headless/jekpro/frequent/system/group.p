@@ -1,6 +1,9 @@
 /**
  * A Prolog thread group is simply a Java thread group. A Prolog thread
- * group might contain Prolog threads and otherwise threads.
+ * group might contain Prolog threads and otherwise threads. The predicate
+ * group_new/1 creates a new thread group. The predicate group_thread/2
+ * allows retrieving the oldest member. The predicate current_group_flag /3
+ * allows inspecting thread group properties.
  *
  * Example:
  * ?- threads.
@@ -10,10 +13,11 @@
  * Thread-4     WAITING         Group-1
  * Yes
  *
- * Further the predicate threads/0 allows listing all Prolog threads
- * currently known to the base knowledge base. The Prolog threads
- * are shown with their state and group. Currently the predicate also
- * lists threads across different sub knowledge bases.
+ * The predicate current_thread/1 succeeds for the Prolog threads
+ * currently known to the base knowledge base. The predicate threads/0
+ * lists the same threads on the standard output. The Prolog threads
+ * are shown with their state and their group. Currently the predicates
+ * also list threads across different sub knowledge bases.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -111,6 +115,27 @@ current_group_flag(T, K, V) :-
 /****************************************************************/
 
 /**
+ * current_thread(T):
+ * The predicate succeeds in T with the managed threads.
+ */
+% current_thread(-Thread)
+:- public current_thread/1.
+current_thread(X) :-
+   var(X), !,
+   sys_current_thread(L),
+   sys_member(X, L).
+current_thread(X) :-
+   sys_current_thread_chk(X).
+
+:- private sys_current_thread/1.
+:- foreign(sys_current_thread/1, 'ForeignGroup',
+      sysCurrentThread('Interpreter')).
+
+:- private sys_current_thread_chk/1.
+:- foreign(sys_current_thread_chk/1, 'ForeignGroup',
+      sysCurrentThreadChk('Interpreter','Thread')).
+
+/**
  * threads:
  * The predicate lists the managed threads.
  */
@@ -151,23 +176,3 @@ sys_get_show_stat(T, sys_thread_group_name, V) :-
    current_thread_flag(T, sys_thread_group, H),
    current_group_flag(H, sys_group_name, V).
 
-/**
- * current_thread(T):
- * The predicate succeeds in T with the managed threads.
- */
-% current_thread(-Thread)
-:- public current_thread/1.
-current_thread(X) :-
-   var(X), !,
-   sys_current_thread(L),
-   sys_member(X, L).
-current_thread(X) :-
-   sys_current_thread_chk(X).
-
-:- private sys_current_thread/1.
-:- foreign(sys_current_thread/1, 'ForeignGroup',
-      sysCurrentThread('Interpreter')).
-
-:- private sys_current_thread_chk/1.
-:- foreign(sys_current_thread_chk/1, 'ForeignGroup',
-      sysCurrentThreadChk('Interpreter','Thread')).
