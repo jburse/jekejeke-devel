@@ -51,6 +51,7 @@
 :- package(library(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/tools/term)).
 :- use_module(library(system/thread)).
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
@@ -70,6 +71,17 @@
 % group_new(-Group)
 :- public group_new/1.
 :- foreign(group_new/1, 'ForeignGroup', sysGroupNew).
+
+/**
+ * thread_new(G, C, T):
+ * The predicate succeeds for a new thread T on the
+ * copy of the goal C inside the thread group G.
+ */
+% thread_new(+Group, +Goal, -Thread)
+:- public thread_new/3.
+:- meta_predicate thread_new(?,0,?).
+:- foreign(thread_new/3, 'ForeignGroup',
+      sysThreadNew('Interpreter','ThreadGroup','AbstractTerm')).
 
 /****************************************************************/
 /* Group Inspection                                             */

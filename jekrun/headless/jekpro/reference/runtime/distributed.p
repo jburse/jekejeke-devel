@@ -150,6 +150,17 @@ setup_balance(Q, N) :-
    horde2(Z, J, (  S,
                    sys_take_all(I, F, 1), T), N).
 
+/**
+ * spawn(C):
+ * The predicate succeeds in running a copy of the goal C
+ * in a new thread.
+ */
+:- public spawn/1.
+:- meta_predicate spawn(0).
+spawn(C) :-
+   thread_new(C, I),
+   thread_start(I).
+
 /**********************************************************/
 /* Pipe Utilities                                         */
 /**********************************************************/

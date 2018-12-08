@@ -86,22 +86,14 @@
 
 /**
  * thread_new(C, T):
- * thread_new(G, C, T):
  * The predicate succeeds for a new thread T on the
- * copy of the goal C. The ternary predicate accepts a
- * thread group G as well.
+ * copy of the goal C.
  */
 % thread_new(+Goal, -Thread)
 :- public thread_new/2.
 :- meta_predicate thread_new(0,?).
 :- foreign(thread_new/2, 'ForeignThread',
       sysThreadNew('Interpreter','AbstractTerm')).
-
-% thread_new(+Group, +Goal, -Thread)
-:- public thread_new/3.
-:- meta_predicate thread_new(?,0,?).
-:- foreign(thread_new/3, 'ForeignThread',
-      sysThreadNew('Interpreter','ThreadGroup','AbstractTerm')).
 
 /**
  * thread_start(T):

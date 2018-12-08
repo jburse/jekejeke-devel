@@ -1,9 +1,7 @@
 package jekpro.frequent.system;
 
-import jekpro.tools.call.ArrayEnumeration;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.MapEntry;
@@ -68,6 +66,25 @@ public final class ForeignGroup {
         ThreadGroup tg = new ThreadGroup("Group-" + nextGroupNum());
         tg.setDaemon(true);
         return tg;
+    }
+
+    /**
+     * <p>Make a copy of the given term and create a thread
+     * running the term once.</p>
+     *
+     * @param inter The interpreter.
+     * @param tg    The thread group.
+     * @param t     The term.
+     * @return The new thread.
+     */
+    public static Thread sysThreadNew(Interpreter inter, ThreadGroup tg, AbstractTerm t)
+            throws InterpreterMessage {
+        Object obj = AbstractTerm.copyMolec(inter, t);
+        final Interpreter inter2 = ForeignThread.makeInterpreter(inter);
+        final CallIn callin = inter2.iterator(obj);
+        Thread thread = new Thread(tg, ForeignThread.makeRunnable(callin, inter2));
+        inter2.getController().setFence(thread);
+        return thread;
     }
 
     /****************************************************************/

@@ -78,32 +78,13 @@ public final class ForeignThread {
     }
 
     /**
-     * <p>Make a copy of the given term and create a thread
-     * running the term once.</p>
-     *
-     * @param inter The interpreter.
-     * @param tg    The thread group.
-     * @param t     The term.
-     * @return The new thread.
-     */
-    public static Thread sysThreadNew(Interpreter inter, ThreadGroup tg, AbstractTerm t)
-            throws InterpreterMessage {
-        Object obj = AbstractTerm.copyMolec(inter, t);
-        final Interpreter inter2 = makeInterpreter(inter);
-        final CallIn callin = inter2.iterator(obj);
-        Thread thread = new Thread(tg, makeRunnable(callin, inter2));
-        inter2.getController().setFence(thread);
-        return thread;
-    }
-
-    /**
      * <p>Make an interpreter.</p>
      *
      * @param inter The old interpreter.
      * @return The new interpreter.
      * @throws InterpreterMessage Shit happens.
      */
-    public static Interpreter makeInterpreter(Interpreter inter)
+    static Interpreter makeInterpreter(Interpreter inter)
             throws InterpreterMessage {
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_DISP_INPUT);
@@ -149,7 +130,7 @@ public final class ForeignThread {
      * @param inter2 The interpreter.
      * @return The runnable.
      */
-    private static Runnable makeRunnable(final CallIn callin, final Interpreter inter2) {
+    static Runnable makeRunnable(final CallIn callin, final Interpreter inter2) {
         return new Runnable() {
             public void run() {
                 try {
