@@ -2,7 +2,13 @@ package jekpro.frequent.system;
 
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.Lobby;
+import jekpro.tools.term.TermCompound;
+import matula.util.data.MapEntry;
+import matula.util.wire.AbstractLivestock;
+import matula.util.wire.Fence;
 
 /**
  * The foreign predicates for the module system/group.
@@ -117,6 +123,42 @@ public final class ForeignGroup {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
         }
+    }
+
+    /****************************************************************/
+    /* Managed Threads                                              */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the managed threads.</p>
+     *
+     * @param inter The interpreter.
+     * @return The Prolog list of managed threads.
+     */
+    public static Object sysCurrentThread(Interpreter inter) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Object res = lobby.ATOM_NIL;
+        MapEntry<Thread, AbstractLivestock>[] snapshot = Fence.DEFAULT.snapshotLivestocks();
+        for (int i = snapshot.length - 1; i >= 0; i--) {
+            AbstractLivestock al = snapshot[i].value;
+            if (al.source != lobby.getFoyer())
+                continue;
+            res = new TermCompound(lobby.ATOM_CONS, snapshot[i].key, res);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Check whether the thread is managed.</p>
+     *
+     * @param inter The interpreter.
+     * @param t     The thread.
+     * @return True if the thread is managed, otherwise false.
+     */
+    public static boolean sysCurrentThreadChk(Interpreter inter, Thread t) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        AbstractLivestock al = Fence.DEFAULT.getLivestock(t);
+        return (al != null && al.source == lobby.getFoyer());
     }
 
 }

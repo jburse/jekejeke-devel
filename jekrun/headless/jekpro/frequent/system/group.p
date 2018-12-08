@@ -2,6 +2,19 @@
  * A Prolog thread group is simply a Java thread group. A Prolog thread
  * group might contain Prolog threads and otherwise threads.
  *
+ * Example:
+ * ?- threads.
+ * Thread       State           Group
+ * Thread-2     WAITING         main
+ * Thread-3     RUNNABLE        Group-1
+ * Thread-4     WAITING         Group-1
+ * Yes
+ *
+ * Further the predicate threads/0 allows listing all Prolog threads
+ * currently known to the base knowledge base. The Prolog threads
+ * are shown with their state and group. Currently the predicate also
+ * lists threads across different sub knowledge bases.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -34,6 +47,11 @@
 :- package(library(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_module(library(system/thread)).
+:- use_module(library(stream/console)).
+:- use_module(library(system/locale)).
+:- use_module(library(misc/text)).
+:- sys_load_resource(show).
 
 :- module(group, []).
 
@@ -87,3 +105,69 @@ current_group_flag(T, K, V) :-
 :- private sys_get_group_flag/3.
 :- foreign(sys_get_group_flag/3, 'ForeignGroup',
       sysGetGroupFlag('ThreadGroup','String')).
+
+/****************************************************************/
+/* Managed Threads                                              */
+/****************************************************************/
+
+/**
+ * threads:
+ * The predicate lists the managed threads.
+ */
+:- public threads/0.
+threads :- thread_show_keys,
+   current_thread(T),
+   thread_show_values(T), fail.
+threads.
+
+:- private thread_show_keys/0.
+thread_show_keys :-
+   sys_get_lang(show, P),
+   sys_current_show_stat(K),
+   message_make(P, thread_show_key(K), M),
+   ttywrite(M), fail.
+thread_show_keys :- ttynl.
+
+:- private thread_show_values/1.
+thread_show_values(T) :-
+   sys_get_lang(show, P),
+   sys_current_show_stat(K),
+   sys_get_show_stat(T, K, V),
+   message_make(P, thread_show_value(K,V), M),
+   ttywrite(M), fail.
+thread_show_values(_) :- ttynl.
+
+:- private sys_current_show_stat/1.
+sys_current_show_stat(sys_thread_name).
+sys_current_show_stat(sys_thread_state).
+sys_current_show_stat(sys_thread_group_name).
+
+:- private sys_get_show_stat/3.
+sys_get_show_stat(T, sys_thread_name, V) :-
+   current_thread_flag(T, sys_thread_name, V).
+sys_get_show_stat(T, sys_thread_state, V) :-
+   current_thread_flag(T, sys_thread_state, V).
+sys_get_show_stat(T, sys_thread_group_name, V) :-
+   current_thread_flag(T, sys_thread_group, H),
+   current_group_flag(H, sys_group_name, V).
+
+/**
+ * current_thread(T):
+ * The predicate succeeds in T with the managed threads.
+ */
+% current_thread(-Thread)
+:- public current_thread/1.
+current_thread(X) :-
+   var(X), !,
+   sys_current_thread(L),
+   sys_member(X, L).
+current_thread(X) :-
+   sys_current_thread_chk(X).
+
+:- private sys_current_thread/1.
+:- foreign(sys_current_thread/1, 'ForeignGroup',
+      sysCurrentThread('Interpreter')).
+
+:- private sys_current_thread_chk/1.
+:- foreign(sys_current_thread_chk/1, 'ForeignGroup',
+      sysCurrentThreadChk('Interpreter','Thread')).

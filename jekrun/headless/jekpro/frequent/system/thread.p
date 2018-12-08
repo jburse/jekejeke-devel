@@ -184,14 +184,6 @@
 /****************************************************************/
 
 /**
- * current_thread(T):
- * The predicate succeeds in T with the current threads.
- */
-% current_thread(-Thread)
-:- public current_thread/1.
-:- foreign(current_thread/1, 'ForeignThread', sysCurrentThread('CallOut')).
-
-/**
  * current_thread_flag(T, K, V):
  * The predicate succeeds for the values V of the keys K concerning the
  * thread T. The following keys are returned by the predicate. For

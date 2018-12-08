@@ -323,28 +323,6 @@ public final class ForeignThread {
     /****************************************************************/
 
     /**
-     * <p>Retrieve the known threads.</p>
-     *
-     * @param co The call out.
-     * @return The thread.
-     */
-    public static Thread sysCurrentThread(CallOut co) {
-        ArrayEnumeration<MapEntry<Thread, AbstractLivestock>> dc;
-        if (co.getFirst()) {
-            dc = new ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>(
-                    Fence.DEFAULT.snapshotLivestocks());
-            co.setData(dc);
-        } else {
-            dc = (ArrayEnumeration<MapEntry<Thread, AbstractLivestock>>) co.getData();
-        }
-        if (!dc.hasMoreElements())
-            return null;
-        Thread res = dc.nextElement().key;
-        co.setRetry(dc.hasMoreElements());
-        return res;
-    }
-
-    /**
      * <p>Retrieve the known thread properties.</p>
      *
      * @param co The call out.
