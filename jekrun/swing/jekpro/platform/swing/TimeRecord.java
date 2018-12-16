@@ -1,16 +1,10 @@
 package jekpro.platform.swing;
 
-import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.reference.bootload.ForeignPath;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
 
 /**
  * The value object for the module stats.
@@ -100,7 +94,7 @@ public final class TimeRecord {
             dc = new ArrayEnumeration<String>(OP_STATISTICS);
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>)co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
