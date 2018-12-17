@@ -178,4 +178,30 @@ public final class ForeignGroup {
         return (al != null && al.source == lobby.getFoyer());
     }
 
+    /****************************************************************/
+    /* Debug Threads                                                */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the JVM stack as a Prolog term.</p>
+     *
+     * @param t The thread.
+     * @return The JVM stack.
+     */
+    /*
+    public static Object sysThreadStack(Interpreter inter, Thread t) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Object res = lobby.ATOM_NIL;
+        StackTraceElement[] stacks = t.getStackTrace();
+        for (int i = stacks.length - 1; i >= 0; i--) {
+            StackTraceElement stack=stacks[i];
+            String fn=stack.getFileName();
+            Object val=new TermCompound("stack", stack.getClassName(),
+                      stack.getMethodName(), (fn!=null?fn:""), stack.getLineNumber());
+            res = new TermCompound(lobby.ATOM_CONS, val, res);
+        }
+        return res;
+    }
+    */
+
 }

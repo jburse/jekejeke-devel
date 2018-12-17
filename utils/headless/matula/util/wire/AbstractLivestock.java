@@ -123,6 +123,19 @@ public abstract class AbstractLivestock extends AbstractDomestic {
     /****************************************************************/
 
     /**
+     * <p>Retrieve the signal.</p>
+     *
+     * @param t The the thread.
+     * @return The signal, can be null.
+     */
+    public static Object liveGetSignal(Thread t) {
+        AbstractLivestock live = currentLivestock(t);
+        if (live == null)
+            return null;
+        return live.signal;
+    }
+
+    /**
      * <p>Set the signal.</p>
      *
      * @param t The thread.

@@ -67,9 +67,6 @@ public abstract class AbstractFactory extends AbstractFramework {
 
     public static final String OP_REPRESENTATION_NULL = "null";
 
-    public static final int HINT_CMD = 0x00000001;
-    public static final int HINT_GUI = 0x00000002;
-
     public static final int FIELD_GET_PRED = 0;
     public static final int FIELD_GET_EVAL = 1;
     public static final int FIELD_SET = 2;

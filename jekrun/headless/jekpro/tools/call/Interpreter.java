@@ -1,6 +1,7 @@
 package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
@@ -12,6 +13,7 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.PositionKey;
+import matula.comp.sharik.Enforced;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
@@ -449,7 +451,15 @@ public final class Interpreter implements Comparator<Object> {
         Store store = (Store) k.getStore();
         Supervisor visor = (Supervisor) i.getVisor();
 
-        engine = new Engine(store, visor);
+        switch (store.foyer.getHint()) {
+            case Enforced.HINT_WEB:
+                engine = new EngineYield(store, visor);
+                break;
+            default:
+                engine = new Engine(store, visor);
+                break;
+        }
+
         engine.proxy = this;
     }
 
