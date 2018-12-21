@@ -50,7 +50,8 @@ public final class TimeRecord {
      *
      * @throws InterpreterMessage Shit happens.
      */
-    public void start() throws InterpreterMessage {
+    public void start()
+            throws InterpreterMessage {
         uptime = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_UPTIME);
         gctime = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_GCTIME);
         time = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_TIME);
@@ -61,7 +62,8 @@ public final class TimeRecord {
      *
      * @throws InterpreterMessage Shit happens.
      */
-    public void end() throws InterpreterMessage {
+    public void end()
+            throws InterpreterMessage {
         uptime = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
         gctime = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
         time = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_TIME), time);
@@ -74,9 +76,8 @@ public final class TimeRecord {
      * @param i1 The first term integer, or null.
      * @param i2 The second term integer, or null.
      * @return The result term integer, or null.
-     * @throws InterpreterMessage Shit happens.
      */
-    private static Number subtract(Number i1, Number i2) throws InterpreterMessage {
+    private static Number subtract(Number i1, Number i2) {
         if (i1 != null && i2 != null) {
             return TermAtomic.normBigInteger(i1.longValue() - i2.longValue());
         } else {

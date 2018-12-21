@@ -1,8 +1,10 @@
 package jekpro.platform.swing;
 
-import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
+
+import java.applet.Applet;
 
 /**
  * Command line parser for the Swing version.
@@ -35,18 +37,34 @@ public final class CommandLine {
     public final static String OP_SYNTAX_ARG_MISSING = "arg_missing";
     public final static String OP_SYNTAX_DUPLICATE_OPTION = "duplicate_option";
 
-    private final MapHash<String, OptionSpec> decl = new MapHash<String, OptionSpec>();
-    private final MapHash<String, String[]> res = new MapHash<String, String[]>();
+    private final MapHash<String, String> decl = new MapHash<String, String>();
+    private final MapHash<String, String> res = new MapHash<String, String>();
+
+    /**
+     * <p>Retrieve an option value.</p>
+     *
+     * @param name The name.
+     * @return The value.
+     */
+    public String getValue(String name) {
+        String val = res.get(name);
+        if (val == null)
+            val = decl.get(name);
+        return val;
+    }
 
     /**
      * <p>Define an option.</p>
      *
-     * @param name  The name.
-     * @param arity The arity.
-     * @param def   The default, can be null.
+     * @param name The name.
+     * @param def  The default, can be null.
      */
-    public void defineOption(String name, int arity, String[] def) {
-        decl.put(name, new OptionSpec(arity, def));
+    public void defineOption(String name, String def) {
+        if (name == null)
+            throw new NullPointerException("name missing");
+        if (def == null)
+            throw new NullPointerException("def missing");
+        decl.put(name, def);
     }
 
     /**
@@ -55,40 +73,37 @@ public final class CommandLine {
      * @param args The arguments.
      * @throws ScannerError Shit happens.
      */
-    public void decodeOptions(String[] args) throws ScannerError {
+    public void decodeOptions(String[] args)
+            throws ScannerError {
         for (int i = 0; i < args.length; i++) {
             String name = args[i];
-            OptionSpec spec = decl.get(name);
-            if (spec == null)
+            String def = decl.get(name);
+            if (def == null)
                 throw new ScannerError(CommandLine.OP_SYNTAX_UNKNOWN_OPTION, i);
             if (res.get(name) != null)
                 throw new ScannerError(CommandLine.OP_SYNTAX_DUPLICATE_OPTION, i);
-            ListArray<String> values = new ListArray<String>();
-            for (int j = 0; j < spec.getArity(); j++) {
-                i++;
-                if (i >= args.length)
-                    throw new ScannerError(CommandLine.OP_SYNTAX_ARG_MISSING, i);
-                values.add(args[i]);
-            }
-            String[] pack = new String[values.size()];
-            values.toArray(pack);
-            res.put(name, pack);
+            i++;
+            if (i >= args.length)
+                throw new ScannerError(CommandLine.OP_SYNTAX_ARG_MISSING, i);
+            res.put(name, args[i]);
         }
     }
 
     /**
-     * <p>Retrieve an option value.</p>
+     * <p>Decode options.</p>
      *
-     * @param name The name.
-     * @return The value.
+     * @param applet The applet.
+     * @throws ScannerError Shit happens.
      */
-    public String[] getValue(String name) {
-        String[] val = res.get(name);
-        if (val == null) {
-            OptionSpec spec = decl.get(name);
-            val = spec.getDefault();
+    public void decodeOptions(Applet applet)
+            throws ScannerError {
+        for (MapEntry<String, String> entry = decl.getFirstEntry();
+             entry != null; entry = decl.successor(entry)) {
+            String val = applet.getParameter(entry.key);
+            if (val == null)
+                continue;
+            res.put(entry.key, val);
         }
-        return val;
     }
 
 }

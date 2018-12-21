@@ -1,9 +1,7 @@
 package jekpro.platform.swing;
 
-import jekpro.tools.call.ArrayEnumeration;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Controller;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.call.*;
 import jekpro.tools.term.TermAtomic;
 
 import java.lang.management.GarbageCollectorMXBean;
@@ -57,6 +55,10 @@ public final class ForeignStatistics {
             OP_STATISTIC_TIME,
             OP_STATISTIC_WALL};
 
+    private final static String[] OP_STATISTICS_WEB = {
+            OP_STATISTIC_UPTIME,
+            OP_STATISTIC_WALL};
+
     private final static String[] OP_THREAD_STATISTICS = {
             OP_SYS_THREAD_LOCAL_CLAUSES};
 
@@ -67,13 +69,22 @@ public final class ForeignStatistics {
     /**
      * <p>Retrieve the known statistics names.</p>
      *
-     * @param co The call out.
+     * @param inter The interpreter.
+     * @param co    The call out.
      * @return The statistics name.
      */
-    public static String sysCurrentStat(CallOut co) {
+    public static String sysCurrentStat(Interpreter inter, CallOut co) {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<String>(OP_STATISTICS);
+            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+            switch (hint) {
+                case Foyer.HINT_WEB:
+                    dc = new ArrayEnumeration<String>(OP_STATISTICS_WEB);
+                    break;
+                default:
+                    dc = new ArrayEnumeration<String>(OP_STATISTICS);
+                    break;
+            }
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
@@ -89,11 +100,12 @@ public final class ForeignStatistics {
      * <p>Retrieve a statistic.</p>
      * <p>Swing version.</p>
      *
-     * @param name The statistics name.
+     * @param inter The interpreter.
+     * @param name  The statistics name.
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysGetStat(String name)
+    public static Object sysGetStat(Interpreter inter, String name)
             throws InterpreterMessage {
         if (OP_STATISTIC_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
@@ -103,32 +115,50 @@ public final class ForeignStatistics {
         } else if (OP_STATISTIC_FREE.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().freeMemory());
         } else if (OP_STATISTIC_UPTIME.equals(name)) {
-            return TermAtomic.normBigInteger(ManagementFactory.getRuntimeMXBean().getUptime());
-        } else if (OP_STATISTIC_GCTIME.equals(name)) {
-            Iterator<GarbageCollectorMXBean> iter =
-                    ManagementFactory.getGarbageCollectorMXBeans().iterator();
-            long gcsum = 0;
-            boolean has = false;
-            while (iter.hasNext()) {
-                GarbageCollectorMXBean gb = iter.next();
-                long gctime = gb.getCollectionTime();
-                if (gctime != -1) {
-                    gcsum += gctime;
-                    has = true;
-                }
+            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+            switch (hint) {
+                case Foyer.HINT_WEB:
+                    return TermAtomic.normBigInteger(System.currentTimeMillis() - 1545076144751L);
+                default:
+                    return TermAtomic.normBigInteger(ManagementFactory.getRuntimeMXBean().getUptime());
             }
-            if (has) {
-                return TermAtomic.normBigInteger(gcsum);
-            } else {
-                return null;
+        } else if (OP_STATISTIC_GCTIME.equals(name)) {
+            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+            switch (hint) {
+                case Foyer.HINT_WEB:
+                    return null;
+                default:
+                    Iterator<GarbageCollectorMXBean> iter =
+                            ManagementFactory.getGarbageCollectorMXBeans().iterator();
+                    long gcsum = 0;
+                    boolean has = false;
+                    while (iter.hasNext()) {
+                        GarbageCollectorMXBean gb = iter.next();
+                        long gctime = gb.getCollectionTime();
+                        if (gctime != -1) {
+                            gcsum += gctime;
+                            has = true;
+                        }
+                    }
+                    if (has) {
+                        return TermAtomic.normBigInteger(gcsum);
+                    } else {
+                        return null;
+                    }
             }
         } else if (OP_STATISTIC_TIME.equals(name)) {
-            ThreadMXBean tb = ManagementFactory.getThreadMXBean();
-            if (tb.isThreadCpuTimeEnabled()) {
-                long cputime = tb.getCurrentThreadCpuTime() / 1000000L;
-                return TermAtomic.normBigInteger(cputime);
-            } else {
-                return null;
+            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+            switch (hint) {
+                case Foyer.HINT_WEB:
+                    return null;
+                default:
+                    ThreadMXBean tb = ManagementFactory.getThreadMXBean();
+                    if (tb.isThreadCpuTimeEnabled()) {
+                        long cputime = tb.getCurrentThreadCpuTime() / 1000000L;
+                        return TermAtomic.normBigInteger(cputime);
+                    } else {
+                        return null;
+                    }
             }
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
