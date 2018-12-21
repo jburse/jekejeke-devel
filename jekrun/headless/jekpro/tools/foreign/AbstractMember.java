@@ -221,29 +221,10 @@ abstract class AbstractMember extends AbstractLense
             } else {
                 throw Types.mapThrowable(x);
             }
-        } catch (IllegalAccessException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_ACCESS,
-                    AbstractFactory.OP_PERMISSION_METHOD,
-                    SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes())));
-        } catch (IllegalArgumentException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_APPLY,
-                    AbstractFactory.OP_PERMISSION_METHOD,
-                    SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes())));
-        } catch (NullPointerException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_LOOKUP,
-                    AbstractFactory.OP_PERMISSION_METHOD,
-                    SpecialForeign.methodToCallable(method.getName(),
-                            method.getParameterTypes())));
-        } catch (NoClassDefFoundError x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_LINK,
-                    EngineMessage.OP_PERMISSION_CLASS,
-                    new SkelAtom(x.getMessage())));
+        } catch (Exception x) {
+            throw Types.mapException(x, method);
+        } catch (Error x) {
+            throw Types.mapError(x);
         }
     }
 

@@ -142,26 +142,10 @@ final class MemberFieldSet extends AbstractMember {
             throws EngineMessage {
         try {
             field.set(obj, arg);
-        } catch (IllegalAccessException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_ACCESS,
-                    AbstractFactory.OP_PERMISSION_FIELD,
-                    new SkelAtom(field.getName())));
-        } catch (IllegalArgumentException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_APPLY,
-                    AbstractFactory.OP_PERMISSION_SETTER,
-                    new SkelAtom(field.getName())));
-        } catch (NullPointerException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_LOOKUP,
-                    AbstractFactory.OP_PERMISSION_SETTER,
-                    new SkelAtom(field.getName())));
-        } catch (NoClassDefFoundError x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_LINK,
-                    EngineMessage.OP_PERMISSION_CLASS,
-                    new SkelAtom(x.getMessage())));
+        } catch (Exception x) {
+            throw Types.mapException(x, field);
+        } catch (Error x) {
+            throw Types.mapError(x);
         }
     }
 

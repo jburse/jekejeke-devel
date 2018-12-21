@@ -63,6 +63,7 @@ public final class FlagAPI extends AbstractFlag {
     public final static String OP_FLAG_SYS_CPU_COUNT = "sys_cpu_count";
     public final static String OP_FLAG_SYS_RUNTIME_VERSION = "sys_runtime_version";
     public final static String OP_FLAG_VERBOSE = "verbose";
+    public final static String OP_FLAG_SYS_HINT = "sys_hint";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_DISP_INPUT = 1;
@@ -78,6 +79,7 @@ public final class FlagAPI extends AbstractFlag {
     private static final int FLAG_SYS_CPU_COUNT = 11;
     private static final int FLAG_SYS_RUNTIME_VERSION = 12;
     private static final int FLAG_VERBOSE = 13;
+    private static final int FLAG_SYS_HINT = 14;
 
     /**
      * <p>Create a flag.</p>
@@ -109,9 +111,9 @@ public final class FlagAPI extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_CPU_COUNT, new FlagAPI(FLAG_SYS_CPU_COUNT));
         prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagAPI(FLAG_SYS_RUNTIME_VERSION));
         prologflags.add(OP_FLAG_VERBOSE, new FlagAPI(FLAG_VERBOSE));
+        prologflags.add(OP_FLAG_SYS_HINT, new FlagAPI(FLAG_SYS_HINT));
         return prologflags;
     }
-
 
     /**
      * <p>Retrieve the value of this flag.</p>
@@ -179,6 +181,8 @@ public final class FlagAPI extends AbstractFlag {
                         throw new IllegalArgumentException("illegal verbosity");
                 }
                 return new SkelAtom(name);
+            case FLAG_SYS_HINT:
+                return Integer.valueOf(en.store.foyer.getHint());
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -262,6 +266,9 @@ public final class FlagAPI extends AbstractFlag {
                     en.store.foyer.resetBit(Foyer.MASK_STORE_DTLS);
                 }
                 return true;
+            case FLAG_SYS_HINT:
+                /* can't modify */
+                return false;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

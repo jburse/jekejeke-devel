@@ -112,7 +112,7 @@ final class LenseUpdate extends AbstractLense {
         } catch (IllegalArgumentException x) {
             throw new EngineMessage(EngineMessage.permissionError(
                     AbstractFactory.OP_PERMISSION_APPLY,
-                    AbstractFactory.OP_PERMISSION_SETTER,
+                    AbstractFactory.OP_PERMISSION_FIELD,
                     SpecialForeign.classToName(clazz)));
         } catch (ArrayIndexOutOfBoundsException x) {
             throw new EngineMessage(EngineMessage.permissionError(

@@ -4,14 +4,20 @@ import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.*;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -353,58 +359,6 @@ public final class Types {
     }
 
     /***********************************************************/
-    /* Exception Mapping                                       */
-    /***********************************************************/
-
-    /**
-     * <p>Check whether the exception class is a mapable throwable.</p>
-     *
-     * @param ret The exception class.
-     * @return True if the exception class is a mappable throwable.
-     */
-    public static boolean validateThrowable(Class ret) {
-        if (InterpreterMessage.class == ret) {
-        } else if (IOException.class.isAssignableFrom(ret)) {
-        } else if (InterruptedException.class.isAssignableFrom(ret)) {
-        } else if (ArithmeticException.class.isAssignableFrom(ret)) {
-        } else if (Exception.class.isAssignableFrom(ret)) {
-        } else if (Error.class.isAssignableFrom(ret)) {
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * <p>Map a Java throwable to a Prolog message.</p>
-     *
-     * @param x The cause.
-     * @return The Prolog message.
-     */
-    public static EngineMessage mapThrowable(Throwable x) {
-        if (x instanceof InterpreterMessage) {
-            return (EngineMessage) ((InterpreterMessage) x).getException();
-        } else if (x instanceof IOException) {
-            return EngineMessage.mapIOException((IOException) x);
-        } else if (x instanceof InterruptedException) {
-            return (EngineMessage) AbstractLivestock.sysThreadClear();
-        } else if (x instanceof ArithmeticException) {
-            String y = x.getMessage();
-            if ("/ by zero".equals(y))
-                y = EngineMessage.OP_EVALUATION_ZERO_DIVISOR;
-            return new EngineMessage(EngineMessage.evaluationError(y));
-        } else if (x instanceof Exception) {
-            String message = x.getMessage();
-            return new EngineMessage(EngineMessage.representationError(
-                    (message != null ? message : "")));
-        } else if (x instanceof Error) {
-            throw (Error) x;
-        } else {
-            throw new Error("unmappable exception", x);
-        }
-    }
-
-    /***********************************************************/
     /* Return Types                                            */
     /***********************************************************/
 
@@ -446,6 +400,154 @@ public final class Types {
                 return true;
             default:
                 throw new IllegalArgumentException("illegal return type");
+        }
+    }
+
+    /***********************************************************/
+    /* Throwable Mapping                                       */
+    /***********************************************************/
+
+    /**
+     * <p>Check whether the exception class is a mapable throwable.</p>
+     *
+     * @param ret The exception class.
+     * @return True if the exception class is a mappable throwable.
+     */
+    public static boolean validateThrowable(Class ret) {
+        if (InterpreterMessage.class == ret) {
+        } else if (IOException.class.isAssignableFrom(ret)) {
+        } else if (InterruptedException.class.isAssignableFrom(ret)) {
+        } else if (ArithmeticException.class.isAssignableFrom(ret)) {
+        } else if (Exception.class.isAssignableFrom(ret)) {
+        } else if (Error.class.isAssignableFrom(ret)) {
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * <p>Map a Java throwable to a Prolog message.</p>
+     *
+     * @param x The Java throwable.
+     * @return The Prolog message.
+     */
+    public static EngineMessage mapThrowable(Throwable x) {
+        if (x instanceof InterpreterMessage) {
+            return (EngineMessage) ((InterpreterMessage) x).getException();
+        } else if (x instanceof IOException) {
+            return EngineMessage.mapIOException((IOException) x);
+        } else if (x instanceof InterruptedException) {
+            return (EngineMessage) AbstractLivestock.sysThreadClear();
+        } else if (x instanceof ArithmeticException) {
+            String y = x.getMessage();
+            if ("/ by zero".equals(y))
+                y = EngineMessage.OP_EVALUATION_ZERO_DIVISOR;
+            return new EngineMessage(EngineMessage.evaluationError(y));
+        } else if (x instanceof Exception) {
+            String message = x.getMessage();
+            return new EngineMessage(EngineMessage.representationError(
+                    (message != null ? message : "")));
+        } else if (x instanceof Error) {
+            throw (Error) x;
+        } else {
+            throw new Error("unmappable throwable", x);
+        }
+    }
+
+    /***********************************************************/
+    /* Exception and Error Mapping                             */
+    /***********************************************************/
+
+    /**
+     * <p>Map a Java exception to a Prolog message.</p>
+     * <p>This is used for reflective calls.</p>
+     *
+     * @param x The Java exception.
+     * @return The Prolog message.
+     */
+    public static EngineMessage mapException(Exception x, Member y) {
+        if (x instanceof IllegalAccessException) {
+            return new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_ACCESS,
+                    mapMemberType(y),
+                    mapMemberCulprit(y)));
+        } else if (x instanceof IllegalArgumentException) {
+            return new EngineMessage(EngineMessage.permissionError(
+                    AbstractFactory.OP_PERMISSION_APPLY,
+                    mapMemberType(y),
+                    mapMemberCulprit(y)));
+        } else if (x instanceof NullPointerException) {
+            return new EngineMessage(EngineMessage.permissionError(
+                    AbstractFactory.OP_PERMISSION_LOOKUP,
+                    mapMemberType(y),
+                    mapMemberCulprit(y)));
+        } else {
+            throw new IllegalArgumentException("illegal exception");
+        }
+    }
+
+    /**
+     * <p>Map a Java member to a Prolog type.</p>
+     *
+     * @param y The Java member.
+     * @return The Prolog type.
+     */
+    private static String mapMemberType(Member y) {
+        if (y instanceof Field) {
+            return AbstractFactory.OP_PERMISSION_FIELD;
+        } else if (y instanceof Method) {
+            return AbstractFactory.OP_PERMISSION_METHOD;
+        } else if (y instanceof Constructor) {
+            return AbstractFactory.OP_PERMISSION_CONSTRUCTOR;
+        } else {
+            throw new IllegalArgumentException("illegal member");
+        }
+    }
+
+    /**
+     * <p>Map a Java member to a Prolog culprit.</p>
+     *
+     * @param y The Java member.
+     * @return The Prolog culprit.
+     */
+    private static Object mapMemberCulprit(Member y) {
+        if (y instanceof Field) {
+            Field field = (Field) y;
+            return new SkelAtom(field.getName());
+        } else if (y instanceof Method) {
+            Method method = (Method) y;
+            return SpecialForeign.methodToCallable(method.getName(),
+                    method.getParameterTypes());
+        } else if (y instanceof Constructor) {
+            Constructor constructor = (Constructor) y;
+            return SpecialForeign.constructorToCallable(
+                    constructor.getParameterTypes());
+        } else {
+            throw new IllegalArgumentException("illegal member");
+        }
+    }
+
+    /**
+     * <p>Map a Java exception to a Prolog message.</p>
+     * <p>This is used for reflective calls.</p>
+     *
+     * @param x The Java exception.
+     * @return The Prolog message.
+     */
+    public static EngineMessage mapError(Error x) {
+        if (x instanceof ExceptionInInitializerError) {
+            return new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_INIT,
+                    EngineMessage.OP_PERMISSION_CLASS,
+                    new SkelAtom(x.getMessage())));
+        } else if (x instanceof NoClassDefFoundError) {
+            return new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_LINK,
+                    EngineMessage.OP_PERMISSION_CLASS,
+                    new SkelAtom(x.getMessage())));
+        } else {
+            throw new IllegalArgumentException("illegal error");
         }
     }
 

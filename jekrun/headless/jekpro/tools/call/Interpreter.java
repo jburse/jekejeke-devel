@@ -452,7 +452,7 @@ public final class Interpreter implements Comparator<Object> {
         Supervisor visor = (Supervisor) i.getVisor();
 
         switch (store.foyer.getHint()) {
-            case Enforced.HINT_WEB:
+            case Foyer.HINT_WEB:
                 engine = new EngineYield(store, visor);
                 break;
             default:

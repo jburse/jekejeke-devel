@@ -172,6 +172,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_PERMISSION_CREATE = "create"; /* ISO */
     public static final String OP_PERMISSION_DIRECTIVE = "directive";
     public static final String OP_PERMISSION_LINK = "link";
+    public static final String OP_PERMISSION_INIT = "init";
     public static final String OP_PERMISSION_CLASS = "class";
     public static final String OP_PERMISSION_TOOLKIT_CAPA = "toolkit_capa";
     public static final String OP_PERMISSION_REDEFINE = "redefine";

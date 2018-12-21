@@ -601,77 +601,41 @@ public final class AutoClass extends AbstractAuto {
      * @return The invokcation result.
      * @throws EngineMessage FFI error.
      */
-    public static Object invokeGetter(Field fld, Object obj)
+    public static Object invokeGetter(Field field, Object obj)
             throws EngineMessage {
         try {
-            return fld.get(obj);
-        } catch (IllegalAccessException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_ACCESS,
-                    AbstractFactory.OP_PERMISSION_FIELD,
-                    new SkelAtom(fld.getName())));
-        } catch (IllegalArgumentException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_APPLY,
-                    AbstractFactory.OP_PERMISSION_GETTER,
-                    new SkelAtom(fld.getName())));
-        } catch (NullPointerException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_LOOKUP,
-                    AbstractFactory.OP_PERMISSION_GETTER,
-                    new SkelAtom(fld.getName())));
-        } catch (NoClassDefFoundError x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_LINK,
-                    EngineMessage.OP_PERMISSION_CLASS,
-                    new SkelAtom(x.getMessage())));
+            return field.get(obj);
+        } catch (Exception x) {
+            throw Types.mapException(x, field);
+        } catch (Error x) {
+            throw Types.mapError(x);
         }
     }
 
     /**
      * <p>Invoke the method.</p>
      *
-     * @param con  The constructor.
+     * @param constructor  The constructor.
      * @param args The arguments array.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public static Object invokeNew(Constructor con, Object[] args)
+    public static Object invokeNew(Constructor constructor, Object[] args)
             throws EngineException, EngineMessage {
         try {
-            return con.newInstance(args);
+            return constructor.newInstance(args);
         } catch (InvocationTargetException y) {
             Throwable x = y.getCause();
-            if (x instanceof RuntimeWrap)
-                x = x.getCause();
             if (x instanceof InterpreterException) {
                 throw (EngineException) ((InterpreterException) x).getException();
             } else {
                 throw Types.mapThrowable(x);
             }
-        } catch (IllegalAccessException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_ACCESS,
-                    AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
-                    SpecialForeign.constructorToCallable(
-                            con.getParameterTypes())));
-        } catch (IllegalArgumentException x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_APPLY,
-                    AbstractFactory.OP_PERMISSION_CONSTRUCTOR,
-                    SpecialForeign.constructorToCallable(
-                            con.getParameterTypes())));
-        } catch (InstantiationException e) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    AbstractFactory.OP_PERMISSION_NEW,
-                    EngineMessage.OP_PERMISSION_CLASS,
-                    SpecialForeign.classToName(con.getDeclaringClass())));
-        } catch (NoClassDefFoundError x) {
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_LINK,
-                    EngineMessage.OP_PERMISSION_CLASS,
-                    new SkelAtom(x.getMessage())));
+        } catch (Exception x) {
+            throw Types.mapException(x, constructor);
+        } catch (Error x) {
+            throw Types.mapError(x);
         }
     }
 

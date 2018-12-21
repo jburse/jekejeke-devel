@@ -61,7 +61,6 @@ public abstract class AbstractFactory extends AbstractFramework {
     public static final String OP_PERMISSION_METHOD = "method";
     public static final String OP_PERMISSION_CONSTRUCTOR = "constructor";
     public static final String OP_PERMISSION_FIELD = "field";
-    public static final String OP_PERMISSION_GETTER = "getter";
     public static final String OP_PERMISSION_SETTER = "setter";
     public static final String OP_PERMISSION_INDEX = "index";
 
