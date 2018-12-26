@@ -7,6 +7,7 @@ import jekpro.tools.call.InterpreterMessage;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -48,13 +49,27 @@ public final class ForeignDirectory {
     /************************************************************/
 
     /**
+     * <p>Create a file.</p>
+     *
+     * @param uristr The file name.
+     * @return True if the file could be created, otherwise false.
+     * @throws InterpreterMessage           Not file scheme.
+     */
+    public static boolean sysCreateFile(String uristr)
+            throws InterpreterMessage, IOException {
+        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        return f.createNewFile();
+    }
+
+    /**
      * <p>Delete a file.</p>
      *
      * @param uristr The file name.
      * @return True if the file could be deleted, otherwise false.
+     * @throws InterpreterMessage           Not file scheme.
      */
     public static boolean sysDeleteFile(String uristr)
-            throws UnsupportedEncodingException, InterpreterMessage {
+            throws InterpreterMessage {
         File f = new File(ForeignDirectory.uriToFilePath(uristr));
         return f.delete();
     }
@@ -67,7 +82,7 @@ public final class ForeignDirectory {
      * @return True if the file could be renamed, otherwise false.
      */
     public static boolean sysRenameFile(String uristr1, String uristr2)
-            throws UnsupportedEncodingException, InterpreterMessage {
+            throws InterpreterMessage {
         File f1 = new File(ForeignDirectory.uriToFilePath(uristr1));
         File f2 = new File(ForeignDirectory.uriToFilePath(uristr2));
         return f1.renameTo(f2);
@@ -78,25 +93,14 @@ public final class ForeignDirectory {
     /************************************************************/
 
     /**
-     * <p>Check whether a file is a directory.</p>
-     *
-     * @param uristr The file name.
-     * @return True if the file is a directory, otherwise false.
-     */
-    public static boolean sysIsDirectory(String uristr)
-            throws UnsupportedEncodingException, InterpreterMessage {
-        File f = new File(ForeignDirectory.uriToFilePath(uristr));
-        return f.isDirectory();
-    }
-
-    /**
      * <p>Create a directory.</p>
      *
      * @param uristr The file name.
      * @return True if the directory could be created, otherwise false.
+     * @throws InterpreterMessage           Not file scheme.
      */
     public static boolean sysMakeDirectory(String uristr)
-            throws UnsupportedEncodingException, InterpreterMessage {
+            throws InterpreterMessage {
         File f = new File(ForeignDirectory.uriToFilePath(uristr));
         return f.mkdir();
     }
@@ -107,9 +111,10 @@ public final class ForeignDirectory {
      * @param co     The call out.
      * @param uristr The file name.
      * @return The relative entries.
+     * @throws InterpreterMessage           Not file scheme.
      */
     public static String sysDirectoryFile(CallOut co, String uristr)
-            throws UnsupportedEncodingException, InterpreterMessage {
+            throws InterpreterMessage {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             File f = new File(uriToFilePath(uristr));
@@ -126,6 +131,32 @@ public final class ForeignDirectory {
         return res;
     }
 
+    /**
+     * <p>Check whether a file is a directory.</p>
+     *
+     * @param uristr The file name.
+     * @return True if the file is a directory, otherwise false.
+     * @throws InterpreterMessage           Not file scheme.
+     */
+    public static boolean sysIsFile(String uristr)
+            throws InterpreterMessage {
+        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        return f.isFile();
+    }
+
+    /**
+     * <p>Check whether a file is a directory.</p>
+     *
+     * @param uristr The file name.
+     * @return True if the file is a directory, otherwise false.
+     * @throws InterpreterMessage           Not file scheme.
+     */
+    public static boolean sysIsDirectory(String uristr)
+            throws InterpreterMessage {
+        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        return f.isDirectory();
+    }
+
     /************************************************************/
     /* Time Stamp                                               */
     /************************************************************/
@@ -135,11 +166,10 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return The last modified as a long.
-     * @throws UnsupportedEncodingException Problem decoding uri.
      * @throws InterpreterMessage           Not file scheme.
      */
     public static long sysGetTimeFile(String uristr)
-            throws UnsupportedEncodingException, InterpreterMessage {
+            throws InterpreterMessage {
         File f = new File(uriToFilePath(uristr));
         return f.lastModified();
     }
@@ -150,11 +180,10 @@ public final class ForeignDirectory {
      * @param uristr The file name.
      * @param date   The last modified as a long.
      * @return True if the date was set, otherwise false.
-     * @throws UnsupportedEncodingException Problem decoding uri.
      * @throws InterpreterMessage           Not file scheme.
      */
     public static boolean sysSetTimeFile(String uristr, long date)
-            throws UnsupportedEncodingException, InterpreterMessage {
+            throws InterpreterMessage {
         File f = new File(uriToFilePath(uristr));
         return f.setLastModified(date);
     }
@@ -170,7 +199,7 @@ public final class ForeignDirectory {
      * @return The file path.
      */
     public static String uriToFilePath(String adr)
-            throws InterpreterMessage, UnsupportedEncodingException {
+            throws InterpreterMessage {
         String spec = ForeignUri.sysUriSpec(adr);
         String scheme = ForeignUri.sysSpecScheme(spec);
         if (!ForeignUri.SCHEME_FILE.equals(scheme))

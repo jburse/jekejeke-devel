@@ -1,9 +1,11 @@
 package jekpro.frequent.system;
 
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -55,6 +57,28 @@ public final class ForeignShell {
         while (iter.hasNext()) {
             res = new TermCompound(lobby.ATOM_CONS,
                     iter.next(), res);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Create a new date.</p>
+     *
+     * @param inter The interpreter.
+     * @param time  The time.
+     * @return The date.
+     */
+    public static Date sysNewDate(Interpreter inter, long time) {
+        int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+        Date res;
+        switch (hint) {
+            case Foyer.HINT_WEB:
+                res = new Date();
+                res.setTime(time);
+                break;
+            default:
+                res = new Date(time);
+                break;
         }
         return res;
     }

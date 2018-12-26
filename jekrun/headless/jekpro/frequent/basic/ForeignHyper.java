@@ -1,5 +1,7 @@
 package jekpro.frequent.basic;
 
+import jekpro.reference.arithmetic.SpecialCompare;
+
 /**
  * <p>The foreign evaluable functions for the module basic/hyper.</p>
  * <p/>
@@ -61,6 +63,23 @@ public final class ForeignHyper {
      */
     public static double atanh(double x) {
         return 0.5 * Math.log((x + 1.0) / (x - 1.0));
+    }
+
+    /**************************************************************/
+    /* CheerpJ Workaround                                         */
+
+    /**************************************************************/
+
+    public static double epsilon() {
+        return SpecialCompare.EPSILON;
+    }
+
+    public static double pi() {
+        return Math.PI;
+    }
+
+    public static double e() {
+        return Math.E;
     }
 
 }

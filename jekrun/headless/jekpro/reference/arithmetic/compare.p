@@ -53,6 +53,7 @@
  */
 
 :- use_package(foreign(jekpro/reference/arithmetic)).
+:- use_package(foreign(jekpro/frequent/basic)).
 
 :- module(user, []).
 
@@ -165,4 +166,5 @@
  * Returns the ulp of one.
  */
 :- public epsilon/1.
-:- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').
+% :- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').
+:- foreign_fun(epsilon/1, 'ForeignHyper', epsilon).

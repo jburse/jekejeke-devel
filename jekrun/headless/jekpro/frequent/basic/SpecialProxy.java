@@ -2,7 +2,10 @@ package jekpro.frequent.basic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindCount;
+import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -86,7 +89,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     BindCount[] ref = en.display;
                     Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                     SkelAtom sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
-                    obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
+                    obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en), en);
                     if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
@@ -98,7 +101,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
-                    obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
+                    obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size, en);
                     if (!en.unifyTerm(temp[2], ref, obj, BindCount.DISPLAY_CONST))
                         return false;
                     return en.getNext();
@@ -129,11 +132,12 @@ public final class SpecialProxy extends AbstractSpecial {
      * <p>Instantiate the Java proxy class of the given Prolog text.</p>
      *
      * @param scope The Prolog text.
+     * @param en    The engine.
      * @return The instance.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static Object newProxyHandler(AbstractSource scope)
+    private static Object newProxyHandler(AbstractSource scope, Engine en)
             throws EngineMessage, EngineException {
         ProxyHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
@@ -142,7 +146,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     EngineMessage.OP_EXISTENCE_PROXY,
                     SpecialForeign.constructorToCallable(new Class[]{})));
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
-        return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{handler});
+        return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{handler}, en);
     }
 
     /**
@@ -150,11 +154,12 @@ public final class SpecialProxy extends AbstractSpecial {
      *
      * @param scope The Prolog text.
      * @param size  The size.
+     * @param en    The engine.
      * @return The instance.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static Object newProxyState(AbstractSource scope, int size)
+    private static Object newProxyState(AbstractSource scope, int size, Engine en)
             throws EngineMessage, EngineException {
         ProxyHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
@@ -164,7 +169,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     SpecialForeign.constructorToCallable(new Class[]{Integer.TYPE})));
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
         ProxyState state = handler.createState(size);
-        return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{state});
+        return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{state}, en);
     }
 
     /**

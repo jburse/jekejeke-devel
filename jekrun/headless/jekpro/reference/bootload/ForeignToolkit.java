@@ -83,6 +83,21 @@ public final class ForeignToolkit {
     }
 
     /**
+     * <p>The registered license text.</p>
+     *
+     * @param inter The call-in.
+     * @param clazz The capability class.
+     * @return The license text.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static String sysRegedLicenseText(Interpreter inter,
+                                         String clazz)
+            throws InterpreterMessage {
+        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
+        return inter.getKnowledgebase().getLobby().regedLicenseText(capa);
+    }
+
+    /**
      * <p>Init a capability.</p>
      * <p>No user interaction is performed.</p>
      *

@@ -124,8 +124,22 @@ make_path(D, N, P) :-
 /************************************************************/
 
 /**
+ * create_file(F):
+ * Succeeds when the file F could be created.
+ */
+% create_file(+Atom)
+:- public create_file/1.
+create_file(Name) :-
+   absolute_file_name(Name, Pin, [access(write)]),
+   sys_create_file(Pin).
+
+:- private sys_create_file/1.
+:- foreign(sys_create_file/1, 'ForeignDirectory',
+      sysCreateFile('String')).
+
+/**
  * delete_file(F):
- * Succeeds when the file F could be deleted.
+ * Succeeds when the file or directory F could be deleted.
  */
 % delete_file(+Atom)
 :- public delete_file/1.
@@ -139,7 +153,8 @@ delete_file(Name) :-
 
 /**
  * rename_file(F, G):
- * Succeeds when the file F could be renamed to the file G.
+ * Succeeds when the file or directory F could be renamed
+ * to the file or directory G.
  */
 % rename_file(+Atom, +Atom)
 :- public rename_file/2.
@@ -152,33 +167,9 @@ rename_file(FromName, ToName) :-
 :- foreign(sys_rename_file/2, 'ForeignDirectory',
       sysRenameFile('String','String')).
 
-/**
- * exists_file(F):
- * Succeeds when the file F exists and when it isn't a directory.
- */
-% exists_file(+Atom)
-:- public exists_file/1.
-exists_file(Name) :-
-   absolute_file_name(Name, Pin),
-   \+ sys_is_directory(Pin).
-
 /************************************************************/
 /* Directory Ops                                            */
 /************************************************************/
-
-/**
- * exists_directory(F):
- * Succeeds when the file F exists and when it is a directory.
- */
-% exists_directory(+Atom)
-:- public exists_directory/1.
-exists_directory(Name) :-
-   absolute_file_name(Name, Pin),
-   sys_is_directory(Pin).
-
-:- private sys_is_directory/1.
-:- foreign(sys_is_directory/1, 'ForeignDirectory',
-      sysIsDirectory('String')).
 
 /**
  * make_directory(F):
@@ -196,7 +187,7 @@ make_directory(Name) :-
 
 /**
  * directory_file(F, N):
- * Succeeds whenever N unifies with an entry if the directory F.
+ * Succeeds whenever N unifies with an entry of the directory F.
  */
 % directory_file(+Atom, -Atom)
 :- public directory_file/2.
@@ -208,6 +199,34 @@ directory_file(Name, Elem) :-
 :- foreign(sys_directory_file/2, 'ForeignDirectory',
       sysDirectoryFile('CallOut','String')).
 
+/**
+ * exists_file(F):
+ * Succeeds when the file F exists and when it isn't a directory.
+ */
+% exists_file(+Atom)
+:- public exists_file/1.
+exists_file(Name) :-
+   absolute_file_name(Name, Pin),
+   sys_is_file(Pin).
+
+:- private sys_is_file/1.
+:- foreign(sys_is_file/1, 'ForeignDirectory',
+      sysIsFile('String')).
+
+/**
+ * exists_directory(F):
+ * Succeeds when the file F exists and when it is a directory.
+ */
+% exists_directory(+Atom)
+:- public exists_directory/1.
+exists_directory(Name) :-
+   absolute_file_name(Name, Pin),
+   sys_is_directory(Pin).
+
+:- private sys_is_directory/1.
+:- foreign(sys_is_directory/1, 'ForeignDirectory',
+      sysIsDirectory('String')).
+
 /************************************************************/
 /* Time Stamp                                               */
 /************************************************************/
@@ -215,8 +234,8 @@ directory_file(Name, Elem) :-
 /**
  * get_time_file(F, T):
  * Succeeds when T unifies with the last modified date of
- * the file F. T is measured in milliseconds since
- * the epoch.
+ * the file or directory F. T is measured in milliseconds
+ * since the epoch.
  */
 % get_time_file(+Atom, -Integer)
 :- public get_time_file/2.
@@ -230,8 +249,8 @@ get_time_file(Name, Date) :-
 
 /**
  * set_time_file(F, T):
- * Succeeds when the last modified date of the file F could
- * be set to T. T is measured in milliseconds since the
+ * Succeeds when the last modified date of the file or directory
+ * F could be set to T. T is measured in milliseconds since the
  * epoch but might be rounded by the system.
  */
 % set_time_file(+Atom, +Integer)

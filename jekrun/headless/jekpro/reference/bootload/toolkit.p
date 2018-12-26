@@ -64,6 +64,16 @@
       sysRegLicenseText('Interpreter','String','String')).
 
 /**
+ * sys_reged_license_text(C, T):
+ * The predicate returns the registeres license text in T for the
+ * capability C in the user preferences.
+ */
+% sys_reged_license_text(+Capa, -Text)
+:- public sys_reged_license_text/2.
+:- foreign(sys_reged_license_text/2, 'ForeignToolkit',
+      sysRegedLicenseText('Interpreter','String')).
+
+/**
  * sys_init_capability(C):
  * sys_init_capability(C, O):
  * The unary predicate initializes and enlists the capability C. The binary

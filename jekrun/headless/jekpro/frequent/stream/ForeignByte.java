@@ -57,18 +57,6 @@ public final class ForeignByte {
     }
 
     /**
-     * <p>Get a byte from a binary stream.</p>
-     *
-     * @param para The stream.
-     * @return The read byte or -1.
-     * @throws IOException IO error.
-     */
-    public static int sysGetByte(InputStream para)
-            throws IOException {
-        return para.read();
-    }
-
-    /**
      * <p>Peek a byte from a binary stream.</p>
      *
      * @param para The stream.
@@ -92,26 +80,6 @@ public final class ForeignByte {
     /****************************************************************/
     /* General Stream Operations                                    */
     /****************************************************************/
-
-    /**
-     * <p>Flush the stream.</p>
-     *
-     * @param para The stream.
-     * @throws InterpreterMessage Validation error.
-     * @throws IOException        IO error.
-     */
-    public static void sysFlushOutput(Object para)
-            throws InterpreterMessage, IOException {
-        if (para instanceof Writer) {
-            ((Writer) para).flush();
-        } else if (para instanceof OutputStream) {
-            ((OutputStream) para).flush();
-        } else {
-            throw new InterpreterMessage(
-                    InterpreterMessage.permissionError("output",
-                            "stream", para));
-        }
-    }
 
     /**
      * <p>Check whether stream is at end.</p>

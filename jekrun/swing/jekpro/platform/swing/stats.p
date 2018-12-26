@@ -17,23 +17,8 @@
  * Current Time           02/13/18 15:20:08
  *
  * Since Jekejeke Prolog is a multi-threaded interpreter, we also provide
- * statistics for the threads in JVM known to the interpreter. The
- * predicate thread_statistics/3 returns some key figures concerning
- * the given thread, whereas the predicate threads/0 displays the
- * key figures for all known threads on the standard output.
- *
- * Example:
- * ?- threads.
- * Id      Alive Clauses
- *      21 Yes              0
- *      25 Yes      1,256,856
- *
- * The JVM will notify the Prolog interpreter about low memory. On the
- * Android platform this is a suicide notice, since foreground heap
- * compaction is not yet available  and it is therefore recommended
- * to exit the Prolog interpreter. On both the Swing and the Android
- * platforms the thread statistics are then used to decide which
- * thread will be aborted.
+ * statistics for the threads in the JVM. The predicate thread_statistics/3
+ * returns some key figures concerning the given thread.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -89,10 +74,12 @@ statistics(K, V) :-
    sys_get_stat(K, V).
 
 :- private sys_current_stat/1.
-:- foreign(sys_current_stat/1, 'ForeignStatistics', sysCurrentStat('CallOut')).
+:- foreign(sys_current_stat/1, 'ForeignStatistics',
+      sysCurrentStat('Interpreter','CallOut')).
 
 :- private sys_get_stat/2.
-:- foreign(sys_get_stat/2, 'ForeignStatistics', sysGetStat('String')).
+:- foreign(sys_get_stat/2, 'ForeignStatistics',
+      sysGetStat('Interpreter','String')).
 
 /**
  * statistics:
@@ -128,53 +115,77 @@ sys_convert_stat(_, X, X).
  */
 % time(+Goal)
 :- public time/1.
+:- meta_predicate time(0).
 time(G) :-
    sys_make_time_record(T),
-   (  sys_start_time_record(T)
-   ;  sys_time_record(T), fail), G,
-   (  sys_time_record(T)
-   ;  sys_start_time_record(T), fail).
+   sys_time_call(T),
+   current_prolog_flag(sys_choices, X), G,
+   current_prolog_flag(sys_choices, Y),
+   (  X =:= Y
+   -> sys_show_time_record(T), !
+   ;  sys_time_redo(T)).
 :- set_predicate_property(time/1, sys_notrace).
 
-% sys_time_record(+TimeRecord)
-:- private sys_time_record/1.
-sys_time_record(T) :-
+% sys_time_call(+Record)
+:- private sys_time_call/1.
+sys_time_call(T) :-
+   sys_start_time_record(T)
+;  sys_show_time_record(T), fail.
+
+% sys_time_redo(+Record)
+:- private sys_time_redo/1.
+sys_time_redo(T) :-
+   sys_show_time_record(T)
+;  sys_start_time_record(T), fail.
+
+/****************************************************************/
+/* Time Record Access & Modification                            */
+/****************************************************************/
+
+% sys_show_time_record(+TimeRecord)
+:- private sys_show_time_record/1.
+sys_show_time_record(T) :-
    sys_end_time_record(T),
    sys_get_lang(gestalt, P),
-   sys_time_record(T, K, V),
+   sys_current_record_stat(T, K, V),
    sys_convert_stat(K, V, W),
    message_make(P, time(K,W), M),
    ttywrite(M), fail.
-sys_time_record(_) :- ttynl.
+sys_show_time_record(_) :- ttynl.
 
-% sys_time_record(+TimeRecord, +Atom, -Atomic)
-:- private sys_time_record/3.
-sys_time_record(T, K, V) :-
+% sys_current_record_stat(+TimeRecord, +Atom, -Atomic)
+:- private sys_current_record_stat/3.
+sys_current_record_stat(T, K, V) :-
    var(K), !,
    sys_current_record_stat(K),
    sys_get_record_stat(T, K, V).
-sys_time_record(T, K, V) :-
+sys_current_record_stat(T, K, V) :-
    sys_get_record_stat(T, K, V).
 
+% sys_make_time_record(-Record)
 :- private sys_make_time_record/1.
 :- foreign_constructor(sys_make_time_record/1, 'TimeRecord', new).
 
+% sys_start_time_record(+Record)
 :- private sys_start_time_record/1.
 :- virtual sys_start_time_record/1.
-:- foreign(sys_start_time_record/1, 'TimeRecord', start).
+:- foreign(sys_start_time_record/1, 'TimeRecord', start('Interpreter')).
 
+% sys_end_time_record(+Record)
 :- private sys_end_time_record/1.
 :- virtual sys_end_time_record/1.
-:- foreign(sys_end_time_record/1, 'TimeRecord', end).
+:- foreign(sys_end_time_record/1, 'TimeRecord', end('Interpreter')).
 
 % sys_current_record_stat(-Atom)
 :- private sys_current_record_stat/1.
-:- foreign(sys_current_record_stat/1, 'TimeRecord', sysCurrentStat('CallOut')).
+:- foreign(sys_current_record_stat/1, 'TimeRecord',
+      sysCurrentStat('Interpreter','CallOut')).
 
 % sys_get_record_stat(+Record, +Atom, -Atomic)
 :- private sys_get_record_stat/3.
 :- virtual sys_get_record_stat/3.
-:- foreign(sys_get_record_stat/3, 'TimeRecord', getStat('String')).
+:- foreign(sys_get_record_stat/3, 'TimeRecord',
+      getStat('Interpreter','String')).
 
 /*********************************************************************/
 /* Thread Statistics                                                 */
@@ -196,59 +207,12 @@ thread_statistics(T, K, V) :-
    sys_get_thread_stat(T, K, V).
 
 :- private sys_current_thread_stat/1.
-:- foreign(sys_current_thread_stat/1, 'ForeignStatistics', sysCurrentThreadStat('CallOut')).
+:- foreign(sys_current_thread_stat/1, 'ForeignStatistics',
+      sysCurrentThreadStat('CallOut')).
 
 :- private sys_get_thread_stat/3.
-:- foreign(sys_get_thread_stat/3, 'ForeignStatistics', sysGetThreadStat('Thread','String')).
-
-/**
- * threads:
- * The predicate displays the current threads statistics key value pairs.
- */
-:- public threads/0.
-threads :- thread_show_keys, ttynl, fail.
-threads :-
-   current_thread(T),
-   thread_show_values(T), ttynl, fail.
-threads.
-
-:- private thread_show_keys/0.
-thread_show_keys :-
-   sys_get_lang(gestalt, P),
-   sys_current_show_stat(K),
-   message_make(P, thread_show_key(K), M),
-   ttywrite(M), fail.
-thread_show_keys.
-
-:- private thread_show_values/1.
-thread_show_values(T) :-
-   sys_get_lang(gestalt, P),
-   sys_current_show_stat(K),
-   sys_get_show_stat(T, K, V),
-   sys_convert_show(K, V, W),
-   message_make(P, thread_show_value(K,W), M),
-   ttywrite(M), fail.
-thread_show_values(_).
-
-:- private sys_current_show_stat/1.
-sys_current_show_stat(sys_thread_id).
-sys_current_show_stat(sys_is_alive).
-sys_current_show_stat(sys_thread_local_clauses).
-
-:- private sys_get_show_stat/3.
-sys_get_show_stat(T, sys_thread_id, V) :-
-   current_thread_flag(T, sys_thread_id, V).
-sys_get_show_stat(T, sys_is_alive, V) :-
-   current_thread_flag(T, sys_is_alive, V).
-sys_get_show_stat(T, sys_thread_local_clauses, V) :-
-   thread_statistics(T, sys_thread_local_clauses, V).
-
-% sys_convert_show(+Atom, +Value, -Value)
-:- private sys_convert_show/3.
-sys_convert_show(sys_is_alive, X, Y) :- !,
-   sys_get_lang(gestalt, P),
-   message_make(P, boolean(X), Y).
-sys_convert_show(_, X, X).
+:- foreign(sys_get_thread_stat/3, 'ForeignStatistics',
+      sysGetThreadStat('Thread','String')).
 
 /***********************************************************/
 /* Apropos Utility                                         */

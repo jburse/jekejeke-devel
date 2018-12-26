@@ -98,8 +98,8 @@ get_byte(Stream, Byte) :-
    sys_get_byte(Stream, Byte).
 
 :- private sys_get_byte/2.
-:- foreign(sys_get_byte/2, 'ForeignByte',
-      sysGetByte('InputStream')).
+:- virtual sys_get_byte/2.
+:- foreign(sys_get_byte/2, 'InputStream', read).
 
 /**
  * peek_byte(B): [ISO 8.13.2]
@@ -155,8 +155,8 @@ flush_output(Alias) :-
 flush_output(Stream) :-
    sys_flush_output(Stream).
 
-:- foreign(sys_flush_output/1, 'ForeignByte',
-      sysFlushOutput('Object')).
+:- virtual sys_flush_output/1.
+:- foreign(sys_flush_output/1, 'Flushable', flush).
 
 /**
  * at_end_of_stream: [ISO 8.11.8]

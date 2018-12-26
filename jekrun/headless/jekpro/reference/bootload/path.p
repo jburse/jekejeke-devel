@@ -243,24 +243,6 @@ absolute_file_name(Slash, _, _) :-
 :- set_predicate_property(absolute_file_name/3, visible(public)).
 
 /****************************************************************/
-/* Resource Resolution                                          */
-/****************************************************************/
-
-/**
- * absolute_resource_name(R, A):
- * The binary predicate succeeds when the read path R resolves to
- * an absolute resource path A.
- */
-% absolute_resource_name(+Slash, -Pin)
-absolute_resource_name(Slash, Pin) :-
-   sys_absolute_resource_name(Slash, Pin), !.
-absolute_resource_name(library(Slash), _) :-
-   throw(error(existence_error(library,Slash),_)).
-absolute_resource_name(Slash, _) :-
-   throw(error(existence_error(source_sink,Slash),_)).
-:- set_predicate_property(absolute_resource_name/2, visible(public)).
-
-/****************************************************************/
 /* File Probing                                                 */
 /****************************************************************/
 
@@ -317,6 +299,14 @@ sys_access_opt([_|L], V, W) :-
       sysFindWrite('Interpreter','String')).
 :- set_predicate_property(sys_find_write/2, visible(private)).
 
+:- foreign(sys_find_prefix/4, 'ForeignPath',
+      sysFindPrefix('Interpreter','String','TermAtomic','Object')).
+:- set_predicate_property(sys_find_prefix/4, visible(private)).
+
+:- foreign(sys_find_key/4, 'ForeignPath',
+      sysFindKey('Interpreter','String','TermAtomic','Object')).
+:- set_predicate_property(sys_find_key/4, visible(private)).
+
 /****************************************************************/
 /* File Unprobing                                               */
 /****************************************************************/
@@ -366,6 +356,24 @@ sys_absolute_file_name4(Path, C, library(Slash)) :- !,
 :- set_predicate_property(sys_unfind_prefix/4, visible(private)).
 
 /****************************************************************/
+/* Resource Resolution                                          */
+/****************************************************************/
+
+/**
+ * absolute_resource_name(R, A):
+ * The binary predicate succeeds when the read path R resolves to
+ * an absolute resource path A.
+ */
+% absolute_resource_name(+Slash, -Pin)
+absolute_resource_name(Slash, Pin) :-
+   sys_absolute_resource_name(Slash, Pin), !.
+absolute_resource_name(library(Slash), _) :-
+   throw(error(existence_error(library,Slash),_)).
+absolute_resource_name(Slash, _) :-
+   throw(error(existence_error(source_sink,Slash),_)).
+:- set_predicate_property(absolute_resource_name/2, visible(public)).
+
+/****************************************************************/
 /* Resource Probing                                             */
 /****************************************************************/
 
@@ -377,21 +385,13 @@ sys_absolute_resource_name(library(Slash), Pin) :- !,
    sys_find_prefix(Path, C, [package(library),file_extension(resource)], J),
    sys_find_key(J, C, [package(library),file_extension(resource)], H),
    sys_set_context_property(Pin, C, H).
-/* relative */
+/* absolute and relative */
 sys_absolute_resource_name(Slash, Pin) :-
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
    sys_find_key(Path, C, [file_extension(resource),failure(read)], H),
    sys_set_context_property(Pin, C, H).
 :- set_predicate_property(sys_absolute_resource_name/2, visible(private)).
-
-:- foreign(sys_find_prefix/4, 'ForeignPath',
-      sysFindPrefix('Interpreter','String','TermAtomic','Object')).
-:- set_predicate_property(sys_find_prefix/4, visible(private)).
-
-:- foreign(sys_find_key/4, 'ForeignPath',
-      sysFindKey('Interpreter','String','TermAtomic','Object')).
-:- set_predicate_property(sys_find_key/4, visible(private)).
 
 /****************************************************************/
 /* Term Representation                                          */

@@ -44,6 +44,8 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- use_package(foreign(jekpro/frequent/basic)).
+
 :- module(user, []).
 
 :- public infix(**).
@@ -133,14 +135,16 @@
  * Returns the float representation of π.
  */
 :- public pi/1.
-:- foreign_const(pi/1, 'Math', 'PI').
+% :- foreign_const(pi/1, 'Math', 'PI').
+:- foreign_fun(pi/1, 'ForeignHyper', pi).
 
 /**
  * e:
  * Returns the float representation of Euler’s number e.
  */
 :- public e/1.
-:- foreign_const(e/1, 'Math', 'E').
+% :- foreign_const(e/1, 'Math', 'E').
+:- foreign_fun(e/1, 'ForeignHyper', e).
 
 /**
  * atan2(X,Y): [TC2 9.3.13]

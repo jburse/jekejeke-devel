@@ -79,6 +79,18 @@ public final class ForeignPath {
     public static final int MASK_MODL_BASE = MASK_MODL_LIBR |
             MASK_MODL_FRGN;
 
+    private static final String OP_PACKAGE = "package";
+    private static final String OP_PACKAGE_NONE = "none";
+    private static final String OP_PACKAGE_BOTH = "both";
+
+    private static final String OP_FILE_EXTENSION = "file_extension";
+    private static final String OP_FILE_EXTENSION_FILE = "file";
+    private static final String OP_FILE_EXTENSION_RESOURCE = "resource";
+
+    private static final String OP_FAILURE = "failure";
+    private static final String OP_FAILURE_READ = "read";
+    private static final String OP_FAILURE_CHILD = "child";
+
     /**
      * <p>Find a write key according to the auto loader.</p>
      *
@@ -244,10 +256,10 @@ public final class ForeignPath {
             Object temp = ((TermCompound) opt).getArg(0);
             if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals("package")) {
+                    ((TermCompound) temp).getFunctor().equals(OP_PACKAGE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
-                if (fun.equals("none")) {
+                if (fun.equals(OP_PACKAGE_NONE)) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask &= ~MASK_PRFX_FRGN;
                 } else if (fun.equals(LoadOpts.OP_PREFIX_LIBRARY)) {
@@ -256,7 +268,7 @@ public final class ForeignPath {
                 } else if (fun.equals(LoadOpts.OP_PREFIX_FOREIGN)) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
-                } else if (fun.equals("both")) {
+                } else if (fun.equals(OP_PACKAGE_BOTH)) {
                     mask |= MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
                 } else {
@@ -265,18 +277,18 @@ public final class ForeignPath {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals("file_extension")) {
+                    ((TermCompound) temp).getFunctor().equals(OP_FILE_EXTENSION)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
                     mask &= ~MASK_SUFX_RSCS;
-                } else if (fun.equals("file")) {
+                } else if (fun.equals(OP_FILE_EXTENSION_FILE)) {
                     mask |= MASK_SUFX_TEXT;
                     mask |= MASK_SUFX_BNRY;
                     mask &= ~MASK_SUFX_RSCS;
-                } else if (fun.equals("resource")) {
+                } else if (fun.equals(OP_FILE_EXTENSION_RESOURCE)) {
                     mask &= ~MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
                     mask |= MASK_SUFX_RSCS;
@@ -286,16 +298,16 @@ public final class ForeignPath {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals("failure")) {
+                    ((TermCompound) temp).getFunctor().equals(OP_FAILURE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals("none")) {
                     mask &= ~MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
-                } else if (fun.equals("read")) {
+                } else if (fun.equals(OP_FAILURE_READ)) {
                     mask |= MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
-                } else if (fun.equals("child")) {
+                } else if (fun.equals(OP_FAILURE_CHILD)) {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_CHLD;
                 } else {

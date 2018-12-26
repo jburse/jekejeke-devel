@@ -188,3 +188,16 @@ sys_get_show_stat(T, sys_thread_group_name, V) :-
    current_thread_flag(T, sys_thread_group, H),
    current_group_flag(H, sys_group_name, V).
 
+/****************************************************************/
+/* Debug Threads                                                */
+/****************************************************************/
+
+/**
+ * thread_stack(T, S):
+ * The predicate succeeds in S with the JVM stack of T.
+ */
+/*
+:- public thread_stack/2.
+:- foreign(thread_stack/2, 'ForeignGroup',
+           sysThreadStack('Interpreter', 'Thread')).
+*/
