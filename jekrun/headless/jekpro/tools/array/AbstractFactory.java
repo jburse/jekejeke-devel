@@ -54,14 +54,13 @@ public abstract class AbstractFactory extends AbstractFramework {
     public static final String OP_DOMAIN_FOREIGN_EXCEPTION = "foreign_exception";
     public static final String OP_DOMAIN_FOREIGN_ACCESS = "foreign_access";
     public static final String OP_DOMAIN_FOREIGN_ARRAY = "foreign_array";
-    public static final String OP_PERMISSION_LOOKUP = "lookup";
+    public static final String OP_DOMAIN_FOREIGN_NOTYET = "foreign_notyet";
 
+    public static final String OP_PERMISSION_LOOKUP = "lookup";
     public static final String OP_PERMISSION_APPLY = "apply";
-    public static final String OP_PERMISSION_NEW = "new";
     public static final String OP_PERMISSION_METHOD = "method";
     public static final String OP_PERMISSION_CONSTRUCTOR = "constructor";
     public static final String OP_PERMISSION_FIELD = "field";
-    public static final String OP_PERMISSION_SETTER = "setter";
     public static final String OP_PERMISSION_INDEX = "index";
 
     public static final String OP_REPRESENTATION_NULL = "null";
@@ -187,7 +186,8 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @param loader The loader.
      * @throws EngineMessage Shit happens.
      */
-    public abstract AbstractBranch stringToBranch(String name, ClassLoader loader)
+    public abstract AbstractBranch stringToBranch(String name,
+                                                  ClassLoader loader)
             throws EngineMessage;
 
     /**
@@ -203,21 +203,21 @@ public abstract class AbstractFactory extends AbstractFramework {
      *
      * @param exces The exception types.
      * @param en    The engine.
-     * @throws EngineMessage Shit happens.
      */
-    public abstract boolean validateExceptionTypes(Class[] exces, Engine en)
-            throws EngineMessage;
+    public abstract boolean validateExceptionTypes(Class[] exces, Engine en);
 
     /**
      * <p>Create a special.</p>
      *
      * @param con  The constructor.
      * @param args The constructor arguments.
+     * @param en   The engine.
      * @return The special.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public abstract Object newInstance(Constructor con, Object[] args)
+    public abstract Object newInstance(Constructor con,
+                                       Object[] args, Engine en)
             throws EngineException, EngineMessage;
 
     /*******************************************************************/

@@ -5,7 +5,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 
 import java.lang.reflect.Modifier;
@@ -177,17 +176,6 @@ public abstract class AbstractLense extends AbstractDelegate {
             subflags |= MASK_METH_FUNC;
 
         return true;
-    }
-
-    /**
-     * <p>Generate a indicator value, where Java doesn't provide one.</p>
-     *
-     * @param res The Java return value.
-     * @return The indicator value.
-     */
-    public Object noretNormJava(Object res) {
-        return (encoderet == Types.TYPE_VOID ||
-                Boolean.TRUE.equals(res) ? AbstractSkel.VOID_OBJ : null);
     }
 
     /******************************************************************/

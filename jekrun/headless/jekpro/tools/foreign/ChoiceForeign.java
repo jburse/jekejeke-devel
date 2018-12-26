@@ -108,11 +108,11 @@ final class ChoiceForeign extends AbstractChoice {
             co.flags &= ~CallOut.MASK_CALL_SPECI;
             co.flags &= ~CallOut.MASK_CALL_CUTTR;
 
-            Object res = AbstractMember.invokeMethod(del.method, obj, args);
+            Object res = AbstractMember.invokeMethod(del.method, obj, args, en);
             if ((del.subflags & MASK_METH_FUNC) != 0) {
                 res = Types.normJava(del.encoderet, res);
             } else {
-                res = del.noretNormJava(res);
+                res = Types.noretNormJava(del.encoderet, res);
             }
             if (res == null)
                 return false;
@@ -180,7 +180,7 @@ final class ChoiceForeign extends AbstractChoice {
         try {
             co.flags &= ~CallOut.MASK_CALL_FIRST;
             co.flags |= CallOut.MASK_CALL_CLEAN;
-            AbstractMember.invokeMethod(del.method, obj, args);
+            AbstractMember.invokeMethod(del.method, obj, args, en);
             InterpreterException ie = co.getException();
             en.fault = (ie != null ? (EngineException) ie.getException() : null);
         } catch (EngineException x) {

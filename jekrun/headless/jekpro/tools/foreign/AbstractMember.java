@@ -5,7 +5,6 @@ import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.AbstractLense;
@@ -13,10 +12,10 @@ import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.proxy.RuntimeWrap;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 /**
@@ -55,6 +54,13 @@ abstract class AbstractMember extends AbstractLense
     public final static Object[] VOID_ARGS = new Object[0];
 
     int scores = -1;
+
+    /**
+     * <p>Retrieve the proxy that is wrapped.</p>
+     *
+     * @return The proxy.
+     */
+    public abstract Member getProxy();
 
     /*******************************************************************/
     /* Auto Loader Heuristics                                          */
@@ -164,6 +170,23 @@ abstract class AbstractMember extends AbstractLense
     }
 
     /**
+     * <p>Convert the receiver, if any.</p>
+     *
+     * @param temp The arguments skeleton.
+     * @param ref  The arguments display.
+     * @return The receiver, or null.
+     * @throws EngineMessage FFI error.
+     */
+    final Object convertRecv(Object temp, BindCount[] ref)
+            throws EngineMessage {
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * <p>Build the arguments array. The arguments of the goal
      * are checked and converted if necessary.</p>
      *
@@ -174,7 +197,8 @@ abstract class AbstractMember extends AbstractLense
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      */
-    final Object[] convertArgs(Object temp, BindCount[] ref, Engine en, CallOut co)
+    final Object[] convertArgs(Object temp, BindCount[] ref,
+                               Engine en, CallOut co)
             throws EngineMessage {
         Object[] args = (encodeparas.length != 0 ?
                 new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
@@ -188,11 +212,68 @@ abstract class AbstractMember extends AbstractLense
             } else if (typ == Types.TYPE_CALLOUT) {
                 args[i] = co;
             } else {
-                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref);
+                args[i] = Types.denormProlog(typ,
+                        ((SkelCompound) temp).args[k], ref);
                 k++;
             }
         }
         return args;
+    }
+
+    /***********************************************************/
+    /* CheerpJ Workaround IllegalArgumentException             */
+    /***********************************************************/
+
+    /**
+     * <p>Check the receiver.</p>
+     *
+     * @param val The reciever.
+     * @throws EngineMessage FFI error.
+     */
+    final void checkRecv(Object val) throws EngineMessage {
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
+            int typ = encodeobj;
+            if (typ == Types.TYPE_CHARSEQ || typ == Types.TYPE_REF) {
+                Class clazz = getDeclaringClass();
+                if (!clazz.isAssignableFrom(val.getClass())) {
+                    Member y = getProxy();
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            AbstractFactory.OP_PERMISSION_APPLY,
+                            Types.mapMemberType(y),
+                            Types.mapMemberCulprit(y)));
+                }
+            } else {
+                /* */
+            }
+        } else {
+            /* */
+        }
+    }
+
+    /**
+     * <p>Check the arguments.</p>
+     *
+     * @param args The arguments.
+     * @throws EngineMessage FFI error.
+     */
+    final void checkArgs(Object[] args)
+            throws EngineMessage {
+        for (int i = 0; i < encodeparas.length; i++) {
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_CHARSEQ || typ == Types.TYPE_REF) {
+                Object val = args[i];
+                Class clazz = getParameterTypes()[i];
+                if (!clazz.isAssignableFrom(val.getClass())) {
+                    Member y = getProxy();
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            AbstractFactory.OP_PERMISSION_APPLY,
+                            Types.mapMemberType(y),
+                            Types.mapMemberCulprit(y)));
+                }
+            } else {
+                /* */
+            }
+        }
     }
 
     /***********************************************************/
@@ -204,11 +285,13 @@ abstract class AbstractMember extends AbstractLense
      *
      * @param obj  The receiver.
      * @param args The arguments array.
+     * @param en   The engine.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    static Object invokeMethod(Method method, Object obj, Object[] args)
+    static Object invokeMethod(Method method, Object obj,
+                               Object[] args, Engine en)
             throws EngineException, EngineMessage {
         try {
             return method.invoke(obj, args);
@@ -222,7 +305,12 @@ abstract class AbstractMember extends AbstractLense
                 throw Types.mapThrowable(x);
             }
         } catch (Exception x) {
-            throw Types.mapException(x, method);
+            Throwable z = Types.mapException(x, method, en);
+            if (z instanceof EngineException) {
+                throw (EngineException) z;
+            } else {
+                throw (EngineMessage) z;
+            }
         } catch (Error x) {
             throw Types.mapError(x);
         }

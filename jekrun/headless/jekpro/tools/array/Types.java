@@ -1,13 +1,16 @@
 package jekpro.tools.array;
 
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.*;
@@ -244,6 +247,18 @@ public final class Types {
     }
 
     /**
+     * <p>Generate a indicator value, where Java doesn't provide one.</p>
+     *
+     * @param typ The Java type.
+     * @param res The Java return value.
+     * @return The indicator value.
+     */
+    public static Object noretNormJava(int typ, Object res) {
+        return (typ == Types.TYPE_VOID ||
+                Boolean.TRUE.equals(res) ? AbstractSkel.VOID_OBJ : null);
+    }
+
+    /**
      * <p>Denormalize an external Prolog type into a Java type.</p>
      *
      * @param typ The Java type.
@@ -252,7 +267,8 @@ public final class Types {
      * @return The denormalized argument.
      * @throws EngineMessage FFI error.
      */
-    public static Object denormProlog(int typ, Object t, BindCount[] d)
+    public static Object denormProlog(int typ, Object t,
+                                      BindCount[] d)
             throws EngineMessage {
         try {
             switch (typ) {
@@ -464,6 +480,7 @@ public final class Types {
      * <p>This is used for reflective calls.</p>
      *
      * @param x The Java exception.
+     * @param y The Java member.
      * @return The Prolog message.
      */
     public static EngineMessage mapException(Exception x, Member y) {
@@ -493,7 +510,7 @@ public final class Types {
      * @param y The Java member.
      * @return The Prolog type.
      */
-    private static String mapMemberType(Member y) {
+    public static String mapMemberType(Member y) {
         if (y instanceof Field) {
             return AbstractFactory.OP_PERMISSION_FIELD;
         } else if (y instanceof Method) {
@@ -511,7 +528,7 @@ public final class Types {
      * @param y The Java member.
      * @return The Prolog culprit.
      */
-    private static Object mapMemberCulprit(Member y) {
+    public static Object mapMemberCulprit(Member y) {
         if (y instanceof Field) {
             Field field = (Field) y;
             return new SkelAtom(field.getName());
@@ -549,6 +566,55 @@ public final class Types {
         } else {
             throw new IllegalArgumentException("illegal error");
         }
+    }
+
+    /***********************************************************/
+    /* CheerpJ Workaround InvocationTargetException            */
+    /***********************************************************/
+
+    /**
+     * <p>Map a Java exception to a Prolog message.</p>
+     * <p>This is used for reflective calls.</p>
+     *
+     * @param z  The Java exception.
+     * @param y  The Java member.
+     * @param en The engine.
+     */
+    public static Throwable mapException(Exception z, Member y, Engine en) {
+        int hint = en.store.foyer.getHint();
+        switch (hint) {
+            case Foyer.HINT_WEB:
+                if (isException(z)) {
+                    return Types.mapException(z, y);
+                } else {
+                    Throwable x = z;
+                    if (x instanceof RuntimeWrap)
+                        x = x.getCause();
+                    if (x instanceof InterpreterException) {
+                        return ((InterpreterException) x).getException();
+                    } else {
+                        return Types.mapThrowable(x);
+                    }
+                }
+            default:
+                return Types.mapException(z, y);
+        }
+    }
+
+    /**
+     * <p>CHeck whether an exception is a reflection exception.</p>
+     *
+     * @param x The exeception.
+     * @return True if the exception is a reflection exception, otherwise false.
+     */
+    private static boolean isException(Exception x) {
+        if (x instanceof IllegalAccessException) {
+        } else if (x instanceof IllegalArgumentException) {
+        } else if (x instanceof NullPointerException) {
+        } else {
+            return false;
+        }
+        return true;
     }
 
 }

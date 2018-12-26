@@ -14,6 +14,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 
 /**
  * <p>Specialization of a delegate for a number constants.</p>
@@ -60,6 +61,15 @@ final class MemberConstant extends AbstractMember {
         field = f;
         subflags |= MASK_DELE_ARIT;
         subflags |= MASK_METH_FUNC;
+    }
+
+    /**
+     * <p>Retrieve the proxy that is wrapped.</p>
+     *
+     * @return The proxy.
+     */
+    public Member getProxy() {
+        return field;
     }
 
     /******************************************************************/
@@ -119,12 +129,7 @@ final class MemberConstant extends AbstractMember {
             throws EngineMessage {
         Object temp = en.skel;
         BindCount[] ref = en.display;
-        Object obj;
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
-        } else {
-            obj = null;
-        }
+        Object obj = convertRecv(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
         res = Types.normJava(encoderet, res);
         if (res == null)

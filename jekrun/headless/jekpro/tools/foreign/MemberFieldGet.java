@@ -11,6 +11,7 @@ import jekpro.tools.array.Types;
 import jekpro.tools.term.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 
 /**
  * <p>Specialization of a delegate for a field getter.</p>
@@ -55,6 +56,15 @@ final class MemberFieldGet extends AbstractMember {
      */
     MemberFieldGet(Field f) {
         field = f;
+    }
+
+    /**
+     * <p>Retrieve the proxy that is wrapped.</p>
+     *
+     * @return The proxy.
+     */
+    public Member getProxy() {
+        return field;
     }
 
     /******************************************************************/
@@ -114,26 +124,20 @@ final class MemberFieldGet extends AbstractMember {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        Object temp = en.skel;
+        Object[] temp = ((SkelCompound) en.skel).args;
         BindCount[] ref = en.display;
-        Object obj;
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
-        } else {
-            obj = null;
-        }
+        Object obj = convertRecv(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {
-            res = noretNormJava(res);
+            res = Types.noretNormJava(encoderet, res);
         }
         if (res == null)
             return false;
         BindCount[] d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(((SkelCompound) temp).args[
-                                ((SkelCompound) temp).args.length - 1], ref,
+                !en.unifyTerm(temp[temp.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
         Object check = AbstractTerm.getMarker(res);

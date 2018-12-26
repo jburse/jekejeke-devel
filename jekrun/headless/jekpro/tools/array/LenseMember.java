@@ -120,15 +120,10 @@ final class LenseMember extends AbstractLense {
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         try {
-            Object temp = en.skel;
+            Object[] temp = ((SkelCompound) en.skel).args;
             BindCount[] ref = en.display;
-            Object obj;
-            if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-                obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
-            } else {
-                obj = null;
-            }
-            Number num = SpecialEval.derefAndCastInteger(((SkelCompound) temp).args[1], ref);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref);
+            Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
             Object res = get(obj, idx);

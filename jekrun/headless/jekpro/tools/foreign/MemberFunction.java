@@ -14,6 +14,7 @@ import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 /**
@@ -61,6 +62,15 @@ final class MemberFunction extends AbstractMember {
         method = m;
         subflags |= MASK_DELE_ARIT;
         subflags |= MASK_METH_FUNC;
+    }
+
+    /**
+     * <p>Retrieve the proxy that is wrapped.</p>
+     *
+     * @return The proxy.
+     */
+    public Member getProxy() {
+        return method;
     }
 
     /************************************************************************************/
@@ -121,14 +131,9 @@ final class MemberFunction extends AbstractMember {
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         BindCount[] ref = en.display;
-        Object obj;
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
-        } else {
-            obj = null;
-        }
+        Object obj = convertRecv(temp, ref);
         Object[] args = computeAndConvertArgs(temp, ref, en);
-        Object res = invokeMethod(method, obj, args);
+        Object res = invokeMethod(method, obj, args, en);
         res = Types.normJava(encoderet, res);
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(

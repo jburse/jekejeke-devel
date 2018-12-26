@@ -6,8 +6,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 
 import java.io.StringWriter;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>

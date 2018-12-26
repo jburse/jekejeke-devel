@@ -5,11 +5,13 @@ import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.*;
 
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 /**
@@ -55,6 +57,15 @@ final class MemberMethodDet extends AbstractMember {
      */
     MemberMethodDet(Method m) {
         method = m;
+    }
+
+    /**
+     * <p>Retrieve the proxy that is wrapped.</p>
+     *
+     * @return The proxy.
+     */
+    public Member getProxy() {
+        return method;
     }
 
     /******************************************************************/
@@ -116,18 +127,22 @@ final class MemberMethodDet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         BindCount[] ref = en.display;
-        Object obj;
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
-        } else {
-            obj = null;
-        }
+        int hint = en.store.foyer.getHint();
+        Object obj = convertRecv(temp, ref);
         Object[] args = convertArgs(temp, ref, en, null);
-        Object res = invokeMethod(method, obj, args);
+        switch (hint) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
+        Object res = invokeMethod(method, obj, args, en);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {
-            res = noretNormJava(res);
+            res = Types.noretNormJava(encoderet, res);
         }
         if (res == null)
             return false;

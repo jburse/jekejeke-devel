@@ -208,22 +208,43 @@ public final class Lobby {
     /**
      * <p>Register the license text.</p>
      *
-     * @param c The capability.
-     * @param t The license text.
+     * @param capa The capability.
+     * @param text The license text.
      * @throws InterpreterMessage License error.
      */
-    public void regLicenseText(Capability c, String t)
+    public void regLicenseText(Capability capa, String text)
             throws InterpreterMessage {
-        if (c == null)
+        if (capa == null)
             throw new NullPointerException("capability missing");
-        if (t == null)
+        if (text == null)
             throw new NullPointerException("text missing");
-        AbstractBranch b = (AbstractBranch) c.getBranch();
+        AbstractBranch branch = (AbstractBranch) capa.getBranch();
         try {
-            foyer.getFramework().getActivator().regLicenseText(foyer, b, t);
+            foyer.getFramework().getActivator().regLicenseText(foyer, branch, text);
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
         }
+    }
+
+    /**
+     * <p>The registered license text.</p>
+     *
+     * @param capa The capability.
+     * @return The license text.
+     * @throws InterpreterMessage License error.
+     */
+    public String regedLicenseText(Capability capa)
+            throws InterpreterMessage {
+        if (capa == null)
+            throw new NullPointerException("capability missing");
+        AbstractBranch branch = (AbstractBranch) capa.getBranch();
+        String text;
+        try {
+            text = foyer.getFramework().getActivator().regedLicenseText(foyer, branch);
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+        }
+        return text;
     }
 
     /***********************************************************/

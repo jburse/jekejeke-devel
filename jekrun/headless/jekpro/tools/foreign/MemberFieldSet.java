@@ -6,12 +6,12 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 
 /**
  * <p>Specialization of a delegate for a field setter.</p>
@@ -60,6 +60,15 @@ final class MemberFieldSet extends AbstractMember {
         field = f;
         fastname = "set_" + field.getName();
         fastpartys = new Class[]{field.getType()};
+    }
+
+    /**
+     * <p>Retrieve the proxy that is wrapped.</p>
+     *
+     * @return The proxy.
+     */
+    public Member getProxy() {
+        return field;
     }
 
     /******************************************************************/
@@ -118,15 +127,10 @@ final class MemberFieldSet extends AbstractMember {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
-        Object temp = en.skel;
+        Object[] temp = ((SkelCompound) en.skel).args;
         BindCount[] ref = en.display;
-        Object obj;
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
-        } else {
-            obj = null;
-        }
-        Object arg = Types.denormProlog(encodeparas[0], ((SkelCompound) temp).args[1], ref);
+        Object obj = convertRecv(temp, ref);
+        Object arg = Types.denormProlog(encodeparas[0], temp[temp.length - 1], ref);
         invokeSetter(obj, arg);
         return en.getNextRaw();
     }

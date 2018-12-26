@@ -13,7 +13,6 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.MutableBit;
 import jekpro.tools.term.PositionKey;
-import matula.comp.sharik.Enforced;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;

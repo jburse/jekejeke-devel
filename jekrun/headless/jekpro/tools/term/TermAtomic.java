@@ -233,10 +233,10 @@ public final class TermAtomic extends AbstractTerm {
     public static boolean guardFloat(float f) throws ArithmeticException {
         if (Float.isNaN(f))
             throw new ArithmeticException(EngineMessage.OP_EVALUATION_UNDEFINED);
-        if (f == Float.POSITIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW);
-        if (f == Float.NEGATIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW);
+        if (Float.isInfinite(f))
+            throw new ArithmeticException((f < 0 ?
+                    EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW :
+                    EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW));
         if (f == 0.0f)
             return false;
         return true;
@@ -267,10 +267,10 @@ public final class TermAtomic extends AbstractTerm {
     public static boolean guardDouble(double d) throws ArithmeticException {
         if (Double.isNaN(d))
             throw new ArithmeticException(EngineMessage.OP_EVALUATION_UNDEFINED);
-        if (d == Double.POSITIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW);
-        if (d == Double.NEGATIVE_INFINITY)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW);
+        if (Double.isInfinite(d))
+            throw new ArithmeticException((d < 0 ?
+                    EngineMessage.OP_EVALUATION_FLOAT_UNDERFLOW :
+                    EngineMessage.OP_EVALUATION_FLOAT_OVERFLOW));
         if (d == 0.0)
             return false;
         return true;

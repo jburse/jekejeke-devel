@@ -8,6 +8,7 @@ import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadForce;
@@ -523,6 +524,20 @@ public final class AutoClass extends AbstractAuto {
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public static boolean createField(Field f, Engine en, int k) {
+        int hint = en.store.foyer.getHint();
+        switch (hint) {
+            case Foyer.HINT_WEB:
+                Class ret = f.getType();
+                if (ret.equals(Double.TYPE)) {
+                    en.skel = EngineMessage.domainError(
+                            AbstractFactory.OP_DOMAIN_FOREIGN_NOTYET,
+                            SpecialForeign.classToName(ret));
+                    return false;
+                }
+                break;
+            default:
+                break;
+        }
         AbstractMember del;
         switch (k) {
             case AbstractFactory.FIELD_GET_PRED:
@@ -543,7 +558,7 @@ public final class AutoClass extends AbstractAuto {
                     return false;
                 }
                 del = new MemberFieldSet(f);
-                if (!del.encodeSignatureEval(en))
+                if (!del.encodeSignaturePred(en))
                     return false;
                 break;
             default:
@@ -615,25 +630,34 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Invoke the method.</p>
      *
-     * @param constructor  The constructor.
-     * @param args The arguments array.
+     * @param constructor The constructor.
+     * @param args        The arguments array.
+     * @param en          The engine.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
-    public static Object invokeNew(Constructor constructor, Object[] args)
+    public static Object invokeNew(Constructor constructor,
+                                   Object[] args, Engine en)
             throws EngineException, EngineMessage {
         try {
             return constructor.newInstance(args);
         } catch (InvocationTargetException y) {
             Throwable x = y.getCause();
+            if (x instanceof RuntimeWrap)
+                x = x.getCause();
             if (x instanceof InterpreterException) {
                 throw (EngineException) ((InterpreterException) x).getException();
             } else {
                 throw Types.mapThrowable(x);
             }
         } catch (Exception x) {
-            throw Types.mapException(x, constructor);
+            Throwable z = Types.mapException(x, constructor, en);
+            if (z instanceof EngineException) {
+                throw (EngineException) z;
+            } else {
+                throw (EngineMessage) z;
+            }
         } catch (Error x) {
             throw Types.mapError(x);
         }
