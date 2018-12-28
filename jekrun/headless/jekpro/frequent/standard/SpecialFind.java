@@ -163,7 +163,7 @@ public final class SpecialFind extends AbstractSpecial {
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
-            boolean found = en.runFirst(snap);
+            boolean found = en.runLoop(snap, true);
             while (found) {
                 EngineCopy ec = en.enginecopy;
                 if (ec == null) {
@@ -176,7 +176,7 @@ public final class SpecialFind extends AbstractSpecial {
                 if (temp == null)
                     temp = new ListArray<Object>();
                 temp.add(val);
-                found = en.runNext(snap);
+                found = en.runLoop(snap, false);
             }
         } catch (EngineMessage x) {
             en.contskel = r;

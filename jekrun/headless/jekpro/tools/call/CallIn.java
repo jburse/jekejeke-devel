@@ -294,7 +294,7 @@ public final class CallIn {
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
-            if (en.runFirst(snap)) {
+            if (en.runLoop(snap, true)) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.visor.setFence(backthread);
@@ -343,7 +343,7 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {
-            if (en.runNext(snap)) {
+            if (en.runLoop(snap, false)) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.visor.setFence(backthread);

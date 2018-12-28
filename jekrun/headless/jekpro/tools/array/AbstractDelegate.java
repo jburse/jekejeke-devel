@@ -297,7 +297,7 @@ public abstract class AbstractDelegate {
         ref2.setEngine(en);
         en.contskel = clause.getNextRaw(en);
         en.contdisplay = ref2;
-        if (!en.runFirst(snap))
+        if (!en.runLoop(snap, true))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));
         en.contskel = r;

@@ -326,11 +326,11 @@ public final class SpecialSession extends AbstractSpecial {
                         ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
                     break;
                 PreClause pre = expandGoalAndWrap(rd, val, pos, en);
-                Clause clause = en.store.foyer.createClause(AbstractDefined.MASK_DEFI_NBDY |
-                        AbstractDefined.MASK_DEFI_NLST |
-                        AbstractDefined.MASK_DEFI_STOP);
-                clause.vars = pre.vars;
+                Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
+                                AbstractDefined.MASK_DEFI_NLST |
+                                AbstractDefined.MASK_DEFI_STOP, en);
                 clause.analyzeBody(pre.molec, en);
+                clause.vars = pre.vars;
 
                 Intermediate r = en.contskel;
                 Display u = en.contdisplay;
@@ -344,7 +344,7 @@ public final class SpecialSession extends AbstractSpecial {
                     ref.setEngine(en);
                     en.contskel = clause.getNextRaw(en);
                     en.contdisplay = ref;
-                    boolean found = en.runFirst(snap);
+                    boolean found = en.runLoop(snap, true);
                     if (!found)
                         failFeedback(en);
                     while (found) {
@@ -359,7 +359,7 @@ public final class SpecialSession extends AbstractSpecial {
                                 throw new EngineMessage(EngineMessage.systemError(
                                         EngineMessage.OP_SYSTEM_USER_EXIT));
                             } else if (";".equals(action)) {
-                                found = en.runNext(snap);
+                                found = en.runLoop(snap, false);
                                 if (!found)
                                     failFeedback(en);
                             } else if ("?".equals(action)) {
@@ -433,7 +433,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
                                                PositionKey pos, Engine en)
-            throws EngineException {
+            throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
                 (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
             PreClause pre = new PreClause();
@@ -455,13 +455,13 @@ public final class SpecialSession extends AbstractSpecial {
             Display u = en.contdisplay;
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
             SkelAtom sa = new SkelAtom("expand_goal", en.store.getRootSystem());
-            Clause clause = en.store.foyer.createClause(AbstractDefined.MASK_DEFI_NBDY |
-                    AbstractDefined.MASK_DEFI_NLST |
-                    AbstractDefined.MASK_DEFI_STOP);
-            clause.vars = Named.makeNamed(rd.getVars());
             Object molec = new SkelCompound(new SkelAtom(
                     PreClause.OP_TURNSTILE), new SkelCompound(sa, t, var));
+            Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
+                        AbstractDefined.MASK_DEFI_NLST |
+                        AbstractDefined.MASK_DEFI_STOP, en);
             clause.analyzeBody(molec, en);
+            clause.vars = Named.makeNamed(rd.getVars());
 
             int snap = en.number;
             Frame backref = en.visor.ref;
@@ -473,7 +473,7 @@ public final class SpecialSession extends AbstractSpecial {
                 ref.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref;
-                if (!en.runFirst(snap))
+                if (!en.runLoop(snap, true))
                     throw new EngineMessage(EngineMessage.syntaxError(
                             EngineMessage.OP_SYNTAX_EXPAND_FAILED));
             } catch (EngineMessage x) {
