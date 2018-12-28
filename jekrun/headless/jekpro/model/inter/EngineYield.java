@@ -3,9 +3,6 @@ package jekpro.model.inter;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
-import jekpro.tools.array.AbstractDelegate;
 
 /**
  * <p>The class provides an engine that yields.</p>
@@ -39,7 +36,7 @@ import jekpro.tools.array.AbstractDelegate;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class EngineYield extends Engine {
-    private static final int YIELD_MAX = 10000;
+    private static final int YIELD_MAX = 20000;
 
     private int yieldcount;
 
@@ -66,39 +63,20 @@ public class EngineYield extends Engine {
      * @return True if the goal list succeeded, otherwise null.
      * @throws EngineException Shit happens.
      */
-    public final boolean runFirst(int snap)
+    public final boolean runLoop(int snap, boolean found)
             throws EngineException {
-        boolean found = true;
         try {
-            while (found) {
-                if (contskel != null) {
-                    if (contskel instanceof Goal) {
-                        if ((yieldcount++) >= YIELD_MAX)
-                            yieldReset();
-                        AbstractDelegate del = ((Goal) contskel).resolveGoal(this);
-                        found = del.moniFirst(this);
-                    } else {
-                        ((Clause) contskel).resolveCont(this);
-                    }
-                } else {
-                    break;
-                }
+            while (found && contskel != null) {
+                if ((yieldcount++) >= YIELD_MAX)
+                    yieldReset();
+                found = contskel.resolveNext(this);
             }
             while (!found && snap < number) {
                 found = choices.moniNext(this);
-                while (found) {
-                    if (contskel != null) {
-                        if (contskel instanceof Goal) {
-                            if ((yieldcount++) >= YIELD_MAX)
-                                yieldReset();
-                            AbstractDelegate del = ((Goal) contskel).resolveGoal(this);
-                            found = del.moniFirst(this);
-                        } else {
-                            ((Clause) contskel).resolveCont(this);
-                        }
-                    } else {
-                        break;
-                    }
+                while (found && contskel != null) {
+                    if ((yieldcount++) >= YIELD_MAX)
+                        yieldReset();
+                    found = contskel.resolveNext(this);
                 }
             }
         } catch (EngineException x) {
@@ -108,53 +86,8 @@ public class EngineYield extends Engine {
             window = null;
             throw fault;
         } catch (EngineMessage y) {
-            EngineException x = new EngineException(y, EngineException.fetchStack(this));
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
-        }
-        return found;
-    }
-
-    /**
-     * <p>Continue searching solutions for the last goal.</p>
-     * <p>In case of exception, the choice points are already removed.</p>
-     *
-     * @param snap The choice barrier.
-     * @return True if the goal list succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    public final boolean runNext(int snap)
-            throws EngineException {
-        boolean found = false;
-        try {
-            while (!found && snap < number) {
-                found = choices.moniNext(this);
-                while (found) {
-                    if (contskel != null) {
-                        if (contskel instanceof Goal) {
-                            if ((yieldcount++) >= YIELD_MAX)
-                                yieldReset();
-                            AbstractDelegate del = ((Goal) contskel).resolveGoal(this);
-                            found = del.moniFirst(this);
-                        } else {
-                            ((Clause) contskel).resolveCont(this);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        } catch (EngineException x) {
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y, EngineException.fetchStack(this));
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(this));
             window = contdisplay;
             fault = x;
             cutChoices(snap);

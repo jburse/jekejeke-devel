@@ -135,7 +135,7 @@ public final class SpecialControl extends AbstractSpecial {
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
-            if (!en.runFirst(snap))
+            if (!en.runLoop(snap, true))
                 return false;
             en.contskel = r;
             en.contdisplay = u;

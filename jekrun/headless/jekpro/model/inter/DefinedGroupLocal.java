@@ -7,7 +7,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.InterfaceClauses;
+import jekpro.model.rope.InterfaceRope;
 import matula.util.data.ListArray;
 import matula.util.wire.AbstractLivestock;
 
@@ -126,7 +126,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
         }
         try {
             Bouquet temp = ep.cr;
-            InterfaceClauses set = temp.set;
+            InterfaceRope set = temp.set;
             if (set != null && set.size() != 1 &&
                     (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
                 temp = Bouquet.definedClauses(temp, m, d, en);
@@ -144,7 +144,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      */
     public final int lengthClauses(Engine en) {
         LocalBlocking ep = defineLocalBlocking(en);
-        InterfaceClauses set = ep.cr.set;
+        InterfaceRope set = ep.cr.set;
         return (set != null ? set.size() : 0);
     }
 
@@ -225,7 +225,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
         }
         try {
             try {
-                InterfaceClauses set = ep.cr.set;
+                InterfaceRope set = ep.cr.set;
                 int len = (set != null ? set.getLengthScope(en) : 0);
                 ep.cr.inspectPaths(wr, 0, 0, len, en);
             } catch (IOException x) {

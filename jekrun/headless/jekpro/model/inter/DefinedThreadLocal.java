@@ -7,7 +7,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.InterfaceClauses;
+import jekpro.model.rope.InterfaceRope;
 import matula.util.data.ListArray;
 
 import java.io.IOException;
@@ -106,7 +106,7 @@ final class DefinedThreadLocal extends AbstractDefined {
     final Clause[] definedClauses(Object m, BindCount[] d, Engine en) {
         LocalLockfree ep = defineLocalLockfree(en);
         Bouquet temp = ep.cr;
-        InterfaceClauses set = temp.set;
+        InterfaceRope set = temp.set;
         if (set != null && set.size() != 1 &&
                 (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
             temp = Bouquet.definedClauses(temp, m, d, en);
@@ -121,7 +121,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      */
     public final int lengthClauses(Engine en) {
         LocalLockfree ep = defineLocalLockfree(en);
-        InterfaceClauses set = ep.cr.set;
+        InterfaceRope set = ep.cr.set;
         return (set != null ? set.size() : 0);
     }
 
@@ -170,7 +170,7 @@ final class DefinedThreadLocal extends AbstractDefined {
             throws EngineMessage, EngineException {
         LocalLockfree ep = defineLocalLockfree(en);
         try {
-            InterfaceClauses set = ep.cr.set;
+            InterfaceRope set = ep.cr.set;
             int len = (set != null ? set.getLengthScope(en) : 0);
             ep.cr.inspectPaths(wr, 0, 0, len, en);
         } catch (IOException x) {

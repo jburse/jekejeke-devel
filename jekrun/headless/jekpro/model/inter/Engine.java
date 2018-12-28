@@ -4,14 +4,12 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
-import matula.util.wire.AbstractLivestock;
 
 import java.util.Comparator;
 
@@ -205,35 +203,16 @@ public class Engine implements Comparator<Object> {
      * @return True if the goal list succeeded, otherwise null.
      * @throws EngineException Shit happens.
      */
-    public boolean runFirst(int snap)
+    public boolean runLoop(int snap, boolean found)
             throws EngineException {
-        boolean found = true;
         try {
-            while (found) {
-                if (contskel != null) {
-                    if (contskel instanceof Goal) {
-                        AbstractDelegate del = ((Goal)contskel).resolveGoal(this);
-                        found = del.moniFirst(this);
-                    } else {
-                        ((Clause)contskel).resolveCont(this);
-                    }
-                } else {
-                    break;
-                }
+            while (found && contskel != null) {
+                found = contskel.resolveNext(this);
             }
             while (!found && snap < number) {
                 found = choices.moniNext(this);
-                while (found) {
-                    if (contskel != null) {
-                        if (contskel instanceof Goal) {
-                            AbstractDelegate del = ((Goal)contskel).resolveGoal(this);
-                            found = del.moniFirst(this);
-                        } else {
-                            ((Clause)contskel).resolveCont(this);
-                        }
-                    } else {
-                        break;
-                    }
+                while (found && contskel != null) {
+                    found = contskel.resolveNext(this);
                 }
             }
         } catch (EngineException x) {
@@ -243,51 +222,8 @@ public class Engine implements Comparator<Object> {
             window = null;
             throw fault;
         } catch (EngineMessage y) {
-            EngineException x = new EngineException(y, EngineException.fetchStack(this));
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
-        }
-        return found;
-    }
-
-    /**
-     * <p>Continue searching solutions for the last goal.</p>
-     * <p>In case of exception, the choice points are already removed.</p>
-     *
-     * @param snap The choice barrier.
-     * @return True if the goal list succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    public boolean runNext(int snap)
-            throws EngineException {
-        boolean found = false;
-        try {
-            while (!found && snap < number) {
-                found = choices.moniNext(this);
-                while (found) {
-                    if (contskel != null) {
-                        if (contskel instanceof Goal) {
-                            AbstractDelegate del = ((Goal)contskel).resolveGoal(this);
-                            found = del.moniFirst(this);
-                        } else {
-                            ((Clause)contskel).resolveCont(this);
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-        } catch (EngineException x) {
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y, EngineException.fetchStack(this));
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(this));
             window = contdisplay;
             fault = x;
             cutChoices(snap);
@@ -544,7 +480,7 @@ public class Engine implements Comparator<Object> {
             ref2.setEngine(this);
             contskel = clause.getNextRaw(this);
             contdisplay = ref2;
-            if (!runFirst(snap))
+            if (!runLoop(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
 
