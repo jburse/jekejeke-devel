@@ -1,5 +1,7 @@
 # What is this?
 
+[![release badge](https://img.shields.io/badge/relesae-v1.3.3-green.svg](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.3)
+
 This repository contains Prolog text excerpts from
 the Jekejeke Prolog source. Here and then you might
 see other artefacts such as Java code, SQL code, XML
