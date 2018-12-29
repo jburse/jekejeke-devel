@@ -159,25 +159,37 @@ random(M, N) :-
 
 /**
  * random_permutation(L, R):
- * The predicate succeeds in R with a random permutation of L.
+ * The predicate succeeds in R with a random permutation of L
+ * from the knowledgebase random number generator.
  */
 % random_permutation(+List, -List)
 :- public random_permutation/2.
 random_permutation(L, R) :-
-   add_random_keys(L, H),
+   current_prolog_flag(sys_random, G),
+   random_permutation(G, L, R).
+
+/**
+ * random_permutation(G, L, R):
+ * The predicate succeeds in R with a random permutation of L
+ * from the random number generator G.
+ */
+% random_permutation(+Random, +List, -List)
+:- public random_permutation/3.
+random_permutation(G, L, R) :-
+   add_random_keys(L, G, H),
    keysort(H, J),
    remove_keys(J, R).
 
-% add_random_keys(+List, -Pairs)
-:- private add_random_keys/2.
-add_random_keys(X, _) :-
+% add_random_keys(+List, +Random, -Pairs)
+:- private add_random_keys/3.
+add_random_keys(X, _, _) :-
    var(X),
    throw(error(instantiation_error,_)).
-add_random_keys([X|L], [K-X|R]) :- !,
-   K is random,
-   add_random_keys(L, R).
-add_random_keys([], []) :- !.
-add_random_keys(X, _) :-
+add_random_keys([X|L], G, [K-X|R]) :- !,
+   random_next(G, K),
+   add_random_keys(L, G, R).
+add_random_keys([], _, []) :- !.
+add_random_keys(X, _, _) :-
    throw(error(type_error(list,X),_)).
 
 % remove_keys(+Pairs, -List)
