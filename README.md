@@ -50,4 +50,4 @@ Feel free to fork for non-commercial attributed use. There
 request if you find issues, but there is also no service
 agreement by us. Note also that Jekejeke is a trademark.
 
-Jan Burse, 24.02.2018
+Jan Burse, 24.02.2018 (updated 29.12.2018)
