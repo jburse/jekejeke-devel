@@ -49,6 +49,15 @@
 /***********************************************************************/
 
 /**
+ * tclear:
+ * The predicate switches the engine to the inherit mode.
+ */
+:- public tclear/0.
+tclear :-
+   set_prolog_flag(sys_tdebug, inherit).
+:- set_predicate_property(tclear/0, sys_notrace).
+
+/**
  * tdebug:
  * The predicate switches the engine to the on mode.
  */

@@ -234,3 +234,16 @@ runner_batch :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_r
    sys_update_summary(OkNok), fail.
 runner_batch.
 
+% runner_batch2
+:- public runner_batch2/0.
+runner_batch2 :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_remove_summary,
+   rule_frame(case(Fun, Arity, Suite, Case), Body, _),
+   write('Case='),
+   write(Case), nl,
+   sys_test_body(Body, OkNok),
+   sys_update_result(Fun, Arity, Suite, Case, OkNok),
+   sys_update_predicate(Fun, Arity, Suite, OkNok),
+   sys_update_suite(Suite, OkNok),
+   sys_update_summary(OkNok), fail.
+runner_batch2.
+

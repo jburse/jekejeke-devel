@@ -3,7 +3,6 @@ package jekdev.reference.debug;
 import jekdev.model.bugger.ClauseTrace;
 import jekdev.model.bugger.GoalTrace;
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
@@ -68,14 +67,12 @@ public final class SpecialFriendly extends AbstractSpecial {
 
     private final static String CODE_UNIFY_TERM = " unify_term";
     private final static String CODE_UNIFY_VAR = " unify_var";
-    private final static String CODE_INIT_DISPLAY = " init_display";
 
     private final static String CODE_CALL_GOAL = " call_goal";
     private final static String CODE_LAST_GOAL = " last_goal";
     private final static String CODE_CALL_META = " call_meta";
     private final static String CODE_LAST_META = " last_meta";
     private final static String CODE_CALL_CONT = " call_cont";
-    private final static String CODE_LAST_CONT = " last_cont";
 
     private final static int ALGN_NMBR = 5;
 
@@ -106,11 +103,11 @@ public final class SpecialFriendly extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 BindCount[] ref = en.display;
                 Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                if (pick==null)
+                if (pick == null)
                     return false;
 
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                AbstractSource source = (sa.scope!=null?sa.scope:en.store.user);
+                AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
                 source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -133,11 +130,11 @@ public final class SpecialFriendly extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                if (pick==null)
+                if (pick == null)
                     return false;
 
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope!=null?sa.scope:en.store.user);
+                source = (sa.scope != null ? sa.scope : en.store.user);
                 source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
@@ -241,7 +238,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         Writer wr = pw.getWriter();
         for (int j = lastalloc; j < endalloc; j++) {
             if (j == lastalloc) {
-                count = intermediateCount(pw, count);
+                count = intermediateCount(wr, count);
                 wr.write(SpecialFriendly.CODE_NEW_BIND);
                 wr.write(" ");
             } else {
@@ -259,13 +256,13 @@ public final class SpecialFriendly extends AbstractSpecial {
     /**
      * <p>Write a line number.</p>
      *
-     * @param pw    The prolog writer.
+     * @param wr    The writer.
      * @param count The line number count.
      * @return The incremented line number count.
      */
-    private static int intermediateCount(PrologWriter pw, int count)
+    private static int intermediateCount(Writer wr, int count)
             throws IOException {
-        pw.getWriter().write(PrologWriter.align(Integer.toString(count), ALGN_NMBR, false));
+        wr.write(PrologWriter.align(Integer.toString(count), ALGN_NMBR, false));
         return count + 1;
     }
 
@@ -290,7 +287,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         Writer wr = pw.getWriter();
         for (int j = lastgc; j < endgc; j++) {
             if (j == lastgc) {
-                count = intermediateCount(pw, count);
+                count = intermediateCount(wr, count);
                 wr.write(SpecialFriendly.CODE_DISPOSE_BIND);
                 wr.write(" ");
             } else {
@@ -321,7 +318,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                                             int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
-        count = intermediateCount(pw, count);
+        count = intermediateCount(wr, count);
         if ((body.flags & Intermediate.MASK_INTER_NLST) == 0) {
             if ((body.flags & Goal.MASK_GOAL_NAKE) == 0) {
                 wr.write(SpecialFriendly.CODE_LAST_GOAL);
@@ -360,19 +357,13 @@ public final class SpecialFriendly extends AbstractSpecial {
             Writer wr = pw.getWriter();
             /* dissassemble the head */
             int count = 0;
-            if (clause.dispsize != 0) {
-                count = intermediateCount(pw, count);
-                wr.write(SpecialFriendly.CODE_INIT_DISPLAY);
-                wr.write('\n');
-                wr.flush();
-            }
             int lastalloc = 0;
             if (clause.intargs != null) {
                 for (int l = 0; l < clause.intargs.length; l++) {
                     int n = clause.intargs[l];
                     if (n < 0) {
                         if (n != Integer.MIN_VALUE) {
-                            count = intermediateCount(pw, count);
+                            count = intermediateCount(wr, count);
                             wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                             wr.write(" _");
                             wr.write(Integer.toString(-n - 1));
@@ -384,7 +375,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                     } else {
                         count = intermediateNewBind(t, lastalloc, n, pw, ref, count);
                         lastalloc = n;
-                        count = intermediateCount(pw, count);
+                        count = intermediateCount(wr, count);
                         wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
@@ -395,27 +386,21 @@ public final class SpecialFriendly extends AbstractSpecial {
                     }
                 }
             }
-//            if ((clause.flags & Clause.MASK_CLAUSE_NCUT) != 0) {
-//                count = intermediateCount(pw, count);
-//                wr.write(SpecialFriendly.CODE_NECK_CUT);
-//                wr.write('\n');
-//                wr.flush();
-//            }
             Intermediate end = nextClause(clause, flags);
             int lastgc = 0;
-            while (end instanceof Goal) {
-                Goal body = (Goal) end;
+            while (!(end instanceof Clause)) {
+                Goal goal = (Goal) end;
                 /* dissassemble a dispose */
-                count = intermediateDisposeBind(t, lastgc, body.endgc, clause, pw, ref, count);
-                lastgc = body.endgc;
+                count = intermediateDisposeBind(t, lastgc, goal.endgc, clause, pw, ref, count);
+                lastgc = goal.endgc;
                 /* dissassemble a new */
-                count = intermediateNewBind(t, lastalloc, body.endalloc, pw, ref, count);
-                lastalloc = body.endalloc;
-                if (body.uniargs != null) {
-                    int[] uniargs = body.uniargs;
+                count = intermediateNewBind(t, lastalloc, goal.endalloc, pw, ref, count);
+                lastalloc = goal.endalloc;
+                if (goal.uniargs != null) {
+                    int[] uniargs = goal.uniargs;
                     for (int l = 0; l < uniargs.length; l++) {
                         int k = uniargs[l];
-                        count = intermediateCount(pw, count);
+                        count = intermediateCount(wr, count);
                         wr.write(SpecialFriendly.CODE_UNIFY_VAR);
                         wr.write(" _");
                         wr.write(Integer.toString(k));
@@ -426,19 +411,15 @@ public final class SpecialFriendly extends AbstractSpecial {
                     }
                 }
                 /* dissassemble a goal */
-                count = intermediateCallGoal(body, pw, ref, count);
-                end = nextGoal(body, flags);
+                count = intermediateCallGoal(goal, pw, ref, count);
+                end = nextGoal(end, flags);
             }
             /* dissassemble a dispose */
             int n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
             count = intermediateDisposeBind(t, lastgc, n, clause, pw, ref, count);
             /* dissassemble a continuation */
-            intermediateCount(pw, count);
-            if ((clause.flags & Intermediate.MASK_INTER_NLST) == 0) {
-                wr.write(SpecialFriendly.CODE_LAST_CONT);
-            } else {
-                wr.write(SpecialFriendly.CODE_CALL_CONT);
-            }
+            intermediateCount(wr, count);
+            wr.write(SpecialFriendly.CODE_CALL_CONT);
             wr.write('\n');
             wr.flush();
         } catch (IOException x) {
@@ -467,7 +448,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param flags The flags.
      * @return The next literal.
      */
-    private static Intermediate nextGoal(Goal goal, int flags) {
+    private static Intermediate nextGoal(Intermediate goal, int flags) {
         if ((flags & MASK_FRIEND_DEBUG) != 0 &&
                 goal instanceof GoalTrace)
             return ((GoalTrace) goal).nexttrace;

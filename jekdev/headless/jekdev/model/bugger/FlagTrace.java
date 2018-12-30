@@ -117,11 +117,11 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_UNKNOWN:
                 return new SkelAtom(ReadOpts.OP_VALUE_ERROR);
             case FLAG_DEBUG:
-                return SpecialDefault.modeToAtom(((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_DEBG);
+                return SpecialDefault.modeToAtom(((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG);
             case FLAG_SYS_LEASH:
-                return SpecialDefault.portsToList(en, ((StoreTrace)en.store).flags >> 16);
+                return SpecialDefault.portsToList(en, ((StoreTrace) en.store).flags >> 16);
             case FLAG_SYS_VISIBLE:
-                return SpecialDefault.portsToList(en, ((StoreTrace)en.store).flags >> 24);
+                return SpecialDefault.portsToList(en, ((StoreTrace) en.store).flags >> 24);
             case FLAG_SYS_TDEBUG:
                 return SpecialDefault.modeToAtom(en.visor.flags & SpecialDefault.MASK_MODE_DEBG);
             case FLAG_SYS_TLEASH:

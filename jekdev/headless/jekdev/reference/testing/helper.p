@@ -36,9 +36,9 @@
 
 :- use_module(library(basic/lists)).
 :- use_module(library(system/uri)).
-:- use_module(library(system/xml)).
 :- use_module(library(system/locale)).
 :- use_module(library(system/file)).
+:- use_module(library(stream/xml)).
 :- use_module(runner).
 :- use_module(tracker).
 :- sys_load_resource(testing).
