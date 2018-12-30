@@ -1,17 +1,13 @@
 /**
- * This module allows the batch reporting of coverage analysis. Beforehand
- * the module tracker needs to be used to produce the coverage analysis.
- * The predicate cover_batch/0 can then be used to generate a number of
- * files that list and summarize the results in HTML format. The reporting
- * tool makes an additional assumption about the source names:
+ * This module provdes a HTTP server based on Pythonesk dispatch.
+ * The server can be started as by providing an object that
+ * will be responsible for handling HTTP requests:
  *
- * source --> package "/" module.
+ * ?- server(<object>, <port>).
  *
- * The first level HTML page will thus present the analysis grouped by
- * packages. The second level HTML page will thus present the analysis of
- * apackage grouped by modules. The current implementation shows hit and
- * miss counts not only as numbers but also as coloured bars. Furthermore
- * links to the original source clauses will be generated.
+ * The class of the object need only implement a predicate
+ * dispatch/4 with the Pythoneks convention that the receiver
+ * object appears in the first argument.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

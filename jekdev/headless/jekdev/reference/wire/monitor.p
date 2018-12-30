@@ -1,17 +1,11 @@
 /**
- * This module allows the batch reporting of coverage analysis. Beforehand
- * the module tracker needs to be used to produce the coverage analysis.
- * The predicate cover_batch/0 can then be used to generate a number of
- * files that list and summarize the results in HTML format. The reporting
- * tool makes an additional assumption about the source names:
+ * This module provides a HTTP object class to inspect the Prolog
+ * threads, Prolog stack frames and Prolog variables of a
+ * Prolog instance.
  *
- * source --> package "/" module.
- *
- * The first level HTML page will thus present the analysis grouped by
- * packages. The second level HTML page will thus present the analysis of
- * apackage grouped by modules. The current implementation shows hit and
- * miss counts not only as numbers but also as coloured bars. Furthermore
- * links to the original source clauses will be generated.
+ * Currently the HTTP object class only deals with GET requests
+ * and provides a simple frame set based view. Extensions towards
+ * web sockets and JSON RPC are planned.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
