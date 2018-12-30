@@ -15,7 +15,7 @@ import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 
 /**
- * <p>Capability flags.</p>
+ * <p>Prolog flags on development environment level.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -50,7 +50,6 @@ public final class FlagTrace extends AbstractFlag {
     public final static String OP_FLAG_DEBUG = "debug"; /* ISO */
     public final static String OP_FLAG_SYS_LEASH = "sys_leash";
     public final static String OP_FLAG_SYS_VISIBLE = "sys_visible";
-    public final static String OP_FLAG_SYS_TDEBUG = "sys_tdebug";
     public final static String OP_FLAG_SYS_TLEASH = "sys_tleash";
     public final static String OP_FLAG_SYS_TVISIBLE = "sys_tvisible";
     public final static String OP_FLAG_SYS_CLAUSE_INSTRUMENT = "sys_clause_instrument";
@@ -64,20 +63,19 @@ public final class FlagTrace extends AbstractFlag {
     private static final int FLAG_DEBUG = 1;
     private static final int FLAG_SYS_LEASH = 2;
     private static final int FLAG_SYS_VISIBLE = 3;
-    private static final int FLAG_SYS_TDEBUG = 4;
-    private static final int FLAG_SYS_TLEASH = 5;
-    private static final int FLAG_SYS_TVISIBLE = 6;
-    private static final int FLAG_SYS_CLAUSE_INSTRUMENT = 7;
-    private static final int FLAG_SYS_HEAD_WAKEUP = 8;
-    private static final int FLAG_SYS_SKIP_FRAME = 9;
-    private static final int FLAG_SYS_QUERY_FRAME = 10;
-    private static final int FLAG_SYS_CLOAK = 11;
-    private static final int FLAG_SYS_MAX_STACK = 12;
+    private static final int FLAG_SYS_TLEASH = 4;
+    private static final int FLAG_SYS_TVISIBLE = 5;
+    private static final int FLAG_SYS_CLAUSE_INSTRUMENT = 6;
+    private static final int FLAG_SYS_HEAD_WAKEUP = 7;
+    private static final int FLAG_SYS_SKIP_FRAME = 8;
+    private static final int FLAG_SYS_QUERY_FRAME = 9;
+    private static final int FLAG_SYS_CLOAK = 10;
+    private static final int FLAG_SYS_MAX_STACK = 11;
 
     /**
-     * <p>Create a flag.</p>
+     * <p>Create a Prolog flag.</p>
      *
-     * @param i The id of the flag.
+     * @param i The id of the Prolog flag.
      */
     private FlagTrace(int i) {
         super(i);
@@ -94,7 +92,6 @@ public final class FlagTrace extends AbstractFlag {
         prologflags.add(OP_FLAG_DEBUG, new FlagTrace(FLAG_DEBUG));
         prologflags.add(OP_FLAG_SYS_LEASH, new FlagTrace(FLAG_SYS_LEASH));
         prologflags.add(OP_FLAG_SYS_VISIBLE, new FlagTrace(FLAG_SYS_VISIBLE));
-        prologflags.add(OP_FLAG_SYS_TDEBUG, new FlagTrace(FLAG_SYS_TDEBUG));
         prologflags.add(OP_FLAG_SYS_TLEASH, new FlagTrace(FLAG_SYS_TLEASH));
         prologflags.add(OP_FLAG_SYS_TVISIBLE, new FlagTrace(FLAG_SYS_TVISIBLE));
         prologflags.add(OP_FLAG_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
@@ -122,8 +119,6 @@ public final class FlagTrace extends AbstractFlag {
                 return SpecialDefault.portsToList(en, ((StoreTrace) en.store).flags >> 16);
             case FLAG_SYS_VISIBLE:
                 return SpecialDefault.portsToList(en, ((StoreTrace) en.store).flags >> 24);
-            case FLAG_SYS_TDEBUG:
-                return SpecialDefault.modeToAtom(en.visor.flags & SpecialDefault.MASK_MODE_DEBG);
             case FLAG_SYS_TLEASH:
                 return SpecialDefault.portsToList(en, en.visor.flags >> 16);
             case FLAG_SYS_TVISIBLE:
@@ -171,9 +166,6 @@ public final class FlagTrace extends AbstractFlag {
                     return true;
                 case FLAG_SYS_VISIBLE:
                     ((StoreTrace) en.store).setVisible(SpecialDefault.listToPorts(m, d) << 24);
-                    return true;
-                case FLAG_SYS_TDEBUG:
-                    ((SupervisorTrace) en.visor).setThreadMode(SpecialDefault.atomToMode(m, d));
                     return true;
                 case FLAG_SYS_TLEASH:
                     ((SupervisorTrace) en.visor).setThreadLeash(SpecialDefault.listToPorts(m, d) << 16);

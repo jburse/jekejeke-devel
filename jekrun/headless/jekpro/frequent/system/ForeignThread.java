@@ -1,16 +1,25 @@
 package jekpro.frequent.system;
 
+import derek.util.protect.LicenseError;
+import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindCount;
+import jekpro.model.molec.EngineMessage;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.SkelAtom;
+import matula.comp.sharik.AbstractBundle;
+import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
-import matula.util.wire.AbstractLivestock;
-import matula.util.wire.Fence;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.util.ArrayList;
 
 /**
  * The foreign predicates for the module system/thread.
@@ -45,15 +54,6 @@ import java.io.BufferedWriter;
  */
 public final class ForeignThread {
     public final static int BUF_SIZE = 1024;
-
-    private final static String OP_SYS_THREAD_NAME = "sys_thread_name";
-    private final static String OP_SYS_THREAD_STATE = "sys_thread_state";
-    private final static String OP_SYS_THREAD_GROUP = "sys_thread_group";
-
-    private final static String[] OP_PROPS = {
-            OP_SYS_THREAD_NAME,
-            OP_SYS_THREAD_STATE,
-            OP_SYS_THREAD_GROUP};
 
     /****************************************************************/
     /* Thread Creation                                              */
@@ -304,15 +304,20 @@ public final class ForeignThread {
     /****************************************************************/
 
     /**
-     * <p>Retrieve the known thread properties.</p>
+     * <p>Retrieve the known thread flags.</p>
      *
-     * @param co The call out.
-     * @return The known thread property.
+     * @param inter The interpreter.
+     * @param co    The call out.
+     * @return The thread flags.
      */
-    public static String sysCurrentThreadFlag(CallOut co) {
+    public static String sysCurrentThreadFlag(Interpreter inter, CallOut co) {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<String>(OP_PROPS);
+            Engine en = (Engine) inter.getEngine();
+            ArrayList<String> list = ForeignThread.listThreadFlags(en);
+            String[] arr = new String[list.size()];
+            list.toArray(arr);
+            dc = new ArrayEnumeration<String>(arr);
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
@@ -325,25 +330,162 @@ public final class ForeignThread {
     }
 
     /**
-     * <p>Retrieve a thread property.</p>
+     * <p>Retrieve a thread flag.</p>
      *
-     * @param t    The thread.
-     * @param name The thread property name.
-     * @return The thread property value, or null.
-     * @throws InterpreterMessage Validation error.
+     * @param inter The interpreter.
+     * @param t     The thread.
+     * @param flag  The thread flag.
+     * @return The value.
+     * @throws InterpreterMessage Flag undefined.
      */
-    public static Object sysGetThreadFlag(Thread t, String name)
+    public static Object sysGetThreadFlag(Interpreter inter, Thread t,
+                                          String flag)
             throws InterpreterMessage {
-        if (OP_SYS_THREAD_NAME.equals(name)) {
-            return t.getName();
-        } else if (OP_SYS_THREAD_STATE.equals(name)) {
-            return t.getState().name();
-        } else if (OP_SYS_THREAD_GROUP.equals(name)) {
-            return t.getThreadGroup();
-        } else {
+        Engine en = (Engine) inter.getEngine();
+        Object val = ForeignThread.getThreadFlag(flag, t, en);
+        if (val == null)
             throw new InterpreterMessage(InterpreterMessage.domainError(
-                    "prolog_flag", name));
+                    "prolog_flag", flag));
+        return val;
+    }
+
+    /**
+     * <p>Set a thread flag.</p>
+     *
+     * @param inter The interpreter.
+     * @param t     The thread.
+     * @param flag  The thread flag.
+     * @param val   The value.
+     * @throws InterpreterMessage Flag undefined.
+     */
+    public static void sysSetThreadFlag(Interpreter inter, Thread t,
+                                          String flag, Object val)
+            throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            ForeignThread.setFlag(flag, AbstractTerm.getSkel(val),
+                    AbstractTerm.getDisplay(val), t, en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
+    }
+
+    /****************************************************************/
+    /* Thread Flags                                                 */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the list of thread flags.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param en The engine.
+     * @return The list of flags.
+     */
+    public static ArrayList<String> listThreadFlags(Engine en) {
+        ArrayList<String> res = new ArrayList<String>();
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
+            for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+                 entry2 != null; entry2 = pfs.successor(entry2)) {
+                res.add(entry2.key);
+            }
+        }
+        AbstractFactory factory = en.store.foyer.getFactory();
+        MapHash<String, AbstractFlag> pfs = factory.getThreadFlags();
+        for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+             entry2 != null; entry2 = pfs.successor(entry2)) {
+            res.add(entry2.key);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Retrieve the value of the given thread flag.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param flag The flag.
+     * @param t    The thread.
+     * @param en   The engine.
+     * @return The value or null.
+     */
+    public static Object getThreadFlag(String flag,
+                                       Thread t, Engine en) {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
+            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (af != null)
+                return af.getThreadFlag(t, en);
+        }
+        AbstractFactory factory = en.store.foyer.getFactory();
+        MapHash<String, AbstractFlag> pfs = factory.getThreadFlags();
+        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+        if (af != null)
+            return af.getThreadFlag(t, en);
+        return null;
+    }
+
+    /**
+     * <p>Change the value of a prolog Prolog flag.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param flag The name of the flag.
+     * @param m    The value skel.
+     * @param d    The value display.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void setFlag(String flag, Object m, BindCount[] d,
+                               Thread t, Engine en)
+            throws EngineMessage {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
+            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (af != null) {
+                if (af.setThreadFlag(m, d, t, en)) {
+                    return;
+                } else {
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            EngineMessage.OP_PERMISSION_MODIFY,
+                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+                }
+            }
+        }
+        AbstractFactory factory = en.store.foyer.getFactory();
+        MapHash<String, AbstractFlag> pfs = factory.getThreadFlags();
+        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+        if (af != null) {
+            if (af.setThreadFlag(m, d, t, en)) {
+                return;
+            } else {
+                throw new EngineMessage(EngineMessage.permissionError(
+                        EngineMessage.OP_PERMISSION_MODIFY,
+                        EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+            }
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                new SkelAtom(flag)));
     }
 
     /****************************************************************/

@@ -91,7 +91,7 @@ public final class ForeignToolkit {
      * @throws InterpreterMessage Validation error.
      */
     public static String sysRegedLicenseText(Interpreter inter,
-                                         String clazz)
+                                             String clazz)
             throws InterpreterMessage {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         return inter.getKnowledgebase().getLobby().regedLicenseText(capa);

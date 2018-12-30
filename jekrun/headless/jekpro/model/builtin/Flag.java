@@ -18,7 +18,7 @@ import java.util.Properties;
 import java.util.Random;
 
 /**
- * <p>Capability flags.</p>
+ * <p>Prolog flags on runtime library level.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -79,9 +79,9 @@ public final class Flag extends AbstractFlag {
     private static final int FLAG_SYS_TIMEOUT = 22;
 
     /**
-     * <p>Create a flag.</p>
+     * <p>Create a Prolog flag.</p>
      *
-     * @param i The id of the flag.
+     * @param i The id of the Prolog flag.
      */
     private Flag(int i) {
         super(i);

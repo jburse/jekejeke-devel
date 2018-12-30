@@ -8,7 +8,6 @@ import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * <p>The foreign predicates for the module system/file.</p>
@@ -53,7 +52,7 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return True if the file could be created, otherwise false.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static boolean sysCreateFile(String uristr)
             throws InterpreterMessage, IOException {
@@ -66,7 +65,7 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return True if the file could be deleted, otherwise false.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static boolean sysDeleteFile(String uristr)
             throws InterpreterMessage {
@@ -97,7 +96,7 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return True if the directory could be created, otherwise false.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static boolean sysMakeDirectory(String uristr)
             throws InterpreterMessage {
@@ -111,7 +110,7 @@ public final class ForeignDirectory {
      * @param co     The call out.
      * @param uristr The file name.
      * @return The relative entries.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static String sysDirectoryFile(CallOut co, String uristr)
             throws InterpreterMessage {
@@ -136,7 +135,7 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return True if the file is a directory, otherwise false.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static boolean sysIsFile(String uristr)
             throws InterpreterMessage {
@@ -149,7 +148,7 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return True if the file is a directory, otherwise false.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static boolean sysIsDirectory(String uristr)
             throws InterpreterMessage {
@@ -166,7 +165,7 @@ public final class ForeignDirectory {
      *
      * @param uristr The file name.
      * @return The last modified as a long.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static long sysGetTimeFile(String uristr)
             throws InterpreterMessage {
@@ -180,7 +179,7 @@ public final class ForeignDirectory {
      * @param uristr The file name.
      * @param date   The last modified as a long.
      * @return True if the date was set, otherwise false.
-     * @throws InterpreterMessage           Not file scheme.
+     * @throws InterpreterMessage Not file scheme.
      */
     public static boolean sysSetTimeFile(String uristr, long date)
             throws InterpreterMessage {

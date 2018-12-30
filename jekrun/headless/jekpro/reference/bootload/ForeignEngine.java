@@ -13,11 +13,11 @@ import jekpro.model.rope.LoadForce;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
 import jekpro.tools.proxy.FactoryAPI;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
@@ -63,32 +63,43 @@ import java.util.Properties;
 public final class ForeignEngine {
 
     /**
-     * <p>Retrieve the list of flags.</p>
+     * <p>Retrieve the list of Prolog flags.</p>
      *
-     * @param inter The call-in.
-     * @return The list of flags.
+     * @param inter The interpreter.
+     * @param co    The call out.
+     * @return The Prolog flags.
      */
-    public static Object sysListFlags(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        ArrayList<String> flags = inter.getProperties();
-        Object res = lobby.ATOM_NIL;
-        for (int i = flags.size() - 1; i >= 0; i--)
-            res = new TermCompound(lobby.ATOM_CONS,
-                    flags.get(i), res);
+    public static String sysCurrentFlag(Interpreter inter, CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            Engine en = (Engine) inter.getEngine();
+            ArrayList<String> list = ForeignEngine.listFlags(en);
+            String[] arr = new String[list.size()];
+            list.toArray(arr);
+            dc = new ArrayEnumeration<String>(arr);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
         return res;
     }
 
     /**
-     * <p>Retrieve a flag.</p>
+     * <p>Retrieve a Prolog flag.</p>
      *
-     * @param inter The call-in.
-     * @param flag  The flag.
+     * @param inter The interpreter.
+     * @param flag  The Prolog flag.
      * @return The value.
      * @throws InterpreterMessage Flag undefined.
      */
     public static Object sysGetFlag(Interpreter inter, String flag)
             throws InterpreterMessage {
-        Object val = inter.getProperty(flag);
+        Engine en = (Engine) inter.getEngine();
+        Object val = ForeignEngine.getFlag(flag, en);
         if (val == null)
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", flag));
@@ -96,16 +107,22 @@ public final class ForeignEngine {
     }
 
     /**
-     * <p>Set a flag.</p>
+     * <p>Set a Prolog flag.</p>
      *
-     * @param inter The call-in.
-     * @param flag  The flag.
+     * @param inter The interpreter.
+     * @param flag  The Prolog flag.
      * @param val   The value.
      * @throws InterpreterMessage Flag undefined.
      */
     public static void sysSetFlag(Interpreter inter, String flag, Object val)
             throws InterpreterMessage {
-        inter.setProperty(flag, val);
+        Engine en = (Engine) inter.getEngine();
+        try {
+            ForeignEngine.setFlag(flag, AbstractTerm.getSkel(val),
+                    AbstractTerm.getDisplay(val), en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
     }
 
     /**
@@ -125,7 +142,69 @@ public final class ForeignEngine {
     /*************************************************************/
 
     /**
-     * <p>Change the value of a prolog flag.</p>
+     * <p>Retrieve the list of Prolog flags.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param en The engine.
+     * @return The list of flags.
+     */
+    public static ArrayList<String> listFlags(Engine en) {
+        ArrayList<String> res = new ArrayList<String>();
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
+            for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+                 entry2 != null; entry2 = pfs.successor(entry2)) {
+                res.add(entry2.key);
+            }
+        }
+        AbstractFactory factory = en.store.foyer.getFactory();
+        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
+        for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+             entry2 != null; entry2 = pfs.successor(entry2)) {
+            res.add(entry2.key);
+        }
+        return res;
+    }
+
+    /**
+     * <p>Retrieve the value of the given Prolog flag.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param flag The flag.
+     * @param en   The engine.
+     * @return The value or null.
+     */
+    public static Object getFlag(String flag, Engine en) {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
+            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (af != null)
+                return af.getFlag(en);
+        }
+        AbstractFactory factory = en.store.foyer.getFactory();
+        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
+        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+        if (af != null)
+            return af.getFlag(en);
+        return null;
+    }
+
+    /**
+     * <p>Change the value of a prolog Prolog flag.</p>
      * <p>Throws a domain error for undefined flags.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
@@ -172,66 +251,6 @@ public final class ForeignEngine {
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_FLAG,
                 new SkelAtom(flag)));
-    }
-
-    /**
-     * <p>Retrieve the value of the given flag.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param flag The flag.
-     * @param en   The engine.
-     * @return The value or null.
-     */
-    public static Object getFlag(String flag, Engine en) {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
-            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-            if (af != null)
-                return af.getFlag(en);
-        }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
-        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-        if (af != null)
-            return af.getFlag(en);
-        return null;
-    }
-
-    /**
-     * <p>Retrieve the list of flags.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param en The engine.
-     * @return The list of flags.
-     */
-    public static ArrayList<String> listFlags(Engine en) {
-        ArrayList<String> res = new ArrayList<String>();
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
-            for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
-                 entry2 != null; entry2 = pfs.successor(entry2)) {
-                res.add(entry2.key);
-            }
-        }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
-        for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
-             entry2 != null; entry2 = pfs.successor(entry2)) {
-            res.add(entry2.key);
-        }
-        return res;
     }
 
     /**********************************************************/

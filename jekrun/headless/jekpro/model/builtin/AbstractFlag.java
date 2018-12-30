@@ -54,16 +54,22 @@ public abstract class AbstractFlag {
         id = i;
     }
 
+    /************************************************************/
+    /* Prolog Flags                                             */
+    /************************************************************/
+
     /**
-     * <p>Retrieve the value of this flag.</p>
+     * <p>Retrieve the value of this Prolog flag.</p>
      *
      * @param en The engine.
      * @return The value.
      */
-    public abstract Object getFlag(Engine en);
+    public Object getFlag(Engine en) {
+        throw new IllegalArgumentException("not implemented");
+    }
 
     /**
-     * <p>Set the value of a this flag.</p>
+     * <p>Set the value of a this Prolog flag.</p>
      *
      * @param m  The value skel.
      * @param d  The value display.
@@ -71,8 +77,41 @@ public abstract class AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public abstract boolean setFlag(Object m, BindCount[] d, Engine en)
-            throws EngineMessage;
+    public boolean setFlag(Object m, BindCount[] d, Engine en)
+            throws EngineMessage {
+        throw new IllegalArgumentException("not implemented");
+    }
+
+    /************************************************************/
+    /* Thread Flags                                             */
+    /************************************************************/
+
+    /**
+     * <p>Retrieve the value of this thread flag.</p>
+     *
+     * @param t  The thread.
+     * @param en The engine.
+     * @return The value.
+     */
+    public Object getThreadFlag(Thread t, Engine en) {
+        throw new IllegalArgumentException("not implemented");
+    }
+
+    /**
+     * <p>Set the value of a this flag.</p>
+     *
+     * @param m  The value skel.
+     * @param d  The value display.
+     * @param t  The thread.
+     * @param en The engine.
+     * @return True if flag could be changed, otherwise false.
+     * @throws EngineMessage Shit happens.
+     */
+    public boolean setThreadFlag(Object m, BindCount[] d,
+                                 Thread t, Engine en)
+            throws EngineMessage {
+        throw new IllegalArgumentException("not implemented");
+    }
 
     /************************************************************/
     /* On & Off Atom                                            */
