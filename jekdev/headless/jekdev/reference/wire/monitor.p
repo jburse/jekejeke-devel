@@ -44,9 +44,9 @@
 :- use_module(library(system/group)).
 
 /**
- * dispatch(O, S, A, R):
+ * dispatch(O, P, A, R):
  * The predicate succeeds in dispatching the request for object
- * O, with spec S, with assoc A and with response R.
+ * O, with path P, with parameter list A and output stream R.
  */
 :- public dispatch/4.
 dispatch(_, '/index.html', _, Response) :- !,

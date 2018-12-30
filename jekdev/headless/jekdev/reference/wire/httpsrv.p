@@ -1,9 +1,9 @@
 /**
- * This module provdes a HTTP server based on Pythonesk dispatch.
- * The server can be started as by providing an object that
+ * This module provides a HTTP server based on Pythonesk dispatch.
+ * The server can be started by providing an object that
  * will be responsible for handling HTTP requests:
  *
- * ?- server(<object>, <port>).
+ * ?- server(<object>, <port>), fail; true.
  *
  * The class of the object need only implement a predicate
  * dispatch/4 with the Pythoneks convention that the receiver
@@ -53,8 +53,8 @@
 /***************************************************************/
 
 /**
- * server(P):
- * The predicate runs a web server at port P.
+ * server(O, P):
+ * The predicate runs a web server with object O at port P.
  */
 % server(+Object, +Integer)
 :- public server/2.
@@ -119,16 +119,16 @@ http_parameter(Assoc, Name, Value) :-
 /***************************************************************/
 
 /**
- * send_file(F, O):
- * The predicate sends the file F to the output stream O.
+ * send_text(F, O):
+ * The predicate sends the HTML resource F to the output stream O.
  */
-% send_file(+File, +Stream)
-:- public send_file/2.
-send_file(File, Response) :-
+% send_text(+File, +Stream)
+:- public send_text/2.
+send_text(File, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream),
       (  send_ok(Response),
-         send_text(Stream, Response)),
+         send_lines(Stream, Response)),
       close(Stream)).
 
 % send_ok(+Stream)
@@ -138,14 +138,14 @@ send_ok(Response) :-
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
-% send_text(+Stream, +Stream)
-:- private send_text/2.
-send_text(Stream, Response) :-
+% send_lines(+Stream, +Stream)
+:- private send_lines/2.
+send_lines(Stream, Response) :-
    read_line(Stream, Line), !,
    write(Response, Line),
    write(Response, '\r\n'),
-   send_text(Stream, Response).
-send_text(_, _).
+   send_lines(Stream, Response).
+send_lines(_, _).
 
 /**
  * html_begin(O, T):
