@@ -49,17 +49,22 @@
 :- use_module(library(system/thread)).
 :- use_module(library(system/group)).
 
-:- public user:dispatch/3.
-user:dispatch('/index.html', _, Response) :- !,
+/**
+ * dispatch(O, S, A, R):
+ * The predicate succeeds in dispatching the request for object
+ * O, with spec S, with assoc A and with response R.
+ */
+:- public dispatch/4.
+dispatch(_, '/index.html', _, Response) :- !,
    send_file(library(wire/index), Response).
-user:dispatch('/thread.jsp', _, Response) :- !,
+dispatch(_, '/thread.jsp', _, Response) :- !,
    send_thread(Response).
-user:dispatch('/stack.jsp', Assoc, Response) :-
+dispatch(_, '/stack.jsp', Assoc, Response) :-
    http_parameter(Assoc, thread, Name), !,
    send_stack(Response, Name).
-user:dispatch('/stack.jsp', _, Response) :- !,
+dispatch(_, '/stack.jsp', _, Response) :- !,
    send_stack(Response).
-user:dispatch('/frame.html', _, Response) :- !,
+dispatch(_, '/frame.html', _, Response) :- !,
    send_file(library(wire/frame), Response).
 
 /*************************************************************/

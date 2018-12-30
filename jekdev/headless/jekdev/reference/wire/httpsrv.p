@@ -60,11 +60,11 @@
  * server(P):
  * The predicate runs a web server at port P.
  */
-% server(+Integer)
-:- public server/1.
-server(Port) :-
+% server(+Object, +Integer)
+:- public server/2.
+server(Object, Port) :-
    balance((  accept(Port, Session),
-              handle(Session))).
+              handle(Object, Session))).
 
 /**
  * accept(P, S):
@@ -83,9 +83,9 @@ accept(Port, Session) :-
  * handle(S):
  * The predicate handles a session S.
  */
-% handle(+Socket)
-:- private handle/1.
-handle(Session) :-
+% handle(+Object, +Socket)
+:- private handle/2.
+handle(Object, Session) :-
    open(Session, read, Request),
    read_line(Request, What),
    atom_list_concat([_,URI,_], ' ', What),
@@ -93,7 +93,7 @@ handle(Session) :-
    params(Query, Assoc),
    setup_call_cleanup(
       open(Session, write, Response),
-      dispatch(Spec, Assoc, Response),
+      Object::dispatch(Spec, Assoc, Response),
       close(Response)).
 
 % params(+Atom, -Assoc)

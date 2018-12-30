@@ -43,6 +43,7 @@
 
 :- module(attach, []).
 :- use_module(library(stream/console)).
+:- use_module(library(system/thread)).
 
 /***********************************************************************/
 /* Thead Debugging Mode                                                */
@@ -54,7 +55,8 @@
  */
 :- public tclear/0.
 tclear :-
-   set_prolog_flag(sys_tdebug, inherit).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tdebug, inherit).
 :- set_predicate_property(tclear/0, sys_notrace).
 
 /**
@@ -63,7 +65,8 @@ tclear :-
  */
 :- public tdebug/0.
 tdebug :-
-   set_prolog_flag(sys_tdebug, on).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tdebug, on).
 :- set_predicate_property(tdebug/0, sys_notrace).
 
 /**
@@ -72,7 +75,8 @@ tdebug :-
  */
 :- public ttrace/0.
 ttrace :-
-   set_prolog_flag(sys_tdebug, step_in).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tdebug, step_in).
 :- set_predicate_property(ttrace/0, sys_notrace).
 
 /**
@@ -81,7 +85,8 @@ ttrace :-
  */
 :- public tskip/0.
 tskip :-
-   set_prolog_flag(sys_tdebug, step_over).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tdebug, step_over).
 :- set_predicate_property(tskip/0, sys_notrace).
 
 /**
@@ -90,7 +95,8 @@ tskip :-
  */
 :- public tout/0.
 tout :-
-   set_prolog_flag(sys_tdebug, step_out).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tdebug, step_out).
 :- set_predicate_property(tout/0, sys_notrace).
 
 /**
@@ -99,7 +105,8 @@ tout :-
  */
 :- public tnodebug/0.
 tnodebug :-
-   set_prolog_flag(sys_tdebug, off).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tdebug, off).
 :- set_predicate_property(tnodebug/0, sys_notrace).
 
 /**
@@ -151,8 +158,10 @@ tvisible(Flags) :-
 % tdebugging
 :- public tdebugging/0.
 tdebugging :-
-   current_prolog_flag(sys_tdebug, X),
-   ttywrite_term((:-set_prolog_flag(sys_tdebug,X)), [quoted(true),context(0)]),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tdebug, X),
+   tdebugging_tdebug(X, C),
+   ttywrite_term((:-C), [quoted(true),context(0)]),
    ttywrite('.'), ttynl, fail.
 tdebugging :-
    current_prolog_flag(sys_tvisible, X),
@@ -172,6 +181,14 @@ tdebugging :-
    ttywrite('.'), ttynl, fail.
 tdebugging.
 :- set_predicate_property(tdebugging/0, sys_notrace).
+
+:- private tdebugging_tdebug/2.
+tdebugging_tdebug(inherit, tclear).
+tdebugging_tdebug(on, tdebug).
+tdebugging_tdebug(step_in, ttrace).
+tdebugging_tdebug(step_over, tskip).
+tdebugging_tdebug(step_out, tout).
+tdebugging_tdebug(off, tnodebug).
 
 /**
  * tspy(P):
