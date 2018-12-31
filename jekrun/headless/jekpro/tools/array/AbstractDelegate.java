@@ -2,8 +2,8 @@ package jekpro.tools.array;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.Predicate;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -171,7 +171,7 @@ public abstract class AbstractDelegate {
         BindCount[] ref = en.display;
 
         Object[] args = computeArgs(temp, ref, en);
-        SkelAtom sa = Frame.callableToName(temp);
+        SkelAtom sa = StackElement.callableToName(temp);
         ref = bridgeCount(args);
         en.display = ref;
         en.skel = bridgeAlloc(sa, args, ref, en);

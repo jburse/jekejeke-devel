@@ -44,11 +44,9 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Engine implements Comparator<Object> {
+public class Engine extends StackElement implements Comparator<Object> {
     public Object skel;
     public BindCount[] display;
-    public Intermediate contskel;
-    public Display contdisplay;
     public Store store;
     public final Supervisor visor;
     public AbstractBind bind;
@@ -206,13 +204,19 @@ public class Engine implements Comparator<Object> {
     public boolean runLoop(int snap, boolean found)
             throws EngineException {
         try {
-            while (found && contskel != null) {
-                found = contskel.resolveNext(this);
-            }
-            while (!found && snap < number) {
-                found = choices.moniNext(this);
-                while (found && contskel != null) {
-                    found = contskel.resolveNext(this);
+            for (;;) {
+                if (found) {
+                    if (contskel != null) {
+                        found = contskel.resolveNext(this);
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (snap < number) {
+                        found = choices.moniNext(this);
+                    } else {
+                        break;
+                    }
                 }
             }
         } catch (EngineException x) {
@@ -430,7 +434,7 @@ public class Engine implements Comparator<Object> {
                     EngineMessage.OP_TYPE_CALLABLE, alfa));
         }
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
-            SkelAtom sa = Frame.callableToName(alfa);
+            SkelAtom sa = StackElement.callableToName(alfa);
             int arity = Frame.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_EVALUABLE,
@@ -438,7 +442,7 @@ public class Engine implements Comparator<Object> {
         }
         AbstractDelegate fun = cp.pick.del;
         if (fun == null) {
-            SkelAtom sa = Frame.callableToName(alfa);
+            SkelAtom sa = StackElement.callableToName(alfa);
             int arity = Frame.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_CODE,

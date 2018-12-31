@@ -275,8 +275,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         dc.lastalloc = lastalloc;
         dc.number = en.number;
         dc.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : dc);
-        dc.goalskel = en.contskel;
-        dc.goaldisplay = u;
+        dc.contskel = en.contskel;
+        dc.contdisplay = u;
 
         if (at != list.length) {
             /* create choice point */

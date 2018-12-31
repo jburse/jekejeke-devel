@@ -66,17 +66,21 @@ public class EngineYield extends Engine {
     public final boolean runLoop(int snap, boolean found)
             throws EngineException {
         try {
-            while (found && contskel != null) {
+            for (;;) {
                 if ((yieldcount++) >= YIELD_MAX)
                     yieldReset();
-                found = contskel.resolveNext(this);
-            }
-            while (!found && snap < number) {
-                found = choices.moniNext(this);
-                while (found && contskel != null) {
-                    if ((yieldcount++) >= YIELD_MAX)
-                        yieldReset();
-                    found = contskel.resolveNext(this);
+                if (found) {
+                    if (contskel != null) {
+                        found = contskel.resolveNext(this);
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (snap < number) {
+                        found = choices.moniNext(this);
+                    } else {
+                        break;
+                    }
                 }
             }
         } catch (EngineException x) {

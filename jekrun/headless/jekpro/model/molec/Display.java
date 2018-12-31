@@ -1,11 +1,11 @@
 package jekpro.model.molec;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.tools.term.SkelVar;
+import jekpro.model.inter.StackElement;
+import jekpro.model.rope.Intermediate;
 
 /**
- * <p>Provides built-in predicates for dict ops.</p>
+ * <p>The class provides a display.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,105 +35,51 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Display {
-    public final static Display DISPLAY_CONST = new Display(0);
+public final class Display extends StackElement {
+    public final static int MASK_DPCL_MORE = 0x00000001;
+    public final static int MASK_DPCL_SOFT = 0x00000002;
 
     public BindCount[] bind;
-    public int serno = -1;
+    public int flags;
+    public int lastalloc;
+    public int lastgc;
+    public int number;
+    public Display prune;
 
     /**
-     * <p>Create a display.</p>
+     * <p>Create a display clause.</p>
      */
     public Display() {
     }
 
-    /**
-     * <p>Create a display.</p>
-     * <p>Fill the binds with bindvars.</p>
-     *
-     * @param s The number of variables.
-     */
-    public Display(int s) {
-        if (s == 0)
-            return;
+    /****************************************************/
+    /* Goal Preparation                                 */
+    /****************************************************/
 
-        BindCount[] b = new BindCount[s];
-        bind = b;
-        for (int i = 0; i < s; i++) {
-            BindCount b2 = new BindCount();
-            b[i] = b2;
-        }
+    /**
+     * <p>Add a variable value to the prepared call.</p>
+     *
+     * @param m  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     */
+    public final void addArgument(Object m, BindCount[] d, Engine en) {
+        BindCount b = new BindCount();
+        bind[lastalloc] = b;
+        bind[lastalloc].bindVar(m, d, en);
+        lastalloc++;
     }
 
     /**
-     * <p>Set the bind size.</p>
-     * <p>Refill the binds with bindvars.</p>
+     * <p>Prepare the call.</p>
      *
-     * @param s The bind size.
+     * @param en The engine.
      */
-    public void setSize(int s) {
-        BindCount[] b = bind;
-        int n = (b != null ? b.length : 0);
-        if (n != s) {
-            if (s == 0) {
-                b = null;
-            } else {
-                BindCount[] newbind = new BindCount[s];
-                n = Math.min(n, s);
-                if (n != 0)
-                    System.arraycopy(b, 0, newbind, 0, n);
-                b = newbind;
-            }
-            bind = b;
-        }
-        for (int i = 0; i < s; i++) {
-            BindCount b2 = b[i];
-            if (b2 == null) {
-                b2 = new BindCount();
-                b[i] = b2;
-            }
-        }
-    }
-
-    /*********************************************************************/
-    /* Utilities                                                         */
-    /*********************************************************************/
-
-    /**
-     * <p>Determine the display size.</p>
-     * <p>Beware, works only for the root copy and not for sub terms.</p>
-     *
-     * @param m The skeleton.
-     * @return The display size.
-     */
-    public static int displaySize(Object m) {
-        Object var = EngineCopy.getVar(m);
-        if (var == null)
-            return 0;
-        if (var instanceof SkelVar) {
-            return 1;
-        } else {
-            return ((SkelVar[]) var).length;
-        }
-    }
-
-    /**
-     * <p>Same as engine remtab for univ builtins.</p>
-     */
-    public void remTab(Engine en) {
-        int n = (bind != null ? bind.length : 0);
-        int k = 0;
-        if (k < n) {
-            do {
-                BindCount bc = bind[k];
-                if ((--bc.refs) == 0) {
-                    bind[k] = null;
-                    if (bc.display != null)
-                        BindVar.unbind(bc, en);
-                }
-                k++;
-            } while (k < n);
-        }
+    public final void setEngine(Engine en) {
+        number = en.number;
+        prune = this;
+        contskel = en.contskel;
+        contdisplay = en.contdisplay;
     }
 
 }

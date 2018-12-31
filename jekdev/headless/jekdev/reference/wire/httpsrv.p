@@ -76,8 +76,8 @@ accept(Port, Session) :-
       close(Server)).
 
 /**
- * handle(S):
- * The predicate handles a session S.
+ * handle(O, S):
+ * The predicate handles with object O a session S.
  */
 % handle(+Object, +Socket)
 :- private handle/2.
@@ -87,10 +87,7 @@ handle(Object, Session) :-
    atom_list_concat([_,URI,_], ' ', What),
    make_uri(Spec, Query, _, URI),
    params(Query, Assoc),
-   setup_call_cleanup(
-      open(Session, write, Response),
-      Object::dispatch(Spec, Assoc, Response),
-      close(Response)).
+   Object::dispatch(Spec, Assoc, Session).
 
 % params(+Atom, -Assoc)
 :- private params/2.
@@ -115,7 +112,7 @@ http_parameter(Assoc, Name, Value) :-
    Value = Found.
 
 /***************************************************************/
-/* HTTP Responses                                              */
+/* HTTP Response Text                                          */
 /***************************************************************/
 
 /**
@@ -127,13 +124,13 @@ http_parameter(Assoc, Name, Value) :-
 send_text(File, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream),
-      (  send_ok(Response),
+      (  send_html(Response),
          send_lines(Stream, Response)),
       close(Stream)).
 
-% send_ok(+Stream)
-:- private send_ok/1.
-send_ok(Response) :-
+% send_html(+Stream)
+:- private send_html/1.
+send_html(Response) :-
    write(Response, 'HTTP/1.0 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
@@ -147,6 +144,48 @@ send_lines(Stream, Response) :-
    send_lines(Stream, Response).
 send_lines(_, _).
 
+/***************************************************************/
+/* HTTP Response Binary                                        */
+/***************************************************************/
+
+/**
+ * send_binary(F, O):
+ * The predicate sends the binary resource F to the output stream O.
+ */
+% send_binary(+File, +Stream)
+:- public send_binary/2.
+send_binary(File, Response) :-
+   setup_call_cleanup(
+      open_resource(File, Stream, [type(binary)]),
+      (  send_octet(Response),
+         send_blocks(Stream, Response)),
+      close(Stream)).
+
+% send_octet(+Stream)
+:- private send_octet/1.
+send_octet(Response) :-
+   write_bytes(Response, "HTTP/1.0 200 OK\r\n"),
+   write_bytes(Response, "Content-Type: application/octet-stream\r\n"),
+   write_bytes(Response, "\r\n").
+
+% write_bytes(+Stream, +Bytes)
+:- private write_bytes/2.
+write_bytes(Response, Bytes) :-
+   block_bytes(Block, Bytes),
+   write_block(Response, Block).
+
+% send_blocks(+Stream, +Stream)
+:- private send_blocks/2.
+send_blocks(Stream, Response) :-
+   read_block(Stream, 1024, Block), !,
+   write_block(Response, Block),
+   send_blocks(Stream, Response).
+send_blocks(_, _).
+
+/***************************************************************/
+/* HTTP Response Dynamic                                       */
+/***************************************************************/
+
 /**
  * html_begin(O, T):
  * The predicate sends the html begin with title T to the output stream O.
@@ -154,7 +193,7 @@ send_lines(_, _).
 % html_begin(+Stream, +Atom)
 :- public html_begin/2.
 html_begin(Response, Title) :-
-   send_ok(Response),
+   send_html(Response),
    write(Response, '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\r\n'),
    write(Response, '<html>\r\n'),
    write(Response, '  <head>\r\n'),

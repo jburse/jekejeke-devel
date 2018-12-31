@@ -3,8 +3,10 @@ package jekdev.model.bugger;
 import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.StackElement;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
@@ -43,8 +45,10 @@ import matula.util.wire.AbstractLivestock;
  */
 public final class FlagTraceThread extends AbstractFlag {
     public final static String OP_FLAG_SYS_TDEBUG = "sys_tdebug";
+    public final static String OP_FLAG_TOP_FRAME = "sys_top_frame";
 
     private static final int FLAG_SYS_TDEBUG = 0;
+    private static final int FLAG_SYS_TOP_FRAME = 1;
 
     /**
      * <p>Create a thread flag.</p>
@@ -63,6 +67,7 @@ public final class FlagTraceThread extends AbstractFlag {
     static MapHash<String, AbstractFlag> defineThreadFlags() {
         MapHash<String, AbstractFlag> threadflags = new MapHash<String, AbstractFlag>();
         threadflags.add(OP_FLAG_SYS_TDEBUG, new FlagTraceThread(FLAG_SYS_TDEBUG));
+        threadflags.add(OP_FLAG_TOP_FRAME, new FlagTraceThread(FLAG_SYS_TOP_FRAME));
         return threadflags;
     }
 
@@ -72,13 +77,25 @@ public final class FlagTraceThread extends AbstractFlag {
      * @param t  The thread.
      * @param en The engine.
      * @return The value.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
-    public Object getThreadFlag(Thread t, Engine en) {
+    public Object getThreadFlag(Thread t, Engine en)
+            throws EngineException, EngineMessage {
         switch (id) {
             case FLAG_SYS_TDEBUG:
                 Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(t);
-                if (s == null) return new SkelAtom("null");
+                if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
                 return SpecialDefault.modeToAtom(s.flags & SpecialDefault.MASK_MODE_DEBG);
+            case FLAG_SYS_TOP_FRAME:
+                s = (Supervisor) AbstractLivestock.currentLivestock(t);
+                if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
+                Engine other = s.inuse;
+                if (other == null) return new SkelAtom(AbstractFlag.OP_NULL);
+                StackElement stack = other;
+                if (StackElement.isNoTrace(stack.contskel, stack.contdisplay, en))
+                    stack = StackElement.skipNoTrace(stack.contdisplay, en);
+                return (stack != null ? stack : new SkelAtom(AbstractFlag.OP_NULL));
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -103,6 +120,7 @@ public final class FlagTraceThread extends AbstractFlag {
                 if (s == null) return true;
                 s.setThreadMode(SpecialDefault.atomToMode(m, d));
                 return true;
+            case FLAG_SYS_TOP_FRAME:
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

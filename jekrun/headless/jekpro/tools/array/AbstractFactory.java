@@ -80,9 +80,10 @@ public abstract class AbstractFactory extends AbstractFramework {
     public Object tooloutput;
     public Object toolerror;
     private MapHash<String, AbstractFlag> prologflags;
+    private MapHash<String, AbstractFlag> threadflags;
 
     /****************************************************************/
-    /* Capability Independent Flags.                                */
+    /* Prolog Flags                                                 */
     /****************************************************************/
 
     /**
@@ -101,6 +102,28 @@ public abstract class AbstractFactory extends AbstractFramework {
      */
     public final void setPrologFlags(MapHash<String, AbstractFlag> f) {
         prologflags = f;
+    }
+
+    /****************************************************************/
+    /* Thread Flags                                                 */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the thread flags.</p>
+     *
+     * @return The thread flags.
+     */
+    public final MapHash<String, AbstractFlag> getThreadFlags() {
+        return threadflags;
+    }
+
+    /**
+     * <p>Set the thread flags.</p>
+     *
+     * @param f The thread flags.
+     */
+    public final void setThreadFlags(MapHash<String, AbstractFlag> f) {
+        threadflags = f;
     }
 
     /*******************************************************************/

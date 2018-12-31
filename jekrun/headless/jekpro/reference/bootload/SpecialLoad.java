@@ -331,7 +331,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) fun).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = Frame.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             if (modifiers != null) {
@@ -513,7 +513,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) fun).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = Frame.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             return true;

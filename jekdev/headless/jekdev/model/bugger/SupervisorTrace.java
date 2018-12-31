@@ -2,6 +2,7 @@ package jekdev.model.bugger;
 
 import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
@@ -40,7 +41,7 @@ import matula.util.data.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SupervisorTrace extends Supervisor {
-    private Frame skipframe;
+    private StackElement skipframe;
     private MapHash<String, ListArray<Integer>> tspys;
     private SetHash<PositionKey> tbreakpoints;
 
@@ -96,7 +97,7 @@ public final class SupervisorTrace extends Supervisor {
      *
      * @return The skip frame.
      */
-    public Frame getSkipFrame() {
+    public StackElement getSkipFrame() {
         return skipframe;
     }
 
@@ -105,7 +106,7 @@ public final class SupervisorTrace extends Supervisor {
      *
      * @param d The skip frame.
      */
-    public void setSkipFrame(Frame d) {
+    public void setSkipFrame(StackElement d) {
         skipframe = d;
     }
 

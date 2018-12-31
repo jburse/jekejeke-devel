@@ -2,6 +2,7 @@ package jekpro.model.rope;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -109,17 +110,17 @@ public class Goal extends Intermediate {
         if (uniargs != null)
             unifyBody(u, en);
         if ((flags & Intermediate.MASK_INTER_NLST) == 0) {
-            Display u1 = u.goaldisplay;
+            Display u1 = u.contdisplay;
             if (u1 != null &&
-                    (u.goalskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
+                    (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
                     u1.number >= en.number) {
-                Clause clause = u.goalskel.getClause();
+                Clause clause = u.contskel.getClause();
                 n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
                 i = u1.lastgc;
                 if (i < n)
                     u1.lastgc = clause.disposeBind(i, n, u1.bind, en);
-                u.goalskel = u1.goalskel;
-                u.goaldisplay = u1.goaldisplay;
+                u.contskel = u1.contskel;
+                u.contdisplay = u1.contdisplay;
             }
         }
         if (en.visor.signal != null &&
@@ -150,7 +151,7 @@ public class Goal extends Intermediate {
                     EngineMessage.OP_TYPE_CALLABLE, alfa));
         }
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
-            SkelAtom sa = Frame.callableToName(alfa);
+            SkelAtom sa = StackElement.callableToName(alfa);
             int arity = Frame.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROCEDURE,
@@ -158,7 +159,7 @@ public class Goal extends Intermediate {
         }
         AbstractDelegate fun = cp.pick.del;
         if (fun == null) {
-            SkelAtom sa = Frame.callableToName(alfa);
+            SkelAtom sa = StackElement.callableToName(alfa);
             int arity = Frame.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_BODY,
@@ -181,9 +182,9 @@ public class Goal extends Intermediate {
      * @param en The engine.
      */
     private void unifyBody(Display u, Engine en) {
-        Goal ir = (Goal) u.goalskel;
+        Goal ir = (Goal) u.contskel;
         Object alfa = ir.goal;
-        BindCount[] ref = u.goaldisplay.bind;
+        BindCount[] ref = u.contdisplay.bind;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b;

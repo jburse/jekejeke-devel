@@ -3,9 +3,9 @@ package jekpro.model.molec;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.rope.Intermediate;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
@@ -194,30 +194,15 @@ public final class EngineException extends Exception {
      */
     public static Object fetchStack(Engine en) {
         try {
-            Display u;
-            boolean first;
-            if (Frame.isNoTrace(en.contskel, en.contdisplay, en)) {
-                u = Frame.skipNoTrace(en.contdisplay, en);
-                first = false;
-            } else {
-                u = null;
-                first = true;
-            }
+            StackElement stack = en;
+            if (StackElement.isNoTrace(stack.contskel, stack.contdisplay, en))
+                stack = StackElement.skipNoTrace(stack.contdisplay, en);
             int k = 0;
             SkelCompound back = null;
             /* iterator and fetch pred_file_line, pred and pred_error */
-            while ((u != null | first) && k < en.store.getMaxStack()) {
-                Intermediate r;
-                if (first) {
-                    r = en.contskel;
-                    u = en.contdisplay;
-                    first = false;
-                } else {
-                    r = u.goalskel;
-                    u = u.goaldisplay;
-                }
-                Frame.callGoal(r, u, en);
-                SkelAtom sa = Frame.callableToName(en.skel);
+            while (stack != null && k < en.store.getMaxStack()) {
+                StackElement.callGoal(stack.contskel, stack.contdisplay, en);
+                SkelAtom sa = StackElement.callableToName(en.skel);
                 Object val;
                 if (sa != null) {
                     int arity = Frame.callableToArity(en.skel);
@@ -235,19 +220,13 @@ public final class EngineException extends Exception {
                 }
                 back = new SkelCompound(en.store.foyer.ATOM_CONS, val, back);
                 k++;
-                u = Frame.skipNoTrace(u, en);
+                stack = StackElement.skipNoTrace(stack.contdisplay, en);
             }
             k = 0;
             /* count and fetch pred_more */
-            while (u != null | first) {
-                if (first) {
-                    u = en.contdisplay;
-                    first = false;
-                } else {
-                    u = u.goaldisplay;
-                }
+            while (stack != null) {
                 k++;
-                u = Frame.skipNoTrace(u, en);
+                stack = StackElement.skipNoTrace(stack.contdisplay, en);
             }
             if (k != 0) {
                 Object val = new SkelCompound(new SkelAtom(OP_PRED_MORE), Integer.valueOf(k));

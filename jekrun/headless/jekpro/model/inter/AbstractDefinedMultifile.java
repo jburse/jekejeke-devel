@@ -116,8 +116,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         dc.lastalloc = lastalloc;
         dc.number = en.number;
         dc.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : dc);
-        dc.goalskel = en.contskel;
-        dc.goaldisplay = u;
+        dc.contskel = en.contskel;
+        dc.contdisplay = u;
 
         int nextat = at;
         while (nextat != list.length) {
@@ -248,7 +248,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
      * @return True if the clause is multifile visible.
      */
     static boolean multiVisible(Clause clause, Engine en) {
-        SkelAtom sa = Frame.callableToName(clause.head);
+        SkelAtom sa = StackElement.callableToName(clause.head);
         return Clause.ancestorSource(sa.scope, en);
     }
 

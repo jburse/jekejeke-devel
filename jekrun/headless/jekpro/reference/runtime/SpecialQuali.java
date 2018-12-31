@@ -5,7 +5,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
@@ -164,11 +164,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SkelAtom sa2 = Frame.callableToName(en.skel);
+                SkelAtom sa2 = StackElement.callableToName(en.skel);
 
-                SkelAtom sa = Frame.callableToName(obj);
+                SkelAtom sa = StackElement.callableToName(obj);
                 sa = SpecialBody.makeAtom(sa.fun, en, sa2);
-                obj = Frame.callableFromName(obj, sa);
+                obj = StackElement.callableFromName(obj, sa);
                 if (!en.unifyTerm(temp.args[0], ref, obj, d2))
                     return false;
                 return en.getNext();

@@ -42,24 +42,50 @@
 :- use_module(library(wire/httpsrv)).
 :- use_module(library(system/thread)).
 :- use_module(library(system/group)).
+:- use_module(library(inspection/frame)).
 
 /**
- * dispatch(O, P, A, R):
+ * dispatch(O, P, A, S):
  * The predicate succeeds in dispatching the request for object
- * O, with path P, with parameter list A and output stream R.
+ * O, with path P, with parameter list A and the session S.
  */
+% dispatch(+Object, +Spec, +Assoc, +Session)
 :- public dispatch/4.
-dispatch(_, '/index.html', _, Response) :- !,
-   send_file(library(wire/index), Response).
-dispatch(_, '/thread.jsp', _, Response) :- !,
-   send_thread(Response).
-dispatch(_, '/stack.jsp', Assoc, Response) :-
-   http_parameter(Assoc, thread, Name), !,
-   send_stack(Response, Name).
-dispatch(_, '/stack.jsp', _, Response) :- !,
-   send_stack(Response).
-dispatch(_, '/frame.html', _, Response) :- !,
-   send_file(library(wire/frame), Response).
+dispatch(_, '/index.html', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_text(library(wire/index), Response),
+      close(Response)).
+dispatch(_, '/thread.jsp', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_thread(Response),
+      close(Response)).
+dispatch(_, '/stack.jsp', Assoc, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_stack(Assoc, Response),
+      close(Response)).
+dispatch(_, '/frame.html', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_text(library(wire/frame), Response),
+      close(Response)).
+dispatch(_, '/closed.gif', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response, [type(binary)]),
+      send_binary(library(wire/closed), Response),
+      close(Response)).
+dispatch(_, '/open.gif', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response, [type(binary)]),
+      send_binary(library(wire/open), Response),
+      close(Response)).
+dispatch(_, '/blank.gif', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response, [type(binary)]),
+      send_binary(library(wire/blank), Response),
+      close(Response)).
 
 /*************************************************************/
 /* Thread Inspection                                         */
@@ -73,46 +99,101 @@ dispatch(_, '/frame.html', _, Response) :- !,
 :- private send_thread/1.
 send_thread(Response) :-
    html_begin(Response, 'Thread'),
-   send_thread_list(Response),
+   write(Response, '<h2>Threads</h2>\r\n'),
+   thread_current(T),
+   current_thread_flag(T, sys_thread_group, H),
+   current_group_flag(H, sys_group_group, Root),
+   send_group_list(Root, Response),
    html_end(Response).
 
-% send_thread_list(+Stream)
-:- private send_thread_list/1.
-send_thread_list(Response) :-
-   write(Response, '<ul>\r\n'),
-   current_thread(Thread),
+% send_group_list(+Group, +Stream)
+:- private send_group_list/2.
+send_group_list(Group, Response) :-
+   write(Response, '<dl>'),
+   send_group_group_list(Group, Response),
+   send_group_thread_list(Group, Response),
+   write(Response, '</dl>\r\n').
+
+% send_group_group_list(+Group, +Stream)
+:- private send_group_group_list/2.
+send_group_group_list(Group, Response) :-
+   current_group(Group, Other),
+   current_group_flag(Other, sys_group_name, Name),
+   write(Response, '<dt><img src="open.gif">'),
+   html_escape(Response, Name),
+   write(Response, '</dt>\r\n'),
+   write(Response, '<dd>'),
+   send_group_list(Other, Response),
+   write(Response, '</dd>\r\n'), fail.
+send_group_group_list(_, _).
+
+% send_group_thread_list(+Group, +Stream)
+:- private send_group_thread_list/2.
+send_group_thread_list(Group, Response) :-
+   current_thread(Group, Thread),
+   write(Response, '<dt><img src="blank.gif">'),
+   send_thread(Thread, Response),
+   write(Response, '</dt>\r\n'), fail.
+send_group_thread_list(_, _).
+
+% send_thread(+Thread, +Stream)
+:- private send_thread/2.
+send_thread(Thread, Response) :-
+   current_thread(Thread), !,
    current_thread_flag(Thread, sys_thread_name, Name),
-   write(Response, '<li><a href="stack.jsp?thread='),
+   write(Response, '<a href="stack.jsp?thread='),
    html_escape(Response, Name),
    write(Response, '" target="stack">'),
    html_escape(Response, Name),
-   write(Response, '</a></li>\r\n'), fail.
-send_thread_list(Response) :-
-   write(Response, '</ul>\r\n').
+   write(Response, '</a>').
+send_thread(Thread, Response) :-
+   current_thread_flag(Thread, sys_thread_name, Name),
+   html_escape(Response, Name).
 
 /*************************************************************/
 /* Stack Inspection                                          */
 /*************************************************************/
 
 /**
- * send_stack(O):
- * The predicate sends empty stack elements to the output stream O.
+ * send_stack(A, O):
+ * The predicate sends the stack element for parameter list
+ * A to the output stream O.
  */
-% send_stack(+Stream)
-:- private send_stack/1.
-send_stack(Response) :-
+% send_stack(+Assoc, +Stream)
+:- private send_stack/2.
+send_stack(Assoc, Response) :-
+   http_parameter(Assoc, thread, Name),
+   current_thread(Thread),
+   current_thread_flag(Thread, sys_thread_name, Name), !,
    html_begin(Response, 'Stack'),
+   write(Response, '<h2>Stack Elements</h2>\r\n'),
+   current_thread_flag(Thread, sys_top_frame, Frame),
+   write(Response, '<dl>'),
+   send_call_stack(Frame, Response),
+   write(Response, '</dl>\r\n'),
+   html_end(Response).
+send_stack(_, Response) :-
+   html_begin(Response, 'Stack'),
+   write(Response, '<h2>Stack Elements</h2>\r\n'),
    html_end(Response).
 
-/**
- * send_stack(O, N):
- * The predicate sends the stack element of the thread N
- * to the output stream O.
- */
-% send_stack(+Stream, +Atom)
-:- private send_stack/2.
-send_stack(Response, Name) :-
-   atom_concat('Stack ', Name, Title),
-   html_begin(Response, Title),
-   html_end(Response).
+% send_call_strack(+Frame, +Stream)
+:- private send_call_stack/2.
+send_call_stack(null, _) :- !.
+send_call_stack(Frame, Response) :-
+   write(Response, '<dt>'),
+   frame_property(Frame, sys_call_goal(Goal)),
+   functor(Goal, Name, Arity),
+   term_atom(Name/Arity, Atom),
+   html_escape(Response, Atom),
+   write(Response, '</dt>\r\n'),
+   frame_property(Frame, sys_parent_frame(Other)),
+   send_call_stack(Other, Response).
+
+/*************************************************************/
+/* Frame Inspection                                          */
+/*************************************************************/
+
+
+
 

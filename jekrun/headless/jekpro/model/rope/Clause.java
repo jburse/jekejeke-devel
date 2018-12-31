@@ -105,8 +105,8 @@ public class Clause extends Intermediate implements InterfaceReference {
             en.contdisplay = null;
             return true;
         } else {
-            en.contskel = u.goalskel;
-            en.contdisplay = u.goaldisplay;
+            en.contskel = u.contskel;
+            en.contdisplay = u.contdisplay;
             return en.getNextRaw();
         }
     }

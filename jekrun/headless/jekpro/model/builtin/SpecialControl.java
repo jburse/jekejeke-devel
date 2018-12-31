@@ -4,7 +4,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
@@ -174,7 +174,7 @@ public final class SpecialControl extends AbstractSpecial {
         Goal r = (Goal) en.contskel;
         Display u = en.contdisplay;
         EngineException y = en.fault;
-        Frame.callGoal(r, u, en);
+        StackElement.callGoal(r, u, en);
         Object[] temp = ((SkelCompound) en.skel).args;
         BindCount[] ref = en.display;
         try {

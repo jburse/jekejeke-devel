@@ -5,6 +5,7 @@ import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.EngineException;
@@ -172,9 +173,9 @@ public final class SpecialVars extends AbstractSpecial {
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Frame frame = en.visor.ref;
-                    BindCount[] ref2 = (frame != null ? frame.getContDisplay().bind : null);
-                    Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+                    StackElement frame = en.visor.ref;
+                    BindCount[] ref2 = (frame != null ? frame.contdisplay.bind : null);
+                    Clause def = (frame != null ? frame.contskel.getClause() : null);
                     MapHashLink<Object, NamedDistance> print =
                             Named.namedToMap((def != null ? def.vars : null), ref2, en);
                     mapToAssoc(print, en);

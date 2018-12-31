@@ -4,10 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.SpecialBody;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
-import jekpro.model.inter.Predicate;
+import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -145,7 +142,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SkelAtom sa = Frame.callableToName(en.skel);
+                SkelAtom sa = StackElement.callableToName(en.skel);
                 multi = atomToProperties(sa, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -160,7 +157,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                sa = Frame.callableToName(en.skel);
+                sa = StackElement.callableToName(en.skel);
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
                 multi = atomToProperty(prop, sa, en);
                 d = en.display;
@@ -280,14 +277,14 @@ public final class SpecialProvable extends AbstractSpecial {
     private static Object addAtomProp(Object t, BindCount[] d,
                                       Object t2, Engine en)
             throws EngineMessage {
-        SkelAtom sa = Frame.callableToName(t2);
+        SkelAtom sa = StackElement.callableToName(t2);
 
         StoreKey prop = Frame.callableToStoreKey(t);
         Object[] vals = getPropAtom(prop, sa, en);
         vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
         sa = setPropAtom(prop, sa, vals, en);
 
-        return Frame.callableFromName(t2, sa);
+        return StackElement.callableFromName(t2, sa);
     }
 
     /**
@@ -303,14 +300,14 @@ public final class SpecialProvable extends AbstractSpecial {
     private static Object removeAtomProp(Object t, BindCount[] d,
                                          Object t2, Engine en)
             throws EngineMessage {
-        SkelAtom sa = Frame.callableToName(t2);
+        SkelAtom sa = StackElement.callableToName(t2);
 
         StoreKey prop = Frame.callableToStoreKey(t);
         Object[] vals = getPropAtom(prop, sa, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
         sa = setPropAtom(prop, sa, vals, en);
 
-        return Frame.callableFromName(t2, sa);
+        return StackElement.callableFromName(t2, sa);
     }
 
     /***********************************************************************/

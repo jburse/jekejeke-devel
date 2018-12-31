@@ -177,7 +177,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = Frame.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             Object t = PreClause.intermediateToClause(clause.head, clause.next, en);

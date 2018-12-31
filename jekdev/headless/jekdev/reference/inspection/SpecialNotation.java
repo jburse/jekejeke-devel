@@ -4,6 +4,7 @@ import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -109,7 +110,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                sa = Frame.callableToName(en.skel);
+                sa = StackElement.callableToName(en.skel);
                 obj = SpecialDynamic.callableToColonSkel(en.skel, (sa != null ? sa.scope : null), en);
                 if (!en.unifyTerm(temp[1], ref, obj, en.display))
                     return false;

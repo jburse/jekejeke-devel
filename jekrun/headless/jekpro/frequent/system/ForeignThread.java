@@ -5,6 +5,7 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
@@ -336,13 +337,21 @@ public final class ForeignThread {
      * @param t     The thread.
      * @param flag  The thread flag.
      * @return The value.
+     * @throws InterpreterException Flag undefined.
      * @throws InterpreterMessage Flag undefined.
      */
     public static Object sysGetThreadFlag(Interpreter inter, Thread t,
                                           String flag)
-            throws InterpreterMessage {
+            throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
-        Object val = ForeignThread.getThreadFlag(flag, t, en);
+        Object val;
+        try {
+            val = ForeignThread.getThreadFlag(flag, t, en);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
         if (val == null)
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", flag));
@@ -359,7 +368,7 @@ public final class ForeignThread {
      * @throws InterpreterMessage Flag undefined.
      */
     public static void sysSetThreadFlag(Interpreter inter, Thread t,
-                                          String flag, Object val)
+                                        String flag, Object val)
             throws InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
@@ -413,9 +422,11 @@ public final class ForeignThread {
      * @param t    The thread.
      * @param en   The engine.
      * @return The value or null.
+     * @throws EngineMessage Shit happens.
      */
     public static Object getThreadFlag(String flag,
-                                       Thread t, Engine en) {
+                                       Thread t, Engine en)
+            throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {

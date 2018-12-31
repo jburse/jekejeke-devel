@@ -6,6 +6,7 @@ import jekdev.reference.inspection.SpecialStack;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -128,7 +129,7 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_SYS_HEAD_WAKEUP:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
-                Frame frame = ((SupervisorTrace) en.visor).getSkipFrame();
+                StackElement frame = ((SupervisorTrace) en.visor).getSkipFrame();
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_QUERY_FRAME:
                 frame = en.visor.ref;
@@ -188,13 +189,11 @@ public final class FlagTrace extends AbstractFlag {
                     }
                     return true;
                 case FLAG_SYS_SKIP_FRAME:
-                    Frame frame = SpecialFrame.derefAndCastFrame(m, d);
-                    SpecialStack.checkStackFrame(frame);
+                    StackElement frame = SpecialFrame.derefAndCastStackElement(m, d);
                     ((SupervisorTrace) en.visor).setSkipFrame(frame);
                     return true;
                 case FLAG_SYS_QUERY_FRAME:
-                    frame = SpecialFrame.derefAndCastFrame(m, d);
-                    SpecialStack.checkStackFrame(frame);
+                    frame = SpecialFrame.derefAndCastStackElement(m, d);
                     en.visor.ref = frame;
                     return true;
                 case FLAG_SYS_CLOAK:

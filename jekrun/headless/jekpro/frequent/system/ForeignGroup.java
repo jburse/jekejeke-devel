@@ -1,8 +1,10 @@
 package jekpro.frequent.system;
 
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Lobby;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
@@ -40,11 +42,12 @@ import matula.util.wire.Fence;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignGroup {
-
     private final static String OP_SYS_GROUP_NAME = "sys_group_name";
+    private final static String OP_SYS_GROUP_GROUP = "sys_group_group";
 
     private final static String[] OP_PROPS = {
-            OP_SYS_GROUP_NAME};
+            OP_SYS_GROUP_NAME,
+            OP_SYS_GROUP_GROUP};
 
     /* For autonumbering anonymous groups. */
     private static int groupInitNumber;
@@ -88,7 +91,7 @@ public final class ForeignGroup {
     }
 
     /****************************************************************/
-    /* Group Inspection                                             */
+    /* Group Enumeration                                            */
     /****************************************************************/
 
     /**
@@ -102,6 +105,90 @@ public final class ForeignGroup {
         int num = tg.enumerate(threads, false);
         return (num != 0 ? threads[0] : null);
     }
+
+    /**
+     * <p>Retrieve the threads of a thread group.</p>
+     *
+     * @param co The call out.
+     * @param tg The thread group.
+     * @return The threads.
+     */
+    public static Thread sysCurrentThread(CallOut co, ThreadGroup tg) {
+        ArrayEnumeration<Thread> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<Thread>(snapshotThreads(tg));
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<Thread>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        Thread res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Retrieve the groups of a thread group.</p>
+     *
+     * @param co The call out.
+     * @param tg The thread group.
+     * @return The groups.
+     */
+    public static ThreadGroup sysCurrentGroup(CallOut co, ThreadGroup tg) {
+        ArrayEnumeration<ThreadGroup> dc;
+        if (co.getFirst()) {
+            dc = new ArrayEnumeration<ThreadGroup>(snapshotGroups(tg));
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<ThreadGroup>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        ThreadGroup res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Compute a snapshot of the threads a thread group.</p>
+     *
+     * @param tg The thread group.
+     * @return The snapshot of the threads of the thread group.
+     */
+    private static Thread[] snapshotThreads(ThreadGroup tg) {
+        Thread[] threads = new Thread[4];
+        int num = tg.enumerate(threads, false);
+        while (num == threads.length) {
+            threads = new Thread[threads.length * 2];
+            num = tg.enumerate(threads, false);
+        }
+        Thread[] res = new Thread[num];
+        System.arraycopy(threads, 0, res, 0, num);
+        return res;
+    }
+
+    /**
+     * <p>Compute a snapshot of the groups a thread group.</p>
+     *
+     * @param tg The thread group.
+     * @return The snapshot of the groups of the thread group.
+     */
+    private static ThreadGroup[] snapshotGroups(ThreadGroup tg) {
+        ThreadGroup[] groups = new ThreadGroup[4];
+        int num = tg.enumerate(groups, false);
+        while (num == groups.length) {
+            groups = new ThreadGroup[groups.length * 2];
+            num = tg.enumerate(groups, false);
+        }
+        ThreadGroup[] res = new ThreadGroup[num];
+        System.arraycopy(groups, 0, res, 0, num);
+        return res;
+    }
+
+    /****************************************************************/
+    /* Group Flags                                                  */
+    /****************************************************************/
 
     /**
      * <p>Retrieve the known group properties.</p>
@@ -127,15 +214,18 @@ public final class ForeignGroup {
     /**
      * <p>Retrieve a group property.</p>
      *
-     * @param t    The group.
+     * @param tg   The group.
      * @param name The group property name.
      * @return The group property value, or null.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysGetGroupFlag(ThreadGroup t, String name)
+    public static Object sysGetGroupFlag(ThreadGroup tg, String name)
             throws InterpreterMessage {
         if (OP_SYS_GROUP_NAME.equals(name)) {
-            return t.getName();
+            return tg.getName();
+        } else if (OP_SYS_GROUP_GROUP.equals(name)) {
+            ThreadGroup val = tg.getParent();
+            return (val != null ? val : new SkelAtom(AbstractFlag.OP_NULL));
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));

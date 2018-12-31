@@ -94,7 +94,7 @@ final class DefinedBlocking extends AbstractDefinedMultifile {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
-            SkelAtom sa = Frame.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             if (scope == sa.scope)
                 retractClause(clause, null);
         }

@@ -3,10 +3,7 @@ package jekpro.reference.runtime;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.Branch;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
+import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
@@ -132,9 +129,9 @@ public final class SpecialSession extends AbstractSpecial {
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Frame frame = en.visor.ref;
-                BindCount[] ref2 = (frame != null ? frame.getContDisplay().bind : null);
-                Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+                StackElement frame = en.visor.ref;
+                BindCount[] ref2 = (frame != null ? frame.contdisplay.bind : null);
+                Clause def = (frame != null ? frame.contskel.getClause() : null);
                 en.skel = namedToAssoc((def != null ? def.vars : null), ref2, en.store);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
@@ -336,11 +333,11 @@ public final class SpecialSession extends AbstractSpecial {
                 Display u = en.contdisplay;
                 AbstractBind mark = en.bind;
                 int snap = en.number;
-                Frame backref = en.visor.ref;
+                StackElement backref = en.visor.ref;
                 try {
                     Display ref = new Display();
                     ref.bind = BindCount.newBindClause(clause.dispsize);
-                    en.visor.ref = new Frame(clause, ref);
+                    en.visor.ref = new StackElement(clause, ref);
                     ref.setEngine(en);
                     en.contskel = clause.getNextRaw(en);
                     en.contdisplay = ref;
@@ -464,12 +461,12 @@ public final class SpecialSession extends AbstractSpecial {
             clause.vars = Named.makeNamed(rd.getVars());
 
             int snap = en.number;
-            Frame backref = en.visor.ref;
+            StackElement backref = en.visor.ref;
             Display ref;
             try {
                 ref = new Display();
                 ref.bind = BindCount.newBindClause(clause.dispsize);
-                en.visor.ref = new Frame(clause, ref);
+                en.visor.ref = new StackElement(clause, ref);
                 ref.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref;
