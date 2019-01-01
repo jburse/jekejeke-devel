@@ -66,10 +66,10 @@ dispatch(_, '/stack.jsp', Assoc, Session) :- !,
       open(Session, write, Response),
       send_stack(Assoc, Response),
       close(Response)).
-dispatch(_, '/frame.html', _, Session) :- !,
+dispatch(_, '/frame.jsp', Assoc, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_text(library(wire/frame), Response),
+      send_frame(Assoc, Response),
       close(Response)).
 dispatch(_, '/closed.gif', _, Session) :- !,
    setup_call_cleanup(
@@ -99,6 +99,7 @@ dispatch(_, '/blank.gif', _, Session) :- !,
 :- private send_thread/1.
 send_thread(Response) :-
    html_begin(Response, 'Thread'),
+   script_tree(Response),
    write(Response, '<h2>Threads</h2>\r\n'),
    thread_current(T),
    current_thread_flag(T, sys_thread_group, H),
@@ -119,10 +120,16 @@ send_group_list(Group, Response) :-
 send_group_group_list(Group, Response) :-
    current_group(Group, Other),
    current_group_flag(Other, sys_group_name, Name),
-   write(Response, '<dt><img src="open.gif">'),
+   write(Response, '<dt><a onclick="openClose('''),
+   html_escape(Response, Name),
+   write(Response, ''');"><img src="closed.gif" id="'),
+   html_escape(Response, Name),
+   write(Response, '_img">'),
    html_escape(Response, Name),
    write(Response, '</dt>\r\n'),
-   write(Response, '<dd>'),
+   write(Response, '<dd style="display:none" id="'),
+   html_escape(Response, Name),
+   write(Response, '">'),
    send_group_list(Other, Response),
    write(Response, '</dd>\r\n'), fail.
 send_group_group_list(_, _).
@@ -165,11 +172,11 @@ send_stack(Assoc, Response) :-
    http_parameter(Assoc, thread, Name),
    current_thread(Thread),
    current_thread_flag(Thread, sys_thread_name, Name), !,
+   current_thread_flag(Thread, sys_top_frame, Frame),
    html_begin(Response, 'Stack'),
    write(Response, '<h2>Stack Elements</h2>\r\n'),
-   current_thread_flag(Thread, sys_top_frame, Frame),
    write(Response, '<dl>'),
-   send_call_stack(Frame, Response),
+   send_call_stack(Frame, Name, 0, Response),
    write(Response, '</dl>\r\n'),
    html_end(Response).
 send_stack(_, Response) :-
@@ -177,23 +184,74 @@ send_stack(_, Response) :-
    write(Response, '<h2>Stack Elements</h2>\r\n'),
    html_end(Response).
 
-% send_call_strack(+Frame, +Stream)
-:- private send_call_stack/2.
-send_call_stack(null, _) :- !.
-send_call_stack(Frame, Response) :-
-   write(Response, '<dt>'),
+% send_call_stack(+Frame, +Atom, +Integer, +Stream)
+:- private send_call_stack/4.
+send_call_stack(null, _, _, _) :- !.
+send_call_stack(Frame, Name, Count, Response) :-
+   write(Response, '<dt><a href="frame.jsp?thread='),
+   html_escape(Response, Name),
+   write(Response, '&index='),
+   write(Response, Count),
+   write(Response, '" target="frame">'),
    frame_property(Frame, sys_call_goal(Goal)),
-   functor(Goal, Name, Arity),
-   term_atom(Name/Arity, Atom),
+   functor(Goal, Functor, Arity),
+   term_atom(Functor/Arity, Atom),
    html_escape(Response, Atom),
-   write(Response, '</dt>\r\n'),
+   write(Response, '</a></dt>\r\n'),
    frame_property(Frame, sys_parent_frame(Other)),
-   send_call_stack(Other, Response).
+   Count2 is Count+1,
+   send_call_stack(Other, Name, Count2, Response).
 
 /*************************************************************/
 /* Frame Inspection                                          */
 /*************************************************************/
 
+/**
+ * send_frame(A, O):
+ * The predicate sends the frame for parameter list
+ * A to the output stream O.
+ */
+% send_frame(+Assoc, +Stream)
+:- private send_frame/2.
+send_frame(Assoc, Response) :-
+   http_parameter(Assoc, thread, Name),
+   http_parameter(Assoc, index, CountStr),
+   atom_codes(CountStr, List),
+   number_codes(Count, List),
+   current_thread(Thread),
+   current_thread_flag(Thread, sys_thread_name, Name),
+   current_thread_flag(Thread, sys_top_frame, Frame),
+   find_call_stack(Frame, Count, Other), !,
+   html_begin(Response, 'Frame'),
+   write(Response, '<h2>Variable Bindings</h2>\r\n'),
+   write(Response, '<dl>'),
+   frame_property(Other, variable_names(Vars)),
+   send_frame_vars(Vars, Response),
+   write(Response, '</dl>\r\n'),
+   html_end(Response).
+send_frame(_, Response) :-
+   html_begin(Response, 'Frame'),
+   write(Response, '<h2>Variable Bindings</h2>\r\n'),
+   html_end(Response).
 
+% send_frame_vars(+List, +Stream)
+:- private send_frame_vars/2.
+send_frame_vars([Var=Term|List], Response) :-
+   write(Response, '<dt>'),
+   sys_quoted_var(Var, Quote),
+   html_escape(Response, Quote),
+   write(Response, ' = '),
+   term_atom(Term, Atom),
+   html_escape(Response, Atom),
+   write(Response, '</dt>\r\n'),
+   send_frame_vars(List, Response).
+send_frame_vars([], _).
 
-
+% find_call_stack(+Frame, +Count, -Frame)
+:- private find_call_stack/3.
+find_call_stack(null, _, _) :- !, fail.
+find_call_stack(Frame, 0, Frame) :- !.
+find_call_stack(Frame, Count, Result) :-
+   frame_property(Frame, sys_parent_frame(Other)),
+   Count2 is Count-1,
+   find_call_stack(Other, Count2, Result).

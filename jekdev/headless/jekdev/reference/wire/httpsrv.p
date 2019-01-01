@@ -187,6 +187,15 @@ send_blocks(_, _).
 /***************************************************************/
 
 /**
+ * html_escape(O, T):
+ * The predicate sends the text T escaped to the output stream O.
+ */
+:- public html_escape/2.
+html_escape(Response, Text) :-
+   text_escape(Text, Escape),
+   write(Response, Escape).
+
+/**
  * html_begin(O, T):
  * The predicate sends the html begin with title T to the output stream O.
  */
@@ -205,15 +214,6 @@ html_begin(Response, Title) :-
    write(Response, '  <body>\r\n').
 
 /**
- * html_escape(O, T):
- * The predicate sends the text T escaped to the output stream O.
- */
-:- public html_escape/2.
-html_escape(Response, Text) :-
-   text_escape(Text, Escape),
-   write(Response, Escape).
-
-/**
  * html_end(O):
  * The predicate sends the html end to the output stream O.
  */
@@ -222,3 +222,26 @@ html_escape(Response, Text) :-
 html_end(Response) :-
    write(Response, '   </body>\r\n'),
    write(Response, '</html>\r\n').
+
+/**
+ * script_tree(O):
+ * The predicate sends the script tree to the output stream O.
+ */
+% script_tree(+Stream)
+:- public script_tree/1.
+script_tree(Response) :-
+   write(Response, '    <script type="text/javascript">\r\n'),
+   write(Response, '        function openClose(id) {\r\n'),
+   write(Response, '            var elem = document.getElementById(id);\r\n'),
+   write(Response, '            var img = document.getElementById(id + "_img");\r\n'),
+   write(Response, '            if (elem.style.display == "none") {\r\n'),
+   write(Response, '                elem.style.display = "block";\r\n'),
+   write(Response, '                img.alt = "open";\r\n'),
+   write(Response, '                img.src = "/open.gif";\r\n'),
+   write(Response, '            } else {\r\n'),
+   write(Response, '                elem.style.display = "none";\r\n'),
+   write(Response, '                img.alt = "closed";\r\n'),
+   write(Response, '                img.src = "/closed.gif";\r\n'),
+   write(Response, '            }\r\n'),
+   write(Response, '        }\r\n'),
+   write(Response, '    </script>\r\n').
