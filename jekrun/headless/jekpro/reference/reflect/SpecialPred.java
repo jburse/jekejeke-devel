@@ -359,7 +359,7 @@ public final class SpecialPred extends AbstractSpecial {
     public static void addPredProp(Object t, BindCount[] d, Predicate pred,
                                    Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropPred(pred, prop, en);
         vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
         setPropPred(prop, pred, vals, en);
@@ -378,7 +378,7 @@ public final class SpecialPred extends AbstractSpecial {
     public static void removePredProp(Object t, BindCount[] d, Predicate pred,
                                       Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropPred(pred, prop, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
         setPropPred(prop, pred, vals, en);
@@ -428,7 +428,7 @@ public final class SpecialPred extends AbstractSpecial {
     private static Object propertyToPredicates(Object t, BindCount[] d,
                                                Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Predicate[] vals = idxPropPred(t, d, prop, en);
         Object res = en.store.foyer.ATOM_NIL;
         res = consPredicates(vals, res, en);
@@ -530,7 +530,7 @@ public final class SpecialPred extends AbstractSpecial {
     private static Object propertyToProvables(Object t, BindCount[] d,
                                               Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Predicate[] vals = idxPropPred(t, d, prop, en);
         Object res = en.store.foyer.ATOM_NIL;
         res = consProvables(vals, res, en);

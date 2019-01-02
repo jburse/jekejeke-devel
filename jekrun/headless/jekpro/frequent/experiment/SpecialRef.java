@@ -4,11 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.builtin.SpecialBody;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
+import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -18,7 +14,6 @@ import jekpro.model.rope.Named;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -306,7 +301,7 @@ public final class SpecialRef extends AbstractSpecial {
     private static void addRefProp(Object temp, BindCount[] ref,
                                    InterfaceReference ptr, Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(temp);
+        StoreKey prop = StackElement.callableToStoreKey(temp);
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);
@@ -325,7 +320,7 @@ public final class SpecialRef extends AbstractSpecial {
     private static void removeRefProp(Object temp, BindCount[] ref,
                                       InterfaceReference ptr, Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(temp);
+        StoreKey prop = StackElement.callableToStoreKey(temp);
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);

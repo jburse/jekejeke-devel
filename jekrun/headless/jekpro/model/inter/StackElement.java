@@ -5,6 +5,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
@@ -69,13 +70,13 @@ public class StackElement {
 
     /**
      * <p>Find visible frame.</p>
-     * <p>Result returned in skeleton and display of engine.</p>
      *
-     * @param u  The continuation display.
+     * @param u  The stack element.
      * @param en The engine.
+     * @return The new stack element.
      */
-    public static Display skipNoTrace(Display u,
-                                      Engine en)
+    public static StackElement skipNoTrace(StackElement u,
+                                           Engine en)
             throws EngineException, EngineMessage {
         while (u != null && isNoTrace(u.contskel, u.contdisplay, en))
             u = u.contdisplay;
@@ -92,8 +93,8 @@ public class StackElement {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public static boolean isNoTrace(Intermediate r, Display u,
-                                    Engine en)
+    private static boolean isNoTrace(Intermediate r, Display u,
+                                     Engine en)
             throws EngineException, EngineMessage {
         if (u == null)
             return true;
@@ -103,7 +104,7 @@ public class StackElement {
         if (sa != null && sa.scope != null &&
                 (sa.scope.getBits() & AbstractSource.MASK_SRC_NOTR) != 0)
             return true;
-        CachePredicate cp = Frame.callableToPredicate(en.skel, en);
+        CachePredicate cp = callableToPredicate(en.skel, en);
         if (cp != null && (cp.flags & CachePredicate.MASK_PRED_VISI) != 0 &&
                 (cp.pick.getBits() & Predicate.MASK_PRED_NOTR) != 0)
             return true;
@@ -133,8 +134,8 @@ public class StackElement {
         } else if (r instanceof Clause) {
             callGoal(u.contskel, u.contdisplay, en);
             Clause clause = (Clause) r;
-            SkelAtom sa = callableToName(clause.head);
-            en.skel = callableFromName(en.skel, sa);
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            en.skel = StackElement.callableFromName(en.skel, sa);
         } else {
             en.skel = null;
             en.display = null;
@@ -172,6 +173,68 @@ public class StackElement {
             return sa;
         } else {
             throw new IllegalArgumentException("not a callable");
+        }
+    }
+
+    /******************************************************************/
+    /* Some Callable Utility                                          */
+    /******************************************************************/
+
+    /**
+     * <p>Lookup the predicate of this goal.</p>
+     * <p>This conversion must be preceded by dereferencing.</p>
+     * <p>Will cache the found predicate.</p>
+     *
+     * @param t  The goal skeleton.
+     * @param en The engine.
+     * @return The predicate, or null.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static CachePredicate callableToPredicate(Object t,
+                                                     Engine en)
+            throws EngineMessage, EngineException {
+        if (t instanceof SkelCompound) {
+            SkelCompound sc = (SkelCompound) t;
+            return CachePredicate.getPredicate(sc.sym, sc.args.length, en);
+        } else if (t instanceof SkelAtom) {
+            SkelAtom sa = (SkelAtom) t;
+            return CachePredicate.getPredicate(sa, 0, en);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * <p>Retrieve the principal length.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The length, or -1.
+     */
+    public static int callableToArity(Object t) {
+        if (t instanceof SkelCompound) {
+            return ((SkelCompound) t).args.length;
+        } else if (t instanceof SkelAtom) {
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * <p>Retrieve a store key.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The store key, or null.
+     */
+    public static StoreKey callableToStoreKey(Object t) {
+        if (t instanceof SkelCompound) {
+            SkelCompound mc = (SkelCompound) t;
+            return new StoreKey(mc.sym.fun, mc.args.length);
+        } else if (t instanceof SkelAtom) {
+            return new StoreKey(((SkelAtom) t).fun, 0);
+        } else {
+            return null;
         }
     }
 

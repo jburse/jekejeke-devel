@@ -197,11 +197,17 @@ html_escape(Response, Text) :-
 
 /**
  * html_begin(O, T):
+ * html_begin(O, T, S):
  * The predicate sends the html begin with title T to the output stream O.
  */
 % html_begin(+Stream, +Atom)
 :- public html_begin/2.
 html_begin(Response, Title) :-
+   html_begin(Response, Title, []).
+
+% html_begin(+Stream, +Atom, +List)
+:- public html_begin/3.
+html_begin(Response, Title, Opt) :-
    send_html(Response),
    write(Response, '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\r\n'),
    write(Response, '<html>\r\n'),
@@ -210,25 +216,23 @@ html_begin(Response, Title) :-
    write(Response, '      <title>'),
    html_escape(Response, Title),
    write(Response, '</title>\r\n'),
+   html_begin_opt(Response, Opt),
    write(Response, '  </head>\r\n'),
    write(Response, '  <body>\r\n').
 
-/**
- * html_end(O):
- * The predicate sends the html end to the output stream O.
- */
-% html_end(+Stream)
-:- public html_end/1.
-html_end(Response) :-
-   write(Response, '   </body>\r\n'),
-   write(Response, '</html>\r\n').
+% html_begin_opt(+Stream, List)
+:- private html_begin_opt/2.
+html_begin_opt(Response, [tree|Opt]) :-
+   script_tree(Response),
+   html_begin_opt(Response, Opt).
+html_begin_opt(_, []).
 
 /**
  * script_tree(O):
  * The predicate sends the script tree to the output stream O.
  */
 % script_tree(+Stream)
-:- public script_tree/1.
+:- private script_tree/1.
 script_tree(Response) :-
    write(Response, '    <script type="text/javascript">\r\n'),
    write(Response, '        function openClose(id) {\r\n'),
@@ -245,3 +249,14 @@ script_tree(Response) :-
    write(Response, '            }\r\n'),
    write(Response, '        }\r\n'),
    write(Response, '    </script>\r\n').
+
+/**
+ * html_end(O):
+ * The predicate sends the html end to the output stream O.
+ */
+% html_end(+Stream)
+:- public html_end/1.
+html_end(Response) :-
+   write(Response, '   </body>\r\n'),
+   write(Response, '</html>\r\n').
+

@@ -66,7 +66,7 @@ public class EngineYield extends Engine {
     public final boolean runLoop(int snap, boolean found)
             throws EngineException {
         try {
-            for (;;) {
+            for (; ; ) {
                 if ((yieldcount++) >= YIELD_MAX)
                     yieldReset();
                 if (found) {

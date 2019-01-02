@@ -53,11 +53,7 @@ public abstract class FoyerTrace extends Foyer {
 
     public final static String OP_TRACE_GOAL = "trace_goal";
 
-    public SkelAtom ATOM_SYS_IN;
-    public SkelAtom ATOM_SYS_OUT;
-    public SkelAtom ATOM_SYS_AT;
-
-    public SkelAtom ATOM_TRACE_GOAL;
+    public SkelAtom ATOM_TRACE_GOAL = new SkelAtom(FoyerTrace.OP_TRACE_GOAL);
 
     public final SkelAtom ATOM_CALL = new SkelAtom(SpecialMode.OP_CALL);
     public final SkelAtom ATOM_FAIL = new SkelAtom(SpecialMode.OP_FAIL);
@@ -65,6 +61,10 @@ public abstract class FoyerTrace extends Foyer {
     public final SkelAtom ATOM_REDO = new SkelAtom(SpecialMode.OP_REDO);
     public final SkelAtom ATOM_HEAD = new SkelAtom(SpecialMode.OP_HEAD);
     public final SkelAtom ATOM_CHOP = new SkelAtom(SpecialMode.OP_CHOP);
+
+    public SkelAtom ATOM_SYS_IN;
+    public SkelAtom ATOM_SYS_OUT;
+    public SkelAtom ATOM_SYS_AT;
 
     /**********************************************************/
     /* Foyer Livecycle                                        */
@@ -84,7 +84,6 @@ public abstract class FoyerTrace extends Foyer {
         ATOM_SYS_OUT = new SkelAtom(FoyerTrace.OP_SYS_OUT, en.store.getRootSystem());
         ATOM_SYS_AT = new SkelAtom(FoyerTrace.OP_SYS_AT, en.store.getRootSystem());
 
-        ATOM_TRACE_GOAL = new SkelAtom(FoyerTrace.OP_TRACE_GOAL, en.store.getRootSystem());
         super.initFoyer(en, prompt);
     }
 
@@ -100,8 +99,6 @@ public abstract class FoyerTrace extends Foyer {
         ATOM_SYS_IN = null;
         ATOM_SYS_OUT = null;
         ATOM_SYS_AT = null;
-
-        ATOM_TRACE_GOAL = null;
     }
 
     /*********************************************************/

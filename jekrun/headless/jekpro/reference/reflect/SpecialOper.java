@@ -4,7 +4,7 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
@@ -351,7 +351,7 @@ public final class SpecialOper extends AbstractSpecial {
     public static void removeOperProp(Object t, BindCount[] d, Operator op,
                                       Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getOperProp(op, prop, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
         setOperProp(prop, op, vals, en);
@@ -370,7 +370,7 @@ public final class SpecialOper extends AbstractSpecial {
     public static void addOperProp(Object t, BindCount[] d, Operator op,
                                    Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getOperProp(op, prop, en);
         vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
         setOperProp(prop, op, vals, en);
@@ -390,7 +390,7 @@ public final class SpecialOper extends AbstractSpecial {
     private static Object propertyToOperators(Object t, BindCount[] d,
                                               Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Operator[] vals = idxPropOper(t, d, prop, en);
         Object res = en.store.foyer.ATOM_NIL;
         res = consOperators(vals, res, en);
@@ -1044,7 +1044,7 @@ public final class SpecialOper extends AbstractSpecial {
     private static Object propertyToSyntax(Object t, BindCount[] d,
                                            Engine en)
             throws EngineMessage {
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Operator[] vals = idxPropOper(t, d, prop, en);
         Object res = en.store.foyer.ATOM_NIL;
         res = consSyntax(vals, res, en);

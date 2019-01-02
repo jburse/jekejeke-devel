@@ -90,11 +90,7 @@ public final class FlagTraceThread extends AbstractFlag {
             case FLAG_SYS_TOP_FRAME:
                 s = (Supervisor) AbstractLivestock.currentLivestock(t);
                 if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
-                Engine other = s.inuse;
-                if (other == null) return new SkelAtom(AbstractFlag.OP_NULL);
-                StackElement stack = other;
-                if (StackElement.isNoTrace(stack.contskel, stack.contdisplay, en))
-                    stack = StackElement.skipNoTrace(stack.contdisplay, en);
+                StackElement stack = StackElement.skipNoTrace(s.inuse, en);
                 return (stack != null ? stack : new SkelAtom(AbstractFlag.OP_NULL));
             default:
                 throw new IllegalArgumentException("illegal flag");

@@ -279,7 +279,7 @@ public final class SpecialProvable extends AbstractSpecial {
             throws EngineMessage {
         SkelAtom sa = StackElement.callableToName(t2);
 
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropAtom(prop, sa, en);
         vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
         sa = setPropAtom(prop, sa, vals, en);
@@ -302,7 +302,7 @@ public final class SpecialProvable extends AbstractSpecial {
             throws EngineMessage {
         SkelAtom sa = StackElement.callableToName(t2);
 
-        StoreKey prop = Frame.callableToStoreKey(t);
+        StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropAtom(prop, sa, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
         sa = setPropAtom(prop, sa, vals, en);

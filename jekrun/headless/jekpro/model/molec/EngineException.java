@@ -2,7 +2,6 @@ package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.StackElement;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
@@ -194,9 +193,7 @@ public final class EngineException extends Exception {
      */
     public static Object fetchStack(Engine en) {
         try {
-            StackElement stack = en;
-            if (StackElement.isNoTrace(stack.contskel, stack.contdisplay, en))
-                stack = StackElement.skipNoTrace(stack.contdisplay, en);
+            StackElement stack = StackElement.skipNoTrace(en, en);
             int k = 0;
             SkelCompound back = null;
             /* iterator and fetch pred_file_line, pred and pred_error */
@@ -205,7 +202,7 @@ public final class EngineException extends Exception {
                 SkelAtom sa = StackElement.callableToName(en.skel);
                 Object val;
                 if (sa != null) {
-                    int arity = Frame.callableToArity(en.skel);
+                    int arity = StackElement.callableToArity(en.skel);
                     val = SpecialQuali.indicatorToColonSkel(sa, arity, en);
                     PositionKey pos = sa.getPosition();
                     if (pos != null) {

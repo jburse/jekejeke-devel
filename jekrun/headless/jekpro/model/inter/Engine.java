@@ -204,7 +204,7 @@ public class Engine extends StackElement implements Comparator<Object> {
     public boolean runLoop(int snap, boolean found)
             throws EngineException {
         try {
-            for (;;) {
+            for (; ; ) {
                 if (found) {
                     if (contskel != null) {
                         found = contskel.resolveNext(this);
@@ -435,7 +435,7 @@ public class Engine extends StackElement implements Comparator<Object> {
         }
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
             SkelAtom sa = StackElement.callableToName(alfa);
-            int arity = Frame.callableToArity(alfa);
+            int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_EVALUABLE,
                     SpecialQuali.indicatorToColonSkel(sa, arity, this)));
@@ -443,7 +443,7 @@ public class Engine extends StackElement implements Comparator<Object> {
         AbstractDelegate fun = cp.pick.del;
         if (fun == null) {
             SkelAtom sa = StackElement.callableToName(alfa);
-            int arity = Frame.callableToArity(alfa);
+            int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_CODE,
                     SpecialQuali.indicatorToColonSkel(sa, arity, this)));

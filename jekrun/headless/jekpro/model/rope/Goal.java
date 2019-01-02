@@ -1,7 +1,6 @@
 package jekpro.model.rope;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.reference.runtime.SpecialQuali;
@@ -152,7 +151,7 @@ public class Goal extends Intermediate {
         }
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
             SkelAtom sa = StackElement.callableToName(alfa);
-            int arity = Frame.callableToArity(alfa);
+            int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROCEDURE,
                     SpecialQuali.indicatorToColonSkel(sa, arity, en)));
@@ -160,7 +159,7 @@ public class Goal extends Intermediate {
         AbstractDelegate fun = cp.pick.del;
         if (fun == null) {
             SkelAtom sa = StackElement.callableToName(alfa);
-            int arity = Frame.callableToArity(alfa);
+            int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_BODY,
                     SpecialQuali.indicatorToColonSkel(sa, arity, en)));

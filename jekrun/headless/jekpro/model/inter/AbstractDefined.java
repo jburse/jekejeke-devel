@@ -457,7 +457,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         BindCount[] refhead = en.display;
 
         /* check predicate existence and visibility */
-        CachePredicate cp = Frame.callableToPredicate(head, en);
+        CachePredicate cp = StackElement.callableToPredicate(head, en);
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
             EngineMessage.checkCallable(head, refhead);
             return false;
