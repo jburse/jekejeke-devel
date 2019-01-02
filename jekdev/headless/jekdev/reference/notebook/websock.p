@@ -1,5 +1,5 @@
 /**
- * t.b.d.
+ * This module provides a web socket extension.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

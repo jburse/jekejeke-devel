@@ -87,7 +87,12 @@ handle(Object, Session) :-
    atom_list_concat([_,URI,_], ' ', What),
    make_uri(Spec, Query, _, URI),
    params(Query, Assoc),
-   Object::dispatch(Spec, Assoc, Session).
+   Object::dispatch(Spec, Assoc, Session), !.
+handle(_, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_error(Response),
+      close(Response)).
 
 % params(+Atom, -Assoc)
 :- private params/2.
@@ -116,54 +121,50 @@ http_parameter(Assoc, Name, Value) :-
 /***************************************************************/
 
 /**
- * send_text(F, O):
- * The predicate sends the HTML resource F to the output stream O.
+ * response_text(O):
+ * Send an OK response to the text output stream.
  */
-% send_text(+File, +Stream)
-:- public send_text/2.
-send_text(File, Response) :-
-   setup_call_cleanup(
-      open_resource(File, Stream),
-      (  send_html(Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-
-% send_html(+Stream)
-:- private send_html/1.
-send_html(Response) :-
+% response_text(+Stream)
+:- public response_text/1.
+response_text(Response) :-
    write(Response, 'HTTP/1.0 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
-% send_lines(+Stream, +Stream)
-:- private send_lines/2.
-send_lines(Stream, Response) :-
-   read_line(Stream, Line), !,
-   write(Response, Line),
-   write(Response, '\r\n'),
-   send_lines(Stream, Response).
-send_lines(_, _).
+/**
+ * send_error(O):
+ * Send a not found error text.
+ */
+% send_error(+Stream)
+:- private send_error/1.
+send_error(Response) :-
+   response_error(Response),
+   html_begin(Response, 'Error'),
+   write(Response, '<p>Error 404 Not Found</p>\r\n'),
+   html_end(Response).
+
+/**
+ * response_error(O):
+ * Send a not found response to the text output stream.
+ */
+% response_error(+Stream)
+:- private response_error/1.
+response_error(Response) :-
+   write(Response, 'HTTP/1.0 404 Not Found\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
 
 /***************************************************************/
 /* HTTP Response Binary                                        */
 /***************************************************************/
 
 /**
- * send_binary(F, O):
- * The predicate sends the binary resource F to the output stream O.
+ * response_binary(O):
+ * Send an OK response to the binary output stream.
  */
-% send_binary(+File, +Stream)
-:- public send_binary/2.
-send_binary(File, Response) :-
-   setup_call_cleanup(
-      open_resource(File, Stream, [type(binary)]),
-      (  send_octet(Response),
-         send_blocks(Stream, Response)),
-      close(Stream)).
-
-% send_octet(+Stream)
-:- private send_octet/1.
-send_octet(Response) :-
+% response_binary(+Stream)
+:- public response_binary/1.
+response_binary(Response) :-
    write_bytes(Response, "HTTP/1.0 200 OK\r\n"),
    write_bytes(Response, "Content-Type: application/octet-stream\r\n"),
    write_bytes(Response, "\r\n").
@@ -173,14 +174,6 @@ send_octet(Response) :-
 write_bytes(Response, Bytes) :-
    block_bytes(Block, Bytes),
    write_block(Response, Block).
-
-% send_blocks(+Stream, +Stream)
-:- private send_blocks/2.
-send_blocks(Stream, Response) :-
-   read_block(Stream, 1024, Block), !,
-   write_block(Response, Block),
-   send_blocks(Stream, Response).
-send_blocks(_, _).
 
 /***************************************************************/
 /* HTTP Response Dynamic                                       */
@@ -197,18 +190,11 @@ html_escape(Response, Text) :-
 
 /**
  * html_begin(O, T):
- * html_begin(O, T, S):
  * The predicate sends the html begin with title T to the output stream O.
  */
 % html_begin(+Stream, +Atom)
 :- public html_begin/2.
 html_begin(Response, Title) :-
-   html_begin(Response, Title, []).
-
-% html_begin(+Stream, +Atom, +List)
-:- public html_begin/3.
-html_begin(Response, Title, Opt) :-
-   send_html(Response),
    write(Response, '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\r\n'),
    write(Response, '<html>\r\n'),
    write(Response, '  <head>\r\n'),
@@ -216,39 +202,8 @@ html_begin(Response, Title, Opt) :-
    write(Response, '      <title>'),
    html_escape(Response, Title),
    write(Response, '</title>\r\n'),
-   html_begin_opt(Response, Opt),
    write(Response, '  </head>\r\n'),
    write(Response, '  <body>\r\n').
-
-% html_begin_opt(+Stream, List)
-:- private html_begin_opt/2.
-html_begin_opt(Response, [tree|Opt]) :-
-   script_tree(Response),
-   html_begin_opt(Response, Opt).
-html_begin_opt(_, []).
-
-/**
- * script_tree(O):
- * The predicate sends the script tree to the output stream O.
- */
-% script_tree(+Stream)
-:- private script_tree/1.
-script_tree(Response) :-
-   write(Response, '    <script type="text/javascript">\r\n'),
-   write(Response, '        function openClose(id) {\r\n'),
-   write(Response, '            var elem = document.getElementById(id);\r\n'),
-   write(Response, '            var img = document.getElementById(id + "_img");\r\n'),
-   write(Response, '            if (elem.style.display == "none") {\r\n'),
-   write(Response, '                elem.style.display = "block";\r\n'),
-   write(Response, '                img.alt = "open";\r\n'),
-   write(Response, '                img.src = "/open.gif";\r\n'),
-   write(Response, '            } else {\r\n'),
-   write(Response, '                elem.style.display = "none";\r\n'),
-   write(Response, '                img.alt = "closed";\r\n'),
-   write(Response, '                img.src = "/closed.gif";\r\n'),
-   write(Response, '            }\r\n'),
-   write(Response, '        }\r\n'),
-   write(Response, '    </script>\r\n').
 
 /**
  * html_end(O):

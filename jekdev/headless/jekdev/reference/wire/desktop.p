@@ -1,11 +1,5 @@
 /**
- * This module provides a HTTP object class to inspect the Prolog
- * threads, Prolog stack frames and Prolog variables of a
- * Prolog instance.
- *
- * Currently the HTTP object class only deals with GET requests
- * and provides a simple frame set based view. Extensions towards
- * web sockets and JSON RPC are planned.
+ * t.b.d.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,7 +34,7 @@
 
 :- module(desktop, []).
 :- use_module(library(notebook/httpsrv)).
-:- reexport(monitor).
+:- reexport(view).
 
 % html_target(+Object, +Stream, +Atom)
 html_target(_, Response, Target) :-
