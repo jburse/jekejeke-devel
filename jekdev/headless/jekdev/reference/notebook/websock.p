@@ -1,11 +1,5 @@
 /**
- * This module provides a HTTP object class to inspect the Prolog
- * threads, Prolog stack frames and Prolog variables of a
- * Prolog instance.
- *
- * Currently the HTTP object class only deals with GET requests
- * and provides a simple frame set based view. Extensions towards
- * web sockets and JSON RPC are planned.
+ * t.b.d.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,14 +30,6 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- package(library(jekdev/reference/wire)).
+:- package(library(jekdev/reference/notebook)).
 
-:- module(desktop, []).
-:- use_module(library(notebook/httpsrv)).
-:- reexport(monitor).
-
-% html_target(+Object, +Stream, +Atom)
-html_target(_, Response, Target) :-
-   write(Response, ' target="'),
-   html_escape(Response, Target),
-   write(Response, '"').
+:- module(websock, []).

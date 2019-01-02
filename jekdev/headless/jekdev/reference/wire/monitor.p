@@ -39,7 +39,7 @@
 :- package(library(jekdev/reference/wire)).
 
 :- module(monitor, []).
-:- use_module(library(wire/httpsrv)).
+:- use_module(library(notebook/httpsrv)).
 :- use_module(library(system/thread)).
 :- use_module(library(system/group)).
 :- use_module(library(inspection/frame)).
