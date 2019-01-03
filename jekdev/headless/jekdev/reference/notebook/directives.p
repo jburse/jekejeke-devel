@@ -90,10 +90,12 @@ sys_show_all(_).
 
 :- private sys_show_answer/1.
 sys_show_answer(the(R)) :-
-   sys_show_name_or_eq_list(R),
+   sys_get_variable_names(M),
+   sys_show_name_or_eq_list(R, M),
    ttywrite(' ;'), ttynl.
 sys_show_answer(last(R)) :-
-   sys_show_name_or_eq_list(R), ttynl.
+   sys_get_variable_names(M),
+   sys_show_name_or_eq_list(R, M), ttynl.
 sys_show_answer(no) :- sys_show_no, ttynl.
 sys_show_answer(ball(E)) :-
    print_stack_trace(E).
@@ -113,7 +115,8 @@ sys_get_answer2(G, A) :-
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
-   sys_get_name_or_eq_list(R),
+   sys_get_variable_names(M),
+   sys_get_name_or_eq_list(R, M),
    (  X == Y -> !,
       A = last(R)
    ;  A = the(R)).

@@ -2,10 +2,8 @@ package jekdev.model.bugger;
 
 import jekdev.reference.debug.SpecialDefault;
 import jekdev.reference.inspection.SpecialFrame;
-import jekdev.reference.inspection.SpecialStack;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineMessage;

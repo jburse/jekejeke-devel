@@ -135,8 +135,8 @@ public final class SpecialSession extends AbstractSpecial {
                 StackElement frame = en.visor.ref;
                 BindCount[] ref2 = (frame != null ? frame.contdisplay.bind : null);
                 Clause def = (frame != null ? frame.contskel.getClause() : null);
-                Object t = (def != null ? PreClause.intermediateToClause(def, en) : null);
-                en.skel = (t != null ? SpecialSession.termToRawAssoc(t, ref2, en) : en.store.foyer.ATOM_NIL);
+                Object var = (def != null ? def.var : null);
+                en.skel = SpecialSession.varToRawAssoc(var, ref2, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
                 return en.getNext();
@@ -698,27 +698,30 @@ public final class SpecialSession extends AbstractSpecial {
      * <p>Will not convert variables that have not yet been allocated.</p>
      * <p>Will not convert variables that have already been deallocated.</p>
      *
-     * @param t     The term skeleton.
+     * @param var     The var object.
      * @param d     The term display.
      * @param en The engine.
      * @return The Prolog association list.
      */
-    public static Object termToRawAssoc(Object t, BindCount[] d,
+    public static Object varToRawAssoc(Object var, BindCount[] d,
                                          Engine en) {
         Object end = en.store.foyer.ATOM_NIL;
-        Object var = EngineCopy.getVar(t);
         if (var == null)
             return end;
         if (var instanceof SkelVar) {
             SkelVar sv = (SkelVar) var;
-            if (sv instanceof SkelVarNamed)
-                end = addToRawAssoc(sv, d, ((SkelVarNamed) sv).getName(), end, en);
+            if (sv instanceof SkelVarNamed) {
+                String name = ((SkelVarNamed) sv).getName();
+                end = addToRawAssoc(sv, d, name, end, en);
+            }
         } else {
             SkelVar[] temp = (SkelVar[]) var;
-            for (int i = 0; i < temp.length; i++) {
+            for (int i = temp.length-1; i>=0; i--) {
                 SkelVar sv = temp[i];
-                if (sv instanceof SkelVarNamed)
-                    end = addToRawAssoc(sv, d, ((SkelVarNamed) sv).getName(), end, en);
+                if (sv instanceof SkelVarNamed) {
+                    String name = ((SkelVarNamed) sv).getName();
+                    end = addToRawAssoc(sv, d, name, end, en);
+                }
             }
         }
         return end;

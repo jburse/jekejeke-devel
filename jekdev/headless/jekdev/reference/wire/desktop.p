@@ -33,8 +33,25 @@
 :- package(library(jekdev/reference/wire)).
 
 :- module(desktop, []).
+:- use_module(monitor).
 :- use_module(library(notebook/httpsrv)).
 :- reexport(view).
+
+/**
+ * dispatch(O, P, A, S):
+ * The predicate succeeds in dispatching the request for object
+ * O, with path P, with parameter list A and the session S.
+ */
+% dispatch(+Object, +Spec, +Assoc, +Session)
+:- override dispatch/4.
+:- public dispatch/4.
+dispatch(_, '/layout.html', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_text(library(wire/layout), Response),
+      close(Response)).
+dispatch(Object, Spec, Assoc, Session) :-
+   wire/view:dispatch(Object, Spec, Assoc, Session).
 
 % html_target(+Object, +Stream, +Atom)
 html_target(_, Response, Target) :-

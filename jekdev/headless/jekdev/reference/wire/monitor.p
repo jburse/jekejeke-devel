@@ -40,9 +40,7 @@
 
 :- module(monitor, []).
 :- use_module(library(notebook/httpsrv)).
-:- use_module(library(system/thread)).
-:- use_module(library(system/group)).
-:- use_module(library(inspection/frame)).
+:- use_module(library(stream/console)).
 
 /**
  * dispatch(O, P, A, S):
@@ -51,20 +49,25 @@
  */
 % dispatch(+Object, +Spec, +Assoc, +Session)
 :- public dispatch/4.
-dispatch(_, '/closed.gif', _, Session) :- !,
+dispatch(_, '/images/closed.gif', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/closed), Response),
+      send_binary(library(wire/images/closed), Response),
       close(Response)).
-dispatch(_, '/open.gif', _, Session) :- !,
+dispatch(_, '/images/open.gif', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/open), Response),
+      send_binary(library(wire/images/open), Response),
       close(Response)).
-dispatch(_, '/blank.gif', _, Session) :- !,
+dispatch(_, '/images/blank.gif', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/blank), Response),
+      send_binary(library(wire/images/blank), Response),
+      close(Response)).
+dispatch(_, '/index.html', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_text(library(wire/index), Response),
       close(Response)).
 dispatch(_, Path, Params, Session) :-
    sub_atom(Path, 0, Pos, '/desktop/'), !,
@@ -86,7 +89,6 @@ dispatch(_, Path, Params, Session) :-
  * The predicate sends the binary resource F to the output stream O.
  */
 % send_binary(+File, +Stream)
-:- private send_binary/2.
 send_binary(File, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]),
@@ -101,3 +103,28 @@ send_blocks(Stream, Response) :-
    write_block(Response, Block),
    send_blocks(Stream, Response).
 send_blocks(_, _).
+
+/***************************************************************/
+/* HTTP Response Text                                          */
+/***************************************************************/
+
+/**
+ * send_text(F, O):
+ * The predicate sends the HTML resource F to the output stream O.
+ */
+% send_text(+File, +Stream)
+send_text(File, Response) :-
+   setup_call_cleanup(
+      open_resource(File, Stream),
+      (  response_text(Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+
+% send_lines(+Stream, +Stream)
+:- private send_lines/2.
+send_lines(Stream, Response) :-
+   read_line(Stream, Line), !,
+   write(Response, Line),
+   write(Response, '\r\n'),
+   send_lines(Stream, Response).
+send_lines(_, _).

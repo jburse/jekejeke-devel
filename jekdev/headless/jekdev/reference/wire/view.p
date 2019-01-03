@@ -33,6 +33,7 @@
 :- package(library(jekdev/reference/wire)).
 
 :- module(view, []).
+:- use_module(monitor).
 :- use_module(library(notebook/httpsrv)).
 :- use_module(library(stream/console)).
 :- use_module(library(system/thread)).
@@ -48,12 +49,8 @@
  * O, with path P, with parameter list A and the session S.
  */
 % dispatch(+Object, +Spec, +Assoc, +Session)
+:- override dispatch/4.
 :- public dispatch/4.
-dispatch(_, '/index.html', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_text(library(wire/index), Response),
-      close(Response)).
 dispatch(Object, '/thread.jsp', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
@@ -109,7 +106,7 @@ send_group_group_list(Object, Group, Response) :-
    current_group_flag(Other, sys_group_name, Name),
    write(Response, '<dt><a onclick="openClose('''),
    html_escape(Response, Name),
-   write(Response, ''');"><img src="../closed.gif" id="'),
+   write(Response, ''');"><img src="../images/closed.gif" id="'),
    html_escape(Response, Name),
    write(Response, '_img">'),
    html_escape(Response, Name),
@@ -125,7 +122,7 @@ send_group_group_list(_, _, _).
 :- private send_group_thread_list/3.
 send_group_thread_list(Object, Group, Response) :-
    current_thread(Group, Thread),
-   write(Response, '<dt><img src="../blank.gif">'),
+   write(Response, '<dt><img src="../images/blank.gif">'),
    send_thread(Object, Thread, Response),
    write(Response, '</dt>\r\n'), fail.
 send_group_thread_list(_, _, _).
@@ -248,26 +245,28 @@ send_frame(Assoc, Response) :-
    frame_begin(Response, Atom),
    write(Response, '<dl>'),
    frame_deref(Other, Deref),
-   frame_property(Deref, variable_names(Vars)),
-   send_frame_vars(Vars, Response),
+   frame_property(Deref, sys_variable_names(Map)),
+   frame_property(Deref, sys_raw_variables(Vars)),
+   filter_vars(Vars, Map, Vars2),
+   send_frame_vars(Vars2, Map, Response),
    write(Response, '</dl>\r\n'),
    html_end(Response).
 send_frame(_, Response) :-
    frame_begin(Response, 'Bindings'),
    html_end(Response).
 
-% send_frame_vars(+List, +Stream)
-:- private send_frame_vars/2.
-send_frame_vars([Var=Term|List], Response) :-
+% send_frame_vars(+List, +List, +Stream)
+:- private send_frame_vars/3.
+send_frame_vars([Var=Term|List], Map, Response) :-
    write(Response, '<dt>'),
    sys_quoted_var(Var, Quote),
    html_escape(Response, Quote),
    write(Response, ' = '),
-   term_atom(Term, Atom),
+   term_atom(Term, Atom, [priority(699),variable_names(Map)]),
    html_escape(Response, Atom),
    write(Response, '</dt>\r\n'),
-   send_frame_vars(List, Response).
-send_frame_vars([], _).
+   send_frame_vars(List, Map, Response).
+send_frame_vars([], _, _).
 
 % find_call_stack(+Frame, +Count, -Frame)
 :- private find_call_stack/3.
@@ -277,6 +276,18 @@ find_call_stack(Frame, Count, Result) :-
    frame_property(Frame, sys_parent_frame(Other)),
    Count2 is Count-1,
    find_call_stack(Other, Count2, Result).
+
+% filter_vars(+List, +List, +List)
+:- private filter_vars/3.
+filter_vars([Name=Term|Vars], Map, Vars2) :-
+   var(Term),
+   once((  sys_member(Name2=Term2, Map),
+           Term2 == Term)),
+   Name2 == Name, !,
+   filter_vars(Vars, Map, Vars2).
+filter_vars([Eq|Vars], Map, [Eq|Vars2]) :-
+   filter_vars(Vars, Map, Vars2).
+filter_vars([], _, []).
 
 /*************************************************************/
 /* Source Inspection                                         */
@@ -364,11 +375,11 @@ script_tree(Response) :-
    write(Response, '            if (elem.style.display == "none") {\r\n'),
    write(Response, '                elem.style.display = "block";\r\n'),
    write(Response, '                img.alt = "open";\r\n'),
-   write(Response, '                img.src = "../open.gif";\r\n'),
+   write(Response, '                img.src = "../images/open.gif";\r\n'),
    write(Response, '            } else {\r\n'),
    write(Response, '                elem.style.display = "none";\r\n'),
    write(Response, '                img.alt = "closed";\r\n'),
-   write(Response, '                img.src = "../closed.gif";\r\n'),
+   write(Response, '                img.src = "../images/closed.gif";\r\n'),
    write(Response, '            }\r\n'),
    write(Response, '        }\r\n'),
    write(Response, '    </script>\r\n').
@@ -385,32 +396,6 @@ style_lines(Response) :-
    write(Response, '    .lnuc:target { white-space: pre; background: yellow }\r\n'),
    write(Response, '    .lnuc { white-space: pre }\r\n'),
    write(Response, '    </style>\r\n').
-
-/***************************************************************/
-/* HTTP Response Text                                          */
-/***************************************************************/
-
-/**
- * send_text(F, O):
- * The predicate sends the HTML resource F to the output stream O.
- */
-% send_text(+File, +Stream)
-:- private send_text/2.
-send_text(File, Response) :-
-   setup_call_cleanup(
-      open_resource(File, Stream),
-      (  response_text(Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-
-% send_lines(+Stream, +Stream)
-:- private send_lines/2.
-send_lines(Stream, Response) :-
-   read_line(Stream, Line), !,
-   write(Response, Line),
-   write(Response, '\r\n'),
-   send_lines(Stream, Response).
-send_lines(_, _).
 
 /***************************************************************/
 /* HTTP Response Text                                          */

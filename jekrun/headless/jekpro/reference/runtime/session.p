@@ -118,60 +118,61 @@ prolog :- break.
 % sys_show_vars
 :- public sys_show_vars/0.
 sys_show_vars :-
-   sys_get_name_or_eq_list(R),
-   sys_show_name_or_eq_list(R).
+   sys_get_variable_names(M),
+   sys_get_name_or_eq_list(R, M),
+   sys_show_name_or_eq_list(R, M).
 :- set_predicate_property(sys_show_vars/0, sys_notrace).
 
 /**
- * sys_get_name_or_eq_list(R):
+ * sys_get_name_or_eq_list(R, M):
  * Will retrieve all variable instantiations and constraints related
  * to the current query or directive. Called by the interpreter for
- * notebook queries.
+ * notebook queries, where M are the variable names.
  */
-% sys_get_name_or_eq_list(-List)
-:- public sys_get_name_or_eq_list/1.
-sys_get_name_or_eq_list(R) :-
+% sys_get_name_or_eq_list(-List, +List)
+:- public sys_get_name_or_eq_list/2.
+sys_get_name_or_eq_list(R, M) :-
    sys_get_raw_variables(N),
    sys_term_eq_list(N, L),
-   sys_filter_variable_names(N, L, R).
+   sys_filter_variable_names(N, M, L, R).
 
 /**
- * sys_filter_variable_names(L, R, S):
+ * sys_filter_variable_names(L, M, R, S):
  * Succeeds with the list S which contains R and those variable
- * names of L that are not trivial.
+ * names of L that are not trivial, where M are the variable names.
  */
-% sys_filter_variable_names(+List, +List, -List)
-:- private sys_filter_variable_names/3.
-sys_filter_variable_names([X=Y|L], R, S) :-
+% sys_filter_variable_names(+List, +List, +List, -List)
+:- private sys_filter_variable_names/4.
+sys_filter_variable_names([X=Y|L], M, R, S) :-
    var(Y),
-   sys_get_variable_names(N),
-   once((  sys_member(Z=T, N),
+   once((  sys_member(Z=T, M),
            T == Y)),
    Z == X, !,
-   sys_filter_variable_names(L, R, S).
-sys_filter_variable_names([X=Y|L], R, [X is Z|S]) :-
+   sys_filter_variable_names(L, M, R, S).
+sys_filter_variable_names([X=Y|L], M, R, [X is Z|S]) :-
    sys_printable_value(Y, Z), !,
-   sys_filter_variable_names(L, R, S).
-sys_filter_variable_names([E|L], R, [E|S]) :-
-   sys_filter_variable_names(L, R, S).
-sys_filter_variable_names([], L, L).
+   sys_filter_variable_names(L, M, R, S).
+sys_filter_variable_names([E|L], M, R, [E|S]) :-
+   sys_filter_variable_names(L, M, R, S).
+sys_filter_variable_names([], _, L, L).
 
 /**
- * sys_show_name_or_eq_list(L):
- * Shows the variable assignments and constraints from L on the tty.
+ * sys_show_name_or_eq_list(L, M):
+ * Shows the variable assignments and constraints from L on the tty,
+ * where M are the variable names.
  */
-% sys_show_name_or_eq_list(+List)
-:- public sys_show_name_or_eq_list/1.
-sys_show_name_or_eq_list([]) :-
+% sys_show_name_or_eq_list(+List, +List)
+:- public sys_show_name_or_eq_list/2.
+sys_show_name_or_eq_list([], _) :-
    sys_get_lang(runtime, P),
    get_property(P, 'query.yes', V),
    ttywrite(V).
-sys_show_name_or_eq_list([X,Y|Z]) :- !,
-   sys_show_name_or_eq(X),
+sys_show_name_or_eq_list([X,Y|Z], M) :- !,
+   sys_show_name_or_eq(X, M),
    ttywrite(','), ttynl,
-   sys_show_name_or_eq_list([Y|Z]).
-sys_show_name_or_eq_list([X]) :-
-   sys_show_name_or_eq(X).
+   sys_show_name_or_eq_list([Y|Z], M).
+sys_show_name_or_eq_list([X], M) :-
+   sys_show_name_or_eq(X, M).
 
 /**
  * sys_show_no:
@@ -185,27 +186,25 @@ sys_show_no :-
    ttywrite(V).
 
 /**
- * sys_show_name_or_eq(E):
- * Shows the variable assignment or constraint E on the tty.
+ * sys_show_name_or_eq(E, M):
+ * Shows the variable assignment or constraint E on the tty,
+ * where M are the variable names.
  */
-% sys_show_name_or_eq(+Eq)
-:- private sys_show_name_or_eq/1.
-:- meta_predicate sys_show_name_or_eq(0).
-sys_show_name_or_eq(X is T) :- !,
+% sys_show_name_or_eq(+Eq, +List)
+:- private sys_show_name_or_eq/2.
+:- meta_predicate sys_show_name_or_eq(0,?).
+sys_show_name_or_eq(X is T, M) :- !,
    sys_quoted_var(X, Q),
    ttywrite(Q),
    ttywrite(' is '),
-   sys_get_variable_names(N),
-   ttywrite_term(T, [quoted(true),priority(699),variable_names(N)]).
-sys_show_name_or_eq(X = T) :- !,
+   ttywrite_term(T, [quoted(true),priority(699),variable_names(M)]).
+sys_show_name_or_eq(X = T, M) :- !,
    sys_quoted_var(X, Q),
    ttywrite(Q),
    ttywrite(' = '),
-   sys_get_variable_names(N),
-   ttywrite_term(T, [quoted(true),priority(699),variable_names(N)]).
-sys_show_name_or_eq(T) :-
-   sys_get_variable_names(N),
-   ttywrite_term(T, [quoted(true),context(0),variable_names(N)]).
+   ttywrite_term(T, [quoted(true),priority(699),variable_names(M)]).
+sys_show_name_or_eq(T, M) :-
+   ttywrite_term(T, [quoted(true),context(0),variable_names(M)]).
 
 /**
  * sys_quoted_var(V, Q):

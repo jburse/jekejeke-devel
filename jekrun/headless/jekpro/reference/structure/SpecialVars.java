@@ -176,8 +176,8 @@ public final class SpecialVars extends AbstractSpecial {
                     StackElement frame = en.visor.ref;
                     BindCount[] ref2 = (frame != null ? frame.contdisplay.bind : null);
                     Clause def = (frame != null ? frame.contskel.getClause() : null);
-                    Object t = (def != null ? PreClause.intermediateToClause(def, en) : null);
-                    MapHashLink<Object, NamedDistance> print = (t != null ? SpecialVars.termToMap(t, ref2, en) : null);
+                    Object var = (def != null ? def.var : null);
+                    MapHashLink<Object, NamedDistance> print = SpecialVars.varToMap(var, ref2, en);
                     mapToAssoc(print, en);
                     if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                         return false;
@@ -509,18 +509,17 @@ public final class SpecialVars extends AbstractSpecial {
      * <p>Will not convert variables that have not yet been allocated.</p>
      * <p>Will not convert variables that have already been deallocated.</p>
      *
-     * @param t  The term skeleton.
+     * @param var  The var object.
      * @param d  The term display.
      * @param en The engine.
      * @return The print map.
      */
-    public static MapHashLink<Object, NamedDistance> termToMap(Object t,
+    public static MapHashLink<Object, NamedDistance> varToMap(Object var,
                                                                BindCount[] d,
                                                                Engine en) {
-        MapHashLink<Object, NamedDistance> print = null;
-        Object var = EngineCopy.getVar(t);
         if (var == null)
-            return print;
+            return null;
+        MapHashLink<Object, NamedDistance> print = null;
         if (var instanceof SkelVar) {
             SkelVar sv = (SkelVar) var;
             if (sv instanceof SkelVarNamed)

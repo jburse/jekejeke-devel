@@ -1,7 +1,6 @@
 package jekdev.model.bugger;
 
 import jekdev.reference.debug.SpecialDefault;
-import jekpro.model.inter.Frame;
 import jekpro.model.inter.StackElement;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.pretty.Foyer;

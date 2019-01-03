@@ -142,8 +142,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SkelAtom sa = StackElement.callableToName(en.skel);
-                multi = atomToProperties(sa, en);
+                multi = callableToProperties(en.skel, en.display, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
@@ -153,13 +152,12 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_SYS_CALLABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
+                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                sa = StackElement.callableToName(en.skel);
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = atomToProperty(prop, sa, en);
+                multi = callableToProperty(prop, en.skel, en.display, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
@@ -179,8 +177,8 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                t = addAtomProp(en.skel, en.display, t, en);
-                if (!en.unifyTerm(temp[0], ref, t, d))
+                addAtomProp(en.skel, en.display, t, d, en);
+                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
             case SPECIAL_RESET_CALLABLE_PROPERTY:
@@ -196,8 +194,8 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                t = removeAtomProp(en.skel, en.display, t, en);
-                if (!en.unifyTerm(temp[0], ref, t, d))
+                removeAtomProp(en.skel, en.display, t, d, en);
+                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
                 return en.getNext();
             default:
@@ -214,12 +212,13 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Result is returned in skeleton and display.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param sa The atom, or null.
+     * @param t2 The callable skeleton.
+     *           @param d2 The callable display.
      * @param en The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean atomToProperties(SkelAtom sa, Engine en)
+    private static boolean callableToProperties(Object t2, BindCount[] d2, Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = BindCount.DISPLAY_CONST;
@@ -236,7 +235,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 StoreKey prop = props[j];
                 Object t = en.skel;
                 BindCount[] d = en.display;
-                Object[] vals = getPropAtom(prop, sa, en);
+                Object[] vals = getPropCallable(prop, t2, d2, en);
                 en.skel = t;
                 en.display = d;
                 multi = AbstractProperty.consArray(multi, vals, en);
@@ -250,15 +249,16 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Result is returned in skeleton and display.</p>
      *
      * @param prop The property.
-     * @param sa   The atom, or null.
+     * @param t2 The callable skeleton.
+     *           @param d2 The callable display.
      * @param en   The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean atomToProperty(StoreKey prop, SkelAtom sa,
+    private static boolean callableToProperty(StoreKey prop, Object t2, BindCount[] d2,
                                           Engine en)
             throws EngineMessage {
-        Object[] vals = getPropAtom(prop, sa, en);
+        Object[] vals = getPropCallable(prop, t2, d2, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = BindCount.DISPLAY_CONST;
         return AbstractProperty.consArray(false, vals, en);
@@ -271,20 +271,17 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param t  The value skeleton.
      * @param d  The value display.
      * @param t2 The callable skeleton.
+     * @param d2 The callable display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static Object addAtomProp(Object t, BindCount[] d,
-                                      Object t2, Engine en)
+    private static void addAtomProp(Object t, BindCount[] d,
+                                      Object t2, BindCount[] d2, Engine en)
             throws EngineMessage {
-        SkelAtom sa = StackElement.callableToName(t2);
-
         StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getPropAtom(prop, sa, en);
+        Object[] vals = getPropCallable(prop, t2, d2, en);
         vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
-        sa = setPropAtom(prop, sa, vals, en);
-
-        return StackElement.callableFromName(t2, sa);
+        setPropCallable(prop, t2, d2, vals, en);
     }
 
     /**
@@ -294,20 +291,17 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param t  The value skeleton.
      * @param d  The value display.
      * @param t2 The callable skeleton.
+     * @param d2 The callable display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static Object removeAtomProp(Object t, BindCount[] d,
-                                         Object t2, Engine en)
+    private static void removeAtomProp(Object t, BindCount[] d,
+                                         Object t2, BindCount[] d2, Engine en)
             throws EngineMessage {
-        SkelAtom sa = StackElement.callableToName(t2);
-
         StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getPropAtom(prop, sa, en);
+        Object[] vals = getPropCallable(prop, t2, d2, en);
         vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
-        sa = setPropAtom(prop, sa, vals, en);
-
-        return StackElement.callableFromName(t2, sa);
+        setPropCallable(prop, t2, d2, vals, en);
     }
 
     /***********************************************************************/
@@ -320,12 +314,13 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param prop The property.
-     * @param sa   The atom, or null.
+     * @param t2 The callable skeleton.
+     *           @param d2 The callable display.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    public static Object[] getPropAtom(StoreKey prop, SkelAtom sa,
+    public static Object[] getPropCallable(StoreKey prop, Object t2, BindCount[] d2,
                                        Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -335,7 +330,7 @@ public final class SpecialProvable extends AbstractSpecial {
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            Object[] vals = branch.getAtomProp(prop, sa, en);
+            Object[] vals = branch.getCallableProp(prop, t2, d2, en);
             if (vals != null)
                 return vals;
         }
@@ -349,13 +344,13 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param prop The property.
-     * @param skel The atom.
+     * @param t2 The callable skeleton.
+     *           @param d2 The callable display.
      * @param vals The values.
      * @param en   The engine.
-     * @return The new atom.
      * @throws EngineMessage Shit happens.
      */
-    private static SkelAtom setPropAtom(StoreKey prop, SkelAtom skel,
+    private static void setPropCallable(StoreKey prop, Object t2, BindCount[] d2,
                                         Object[] vals, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -365,8 +360,8 @@ public final class SpecialProvable extends AbstractSpecial {
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            if (branch.setAtomProp(prop, skel, vals, en))
-                return (SkelAtom) en.skel;
+            if (branch.setCallableProp(prop, t2, d2, vals, en))
+                return;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,

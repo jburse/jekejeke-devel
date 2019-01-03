@@ -1,6 +1,7 @@
 package jekpro.model.rope;
 
 import jekpro.frequent.experiment.InterfaceReference;
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
@@ -55,6 +56,7 @@ public class Clause extends Intermediate implements InterfaceReference {
     public int size;
     public AbstractDefined del;
     public int endgc;
+    public Object var;
 
     /**
      * <p>Create a clause.</p>
@@ -213,11 +215,13 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param en    The engine or null.
      */
     public void analyzeBody(Object molec, Engine en) {
-        /* detect the veriables and the body */
+        /* create the helper */
+        var = EngineCopy.getVar(molec);
         OptimizationVar[] vars = OptimizationVar.createHelper(molec);
         size = vars.length;
-        ListArray<Object> body = PreClause.clauseToBody(molec);
 
+        /* mark the helper */
+        ListArray<Object> body = PreClause.clauseToBody(molec);
         if (vars.length != 0) {
             /* analyze the variables */
             OptimizationVar.setStructureAndMinArg(head, this, vars);
@@ -238,7 +242,6 @@ public class Clause extends Intermediate implements InterfaceReference {
         } else {
             remtab = OptimizationArray.zeroInt(0);
         }
-
         dispsize = OptimizationArray.sweepMaxGoal(-1, true, size, vars, remtab);
 
         /* build the clause */

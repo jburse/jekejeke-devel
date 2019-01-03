@@ -721,7 +721,8 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 ev.singsOf(t, ref);
             }
-            MapHashLink<Object, NamedDistance> print = SpecialVars.termToMap(t, ref, en);
+            Object var = EngineCopy.getVar(t);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.varToMap(var, ref, en);
             print = EngineVars.numberVariables(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
@@ -732,9 +733,9 @@ public final class SpecialLoad extends AbstractSpecial {
         AbstractBind mark = en.bind;
         int snap = en.number;
         int size = EngineCopy.displaySize(t);
-        SkelVar var = SkelVar.valueOf(size);
+        SkelVar res = SkelVar.valueOf(size);
         BindCount[] dc = BindCount.newBind(size + 1);
-        t = new SkelCompound(new SkelAtom("rebuild_term"), t, var);
+        t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
         Intermediate r = en.contskel;
@@ -773,14 +774,15 @@ public final class SpecialLoad extends AbstractSpecial {
                 throw en.fault;
             EngineVars ev = new EngineVars();
             if ((flags & MASK_SHOW_NANO) != 0) {
-                ev.varInclude(var, dc);
+                ev.varInclude(res, dc);
             } else {
-                ev.singsOf(var, dc);
+                ev.singsOf(res, dc);
             }
-            MapHashLink<Object, NamedDistance> print = SpecialVars.termToMap(t, dc, en);
+            Object var = EngineCopy.getVar(t);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.varToMap(var, dc, en);
             print = EngineVars.numberVariables(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
-            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), var);
+            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
             pw.unparseStatement(t, dc);
             SpecialLoad.flushWriter(pw.getWriter());
         } catch (EngineMessage y) {

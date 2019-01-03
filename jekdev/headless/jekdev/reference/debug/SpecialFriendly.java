@@ -180,11 +180,11 @@ public final class SpecialFriendly extends AbstractSpecial {
             SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
-            Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
+            Object t = PreClause.intermediateToClause(clause, en);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setOffset(-1);
-            BindCount[] ref = SpecialLoad.showClause(pw, t, clause.vars, en,
+            BindCount[] ref = SpecialLoad.showClause(pw, t, en,
                     SpecialLoad.MASK_SHOW_NANO + SpecialLoad.MASK_SHOW_NRBD);
             pw.setFlags(PrologWriter.FLAG_QUOT);
             pw.setSpez(PrologWriter.SPEZ_META);
