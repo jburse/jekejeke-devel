@@ -4,12 +4,14 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.term.PositionKey;
+import jekpro.model.pretty.NamedDistance;
+import jekpro.model.pretty.SkelVarNamed;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>This class provides basic functions to copy terms.</p>
@@ -48,6 +50,7 @@ public final class EngineCopy {
     public MapHash<BindCount, SkelVar> vars;
     public MapHash<BindCount, SkelVar> anon;
     public int flags;
+    public MapHashLink<Object, NamedDistance> printmap;
 
     /**
      * <p>Retrieve the variable or variable array.</p>
@@ -176,9 +179,9 @@ public final class EngineCopy {
      * </pre>
      * <p>Tail recursive implementation.</p>
      *
-     * @param t   The goal skel.
-     * @param d   The goal display.
-     * @param en  The engine.
+     * @param t  The goal skel.
+     * @param d  The goal display.
+     * @param en The engine.
      * @return A copy of the goal with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
@@ -268,9 +271,9 @@ public final class EngineCopy {
      * </pre>
      * <p>Tail recursive implementation.</p>
      *
-     * @param t   The term skel.
-     * @param d   The term display.
-     * @param en  The engine.
+     * @param t  The term skel.
+     * @param d  The term display.
+     * @param en The engine.
      * @return A copy of the goal with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
@@ -406,19 +409,30 @@ public final class EngineCopy {
      */
     private SkelVar getVarNew(SkelVar v, BindCount[] d) {
         BindCount key = d[v.id];
+        SkelVar mv;
         if (vars == null) {
             vars = new MapHash<BindCount, SkelVar>();
-            v = null;
+            mv = null;
         } else {
-            v = vars.get(key);
+            mv = vars.get(key);
         }
-        if (v == null) {
-            v = new SkelVar(vars.size);
-            vars.add(key, v);
+        if (mv == null) {
+            if (printmap != null) {
+                Object obj = AbstractTerm.createMolec(v, d);
+                NamedDistance nd = printmap.get(obj);
+                if (nd != null) {
+                    mv = new SkelVarNamed(vars.size, nd.getName());
+                } else {
+                    mv = new SkelVar(vars.size);
+                }
+            } else {
+                mv = new SkelVar(vars.size);
+            }
+            vars.add(key, mv);
             if ((flags & MASK_COPY_SINGL) != 0) {
                 if (anon == null)
                     anon = new MapHash<BindCount, SkelVar>();
-                anon.add(key, v);
+                anon.add(key, mv);
             }
         } else {
             if ((flags & MASK_COPY_SINGL) != 0) {

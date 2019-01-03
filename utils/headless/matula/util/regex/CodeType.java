@@ -715,4 +715,17 @@ public final class CodeType {
         return str;
     }
 
+    /**
+     * Some testing.
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+       int cp = '\u20BF';
+       int type = Character.getType(cp);
+       System.out.println("type="+type);
+    }
+    */
+
 }

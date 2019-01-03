@@ -16,6 +16,7 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
@@ -344,9 +345,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
                 SpecialLoad.flushWriter(pw.getWriter());
             }
-            Object t = PreClause.intermediateToClause(clause.head, clause.next, en);
+            Object t = PreClause.intermediateToClause(clause, en);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
-            SpecialLoad.showClause(pw, t, clause.vars, en, 0);
+            SpecialLoad.showClause(pw, t, en, 0);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
         }
     }
@@ -702,13 +703,12 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param pw    The prolog writer.
      * @param t     The term.
-     * @param vars  The variable names.
      * @param en    The engine.
      * @param flags The show flags.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public static BindCount[] showClause(PrologWriter pw, Object t, Named[] vars,
+    public static BindCount[] showClause(PrologWriter pw, Object t,
                                          Engine en, int flags)
             throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
@@ -721,7 +721,7 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 ev.singsOf(t, ref);
             }
-            MapHashLink<Object, NamedDistance> print = Named.namedToMap(vars, ref, en);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.termToMap(t, ref, en);
             print = EngineVars.numberVariables(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
@@ -777,7 +777,7 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 ev.singsOf(var, dc);
             }
-            MapHashLink<Object, NamedDistance> print = Named.namedToMap(vars, dc, en);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.termToMap(t, dc, en);
             print = EngineVars.numberVariables(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), var);

@@ -245,43 +245,56 @@ public final class Interpreter implements Comparator<Object> {
     /**
      * <p>Unparse the given term to a string.</p>
      *
-     * @param flags The flags.
-     * @param t     The object.
+     * @param t The object.
+     * @param opt The write options.
      * @return The string.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public String unparseTerm(int flags, AbstractTerm t)
+    public String unparseTerm(AbstractTerm t, Object opt)
             throws InterpreterMessage, InterpreterException {
-        try {
-            Engine en = (Engine) getEngine();
-            StringWriter sw = new StringWriter();
-            PrologWriter.toString(AbstractTerm.getSkel(t), AbstractTerm.getDisplay(t),
-                    sw, flags, en);
-            return sw.toString();
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
+        StringWriter sw = new StringWriter();
+        unparseTerm(sw, t, opt, true);
+        return sw.toString();
     }
 
     /**
      * <p>Unparse the given term to a string.</p>
      *
      * @param wr  The writer.
-     * @param opt The write options.
      * @param t   The term.
+     * @param opt The write options.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public void unparseTerm(Writer wr, Object opt, AbstractTerm t)
+    public void unparseTerm(Writer wr, AbstractTerm t, Object opt)
+            throws InterpreterMessage, InterpreterException {
+        unparseTerm(wr, t, opt, false);
+    }
+
+    /**
+     * <p>Unparse the given term to a string.</p>
+     *
+     * @param wr       The writer.
+     * @param t        The term.
+     * @param opt      The write options.
+     * @param defquote The default quote flag.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    private void unparseTerm(Writer wr, AbstractTerm t, Object opt,
+                             boolean defquote)
             throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         try {
             PrologWriter pw;
-            if (!opt.equals(Foyer.OP_NIL)) {
+            if (!opt.equals(Knowledgebase.OP_NIL)) {
                 WriteOpts wo = new WriteOpts(en);
+                if (defquote) {
+                    wo.flags |= Interpreter.FLAG_QUOTED;
+                } else {
+                    wo.flags &= ~Interpreter.FLAG_QUOTED;
+                }
                 wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
                         AbstractTerm.getDisplay(opt), en);
                 if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
@@ -293,6 +306,11 @@ public final class Interpreter implements Comparator<Object> {
                 wo.setWriteOpts(pw);
             } else {
                 pw = Foyer.createWriter(Foyer.IO_TERM);
+                if (defquote) {
+                    pw.flags |= Interpreter.FLAG_QUOTED;
+                } else {
+                    pw.flags &= ~Interpreter.FLAG_QUOTED;
+                }
                 pw.setWriteUtil(en.store);
                 pw.setSource(en.store.user);
             }
@@ -316,47 +334,17 @@ public final class Interpreter implements Comparator<Object> {
      * <p>The term doesn't need a period.</p>
      * <p>Returns null when an empty string has been supplied.</p>
      *
-     * @param s The string.
+     * @param s   The string.
+     * @param opt The read options.
      * @return The term or null.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public AbstractTerm parseTerm(String s)
+    public AbstractTerm parseTerm(String s, Object opt)
             throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) getEngine();
-        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         cr.setLineNumber(1);
-        rd.getScanner().setReader(cr);
-        rd.setReadUtil(en.store);
-        rd.setSource(en.store.user);
-        rd.setEngineRaw(en);
-        Object val;
-        try {
-            try {
-                val = rd.parseHeadInternal();
-            } catch (ScannerError y) {
-                String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
-                rd.parseTailError(PrologReader.OP_EOF, y);
-                EngineMessage x = new EngineMessage(
-                        EngineMessage.syntaxError(y.getError()));
-                throw new EngineException(x,
-                        EngineException.fetchPos(
-                                EngineException.fetchStack(en), line, en));
-            }
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-        if (val == null)
-            return null;
-        int size = rd.getGensym();
-        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
-        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
-        if (size != 0)
-            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
-        return res;
+        return parseTerm(cr, opt, false);
     }
 
     /**
@@ -364,20 +352,41 @@ public final class Interpreter implements Comparator<Object> {
      * <p>Returns null when the output options don't unify.</p>
      *
      * @param lr  The line number reader.
-     * @param opt The options.
+     * @param opt The read options.
      * @return The term or null.
      * @throws InterpreterException Shit happens.
      * @throws InterpreterMessage   Shit happens.
      */
     public AbstractTerm parseTerm(Reader lr, Object opt)
             throws InterpreterException, InterpreterMessage {
+        return parseTerm(lr, opt, true);
+    }
+
+    /**
+     * <p>Create a term from a line number reader.</p>
+     * <p>Returns null when the output options don't unify.</p>
+     *
+     * @param lr      The line number reader.
+     * @param opt     The read options.
+     * @param defstmt The default statement flag.
+     * @return The term or null.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    private AbstractTerm parseTerm(Reader lr, Object opt, boolean defstmt)
+            throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) getEngine();
         Object val;
         PrologReader rd;
         try {
             boolean stmt;
-            if (!opt.equals(Foyer.OP_NIL)) {
+            if (!opt.equals(Knowledgebase.OP_NIL)) {
                 ReadOpts ro = new ReadOpts(en);
+                if (defstmt) {
+                    ro.flags |= PrologWriter.FLAG_STMT;
+                } else {
+                    ro.flags &= ~PrologWriter.FLAG_STMT;
+                }
                 ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
                 if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
                     rd = en.store.foyer.createReader(Foyer.IO_TERM);
@@ -390,7 +399,7 @@ public final class Interpreter implements Comparator<Object> {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
                 rd.setReadUtil(en.store);
                 rd.setSource(en.store.user);
-                stmt = true;
+                stmt = defstmt;
             }
             rd.getScanner().setReader(lr);
             rd.setEngineRaw(en);
@@ -402,7 +411,7 @@ public final class Interpreter implements Comparator<Object> {
                 }
             } catch (ScannerError y) {
                 String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                rd.parseTailError(PrologReader.OP_PERIOD, y);
+                rd.parseTailError(stmt ? PrologReader.OP_PERIOD : PrologReader.OP_EOF, y);
                 EngineMessage x = new EngineMessage(
                         EngineMessage.syntaxError(y.getError()));
                 PositionKey pos = (OpenOpts.getPath(lr) != null ?

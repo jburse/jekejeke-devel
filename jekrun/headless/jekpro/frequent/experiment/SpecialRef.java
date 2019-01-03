@@ -4,20 +4,28 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.NamedDistance;
+import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Named;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>Provides built-in predicates for the internal database predicates.</p>
@@ -218,15 +226,17 @@ public final class SpecialRef extends AbstractSpecial {
             en.enginecopy = ec;
         }
         ec.vars = null;
+        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
+            ec.printmap = decodeAssertOptions(temp[2], ref, en);
+        } else {
+            ec.printmap = null;
+        }
         ec.flags = 0;
         Object molec = ec.copyTermAndWrap(temp[0], ref, en);
-        Named[] vars = null;
-        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0)
-            vars = Named.decodeAssertOptions(temp[2], ref, en, ec);
         ec.vars = null;
-        Clause clause = PreClause.determineCompiled(flags, molec, en);
-        clause.vars = vars;
-        return clause;
+        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0)
+            ec.printmap = null;
+        return PreClause.determineCompiled(flags, molec, en);
     }
 
     /***************************************************************/
@@ -410,6 +420,63 @@ public final class SpecialRef extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_REF, m));
         }
+    }
+
+    /*******************************************************************/
+    /* Assert Options                                                  */
+    /*******************************************************************/
+
+    /**
+     * <p>Decode the given clause options.</p>
+     * <p>Will look for the following option:</p>
+     * <ul>
+     * <li><b>variable_names:</b> The variables names with singletons (input).</li>
+     * </ul>
+     *
+     * @param t  The options skel.
+     * @param d  The options display.
+     * @param en The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static MapHashLink<Object, NamedDistance> decodeAssertOptions(Object t, BindCount[] d,
+                                                                         Engine en)
+            throws EngineMessage {
+        MapHashLink<Object, NamedDistance> vars = null;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        while (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 2 &&
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] mc = ((SkelCompound) en.skel).args;
+            d = en.display;
+            en.skel = mc[0];
+            en.deref();
+            if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
+                vars = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0],
+                        d, en);
+            } else {
+                EngineMessage.checkInstantiated(en.skel);
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_ASSERT_OPTION,
+                        en.skel), en.display);
+            }
+            en.skel = mc[1];
+            en.display = d;
+            en.deref();
+        }
+        if (en.skel instanceof SkelAtom &&
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST,
+                    en.skel), en.display);
+        }
+        return vars;
     }
 
 }

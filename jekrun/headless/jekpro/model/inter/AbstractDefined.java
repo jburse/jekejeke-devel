@@ -1,5 +1,6 @@
 package jekpro.model.inter;
 
+import jekpro.frequent.experiment.SpecialRef;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -7,7 +8,6 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
-import jekpro.model.rope.Named;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -418,14 +418,17 @@ public abstract class AbstractDefined extends AbstractDelegate {
             en.enginecopy = ec;
         }
         ec.vars = null;
+        if ((flags & OPT_ARGS_ASOP) != 0) {
+            ec.printmap = SpecialRef.decodeAssertOptions(temp[1], ref, en);
+        } else {
+            ec.printmap = null;
+        }
         ec.flags = 0;
         Object molec = ec.copyTermAndWrap(temp[0], ref, en);
-        Named[] vars = null;
-        if ((flags & OPT_ARGS_ASOP) != 0)
-            vars = Named.decodeAssertOptions(temp[1], ref, en, ec);
         ec.vars = null;
+        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0)
+            ec.printmap = null;
         Clause clause = PreClause.determineCompiled(flags, molec, en);
-        clause.vars = vars;
         clause.assertRef(flags, en);
     }
 

@@ -149,7 +149,6 @@ public final class ForeignUri {
         if (!ForeignFile.STRING_EMPTY.equals(rest))
             name += "&" + rest;
         return name;
-
     }
 
     /*******************************************************************/

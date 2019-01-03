@@ -954,8 +954,8 @@ public class PrologWriter {
         } else if (term instanceof SkelVar) {
             SkelVar sv = (SkelVar) term;
             if (printmap != null) {
-                Object key = AbstractTerm.createMolec(sv, ref);
-                NamedDistance nd = printmap.get(key);
+                Object obj = AbstractTerm.createMolec(sv, ref);
+                NamedDistance nd = printmap.get(obj);
                 if (nd != null) {
                     String t = variableQuoted(nd.getName());
                     safeSpace(t);

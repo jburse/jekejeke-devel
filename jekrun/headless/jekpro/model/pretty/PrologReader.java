@@ -4,7 +4,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.OperatorSearch;
-import jekpro.model.rope.Named;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.structure.ForeignAtom;
@@ -13,6 +12,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.regex.*;
 import matula.util.system.OpenOpts;
@@ -879,7 +879,7 @@ public class PrologReader {
         }
         if (mv == null) {
             if ((flags & PrologReader.FLAG_NEWV) != 0) {
-                mv = new SkelVar(gensym);
+                mv = new SkelVarNamed(gensym, key);
             } else {
                 mv = SkelVar.valueOf(gensym);
             }
@@ -1182,13 +1182,12 @@ public class PrologReader {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkSingleton(Named[] anon,
-                                      PositionKey pos,
-                                      Engine en)
+    public static void checkSingleton(MapHashLink<String, SkelVar> anon,
+                                      PositionKey pos, Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (anon != null && anon.length > 0) {
-                Object val = singToMolec(anon, en.store);
+            if (anon != null && anon.size()>0) {
+                Object val = singToMolec(anon, en);
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_SINGLETON_VAR, val));
             }
@@ -1205,14 +1204,17 @@ public class PrologReader {
      * <p>Create a list of the singletons.</p>
      *
      * @param anon  The anonymous variables.
-     * @param store The store.
+     * @param en The engine.
      * @return The list of the singletons names.
      */
-    private static Object singToMolec(Named[] anon, Store store) {
-        Object end = store.foyer.ATOM_NIL;
-        for (int i = anon.length - 1; i >= 0; i--)
-            end = new SkelCompound(store.foyer.ATOM_CONS,
-                    new SkelAtom(anon[i].getName()), end);
+    private static Object singToMolec(MapHashLink<String, SkelVar> anon,
+                                      Engine en) {
+        Object end = en.store.foyer.ATOM_NIL;
+        for (MapEntry<String,SkelVar> entry=anon.getFirstEntry();
+                entry!=null; entry=anon.successor(entry)) {
+            end = new SkelCompound(en.store.foyer.ATOM_CONS,
+                    new SkelAtom(entry.key), end);
+        }
         return end;
     }
 

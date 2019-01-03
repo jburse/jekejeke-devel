@@ -54,7 +54,6 @@ public class Clause extends Intermediate implements InterfaceReference {
     public int[] remtab;
     public int size;
     public AbstractDefined del;
-    public Named[] vars;
     public int endgc;
 
     /**
@@ -296,7 +295,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public boolean clauseRef(Engine en)
             throws EngineMessage {
-        en.skel = PreClause.intermediateToClause(head, next, en);
+        en.skel = PreClause.intermediateToClause(this, en);
         en.display = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
         return (size != 0);
     }
