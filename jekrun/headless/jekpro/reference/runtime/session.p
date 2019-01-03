@@ -212,7 +212,7 @@ sys_show_name_or_eq(T) :-
  * The predicate succeeds in Q with a possibly quoted variable name V.
  */
 % sys_quoted_var(+Atom, -Atom)
-:- private sys_quoted_var/2.
+:- public sys_quoted_var/2.
 :- special(sys_quoted_var/2, 'SpecialSession', 2).
 
 /**

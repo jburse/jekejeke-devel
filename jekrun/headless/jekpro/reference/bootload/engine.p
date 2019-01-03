@@ -73,16 +73,15 @@
 % current_prolog_flag(-Atom, -Term)
 :- public current_prolog_flag/2.
 current_prolog_flag(Flag, Value) :-
-   ground(Flag), !,
+   var(Flag), !,
+   sys_current_flag(Flag),
    sys_get_flag(Flag, Value).
 current_prolog_flag(Flag, Value) :-
-   sys_list_flags(List),
-   sys_member(Flag, List),
    sys_get_flag(Flag, Value).
 
-:- private sys_list_flags/1.
-:- foreign(sys_list_flags/1, 'ForeignEngine',
-      sysListFlags('Interpreter')).
+:- private sys_current_flag/1.
+:- foreign(sys_current_flag/1, 'ForeignEngine',
+      sysCurrentFlag('Interpreter','CallOut')).
 
 :- private sys_get_flag/2.
 :- foreign(sys_get_flag/2, 'ForeignEngine',

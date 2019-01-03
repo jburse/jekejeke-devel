@@ -660,7 +660,7 @@ public final class SpecialSession extends AbstractSpecial {
             val = rd.parseHeadStatement();
         } catch (ScannerError y) {
             String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
-            rd.parseTailError(PrologReader.OP_PERIOD, y);
+            rd.parseTailError(PrologReader.OP_EOF, y);
             EngineMessage x = new EngineMessage(
                     EngineMessage.syntaxError(y.getError()));
             throw new EngineException(x,

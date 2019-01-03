@@ -84,7 +84,7 @@
       sysThreadNew('Interpreter','ThreadGroup','AbstractTerm')).
 
 /****************************************************************/
-/* Group Inspection                                             */
+/* Group Enumeration                                            */
 /****************************************************************/
 
 /**
@@ -95,7 +95,32 @@
  */
 % group_thread(+Group, -Thread)
 :- public group_thread/2.
-:- foreign(group_thread/2, 'ForeignGroup', sysGroupThread('ThreadGroup')).
+:- foreign(group_thread/2, 'ForeignGroup',
+      sysGroupThread('ThreadGroup')).
+
+/**
+ * current_thread(G, T):
+ * The predicate succeeds in T with the threads of the
+ * thread group G.
+ */
+% current_thread(+Group, -Thread)
+:- public current_thread/2.
+:- foreign(current_thread/2, 'ForeignGroup',
+      sysCurrentThread('CallOut','ThreadGroup')).
+
+/**
+ * current_group(G, H):
+ * The predicate succeeds in H with the groups of the
+ * thread group G.
+ */
+% current_group(+Group, -Group)
+:- public current_group/2.
+:- foreign(current_group/2, 'ForeignGroup',
+      sysCurrentGroup('CallOut','ThreadGroup')).
+
+/****************************************************************/
+/* Group Flags                                                  */
+/****************************************************************/
 
 /**
  * current_group_flag(G, K, V):
@@ -151,12 +176,14 @@ current_thread(X) :-
  * threads:
  * The predicate lists the managed threads.
  */
+% threads
 :- public threads/0.
 threads :- thread_show_keys,
    current_thread(T),
    thread_show_values(T), fail.
 threads.
 
+% thread_show_keys
 :- private thread_show_keys/0.
 thread_show_keys :-
    sys_get_lang(show, P),
@@ -165,6 +192,7 @@ thread_show_keys :-
    ttywrite(M), fail.
 thread_show_keys :- ttynl.
 
+% thread_show_values(+Thread)
 :- private thread_show_values/1.
 thread_show_values(T) :-
    sys_get_lang(show, P),
@@ -174,11 +202,13 @@ thread_show_values(T) :-
    ttywrite(M), fail.
 thread_show_values(_) :- ttynl.
 
+% sys_current_show_stat(-Atom)
 :- private sys_current_show_stat/1.
 sys_current_show_stat(sys_thread_name).
 sys_current_show_stat(sys_thread_state).
 sys_current_show_stat(sys_thread_group_name).
 
+% ss_get_show_stat(+Thread, +Atom, -Atom)
 :- private sys_get_show_stat/3.
 sys_get_show_stat(T, sys_thread_name, V) :-
    current_thread_flag(T, sys_thread_name, V).

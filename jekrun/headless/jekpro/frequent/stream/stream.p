@@ -277,11 +277,28 @@ sys_remove_alias(Alias, Stream) :-
 
 /**
  * open_resource(P, S):
+ * open_resource(P, S, O):
  * The predicate succeeds when S unifies with the new
- * resource stream associated with the path P.
+ * resource stream associated with the path P. The ternary
+ * predicate additionally recognizes the following open options.
+ * For a list of options see the API documentation.
  */
-% open_resource(+Atom, -Stream)
+% open_resource(+Path, -Stream, +Opt)
+:- public open_resource/3.
+open_resource(Path, Stream, Opt) :-
+   sys_oneof(Opt, alias(Alias), Opt2), !,
+   open_resource2(Path, Stream, Opt2),
+   sys_put_alias(Alias, Stream).
+open_resource(Path, Stream, Opt) :-
+   open_resource2(Path, Stream, Opt).
+
+% open_resource2(+Path, -Stream, +Opt)
+:- private open_resource2/3.
+open_resource2(Path, Stream, Opt) :-
+   absolute_resource_name(Path, Pin),
+   sys_open(Pin, read, Opt, Stream).
+
+% open_resource(+Path, -Stream)
 :- public open_resource/2.
 open_resource(Path, Stream) :-
-   absolute_resource_name(Path, Pin),
-   sys_open(Pin, read, [], Stream).
+   open_resource(Path, Stream, []).

@@ -59,7 +59,7 @@ public final class ForeignTerm {
                                     Writer para, AbstractTerm val,
                                     Object opt)
             throws InterpreterMessage, InterpreterException {
-        inter.unparseTerm(para, opt, val);
+        inter.unparseTerm(para, val, opt);
     }
 
     /**

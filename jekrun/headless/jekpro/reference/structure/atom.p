@@ -672,24 +672,31 @@ atom_list_concat2(Atom, _, [Atom]).
 
 /**
  * term_atom(T, A):
+ * term_atom(T, A, O):
  * The predicate succeeds when the atom A is the serialization
- * of the term T.
+ * of the term T. The ternary perdicate accepts some read or
+ * write options O.
  */
 % term_atom(+-Term, -+Atom)
 :- public term_atom/2.
 term_atom(T, A) :-
+   term_atom(T, A, []).
+
+% term_atom(+-Term, -+Atom, +List)
+:- public term_atom/3.
+term_atom(T, A, O) :-
    var(A), !,
-   sys_unparse_term(T, A).
-term_atom(T, A) :-
-   sys_parse_term(A, T).
+   sys_unparse_term(T, O, A).
+term_atom(T, A, O) :-
+   sys_parse_term(A, O, T).
 
-:- private sys_parse_term/2.
-:- foreign(sys_parse_term/2, 'ForeignAtom',
-      sysParseTerm('Interpreter','String')).
+:- private sys_parse_term/3.
+:- foreign(sys_parse_term/3, 'ForeignAtom',
+      sysParseTerm('Interpreter','String','Object')).
 
-:- private sys_unparse_term/2.
-:- foreign(sys_unparse_term/2, 'ForeignAtom',
-      sysUnparseTerm('Interpreter','AbstractTerm')).
+:- private sys_unparse_term/3.
+:- foreign(sys_unparse_term/3, 'ForeignAtom',
+      sysUnparseTerm('Interpreter','AbstractTerm','Object')).
 
 /****************************************************************/
 /* Block Bytes Conversion                                       */

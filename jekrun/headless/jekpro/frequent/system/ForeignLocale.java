@@ -13,6 +13,8 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
+import matula.util.system.ForeignFile;
+import matula.util.system.ForeignUri;
 import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
@@ -271,10 +273,7 @@ public final class ForeignLocale {
      * @return The short name.
      */
     public static String shortName(String path) {
-        int k = path.lastIndexOf('/');
-        path = path.substring(k + 1);
-        k = path.lastIndexOf('$');
-        return path.substring(k + 1);
+        return ForeignFile.sysPathName(ForeignUri.sysUriSpec(path));
     }
 
 }
