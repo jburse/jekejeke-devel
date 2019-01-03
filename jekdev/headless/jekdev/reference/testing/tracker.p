@@ -108,7 +108,7 @@ is_entry(exit).
 user:goal_tracing(P, Q) :-
    is_entry(P),
    frame_property(Q, sys_call_goal(G)),
-   callable_property(G, sys_context(O)),
+   callable_property(G, source_file(O)),
    callable_property(G, line_no(L)), !,
    update_cover_hit(O, L).
 user:goal_tracing(_, _).
