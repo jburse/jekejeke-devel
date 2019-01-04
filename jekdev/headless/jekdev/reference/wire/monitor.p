@@ -48,6 +48,7 @@
  * O, with path P, with parameter list A and the session S.
  */
 % dispatch(+Object, +Spec, +Assoc, +Session)
+:- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/images/closed.gif', _, Session) :- !,
    setup_call_cleanup(
@@ -79,30 +80,8 @@ dispatch(_, Path, Params, Session) :-
    Pos2 is Pos-1,
    sub_atom(Path, Pos2, _, 0, Path2),
    wire/mobile::dispatch(Path2, Params, Session).
-
-/***************************************************************/
-/* HTTP Response Binary                                        */
-/***************************************************************/
-
-/**
- * send_binary(F, O):
- * The predicate sends the binary resource F to the output stream O.
- */
-% send_binary(+File, +Stream)
-send_binary(File, Response) :-
-   setup_call_cleanup(
-      open_resource(File, Stream, [type(binary)]),
-      (  response_binary(Response),
-         send_blocks(Stream, Response)),
-      close(Stream)).
-
-% send_blocks(+Stream, +Stream)
-:- private send_blocks/2.
-send_blocks(Stream, Response) :-
-   read_block(Stream, 1024, Block), !,
-   write_block(Response, Block),
-   send_blocks(Stream, Response).
-send_blocks(_, _).
+dispatch(Object, Spec, Assoc, Session) :-
+   notebook/httpsrv:dispatch(Object, Spec, Assoc, Session).
 
 /***************************************************************/
 /* HTTP Response Text                                          */

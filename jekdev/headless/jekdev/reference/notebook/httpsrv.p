@@ -101,6 +101,19 @@ params(Query, [Name-Value|Assoc]) :-
    make_query(Name, Value, Rest, Query),
    params(Rest, Assoc).
 
+/**
+ * dispatch(O, P, A, S):
+ * The predicate succeeds in dispatching the request for object
+ * O, with path P, with parameter list A and the session S.
+ */
+% dispatch(+Object, +Spec, +Assoc, +Session)
+:- public dispatch/4.
+dispatch(_, '/images/cookie.gif', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response, [type(binary)]),
+      send_binary(library(notebook/images/cookie), Response),
+      close(Response)).
+
 /***************************************************************/
 /* HTTP Requests                                               */
 /***************************************************************/
@@ -152,6 +165,27 @@ write_bytes(Response, Bytes) :-
    block_bytes(Block, Bytes),
    write_block(Response, Block).
 
+/**
+ * send_binary(F, O):
+ * The predicate sends the binary resource F to the output stream O.
+ */
+% send_binary(+File, +Stream)
+:- public send_binary/2.
+send_binary(File, Response) :-
+   setup_call_cleanup(
+      open_resource(File, Stream, [type(binary)]),
+      (  response_binary(Response),
+         send_blocks(Stream, Response)),
+      close(Stream)).
+
+% send_blocks(+Stream, +Stream)
+:- private send_blocks/2.
+send_blocks(Stream, Response) :-
+   read_block(Stream, 1024, Block), !,
+   write_block(Response, Block),
+   send_blocks(Stream, Response).
+send_blocks(_, _).
+
 /***************************************************************/
 /* HTTP Response Dynamic                                       */
 /***************************************************************/
@@ -178,7 +212,7 @@ html_escape(Response, Text) :-
 send_error(Response) :-
    response_error(Response),
    html_begin(Response, 'Error'),
-   write(Response, '<p>Error 404 Not Found</p>\r\n'),
+   write(Response, '<p style="margin-left: 90px; padding-top: 170px">Error 404 Not Found</p>\r\n'),
    html_end(Response).
 
 /**
@@ -207,7 +241,7 @@ html_begin(Response, Title) :-
    html_escape(Response, Title),
    write(Response, '</title>\r\n'),
    write(Response, '  </head>\r\n'),
-   write(Response, '  <body>\r\n').
+   write(Response, '  <body background="/images/cookie.gif" style=" background-repeat: no-repeat">\r\n').
 
 /**
  * html_end(O):
