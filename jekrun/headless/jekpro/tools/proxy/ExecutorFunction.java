@@ -1,6 +1,7 @@
 package jekpro.tools.proxy;
 
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.Types;
@@ -66,9 +67,9 @@ final class ExecutorFunction extends AbstractExecutor {
      */
     void setSource(AbstractSource src) {
         SkelAtom val = new SkelAtom(method.getName(), src);
-        functor = (TermAtomic) AbstractTerm.createTermWrapped(val, BindCount.DISPLAY_CONST);
+        functor = (TermAtomic) AbstractTerm.createTermWrapped(val, Display.DISPLAY_CONST);
         val = new SkelAtom("is");
-        is = (TermAtomic) AbstractTerm.createTermWrapped(val, BindCount.DISPLAY_CONST);
+        is = (TermAtomic) AbstractTerm.createTermWrapped(val, Display.DISPLAY_CONST);
     }
 
     /**

@@ -2,6 +2,7 @@ package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -125,7 +126,7 @@ final class MemberFieldGet extends AbstractMember {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         Object[] temp = ((SkelCompound) en.skel).args;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         Object obj = convertRecv(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
         if ((subflags & MASK_METH_FUNC) != 0) {
@@ -135,14 +136,14 @@ final class MemberFieldGet extends AbstractMember {
         }
         if (res == null)
             return false;
-        BindCount[] d = AbstractTerm.getDisplay(res);
+        Display d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(temp[temp.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
         Object check = AbstractTerm.getMarker(res);
         if (check != null && ((MutableBit) check).getBit()) {
-            BindCount.remTab(d, en);
+            BindCount.remTab(d.bind, en);
             ((MutableBit) check).setBit(false);
         }
         return en.getNext();

@@ -1,10 +1,12 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.experiment.SpecialRef;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -94,7 +96,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<Object, NamedDistance> printmap;
+    public MapHashLink<BindCount, NamedDistance> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -120,7 +122,7 @@ public final class WriteOpts {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public void decodeWriteOptions(Object t, BindCount[] d, Engine en)
+    public void decodeWriteOptions(Object t, Display d, Engine en)
             throws EngineMessage {
         try {
             en.skel = t;
@@ -226,7 +228,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                    printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
+                    printmap = SpecialRef.assocToFastMap(((SkelCompound) en.skel).args[0], en.display, en);
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
@@ -328,7 +330,7 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean atomToBool(Object m, BindCount[] d)
+    public static boolean atomToBool(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(Foyer.OP_TRUE)) {
@@ -355,7 +357,7 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToFormat(Object m, BindCount[] d)
+    private static int atomToFormat(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
@@ -387,7 +389,7 @@ public final class WriteOpts {
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int termToAnno(Object m, BindCount[] d, Engine en)
+    public static int termToAnno(Object m, Display d, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -463,7 +465,7 @@ public final class WriteOpts {
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToWritePart(Object m, BindCount[] d)
+    public static int atomToWritePart(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(AbstractFlag.OP_FALSE)) {
@@ -495,7 +497,7 @@ public final class WriteOpts {
      * @return The bool value.
      * @throws EngineMessage Shit happens.
      */
-    private static int atomToOperand(Object m, BindCount[] d, Engine en)
+    private static int atomToOperand(Object m, Display d, Engine en)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_OPERAND_NONE)) {
@@ -520,7 +522,7 @@ public final class WriteOpts {
             return;
         if (printmap == null)
             return;
-        for (MapEntry<Object, NamedDistance> entry = printmap.getLastEntry();
+        for (MapEntry<BindCount, NamedDistance> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
             if (PrologWriter.variableNeedsQuotes(entry.value.getName()))
                 throw new EngineMessage(EngineMessage.domainError(

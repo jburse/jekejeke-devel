@@ -1,7 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -43,15 +43,9 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class StackElement {
+public class StackElement implements InterfaceStack {
     public Intermediate contskel;
-    public Display contdisplay;
-
-    /**
-     * <p>Create a new stack element.</p>
-     */
-    public StackElement() {
-    }
+    public DisplayClause contdisplay;
 
     /**
      * <p>Create a new stack element.</p>
@@ -59,9 +53,27 @@ public class StackElement {
      * @param r The continuation skeleton.
      * @param u The continuation display.
      */
-    public StackElement(Intermediate r, Display u) {
+    public StackElement(Intermediate r, DisplayClause u) {
         contskel = r;
         contdisplay = u;
+    }
+
+    /**
+     * <p>Retrieve the cont skel.</p>
+     *
+     * @return The cont skel.
+     */
+    public Intermediate getContSkel() {
+        return contskel;
+    }
+
+    /**
+     * <p>Retrieve the cont display.</p>
+     *
+     * @return The cont display.
+     */
+    public DisplayClause getContDisplay() {
+        return contdisplay;
     }
 
     /******************************************************************/
@@ -75,11 +87,10 @@ public class StackElement {
      * @param en The engine.
      * @return The new stack element.
      */
-    public static StackElement skipNoTrace(StackElement u,
-                                           Engine en)
+    public static InterfaceStack skipNoTrace(InterfaceStack u, Engine en)
             throws EngineException, EngineMessage {
-        while (u != null && isNoTrace(u.contskel, u.contdisplay, en))
-            u = u.contdisplay;
+        while (u != null && isNoTrace(u.getContSkel(), u.getContDisplay(), en))
+            u = u.getContDisplay();
         return u;
     }
 
@@ -93,7 +104,7 @@ public class StackElement {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static boolean isNoTrace(Intermediate r, Display u,
+    private static boolean isNoTrace(Intermediate r, DisplayClause u,
                                      Engine en)
             throws EngineException, EngineMessage {
         if (u == null)
@@ -112,10 +123,6 @@ public class StackElement {
         return false;
     }
 
-    /*************************************************************/
-    /* Frame Access & Modification                               */
-    /*************************************************************/
-
     /**
      * <p>Determine the goal of a frame.</p>
      * <p>The result is return in skel and display.</p>
@@ -124,11 +131,11 @@ public class StackElement {
      * @param u  The continuation display.
      * @param en The engine.
      */
-    public static void callGoal(Intermediate r, Display u, Engine en) {
+    public static void callGoal(Intermediate r, DisplayClause u, Engine en) {
         if (r instanceof Goal) {
             Goal cont = (Goal) r;
             en.skel = cont.goal;
-            en.display = u.bind;
+            en.display = u;
             if ((cont.flags & Goal.MASK_GOAL_NAKE) != 0)
                 en.deref();
         } else if (r instanceof Clause) {
@@ -141,6 +148,10 @@ public class StackElement {
             en.display = null;
         }
     }
+
+    /******************************************************************/
+    /* Frame Access & Modification                                    */
+    /******************************************************************/
 
     /**
      * <p>Retrieve the principal name.</p>

@@ -108,7 +108,7 @@ public final class SpecialOper extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_NEUTRAL_OPER:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Operator.operToOperatorDefined(temp[0], ref, en, true);
                 return en.getNextRaw();
             case SPECIAL_SYS_CHECK_STYLE_OPER:
@@ -123,7 +123,7 @@ public final class SpecialOper extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        currentOpers(en), BindCount.DISPLAY_CONST))
+                        currentOpers(en), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_OPER_CHK:
@@ -140,11 +140,11 @@ public final class SpecialOper extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 boolean multi = operToProperties(oper, en);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -158,7 +158,7 @@ public final class SpecialOper extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -169,7 +169,7 @@ public final class SpecialOper extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         SpecialOper.propertyToOperators(en.skel, en.display, en),
-                        BindCount.DISPLAY_CONST))
+                        Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_RESET_OPER_PROPERTY:
@@ -195,7 +195,7 @@ public final class SpecialOper extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_SYNTAX_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -206,7 +206,7 @@ public final class SpecialOper extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 if (!en.unifyTerm(temp[1], ref,
                         propertyToSyntax(en.skel, en.display, en),
-                        BindCount.DISPLAY_CONST))
+                        Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             default:
@@ -273,7 +273,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The operator.
      * @throws EngineMessage Shit happends.
      */
-    public static Operator operToOperator(Object t, BindCount[] d,
+    public static Operator operToOperator(Object t, Display d,
                                           Engine en)
             throws EngineMessage, EngineException {
         int type = colonToOper(t, d, en);
@@ -300,13 +300,13 @@ public final class SpecialOper extends AbstractSpecial {
                                            Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         boolean multi = false;
         StoreKey[] keys = listOperProp();
         for (int j = keys.length - 1; j >= 0; j--) {
             StoreKey key = keys[j];
             Object t = en.skel;
-            BindCount[] d = en.display;
+            Display d = en.display;
             Object[] vals = getOperProp(op, key, en);
             en.skel = t;
             en.display = d;
@@ -330,7 +330,7 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         Object[] vals = getOperProp(op, key, en);
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         return AbstractProperty.consArray(false, vals, en);
     }
 
@@ -348,7 +348,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void removeOperProp(Object t, BindCount[] d, Operator op,
+    public static void removeOperProp(Object t, Display d, Operator op,
                                       Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
@@ -367,7 +367,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void addOperProp(Object t, BindCount[] d, Operator op,
+    public static void addOperProp(Object t, Display d, Operator op,
                                    Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
@@ -387,7 +387,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param d  The value display.
      * @param en The engine.
      */
-    private static Object propertyToOperators(Object t, BindCount[] d,
+    private static Object propertyToOperators(Object t, Display d,
                                               Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
@@ -709,7 +709,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The operators, or null.
      * @throws EngineMessage Shit happens.
      */
-    public static Operator[] idxPropOper(Object t, BindCount[] d,
+    public static Operator[] idxPropOper(Object t, Display d,
                                          StoreKey prop, Engine en)
             throws EngineMessage {
         if (KEY_SYS_USAGE.equals(prop)) {
@@ -877,7 +877,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The type.
      * @throws EngineMessage Shit happends.
      */
-    public static int colonToOper(Object t, BindCount[] d, Engine en)
+    public static int colonToOper(Object t, Display d, Engine en)
             throws EngineMessage {
         int type = opToType(t, d, en);
         SpecialQuali.colonToCallable(en.skel, en.display, false, en);
@@ -901,7 +901,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The type.
      * @throws EngineMessage Shit happends.
      */
-    public static int opToType(Object t, BindCount[] d, Engine en)
+    public static int opToType(Object t, Display d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -1019,7 +1019,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The operator or null.
      * @throws EngineMessage Shit happends.
      */
-    public static Operator operToSyntax(Object t, BindCount[] d, Engine en)
+    public static Operator operToSyntax(Object t, Display d, Engine en)
             throws EngineMessage {
         int type = colonToOper(t, d, en);
         String fun = ((SkelAtom) en.skel).fun;
@@ -1041,7 +1041,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param d  The value display.
      * @param en The engine.
      */
-    private static Object propertyToSyntax(Object t, BindCount[] d,
+    private static Object propertyToSyntax(Object t, Display d,
                                            Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);

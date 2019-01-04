@@ -3,10 +3,7 @@ package jekpro.model.builtin;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
 
@@ -72,7 +69,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_SET_PREDICATE_PROPERTY:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     Predicate pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                     Predicate.checkExistentPredicate(pick, temp[0], ref);
 

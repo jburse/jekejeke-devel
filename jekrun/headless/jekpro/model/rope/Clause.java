@@ -4,12 +4,11 @@ import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>The class provides the clause intermediate code.</p>
@@ -56,7 +55,7 @@ public class Clause extends Intermediate implements InterfaceReference {
     public int size;
     public AbstractDefined del;
     public int endgc;
-    public Object var;
+    public MapHashLink<String, SkelVar> vars;
 
     /**
      * <p>Create a clause.</p>
@@ -92,8 +91,8 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @return Always true.
      */
     public final boolean resolveNext(Engine en) {
-        Display u = en.contdisplay;
-        if ((((u.flags & Display.MASK_DPCL_MORE) != 0) ?
+        DisplayClause u = en.contdisplay;
+        if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
                 u.number + 1 : u.number) >= en.number) {
             int n = endgc;
             int i = u.lastgc;
@@ -216,7 +215,6 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public void analyzeBody(Object molec, Engine en) {
         /* create the helper */
-        var = EngineCopy.getVar(molec);
         OptimizationVar[] vars = OptimizationVar.createHelper(molec);
         size = vars.length;
 
@@ -266,7 +264,7 @@ public class Clause extends Intermediate implements InterfaceReference {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_DIRECTIVE,
-                    this), BindCount.DISPLAY_CONST);
+                    this), Display.DISPLAY_CONST);
         return del.assertClause(this, flags, en);
     }
 
@@ -283,7 +281,7 @@ public class Clause extends Intermediate implements InterfaceReference {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_DIRECTIVE,
-                    this), BindCount.DISPLAY_CONST);
+                    this), Display.DISPLAY_CONST);
         return del.retractClause(this, en);
     }
 
@@ -299,7 +297,7 @@ public class Clause extends Intermediate implements InterfaceReference {
     public boolean clauseRef(Engine en)
             throws EngineMessage {
         en.skel = PreClause.intermediateToClause(this, en);
-        en.display = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+        en.display = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         return (size != 0);
     }
 

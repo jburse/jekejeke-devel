@@ -5,8 +5,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.NamedDistance;
-import jekpro.model.pretty.SkelVarNamed;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -50,7 +48,7 @@ public final class EngineCopy {
     public MapHash<BindCount, SkelVar> vars;
     public MapHash<BindCount, SkelVar> anon;
     public int flags;
-    public MapHashLink<Object, NamedDistance> printmap;
+    public MapHashLink<BindCount, NamedDistance> printmap;
 
     /**
      * <p>Retrieve the variable or variable array.</p>
@@ -99,13 +97,13 @@ public final class EngineCopy {
      * @param d The term display.
      * @return A copy of the term.
      */
-    public final Object copyTerm(Object t, BindCount[] d) {
+    public final Object copyTerm(Object t, Display d) {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d[v.id]).display != null) {
+                if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -147,8 +145,8 @@ public final class EngineCopy {
      * @param d The old variable display.
      * @return The new variable.
      */
-    private SkelVar getVarValue(SkelVar v, BindCount[] d) {
-        BindCount key = d[v.id];
+    private SkelVar getVarValue(SkelVar v, Display d) {
+        BindCount key = d.bind[v.id];
         if (vars == null) {
             vars = new MapHash<BindCount, SkelVar>();
             v = null;
@@ -186,7 +184,7 @@ public final class EngineCopy {
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
-    public final Object copyGoalAndWrap(Object t, BindCount[] d,
+    public final Object copyGoalAndWrap(Object t, Display d,
                                         Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -194,7 +192,7 @@ public final class EngineCopy {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d[v.id]).display != null) {
+                if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -278,7 +276,7 @@ public final class EngineCopy {
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
-    public final Object copyTermAndWrap(Object t, BindCount[] d,
+    public final Object copyTermAndWrap(Object t, Display d,
                                         Engine en)
             throws EngineMessage, EngineException {
         SkelCompound back = null;
@@ -286,7 +284,7 @@ public final class EngineCopy {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d[v.id]).display != null) {
+                if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -359,13 +357,13 @@ public final class EngineCopy {
      * @param d The term display.
      * @return A copy of the term.
      */
-    public final Object copyRest(Object t, BindCount[] d) {
+    public final Object copyRest(Object t, Display d) {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
                 BindVar b;
-                if ((b = d[v.id]).display != null) {
+                if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
                     continue;
@@ -407,8 +405,8 @@ public final class EngineCopy {
      * @param d The old variable display.
      * @return The new variable.
      */
-    private SkelVar getVarNew(SkelVar v, BindCount[] d) {
-        BindCount key = d[v.id];
+    private SkelVar getVarNew(SkelVar v, Display d) {
+        BindCount key = d.bind[v.id];
         SkelVar mv;
         if (vars == null) {
             vars = new MapHash<BindCount, SkelVar>();
@@ -417,17 +415,7 @@ public final class EngineCopy {
             mv = vars.get(key);
         }
         if (mv == null) {
-            if (printmap != null) {
-                Object obj = AbstractTerm.createMolec(v, d);
-                NamedDistance nd = printmap.get(obj);
-                if (nd != null) {
-                    mv = new SkelVarNamed(vars.size, nd.getName());
-                } else {
-                    mv = new SkelVar(vars.size);
-                }
-            } else {
-                mv = new SkelVar(vars.size);
-            }
+            mv = new SkelVar(vars.size);
             vars.add(key, mv);
             if ((flags & MASK_COPY_SINGL) != 0) {
                 if (anon == null)

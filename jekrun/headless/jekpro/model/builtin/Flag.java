@@ -2,6 +2,7 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
@@ -213,7 +214,7 @@ public final class Flag extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, BindCount[] d, Engine en)
+    public boolean setFlag(Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {

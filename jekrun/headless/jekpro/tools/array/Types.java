@@ -3,6 +3,7 @@ package jekpro.tools.array;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -267,8 +268,7 @@ public final class Types {
      * @return The denormalized argument.
      * @throws EngineMessage FFI error.
      */
-    public static Object denormProlog(int typ, Object t,
-                                      BindCount[] d)
+    public static Object denormProlog(int typ, Object t, Display d)
             throws EngineMessage {
         try {
             switch (typ) {
@@ -277,7 +277,7 @@ public final class Types {
                 case Types.TYPE_CHARSEQ:
                     BindVar b;
                     while (t instanceof SkelVar &&
-                            (b = d[((SkelVar) t).id]).display != null) {
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
                         t = b.skel;
                         d = b.display;
                     }
@@ -337,21 +337,21 @@ public final class Types {
                     return SpecialUniv.derefAndCastRef(t, d);
                 case Types.TYPE_OBJECT:
                     while (t instanceof SkelVar &&
-                            (b = d[((SkelVar) t).id]).display != null) {
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
                         t = b.skel;
                         d = b.display;
                     }
                     return AbstractTerm.createTerm(t, d);
                 case Types.TYPE_TERM:
                     while (t instanceof SkelVar &&
-                            (b = d[((SkelVar) t).id]).display != null) {
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
                         t = b.skel;
                         d = b.display;
                     }
                     return AbstractTerm.createTermWrapped(t, d);
                 case Types.TYPE_ATOMIC:
                     while (t instanceof SkelVar &&
-                            (b = d[((SkelVar) t).id]).display != null) {
+                            (b = d.bind[((SkelVar) t).id]).display != null) {
                         t = b.skel;
                         d = b.display;
                     }

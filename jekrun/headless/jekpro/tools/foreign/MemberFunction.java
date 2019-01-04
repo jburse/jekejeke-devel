@@ -2,6 +2,7 @@ package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -130,7 +131,7 @@ final class MemberFunction extends AbstractMember {
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         Object obj = convertRecv(temp, ref);
         Object[] args = computeAndConvertArgs(temp, ref, en);
         Object res = invokeMethod(method, obj, args, en);

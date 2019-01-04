@@ -84,7 +84,7 @@ public final class SpecialLexical extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_LEX_EQ:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     if (!equalTerm(temp[0], ref, temp[1], ref))
                         return false;
                     return en.getNextRaw();
@@ -127,7 +127,7 @@ public final class SpecialLexical extends AbstractSpecial {
                     ref = en.display;
                     Object witmolec = SpecialLexical.comparisonAtom(
                             SpecialLexical.compareTerm(temp[1], ref, temp[2], ref, en), en);
-                    if (!en.unifyTerm(temp[0], ref, witmolec, BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_LOCALE_COMPARE:
@@ -136,7 +136,7 @@ public final class SpecialLexical extends AbstractSpecial {
                     Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
                     witmolec = SpecialLexical.comparisonAtom(new EngineLexical(cmp, en)
                             .localeCompareTerm(temp[2], ref, temp[3], ref), en);
-                    if (!en.unifyTerm(temp[1], ref, witmolec, BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:
@@ -195,18 +195,18 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param d2   The display of the second term.
      * @return True if they are lexically equal, otherwise false.
      */
-    public static boolean equalTerm(Object alfa, BindCount[] d1,
-                                    Object beta, BindCount[] d2) {
+    public static boolean equalTerm(Object alfa, Display d1,
+                                    Object beta, Display d2) {
         for (; ; ) {
             BindVar b1;
             while (alfa instanceof SkelVar &&
-                    (b1 = d1[((SkelVar) alfa).id]).display != null) {
+                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
             int k = eqType(alfa);
             while (beta instanceof SkelVar &&
-                    (b1 = d2[((SkelVar) beta).id]).display != null) {
+                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
@@ -255,19 +255,19 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param en   The engine.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
-    public static int compareTerm(Object alfa, BindCount[] d1,
-                                  Object beta, BindCount[] d2, Engine en)
+    public static int compareTerm(Object alfa, Display d1,
+                                  Object beta, Display d2, Engine en)
             throws ArithmeticException {
         for (; ; ) {
             BindCount b1;
             while (alfa instanceof SkelVar &&
-                    (b1 = d1[((SkelVar) alfa).id]).display != null) {
+                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
             int i = EngineLexical.cmpType(alfa);
             while (beta instanceof SkelVar &&
-                    (b1 = d2[((SkelVar) beta).id]).display != null) {
+                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
@@ -275,11 +275,11 @@ public final class SpecialLexical extends AbstractSpecial {
             if (k != 0) return k;
             switch (i) {
                 case EngineLexical.CMP_TYPE_VAR:
-                    b1 = d1[((SkelVar) alfa).id];
+                    b1 = d1.bind[((SkelVar) alfa).id];
                     i = b1.serno;
                     if (i == -1)
                         i = BindSerno.bindSerno(b1, en);
-                    b1 = d2[((SkelVar) beta).id];
+                    b1 = d2.bind[((SkelVar) beta).id];
                     k = b1.serno;
                     if (k == -1)
                         k = BindSerno.bindSerno(b1, en);

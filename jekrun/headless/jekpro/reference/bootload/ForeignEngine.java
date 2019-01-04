@@ -5,6 +5,7 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -214,7 +215,7 @@ public final class ForeignEngine {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void setFlag(String flag, Object m, BindCount[] d, Engine en)
+    public static void setFlag(String flag, Object m, Display d, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();

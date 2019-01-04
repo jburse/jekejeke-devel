@@ -77,7 +77,7 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_TRUE:
                 return en.getNextRaw();
             case SPECIAL_CUT:
-                Display ref2 = en.contdisplay;
+                DisplayClause ref2 = en.contdisplay;
                 en.window = ref2;
                 en.fault = null;
                 en.cutChoices(ref2.prune.number);
@@ -87,10 +87,10 @@ public final class SpecialControl extends AbstractSpecial {
                 return en.getNextRaw();
             case SPECIAL_SYS_FETCH_STACK:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
                         EngineException.fetchStack(en),
-                        BindCount.DISPLAY_CONST))
+                        Display.DISPLAY_CONST))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_RAISE:
@@ -120,18 +120,18 @@ public final class SpecialControl extends AbstractSpecial {
     private boolean invokeTrap(Engine en)
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         AbstractBind mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
-            BindCount[] ref = en.display;
+            Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display ref2 = new Display();
-            ref2.bind = BindCount.newBindClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause();
+            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, ref, en);
             if (multi)
-                BindCount.remTab(ref, en);
+                BindCount.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -172,19 +172,19 @@ public final class SpecialControl extends AbstractSpecial {
     public static boolean handleException(Engine en)
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         EngineException y = en.fault;
         StackElement.callGoal(r, u, en);
         Object[] temp = ((SkelCompound) en.skel).args;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         try {
             Object temp2 = y.getTemplate();
             int size = EngineCopy.displaySize(temp2);
-            BindCount[] ref2 = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            Display ref2 = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                 throw y;
             if (size != 0)
-                BindCount.remTab(ref2, en);
+                BindCount.remTab(ref2.bind, en);
         } catch (EngineException z) {
             throw new EngineException(y, z);
         }

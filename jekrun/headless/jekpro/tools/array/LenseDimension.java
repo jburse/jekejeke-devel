@@ -3,6 +3,7 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -118,12 +119,12 @@ final class LenseDimension extends AbstractLense {
             throws EngineException, EngineMessage {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
-            BindCount[] ref = en.display;
+            Display ref = en.display;
             Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
             SpecialEval.checkNotLessThanZero(num);
             int size = SpecialEval.castIntValue(num);
             Object val = newInstance(size);
-            if (!en.unifyTerm(temp[1], ref, val, BindCount.DISPLAY_CONST))
+            if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
                 return false;
             return en.getNext();
         } catch (ClassCastException x) {

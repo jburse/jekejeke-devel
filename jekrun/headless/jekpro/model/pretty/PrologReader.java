@@ -879,7 +879,7 @@ public class PrologReader {
         }
         if (mv == null) {
             if ((flags & PrologReader.FLAG_NEWV) != 0) {
-                mv = new SkelVarNamed(gensym, key);
+                mv = new SkelVar(gensym);
             } else {
                 mv = SkelVar.valueOf(gensym);
             }
@@ -1186,7 +1186,7 @@ public class PrologReader {
                                       PositionKey pos, Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (anon != null && anon.size()>0) {
+            if (anon != null && anon.size() > 0) {
                 Object val = singToMolec(anon, en);
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_SINGLETON_VAR, val));
@@ -1203,15 +1203,15 @@ public class PrologReader {
     /**
      * <p>Create a list of the singletons.</p>
      *
-     * @param anon  The anonymous variables.
-     * @param en The engine.
+     * @param anon The anonymous variables.
+     * @param en   The engine.
      * @return The list of the singletons names.
      */
     private static Object singToMolec(MapHashLink<String, SkelVar> anon,
                                       Engine en) {
         Object end = en.store.foyer.ATOM_NIL;
-        for (MapEntry<String,SkelVar> entry=anon.getFirstEntry();
-                entry!=null; entry=anon.successor(entry)) {
+        for (MapEntry<String, SkelVar> entry = anon.getFirstEntry();
+             entry != null; entry = anon.successor(entry)) {
             end = new SkelCompound(en.store.foyer.ATOM_CONS,
                     new SkelAtom(entry.key), end);
         }

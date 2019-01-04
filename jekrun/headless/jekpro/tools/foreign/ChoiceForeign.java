@@ -53,7 +53,7 @@ final class ChoiceForeign extends AbstractChoice {
     Object[] args;
     AbstractBind mark;
     Intermediate goalskel;
-    Display goaldisplay;
+    DisplayClause goaldisplay;
 
     /**
      * <p>Creata choice foreign.</p>
@@ -91,12 +91,12 @@ final class ChoiceForeign extends AbstractChoice {
 
         Goal ir = (Goal) goalskel;
         Object term = ir.goal;
-        BindCount[] ref = goaldisplay.bind;
+        Display ref = goaldisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b1;
             while (term instanceof SkelVar &&
-                    (b1 = ref[((SkelVar) term).id]).display != null) {
+                    (b1 = ref.bind[((SkelVar) term).id]).display != null) {
                 term = b1.skel;
                 ref = b1.display;
             }
@@ -116,7 +116,7 @@ final class ChoiceForeign extends AbstractChoice {
             }
             if (res == null)
                 return false;
-            BindCount[] d = AbstractTerm.getDisplay(res);
+            Display d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) term).args[
                                     ((SkelCompound) term).args.length - 1], ref,
@@ -133,7 +133,7 @@ final class ChoiceForeign extends AbstractChoice {
             } else {
                 Object check = AbstractTerm.getMarker(res);
                 if (check != null && ((MutableBit) check).getBit()) {
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                     ((MutableBit) check).setBit(false);
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
@@ -166,10 +166,10 @@ final class ChoiceForeign extends AbstractChoice {
             return;
 
         /* backup sliding window */
-        Display back = en.window;
+        DisplayClause back = en.window;
 
         Intermediate r = en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
         if (en.skel != null) {

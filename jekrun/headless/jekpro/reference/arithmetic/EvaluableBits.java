@@ -3,6 +3,7 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -75,14 +76,14 @@ public final class EvaluableBits extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_NOT:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    BindCount[] d = en.display;
+                    Display d = en.display;
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = not(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_AND:
                     temp = ((SkelCompound) en.skel).args;
@@ -91,14 +92,14 @@ public final class EvaluableBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = and(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_OR:
                     temp = ((SkelCompound) en.skel).args;
@@ -107,14 +108,14 @@ public final class EvaluableBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = or(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_XOR:
                     temp = ((SkelCompound) en.skel).args;
@@ -123,14 +124,14 @@ public final class EvaluableBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = xor(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SHIFT_LEFT:
                     temp = ((SkelCompound) en.skel).args;
@@ -139,15 +140,15 @@ public final class EvaluableBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = shiftLeft(alfa, x);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SHIFT_RIGHT:
                     temp = ((SkelCompound) en.skel).args;
@@ -156,15 +157,15 @@ public final class EvaluableBits extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     x = SpecialEval.castIntValue(beta);
                     en.skel = shiftRight(alfa, x);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

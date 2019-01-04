@@ -1,10 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractBind;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialForeign;
@@ -129,7 +126,7 @@ final class MemberMethodNondet extends AbstractMember {
         CallOut co = new CallOut();
         AbstractBind mark = en.bind;
         Object temp = en.skel;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         int hint = en.store.foyer.getHint();
         Object obj = convertRecv(temp, ref);
         Object[] args = convertArgs(temp, ref, en, co);
@@ -151,7 +148,7 @@ final class MemberMethodNondet extends AbstractMember {
             }
             if (res == null)
                 return false;
-            BindCount[] d = AbstractTerm.getDisplay(res);
+            Display d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) temp).args[
                                     ((SkelCompound) temp).args.length - 1], ref,
@@ -173,7 +170,7 @@ final class MemberMethodNondet extends AbstractMember {
             } else {
                 Object check = AbstractTerm.getMarker(res);
                 if (check != null && ((MutableBit) check).getBit()) {
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                     ((MutableBit) check).setBit(false);
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {

@@ -2,10 +2,7 @@ package jekpro.frequent.basic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.CacheSubclass;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -86,11 +83,11 @@ public final class SpecialProxy extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_SYS_PROXY_HANDLER:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                     SkelAtom sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en), en);
-                    if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_SYS_PROXY_STATE:
@@ -102,7 +99,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
                     obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size, en);
-                    if (!en.unifyTerm(temp[2], ref, obj, BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_SYS_ASSIGNABLE_FROM:

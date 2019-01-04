@@ -3,6 +3,7 @@ package jekpro.tools.array;
 import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -117,7 +118,7 @@ final class LenseElement extends AbstractLense {
             throws EngineException, EngineMessage {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
-            BindCount[] ref = en.display;
+            Display ref = en.display;
             Object obj = Types.denormProlog(encodeobj, temp[0], ref);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
@@ -130,14 +131,14 @@ final class LenseElement extends AbstractLense {
             }
             if (res == null)
                 return false;
-            BindCount[] d = AbstractTerm.getDisplay(res);
+            Display d = AbstractTerm.getDisplay(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(temp[2], ref,
                             AbstractTerm.getSkel(res), d))
                 return false;
             Object check = AbstractTerm.getMarker(res);
             if (check != null && ((MutableBit) check).getBit()) {
-                BindCount.remTab(d, en);
+                BindCount.remTab(d.bind, en);
                 ((MutableBit) check).setBit(false);
             }
             return en.getNext();

@@ -44,9 +44,11 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Engine extends StackElement implements Comparator<Object> {
+public class Engine implements InterfaceStack, Comparator<Object> {
     public Object skel;
-    public BindCount[] display;
+    public Display display;
+    public Intermediate contskel;
+    public DisplayClause contdisplay;
     public Store store;
     public final Supervisor visor;
     public AbstractBind bind;
@@ -57,7 +59,7 @@ public class Engine extends StackElement implements Comparator<Object> {
     public EngineWrap enginewrap;
     public Object proxy;
     public EngineException fault;
-    public Display window;
+    public DisplayClause window;
 
     /**
      * <p>Create a new engine.</p>
@@ -73,6 +75,24 @@ public class Engine extends StackElement implements Comparator<Object> {
     }
 
     /**
+     * <p>Retrieve the cont skel.</p>
+     *
+     * @return The cont skel.
+     */
+    public Intermediate getContSkel() {
+        return contskel;
+    }
+
+    /**
+     * <p>Retrieve the cont display.</p>
+     *
+     * @return The cont display.
+     */
+    public DisplayClause getContDisplay() {
+        return contdisplay;
+    }
+
+    /**
      * <p>Dereference the term given by the current skeleton
      * and display, return the result in the current skeleton
      * and display.</p>
@@ -80,7 +100,7 @@ public class Engine extends StackElement implements Comparator<Object> {
     public final void deref() {
         BindVar b;
         while (skel instanceof SkelVar &&
-                (b = display[((SkelVar) skel).id]).display != null) {
+                (b = display.bind[((SkelVar) skel).id]).display != null) {
             skel = b.skel;
             display = b.display;
         }
@@ -97,14 +117,14 @@ public class Engine extends StackElement implements Comparator<Object> {
      * @return True if the two terms unify, otherwise false.
      * @throws EngineException Shit happens.
      */
-    public final boolean unifyTerm(Object alfa, BindCount[] d1,
-                                   Object beta, BindCount[] d2)
+    public final boolean unifyTerm(Object alfa, Display d1,
+                                   Object beta, Display d2)
             throws EngineException {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
                 // combined check and deref
                 BindVar b1;
-                if ((b1 = d1[((SkelVar) alfa).id]).display != null) {
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                     alfa = b1.skel;
                     d1 = b1.display;
                     continue;
@@ -113,7 +133,7 @@ public class Engine extends StackElement implements Comparator<Object> {
                     if (beta instanceof SkelVar) {
                         // combined check and deref
                         BindVar b2;
-                        if ((b2 = d2[((SkelVar) beta).id]).display != null) {
+                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
                             beta = b2.skel;
                             d2 = b2.display;
                             continue;
@@ -129,7 +149,7 @@ public class Engine extends StackElement implements Comparator<Object> {
                 // combined check and deref
                 if (beta instanceof SkelVar) {
                     BindVar b;
-                    if ((b = d2[((SkelVar) beta).id]).display != null) {
+                    if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
                         beta = b.skel;
                         d2 = b.display;
                         continue;
@@ -170,7 +190,7 @@ public class Engine extends StackElement implements Comparator<Object> {
     }
 
     /*****************************************************************/
-    /* BindCount[] Management                                        */
+    /* Display Management                                        */
     /*****************************************************************/
 
     /**
@@ -304,17 +324,17 @@ public class Engine extends StackElement implements Comparator<Object> {
         ListArray<BindVar> list = BindCont.bindCont(this);
         boolean ext = contCount(list, this);
         skel = contAlloc(list, ext, this);
-        BindCount[] d2 = display;
+        Display d2 = display;
         boolean multi = wrapGoal();
         if (multi && ext)
-            BindCount.remTab(d2, this);
-        BindCount[] ref = display;
+            BindCount.remTab(d2.bind, this);
+        Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
-        Display ref2 = new Display();
-        ref2.bind = BindCount.newBindClause(clause.dispsize);
+        DisplayClause ref2 = new DisplayClause();
+        ref2.bind = DisplayClause.newBindClause(clause.dispsize);
         ref2.addArgument(skel, ref, this);
         if (multi || ext)
-            BindCount.remTab(ref, this);
+            BindCount.remTab(ref.bind, this);
         ref2.setEngine(this);
         contskel = clause.getNextRaw(this);
         contdisplay = ref2;
@@ -330,7 +350,7 @@ public class Engine extends StackElement implements Comparator<Object> {
      */
     private static boolean contCount(ListArray<BindVar> list, Engine en) {
         int countvar = 0;
-        BindCount[] last = BindCount.DISPLAY_CONST;
+        Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         for (int i = list.size() - 1; i >= 0; i--) {
             BindVar bv = list.get(i);
@@ -339,7 +359,7 @@ public class Engine extends StackElement implements Comparator<Object> {
             en.deref();
             if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
-                if (last == BindCount.DISPLAY_CONST) {
+                if (last == Display.DISPLAY_CONST) {
                     last = en.display;
                 } else if (last != en.display) {
                     multi = true;
@@ -347,7 +367,7 @@ public class Engine extends StackElement implements Comparator<Object> {
             }
         }
         if (multi)
-            last = BindCount.newBind(countvar);
+            last = new Display(Display.newBind(countvar));
         en.display = last;
         return multi;
     }
@@ -363,7 +383,7 @@ public class Engine extends StackElement implements Comparator<Object> {
      */
     private static Object contAlloc(ListArray<BindVar> list, boolean multi,
                                     Engine en) {
-        BindCount[] d3 = en.display;
+        Display d3 = en.display;
         int countvar = 0;
         Object res = null;
         for (int i = list.size() - 1; i >= 0; i--) {
@@ -375,7 +395,7 @@ public class Engine extends StackElement implements Comparator<Object> {
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = SkelVar.valueOf(countvar);
                 countvar++;
-                d3[sv.id].bindVar(en.skel, en.display, en);
+                d3.bind[sv.id].bindVar(en.skel, en.display, en);
                 temp = sv;
             } else {
                 temp = en.skel;
@@ -408,17 +428,17 @@ public class Engine extends StackElement implements Comparator<Object> {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean computeExpr(Object alfa, BindCount[] d1)
+    public final boolean computeExpr(Object alfa, Display d1)
             throws EngineMessage, EngineException {
         BindVar b;
         while (alfa instanceof SkelVar &&
-                (b = d1[((SkelVar) alfa).id]).display != null) {
+                (b = d1.bind[((SkelVar) alfa).id]).display != null) {
             alfa = b.skel;
             d1 = b.display;
         }
         if (!(alfa instanceof AbstractSkel)) {
             skel = alfa;
-            display = BindCount.DISPLAY_CONST;
+            display = Display.DISPLAY_CONST;
             return false;
         }
         CachePredicate cp;
@@ -467,20 +487,20 @@ public class Engine extends StackElement implements Comparator<Object> {
     public final void invokeChecked()
             throws EngineException {
         Intermediate r = contskel;
-        Display u = contdisplay;
+        DisplayClause u = contdisplay;
         boolean backignore = visor.setIgnore(false);
         boolean backverify = visor.setVerify(false);
         AbstractBind mark = bind;
         int snap = number;
         try {
             boolean multi = wrapGoal();
-            BindCount[] ref = display;
+            Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
-            Display ref2 = new Display();
-            ref2.bind = BindCount.newBindClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause();
+            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
             ref2.addArgument(skel, ref, this);
             if (multi)
-                BindCount.remTab(ref, this);
+                BindCount.remTab(ref.bind, this);
             ref2.setEngine(this);
             contskel = clause.getNextRaw(this);
             contdisplay = ref2;
@@ -528,7 +548,7 @@ public class Engine extends StackElement implements Comparator<Object> {
     public final boolean wrapGoal()
             throws EngineException, EngineMessage {
         Object t = skel;
-        BindCount[] d = display;
+        Display d = display;
         EngineMessage.checkInstantiated(t);
         EngineWrap ew = enginewrap;
         if (ew == null) {
@@ -537,7 +557,7 @@ public class Engine extends StackElement implements Comparator<Object> {
         }
         ew.countvar = 0;
         ew.flags = 0;
-        ew.last = BindCount.DISPLAY_CONST;
+        ew.last = Display.DISPLAY_CONST;
         ew.countGoal(t, d, this);
         if ((ew.flags & EngineWrap.MASK_WRAP_CHNG) == 0) {
             skel = t;
@@ -545,11 +565,11 @@ public class Engine extends StackElement implements Comparator<Object> {
             return false;
         }
         if ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0)
-            ew.last = BindCount.newBind(ew.countvar);
+            ew.last = new Display(Display.newBind(ew.countvar));
         ew.countvar = 0;
         skel = ew.replaceGoalAndWrap(t, d, this);
         display = ew.last;
-        ew.last = BindCount.DISPLAY_CONST;
+        ew.last = Display.DISPLAY_CONST;
         return ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0);
     }
 

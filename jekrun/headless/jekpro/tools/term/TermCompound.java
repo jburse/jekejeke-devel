@@ -5,6 +5,7 @@ import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
 
@@ -57,7 +58,7 @@ import jekpro.tools.call.Interpreter;
  */
 public final class TermCompound extends AbstractTerm {
     final SkelCompound skel;
-    final BindCount[] display;
+    final Display display;
     Object marker;
 
     /**
@@ -66,7 +67,7 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      * @param d The compound display.
      */
-    TermCompound(SkelCompound s, BindCount[] d) {
+    TermCompound(SkelCompound s, Display d) {
         display = d;
         skel = s;
     }
@@ -77,7 +78,7 @@ public final class TermCompound extends AbstractTerm {
      * @param s The compound skel.
      */
     public TermCompound(SkelCompound s) {
-        display = BindCount.DISPLAY_CONST;
+        display = Display.DISPLAY_CONST;
         skel = s;
     }
 
@@ -149,7 +150,7 @@ public final class TermCompound extends AbstractTerm {
      *
      * @return The display.
      */
-    public BindCount[] getDisplay() {
+    public Display getDisplay() {
         return display;
     }
 
@@ -213,10 +214,10 @@ public final class TermCompound extends AbstractTerm {
      */
     public Object getArg(int k) {
         Object t = skel.args[k];
-        BindCount[] d = display;
+        Display d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -233,10 +234,10 @@ public final class TermCompound extends AbstractTerm {
      */
     public AbstractTerm getArgWrapped(int k) {
         Object t = skel.args[k];
-        BindCount[] d = display;
+        Display d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -253,10 +254,10 @@ public final class TermCompound extends AbstractTerm {
      */
     public Object getArgMolec(int k) {
         Object t = skel.args[k];
-        BindCount[] d = display;
+        Display d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -291,16 +292,16 @@ public final class TermCompound extends AbstractTerm {
      * @param args The arguments.
      * @return The display.
      */
-    private BindCount[] makeCount(Object[] args) {
-        BindCount[] last = BindCount.DISPLAY_CONST;
+    private Display makeCount(Object[] args) {
+        Display last = Display.DISPLAY_CONST;
         Object check = null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             Object t = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(t) != null) {
-                BindCount[] d = AbstractTerm.getDisplay(obj);
+                Display d = AbstractTerm.getDisplay(obj);
                 Object c = AbstractTerm.getMarker(obj);
-                if (last == BindCount.DISPLAY_CONST) {
+                if (last == Display.DISPLAY_CONST) {
                     last = d;
                     check = c;
                 } else if (last != d || check != c) {
@@ -325,10 +326,10 @@ public final class TermCompound extends AbstractTerm {
      * @param en   The engine.
      * @return The display.
      */
-    private BindCount[] createCount(Object[] args, Engine en) {
+    private Display createCount(Object[] args, Engine en) {
         int countvar = 0;
         boolean multi = false;
-        BindCount[] last = BindCount.DISPLAY_CONST;
+        Display last = Display.DISPLAY_CONST;
         Object check = null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
@@ -338,10 +339,10 @@ public final class TermCompound extends AbstractTerm {
             /* common lane */
             Object t = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(t) != null) {
-                BindCount[] d = AbstractTerm.getDisplay(obj);
+                Display d = AbstractTerm.getDisplay(obj);
                 Object c = AbstractTerm.getMarker(obj);
                 countvar++;
-                if (last == BindCount.DISPLAY_CONST) {
+                if (last == Display.DISPLAY_CONST) {
                     last = d;
                     check = c;
                 } else if (last != d || check != c) {
@@ -350,7 +351,7 @@ public final class TermCompound extends AbstractTerm {
             }
         }
         if (multi) {
-            last = BindCount.newBind(countvar);
+            last = new Display(Display.newBind(countvar));
             marker = new MutableBit().setBit(true);
         } else {
             marker = check;
@@ -370,11 +371,11 @@ public final class TermCompound extends AbstractTerm {
      */
     private SkelCompound createAlloc(SkelAtom sa, Object[] args, Engine en) {
         boolean multi = ((Boolean) en.skel).booleanValue();
-        BindCount[] d3;
+        Display d3;
         SkelVar[] vars;
         if (multi) {
             d3 = display;
-            vars = SkelVar.valueOfArray(d3.length);
+            vars = SkelVar.valueOfArray(d3.bind.length);
         } else {
             vars = null;
             d3 = null;
@@ -384,13 +385,13 @@ public final class TermCompound extends AbstractTerm {
             Object obj = args[i];
             Object t = AbstractTerm.getSkel(obj);
             if (multi && EngineCopy.getVar(t) != null) {
-                BindCount[] d = AbstractTerm.getDisplay(obj);
+                Display d = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d3[sv.id].bindVar(t, d, en);
+                d3.bind[sv.id].bindVar(t, d, en);
                 Object check = AbstractTerm.getMarker(obj);
                 if (check != null && ((MutableBit) check).getBit()) {
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                     ((MutableBit) check).setBit(false);
                 }
                 args[i] = sv;

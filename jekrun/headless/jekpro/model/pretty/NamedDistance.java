@@ -5,6 +5,7 @@ import jekpro.model.molec.BindVar;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.data.SetHash;
 
 /**
  * <p>This class registers the deref distance of a variable
@@ -105,7 +106,7 @@ public final class NamedDistance {
         int count = 0;
         BindVar b;
         while (en.skel instanceof SkelVar &&
-                (b = en.display[((SkelVar) en.skel).id]).display != null) {
+                (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
             en.skel = b.skel;
             en.display = b.display;
             count++;
@@ -121,10 +122,10 @@ public final class NamedDistance {
      * @param name     The variable name.
      * @param distance The variable distance.
      */
-    public static void addPriorized(MapHashLink<Object, NamedDistance> print,
-                                    Object key,
-                                    String name, int distance) {
-        MapEntry<Object, NamedDistance> entry = print.getEntry(key);
+    public static <T> void addPriorized(MapHashLink<T, NamedDistance> print,
+                                        T key,
+                                        String name, int distance) {
+        MapEntry<T, NamedDistance> entry = print.getEntry(key);
         if (entry == null) {
             NamedDistance nd = new NamedDistance(name, distance);
             print.add(key, nd);
@@ -144,11 +145,27 @@ public final class NamedDistance {
      * @param key   The variable.
      * @param name  The variable name.
      */
-    public static void addAnon(MapHashLink<Object, NamedDistance> print,
-                               Object key,
-                               String name) {
+    public static <T> void addAnon(MapHashLink<T, NamedDistance> print,
+                                   T key,
+                                   String name) {
         NamedDistance nd = new NamedDistance(name, 0);
         print.add(key, nd);
+    }
+
+    /**
+     * <po>Compute the name range.</po>
+     *
+     * @param print The print map.
+     * @return The name range.
+     */
+    public static <T> SetHash<String> nameRange(MapHashLink<T, NamedDistance> print) {
+        SetHash<String> range = new SetHash<String>();
+        if (print == null)
+            return range;
+        for (MapEntry<T, NamedDistance> entry = print.getFirstEntry();
+             entry != null; entry = print.successor(entry))
+            range.add(entry.value.getName());
+        return range;
     }
 
 }

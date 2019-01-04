@@ -93,7 +93,7 @@ public final class SpecialQuali extends AbstractSpecial {
         switch (id) {
             case SPECIAL_CALL_COLON:
                 SkelCompound temp = (SkelCompound) en.skel;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
                 SkelAtom mod = modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
@@ -101,11 +101,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display ref2 = new Display();
-                ref2.bind = BindCount.newBindClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause();
+                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi)
-                    BindCount.remTab(ref, en);
+                    BindCount.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
@@ -118,7 +118,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Object recv = en.skel;
-                BindCount[] d2 = en.display;
+                Display d2 = en.display;
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 mod = objToAtom(obj, recv, d2, en);
@@ -127,14 +127,14 @@ public final class SpecialQuali extends AbstractSpecial {
                 d2 = en.display;
                 multi = en.wrapGoal();
                 if (multi && ext)
-                    BindCount.remTab(d2, en);
+                    BindCount.remTab(d2.bind, en);
                 ref = en.display;
                 clause = en.store.foyer.CLAUSE_CONT;
-                ref2 = new Display();
-                ref2.bind = BindCount.newBindClause(clause.dispsize);
+                ref2 = new DisplayClause();
+                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
-                    BindCount.remTab(ref, en);
+                    BindCount.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
@@ -147,7 +147,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 if (obj == null)
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, m));
-                if (!en.unifyTerm(temp.args[1], ref, obj, BindCount.DISPLAY_CONST))
+                if (!en.unifyTerm(temp.args[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_REPLACE_SITE:
@@ -203,7 +203,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The module or class, or null.
      * @throws EngineMessage Shit happens.
      */
-    public static Object slashToClass(Object t, BindCount[] d,
+    public static Object slashToClass(Object t, Display d,
                                       boolean comp,
                                       boolean err,
                                       Engine en)
@@ -299,7 +299,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The package, or null.
      * @throws EngineMessage Shit happens.
      */
-    public static SkelAtom slashToPackage(Object t, BindCount[] d,
+    public static SkelAtom slashToPackage(Object t, Display d,
                                           boolean set,
                                           boolean err,
                                           Engine en)
@@ -372,7 +372,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean colonToCallable(Object t, BindCount[] d,
+    public static boolean colonToCallable(Object t, Display d,
                                           boolean comp,
                                           Engine en)
             throws EngineMessage {
@@ -398,7 +398,7 @@ public final class SpecialQuali extends AbstractSpecial {
             en.display = d;
             en.deref();
             Object recv = en.skel;
-            BindCount[] d2 = en.display;
+            Display d2 = en.display;
 
             Object obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
             SkelAtom mod = objToAtom(obj, recv, d2, en);
@@ -426,7 +426,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The length.
      * @throws EngineMessage The indicator is not wellformed.
      */
-    public static Integer colonToIndicator(Object t, BindCount[] d, Engine en)
+    public static Integer colonToIndicator(Object t, Display d, Engine en)
             throws EngineMessage {
         try {
             en.skel = t;
@@ -542,7 +542,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The nodule name.
      * @throws EngineMessage Shit happens.
      */
-    static SkelAtom objToAtom(Object mod, Object t, BindCount[] d,
+    static SkelAtom objToAtom(Object mod, Object t, Display d,
                               Engine en)
             throws EngineMessage {
         if (!(mod instanceof AbstractSkel) &&
@@ -572,7 +572,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The nodule atom.
      * @throws EngineMessage Shit happens.
      */
-    public static SkelAtom modToAtom(Object mod, Object t, BindCount[] d, Engine en)
+    public static SkelAtom modToAtom(Object mod, Object t, Display d, Engine en)
             throws EngineMessage {
         if (!(mod instanceof AbstractSkel) &&
                 !(mod instanceof Number)) {
@@ -635,20 +635,20 @@ public final class SpecialQuali extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static boolean colonToMethod(SkelAtom mod, SkelAtom sa2,
-                                        Object recv, BindCount[] d2,
+                                        Object recv, Display d2,
                                         boolean comp, boolean ext,
                                         Engine en)
             throws EngineMessage {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
-            BindCount[] d3 = en.display;
+            Display d3 = en.display;
             SkelAtom sa = CacheFunctor.getFunctor(sc2.sym, mod, sa2, en);
             boolean multi = SpecialQuali.prependCount(recv, d2,
                     sc2.args, d3, en);
             en.skel = SpecialQuali.prependAlloc(sa, recv, d2,
                     sc2.args, d3, multi, en);
             if (multi && ext)
-                BindCount.remTab(d3, en);
+                BindCount.remTab(d3.bind, en);
             return (multi || ext);
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
@@ -679,11 +679,11 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param en The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean prependCount(Object t, BindCount[] d,
-                                        Object[] t2, BindCount[] d2,
+    private static boolean prependCount(Object t, Display d,
+                                        Object[] t2, Display d2,
                                         Engine en) {
         int countvar = 0;
-        BindCount[] last = BindCount.DISPLAY_CONST;
+        Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         for (int i = -1; i < t2.length; i++) {
             if (i != -1) {
@@ -696,7 +696,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
             if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
-                if (last == BindCount.DISPLAY_CONST) {
+                if (last == Display.DISPLAY_CONST) {
                     last = en.display;
                 } else if (last != en.display) {
                     multi = true;
@@ -704,7 +704,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         }
         if (multi)
-            last = BindCount.newBind(countvar);
+            last = new Display(Display.newBind(countvar));
         en.display = last;
         return multi;
     }
@@ -724,13 +724,13 @@ public final class SpecialQuali extends AbstractSpecial {
      * @return The new compound.
      */
     private static SkelCompound prependAlloc(SkelAtom sa,
-                                             Object t, BindCount[] d,
-                                             Object[] t2, BindCount[] d2,
+                                             Object t, Display d,
+                                             Object[] t2, Display d2,
                                              boolean multi, Engine en) {
-        BindCount[] d4 = en.display;
+        Display d4 = en.display;
         SkelVar[] vars;
         if (multi) {
-            vars = SkelVar.valueOfArray(d4.length);
+            vars = SkelVar.valueOfArray(d4.bind.length);
         } else {
             vars = null;
         }
@@ -748,7 +748,7 @@ public final class SpecialQuali extends AbstractSpecial {
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d4[sv.id].bindVar(en.skel, en.display, en);
+                d4.bind[sv.id].bindVar(en.skel, en.display, en);
                 args[i + 1] = sv;
             } else {
                 args[i + 1] = en.skel;

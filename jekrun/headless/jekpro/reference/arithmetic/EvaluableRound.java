@@ -3,6 +3,7 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -78,14 +79,14 @@ public final class EvaluableRound extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_INTEGER:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    BindCount[] d = en.display;
+                    Display d = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = integer(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_TRUNCATE:
                     temp = ((SkelCompound) en.skel).args;
@@ -94,9 +95,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = truncate(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_FLOOR:
                     temp = ((SkelCompound) en.skel).args;
@@ -105,9 +106,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = floor(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_CEILING:
                     temp = ((SkelCompound) en.skel).args;
@@ -116,9 +117,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = ceiling(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_ROUND:
                     temp = ((SkelCompound) en.skel).args;
@@ -127,9 +128,9 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = round(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SLASH_SLASH:
                     temp = ((SkelCompound) en.skel).args;
@@ -138,14 +139,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = slashSlash(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_REM:
                     temp = ((SkelCompound) en.skel).args;
@@ -154,14 +155,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = rem(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_DIV:
                     temp = ((SkelCompound) en.skel).args;
@@ -170,14 +171,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = div(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_MOD:
                     temp = ((SkelCompound) en.skel).args;
@@ -186,14 +187,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = mod(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

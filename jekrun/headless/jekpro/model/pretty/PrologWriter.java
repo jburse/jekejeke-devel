@@ -97,7 +97,7 @@ public class PrologWriter {
     private int lch = -1;
     public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
     public int lev = Operator.LEVEL_HIGH;
-    private MapHashLink<Object, NamedDistance> printmap;
+    private MapHashLink<BindCount, NamedDistance> printmap;
     public int spez;
     public int offset;
     public int shift;
@@ -255,7 +255,7 @@ public class PrologWriter {
      *
      * @param v The var map.
      */
-    public void setPrintMap(MapHashLink<Object, NamedDistance> v) {
+    public void setPrintMap(MapHashLink<BindCount, NamedDistance> v) {
         printmap = v;
     }
 
@@ -627,7 +627,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeAtom(SkelAtom sa, BindCount[] ref,
+    protected void writeAtom(SkelAtom sa, Display ref,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
@@ -882,7 +882,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writePostfix(Operator op, SkelCompound sc, BindCount[] ref,
+    protected void writePostfix(Operator op, SkelCompound sc, Display ref,
                                 CachePredicate cp, Object[] decl,
                                 int backshift, int backspez, int backoffset,
                                 Object mod, SkelAtom nsa)
@@ -945,7 +945,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeAtomicOrVar(Object term, BindCount[] ref,
+    protected void writeAtomicOrVar(Object term, Display ref,
                                     Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (term instanceof SkelAtom) {
@@ -954,7 +954,7 @@ public class PrologWriter {
         } else if (term instanceof SkelVar) {
             SkelVar sv = (SkelVar) term;
             if (printmap != null) {
-                Object obj = AbstractTerm.createMolec(sv, ref);
+                BindCount obj =  ref.bind[sv.id];
                 NamedDistance nd = printmap.get(obj);
                 if (nd != null) {
                     String t = variableQuoted(nd.getName());
@@ -1012,7 +1012,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeSet(SkelCompound sc, BindCount[] ref,
+    protected void writeSet(SkelCompound sc, Display ref,
                             Object mod, SkelAtom nsa)
             throws IOException, EngineException, EngineMessage {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
@@ -1044,7 +1044,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeList(SkelCompound sc, BindCount[] ref,
+    protected void writeList(SkelCompound sc, Display ref,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
@@ -1119,7 +1119,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeCompound(SkelCompound sc, BindCount[] ref,
+    protected void writeCompound(SkelCompound sc, Display ref,
                                  Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
@@ -1183,7 +1183,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeIndex(SkelCompound sc, BindCount[] ref,
+    protected void writeIndex(SkelCompound sc, Display ref,
                               CachePredicate cp, Object[] decl,
                               int backshift, int backspez, int backoffset,
                               Object mod, SkelAtom nsa)
@@ -1238,7 +1238,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeStruct(SkelCompound sc, BindCount[] ref,
+    protected void writeStruct(SkelCompound sc, Display ref,
                                CachePredicate cp, Object[] decl,
                                int backshift, int backspez, int backoffset,
                                Object mod, SkelAtom nsa)
@@ -1281,7 +1281,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public final void write(Object term, BindCount[] ref, int level,
+    public final void write(Object term, Display ref, int level,
                             Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null) {
@@ -1485,7 +1485,7 @@ public class PrologWriter {
      * @param ref  The argument display.
      * @return True if the argument is a simple, otherwise false.
      */
-    private boolean isSimple(Object term, BindCount[] ref) {
+    private boolean isSimple(Object term, Display ref) {
         if (engine != null) {
             engine.skel = term;
             engine.display = ref;
@@ -1508,7 +1508,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    private Operator isOperSimple(Object term, BindCount[] ref,
+    private Operator isOperSimple(Object term, Display ref,
                                   Object mod, SkelAtom nsa)
             throws EngineMessage, EngineException {
         if (engine == null)
@@ -1604,7 +1604,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void unparsePeriod(SkelAtom sa, Object t, BindCount[] ref)
+    protected void unparsePeriod(SkelAtom sa, Object t, Display ref)
             throws IOException, EngineMessage, EngineException {
         write(t, ref, lev, null, null);
         safeSpace(".");
@@ -1620,7 +1620,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public void unparseStatement(Object t, BindCount[] ref)
+    public void unparseStatement(Object t, Display ref)
             throws EngineMessage, EngineException {
         try {
             toff = 0;
@@ -1684,7 +1684,7 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public static void toString(Object t, BindCount[] ref, Writer wr, int flags,
+    public static void toString(Object t, Display ref, Writer wr, int flags,
                                 Engine en)
             throws EngineMessage, EngineException {
         PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);

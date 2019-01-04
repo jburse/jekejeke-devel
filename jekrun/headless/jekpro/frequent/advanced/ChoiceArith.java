@@ -45,7 +45,7 @@ import jekpro.tools.term.SkelVar;
 final class ChoiceArith extends AbstractChoice {
     private Number cur;
     private final Goal goalskel;
-    private final Display goaldisplay;
+    private final DisplayClause goaldisplay;
     private final AbstractBind mark;
     private final int id;
 
@@ -56,7 +56,7 @@ final class ChoiceArith extends AbstractChoice {
      * @param m The mark.
      */
     ChoiceArith(AbstractChoice n,
-                Number c, Goal r, Display u,
+                Number c, Goal r, DisplayClause u,
                 AbstractBind m,
                 int i) {
         super(n);
@@ -93,12 +93,12 @@ final class ChoiceArith extends AbstractChoice {
 
         Goal ir = goalskel;
         Object t = ir.goal;
-        BindCount[] d = goaldisplay.bind;
+        Display d = goaldisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b1;
             while (t instanceof SkelVar &&
-                    (b1 = d[((SkelVar) t).id]).display != null) {
+                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
                 d = b1.display;
             }
@@ -113,7 +113,7 @@ final class ChoiceArith extends AbstractChoice {
 
                 int res = SpecialCompare.computeCmp(cur, num2);
                 while (res <= 0) {
-                    if (en.unifyTerm(temp[2], d, cur, BindCount.DISPLAY_CONST)) {
+                    if (en.unifyTerm(temp[2], d, cur, Display.DISPLAY_CONST)) {
                         if (res != 0) {
                             /* reuse choice point */
                             en.choices = this;
@@ -136,7 +136,7 @@ final class ChoiceArith extends AbstractChoice {
                 cur = EvaluableElem.add(cur, Integer.valueOf(1));
 
                 while (true) {
-                    if (en.unifyTerm(temp[1], d, cur, BindCount.DISPLAY_CONST)) {
+                    if (en.unifyTerm(temp[1], d, cur, Display.DISPLAY_CONST)) {
                         /* reuse choice point */
                         en.choices = this;
                         en.number++;

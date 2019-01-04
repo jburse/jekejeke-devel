@@ -69,13 +69,13 @@ public final class SpecialArith extends AbstractSpecial {
         switch (id) {
             case SPECIAL_BETWEEN:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Number num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 Number num2 = SpecialEval.derefAndCastNumber(temp[1], ref);
                 AbstractBind mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
                 while (res <= 0) {
-                    if (en.unifyTerm(temp[2], ref, num1, BindCount.DISPLAY_CONST)) {
+                    if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {
                         if (res != 0) {
                             /* create choice point */
                             en.choices = new ChoiceArith(en.choices, num1,
@@ -101,7 +101,7 @@ public final class SpecialArith extends AbstractSpecial {
                 num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 mark = en.bind;
                 while (true) {
-                    if (en.unifyTerm(temp[1], ref, num1, BindCount.DISPLAY_CONST)) {
+                    if (en.unifyTerm(temp[1], ref, num1, Display.DISPLAY_CONST)) {
                         /* create choice point */
                         en.choices = new ChoiceArith(en.choices, num1,
                                 (Goal) en.contskel, en.contdisplay, mark, id);

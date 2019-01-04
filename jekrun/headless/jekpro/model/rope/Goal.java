@@ -92,8 +92,8 @@ public class Goal extends Intermediate {
      */
     public final boolean resolveNext(Engine en)
             throws EngineException, EngineMessage {
-        Display u = en.contdisplay;
-        if ((((u.flags & Display.MASK_DPCL_MORE) != 0) ?
+        DisplayClause u = en.contdisplay;
+        if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
                 u.number + 1 : u.number) >= en.number) {
             int n = endgc;
             int i = u.lastgc;
@@ -109,7 +109,7 @@ public class Goal extends Intermediate {
         if (uniargs != null)
             unifyBody(u, en);
         if ((flags & Intermediate.MASK_INTER_NLST) == 0) {
-            Display u1 = u.contdisplay;
+            DisplayClause u1 = u.contdisplay;
             if (u1 != null &&
                     (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
                     u1.number >= en.number) {
@@ -127,12 +127,12 @@ public class Goal extends Intermediate {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         /* current goal */
         Object alfa = goal;
-        BindCount[] d1 = u.bind;
+        Display d1 = u;
         if ((flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b;
             while (alfa instanceof SkelVar &&
-                    (b = d1[((SkelVar) alfa).id]).display != null) {
+                    (b = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b.skel;
                 d1 = b.display;
             }
@@ -180,15 +180,15 @@ public class Goal extends Intermediate {
      * @param u  The continuation display.
      * @param en The engine.
      */
-    private void unifyBody(Display u, Engine en) {
+    private void unifyBody(DisplayClause u, Engine en) {
         Goal ir = (Goal) u.contskel;
         Object alfa = ir.goal;
-        BindCount[] ref = u.contdisplay.bind;
+        Display ref = u.contdisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindVar b;
             while (alfa instanceof SkelVar &&
-                    (b = ref[((SkelVar) alfa).id]).display != null) {
+                    (b = ref.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b.skel;
                 ref = b.display;
             }
@@ -199,10 +199,10 @@ public class Goal extends Intermediate {
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
             alfa = t1[n];
-            BindCount[] d1 = ref;
+            Display d1 = ref;
             BindVar b;
             while (alfa instanceof SkelVar &&
-                    (b = d1[((SkelVar) alfa).id]).display != null) {
+                    (b = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b.skel;
                 d1 = b.display;
             }

@@ -674,7 +674,7 @@ atom_list_concat2(Atom, _, [Atom]).
  * term_atom(T, A):
  * term_atom(T, A, O):
  * The predicate succeeds when the atom A is the serialization
- * of the term T. The ternary perdicate accepts some read or
+ * of the term T. The ternary predicate accepts read respectively
  * write options O.
  */
 % term_atom(+-Term, -+Atom)

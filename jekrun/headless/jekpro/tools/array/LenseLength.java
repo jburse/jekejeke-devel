@@ -2,6 +2,7 @@ package jekpro.tools.array;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
@@ -115,10 +116,10 @@ final class LenseLength extends AbstractLense {
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         Object obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
         en.skel = Integer.valueOf(getLength(obj));
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         return false;
     }
 

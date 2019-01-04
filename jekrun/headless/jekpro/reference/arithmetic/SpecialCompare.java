@@ -3,6 +3,7 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -85,17 +86,17 @@ public final class SpecialCompare extends AbstractSpecial {
         switch (id) {
             case SPECIAL_COMPARE_EQ:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 boolean multi = en.computeExpr(temp[0], ref);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 if (!SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
@@ -106,12 +107,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 if (SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
@@ -122,12 +123,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
                 return en.getNextRaw();
@@ -138,12 +139,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
                 return en.getNextRaw();
@@ -154,12 +155,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return en.getNextRaw();
@@ -170,12 +171,12 @@ public final class SpecialCompare extends AbstractSpecial {
                 d = en.display;
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 multi = en.computeExpr(temp[1], ref);
                 d = en.display;
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
                 return en.getNextRaw();

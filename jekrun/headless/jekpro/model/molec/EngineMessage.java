@@ -26,8 +26,6 @@ import java.net.MalformedURLException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.FileLockInterruptionException;
 import java.nio.charset.CharacterCodingException;
 import java.util.*;
 import java.util.zip.ZipException;
@@ -272,7 +270,7 @@ public final class EngineMessage extends Exception {
      * @param t The message skeleton.
      * @param d The message display.
      */
-    public EngineMessage(Object t, BindCount[] d) {
+    public EngineMessage(Object t, Display d) {
         EngineCopy ec = new EngineCopy();
         template = ec.copyTerm(t, d);
     }
@@ -304,7 +302,7 @@ public final class EngineMessage extends Exception {
     public String toString() {
         try {
             int size = EngineCopy.displaySize(template);
-            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             return EngineMessage.messageMake(template, ref, Locale.getDefault(), null, null);
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldnt happen", x);
@@ -324,7 +322,7 @@ public final class EngineMessage extends Exception {
             Locale locale = store.foyer.locale;
             Properties error = getErrorLang(locale, store);
             int size = EngineCopy.displaySize(template);
-            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             return EngineMessage.messageMake(template, ref, locale, error, null);
         } catch (IOException x) {
             throw new RuntimeException("shouldnt happen", x);
@@ -517,7 +515,7 @@ public final class EngineMessage extends Exception {
      * @param d The term display.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkCallable(Object t, BindCount[] d)
+    public static void checkCallable(Object t, Display d)
             throws EngineMessage {
         if (t instanceof SkelCompound) {
             /* */
@@ -597,7 +595,7 @@ public final class EngineMessage extends Exception {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static String messageMake(Object term, BindCount[] ref,
+    public static String messageMake(Object term, Display ref,
                                      Locale locale, Properties prop,
                                      Engine en)
             throws EngineMessage, EngineException {
@@ -608,7 +606,7 @@ public final class EngineMessage extends Exception {
         }
         BindVar b;
         while (term instanceof SkelVar &&
-                (b = ref[((SkelVar) term).id]).display != null) {
+                (b = ref.bind[((SkelVar) term).id]).display != null) {
             term = b.skel;
             ref = b.display;
         }
@@ -711,7 +709,7 @@ public final class EngineMessage extends Exception {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static String messageTemplate(Object term, BindCount[] ref,
+    private static String messageTemplate(Object term, Display ref,
                                           ArrayList<String> pat,
                                           Properties prop,
                                           Engine en)
@@ -729,10 +727,10 @@ public final class EngineMessage extends Exception {
         for (int i = 0; i < pat.size(); i++) {
             if (ARGTYPE_ID.equals(pat.get(i))) {
                 Object t = ((SkelCompound) term).args[i];
-                BindCount[] d = ref;
+                Display d = ref;
                 BindVar b;
                 while (t instanceof SkelVar &&
-                        (b = d[((SkelVar) t).id]).display != null) {
+                        (b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
                 }
@@ -758,7 +756,7 @@ public final class EngineMessage extends Exception {
      * @param en   The engine.
      * @return The message parameters.
      */
-    private static Object[] messageParameters(Object term, BindCount[] ref,
+    private static Object[] messageParameters(Object term, Display ref,
                                               ArrayList<String> pat,
                                               Engine en)
             throws EngineException, EngineMessage {
@@ -768,10 +766,10 @@ public final class EngineMessage extends Exception {
             if (ARGTYPE_ID.equals(argtype))
                 continue;
             Object t = ((SkelCompound) term).args[i];
-            BindCount[] d = ref;
+            Display d = ref;
             BindVar b;
             while (t instanceof SkelVar &&
-                    (b = d[((SkelVar) t).id]).display != null) {
+                    (b = d.bind[((SkelVar) t).id]).display != null) {
                 t = b.skel;
                 d = b.display;
             }
@@ -808,7 +806,7 @@ public final class EngineMessage extends Exception {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static Object prepareArgument(Object t, BindCount[] d,
+    public static Object prepareArgument(Object t, Display d,
                                          Engine en)
             throws EngineMessage, EngineException {
         if (t instanceof Float || t instanceof Double) {

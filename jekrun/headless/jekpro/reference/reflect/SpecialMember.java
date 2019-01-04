@@ -3,10 +3,7 @@ package jekpro.reference.reflect;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.BindVar;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -78,7 +75,7 @@ public final class SpecialMember extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_UNIFY:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     if (!en.unifyTerm(temp[1], ref, temp[0], ref))
                         return false;
                     return en.getNext();
@@ -107,7 +104,7 @@ public final class SpecialMember extends AbstractSpecial {
                     SpecialEval.checkNotLessThanZero(num);
                     int arity = SpecialEval.castIntValue(num);
 
-                    BindCount[] d;
+                    Display d;
                     boolean multi;
                     if (arity != 0) {
                         SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
@@ -115,7 +112,7 @@ public final class SpecialMember extends AbstractSpecial {
                         Object[] args = new Object[arity];
                         System.arraycopy(vars, 0, args, 0, arity);
                         en.skel = new SkelCompound(sa, args, (arity > 1 ? vars : vars[0]));
-                        d = BindCount.newBind(arity);
+                        d = new Display(Display.newBind(arity));
                         multi = true;
                     } else {
                         en.skel = temp[0];
@@ -128,13 +125,13 @@ public final class SpecialMember extends AbstractSpecial {
                             throw new EngineMessage(EngineMessage.typeError(
                                     EngineMessage.OP_TYPE_ATOMIC, en.skel), en.display);
                         }
-                        d = BindCount.DISPLAY_CONST;
+                        d = Display.DISPLAY_CONST;
                         multi = false;
                     }
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     return en.getNext();
                 case SPECIAL_SYS_TERM_TO_FUNCTOR:
                     temp = ((SkelCompound) en.skel).args;
@@ -154,7 +151,7 @@ public final class SpecialMember extends AbstractSpecial {
                     }
                     if (!en.unifyTerm(temp[1], ref, obj, en.display))
                         return false;
-                    if (!en.unifyTerm(temp[2], ref, num, BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:
@@ -173,12 +170,12 @@ public final class SpecialMember extends AbstractSpecial {
      * @param d1   The term display.
      * @return True if a variable, otherwise false.
      */
-    private static boolean isVar(Object alfa, BindCount[] d1) {
+    private static boolean isVar(Object alfa, Display d1) {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
                 // combined check and deref
                 BindVar b1;
-                if ((b1 = d1[((SkelVar) alfa).id]).display != null) {
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                     alfa = b1.skel;
                     d1 = b1.display;
                     continue;
@@ -198,7 +195,7 @@ public final class SpecialMember extends AbstractSpecial {
      * @param d The term display.
      * @return True if the term is ground, otherwise false.
      */
-    private static boolean isGround(Object t, BindCount[] d) {
+    private static boolean isGround(Object t, Display d) {
         for (; ; ) {
             Object var = EngineCopy.getVar(t);
             if (var == null)
@@ -211,7 +208,7 @@ public final class SpecialMember extends AbstractSpecial {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d[v.id];
+                    BindVar b = d.bind[v.id];
                     if (b.display != null) {
                         if (!isGround(b.skel, b.display))
                             return false;
@@ -221,7 +218,7 @@ public final class SpecialMember extends AbstractSpecial {
                 }
                 v = temp[j];
             }
-            BindVar b = d[v.id];
+            BindVar b = d.bind[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;

@@ -3,20 +3,22 @@ package jekpro.reference.runtime;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.Branch;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
+import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Intermediate;
+import jekpro.model.rope.LoadForce;
+import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
@@ -124,19 +126,19 @@ public final class SpecialSession extends AbstractSpecial {
                 return en.getNextRaw();
             case SPECIAL_SYS_QUOTED_VAR:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
-                if (!en.unifyTerm(temp[1], ref, sysQuoteVar(fun, en), BindCount.DISPLAY_CONST))
+                if (!en.unifyTerm(temp[1], ref, sysQuoteVar(fun, en), Display.DISPLAY_CONST))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                StackElement frame = en.visor.ref;
-                BindCount[] ref2 = (frame != null ? frame.contdisplay.bind : null);
-                Clause def = (frame != null ? frame.contskel.getClause() : null);
-                Object var = (def != null ? def.var : null);
-                en.skel = SpecialSession.varToRawAssoc(var, ref2, en);
+                InterfaceStack frame = en.visor.ref;
+                Display ref2 = (frame != null ? frame.getContDisplay() : null);
+                Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+                MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
+                en.skel = SpecialSession.hashToRawAssoc(vars, ref2, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
                 return en.getNext();
@@ -213,7 +215,7 @@ public final class SpecialSession extends AbstractSpecial {
     }
 
     /**
-     * <p>Display the help text.</p>
+     * <p>DisplayClause the help text.</p>
      *
      * @param pos The position key.
      * @param en  The engine trace.
@@ -268,7 +270,7 @@ public final class SpecialSession extends AbstractSpecial {
             if (!Branch.OP_USER.equals(s)) {
                 wr.write("(");
                 Object res = SpecialDynamic.moduleToSlashSkel(s, en.store.user, en);
-                PrologWriter.toString(res, BindCount.DISPLAY_CONST, wr, 0, en);
+                PrologWriter.toString(res, Display.DISPLAY_CONST, wr, 0, en);
                 wr.write(") ");
             }
             wr.write("?- ");
@@ -299,7 +301,10 @@ public final class SpecialSession extends AbstractSpecial {
             try {
                 AbstractSource src = en.visor.peekStack();
                 SpecialSession.promptQuery(src, en);
-                int flags = PrologReader.FLAG_NEWV;
+                int flags=0;
+                if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
+                        (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0)
+                    flags |= PrologReader.FLAG_NEWV;
                 rd.setFlags(flags);
                 rd.setReadUtil(en.store);
                 rd.setSource(src);
@@ -328,15 +333,17 @@ public final class SpecialSession extends AbstractSpecial {
                         AbstractDefined.MASK_DEFI_NLST |
                         AbstractDefined.MASK_DEFI_STOP, en);
                 clause.analyzeBody(pre.molec, en);
+                clause.vars = pre.vars;
 
                 Intermediate r = en.contskel;
-                Display u = en.contdisplay;
+                DisplayClause u = en.contdisplay;
                 AbstractBind mark = en.bind;
                 int snap = en.number;
-                StackElement backref = en.visor.ref;
+                InterfaceStack backref = en.visor.ref;
                 try {
-                    Display ref = new Display();
-                    ref.bind = BindCount.newBindClause(clause.dispsize);
+                    DisplayClause ref = new DisplayClause();
+                    ref.bind = DisplayClause.newBindClause(clause.dispsize);
+                    ref.vars = clause.vars;
                     en.visor.ref = new StackElement(clause, ref);
                     ref.setEngine(en);
                     en.contskel = clause.getNextRaw(en);
@@ -346,7 +353,7 @@ public final class SpecialSession extends AbstractSpecial {
                         failFeedback(en);
                     while (found) {
                         en.skel = new SkelAtom("sys_show_vars");
-                        en.display = BindCount.DISPLAY_CONST;
+                        en.display = Display.DISPLAY_CONST;
                         en.contskel = r;
                         en.contdisplay = u;
                         en.invokeChecked();
@@ -436,19 +443,20 @@ public final class SpecialSession extends AbstractSpecial {
             PreClause pre = new PreClause();
             pre.molec = new SkelCompound(new SkelAtom(
                     PreClause.OP_TURNSTILE), t);
+            pre.vars = rd.getVars();
             return pre;
         }
 
         /* expand goal */
         AbstractBind mark = en.bind;
-        BindCount[] d;
+        Display d;
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0) {
             int size = rd.getGensym();
-            d = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            d = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             en.fault = null;
         } else {
             Intermediate r = en.contskel;
-            Display u = en.contdisplay;
+            DisplayClause u = en.contdisplay;
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
             SkelAtom sa = new SkelAtom("expand_goal", en.store.getRootSystem());
             Object molec = new SkelCompound(new SkelAtom(
@@ -459,11 +467,11 @@ public final class SpecialSession extends AbstractSpecial {
             clause.analyzeBody(molec, en);
 
             int snap = en.number;
-            StackElement backref = en.visor.ref;
-            Display ref;
+            InterfaceStack backref = en.visor.ref;
+            DisplayClause ref;
             try {
-                ref = new Display();
-                ref.bind = BindCount.newBindClause(clause.dispsize);
+                ref = new DisplayClause();
+                ref.bind = DisplayClause.newBindClause(clause.dispsize);
                 en.visor.ref = new StackElement(clause, ref);
                 ref.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
@@ -494,7 +502,7 @@ public final class SpecialSession extends AbstractSpecial {
             en.cutChoices(snap);
             en.visor.ref = backref;
             t = var;
-            d = ref.bind;
+            d = ref;
         }
         PreClause pre;
         try {
@@ -530,7 +538,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @throws EngineException Shit happens.
      */
     private static PreClause copyGoalVarsAndWrap(MapHashLink<String, SkelVar> assoc,
-                                                  Object t, BindCount[] d,
+                                                 Object t, Display d,
                                                  Engine en)
             throws EngineMessage, EngineException {
         PreClause pre = new PreClause();
@@ -540,13 +548,14 @@ public final class SpecialSession extends AbstractSpecial {
             en.enginecopy = ec;
         }
         ec.vars = null;
-        ec.printmap = FileText.varsToMap(assoc, d, en);
         ec.flags = 0;
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
             t = ec.copyRest(t, d);
         } else {
             t = ec.copyGoalAndWrap(t, d, en);
         }
+        MapHashLink<BindCount, NamedDistance> printmap = FileText.hashToFastMap(assoc, d, en);
+        pre.vars = FileText.copyVars(ec.vars, printmap);
         pre.molec = new SkelCompound(new SkelAtom(
                 PreClause.OP_TURNSTILE), t);
         ec.vars = null;
@@ -670,7 +679,7 @@ public final class SpecialSession extends AbstractSpecial {
             return false;
         en.skel = val;
         int size = rd.getGensym();
-        en.display = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+        en.display = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         return true;
     }
 
@@ -698,32 +707,19 @@ public final class SpecialSession extends AbstractSpecial {
      * <p>Will not convert variables that have not yet been allocated.</p>
      * <p>Will not convert variables that have already been deallocated.</p>
      *
-     * @param var     The var object.
-     * @param d     The term display.
-     * @param en The engine.
+     * @param vars The var hash.
+     * @param d    The term display.
+     * @param en   The engine.
      * @return The Prolog association list.
      */
-    public static Object varToRawAssoc(Object var, BindCount[] d,
-                                         Engine en) {
+    public static Object hashToRawAssoc(MapHashLink<String, SkelVar> vars, Display d,
+                                        Engine en) {
         Object end = en.store.foyer.ATOM_NIL;
-        if (var == null)
+        if (vars == null)
             return end;
-        if (var instanceof SkelVar) {
-            SkelVar sv = (SkelVar) var;
-            if (sv instanceof SkelVarNamed) {
-                String name = ((SkelVarNamed) sv).getName();
-                end = addToRawAssoc(sv, d, name, end, en);
-            }
-        } else {
-            SkelVar[] temp = (SkelVar[]) var;
-            for (int i = temp.length-1; i>=0; i--) {
-                SkelVar sv = temp[i];
-                if (sv instanceof SkelVarNamed) {
-                    String name = ((SkelVarNamed) sv).getName();
-                    end = addToRawAssoc(sv, d, name, end, en);
-                }
-            }
-        }
+        for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
+             entry != null; entry = vars.successor(entry))
+            end = addToRawAssoc(entry.value, d, entry.key, end, en);
         return end;
     }
 
@@ -736,10 +732,10 @@ public final class SpecialSession extends AbstractSpecial {
      * @param end  The Prolog list.
      * @return The Prolog list.
      */
-    private static Object addToRawAssoc(SkelVar sv, BindCount[] d,
+    private static Object addToRawAssoc(SkelVar sv, Display d,
                                         String name, Object end,
                                         Engine en) {
-        if (d == null || sv.id >= d.length || d[sv.id] == null)
+        if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)
             return end;
         Object val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
                 new SkelAtom(name), sv);

@@ -3,6 +3,7 @@ package jekpro.reference.structure;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindSerno;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.AbstractTerm;
@@ -122,19 +123,19 @@ public final class EngineLexical implements Comparator<Object> {
      * @param d2   The display of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
-    public final int localeCompareTerm(Object alfa, BindCount[] d1,
-                                       Object beta, BindCount[] d2)
+    public final int localeCompareTerm(Object alfa, Display d1,
+                                       Object beta, Display d2)
             throws ArithmeticException {
         for (; ; ) {
             BindCount b1;
             while (alfa instanceof SkelVar &&
-                    (b1 = d1[((SkelVar) alfa).id]).display != null) {
+                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
             int i = EngineLexical.cmpType(alfa);
             while (beta instanceof SkelVar &&
-                    (b1 = d2[((SkelVar) beta).id]).display != null) {
+                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
@@ -142,11 +143,11 @@ public final class EngineLexical implements Comparator<Object> {
             if (k != 0) return k;
             switch (i) {
                 case CMP_TYPE_VAR:
-                    b1 = d1[((SkelVar) alfa).id];
+                    b1 = d1.bind[((SkelVar) alfa).id];
                     i = b1.serno;
                     if (i == -1)
                         i = BindSerno.bindSerno(b1, engine);
-                    b1 = d2[((SkelVar) beta).id];
+                    b1 = d2.bind[((SkelVar) beta).id];
                     k = b1.serno;
                     if (k == -1)
                         k = BindSerno.bindSerno(b1, engine);
@@ -192,7 +193,7 @@ public final class EngineLexical implements Comparator<Object> {
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */
-    public static Comparator comparatorAtom(Object m, BindCount[] d)
+    public static Comparator comparatorAtom(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if ("IGNORE_CASE".equals(fun)) {

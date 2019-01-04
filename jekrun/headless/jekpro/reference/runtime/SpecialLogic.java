@@ -2,8 +2,8 @@ package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelCompound;
@@ -67,7 +67,7 @@ public final class SpecialLogic extends AbstractSpecial {
             throws EngineException {
         switch (id) {
             case SPECIAL_SYS_LOCAL_CUT:
-                Display u = en.contdisplay;
+                DisplayClause u = en.contdisplay;
                 en.window = u;
                 en.fault = null;
                 en.cutChoices(u.number);
@@ -77,7 +77,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 return en.getNextRaw();
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
                 u = en.contdisplay;
-                if ((((u.flags & Display.MASK_DPCL_MORE) != 0) ?
+                if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
                         u.number + 1 : u.number) >= en.number) {
                     en.window = u;
                     en.fault = null;
@@ -86,18 +86,18 @@ public final class SpecialLogic extends AbstractSpecial {
                     if (en.fault != null)
                         throw en.fault;
                 } else {
-                    u.flags |= Display.MASK_DPCL_SOFT;
+                    u.flags |= DisplayClause.MASK_DPCL_SOFT;
                 }
                 return en.getNextRaw();
             case SPECIAL_SYS_SAFE:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display ref2 = new Display();
-                ref2.bind = BindCount.newBindClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause();
+                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, en.display, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);

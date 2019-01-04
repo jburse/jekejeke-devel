@@ -2,7 +2,7 @@ package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelAtom;
@@ -77,7 +77,7 @@ public final class EvaluableQuali extends AbstractSpecial {
         switch (id) {
             case EVALUABLE_COLON:
                 SkelCompound temp = (SkelCompound) en.skel;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp.args[0], ref, false, true, en);
                 SkelAtom mod = SpecialQuali.modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
@@ -91,7 +91,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 en.display = ref;
                 en.computeExpr(en.skel, en.display);
                 Object recv = en.skel;
-                BindCount[] d2 = en.display;
+                Display d2 = en.display;
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 mod = SpecialQuali.objToAtom(obj, recv, d2, en);

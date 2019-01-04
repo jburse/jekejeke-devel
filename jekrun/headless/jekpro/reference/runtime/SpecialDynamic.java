@@ -84,7 +84,7 @@ public final class SpecialDynamic extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_ENSURE_SHARED_DYNAMIC:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialDynamic.defineDynamic(pick, en);
@@ -251,7 +251,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             } else {
                 if (err) {
                     EngineMessage.checkInstantiated(t);
-                    BindCount[] d = createDisplay(t);
+                    Display d = createDisplay(t);
                     throw new EngineMessage(EngineMessage.typeError(
                             (comp ? EngineMessage.OP_TYPE_CALLABLE :
                                     EngineMessage.OP_TYPE_ATOM), t), d);
@@ -283,7 +283,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             } else {
                 if (err) {
                     EngineMessage.checkInstantiated(t);
-                    BindCount[] d = createDisplay(t);
+                    Display d = createDisplay(t);
                     throw new EngineMessage(EngineMessage.domainError(
                             (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
                                     EngineMessage.OP_DOMAIN_MODULE), t), d);
@@ -321,7 +321,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 return CachePackage.getPackage(sa, ((SkelAtom) t).fun);
             if (err) {
                 EngineMessage.checkInstantiated(t);
-                BindCount[] d = createDisplay(t);
+                Display d = createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_ATOM, t), d);
             } else {
@@ -340,7 +340,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 return (SkelAtom) t;
             if (err) {
                 EngineMessage.checkInstantiated(t);
-                BindCount[] d = createDisplay(t);
+                Display d = createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
                         (set ? EngineMessage.OP_DOMAIN_ARRAY :
                                 EngineMessage.OP_DOMAIN_PACKAGE), t), d);
@@ -356,9 +356,9 @@ public final class SpecialDynamic extends AbstractSpecial {
      * @param t The skeleton.
      * @return The display.
      */
-    public static BindCount[] createDisplay(Object t) {
+    public static Display createDisplay(Object t) {
         int size = EngineCopy.displaySize(t);
-        return (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+        return (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
     }
 
     /*************************************************************/
@@ -453,7 +453,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 /* reference */
                 mod = SpecialProxy.classOrProxyName(mod, en);
                 if (mod == null) {
-                    BindCount[] d = createDisplay(temp.args[0]);
+                    Display d = createDisplay(temp.args[0]);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
                 }
@@ -470,7 +470,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 t = CacheFunctor.getFunctor(sa, (SkelAtom) mod, temp.sym, en);
             } else {
                 EngineMessage.checkInstantiated(t);
-                BindCount[] d = createDisplay(t);
+                Display d = createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
@@ -484,13 +484,13 @@ public final class SpecialDynamic extends AbstractSpecial {
                 /* reference */
                 mod = SpecialProxy.refClassOrProxy(mod);
                 if (mod == null) {
-                    BindCount[] d = createDisplay(temp.args[0]);
+                    Display d = createDisplay(temp.args[0]);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), d);
                 }
                 mod = SpecialProxy.classOrProxyName(mod, en);
                 if (mod == null) {
-                    BindCount[] d = createDisplay(temp.args[0]);
+                    Display d = createDisplay(temp.args[0]);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
                 }
@@ -513,7 +513,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                         temp.sym, en), recv);
             } else {
                 EngineMessage.checkInstantiated(t);
-                BindCount[] d = createDisplay(t);
+                Display d = createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
@@ -670,13 +670,13 @@ public final class SpecialDynamic extends AbstractSpecial {
             /* reference */
             mod = SpecialProxy.refClassOrProxy(mod);
             if (mod == null) {
-                BindCount[] d = createDisplay(t);
+                Display d = createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
             }
             mod = SpecialProxy.classOrProxyName(mod, en);
             if (mod == null) {
-                BindCount[] d = createDisplay(t);
+                Display d = createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_CLASS, t), d);
             }

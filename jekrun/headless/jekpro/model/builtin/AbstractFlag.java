@@ -2,6 +2,7 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
@@ -78,7 +79,7 @@ public abstract class AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, BindCount[] d, Engine en)
+    public boolean setFlag(Object m, Display d, Engine en)
             throws EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
@@ -111,7 +112,7 @@ public abstract class AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setThreadFlag(Object m, BindCount[] d,
+    public boolean setThreadFlag(Object m, Display d,
                                  Thread t, Engine en)
             throws EngineMessage {
         throw new IllegalArgumentException("not implemented");
@@ -130,7 +131,7 @@ public abstract class AbstractFlag {
      * @return The switch value.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean atomToSwitch(Object m, BindCount[] d)
+    public static boolean atomToSwitch(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_ON)) {

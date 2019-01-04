@@ -3,6 +3,7 @@ package jekpro.tools.term;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
+import jekpro.model.molec.Display;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -53,7 +54,7 @@ import jekpro.tools.call.Interpreter;
  */
 public final class TermVar extends AbstractTerm {
     final SkelVar skel;
-    final BindCount[] display;
+    final Display display;
     Object marker;
 
     /**
@@ -62,7 +63,7 @@ public final class TermVar extends AbstractTerm {
      * @param s The var skel.
      * @param d The var display.
      */
-    TermVar(SkelVar s, BindCount[] d) {
+    TermVar(SkelVar s, Display d) {
         skel = s;
         display = d;
     }
@@ -72,7 +73,7 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        display = BindCount.newBind(1);
+        display = new Display(Display.newBind(1));
         marker = new MutableBit().setBit(true);
     }
 
@@ -94,7 +95,7 @@ public final class TermVar extends AbstractTerm {
      *
      * @return The display.
      */
-    public BindCount[] getDisplay() {
+    public Display getDisplay() {
         return display;
     }
 
@@ -140,10 +141,10 @@ public final class TermVar extends AbstractTerm {
      */
     public Object deref() {
         Object t = skel;
-        BindCount[] d = display;
+        Display d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -161,10 +162,10 @@ public final class TermVar extends AbstractTerm {
      */
     public AbstractTerm derefWrapped() {
         Object t = skel;
-        BindCount[] d = display;
+        Display d = display;
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }

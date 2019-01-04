@@ -2,10 +2,7 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
@@ -81,13 +78,13 @@ public final class SpecialApply extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_MODEXT_ARGS_ANY:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 boolean multi = moduleExtendGoal(temp[0], ref, temp, ref, temp.length - 1, en);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[temp.length - 1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_CALL_ANY:
                 temp = ((SkelCompound) en.skel).args;
@@ -96,14 +93,14 @@ public final class SpecialApply extends AbstractSpecial {
                 d = en.display;
                 multi = en.wrapGoal();
                 if (multi && ext)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display ref2 = new Display();
-                ref2.bind = BindCount.newBindClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause();
+                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
-                    BindCount.remTab(ref, en);
+                    BindCount.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
@@ -124,8 +121,8 @@ public final class SpecialApply extends AbstractSpecial {
      * @param en    The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean moduleExtendGoal(Object t, BindCount[] d,
-                                            Object[] t2, BindCount[] d2,
+    private static boolean moduleExtendGoal(Object t, Display d,
+                                            Object[] t2, Display d2,
                                             int slice, Engine en)
             throws EngineMessage {
         en.skel = t;
@@ -148,7 +145,7 @@ public final class SpecialApply extends AbstractSpecial {
             boolean multi = pairCount(t, d, t4, d2, en);
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
             if (multi && ext)
-                BindCount.remTab(d2, en);
+                BindCount.remTab(d2.bind, en);
             return (multi || ext);
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
@@ -165,7 +162,7 @@ public final class SpecialApply extends AbstractSpecial {
             boolean multi = pairCount(t, d, t4, d2, en);
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
             if (multi && ext)
-                BindCount.remTab(d2, en);
+                BindCount.remTab(d2.bind, en);
             return (multi || ext);
         } else {
             SkelAtom sa;
@@ -199,14 +196,14 @@ public final class SpecialApply extends AbstractSpecial {
      * @param en The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean pairCount(Object t, BindCount[] d, Object t2,
-                                     BindCount[] d2, Engine en) {
+    private static boolean pairCount(Object t, Display d, Object t2,
+                                     Display d2, Engine en) {
         int countvar = 0;
-        BindCount[] last = BindCount.DISPLAY_CONST;
+        Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         if (EngineCopy.getVar(t) != null) {
             countvar++;
-            if (last == BindCount.DISPLAY_CONST) {
+            if (last == Display.DISPLAY_CONST) {
                 last = d;
             } else if (last != d) {
                 multi = true;
@@ -214,14 +211,14 @@ public final class SpecialApply extends AbstractSpecial {
         }
         if (EngineCopy.getVar(t2) != null) {
             countvar++;
-            if (last == BindCount.DISPLAY_CONST) {
+            if (last == Display.DISPLAY_CONST) {
                 last = d2;
             } else if (last != d2) {
                 multi = true;
             }
         }
         if (multi)
-            last = BindCount.newBind(countvar);
+            last = new Display(Display.newBind(countvar));
         en.display = last;
         return multi;
     }
@@ -241,13 +238,13 @@ public final class SpecialApply extends AbstractSpecial {
      * @return The new compound.
      */
     private static SkelCompound pairAlloc(SkelAtom sa,
-                                          Object t, BindCount[] d,
-                                          Object t2, BindCount[] d2,
+                                          Object t, Display d,
+                                          Object t2, Display d2,
                                           boolean multi, Engine en) {
-        BindCount[] d3 = en.display;
+        Display d3 = en.display;
         SkelVar[] vars;
         if (multi) {
-            vars = SkelVar.valueOfArray(d3.length);
+            vars = SkelVar.valueOfArray(d3.bind.length);
         } else {
             vars = null;
         }
@@ -256,7 +253,7 @@ public final class SpecialApply extends AbstractSpecial {
         if (multi && EngineCopy.getVar(t) != null) {
             SkelVar sv = vars[countvar];
             countvar++;
-            d3[sv.id].bindVar(t, d, en);
+            d3.bind[sv.id].bindVar(t, d, en);
             args[0] = sv;
         } else {
             args[0] = t;
@@ -264,7 +261,7 @@ public final class SpecialApply extends AbstractSpecial {
         if (multi && EngineCopy.getVar(t2) != null) {
             SkelVar sv = vars[countvar];
             // countvar++;
-            d3[sv.id].bindVar(t2, d2, en);
+            d3.bind[sv.id].bindVar(t2, d2, en);
             args[1] = sv;
         } else {
             args[1] = t2;
@@ -293,11 +290,11 @@ public final class SpecialApply extends AbstractSpecial {
      * @param en    The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean extendCount(Object t, BindCount[] d,
-                                       Object[] t2, BindCount[] d2,
+    private static boolean extendCount(Object t, Display d,
+                                       Object[] t2, Display d2,
                                        int slice, Engine en) {
         int countvar = 0;
-        BindCount[] last = BindCount.DISPLAY_CONST;
+        Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         if (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
@@ -307,7 +304,7 @@ public final class SpecialApply extends AbstractSpecial {
                 en.deref();
                 if (EngineCopy.getVar(en.skel) != null) {
                     countvar++;
-                    if (last == BindCount.DISPLAY_CONST) {
+                    if (last == Display.DISPLAY_CONST) {
                         last = en.display;
                     } else if (last != en.display) {
                         multi = true;
@@ -321,7 +318,7 @@ public final class SpecialApply extends AbstractSpecial {
             en.deref();
             if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
-                if (last == BindCount.DISPLAY_CONST) {
+                if (last == Display.DISPLAY_CONST) {
                     last = en.display;
                 } else if (last != en.display) {
                     multi = true;
@@ -329,7 +326,7 @@ public final class SpecialApply extends AbstractSpecial {
             }
         }
         if (multi)
-            last = BindCount.newBind(countvar);
+            last = new Display(Display.newBind(countvar));
         en.display = last;
         return multi;
     }
@@ -349,14 +346,14 @@ public final class SpecialApply extends AbstractSpecial {
      * @param en    The engine.
      * @return The new compound.
      */
-    private static SkelCompound extendAlloc(SkelAtom sa, Object t, BindCount[] d,
-                                            Object[] t2, BindCount[] d2,
+    private static SkelCompound extendAlloc(SkelAtom sa, Object t, Display d,
+                                            Object[] t2, Display d2,
                                             int slice,
                                             boolean multi, Engine en) {
-        BindCount[] d3 = en.display;
+        Display d3 = en.display;
         SkelVar[] vars;
         if (multi) {
-            vars = SkelVar.valueOfArray(d3.length);
+            vars = SkelVar.valueOfArray(d3.bind.length);
         } else {
             vars = null;
         }
@@ -378,7 +375,7 @@ public final class SpecialApply extends AbstractSpecial {
                 if (multi && EngineCopy.getVar(en.skel) != null) {
                     SkelVar sv = vars[countvar];
                     countvar++;
-                    d3[sv.id].bindVar(en.skel, en.display, en);
+                    d3.bind[sv.id].bindVar(en.skel, en.display, en);
                     args[i] = sv;
                 } else {
                     args[i] = en.skel;
@@ -392,7 +389,7 @@ public final class SpecialApply extends AbstractSpecial {
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d3[sv.id].bindVar(en.skel, en.display, en);
+                d3.bind[sv.id].bindVar(en.skel, en.display, en);
                 args[len + i] = sv;
             } else {
                 args[len + i] = en.skel;

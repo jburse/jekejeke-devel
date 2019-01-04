@@ -68,13 +68,13 @@ public final class SpecialEval extends AbstractSpecial {
         switch (id) {
             case SPECIAL_IS:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 boolean multi = en.computeExpr(temp[1], ref);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -93,11 +93,11 @@ public final class SpecialEval extends AbstractSpecial {
      * @return The number.
      * @throws EngineMessage Not a number.
      */
-    public static Number derefAndCastNumber(Object t, BindCount[] d)
+    public static Number derefAndCastNumber(Object t, Display d)
             throws EngineMessage {
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -118,11 +118,11 @@ public final class SpecialEval extends AbstractSpecial {
      * @return The integer, either Integer or BigInteger.
      * @throws EngineMessage Not a integer.
      */
-    public static Number derefAndCastInteger(Object t, BindCount[] d)
+    public static Number derefAndCastInteger(Object t, Display d)
             throws EngineMessage {
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }
@@ -145,11 +145,11 @@ public final class SpecialEval extends AbstractSpecial {
      * @return The decimal, either Long or BigDecimal.
      * @throws EngineMessage Not a integer.
      */
-    public static Number derefAndCastDecimal(Object t, BindCount[] d)
+    public static Number derefAndCastDecimal(Object t, Display d)
             throws EngineMessage {
         BindVar b;
         while (t instanceof SkelVar &&
-                (b = d[((SkelVar) t).id]).display != null) {
+                (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
             d = b.display;
         }

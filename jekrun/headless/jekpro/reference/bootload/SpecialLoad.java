@@ -16,15 +16,12 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
-import matula.util.data.ListArray;
-import matula.util.data.MapEntry;
-import matula.util.data.MapHashLink;
+import matula.util.data.*;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -102,7 +99,7 @@ public final class SpecialLoad extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_LOAD_FILE:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 LoadOpts opts = new LoadOpts();
                 opts.decodeLoadOpts(temp[1], ref, en);
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
@@ -318,7 +315,7 @@ public final class SpecialLoad extends AbstractSpecial {
                         }
                         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                        pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
+                        pw.unparseStatement(decl, Display.DISPLAY_CONST);
                         SpecialLoad.flushWriter(pw.getWriter());
                     }
                 }
@@ -342,12 +339,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 modifiers = null;
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                 decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
+                pw.unparseStatement(decl, Display.DISPLAY_CONST);
                 SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause, en);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
-            SpecialLoad.showClause(pw, t, en, 0);
+            SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
         }
     }
@@ -364,7 +361,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Object decl = oper.operatorToCompound(en.store);
         decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
         decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-        pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
+        pw.unparseStatement(decl, Display.DISPLAY_CONST);
         SpecialLoad.flushWriter(pw.getWriter());
     }
 
@@ -392,7 +389,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     new SkelAtom(Foyer.OP_NIL));
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-            pw.unparseStatement(decl, BindCount.DISPLAY_CONST);
+            pw.unparseStatement(decl, Display.DISPLAY_CONST);
             SpecialLoad.flushWriter(pw.getWriter());
         }
 
@@ -575,7 +572,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Object[] newvals = new Object[vals.length];
         for (int i = 0; i < vals.length; i++) {
             Object val = pick.del.toSpec(source, en);
-            newvals[i] = AbstractTerm.createMolec(val, BindCount.DISPLAY_CONST);
+            newvals[i] = AbstractTerm.createMolec(val, Display.DISPLAY_CONST);
         }
         return newvals;
     }
@@ -703,27 +700,28 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param pw    The prolog writer.
      * @param t     The term.
+     * @param vars  The var hash
      * @param en    The engine.
      * @param flags The show flags.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public static BindCount[] showClause(PrologWriter pw, Object t,
-                                         Engine en, int flags)
+    public static Display showClause(PrologWriter pw, Object t,
+                                     MapHashLink<String, SkelVar> vars,
+                                     Engine en, int flags)
             throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
                 ((flags & MASK_SHOW_NRBD) != 0)) {
             int size = EngineCopy.displaySize(t);
-            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             EngineVars ev = new EngineVars();
             if ((flags & MASK_SHOW_NANO) != 0) {
                 ev.varInclude(t, ref);
             } else {
                 ev.singsOf(t, ref);
             }
-            Object var = EngineCopy.getVar(t);
-            MapHashLink<Object, NamedDistance> print = SpecialVars.varToMap(var, ref, en);
-            print = EngineVars.numberVariables(ev.vars, ev.anon, print);
+            MapHashLink<BindCount, NamedDistance> print = FileText.hashToFastMap(vars, ref, en);
+            print = SpecialLoad.numberFastVars(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
             pw.unparseStatement(t, ref);
@@ -734,16 +732,16 @@ public final class SpecialLoad extends AbstractSpecial {
         int snap = en.number;
         int size = EngineCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
-        BindCount[] dc = BindCount.newBind(size + 1);
+        Display dc = new Display(Display.newBind(size + 1));
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
         Intermediate r = en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display ref = new Display();
-            ref.bind = BindCount.newBindClause(clause.dispsize);
+            DisplayClause ref = new DisplayClause();
+            ref.bind = DisplayClause.newBindClause(clause.dispsize);
             ref.addArgument(t, dc, en);
             ref.setEngine(en);
             en.contskel = clause.getNextRaw(en);
@@ -778,9 +776,8 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 ev.singsOf(res, dc);
             }
-            Object var = EngineCopy.getVar(t);
-            MapHashLink<Object, NamedDistance> print = SpecialVars.varToMap(var, dc, en);
-            print = EngineVars.numberVariables(ev.vars, ev.anon, print);
+            MapHashLink<BindCount, NamedDistance> print = FileText.hashToFastMap(vars, dc, en);
+            print = SpecialLoad.numberFastVars(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
             pw.unparseStatement(t, dc);
@@ -814,6 +811,45 @@ public final class SpecialLoad extends AbstractSpecial {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
+    }
+
+    /**
+     * <p>Complement the variable names.</p>
+     *
+     * @param mvs3 The var set, can be null.
+     * @param mvs  The anon set, can be null.
+     * @param vars The old variable names, can be null.
+     * @return The new variable names, can be null.
+     */
+    public static MapHashLink<BindCount, NamedDistance> numberFastVars(SetHashLink<Object> mvs3,
+                                                                       SetHashLink<Object> mvs,
+                                                                       MapHashLink<BindCount, NamedDistance> vars) {
+        MapHashLink<BindCount, NamedDistance> copy = new MapHashLink<BindCount, NamedDistance>();
+        int k = 0;
+        SetHash<String> range = null;
+        for (SetEntry<Object> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
+             entry != null; entry = mvs3.successor(entry)) {
+            Object t = TermAtomic.getSkel(entry.key);
+            Display ref = TermAtomic.getDisplay(entry.key);
+            BindCount key = ref.bind[((SkelVar) t).id];
+            NamedDistance nd;
+            if (mvs != null && mvs.getKey(entry.key) != null) {
+                NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
+            } else if (vars != null && (nd = vars.get(key)) != null) {
+                copy.add(key, nd);
+            } else {
+                if (range == null)
+                    range = NamedDistance.nameRange(vars);
+                String name = SkelVar.sernoToString(k, false);
+                k++;
+                while (range.getKey(name) != null) {
+                    name = SkelVar.sernoToString(k, false);
+                    k++;
+                }
+                NamedDistance.addAnon(copy, key, name);
+            }
+        }
+        return copy;
     }
 
 }

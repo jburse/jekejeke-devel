@@ -2,6 +2,7 @@ package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
@@ -128,7 +129,7 @@ final class MemberConstant extends AbstractMember {
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
         Object temp = en.skel;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         Object obj = convertRecv(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
         res = Types.normJava(encoderet, res);

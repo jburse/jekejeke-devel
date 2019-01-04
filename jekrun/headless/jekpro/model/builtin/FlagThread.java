@@ -2,6 +2,7 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import matula.util.data.MapHash;
 
@@ -97,7 +98,7 @@ public final class FlagThread extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setThreadFlag(Object m, BindCount[] d,
+    public boolean setThreadFlag(Object m, Display d,
                                  Thread t, Engine en)
             throws EngineMessage {
         switch (id) {

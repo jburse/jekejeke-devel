@@ -2,6 +2,7 @@ package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -126,7 +127,7 @@ final class MemberConstructor extends AbstractMember {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         Object temp = en.skel;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         int hint = en.store.foyer.getHint();
         Object[] args = convertArgs(temp, ref, en, null);
         switch (hint) {
@@ -144,7 +145,7 @@ final class MemberConstructor extends AbstractMember {
         }
         if (res == null)
             return false;
-        BindCount[] d = AbstractTerm.getDisplay(res);
+        Display d = AbstractTerm.getDisplay(res);
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm(((SkelCompound) temp).args[
                                 ((SkelCompound) temp).args.length - 1], ref,
@@ -152,7 +153,7 @@ final class MemberConstructor extends AbstractMember {
             return false;
         Object check = AbstractTerm.getMarker(res);
         if (check != null && ((MutableBit) check).getBit()) {
-            BindCount.remTab(d, en);
+            BindCount.remTab(d.bind, en);
             ((MutableBit) check).setBit(false);
         }
         return en.getNext();

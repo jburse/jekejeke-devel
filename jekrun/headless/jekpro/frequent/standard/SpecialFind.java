@@ -69,7 +69,7 @@ public final class SpecialFind extends AbstractSpecial {
         switch (id) {
             case SPECIAL_FINDALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
 
                 en.skel = temp[1];
                 en.display = ref;
@@ -77,14 +77,14 @@ public final class SpecialFind extends AbstractSpecial {
                 ListArray<Object> list = iterFindAll(temp[0], ref, en);
 
                 en.skel = en.store.foyer.ATOM_NIL;
-                en.display = BindCount.DISPLAY_CONST;
+                en.display = Display.DISPLAY_CONST;
                 boolean multi = SpecialFind.createList(list, en);
 
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_FINDALL_END:
                 temp = ((SkelCompound) en.skel).args;
@@ -104,7 +104,7 @@ public final class SpecialFind extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
@@ -118,11 +118,11 @@ public final class SpecialFind extends AbstractSpecial {
                 Object temp2 = ec.copyTerm(temp[0], ref);
                 ec.vars = null;
                 int size = EngineCopy.displaySize(temp2);
-                d = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+                d = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
                 if (!en.unifyTerm(temp[1], ref, temp2, d))
                     return false;
                 if (size != 0)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -143,23 +143,23 @@ public final class SpecialFind extends AbstractSpecial {
      * @return The list of solutions.
      * @throws EngineException Shit happens.
      */
-    private static ListArray<Object> iterFindAll(Object t2, BindCount[] d2,
+    private static ListArray<Object> iterFindAll(Object t2, Display d2,
                                                  Engine en)
             throws EngineException {
         Intermediate r = en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         ListArray<Object> temp = null;
         AbstractBind mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
-            BindCount[] ref = en.display;
+            Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display ref2 = new Display();
-            ref2.bind = BindCount.newBindClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause();
+            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, en.display, en);
             if (multi)
-                BindCount.remTab(ref, en);
+                BindCount.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -211,17 +211,17 @@ public final class SpecialFind extends AbstractSpecial {
             return multi;
         for (int i = temp.size() - 1; i >= 0; i--) {
             Object t = en.skel;
-            BindCount[] d = en.display;
+            Display d = en.display;
             boolean ext = multi;
             Object val = temp.get(i);
             int size = EngineCopy.displaySize(val);
-            BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t, d, en);
             if (multi && ext)
-                BindCount.remTab(d, en);
+                BindCount.remTab(d.bind, en);
             if (multi && (size != 0))
-                BindCount.remTab(ref, en);
+                BindCount.remTab(ref.bind, en);
             multi = (multi || ext || (size != 0));
         }
         return multi;
@@ -239,8 +239,8 @@ public final class SpecialFind extends AbstractSpecial {
      * @return True if new display is returned, otherwise false.
      */
     public static boolean pairValue(SkelCompound sc,
-                                    Object t2, BindCount[] d2,
-                                    Object t, BindCount[] d, Engine en) {
+                                    Object t2, Display d2,
+                                    Object t, Display d, Engine en) {
         Object v2 = EngineCopy.getVar(t2);
         Object v = EngineCopy.getVar(t);
         if (v2 == null) {
@@ -258,9 +258,9 @@ public final class SpecialFind extends AbstractSpecial {
             en.display = d2;
             return false;
         } else {
-            BindCount[] d3 = BindCount.newBind(2);
-            d3[0].bindVar(t2, d2, en);
-            d3[1].bindVar(t, d, en);
+            Display d3 = new Display(Display.newBind(2));
+            d3.bind[0].bindVar(t2, d2, en);
+            d3.bind[1].bindVar(t, d, en);
             en.skel = sc;
             en.display = d3;
             return true;

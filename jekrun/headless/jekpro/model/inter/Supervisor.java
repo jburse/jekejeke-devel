@@ -61,7 +61,7 @@ public class Supervisor extends AbstractLivestock {
     public Object attachedto;
     public int breaklevel = -1;
     public ListArray<AbstractSource> modstack;
-    public StackElement ref;
+    public InterfaceStack ref;
     public StoreKey lastsk;
     public LoadOpts cond;
     public Object proxy;

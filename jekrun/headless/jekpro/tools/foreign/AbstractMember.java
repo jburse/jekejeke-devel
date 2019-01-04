@@ -2,6 +2,7 @@ package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -148,7 +149,7 @@ abstract class AbstractMember extends AbstractLense
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    final Object[] computeAndConvertArgs(Object temp, BindCount[] ref,
+    final Object[] computeAndConvertArgs(Object temp, Display ref,
                                          Engine en)
             throws EngineMessage, EngineException {
         Object[] args = (encodeparas.length != 0 ?
@@ -177,7 +178,7 @@ abstract class AbstractMember extends AbstractLense
      * @return The receiver, or null.
      * @throws EngineMessage FFI error.
      */
-    final Object convertRecv(Object temp, BindCount[] ref)
+    final Object convertRecv(Object temp, Display ref)
             throws EngineMessage {
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
             return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
@@ -197,7 +198,7 @@ abstract class AbstractMember extends AbstractLense
      * @return The arguments array.
      * @throws EngineMessage FFI error.
      */
-    final Object[] convertArgs(Object temp, BindCount[] ref,
+    final Object[] convertArgs(Object temp, Display ref,
                                Engine en, CallOut co)
             throws EngineMessage {
         Object[] args = (encodeparas.length != 0 ?

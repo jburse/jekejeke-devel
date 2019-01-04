@@ -1,6 +1,6 @@
 package jekpro.model.inter;
 
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -103,7 +103,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @param d  The goal display.
      * @param en The engine.
      */
-    final Clause[] definedClauses(Object m, BindCount[] d, Engine en) {
+    final Clause[] definedClauses(Object m, Display d, Engine en) {
         LocalLockfree ep = defineLocalLockfree(en);
         Bouquet temp = ep.cr;
         InterfaceRope set = temp.set;

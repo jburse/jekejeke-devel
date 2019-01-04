@@ -63,7 +63,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         Object t = en.skel;
-        BindCount[] d = en.display;
+        Display d = en.display;
         Clause[] list = definedClauses(t, d, en);
         int at = 0;
 
@@ -78,19 +78,20 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractBind mark = en.bind;
         Clause clause;
-        BindCount[] ref = null;
+        DisplayClause dc = new DisplayClause();
         int lastalloc;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (ref == null) {
-                ref = BindCount.newBindClause(clause.dispsize);
+            if (dc.bind == null) {
+                dc.bind = DisplayClause.newBindClause(clause.dispsize);
             } else {
-                ref = BindCount.setSizeClause(clause.dispsize, ref);
+                dc.bind = DisplayClause.setSizeClause(clause.dispsize, dc.bind);
             }
+            dc.vars = clause.vars;
             lastalloc = (clause.intargs != null ?
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.head).args, ref,
+                            ((SkelCompound) clause.head).args, dc,
                             clause.intargs, en) : 0);
             if (lastalloc != -1)
                 break;
@@ -110,9 +111,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        Display u = en.contdisplay;
-        Display dc = new Display();
-        dc.bind = ref;
+        DisplayClause u = en.contdisplay;
         dc.lastalloc = lastalloc;
         dc.number = en.number;
         dc.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : dc);
@@ -130,7 +129,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             /* create choice point */
             en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark, nextat);
             en.number++;
-            dc.flags |= Display.MASK_DPCL_MORE;
+            dc.flags |= DisplayClause.MASK_DPCL_MORE;
         }
         en.contskel = clause;
         en.contdisplay = dc;
@@ -151,8 +150,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
      * @throws EngineException Shit happens.
      */
     public final boolean searchFirst(int flags,
-                                     Object head, BindCount[] refhead,
-                                     Object[] temp, BindCount[] ref,
+                                     Object head, Display refhead,
+                                     Object[] temp, Display ref,
                                      Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
@@ -169,14 +168,14 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractBind mark = en.bind;
         Clause clause;
-        BindCount[] ref1 = null;
+        Display ref1 = new Display();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (ref1 == null) {
-                ref1 = BindCount.newBind(clause.size);
+            if (ref1.bind == null) {
+                ref1.bind = Display.newBind(clause.size);
             } else {
-                ref1 = BindCount.setSize(clause.size, ref1);
+                ref1.bind = Display.setSize(clause.size, ref1.bind);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
@@ -186,10 +185,10 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                     if ((flags & OPT_RSLT_FRME) != 0) {
                         Frame frame = new Frame(clause, ref1);
                         if (en.unifyTerm(temp[2], ref,
-                                frame, BindCount.DISPLAY_CONST)) {
+                                frame, Display.DISPLAY_CONST)) {
                             if ((flags & OPT_RSLT_CREF) != 0) {
                                 if (en.unifyTerm(temp[3], ref,
-                                        clause, BindCount.DISPLAY_CONST))
+                                        clause, Display.DISPLAY_CONST))
                                     break;
                             } else {
                                 break;
@@ -197,7 +196,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                         }
                     } else if ((flags & OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(temp[2], ref,
-                                clause, BindCount.DISPLAY_CONST))
+                                clause, Display.DISPLAY_CONST))
                             break;
                     } else {
                         break;
@@ -221,7 +220,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                 throw en.fault;
         }
         if (clause.size != 0)
-            BindCount.remTab(ref1, en);
+            BindCount.remTab(ref1.bind, en);
 
         while (at != list.length) {
             if (multiVisible(list[at], en))

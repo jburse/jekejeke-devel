@@ -1,15 +1,10 @@
-package jekpro.tools.term;
+package jekpro.model.inter;
 
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.PrologWriter;
-
-import java.io.StringWriter;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.rope.Intermediate;
 
 /**
- * <p>This is the base class for skeletons, except for numbers and references.</p>
+ * <p>This class provides a stack interface.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,25 +34,20 @@ import java.io.StringWriter;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractSkel {
-    public final static Object VOID_OBJ = new Object();
+public interface InterfaceStack {
 
     /**
-     * <p>Return a string of a skeleton.</p>
+     * <p>Retrieve the cont skel.</p>
      *
-     * @return The string.
+     * @return The cont skel.
      */
-    public String toString() {
-        try {
-            StringWriter sw = new StringWriter();
-            PrologWriter.toString(this, Display.DISPLAY_CONST, sw, 0, null);
-            return sw.toString();
-        } catch (EngineMessage x) {
-            throw new RuntimeException("shouldn't happen", x);
-        } catch (EngineException x) {
-            throw new RuntimeException("shouldn't happen", x);
-        }
-    }
+    Intermediate getContSkel();
 
+    /**
+     * <p>Retrieve the cont display.</p>
+     *
+     * @return The cont display.
+     */
+    DisplayClause getContDisplay();
 
 }

@@ -3,6 +3,7 @@ package jekpro.reference.arithmetic;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
@@ -81,14 +82,14 @@ public final class EvaluableElem extends AbstractSpecial {
             switch (id) {
                 case EVALUABLE_MINUS:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     boolean multi = en.computeExpr(temp[0], ref);
-                    BindCount[] d = en.display;
+                    Display d = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = neg(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_PLUS:
                     temp = ((SkelCompound) en.skel).args;
@@ -97,9 +98,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = alfa;
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_ABS:
                     temp = ((SkelCompound) en.skel).args;
@@ -108,9 +109,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = abs(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SIGN:
                     temp = ((SkelCompound) en.skel).args;
@@ -119,9 +120,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = sign(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_FLOAT:
                     temp = ((SkelCompound) en.skel).args;
@@ -130,10 +131,10 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = (alfa instanceof Double ? alfa :
                             TermAtomic.makeDouble(alfa.doubleValue()));
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_DECIMAL:
                     temp = ((SkelCompound) en.skel).args;
@@ -142,9 +143,9 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = decimal(alfa);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_FLOAT32:
                     temp = ((SkelCompound) en.skel).args;
@@ -153,10 +154,10 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = (alfa instanceof Float ? alfa :
                             TermAtomic.makeFloat(alfa.floatValue()));
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_ADD:
                     temp = ((SkelCompound) en.skel).args;
@@ -165,14 +166,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = add(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SUB:
                     temp = ((SkelCompound) en.skel).args;
@@ -181,14 +182,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = sub(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_MUL:
                     temp = ((SkelCompound) en.skel).args;
@@ -197,14 +198,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = mul(alfa, beta);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_SLASH:
                     temp = ((SkelCompound) en.skel).args;
@@ -213,14 +214,14 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     en.skel = TermAtomic.makeDouble(slash(alfa, beta));
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 case EVALUABLE_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
@@ -229,16 +230,16 @@ public final class EvaluableElem extends AbstractSpecial {
                     d = en.display;
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     multi = en.computeExpr(temp[1], ref);
                     d = en.display;
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindCount.remTab(d.bind, en);
                     SpecialEval.checkNotLessThanZero(beta);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = intPow(alfa, x);
-                    en.display = BindCount.DISPLAY_CONST;
+                    en.display = Display.DISPLAY_CONST;
                     return false;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

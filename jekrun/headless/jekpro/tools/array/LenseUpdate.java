@@ -2,6 +2,7 @@ package jekpro.tools.array;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -78,7 +79,7 @@ final class LenseUpdate extends AbstractLense {
             throws EngineMessage {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
-            BindCount[] ref = en.display;
+            Display ref = en.display;
             Object obj = Types.denormProlog(encodeobj, temp[0], ref);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);

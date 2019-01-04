@@ -3,6 +3,7 @@ package jekpro.tools.proxy;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.tools.call.*;
@@ -200,7 +201,7 @@ public final class ProxyHandler implements InvocationHandler {
             throw new ArrayIndexOutOfBoundsException();
         Object m = state.at(idx);
         int size = EngineCopy.displaySize(m);
-        BindCount[] ref = (size != 0 ? BindCount.newBind(size) : BindCount.DISPLAY_CONST);
+        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(m, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new MutableBit().setBit(true));

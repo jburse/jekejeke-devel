@@ -274,7 +274,7 @@ public final class CallIn {
             throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         en.skel = AbstractTerm.getSkel(goal);
@@ -284,13 +284,13 @@ public final class CallIn {
         snap = en.number;
         try {
             boolean multi = en.wrapGoal();
-            BindCount[] ref = en.display;
+            Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display ref2 = new Display();
-            ref2.bind = BindCount.newBindClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause();
+            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
             ref2.addArgument(en.skel, ref, en);
             if (multi)
-                BindCount.remTab(ref, en);
+                BindCount.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -339,7 +339,7 @@ public final class CallIn {
     private boolean unfoldNext() throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
-        Display u = en.contdisplay;
+        DisplayClause u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {

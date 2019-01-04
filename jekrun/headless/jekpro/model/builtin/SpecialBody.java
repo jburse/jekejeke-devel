@@ -2,10 +2,7 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.PositionKey;
@@ -73,18 +70,18 @@ public final class SpecialBody extends AbstractSpecial {
         switch (id) {
             case SPECIAL_CALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display ref2 = new Display();
-                ref2.bind = BindCount.newBindClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause();
+                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
                 ref2.addArgument(en.skel, ref, en);
                 if (multi)
-                    BindCount.remTab(ref, en);
+                    BindCount.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;

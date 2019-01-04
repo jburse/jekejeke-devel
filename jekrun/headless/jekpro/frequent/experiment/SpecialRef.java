@@ -4,27 +4,23 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
+import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.NamedDistance;
-import jekpro.model.pretty.ReadOpts;
-import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -96,11 +92,11 @@ public final class SpecialRef extends AbstractSpecial {
         switch (id) {
             case SPECIAL_ASSERTABLE_REF:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Clause clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
                 if (!en.unifyTerm(temp[1], ref,
-                        clause, BindCount.DISPLAY_CONST))
+                        clause, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_ASSUMABLE_REF:
@@ -109,7 +105,7 @@ public final class SpecialRef extends AbstractSpecial {
                 clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_THLC |
                         AbstractDefined.OPT_CHCK_ASSE, en);
                 if (!en.unifyTerm(temp[1], ref,
-                        clause, BindCount.DISPLAY_CONST))
+                        clause, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_RECORDA_REF:
@@ -138,11 +134,11 @@ public final class SpecialRef extends AbstractSpecial {
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 boolean multi = ptr.clauseRef(en);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_CLAUSE_REF:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
@@ -157,7 +153,7 @@ public final class SpecialRef extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_REF_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -169,7 +165,7 @@ public final class SpecialRef extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -219,24 +215,26 @@ public final class SpecialRef extends AbstractSpecial {
     private static Clause compileClause(int flags, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
-        BindCount[] ref = en.display;
+        Display ref = en.display;
         EngineCopy ec = en.enginecopy;
         if (ec == null) {
             ec = new EngineCopy();
             en.enginecopy = ec;
         }
         ec.vars = null;
-        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
-            ec.printmap = decodeAssertOptions(temp[2], ref, en);
-        } else {
-            ec.printmap = null;
-        }
         ec.flags = 0;
         Object molec = ec.copyTermAndWrap(temp[0], ref, en);
+        MapHashLink<String, SkelVar> vars;
+        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
+            MapHashLink<BindCount, NamedDistance> printmap = SpecialRef.decodeAssertFastOptions(temp[2], ref, en);
+            vars = FileText.copyVars(ec.vars, printmap);
+        } else {
+            vars = null;
+        }
         ec.vars = null;
-        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0)
-            ec.printmap = null;
-        return PreClause.determineCompiled(flags, molec, en);
+        Clause clause = PreClause.determineCompiled(flags, molec, en);
+        clause.vars = vars;
+        return clause;
     }
 
     /***************************************************************/
@@ -257,7 +255,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
@@ -269,7 +267,7 @@ public final class SpecialRef extends AbstractSpecial {
             for (int j = props.length - 1; j >= 0; j--) {
                 StoreKey prop = props[j];
                 Object t = en.skel;
-                BindCount[] d = en.display;
+                Display d = en.display;
                 Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
                 en.skel = t;
                 en.display = d;
@@ -294,7 +292,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         return AbstractProperty.consArray(false, vals, en);
     }
 
@@ -308,7 +306,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void addRefProp(Object temp, BindCount[] ref,
+    private static void addRefProp(Object temp, Display ref,
                                    InterfaceReference ptr, Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(temp);
@@ -327,7 +325,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void removeRefProp(Object temp, BindCount[] ref,
+    private static void removeRefProp(Object temp, Display ref,
                                       InterfaceReference ptr, Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(temp);
@@ -411,7 +409,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @return The ptr.
      * @throws EngineMessage Shit happens.
      */
-    public static InterfaceReference derefAndCastPtr(Object m, BindCount[] d)
+    public static InterfaceReference derefAndCastPtr(Object m, Display d)
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRef(m, d);
         if (m instanceof InterfaceReference) {
@@ -438,10 +436,10 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<Object, NamedDistance> decodeAssertOptions(Object t, BindCount[] d,
-                                                                         Engine en)
+    public static MapHashLink<BindCount, NamedDistance> decodeAssertFastOptions(Object t, Display d,
+                                                                                Engine en)
             throws EngineMessage {
-        MapHashLink<Object, NamedDistance> vars = null;
+        MapHashLink<BindCount, NamedDistance> vars = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -455,7 +453,7 @@ public final class SpecialRef extends AbstractSpecial {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                vars = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0],
+                vars = SpecialRef.assocToFastMap(((SkelCompound) en.skel).args[0],
                         d, en);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
@@ -477,6 +475,67 @@ public final class SpecialRef extends AbstractSpecial {
                     en.skel), en.display);
         }
         return vars;
+    }
+
+    /**
+     * <p>Create variable map from variable names.</p>
+     * <p>Non variable associations are skipped.</p>
+     *
+     * @param t  The variable names skel.
+     * @param d  The variable names display.
+     * @param en The engine.
+     * @return The print map.
+     * @throws EngineMessage Shit happens.
+     */
+    public static MapHashLink<BindCount, NamedDistance> assocToFastMap(Object t, Display d,
+                                                                Engine en)
+            throws EngineMessage {
+        MapHashLink<BindCount, NamedDistance> print = null;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        while (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 2 &&
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] mc = ((SkelCompound) en.skel).args;
+            d = en.display;
+            en.skel = mc[0];
+            en.deref();
+            if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 2 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
+                /* */
+            } else {
+                EngineMessage.checkInstantiated(en.skel);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_ASSOC,
+                        en.skel), en.display);
+            }
+            Object[] mc2 = ((SkelCompound) en.skel).args;
+            Display d2 = en.display;
+            en.skel = mc2[1];
+            int distance = NamedDistance.derefCount(en);
+            if (en.skel instanceof SkelVar) {
+                BindCount pair = en.display.bind[((SkelVar)en.skel).id];
+                if (print == null)
+                    print = new MapHashLink<BindCount, NamedDistance>();
+                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
+                NamedDistance.addPriorized(print, pair, name, distance);
+            }
+            en.skel = mc[1];
+            en.display = d;
+            en.deref();
+        }
+        if (en.skel instanceof SkelAtom &&
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST,
+                    en.skel), en.display);
+        }
+        return print;
     }
 
 }

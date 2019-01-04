@@ -4,10 +4,7 @@ import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.BindCount;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
@@ -90,7 +87,7 @@ public final class SpecialForeign extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_FOREIGN:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Integer arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
                 Class clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 String name = SpecialForeign.methodName(temp[2], ref, en);
@@ -229,7 +226,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @return The method name.
      * @throws EngineMessage Validation error.
      */
-    private static String methodName(Object t, BindCount[] d, Engine en)
+    private static String methodName(Object t, Display d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -258,7 +255,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @return The formal parameters.
      * @throws EngineMessage Validation error.
      */
-    private static Class[] formalParameters(Object t, BindCount[] d, Engine en)
+    private static Class[] formalParameters(Object t, Display d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
