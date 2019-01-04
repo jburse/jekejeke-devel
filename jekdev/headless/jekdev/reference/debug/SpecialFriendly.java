@@ -5,6 +5,7 @@ import jekdev.model.bugger.GoalTrace;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -101,7 +102,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_FRIENDLY:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
@@ -184,8 +185,8 @@ public final class SpecialFriendly extends AbstractSpecial {
             pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setOffset(-1);
-            BindCount[] ref = SpecialLoad.showClause(pw, t, en,
-                    SpecialLoad.MASK_SHOW_NANO + SpecialLoad.MASK_SHOW_NRBD);
+            Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
+                    SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
             pw.setFlags(PrologWriter.FLAG_QUOT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setOffset(0);
@@ -232,7 +233,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws IOException IO error.
      */
     private static int intermediateNewBind(Object t, int lastalloc, int endalloc,
-                                           PrologWriter pw, BindCount[] ref,
+                                           PrologWriter pw, Display ref,
                                            int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
@@ -281,7 +282,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      */
     private static int intermediateDisposeBind(Object t, int lastgc, int endgc,
                                                Clause clause,
-                                               PrologWriter pw, BindCount[] ref,
+                                               PrologWriter pw, Display ref,
                                                int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
@@ -314,7 +315,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws IOException IO error.
      */
     private static int intermediateCallGoal(Goal body,
-                                            PrologWriter pw, BindCount[] ref,
+                                            PrologWriter pw, Display ref,
                                             int count)
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
@@ -350,7 +351,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage IO error.
      */
     private static void intermediateClause(PrologWriter pw, Object t,
-                                           Clause clause, BindCount[] ref,
+                                           Clause clause, Display ref,
                                            int flags)
             throws EngineMessage, EngineException {
         try {

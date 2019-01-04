@@ -1,11 +1,9 @@
 package jekdev.reference.inspection;
 
 import jekpro.model.builtin.SpecialBody;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Frame;
-import jekpro.model.inter.StackElement;
+import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -81,9 +79,9 @@ public final class SpecialNotation extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_SLASH_TO_MODULE:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
+                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_MODULE_TO_SLASH:
@@ -91,18 +89,18 @@ public final class SpecialNotation extends AbstractSpecial {
                 ref = en.display;
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 obj = SpecialDynamic.moduleToSlashSkel(sa.fun, sa.scope, en);
-                if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
+                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_COLON_TO_CALLABLE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 boolean multi = SpecialQuali.colonToCallable(temp[0], ref, true, en);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_CALLABLE_TO_COLON:
                 temp = ((SkelCompound) en.skel).args;
@@ -120,7 +118,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 ref = en.display;
                 Integer arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
                 obj = new SkelCompound(new SkelAtom(Foyer.OP_SLASH), en.skel, arity);
-                if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
+                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_INDICATOR_TO_COLON:
@@ -133,7 +131,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 obj = SpecialQuali.indicatorToColonSkel(
                         ((SkelAtom) en.skel).fun, ((SkelAtom) en.skel).scope,
                         arity.intValue(), en);
-                if (!en.unifyTerm(temp[1], ref, obj, BindCount.DISPLAY_CONST))
+                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             default:

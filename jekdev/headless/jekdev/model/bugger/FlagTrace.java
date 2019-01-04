@@ -4,8 +4,8 @@ import jekdev.reference.debug.SpecialDefault;
 import jekdev.reference.inspection.SpecialFrame;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindCount;
+import jekpro.model.inter.InterfaceStack;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
@@ -127,7 +127,7 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_SYS_HEAD_WAKEUP:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
-                StackElement frame = ((SupervisorTrace) en.visor).getSkipFrame();
+                InterfaceStack frame = ((SupervisorTrace) en.visor).getSkipFrame();
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_QUERY_FRAME:
                 frame = en.visor.ref;
@@ -150,7 +150,7 @@ public final class FlagTrace extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, BindCount[] d, Engine en)
+    public boolean setFlag(Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -187,7 +187,7 @@ public final class FlagTrace extends AbstractFlag {
                     }
                     return true;
                 case FLAG_SYS_SKIP_FRAME:
-                    StackElement frame = SpecialFrame.derefAndCastStackElement(m, d);
+                    InterfaceStack frame = SpecialFrame.derefAndCastStackElement(m, d);
                     ((SupervisorTrace) en.visor).setSkipFrame(frame);
                     return true;
                 case FLAG_SYS_QUERY_FRAME:

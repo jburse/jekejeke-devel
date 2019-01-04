@@ -4,6 +4,7 @@ import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -79,9 +80,9 @@ public final class SpecialSyntax extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_CURRENT_SYNTAX:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        SpecialSyntax.currentSyntax(en), BindCount.DISPLAY_CONST))
+                        SpecialSyntax.currentSyntax(en), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
@@ -98,11 +99,11 @@ public final class SpecialSyntax extends AbstractSpecial {
                 if (op == null)
                     return false;
                 boolean multi = SpecialOper.operToProperties(op, en);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;

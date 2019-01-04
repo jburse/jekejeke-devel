@@ -63,9 +63,9 @@ public final class ForeignSerialize {
      * @throws InterpreterException Syntax error.
      */
     public static void sysNodeRead(Interpreter inter,
-                                          Reader reader,
-                                          Object opts,
-                                          AbstractDom node)
+                                   Reader reader,
+                                   Object opts,
+                                   AbstractDom node)
             throws InterpreterMessage, IOException, InterpreterException {
         SerializeOpts res = SerializeOpts.decodeSerializeOpts(opts);
         try {

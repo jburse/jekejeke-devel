@@ -3,9 +3,10 @@ package jekdev.model.bugger;
 import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.InterfaceStack;
 import jekpro.model.inter.StackElement;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelAtom;
@@ -90,7 +91,7 @@ public final class FlagTraceThread extends AbstractFlag {
             case FLAG_SYS_TOP_FRAME:
                 s = (Supervisor) AbstractLivestock.currentLivestock(t);
                 if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
-                StackElement stack = StackElement.skipNoTrace(s.inuse, en);
+                InterfaceStack stack = StackElement.skipNoTrace(s.inuse, en);
                 return (stack != null ? stack : new SkelAtom(AbstractFlag.OP_NULL));
             default:
                 throw new IllegalArgumentException("illegal flag");
@@ -107,7 +108,7 @@ public final class FlagTraceThread extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setThreadFlag(Object m, BindCount[] d,
+    public boolean setThreadFlag(Object m, Display d,
                                  Thread t, Engine en)
             throws EngineMessage {
         switch (id) {

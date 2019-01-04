@@ -92,12 +92,6 @@ frame_property(I, R) :-
 :- private sys_frame_property_chk/3.
 :- special(sys_frame_property_chk/3, 'SpecialFrame', 3).
 
-% a frame property
-:- public sys_clause_term/1.
-:- meta_predicate sys_clause_term(-1).
-sys_clause_term(_) :-
-   throw(error(existence_error(body,sys_clause_term/1),_)).
-
 /**
  * set_frame_property(F, P):
  * The predicate assigns the property P to the clause referenced by F.

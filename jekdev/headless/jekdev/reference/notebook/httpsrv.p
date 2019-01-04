@@ -131,29 +131,6 @@ response_text(Response) :-
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
-/**
- * send_error(O):
- * Send a not found error text.
- */
-% send_error(+Stream)
-:- private send_error/1.
-send_error(Response) :-
-   response_error(Response),
-   html_begin(Response, 'Error'),
-   write(Response, '<p>Error 404 Not Found</p>\r\n'),
-   html_end(Response).
-
-/**
- * response_error(O):
- * Send a not found response to the text output stream.
- */
-% response_error(+Stream)
-:- private response_error/1.
-response_error(Response) :-
-   write(Response, 'HTTP/1.0 404 Not Found\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
-
 /***************************************************************/
 /* HTTP Response Binary                                        */
 /***************************************************************/
@@ -188,12 +165,39 @@ html_escape(Response, Text) :-
    text_escape(Text, Escape),
    write(Response, Escape).
 
+/***************************************************************/
+/* Internal Error Generator                                    */
+/***************************************************************/
+
+/**
+ * send_error(O):
+ * Send a not found error text.
+ */
+% send_error(+Stream)
+:- private send_error/1.
+send_error(Response) :-
+   response_error(Response),
+   html_begin(Response, 'Error'),
+   write(Response, '<p>Error 404 Not Found</p>\r\n'),
+   html_end(Response).
+
+/**
+ * response_error(O):
+ * Send a not found response to the text output stream.
+ */
+% response_error(+Stream)
+:- private response_error/1.
+response_error(Response) :-
+   write(Response, 'HTTP/1.0 404 Not Found\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+
 /**
  * html_begin(O, T):
  * The predicate sends the html begin with title T to the output stream O.
  */
 % html_begin(+Stream, +Atom)
-:- public html_begin/2.
+:- private html_begin/2.
 html_begin(Response, Title) :-
    write(Response, '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\r\n'),
    write(Response, '<html>\r\n'),
@@ -210,8 +214,9 @@ html_begin(Response, Title) :-
  * The predicate sends the html end to the output stream O.
  */
 % html_end(+Stream)
-:- public html_end/1.
+:- private html_end/1.
 html_end(Response) :-
    write(Response, '   </body>\r\n'),
    write(Response, '</html>\r\n').
+
 

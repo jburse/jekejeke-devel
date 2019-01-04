@@ -6,6 +6,7 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -88,9 +89,9 @@ public final class SpecialProvable extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_CURRENT_PROVABLE:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
-                        SpecialProvable.currentProvables(en), BindCount.DISPLAY_CONST))
+                        SpecialProvable.currentProvables(en), Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();
             case SPECIAL_SYS_CURRENT_PROVABLE_CHK:
@@ -107,11 +108,11 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 boolean multi = SpecialPred.predicateToProperties(pick, en);
-                BindCount[] d = en.display;
+                Display d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -147,7 +148,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_CALLABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -162,7 +163,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindCount.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SET_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -218,10 +219,10 @@ public final class SpecialProvable extends AbstractSpecial {
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean callableToProperties(Object t2, BindCount[] d2, Engine en)
+    private static boolean callableToProperties(Object t2, Display d2, Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         boolean multi = false;
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = snapshot.length - 1; i >= 0; i--) {
@@ -234,7 +235,7 @@ public final class SpecialProvable extends AbstractSpecial {
             for (int j = props.length - 1; j >= 0; j--) {
                 StoreKey prop = props[j];
                 Object t = en.skel;
-                BindCount[] d = en.display;
+                Display d = en.display;
                 Object[] vals = getPropCallable(prop, t2, d2, en);
                 en.skel = t;
                 en.display = d;
@@ -255,12 +256,12 @@ public final class SpecialProvable extends AbstractSpecial {
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean callableToProperty(StoreKey prop, Object t2, BindCount[] d2,
+    private static boolean callableToProperty(StoreKey prop, Object t2, Display d2,
                                           Engine en)
             throws EngineMessage {
         Object[] vals = getPropCallable(prop, t2, d2, en);
         en.skel = en.store.foyer.ATOM_NIL;
-        en.display = BindCount.DISPLAY_CONST;
+        en.display = Display.DISPLAY_CONST;
         return AbstractProperty.consArray(false, vals, en);
     }
 
@@ -275,8 +276,8 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void addAtomProp(Object t, BindCount[] d,
-                                      Object t2, BindCount[] d2, Engine en)
+    private static void addAtomProp(Object t, Display d,
+                                      Object t2, Display d2, Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
@@ -295,8 +296,8 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void removeAtomProp(Object t, BindCount[] d,
-                                         Object t2, BindCount[] d2, Engine en)
+    private static void removeAtomProp(Object t, Display d,
+                                         Object t2, Display d2, Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
@@ -320,7 +321,7 @@ public final class SpecialProvable extends AbstractSpecial {
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    public static Object[] getPropCallable(StoreKey prop, Object t2, BindCount[] d2,
+    public static Object[] getPropCallable(StoreKey prop, Object t2, Display d2,
                                        Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -350,7 +351,7 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void setPropCallable(StoreKey prop, Object t2, BindCount[] d2,
+    private static void setPropCallable(StoreKey prop, Object t2, Display d2,
                                         Object[] vals, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();

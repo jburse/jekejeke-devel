@@ -6,6 +6,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.SpecialLoad;
@@ -76,7 +77,7 @@ public final class SpecialDump extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_DUMP:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 AbstractDelegate fun = pick.del;

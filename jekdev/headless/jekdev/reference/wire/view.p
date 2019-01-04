@@ -89,7 +89,7 @@ send_thread(Object, Response) :-
    current_thread_flag(T, sys_thread_group, H),
    current_group_flag(H, sys_group_group, Root),
    send_group_list(Object, Root, Response),
-   html_end(Response).
+   frame_end(Response).
 
 % send_group_list(+Object, +Group, +Stream)
 :- private send_group_list/3.
@@ -164,10 +164,10 @@ send_stack(Object, Assoc, Response) :-
    write(Response, '<dl>'),
    send_call_stack(Object, Frame, Name, 0, Response),
    write(Response, '</dl>\r\n'),
-   html_end(Response).
+   frame_end(Response).
 send_stack(_, _, Response) :-
    frame_begin(Response, 'Stack'),
-   html_end(Response).
+   frame_end(Response).
 
 % send_call_stack(+Object, +Frame, +Atom, +Integer, +Stream)
 :- private send_call_stack/5.
@@ -245,15 +245,16 @@ send_frame(Assoc, Response) :-
    frame_begin(Response, Atom),
    write(Response, '<dl>'),
    frame_deref(Other, Deref),
-   frame_property(Deref, sys_variable_names(Map)),
-   frame_property(Deref, sys_raw_variables(Vars)),
+   frame_property(Deref, sys_call_goal(Goal)),
+   callable_property(Goal, sys_variable_names(Map)),
+   callable_property(Goal, sys_raw_variables(Vars)),
    filter_vars(Vars, Map, Vars2),
    send_frame_vars(Vars2, Map, Response),
    write(Response, '</dl>\r\n'),
-   html_end(Response).
+   frame_end(Response).
 send_frame(_, Response) :-
    frame_begin(Response, 'Bindings'),
-   html_end(Response).
+   frame_end(Response).
 
 % send_frame_vars(+List, +List, +Stream)
 :- private send_frame_vars/3.
@@ -310,10 +311,10 @@ send_source(Assoc, Response) :-
    write(Response, '<pre class="code2">'),
    send_origin(Origin, Response),
    write(Response, '</pre>'),
-   html_end(Response).
+   frame_end(Response).
 send_source(_, Response) :-
    frame_begin(Response, 'Source'),
-   html_end(Response).
+   frame_end(Response).
 
 /*************************************************************/
 /* Some Utility                                              */
@@ -322,20 +323,16 @@ send_source(_, Response) :-
 % frame_begin(+Stream, +Atom)
 :- private frame_begin/2.
 frame_begin(Response, Title) :-
-   response_text(Response),
-   html_begin(Response, Title),
-   write(Response, '<h2>'),
-   html_escape(Response, Title),
-   write(Response, '</h2>\r\n').
+   frame_begin(Response, Title, []).
 
 % frame_begin(+Stream, +Atom, +List)
 :- private frame_begin/3.
 frame_begin(Response, Title, Opt) :-
    response_text(Response),
    html_begin(Response, Title, Opt),
-   write(Response, '<h2>'),
+   write(Response, '<h3>'),
    html_escape(Response, Title),
-   write(Response, '</h2>\r\n').
+   write(Response, '</h3>\r\n').
 
 % html_begin(+Stream, +Atom, +List)
 :- private html_begin/3.
@@ -396,6 +393,16 @@ style_lines(Response) :-
    write(Response, '    .lnuc:target { white-space: pre; background: yellow }\r\n'),
    write(Response, '    .lnuc { white-space: pre }\r\n'),
    write(Response, '    </style>\r\n').
+
+/**
+ * frame_end(O):
+ * The predicate sends the html end to the output stream O.
+ */
+% frame_end(+Stream)
+:- private frame_end/1.
+frame_end(Response) :-
+   write(Response, '   </body>\r\n'),
+   write(Response, '</html>\r\n').
 
 /***************************************************************/
 /* HTTP Response Text                                          */
