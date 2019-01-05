@@ -13,6 +13,7 @@ import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -20,7 +21,6 @@ import jekpro.tools.term.SkelVar;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -226,7 +226,7 @@ public final class SpecialRef extends AbstractSpecial {
         Object molec = ec.copyTermAndWrap(temp[0], ref, en);
         MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
-            MapHashLink<BindCount, NamedDistance> printmap = SpecialRef.decodeAssertFastOptions(temp[2], ref, en);
+            MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[2], ref, en);
             vars = FileText.copyVars(ec.vars, printmap);
         } else {
             vars = null;
@@ -436,10 +436,10 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<BindCount, NamedDistance> decodeAssertFastOptions(Object t, Display d,
+    public static MapHashLink<Object, NamedDistance> decodeAssertOptions(Object t, Display d,
                                                                                 Engine en)
             throws EngineMessage {
-        MapHashLink<BindCount, NamedDistance> vars = null;
+        MapHashLink<Object, NamedDistance> vars = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -453,7 +453,7 @@ public final class SpecialRef extends AbstractSpecial {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                vars = SpecialRef.assocToFastMap(((SkelCompound) en.skel).args[0],
+                vars = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0],
                         d, en);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
@@ -475,67 +475,6 @@ public final class SpecialRef extends AbstractSpecial {
                     en.skel), en.display);
         }
         return vars;
-    }
-
-    /**
-     * <p>Create variable map from variable names.</p>
-     * <p>Non variable associations are skipped.</p>
-     *
-     * @param t  The variable names skel.
-     * @param d  The variable names display.
-     * @param en The engine.
-     * @return The print map.
-     * @throws EngineMessage Shit happens.
-     */
-    public static MapHashLink<BindCount, NamedDistance> assocToFastMap(Object t, Display d,
-                                                                Engine en)
-            throws EngineMessage {
-        MapHashLink<BindCount, NamedDistance> print = null;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        while (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
-            Object[] mc = ((SkelCompound) en.skel).args;
-            d = en.display;
-            en.skel = mc[0];
-            en.deref();
-            if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 2 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
-                /* */
-            } else {
-                EngineMessage.checkInstantiated(en.skel);
-                throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_ASSOC,
-                        en.skel), en.display);
-            }
-            Object[] mc2 = ((SkelCompound) en.skel).args;
-            Display d2 = en.display;
-            en.skel = mc2[1];
-            int distance = NamedDistance.derefCount(en);
-            if (en.skel instanceof SkelVar) {
-                BindCount pair = en.display.bind[((SkelVar)en.skel).id];
-                if (print == null)
-                    print = new MapHashLink<BindCount, NamedDistance>();
-                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
-                NamedDistance.addPriorized(print, pair, name, distance);
-            }
-            en.skel = mc[1];
-            en.display = d;
-            en.deref();
-        }
-        if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST,
-                    en.skel), en.display);
-        }
-        return print;
     }
 
 }

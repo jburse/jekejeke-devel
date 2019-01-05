@@ -84,14 +84,34 @@ accept(Port, Session) :-
 handle(Object, Session) :-
    open(Session, read, Request),
    read_line(Request, What),
-   atom_list_concat([_,URI,_], ' ', What),
-   make_uri(Spec, Query, _, URI),
-   params(Query, Assoc),
-   Object::dispatch(Spec, Assoc, Session), !.
+   atom_list_concat([Method,URI,_], ' ', What), !,
+   handle_method(Object, Method, URI, Session).
 handle(_, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_error(Response),
+      send_error(Response, 400),                  /* Bad Request */
+      close(Response)).
+
+% handle_method(+Object, +Atom, +Atom, +Socket)
+:- private handle_method/4.
+handle_method(Object, 'GET', URI, Session) :- !,
+   handle_get(Object, URI, Session).
+handle_method(_, _, _, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_error(Response, 405),                  /* Method Not Allowed */
+      close(Response)).
+
+% handle_get(+Object, +Atom, +Socket)
+:- private handle_get/3.
+handle_get(Object, URI, Session) :-
+   make_uri(Spec, Query, _, URI),
+   params(Query, Assoc),
+   Object::dispatch(Spec, Assoc, Session), !.
+handle_get(_, _, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_error(Response, 404),                  /* Not Found */
       close(Response)).
 
 % params(+Atom, -Assoc)
@@ -143,6 +163,28 @@ response_text(Response) :-
    write(Response, 'HTTP/1.0 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
+
+/**
+ * send_text(F, O):
+ * The predicate sends the HTML resource F to the output stream O.
+ */
+% send_text(+File, +Stream)
+:- public send_text/2.
+send_text(File, Response) :-
+   setup_call_cleanup(
+      open_resource(File, Stream),
+      (  response_text(Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+
+% send_lines(+Stream, +Stream)
+:- private send_lines/2.
+send_lines(Stream, Response) :-
+   read_line(Stream, Line), !,
+   write(Response, Line),
+   write(Response, '\r\n'),
+   send_lines(Stream, Response).
+send_lines(_, _).
 
 /***************************************************************/
 /* HTTP Response Binary                                        */
@@ -204,53 +246,45 @@ html_escape(Response, Text) :-
 /***************************************************************/
 
 /**
- * send_error(O):
- * Send a not found error text.
+ * response_error(O, C):
+ * Send an error code C to the text output stream O.
  */
-% send_error(+Stream)
-:- private send_error/1.
-send_error(Response) :-
-   response_error(Response),
-   html_begin(Response, 'Error'),
-   write(Response, '<p style="margin-left: 90px; padding-top: 170px">Error 404 Not Found</p>\r\n'),
-   html_end(Response).
-
-/**
- * response_error(O):
- * Send a not found response to the text output stream.
- */
-% response_error(+Stream)
-:- private response_error/1.
-response_error(Response) :-
+% response_error(+Stream, +Integer)
+:- private response_error/2.
+response_error(Response, 400) :- !,
+   write(Response, 'HTTP/1.0 400 Bad Request\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(Response, 405) :- !,
+   write(Response, 'HTTP/1.0 405 Method Not Allowed\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(Response, 404) :- !,
    write(Response, 'HTTP/1.0 404 Not Found\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
 /**
- * html_begin(O, T):
- * The predicate sends the html begin with title T to the output stream O.
+ * send_error(O, C):
+ * Send an error code C page to the text output stream O.
  */
-% html_begin(+Stream, +Atom)
-:- private html_begin/2.
-html_begin(Response, Title) :-
-   write(Response, '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\r\n'),
-   write(Response, '<html>\r\n'),
-   write(Response, '  <head>\r\n'),
-   write(Response, '      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\r\n'),
-   write(Response, '      <title>'),
-   html_escape(Response, Title),
-   write(Response, '</title>\r\n'),
-   write(Response, '  </head>\r\n'),
-   write(Response, '  <body background="/images/cookie.gif" style=" background-repeat: no-repeat">\r\n').
-
-/**
- * html_end(O):
- * The predicate sends the html end to the output stream O.
- */
-% html_end(+Stream)
-:- private html_end/1.
-html_end(Response) :-
-   write(Response, '   </body>\r\n'),
-   write(Response, '</html>\r\n').
-
-
+% send_error(+Stream, +Integer)
+:- private send_error/2.
+send_error(Response, 400) :- !,
+   setup_call_cleanup(
+      open_resource(library(notebook/pages/err400), Stream),
+      (  response_error(Response, 400),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(Response, 405) :- !,
+   setup_call_cleanup(
+      open_resource(library(notebook/pages/err405), Stream),
+      (  response_error(Response, 405),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(Response, 404) :- !,
+   setup_call_cleanup(
+      open_resource(library(notebook/pages/err404), Stream),
+      (  response_error(Response, 404),
+         send_lines(Stream, Response)),
+      close(Stream)).

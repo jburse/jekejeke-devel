@@ -343,7 +343,7 @@ public final class SpecialSession extends AbstractSpecial {
                 try {
                     DisplayClause ref = new DisplayClause();
                     ref.bind = DisplayClause.newBindClause(clause.dispsize);
-                    ref.vars = clause.vars;
+                    ref.def = clause;
                     en.visor.ref = new StackElement(clause, ref);
                     ref.setEngine(en);
                     en.contskel = clause.getNextRaw(en);
@@ -554,7 +554,7 @@ public final class SpecialSession extends AbstractSpecial {
         } else {
             t = ec.copyGoalAndWrap(t, d, en);
         }
-        MapHashLink<BindCount, NamedDistance> printmap = FileText.hashToFastMap(assoc, d, en);
+        MapHashLink<Object, NamedDistance> printmap = SpecialVars.hashToMap(assoc, d, en);
         pre.vars = FileText.copyVars(ec.vars, printmap);
         pre.molec = new SkelCompound(new SkelAtom(
                 PreClause.OP_TURNSTILE), t);
@@ -717,8 +717,8 @@ public final class SpecialSession extends AbstractSpecial {
         Object end = en.store.foyer.ATOM_NIL;
         if (vars == null)
             return end;
-        for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry))
+        for (MapEntry<String, SkelVar> entry = vars.getLastEntry();
+             entry != null; entry = vars.predecessor(entry))
             end = addToRawAssoc(entry.value, d, entry.key, end, en);
         return end;
     }
@@ -732,7 +732,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @param end  The Prolog list.
      * @return The Prolog list.
      */
-    private static Object addToRawAssoc(SkelVar sv, Display d,
+    public static Object addToRawAssoc(SkelVar sv, Display d,
                                         String name, Object end,
                                         Engine en) {
         if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)

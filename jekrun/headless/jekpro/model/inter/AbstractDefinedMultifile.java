@@ -88,7 +88,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             } else {
                 dc.bind = DisplayClause.setSizeClause(clause.dispsize, dc.bind);
             }
-            dc.vars = clause.vars;
+            dc.def = clause;
             lastalloc = (clause.intargs != null ?
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                             ((SkelCompound) clause.head).args, dc,

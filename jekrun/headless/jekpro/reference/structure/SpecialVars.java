@@ -12,6 +12,7 @@ import jekpro.model.pretty.NamedDistance;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.term.*;
 import matula.util.data.*;
 
@@ -379,40 +380,44 @@ public final class SpecialVars extends AbstractSpecial {
     private static void numberVariables(Object[] temp, Display ref,
                                         Engine en)
             throws EngineMessage {
-        SetHashLink<Object> mvs2 = SpecialVars.arrayToSet(temp[0], ref, en);
-        MapHashLink<BindCount, NamedDistance> print = SpecialRef.assocToFastMap(temp[1], ref, en);
-        SetHashLink<BindCount> mvs = SpecialVars.arrayToFastSet(temp[2], ref, en);
-        MapHashLink<Object, NamedDistance> print2 = SpecialVars.numberVars(mvs2, mvs, print);
-        SpecialVars.mapToAssoc(print2, en);
+        SetHashLink<Object> vars = SpecialVars.arrayToSet(temp[0], ref, en);
+        MapHashLink<Object, NamedDistance> print = SpecialVars.assocToMap(temp[1], ref, en);
+        SetHashLink<Object> anon = SpecialVars.arrayToSet(temp[2], ref, en);
+        MapHashLink<Object, NamedDistance> copy = SpecialVars.numberVars(vars, anon, print, 0);
+        SpecialVars.mapToAssoc(copy, en);
     }
 
     /**
      * <p>Complement the variable names.</p>
      *
-     * @param mvs3 The var set, can be null.
-     * @param mvs  The anon set, can be null.
-     * @param vars The old variable names, can be null.
+     * @param vars  The var set, can be null.
+     * @param anon  The anon set, can be null.
+     * @param print The old variable names, can be null.
+     * @param flags The flags.
      * @return The new variable names, can be null.
      */
-    private static MapHashLink<Object, NamedDistance> numberVars(SetHashLink<Object> mvs3,
-                                                                SetHashLink<BindCount> mvs,
-                                                                MapHashLink<BindCount, NamedDistance> vars) {
+    public static MapHashLink<Object, NamedDistance> numberVars(SetHashLink<Object> vars,
+                                                                SetHashLink<Object> anon,
+                                                                MapHashLink<Object, NamedDistance> print,
+                                                                int flags) {
+        if (vars == null)
+            return null;
+
         MapHashLink<Object, NamedDistance> copy = new MapHashLink<Object, NamedDistance>();
         int k = 0;
         SetHash<String> range = null;
-        for (SetEntry<Object> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
-             entry != null; entry = mvs3.successor(entry)) {
-            Object t = TermAtomic.getSkel(entry.key);
-            Display ref = TermAtomic.getDisplay(entry.key);
-            BindCount key = ref.bind[((SkelVar) t).id];
+
+        /* pass one, all non-anon */
+        for (SetEntry<Object> entry = vars.getFirstEntry();
+             entry != null; entry = vars.successor(entry)) {
+            if (anon != null && anon.getKey(entry.key) != null)
+                continue;
             NamedDistance nd;
-            if (mvs != null && mvs.getKey(key) != null) {
-                NamedDistance.addAnon(copy, entry.key, PrologReader.OP_ANON);
-            } else if (vars != null && (nd = vars.get(key)) != null) {
+            if (print != null && (nd = print.get(entry.key)) != null) {
                 copy.add(entry.key, nd);
             } else {
                 if (range == null)
-                    range = NamedDistance.nameRange(vars);
+                    range = NamedDistance.nameRange(print);
                 String name = SkelVar.sernoToString(k, false);
                 k++;
                 while (range.getKey(name) != null) {
@@ -422,6 +427,32 @@ public final class SpecialVars extends AbstractSpecial {
                 NamedDistance.addAnon(copy, entry.key, name);
             }
         }
+
+        /* pass two, all anon */
+        for (SetEntry<Object> entry = vars.getFirstEntry();
+             entry != null; entry = vars.successor(entry)) {
+            if (anon == null || anon.getKey(entry.key) == null)
+                continue;
+            NamedDistance nd;
+            if (print != null && (nd = print.get(entry.key)) != null) {
+                copy.add(entry.key, nd);
+            } else {
+                if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
+                    NamedDistance.addAnon(copy, entry.key, PrologReader.OP_ANON);
+                } else {
+                    if (range == null)
+                        range = NamedDistance.nameRange(print);
+                    String name = SkelVar.sernoToString(k, false);
+                    k++;
+                    while (range.getKey(name) != null) {
+                        name = SkelVar.sernoToString(k, false);
+                        k++;
+                    }
+                    NamedDistance.addAnon(copy, entry.key, name);
+                }
+            }
+        }
+
         return copy;
     }
 
@@ -453,56 +484,6 @@ public final class SpecialVars extends AbstractSpecial {
                 Object pair = AbstractTerm.createMolec(en.skel, en.display);
                 if (set == null) {
                     set = new SetHashLink<Object>();
-                    set.add(pair);
-                } else {
-                    if (set.getKey(pair) == null)
-                        set.add(pair);
-                }
-            }
-            en.skel = mc.args[1];
-            en.display = d;
-            en.deref();
-        }
-        if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST,
-                    en.skel), en.display);
-        }
-        return set;
-    }
-
-    /**
-     * <p>Create variable set from variables.</p>
-     * <p>Non variable associations are skipped.</p>
-     *
-     * @param t  The variable list skel.
-     * @param d  The variable list display.
-     * @param en The engine.
-     * @return The variable list.
-     * @throws EngineMessage Shit happens.
-     */
-    private static SetHashLink<BindCount> arrayToFastSet(Object t, Display d,
-                                                         Engine en)
-            throws EngineMessage {
-        SetHashLink<BindCount> set = null;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        while (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
-            SkelCompound mc = (SkelCompound) en.skel;
-            d = en.display;
-            en.skel = mc.args[0];
-            en.deref();
-            if (en.skel instanceof SkelVar) {
-                BindCount pair = en.display.bind[((SkelVar)en.skel).id];
-                if (set == null) {
-                    set = new SetHashLink<BindCount>();
                     set.add(pair);
                 } else {
                     if (set.getKey(pair) == null)
@@ -575,6 +556,68 @@ public final class SpecialVars extends AbstractSpecial {
         }
         en.skel = m;
         en.display = last;
+    }
+
+
+    /**
+     * <p>Create variable map from variable names.</p>
+     * <p>Non variable associations are skipped.</p>
+     *
+     * @param t  The variable names skel.
+     * @param d  The variable names display.
+     * @param en The engine.
+     * @return The print map.
+     * @throws EngineMessage Shit happens.
+     */
+    public static MapHashLink<Object, NamedDistance> assocToMap(Object t, Display d,
+                                                                       Engine en)
+            throws EngineMessage {
+        MapHashLink<Object, NamedDistance> print = null;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        while (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 2 &&
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] mc = ((SkelCompound) en.skel).args;
+            d = en.display;
+            en.skel = mc[0];
+            en.deref();
+            if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 2 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
+                /* */
+            } else {
+                EngineMessage.checkInstantiated(en.skel);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_ASSOC,
+                        en.skel), en.display);
+            }
+            Object[] mc2 = ((SkelCompound) en.skel).args;
+            Display d2 = en.display;
+            en.skel = mc2[1];
+            int distance = NamedDistance.derefCount(en);
+            if (en.skel instanceof SkelVar) {
+                Object pair = TermAtomic.createMolec(en.skel,en.display);
+                if (print == null)
+                    print = new MapHashLink<Object, NamedDistance>();
+                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
+                NamedDistance.addPriorized(print, pair, name, distance);
+            }
+            en.skel = mc[1];
+            en.display = d;
+            en.deref();
+        }
+        if (en.skel instanceof SkelAtom &&
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST,
+                    en.skel), en.display);
+        }
+        return print;
     }
 
 }

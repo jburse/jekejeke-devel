@@ -82,28 +82,3 @@ dispatch(_, Path, Params, Session) :-
    wire/mobile::dispatch(Path2, Params, Session).
 dispatch(Object, Spec, Assoc, Session) :-
    notebook/httpsrv:dispatch(Object, Spec, Assoc, Session).
-
-/***************************************************************/
-/* HTTP Response Text                                          */
-/***************************************************************/
-
-/**
- * send_text(F, O):
- * The predicate sends the HTML resource F to the output stream O.
- */
-% send_text(+File, +Stream)
-send_text(File, Response) :-
-   setup_call_cleanup(
-      open_resource(File, Stream),
-      (  response_text(Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-
-% send_lines(+Stream, +Stream)
-:- private send_lines/2.
-send_lines(Stream, Response) :-
-   read_line(Stream, Line), !,
-   write(Response, Line),
-   write(Response, '\r\n'),
-   send_lines(Stream, Response).
-send_lines(_, _).

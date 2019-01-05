@@ -96,7 +96,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<BindCount, NamedDistance> printmap;
+    public MapHashLink<Object, NamedDistance> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -228,7 +228,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                    printmap = SpecialRef.assocToFastMap(((SkelCompound) en.skel).args[0], en.display, en);
+                    printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_DOUBLE_QUOTES)) {
@@ -522,7 +522,7 @@ public final class WriteOpts {
             return;
         if (printmap == null)
             return;
-        for (MapEntry<BindCount, NamedDistance> entry = printmap.getLastEntry();
+        for (MapEntry<Object, NamedDistance> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
             if (PrologWriter.variableNeedsQuotes(entry.value.getName()))
                 throw new EngineMessage(EngineMessage.domainError(

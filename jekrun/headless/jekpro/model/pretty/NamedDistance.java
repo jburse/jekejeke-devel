@@ -168,4 +168,17 @@ public final class NamedDistance {
         return range;
     }
 
+    /**************************************************************/
+    /* Onject Protocol                                            */
+    /**************************************************************/
+
+    /**
+     * Returns a string representation of the object.
+     *
+     * @return The string representation.
+     */
+    public String toString() {
+        return name + "%" + distance;
+    }
+
 }

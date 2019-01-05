@@ -16,6 +16,7 @@ import jekpro.reference.reflect.SpecialSource;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
@@ -715,13 +716,9 @@ public final class SpecialLoad extends AbstractSpecial {
             int size = EngineCopy.displaySize(t);
             Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             EngineVars ev = new EngineVars();
-            if ((flags & MASK_SHOW_NANO) != 0) {
-                ev.varInclude(t, ref);
-            } else {
-                ev.singsOf(t, ref);
-            }
-            MapHashLink<BindCount, NamedDistance> print = FileText.hashToFastMap(vars, ref, en);
-            print = SpecialLoad.numberFastVars(ev.vars, ev.anon, print);
+            ev.singsOf(t, ref);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref, en);
+            print = SpecialVars.numberVars(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
             pw.unparseStatement(t, ref);
@@ -771,13 +768,9 @@ public final class SpecialLoad extends AbstractSpecial {
             if (en.fault != null)
                 throw en.fault;
             EngineVars ev = new EngineVars();
-            if ((flags & MASK_SHOW_NANO) != 0) {
-                ev.varInclude(res, dc);
-            } else {
-                ev.singsOf(res, dc);
-            }
-            MapHashLink<BindCount, NamedDistance> print = FileText.hashToFastMap(vars, dc, en);
-            print = SpecialLoad.numberFastVars(ev.vars, ev.anon, print);
+            ev.singsOf(res, dc);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, dc, en);
+            print = SpecialVars.numberVars(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
             pw.unparseStatement(t, dc);
@@ -811,45 +804,6 @@ public final class SpecialLoad extends AbstractSpecial {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
-    }
-
-    /**
-     * <p>Complement the variable names.</p>
-     *
-     * @param mvs3 The var set, can be null.
-     * @param mvs  The anon set, can be null.
-     * @param vars The old variable names, can be null.
-     * @return The new variable names, can be null.
-     */
-    public static MapHashLink<BindCount, NamedDistance> numberFastVars(SetHashLink<Object> mvs3,
-                                                                       SetHashLink<Object> mvs,
-                                                                       MapHashLink<BindCount, NamedDistance> vars) {
-        MapHashLink<BindCount, NamedDistance> copy = new MapHashLink<BindCount, NamedDistance>();
-        int k = 0;
-        SetHash<String> range = null;
-        for (SetEntry<Object> entry = (mvs3 != null ? mvs3.getFirstEntry() : null);
-             entry != null; entry = mvs3.successor(entry)) {
-            Object t = TermAtomic.getSkel(entry.key);
-            Display ref = TermAtomic.getDisplay(entry.key);
-            BindCount key = ref.bind[((SkelVar) t).id];
-            NamedDistance nd;
-            if (mvs != null && mvs.getKey(entry.key) != null) {
-                NamedDistance.addAnon(copy, key, PrologReader.OP_ANON);
-            } else if (vars != null && (nd = vars.get(key)) != null) {
-                copy.add(key, nd);
-            } else {
-                if (range == null)
-                    range = NamedDistance.nameRange(vars);
-                String name = SkelVar.sernoToString(k, false);
-                k++;
-                while (range.getKey(name) != null) {
-                    name = SkelVar.sernoToString(k, false);
-                    k++;
-                }
-                NamedDistance.addAnon(copy, key, name);
-            }
-        }
-        return copy;
     }
 
 }

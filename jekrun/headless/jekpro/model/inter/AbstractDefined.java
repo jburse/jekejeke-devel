@@ -252,7 +252,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 dc.bind = DisplayClause.setSizeClause(clause.dispsize, dc.bind);
             }
-            dc.vars = clause.vars;
+            dc.def = clause;
             lastalloc = (clause.intargs != null ?
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                             ((SkelCompound) clause.head).args, dc,
@@ -421,7 +421,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         Object molec = ec.copyTermAndWrap(temp[0], ref, en);
         MapHashLink<String, SkelVar> vars;
         if ((flags & OPT_ARGS_ASOP) != 0) {
-            MapHashLink<BindCount, NamedDistance> printmap = SpecialRef.decodeAssertFastOptions(temp[1], ref, en);
+            MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[1], ref, en);
             vars = FileText.copyVars(ec.vars, printmap);
         } else {
             vars = null;

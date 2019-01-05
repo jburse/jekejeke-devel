@@ -4,13 +4,11 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
-import jekpro.model.pretty.NamedDistance;
-import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import jekpro.tools.term.TermAtomic;
-import matula.util.data.*;
+import matula.util.data.SetEntry;
+import matula.util.data.SetHashLink;
 
 /**
  * <p>This class provides basic functions to enumerate variables from molces.</p>
