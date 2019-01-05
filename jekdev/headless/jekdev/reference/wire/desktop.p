@@ -48,7 +48,7 @@
 dispatch(_, '/layout.html', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_text(library(wire/layout), Response),
+      send_text(library(wire/pages/layout), Response),
       close(Response)).
 dispatch(Object, Spec, Assoc, Session) :-
    wire/view:dispatch(Object, Spec, Assoc, Session).

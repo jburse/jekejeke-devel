@@ -68,7 +68,7 @@ dispatch(_, '/images/blank.gif', _, Session) :- !,
 dispatch(_, '/index.html', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_text(library(wire/index), Response),
+      send_text(library(wire/pages/index), Response),
       close(Response)).
 dispatch(_, Path, Params, Session) :-
    sub_atom(Path, 0, Pos, '/desktop/'), !,

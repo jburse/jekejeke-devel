@@ -1,13 +1,27 @@
 /**
- * This module provides a HTTP server based on Pythonesk dispatch.
- * The server can be started by providing an object that
- * will be responsible for handling HTTP requests:
+ * This module provides a HTTP server based on Pythonesk dispatch of
+ * a server object. The class of the server object need only implement
+ * a predicate dispatch/4 with the Pythonesk convention that the receiver
+ * appears in the first argument. The server can be started by providing
+ * the server object that will be responsible for handling HTTP requests:
  *
  * ?- server(<object>, <port>), fail; true.
  *
- * The class of the object need only implement a predicate
- * dispatch/4 with the Pythoneks convention that the receiver
- * object appears in the first argument.
+ * The server currently implements a minimal subset of the HTTP/1.0
+ * protocol. The server will only read the first line of a request and
+ * only process GET methods. The server is able to generate error messages
+ * in the case the request is erroneous or in case the server object cannot
+ * handle the request. The following HTTP/1.0 errors have been realized:
+ *
+ * * 400 Bad Request: Request could not be parsed.
+ * * 404 Not Found: Server object did not succeeds.
+ * * 501 Not Implemented: Request method not supported.
+ *
+ * The predicate http_parameter/3 can be used by the server object to access
+ * URI query parameters. The predicate response_text/1, response_binary/1 and
+ * html_escape/1 can be used to generate dynamic content by the server
+ * object. The predicates send_text/2 and send_binary/2 can be used by the
+ * server object to deliver static content.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -99,7 +113,7 @@ handle_method(Object, 'GET', URI, Session) :- !,
 handle_method(_, _, _, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_error(Response, 405),                  /* Method Not Allowed */
+      send_error(Response, 501),                  /* Not Implemented */
       close(Response)).
 
 % handle_get(+Object, +Atom, +Socket)
@@ -243,6 +257,7 @@ html_escape(Response, Text) :-
 
 /***************************************************************/
 /* Internal Error Generator                                    */
+/* https://www.w3.org/Protocols/HTTP/1.0/spec.html             */
 /***************************************************************/
 
 /**
@@ -255,12 +270,12 @@ response_error(Response, 400) :- !,
    write(Response, 'HTTP/1.0 400 Bad Request\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
-response_error(Response, 405) :- !,
-   write(Response, 'HTTP/1.0 405 Method Not Allowed\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
 response_error(Response, 404) :- !,
    write(Response, 'HTTP/1.0 404 Not Found\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(Response, 501) :- !,
+   write(Response, 'HTTP/1.0 501 Not Implemented\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
@@ -276,15 +291,15 @@ send_error(Response, 400) :- !,
       (  response_error(Response, 400),
          send_lines(Stream, Response)),
       close(Stream)).
-send_error(Response, 405) :- !,
-   setup_call_cleanup(
-      open_resource(library(notebook/pages/err405), Stream),
-      (  response_error(Response, 405),
-         send_lines(Stream, Response)),
-      close(Stream)).
 send_error(Response, 404) :- !,
    setup_call_cleanup(
       open_resource(library(notebook/pages/err404), Stream),
       (  response_error(Response, 404),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(Response, 501) :- !,
+   setup_call_cleanup(
+      open_resource(library(notebook/pages/err501), Stream),
+      (  response_error(Response, 501),
          send_lines(Stream, Response)),
       close(Stream)).
