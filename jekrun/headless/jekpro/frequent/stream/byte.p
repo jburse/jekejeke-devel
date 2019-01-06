@@ -208,7 +208,7 @@ read_block(Stream, Length, Block) :-
 
 :- private sys_read_block/3.
 :- foreign(sys_read_block/3, 'ForeignByte',
-      sysReadBlock('InputStream',int)).
+      sysReadBlock('InputStream','Integer')).
 
 /**
  * write_block(B):

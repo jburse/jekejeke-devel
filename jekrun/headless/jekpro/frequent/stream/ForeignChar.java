@@ -3,6 +3,7 @@ package jekpro.frequent.stream;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
+import matula.util.regex.ScannerToken;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -85,34 +86,6 @@ public final class ForeignChar {
     }
 
     /**
-     * <p>Get a code from a text stream.</p>
-     *
-     * @param para The stream.
-     * @return The read code or -1.
-     * @throws IOException IO error.
-     */
-    public static int sysGetCode(Reader para)
-            throws IOException {
-        int ch = para.read();
-        if (Character.isHighSurrogate((char) ch)) {
-            para.mark(1);
-            int ch2;
-            try {
-                ch2 = para.read();
-            } catch (IOException x) {
-                para.reset();
-                throw x;
-            }
-            para.reset();
-            if (Character.isLowSurrogate((char) ch2)) {
-                ch = Character.toCodePoint((char) ch, (char) ch2);
-                para.read();
-            }
-        }
-        return ch;
-    }
-
-    /**
      * <p>Read a character from a text stream.</p>
      *
      * @param para The stream.
@@ -121,7 +94,7 @@ public final class ForeignChar {
      */
     public static String sysGetChar(Reader para)
             throws IOException {
-        int ch = sysGetCode(para);
+        int ch = ScannerToken.sysGetCode(para);
         String val;
         if (ch == -1) {
             val = "end_of_file";
@@ -132,33 +105,6 @@ public final class ForeignChar {
     }
 
     /**
-     * <p>Peek a code from a text stream.</p>
-     *
-     * @param para The stream.
-     * @return The peeked code or -1.
-     * @throws IOException IO error.
-     */
-    public static int sysPeekCode(Reader para)
-            throws IOException {
-        para.mark(2);
-        int ch;
-        try {
-            ch = para.read();
-            if (Character.isHighSurrogate((char) ch)) {
-                int ch2 = para.read();
-                if (Character.isLowSurrogate((char) ch2))
-                    ch = Character.toCodePoint((char) ch, (char) ch2);
-            }
-        } catch (IOException x) {
-            para.reset();
-            throw x;
-        }
-        para.reset();
-        return ch;
-    }
-
-
-    /**
      * <p>Peek a character from a text stream.</p>
      *
      * @param para The stream.
@@ -167,7 +113,7 @@ public final class ForeignChar {
      */
     public static String sysPeekChar(Reader para)
             throws IOException {
-        int ch = sysPeekCode(para);
+        int ch = ScannerToken.sysPeekCode(para);
         String val;
         if (ch == -1) {
             val = "end_of_file";

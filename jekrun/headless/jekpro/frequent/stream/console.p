@@ -1,7 +1,9 @@
 /**
  * This module supports access to the console. The first part
  * consists of read utilities. Among the read utilities there
- * are currently predicates read_line/[1,2].
+ * are currently the predicates read_line/[1,2] and
+ * read_line_max/[2,3]. The former does an unbounded read
+ * the later does a bounded read.
  *
  * The second part consist Quintus Prolog inspired formatted
  * output predicates. Among the formatted output there are
@@ -20,7 +22,7 @@
  * The third part consist Edinburgh Prolog inspired terminal
  * input/output. Among the terminal input/output there are
  * currently the predicates ttynl/0, ttywrite/1, ttywrite_term/2,
- * ttyflush_output/0 and ttyread_line/1.
+ * ttyflush_output/0, ttyread_line/1 and ttyread_line_max/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -67,10 +69,9 @@
 /**
  * read_line(C):
  * read_line(T, C):
- * The predicate reads a character line from the standard input.
- * The predicate succeeds when C unifies with the read characters
- * or fails when the end of the stream has been reached. The binary
- * predicate takes an additional text stream T as argument.
+ * The predicate succeeds in C in reading a line. The predicate fails
+ * upon an empty line and an end of file. The binary predicate
+ * allows specifying a text stream T
  */
 % read_line(-Atom)
 :- public read_line/1.
@@ -89,7 +90,33 @@ read_line(Stream, Atom) :-
 
 :- private sys_read_line/2.
 :- foreign(sys_read_line/2, 'ForeignConsole',
-      sysReadLine('Reader')).
+      readLine('Reader')).
+
+/**
+ * read_line_max(L, C):
+ * read_line_max(T, L, C):
+ * The predicate succeeds in C in reading a line with maximally L
+ * characters. The predicate fails upon an empty line and an end of file.
+ * The ternary predicate allows specifying a text stream T.
+ */
+% read_line_max(+Integer, -Atom)
+:- public read_line_max/2.
+read_line_max(Length, Atom) :-
+   current_input(Stream),
+   sys_read_line_max(Stream, Length, Atom).
+
+% read_line_max(+AliasOrStream, +Integer, -Atom)
+:- public read_line_max/3.
+read_line_max(Alias, Length, Atom) :-
+   atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_read_line_max(Stream, Length, Atom).
+read_line_max(Stream, Length, Atom) :-
+   sys_read_line_max(Stream, Length, Atom).
+
+:- private sys_read_line_max/3.
+:- foreign(sys_read_line_max/3, 'ForeignConsole',
+      readLineMax('Reader','Integer')).
 
 /****************************************************************/
 /* Formatted Output                                             */
@@ -256,12 +283,23 @@ ttyflush_output :-
 
 /**
  * ttyread_line(C):
- * The predicate reads a character line from the terminal.
- * The predicate succeeds when C unifies with the read characters
- * or fails when the end of the stream has been reached.
+ * The predicate succeeds in C in reading a line from the terminal.
+ * The predicate fails upon an empty line and an end of file.
  */
 % ttyread_line(-Atom)
 :- public ttyread_line/1.
 ttyread_line(Atom) :-
    current_prolog_flag(sys_disp_input, Stream),
    sys_read_line(Stream, Atom).
+
+/**
+ * ttyread_line_max(L, C):
+ * The predicate succeeds in C in reading a line with maximally L
+ * characters from the terminal. The predicate fails upon an empty
+ * line and an end of file.
+ */
+% ttyread_line_max(+Integer, -Atom)
+:- public ttyread_line_max/2.
+ttyread_line_max(Length, Atom) :-
+   current_prolog_flag(sys_disp_input, Stream),
+   sys_read_line_max(Stream, Length, Atom).

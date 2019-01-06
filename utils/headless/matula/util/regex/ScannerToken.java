@@ -224,14 +224,14 @@ public final class ScannerToken {
     private void nextString()
             throws ScannerError, IOException {
         int quote = ch;
-        ch = getCode();
+        ch = sysGetCode(reader);
         while (ch != CodeType.LINE_EOF) {
             if (ch == quote) {
-                ch = getCode();
+                ch = sysGetCode(reader);
                 if (ch == quote) {
                     buf.appendCodePoint(ch);
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                 } else {
                     hint = quote;
                     data = buf.toString();
@@ -280,7 +280,7 @@ public final class ScannerToken {
             throws ScannerError, IOException {
         if (ch == CodeType.LINE_BACKSLASH) {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             if (ch != CodeType.LINE_EOF) {
                 if (!cont && ch == CodeType.LINE_EOL)
                     throw new ScannerError(OP_SYNTAX_CONT_ESC_IN_CHARACTER,
@@ -289,15 +289,15 @@ public final class ScannerToken {
                         || ch == 'x') {
                     while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     }
                     if (ch == CodeType.LINE_BACKSLASH) {
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     }
                 } else {
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                 }
             }
         } else if (ch == CodeType.LINE_EOL && (flags & MASK_ALLW_NEWL) == 0) {
@@ -310,7 +310,7 @@ public final class ScannerToken {
             }
         } else {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
         }
     }
 
@@ -346,7 +346,7 @@ public final class ScannerToken {
             throws ScannerError, IOException {
         if (ch == CodeType.LINE_ZERO) {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             if ((ch == PREFIX_OCTAL || ch == PREFIX_BINARY ||
                     ch == PREFIX_HEX || ch == PREFIX_REFERENCE)) {
                 int radix;
@@ -358,12 +358,12 @@ public final class ScannerToken {
                     radix = 16;
                 }
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
                 while (ch != CodeType.LINE_EOF) {
                     if (Character.digit(ch, radix) != -1 ||
                             delemiter.isUnderscore(ch)) {
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     } else {
                         hint = 0;
                         data = buf.toString();
@@ -375,13 +375,13 @@ public final class ScannerToken {
                 return;
             } else if (ch == CodeType.LINE_SINGLE) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
                 if (ch == CodeType.LINE_SINGLE) {
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                     if (ch == CodeType.LINE_SINGLE) {
                         buf.appendCodePoint(ch);
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     }
                 } else if (ch != CodeType.LINE_EOF) {
                     nextChar(false);
@@ -396,21 +396,21 @@ public final class ScannerToken {
                 return;
             } else if (ch == PREFIX_DECIMAL || ch == PREFIX_FLOAT32) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
                 /* mantiassa */
                 while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                 }
-                if (ch == SCAN_PERIOD && Character.isDigit(peekCode())) {
+                if (ch == SCAN_PERIOD && Character.isDigit(sysPeekCode(reader))) {
                     /* fraction */
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                     while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     }
                 }
                 nextExponent();
@@ -422,17 +422,17 @@ public final class ScannerToken {
         /* mantiassa */
         while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
         }
-        if (ch == SCAN_PERIOD && Character.isDigit(peekCode())) {
+        if (ch == SCAN_PERIOD && Character.isDigit(sysPeekCode(reader))) {
             /* fraction */
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
             /* exponent */
             nextExponent();
@@ -453,25 +453,26 @@ public final class ScannerToken {
      */
     private void nextExponent()
             throws IOException {
+        int ch2;
         if ((ch == SCAN_EXPLOW || ch == SCAN_EXPCAP) &&
-                (Character.isDigit(peekCode()) ||
-                        peekCode() == SCAN_NEG ||
-                        peekCode() == SCAN_POS)) {
+                (Character.isDigit(ch2 = sysPeekCode(reader)) ||
+                        ch2 == SCAN_NEG ||
+                        ch2 == SCAN_POS)) {
             /* exponent character */
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             /* exponent sign */
             if (ch == SCAN_NEG || ch == SCAN_POS) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
             /* exponent mantissa */
             if (Character.isDigit(ch)) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
                 while (ch != CodeType.LINE_EOF && isDigitOrUnderscore(ch)) {
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                 }
             }
         }
@@ -510,11 +511,11 @@ public final class ScannerToken {
             consumeStr(lc);
             while (ch != CodeType.LINE_EOF && ch != CodeType.LINE_EOL) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
             if (!stopeol && ch != CodeType.LINE_EOF) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
             hint = 0;
             data = buf.toString();
@@ -522,9 +523,9 @@ public final class ScannerToken {
             String lc = remark.getLineComment();
             skipStr(lc);
             while (ch != CodeType.LINE_EOF && ch != CodeType.LINE_EOL)
-                ch = getCode();
+                ch = sysGetCode(reader);
             if (!stopeol && ch != CodeType.LINE_EOF)
-                ch = getCode();
+                ch = sysGetCode(reader);
         }
     }
 
@@ -552,7 +553,7 @@ public final class ScannerToken {
                     return;
                 }
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
         } else {
             String lc = remark.getBlockCommentStart();
@@ -563,7 +564,7 @@ public final class ScannerToken {
                     skipStr(lc);
                     return;
                 }
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
         }
         hint = 0;
@@ -589,21 +590,21 @@ public final class ScannerToken {
             throws IOException {
         if ((flags & MASK_RTRN_LAYT) != 0) {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             while (ch != CodeType.LINE_EOF &&
                     (!stopeol || ch != CodeType.LINE_EOL) &&
                     delemiter.isLayout(ch)) {
                 buf.appendCodePoint(ch);
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
             hint = 0;
             data = buf.toString();
         } else {
-            ch = getCode();
+            ch = sysGetCode(reader);
             while (ch != CodeType.LINE_EOF &&
                     (!stopeol || ch != CodeType.LINE_EOL) &&
                     delemiter.isLayout(ch)) {
-                ch = getCode();
+                ch = sysGetCode(reader);
             }
         }
     }
@@ -618,7 +619,7 @@ public final class ScannerToken {
      * @throws IOException I/O Error.
      */
     public void firstChar() throws IOException {
-        ch = getCode();
+        ch = sysGetCode(reader);
     }
 
     /**
@@ -662,7 +663,7 @@ public final class ScannerToken {
                         return;
                     }
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                     hint = 0;
                     data = buf.toString();
                     return;
@@ -671,10 +672,10 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_UPPER:
                 case CodeType.SUB_CLASS_OTHER:
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                     while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     }
                     hint = 0;
                     data = buf.toString();
@@ -698,10 +699,10 @@ public final class ScannerToken {
                         continue;
                     }
                     buf.appendCodePoint(ch);
-                    ch = getCode();
+                    ch = sysGetCode(reader);
                     while (ch != CodeType.LINE_EOF && delemiter.isGraphic(ch)) {
                         buf.appendCodePoint(ch);
-                        ch = getCode();
+                        ch = sysGetCode(reader);
                     }
                     hint = 0;
                     data = buf.toString();
@@ -803,12 +804,12 @@ public final class ScannerToken {
     /*************************************************************/
 
     /**
-     * <p>Get a code from a text stream.</p>
+     * <p>Read a code from a text stream.</p>
      *
      * @return The read code point or -1.
      * @throws IOException I/O Error.
      */
-    private int getCode() throws IOException {
+    public static int sysGetCode(Reader reader) throws IOException {
         int ch = reader.read();
         if (Character.isHighSurrogate((char) ch)) {
             reader.mark(1);
@@ -829,12 +830,14 @@ public final class ScannerToken {
     }
 
     /**
-     * <p>Peek a code from a text stream.</p>
+     * <p>Peek a code code from a text stream.</p>
      *
+     * @param reader The reader.
      * @return The peeked code point or -1.
      * @throws IOException I/O Error.
      */
-    private int peekCode() throws IOException {
+    public static int sysPeekCode(Reader reader)
+            throws IOException {
         reader.mark(2);
         int ch;
         try {
@@ -878,7 +881,7 @@ public final class ScannerToken {
         if (s.length() == 1) {
             return (ch == s.charAt(0));
         } else if (s.length() == 2) {
-            return (ch == s.charAt(0) && peekCode() == s.charAt(1));
+            return (ch == s.charAt(0) && sysPeekCode(reader) == s.charAt(1));
         } else {
             throw new IllegalArgumentException("illegal config");
         }
@@ -894,12 +897,12 @@ public final class ScannerToken {
             throws IOException {
         if (s.length() == 1) {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
         } else if (s.length() == 2) {
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
             buf.appendCodePoint(ch);
-            ch = getCode();
+            ch = sysGetCode(reader);
         } else {
             throw new IllegalArgumentException("illegal config");
         }
@@ -914,10 +917,10 @@ public final class ScannerToken {
     private void skipStr(String s)
             throws IOException {
         if (s.length() == 1) {
-            ch = getCode();
+            ch = sysGetCode(reader);
         } else if (s.length() == 2) {
-            getCode();
-            ch = getCode();
+            sysGetCode(reader);
+            ch = sysGetCode(reader);
         } else {
             throw new IllegalArgumentException("illegal config");
         }

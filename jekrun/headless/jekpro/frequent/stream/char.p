@@ -41,6 +41,7 @@
 
 :- use_package(foreign(jekpro/frequent/stream)).
 :- use_package(foreign(java/io)).
+:- use_package(foreign(matula/util/regex)).
 
 :- module(user, []).
 
@@ -176,7 +177,7 @@ get_code(Stream, Code) :-
    sys_get_code(Stream, Code).
 
 :- private sys_get_code/2.
-:- foreign(sys_get_code/2, 'ForeignChar',
+:- foreign(sys_get_code/2, 'ScannerToken',
       sysGetCode('Reader')).
 
 /**
@@ -231,5 +232,5 @@ peek_code(Stream, Code) :-
    sys_peek_code(Stream, Code).
 
 :- private sys_peek_code/2.
-:- foreign(sys_peek_code/2, 'ForeignChar',
+:- foreign(sys_peek_code/2, 'ScannerToken',
       sysPeekCode('Reader')).

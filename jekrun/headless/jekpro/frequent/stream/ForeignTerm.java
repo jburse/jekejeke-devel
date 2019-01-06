@@ -48,10 +48,10 @@ public final class ForeignTerm {
     /**
      * <p>Write a term respecting options to a stream.</p>
      *
-     * @param inter   The interpreter.
-     * @param para    The write stream.
-     * @param val     The write term.
-     * @param opt     The write options.
+     * @param inter The interpreter.
+     * @param para  The write stream.
+     * @param val   The write term.
+     * @param opt   The write options.
      * @throws InterpreterMessage   Validation problem or option problem.
      * @throws InterpreterException Shit happens.
      */
@@ -65,9 +65,9 @@ public final class ForeignTerm {
     /**
      * <p>Read a term and options from a stream.</p>
      *
-     * @param inter   The interpreter.
-     * @param para    The read stream.
-     * @param opt     The read options.
+     * @param inter The interpreter.
+     * @param para  The read stream.
+     * @param opt   The read options.
      * @return The read term.
      * @throws InterpreterMessage   Validation problem or option problem.
      * @throws InterpreterException Validation problem or option problem.

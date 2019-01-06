@@ -3,10 +3,12 @@ package jekpro.frequent.stream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
+import matula.util.regex.ScannerToken;
 import matula.util.wire.XSelectFormat;
 
 import java.io.IOException;
@@ -55,31 +57,43 @@ public final class ForeignConsole {
     /**
      * <p>Read a line.</p>
      *
-     * @param obj The reader.
+     * @param reader The reader.
      * @return The line.
      * @throws IOException IO error.
      */
-    public static String sysReadLine(Reader obj)
+    public static String readLine(Reader reader)
             throws IOException {
-        return readLine(obj);
+        StringBuilder buf = new StringBuilder();
+        int ch = ScannerToken.sysGetCode(reader);
+        while (ch != '\n' && ch != -1) {
+            buf.appendCodePoint(ch);
+            ch = ScannerToken.sysGetCode(reader);
+        }
+        if (ch == -1 && buf.length() == 0)
+            return null;
+        return buf.toString();
     }
 
     /**
-     * <p>Read a line.</p>
+     * <p>Read a line with maximum length.</p>
      *
-     * @param lr The reader.
+     * @param reader The reader.
+     * @param arg    The maximum length.
      * @return The line.
      * @throws IOException IO error.
      */
-    public static String readLine(Reader lr)
+    public static String readLineMax(Reader reader, Integer arg)
             throws IOException {
+        int len = arg.intValue();
         StringBuilder buf = new StringBuilder();
-        int c = lr.read();
-        while (c != '\n' && c != -1) {
-            buf.append((char) c);
-            c = lr.read();
+        int pos = 0;
+        int ch = (pos < len ? ScannerToken.sysGetCode(reader) : '\n');
+        while (ch != '\n' && ch != -1) {
+            buf.appendCodePoint(ch);
+            pos++;
+            ch = (pos < len ? ScannerToken.sysGetCode(reader) : '\n');
         }
-        if (c == -1 && buf.length() == 0)
+        if (ch == -1 && buf.length() == 0)
             return null;
         return buf.toString();
     }

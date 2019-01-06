@@ -131,7 +131,7 @@ public final class TimeRecord {
      * <p>Retrieve a time record statistic.</p>
      *
      * @param inter The interpreter.
-     * @param name The name.
+     * @param name  The name.
      * @return The value, or null.
      * @throws InterpreterMessage Shit happens.
      */

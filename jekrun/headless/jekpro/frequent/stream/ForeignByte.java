@@ -3,7 +3,10 @@ package jekpro.frequent.stream;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.InterpreterMessage;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * The foreign predicates for the module byte.
@@ -126,12 +129,13 @@ public final class ForeignByte {
      * <p>Read a byte block.</p>
      *
      * @param in  The input stream.
-     * @param len The maximum length.
+     * @param arg The maximum length.
      * @return The byte block, or null.
      * @throws IOException I/O Error.
      */
-    public static byte[] sysReadBlock(InputStream in, int len)
+    public static byte[] sysReadBlock(InputStream in, Integer arg)
             throws IOException {
+        int len = arg.intValue();
         byte[] data = new byte[len];
         len = in.read(data, 0, len);
         if (len == -1)
