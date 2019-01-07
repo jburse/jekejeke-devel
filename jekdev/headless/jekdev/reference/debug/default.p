@@ -223,7 +223,7 @@ break(P, L) :-
 :- set_predicate_property(break/2, sys_notrace).
 
 % sys_break(+Pin, +Integer)
-:- private sys_break/2.
+:- public sys_break/2.
 :- special(sys_break/2, 'SpecialDefault', 3).
 
 /**
@@ -238,7 +238,7 @@ nobreak(P, L) :-
 :- set_predicate_property(nobreak/2, sys_notrace).
 
 % sys_nobreak(+Pin, +Integer)
-:- private sys_nobreak/2.
+:- public sys_nobreak/2.
 :- special(sys_nobreak/2, 'SpecialDefault', 4).
 
 /**

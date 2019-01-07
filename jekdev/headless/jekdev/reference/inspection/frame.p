@@ -1,18 +1,5 @@
 /**
- * When a clause is instantiated a new frame for the variables is
- * created. Practical Prolog sys-tems store additional information
- * in a frame. We provide access to frame properties via frame
- * references. The predicate rule_frame/3 searches a clause and
- * returns a frame reference. This predicate is able to retrieve
- * clauses unrestrictedly, namely it is possible to retrieve clauses
- * from thread local, dynamic or static predicates.
- *
- * The predicates frame_property/2, set_frame_property/2 and
- * reset_frame_property/2 allow inspecting and modifying frame
- * properties. Not only the predicates clause/3 and retract/2
- * return a frame reference. A reference to a frame can also be
- * created from a clause reference via the predicate
- * sys_instance_clause/2.
+ * t.b.d.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -47,6 +34,12 @@
 :- use_package(foreign(jekdev/reference/inspection)).
 
 :- module(frame, []).
+
+% some frame property
+:- public sys_call_goal/1.
+:- meta_predicate sys_call_goal(0).
+sys_call_goal(_) :-
+   throw(error(existence_error(body,sys_call_goal/1),_)).
 
 /**
  * rule_frame(H, B, F):

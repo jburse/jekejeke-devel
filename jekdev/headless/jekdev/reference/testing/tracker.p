@@ -63,7 +63,6 @@
 
 :- module(tracker, []).
 :- use_module(library(inspection/frame)).
-:- use_module(library(inspection/stack)).
 :- use_module(library(inspection/provable)).
 :- use_module(runner).
 :- use_module(helper).

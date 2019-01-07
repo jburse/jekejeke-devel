@@ -82,7 +82,7 @@ dispatch(_, '/toggle.class', Assoc, Session) :- !,
 % frame_deref(+Frame, -Frame)
 :- public frame_deref/2.
 frame_deref(Frame, Other) :-
-   frame_property(Frame, sys_call_goal(trace_goal(_,Other))), !.
+   frame_property(Frame, sys_call_goal(trace_goal(_, Other))), !.
 frame_deref(Frame, Frame).
 
 % find_call_stack(+Frame, +Count, -Frame)
