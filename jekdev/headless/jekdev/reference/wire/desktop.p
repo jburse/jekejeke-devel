@@ -1,5 +1,5 @@
 /**
- * t.b.d.
+ * The refinement class for a desktop monitor.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -54,6 +54,7 @@ dispatch(Object, Spec, Assoc, Session) :-
    wire/view:dispatch(Object, Spec, Assoc, Session).
 
 % html_target(+Object, +Stream, +Atom)
+:- public html_target/3.
 html_target(_, Response, Target) :-
    write(Response, ' target="'),
    html_escape(Response, Target),

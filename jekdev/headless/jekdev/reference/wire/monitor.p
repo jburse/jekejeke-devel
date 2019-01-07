@@ -41,6 +41,15 @@
 :- module(monitor, []).
 :- use_module(library(notebook/httpsrv)).
 :- use_module(library(stream/console)).
+:- use_module(library(runtime/distributed)).
+
+/**
+ * start(P):
+ * The predicate starts the monitor at port P:
+ */
+:- public start/1.
+start(P) :-
+   spawn((  server(wire/monitor, P), fail; true)).
 
 /**
  * dispatch(O, P, A, S):
@@ -64,6 +73,11 @@ dispatch(_, '/images/blank.gif', _, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response, [type(binary)]),
       send_binary(library(wire/images/blank), Response),
+      close(Response)).
+dispatch(_, '/images/break.gif', _, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response, [type(binary)]),
+      send_binary(library(wire/images/break), Response),
       close(Response)).
 dispatch(_, '/index.html', _, Session) :- !,
    setup_call_cleanup(

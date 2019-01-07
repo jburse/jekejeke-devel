@@ -254,5 +254,5 @@ breaking(P, L) :-
    absolute_file_name(P, Q).
 
 % sys_breaking(+List)
-:- private sys_breaking/1.
+:- public sys_breaking/1.
 :- special(sys_breaking/1, 'SpecialDefault', 5).

@@ -1,5 +1,5 @@
 /**
- * t.b.d.
+ * The refinement class for a mobile monitor.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,4 +36,5 @@
 :- reexport(view).
 
 % html_target(+Object, +Stream, +Atom)
+:- public html_target/3.
 html_target(_, _, _).

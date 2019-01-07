@@ -1,5 +1,5 @@
 /**
- * t.b.d.
+ * The base class for a monitor.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,13 +35,11 @@
 :- module(view, []).
 :- use_module(monitor).
 :- use_module(library(notebook/httpsrv)).
-:- use_module(library(stream/console)).
-:- use_module(library(system/thread)).
-:- use_module(library(system/group)).
 :- use_module(library(inspection/frame)).
-:- use_module(library(inspection/provable)).
-:- use_module(library(system/file)).
-:- use_module(library(system/uri)).
+:- use_module(pages/thread).
+:- use_module(pages/stack).
+:- use_module(pages/frame).
+:- use_module(pages/source).
 
 /**
  * dispatch(O, P, A, S):
@@ -71,206 +69,24 @@ dispatch(_, '/source.jsp', Assoc, Session) :- !,
       open(Session, write, Response),
       send_source(Assoc, Response),
       close(Response)).
+dispatch(_, '/toggle.class', Assoc, Session) :- !,
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_toggle(Assoc, Response),
+      close(Response)).
 
 /*************************************************************/
-/* Thread Inspection                                         */
+/* Some Utility                                              */
 /*************************************************************/
-
-/**
- * send_thread(M, O):
- * The predicate sends the threads to the output stream O
- * from within the monitor object M.
- */
-% send_thread(+Object, +Stream)
-:- private send_thread/2.
-send_thread(Object, Response) :-
-   frame_begin(Response, 'Thread', [tree]),
-   thread_current(T),
-   current_thread_flag(T, sys_thread_group, H),
-   current_group_flag(H, sys_group_group, Root),
-   send_group_list(Object, Root, Response),
-   frame_end(Response).
-
-% send_group_list(+Object, +Group, +Stream)
-:- private send_group_list/3.
-send_group_list(Object, Group, Response) :-
-   write(Response, '<dl>'),
-   send_group_group_list(Object, Group, Response),
-   send_group_thread_list(Object, Group, Response),
-   write(Response, '</dl>\r\n').
-
-% send_group_group_list(+Object, +Group, +Stream)
-:- private send_group_group_list/3.
-send_group_group_list(Object, Group, Response) :-
-   current_group(Group, Other),
-   current_group_flag(Other, sys_group_name, Name),
-   write(Response, '<dt><a onclick="openClose('''),
-   html_escape(Response, Name),
-   write(Response, ''');"><img src="../images/closed.gif" id="'),
-   html_escape(Response, Name),
-   write(Response, '_img">'),
-   html_escape(Response, Name),
-   write(Response, '</dt>\r\n'),
-   write(Response, '<dd style="display:none" id="'),
-   html_escape(Response, Name),
-   write(Response, '">'),
-   send_group_list(Object, Other, Response),
-   write(Response, '</dd>\r\n'), fail.
-send_group_group_list(_, _, _).
-
-% send_group_thread_list(+Object, +Group, +Stream)
-:- private send_group_thread_list/3.
-send_group_thread_list(Object, Group, Response) :-
-   current_thread(Group, Thread),
-   write(Response, '<dt><img src="../images/blank.gif">'),
-   send_thread(Object, Thread, Response),
-   write(Response, '</dt>\r\n'), fail.
-send_group_thread_list(_, _, _).
-
-% send_thread(+Object, +Thread, +Stream)
-:- private send_thread/3.
-send_thread(Object, Thread, Response) :-
-   current_thread(Thread), !,
-   current_thread_flag(Thread, sys_thread_name, Name),
-   write(Response, '<a href="stack.jsp?thread='),
-   html_escape(Response, Name),
-   write(Response, '"'),
-   Object::html_target(Response, stack),
-   write(Response, >),
-   html_escape(Response, Name),
-   write(Response, '</a>').
-send_thread(_, Thread, Response) :-
-   current_thread_flag(Thread, sys_thread_name, Name),
-   html_escape(Response, Name).
-
-/*************************************************************/
-/* Stack Inspection                                          */
-/*************************************************************/
-
-/**
- * send_stack(M, A, O):
- * The predicate sends the stack element for parameter list
- * A to the output stream O from within the monitor object M.
- */
-% send_stack(+Object, +Assoc, +Stream)
-:- private send_stack/3.
-send_stack(Object, Assoc, Response) :-
-   http_parameter(Assoc, thread, Name),
-   current_thread(Thread),
-   current_thread_flag(Thread, sys_thread_name, Name), !,
-   current_thread_flag(Thread, sys_top_frame, Frame),
-   atom_list_concat(['Stack',Name], ', ', Atom),
-   frame_begin(Response, Atom),
-   write(Response, '<dl>'),
-   send_call_stack(Object, Frame, Name, 0, Response),
-   write(Response, '</dl>\r\n'),
-   frame_end(Response).
-send_stack(_, _, Response) :-
-   frame_begin(Response, 'Stack'),
-   frame_end(Response).
-
-% send_call_stack(+Object, +Frame, +Atom, +Integer, +Stream)
-:- private send_call_stack/5.
-send_call_stack(_, null, _, _, _) :- !.
-send_call_stack(Object, Frame, Name, Count, Response) :-
-   write(Response, '<dt><a href="frame.jsp?thread='),
-   html_escape(Response, Name),
-   write(Response, '&index='),
-   write(Response, Count),
-   write(Response, '"'),
-   Object::html_target(Response, frame),
-   write(Response, >),
-   frame_deref(Frame, Deref),
-   frame_property(Deref, sys_call_goal(Goal)),
-   functor(Goal, Functor, Arity),
-   term_atom(Functor/Arity, Atom),
-   html_escape(Response, Atom),
-   write(Response, '</a>'),
-   send_frame_pos(Object, Goal, Response),
-   write(Response, '</dt>\r\n'),
-   frame_property(Frame, sys_parent_frame(Other)),
-   Count2 is Count+1,
-   send_call_stack(Object, Other, Name, Count2, Response).
-
-% send_frame_pos(+Object, +Term, +Stream)
-:- private send_frame_pos/3.
-send_frame_pos(Object, Goal, Response) :-
-   callable_property(Goal, source_file(Origin)),
-   callable_property(Goal, line_no(Line)), !,
-   make_uri(Spec, _, _, Origin),
-   make_path(_, Name, Spec),
-   term_atom(Name, Atom),
-   write(Response, ' in '),
-   write(Response, '<a href="source.jsp?origin='),
-   uri_encode(Origin, OriginEnc),
-   html_escape(Response, OriginEnc),
-   write(Response, #),
-   write(Response, Line),
-   write(Response, '"'),
-   Object::html_target(Response, source),
-   write(Response, >),
-   html_escape(Response, Atom),
-   write(Response, ' at '),
-   write(Response, Line),
-   write(Response, '</a>').
-send_frame_pos(_, _, _).
 
 % frame_deref(+Frame, -Frame)
-:- private frame_deref/2.
+:- public frame_deref/2.
 frame_deref(Frame, Other) :-
    frame_property(Frame, sys_call_goal(trace_goal(_,Other))), !.
 frame_deref(Frame, Frame).
 
-/*************************************************************/
-/* Frame Inspection                                          */
-/*************************************************************/
-
-/**
- * send_frame(A, O):
- * The predicate sends the frame for parameter list
- * A to the output stream O.
- */
-% send_frame(+Assoc, +Stream)
-:- private send_frame/2.
-send_frame(Assoc, Response) :-
-   http_parameter(Assoc, thread, Name),
-   http_parameter(Assoc, index, CountStr),
-   atom_codes(CountStr, List),
-   number_codes(Count, List),
-   current_thread(Thread),
-   current_thread_flag(Thread, sys_thread_name, Name),
-   current_thread_flag(Thread, sys_top_frame, Frame),
-   find_call_stack(Frame, Count, Other), !,
-   atom_list_concat(['Bindings',Name,CountStr], ', ', Atom),
-   frame_begin(Response, Atom),
-   write(Response, '<dl>'),
-   frame_deref(Other, Deref),
-   frame_property(Deref, sys_call_goal(Goal)),
-   callable_property(Goal, sys_variable_names(Map)),
-   callable_property(Goal, sys_raw_variables(Vars)),
-   filter_vars(Vars, Map, Vars2),
-   send_frame_vars(Vars2, Map, Response),
-   write(Response, '</dl>\r\n'),
-   frame_end(Response).
-send_frame(_, Response) :-
-   frame_begin(Response, 'Bindings'),
-   frame_end(Response).
-
-% send_frame_vars(+List, +List, +Stream)
-:- private send_frame_vars/3.
-send_frame_vars([Var=Term|List], Map, Response) :-
-   write(Response, '<dt>'),
-   sys_quoted_var(Var, Quote),
-   html_escape(Response, Quote),
-   write(Response, ' = '),
-   term_atom(Term, Atom, [priority(699),variable_names(Map)]),
-   html_escape(Response, Atom),
-   write(Response, '</dt>\r\n'),
-   send_frame_vars(List, Map, Response).
-send_frame_vars([], _, _).
-
 % find_call_stack(+Frame, +Count, -Frame)
-:- private find_call_stack/3.
+:- public find_call_stack/3.
 find_call_stack(null, _, _) :- !, fail.
 find_call_stack(Frame, 0, Frame) :- !.
 find_call_stack(Frame, Count, Result) :-
@@ -278,55 +94,17 @@ find_call_stack(Frame, Count, Result) :-
    Count2 is Count-1,
    find_call_stack(Other, Count2, Result).
 
-% filter_vars(+List, +List, +List)
-:- private filter_vars/3.
-filter_vars([Name=Term|Vars], Map, Vars2) :-
-   var(Term),
-   once((  sys_member(Name2=Term2, Map),
-           Term2 == Term)),
-   Name2 == Name, !,
-   filter_vars(Vars, Map, Vars2).
-filter_vars([Eq|Vars], Map, [Eq|Vars2]) :-
-   filter_vars(Vars, Map, Vars2).
-filter_vars([], _, []).
-
-/*************************************************************/
-/* Source Inspection                                         */
-/*************************************************************/
-
-/**
- * send_source(A, O):
- * The predicate sends the source for parameter list
- * A to the output stream O.
- */
-% send_source(+Assoc, +Stream)
-:- private send_source/2.
-send_source(Assoc, Response) :-
-   http_parameter(Assoc, origin, Origin), !,
-   make_uri(Spec, _, _, Origin),
-   make_path(_, Name, Spec),
-   term_atom(Name, Atom),
-   atom_list_concat(['Source',Atom], ', ', Atom2),
-   frame_begin(Response, Atom2, [lines]),
-   write(Response, '<pre class="code2">'),
-   send_origin(Origin, Response),
-   write(Response, '</pre>'),
-   frame_end(Response).
-send_source(_, Response) :-
-   frame_begin(Response, 'Source'),
-   frame_end(Response).
-
-/*************************************************************/
-/* Some Utility                                              */
-/*************************************************************/
+/***************************************************************/
+/* HTTP Response Text                                          */
+/***************************************************************/
 
 % frame_begin(+Stream, +Atom)
-:- private frame_begin/2.
+:- public frame_begin/2.
 frame_begin(Response, Title) :-
    frame_begin(Response, Title, []).
 
 % frame_begin(+Stream, +Atom, +List)
-:- private frame_begin/3.
+:- public frame_begin/3.
 frame_begin(Response, Title, Opt) :-
    response_text(Response),
    html_begin(Response, Title, Opt),
@@ -356,81 +134,17 @@ html_begin_opt(Response, [tree|Opt]) :-
 html_begin_opt(Response, [lines|Opt]) :-
    style_lines(Response),
    html_begin_opt(Response, Opt).
+html_begin_opt(Response, [margin|Opt]) :-
+   script_margin(Response),
+   html_begin_opt(Response, Opt).
 html_begin_opt(_, []).
-
-/**
- * script_tree(O):
- * The predicate sends the script tree to the output stream O.
- */
-% script_tree(+Stream)
-:- private script_tree/1.
-script_tree(Response) :-
-   write(Response, '    <script type="text/javascript">\r\n'),
-   write(Response, '        function openClose(id) {\r\n'),
-   write(Response, '            var elem = document.getElementById(id);\r\n'),
-   write(Response, '            var img = document.getElementById(id + "_img");\r\n'),
-   write(Response, '            if (elem.style.display == "none") {\r\n'),
-   write(Response, '                elem.style.display = "block";\r\n'),
-   write(Response, '                img.alt = "open";\r\n'),
-   write(Response, '                img.src = "../images/open.gif";\r\n'),
-   write(Response, '            } else {\r\n'),
-   write(Response, '                elem.style.display = "none";\r\n'),
-   write(Response, '                img.alt = "closed";\r\n'),
-   write(Response, '                img.src = "../images/closed.gif";\r\n'),
-   write(Response, '            }\r\n'),
-   write(Response, '        }\r\n'),
-   write(Response, '    </script>\r\n').
-
-/**
- * style_lines(O):
- * The predicate sends the style lines to the output stream O.
- */
-% style_lines(+Stream)
-:- private style_lines/1.
-style_lines(Response) :-
-   write(Response, '    <style>\r\n'),
-   write(Response, '    .code2 { white-space: normal }\r\n'),
-   write(Response, '    .lnuc:target { white-space: pre; background: yellow }\r\n'),
-   write(Response, '    .lnuc { white-space: pre }\r\n'),
-   write(Response, '    </style>\r\n').
 
 /**
  * frame_end(O):
  * The predicate sends the html end to the output stream O.
  */
 % frame_end(+Stream)
-:- private frame_end/1.
+:- public frame_end/1.
 frame_end(Response) :-
    write(Response, '   </body>\r\n'),
    write(Response, '</html>\r\n').
-
-/***************************************************************/
-/* HTTP Response Text                                          */
-/***************************************************************/
-
-/**
- * send_origin(F, O):
- * The predicate sends the source text F to the output stream O.
- */
-% send_origin(+File, +Stream)
-:- private send_origin/2.
-send_origin(File, Response) :-
-   setup_call_cleanup(
-      open(File, read, Stream),
-      send_escape(Stream, 1, Response),
-      close(Stream)).
-
-% send_escape(+Stream, +Integer, +Stream)
-:- private send_escape/3.
-send_escape(Stream, Count, Response) :-
-   read_line(Stream, Line), !,
-   write(Response, '<div class="lnuc" id="'),
-   write(Response, Count),
-   write(Response, '"><a name="'),
-   write(Response, Count),
-   write(Response, '"></a>'),
-   html_escape(Response, Line),
-   write(Response, '&nbsp;</div>\r\n'),
-   Count2 is Count+1,
-   send_escape(Stream, Count2, Response).
-send_escape(_, _, _).

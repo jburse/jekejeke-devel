@@ -97,7 +97,8 @@ accept(Port, Session) :-
 :- private handle/2.
 handle(Object, Session) :-
    open(Session, read, Request),
-   read_line(Request, What),
+   read_line_max(Request, 1024, What),
+   \+ atom_length(What, 1024),
    atom_list_concat([Method,URI,_], ' ', What), !,
    handle_method(Object, Method, URI, Session).
 handle(_, Session) :-
@@ -194,11 +195,25 @@ send_text(File, Response) :-
 % send_lines(+Stream, +Stream)
 :- private send_lines/2.
 send_lines(Stream, Response) :-
-   read_line(Stream, Line), !,
+   read_line_max(Stream, 1024, Line), !,
    write(Response, Line),
-   write(Response, '\r\n'),
-   send_lines(Stream, Response).
+   (  \+ atom_length(Line, 1024)
+   -> write(Response, '\r\n'),
+      send_lines(Stream, Response)
+   ;  send_lines2(Stream, Response)).
 send_lines(_, _).
+
+% send_lines2(+Stream, +Stream)
+:- private send_lines2/2.
+send_lines2(Stream, Response) :-
+   read_line_max(Stream, 1024, Line), !,
+   write(Response, Line),
+   (  \+ atom_length(Line, 1024)
+   -> write(Response, '\r\n'),
+      send_lines(Stream, Response)
+   ;  send_lines2(Stream, Response)).
+send_lines2(_, Response) :-
+   write(Response, '\r\n').
 
 /***************************************************************/
 /* HTTP Response Binary                                        */
@@ -254,6 +269,23 @@ send_blocks(_, _).
 html_escape(Response, Text) :-
    text_escape(Text, Escape),
    write(Response, Escape).
+
+/***************************************************************/
+/* HTTP Response Redirect                                      */
+/***************************************************************/
+
+/**
+ * response_redirect(L, O):
+ * Send a redirect response to the text output stream O.
+ */
+% response_redirect(+Atom, +Stream)
+:- public response_redirect/2.
+response_redirect(Location, Response) :-
+   write(Response, 'HTTP/1.0 302 Found\r\n'),
+   write(Response, 'Location: '),
+   write(Response, Location),
+   write(Response, '\r\n'),
+   write(Response, '\r\n').
 
 /***************************************************************/
 /* Internal Error Generator                                    */
