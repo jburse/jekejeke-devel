@@ -3,8 +3,10 @@ package jekdev.reference.inspection;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.builtin.SpecialBody;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -14,7 +16,6 @@ import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -214,7 +215,7 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param t2 The callable skeleton.
-     *           @param d2 The callable display.
+     * @param d2 The callable display.
      * @param en The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
@@ -250,14 +251,14 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Result is returned in skeleton and display.</p>
      *
      * @param prop The property.
-     * @param t2 The callable skeleton.
-     *           @param d2 The callable display.
+     * @param t2   The callable skeleton.
+     * @param d2   The callable display.
      * @param en   The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
     private static boolean callableToProperty(StoreKey prop, Object t2, Display d2,
-                                          Engine en)
+                                              Engine en)
             throws EngineMessage {
         Object[] vals = getPropCallable(prop, t2, d2, en);
         en.skel = en.store.foyer.ATOM_NIL;
@@ -277,7 +278,7 @@ public final class SpecialProvable extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void addAtomProp(Object t, Display d,
-                                      Object t2, Display d2, Engine en)
+                                    Object t2, Display d2, Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
@@ -297,7 +298,7 @@ public final class SpecialProvable extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void removeAtomProp(Object t, Display d,
-                                         Object t2, Display d2, Engine en)
+                                       Object t2, Display d2, Engine en)
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
@@ -315,14 +316,14 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param prop The property.
-     * @param t2 The callable skeleton.
-     *           @param d2 The callable display.
+     * @param t2   The callable skeleton.
+     * @param d2   The callable display.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
     public static Object[] getPropCallable(StoreKey prop, Object t2, Display d2,
-                                       Engine en)
+                                           Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -345,8 +346,8 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param prop The property.
-     * @param t2 The callable skeleton.
-     *           @param d2 The callable display.
+     * @param t2   The callable skeleton.
+     * @param d2   The callable display.
      * @param vals The values.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.

@@ -54,15 +54,6 @@ sys_call_goal(_) :-
 :- special(rule_frame/3, 'SpecialFrame', 0).
 
 /**
- * sys_instance_clause(R, F):
- * The predicate succeeds with a new frame reference F for the
- * rule, fact or directive referenced by R.
- */
-% sys_instance_clause(+Reference, -Frame)
-:- public sys_instance_clause/2.
-:- special(sys_instance_clause/2, 'SpecialFrame', 1).
-
-/**
  * frame_property(F, P):
  * The predicate succeeds for the properties P of the clause referenced by F.
  */
@@ -84,19 +75,3 @@ frame_property(I, R) :-
 
 :- private sys_frame_property_chk/3.
 :- special(sys_frame_property_chk/3, 'SpecialFrame', 3).
-
-/**
- * set_frame_property(F, P):
- * The predicate assigns the property P to the clause referenced by F.
- */
-% set_frame_property(+Frame, +Property)
-:- public set_frame_property/2.
-:- special(set_frame_property/2, 'SpecialFrame', 4).
-
-/**
- * reset_frame_property(F, P):
- * The predicate de-assigns the property P from the clause referenced by F.
- */
-% reset_frame_property(+Frame, +Property)
-:- public reset_frame_property/2.
-:- special(reset_frame_property/2, 'SpecialFrame', 5).

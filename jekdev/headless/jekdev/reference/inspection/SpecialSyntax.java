@@ -1,6 +1,5 @@
 package jekdev.reference.inspection;
 
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindCount;
@@ -11,7 +10,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Operator;
 import jekpro.reference.reflect.SpecialOper;
-import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.MapEntry;
 
