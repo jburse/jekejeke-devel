@@ -16,14 +16,14 @@
  * X = 1114111
  *
  * Besides the ISO core standard inspired atom related predicates we also
- * provide SWI-Prolog inspired atom related predicates. The predicate
- * atom_list_concat/3 allows concatenating and splitting atom lists to
- * and from atoms.
+ * provide Prolog commons inspired atom related predicates. The predicate
+ * atom_split/3 allows concatenating and splitting atom lists to and from atoms.
+ * The predicate atom_number/2 allows converting between atoms and numbers.
  *
  * Examples:
- * ?- atom_list_concat([a,b,c],'_',X).
+ * ?- atom_split([a,b,c],'_',X).
  * X = a_b_c
- * ?- atom_list_concat(X,'_',a_b_c).
+ * ?- atom_split(X,'_',a_b_c).
  * X = [a,b,c]
  *
  * The arguments of the below string predicates do not work with 16-bit
@@ -626,45 +626,60 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
    sys_atom_word_count(Str, Pos2, Count, Off2).
 
 /****************************************************************/
-/* SWI-Prolog Inspired                                          */
+/* Prolog Commons                                               */
 /****************************************************************/
 
 /**
- * atom_list_concat(L, S, R):
+ * atom_split(L, S, R): [Prolog Commons Atom Utilities]
  * If R is a variable the predicate succeeds when R unifies with the
  * concatenation of each atom from the non-empty list L separated by
  * the atom S. Otherwise the predicate splits the atom R into a list L
  * of atoms that are separated by the atom S.
  */
-% atom_list_concat(+-List, +Atom, -+Atom)
-:- public atom_list_concat/3.
-atom_list_concat(List, Sep, Atom) :-
+% atom_split(+-List, +Atom, -+Atom)
+:- public atom_split/3.
+atom_split(List, Sep, Atom) :-
    var(Atom), !,
-   atom_list_concat1(List, Sep, Atom).
-atom_list_concat(List, Sep, Atom) :-
-   atom_list_concat2(Atom, Sep, List).
+   atom_split1(List, Sep, Atom).
+atom_split(List, Sep, Atom) :-
+   atom_split2(Atom, Sep, List).
 
-% atom_list_concat1(+List, +Atom, -Atom)
-:- private atom_list_concat1/3.
-atom_list_concat1(List, _, _) :-
+% atom_split1(+List, +Atom, -Atom)
+:- private atom_split1/3.
+atom_split1(List, _, _) :-
    var(List),
    throw(error(instantiation_error,_)).
-atom_list_concat1([X], _, X) :- !.
-atom_list_concat1([X,Y|Z], Sep, R) :- !,
-   atom_list_concat1([Y|Z], Sep, H),
+atom_split1([X], _, X) :- !.
+atom_split1([X,Y|Z], Sep, R) :- !,
+   atom_split1([Y|Z], Sep, H),
    atom_concat(Sep, H, J),
    atom_concat(X, J, R).
-atom_list_concat1(List, _, _) :-
+atom_split1(List, _, _) :-
    throw(error(type_error(list,List),_)).
 
-% atom_list_concat2(+Atom, +Atom, -List)
-:- private atom_list_concat2/3.
-atom_list_concat2(Atom, Sep, [X|L]) :-
+% atom_split2(+Atom, +Atom, -List)
+:- private atom_split2/3.
+atom_split2(Atom, Sep, [X|L]) :-
    sub_atom(Atom, Before, _, After, Sep), !,
    sub_atom(Atom, 0, Before, X),
    last_sub_atom(Atom, After, 0, H),
-   atom_list_concat2(H, Sep, L).
-atom_list_concat2(Atom, _, [Atom]).
+   atom_split2(H, Sep, L).
+atom_split2(Atom, _, [Atom]).
+
+/**
+ * atom_numer(A, N): [Prolog Commons Atom Utilities]
+ * If A is a variable, then the predicate succeeds in A
+ * with the number unparsing of N. Otherwise the predicate
+ * succeeds in N with the number parsing of A.
+ */
+:- public atom_number/2.
+atom_number(A, N) :-
+   var(A), !,
+   number_codes(N, L),
+   atom_codes(A, L).
+atom_number(A, N) :-
+   atom_codes(A, L),
+   number_codes(N, L).
 
 /****************************************************************/
 /* Term Conversion                                              */

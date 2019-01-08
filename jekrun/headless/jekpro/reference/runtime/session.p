@@ -220,5 +220,5 @@ sys_show_name_or_eq(T, M) :-
  * from the top-level query including non-variables or duplicates.
  */
 % sys_get_raw_variables(-VariableNames)
-:- private sys_get_raw_variables/1.
+:- public sys_get_raw_variables/1.
 :- special(sys_get_raw_variables/1, 'SpecialSession', 3).

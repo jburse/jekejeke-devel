@@ -16,7 +16,7 @@
  * Codes outside of the range are classified as invalid.
  *
  * The predicates code_lower/2 and code_upper/2 can be used for case
- * conversion of code points. The predicates atom_lower/2 and atom_upper/2
+ * conversion of code points. The predicates downcase_atom/2 and upcase_atom/2
  * can be used for case conversion of atoms.
  *
  * Examples:
@@ -148,20 +148,20 @@ sys_type_name(9, graph).
 :- foreign(code_upper/2, 'Character', toUpperCase(int)).
 
 /**
- * atom_lower(A, B):
- * The predicate succeeds in A for the lower case of B.
+ * downcase_atom(A, B): [Prolog Commons Atom Utilities]
+ * The predicate succeeds in B for the lower case of A.
  */
-:- public atom_lower/2.
-:- virtual atom_lower/2.
-:- foreign(atom_lower/2, 'String', toLowerCase).
+:- public downcase_atom/2.
+:- virtual downcase_atom/2.
+:- foreign(downcase_atom/2, 'String', toLowerCase).
 
 /**
- * atom_upper(A, B):
- * The predicate succeeds in A for the upper case of B.
+ * upcase_atom(A, B): [Prolog Commons Atom Utilities]
+ * The predicate succeeds in B for the upper case of A.
  */
-:- public atom_upper/2.
-:- virtual atom_upper/2.
-:- foreign(atom_upper/2, 'String', toUpperCase).
+:- public upcase_atom/2.
+:- virtual upcase_atom/2.
+:- foreign(upcase_atom/2, 'String', toUpperCase).
 
 /******************************************************************/
 /* Matching & Replace                                             */
