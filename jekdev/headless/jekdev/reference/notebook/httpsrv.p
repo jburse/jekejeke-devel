@@ -99,7 +99,7 @@ handle(Object, Session) :-
    open(Session, read, Request),
    read_line_max(Request, 1024, What),
    \+ atom_length(What, 1024),
-   atom_list_concat([Method,URI,_], ' ', What), !,
+   atom_split(What, ' ', [Method,URI,_]), !,
    handle_method(Object, Method, URI, Session).
 handle(_, Session) :-
    setup_call_cleanup(

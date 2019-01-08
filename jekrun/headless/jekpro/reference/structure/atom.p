@@ -21,9 +21,9 @@
  * The predicate atom_number/2 allows converting between atoms and numbers.
  *
  * Examples:
- * ?- atom_split([a,b,c],'_',X).
+ * ?- atom_split(X,'_',[a,b,c]).
  * X = a_b_c
- * ?- atom_split(X,'_',a_b_c).
+ * ?- atom_split(a_b_c,'_',X).
  * X = [a,b,c]
  *
  * The arguments of the below string predicates do not work with 16-bit
@@ -630,18 +630,18 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
 /****************************************************************/
 
 /**
- * atom_split(L, S, R): [Prolog Commons Atom Utilities]
+ * atom_split(R, S, L): [Prolog Commons Atom Utilities]
  * If R is a variable the predicate succeeds when R unifies with the
  * concatenation of each atom from the non-empty list L separated by
  * the atom S. Otherwise the predicate splits the atom R into a list L
  * of atoms that are separated by the atom S.
  */
-% atom_split(+-List, +Atom, -+Atom)
+% atom_split(+Atom, -+Atom, +-List)
 :- public atom_split/3.
-atom_split(List, Sep, Atom) :-
+atom_split(Atom, Sep, List) :-
    var(Atom), !,
    atom_split1(List, Sep, Atom).
-atom_split(List, Sep, Atom) :-
+atom_split(Atom, Sep, List) :-
    atom_split2(Atom, Sep, List).
 
 % atom_split1(+List, +Atom, -Atom)
