@@ -98,4 +98,4 @@ leash(Flags) :-
  */
 % sys_trace(+Atom, +Frame)
 :- private sys_trace/2.
-:- special(sys_trace/2, 'SpecialDefault', 6).
+:- special(sys_trace/2, 'SpecialDefault', 3).

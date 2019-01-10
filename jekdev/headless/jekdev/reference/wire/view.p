@@ -119,6 +119,7 @@ html_begin(Response, Title, Opt) :-
    write(Response, '<html>\r\n'),
    write(Response, '  <head>\r\n'),
    write(Response, '      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\r\n'),
+   write(Response, '      <meta name="viewport" content="width=device-width, initial-scale=1.0">\r\n'),
    write(Response, '      <title>'),
    html_escape(Response, Title),
    write(Response, '</title>\r\n'),

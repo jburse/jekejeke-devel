@@ -55,7 +55,7 @@ sys_call_goal(_) :-
 
 /**
  * frame_property(F, P):
- * The predicate succeeds for the properties P of the clause referenced by F.
+ * The predicate succeeds for the properties P of the frame F.
  */
 % frame_property(+Frame, -Property)
 :- public frame_property/2.
@@ -75,3 +75,40 @@ frame_property(I, R) :-
 
 :- private sys_frame_property_chk/3.
 :- special(sys_frame_property_chk/3, 'SpecialFrame', 3).
+
+/**
+ * store_property(F, P):
+ * The predicate succeeds for the properties P of the store F.
+ */
+% store_property(+Frame, -Property)
+:- public store_property/2.
+store_property(I, R) :-
+   var(R), !,
+   sys_store_property(I, P),
+   sys_member(R, P).
+store_property(I, R) :-
+   functor(R, F, A),
+   sys_store_property_chk(I, F/A, P),
+   sys_member(R, P).
+
+:- private sys_store_property/2.
+:- special(sys_store_property/2, 'SpecialFrame', 4).
+
+:- private sys_store_property_chk/3.
+:- special(sys_store_property_chk/3, 'SpecialFrame', 5).
+
+/**
+ * set_store_property(S, Q):
+ * The predicate assigns the property Q to the store S.
+ */
+% set_store_property(+Oper, +Property)
+:- public set_store_property/2.
+:- special(set_store_property/2, 'SpecialFrame', 6).
+
+/**
+ * reset_store_property(S, Q):
+ * The predicate de-assigns the property Q from the store S.
+ */
+% reset_store_property(+Oper, +Property)
+:- public reset_store_property/2.
+:- special(reset_store_property/2, 'SpecialFrame', 7).

@@ -69,6 +69,8 @@
 
 :- use_module(library(inspection/provable)).
 :- use_module(library(stream/console)).
+:- use_module(library(system/thread)).
+:- use_module(library(inspection/frame)).
 
 /***********************************************************************/
 /* Debugging Mode                                                      */
@@ -219,12 +221,10 @@ spying(I) :-
 :- public break/2.
 break(P, L) :-
    absolute_file_name(P, Q),
-   sys_break(Q, L).
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_store, Store),
+   set_store_property(Store, sys_break(Q,L)).
 :- set_predicate_property(break/2, sys_notrace).
-
-% sys_break(+Pin, +Integer)
-:- public sys_break/2.
-:- special(sys_break/2, 'SpecialDefault', 3).
 
 /**
  * nobreak(F, L):
@@ -234,12 +234,10 @@ break(P, L) :-
 :- public nobreak/2.
 nobreak(P, L) :-
    absolute_file_name(P, Q),
-   sys_nobreak(Q, L).
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_store, Store),
+   reset_store_property(Store, sys_break(Q,L)).
 :- set_predicate_property(nobreak/2, sys_notrace).
-
-% sys_nobreak(+Pin, +Integer)
-:- public sys_nobreak/2.
-:- special(sys_nobreak/2, 'SpecialDefault', 4).
 
 /**
  * breaking(F, L):
@@ -249,10 +247,7 @@ nobreak(P, L) :-
 % breaking(-Callable, -Integer)
 :- public breaking/2.
 breaking(P, L) :-
-   sys_breaking(R),
-   sys_member(Q-L, R),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_store, Store),
+   store_property(Store, sys_break(Q,L)),
    absolute_file_name(P, Q).
-
-% sys_breaking(+List)
-:- public sys_breaking/1.
-:- special(sys_breaking/1, 'SpecialDefault', 5).
