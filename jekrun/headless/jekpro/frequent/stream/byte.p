@@ -193,11 +193,13 @@ at_end_of_stream(Stream) :-
  * read_block(I, L, B):
  * The predicate succeeds in a block B in reading maximally L bytes from I.
  */
+% read_block(+Integer, -Bytes)
 :- public read_block/2.
 read_block(Length, Block) :-
    current_input(Stream),
    sys_read_block(Stream, Length, Block).
 
+% read_block(+Stream, +Integer, -Bytes)
 :- public read_block/3.
 read_block(Alias, Length, Block) :-
    atom(Alias), !,
@@ -215,11 +217,13 @@ read_block(Stream, Length, Block) :-
  * write_block(O, B):
  * The predicate succeeds in writing the byte block B to O.
  */
+% write_block(+Bytes)
 :- public write_block/1.
 write_block(Block) :-
    current_output(Stream),
    sys_write_block(Stream, Block).
 
+% write_block(+Stream, +Bytes)
 :- public write_block/2.
 write_block(Alias, Block) :-
    atom(Alias), !,

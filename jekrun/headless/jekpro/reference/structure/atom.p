@@ -722,6 +722,7 @@ term_atom(T, A, O) :-
  * The predicate succeeds when L is a list of bytes and
  * B is a corresponding byte block.
  */
+% block_bytes(+-Bytes, -+List)
 :- public block_bytes/2.
 block_bytes(Block, Bytes) :-
    ground(Bytes), !,

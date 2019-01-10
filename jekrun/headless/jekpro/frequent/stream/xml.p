@@ -70,3 +70,19 @@ text_escape(X, Y) :-
 :- private sys_text_unescape/2.
 :- foreign(sys_text_unescape/2, 'ForeignXml',
       sysTextUnescape('String')).
+
+% base64_block(+-Atom, -+Bytes)
+:- public base64_block/2.
+base64_block(X, Y) :-
+   var(X), !,
+   sys_base64_encode(Y, X).
+base64_block(X, Y) :-
+   sys_base64_decode(X, Y).
+
+:- private sys_base64_decode/2.
+:- foreign(sys_base64_decode/2, 'ForeignXml',
+      sysBase64Decode('String')).
+
+:- private sys_base64_encode/2.
+:- foreign(sys_base64_encode/2, 'ForeignXml',
+      sysBase64Encode({byte})).

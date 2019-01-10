@@ -3,6 +3,8 @@ package matula.util.system;
 import matula.util.data.MapHash;
 import matula.util.format.XmlMachine;
 
+import java.text.ParseException;
+
 /**
  * The foreign predicates for the module system/xml.
  * <p/>
@@ -35,6 +37,8 @@ import matula.util.format.XmlMachine;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignXml {
+    public static final int GROUPS_PER_LINE = 10;
+
     public static final int MAX_ENTITY = 8; /* including & and ; */
     public static final String PREFIX_HTTP = "http:";
 
@@ -296,6 +300,197 @@ public final class ForeignXml {
         if (buf != null)
             return buf.toString();
         return str;
+    }
+
+    /*******************************************************************/
+    /* Base64 Decode/Encode                                            */
+    /*******************************************************************/
+
+    /**
+     * <p>Decode a string.</p>
+     *
+     * @param s The string.
+     * @return The bytes.
+     * @throws ParseException Shit happens.
+     */
+    public static byte[] sysBase64Decode(String s) throws ParseException {
+        int n = s.length();
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if (ch == '\n' || ch == '\r') k++;
+        }
+        if ((n - k) % 4 != 0)
+            throw new ParseException("length problem", n);
+        int m = (n - k) / 4 * 3;
+        if (s.endsWith("==")) {
+            m -= 2;
+        } else if (s.endsWith("=")) {
+            m -= 1;
+        }
+        byte[] res = new byte[m];
+        int j = 0;
+        k = 0;
+        int v = 0;
+        for (int i = 0; i < m; i++) {
+            switch (k) {
+                case 0:
+                    char ch = s.charAt(j);
+                    while (ch == '\n' || ch == '\r') {
+                        j++;
+                        ch = s.charAt(j);
+                    }
+                    j++;
+                    v = charToByte(ch);
+                    if (v == -1)
+                        throw new ParseException("decoding problem", j);
+                    res[i] = (byte) (v << 2);
+                    ch = s.charAt(j);
+                    j++;
+                    if (i == m - 1 && ch == '=') {
+                        v = 0;
+                    } else {
+                        v = charToByte(ch);
+                        if (v == -1)
+                            throw new ParseException("decoding problem", j);
+                    }
+                    res[i] |= (byte) (v >> 4);
+                    k = 1;
+                    break;
+                case 1:
+                    res[i] = (byte) (v << 4);
+                    ch = s.charAt(j);
+                    j++;
+                    v = charToByte(ch);
+                    if (v == -1)
+                        throw new ParseException("decoding problem", j);
+                    res[i] |= (byte) (v >> 2);
+                    k = 2;
+                    break;
+                case 2:
+                    res[i] = (byte) (v << 6);
+                    ch = s.charAt(j);
+                    j++;
+                    v = charToByte(ch);
+                    if (v == -1)
+                        throw new ParseException("decoding problem", j);
+                    res[i] |= v;
+                    k = 0;
+                    break;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * <p>Decode a character to a 6-bit value.</p>
+     *
+     * @param ch The character.
+     * @return The 6-bit value or -1.
+     */
+    private static int charToByte(int ch) {
+        if (('A' <= ch) && (ch <= 'Z')) {
+            return ch - 'A';
+        } else if (('a' <= ch) && (ch <= 'z')) {
+            return ch - 'a' + 26;
+        } else if (('0' <= ch) && (ch <= '9')) {
+            return ch - '0' + 52;
+        } else if (ch == '+') {
+            return 62;
+        } else if (ch == '/') {
+            return 63;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * <p>Encode bytes.</p>
+     *
+     * @param b The bytes.
+     * @return The string.
+     */
+    public static String sysBase64Encode(byte[] b) {
+        int k = b.length / (GROUPS_PER_LINE * 3);
+        int m = (b.length + 2) / 3 * 4 + k;
+        char[] res = new char[m];
+        int j = 0;
+        k = 0;
+        int v = 0;
+        int l = -1;
+        for (int i = 0; i < m; i++) {
+            switch (k) {
+                case 0:
+                    l++;
+                    if (l == GROUPS_PER_LINE) {
+                        res[i] = '\n';
+                        i++;
+                        l = 0;
+                    }
+                    v = b[j];
+                    j++;
+                    res[i] = (char) byteToChar((v >>> 2) & 0x3F);
+                    k = 1;
+                    break;
+                case 1:
+                    int w = v;
+                    if (j < b.length) {
+                        v = b[j];
+                    } else {
+                        v = 0;
+                    }
+                    j++;
+                    res[i] = (char) byteToChar(((w << 4) & 0x30) | ((v >>> 4) & 0x0F));
+                    k = 2;
+                    break;
+                case 2:
+                    if (j <= b.length) {
+                        w = v;
+                        if (j < b.length) {
+                            v = b[j];
+                        } else {
+                            v = 0;
+                        }
+                        j++;
+                        res[i] = (char) byteToChar(((w << 2) & 0x3C) | ((v >>> 6) & 0x03));
+                    } else {
+                        res[i] = '=';
+                    }
+                    k = 3;
+                    break;
+                case 3:
+                    if (j <= b.length) {
+                        res[i] = (char) byteToChar(v & 0x3F);
+                    } else {
+                        res[i] = '=';
+                    }
+                    k = 0;
+                    break;
+            }
+        }
+        return new String(res);
+    }
+
+    /**
+     * <p>Encode a 6-bit value to a character.</p>
+     *
+     * @param b The 6-bit value.
+     * @return The character.
+     */
+    private static int byteToChar(int b) {
+        if (b < 26) {
+            return 'A' + b;
+        } else if (b < 52) {
+            return 'a' + b - 26;
+        } else if (b < 62) {
+            return '0' + b - 52;
+        } else if (b == 62) {
+            return '+';
+        } else if (b == 63) {
+            return '/';
+        } else {
+            throw new IllegalArgumentException("problem encoding");
+        }
     }
 
     /**
