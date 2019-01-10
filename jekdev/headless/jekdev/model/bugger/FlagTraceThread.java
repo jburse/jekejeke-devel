@@ -9,6 +9,8 @@ import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.call.Controller;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
@@ -46,10 +48,12 @@ import matula.util.wire.AbstractLivestock;
  */
 public final class FlagTraceThread extends AbstractFlag {
     public final static String OP_FLAG_SYS_TDEBUG = "sys_tdebug";
-    public final static String OP_FLAG_TOP_FRAME = "sys_top_frame";
+    public final static String OP_FLAG_SYS_TOP_FRAME = "sys_top_frame";
+    public final static String OP_FLAG_SYS_THREAD_STORE = "sys_thread_store";
 
     private static final int FLAG_SYS_TDEBUG = 0;
     private static final int FLAG_SYS_TOP_FRAME = 1;
+    private static final int FLAG_SYS_THREAD_STORE = 2;
 
     /**
      * <p>Create a thread flag.</p>
@@ -68,7 +72,8 @@ public final class FlagTraceThread extends AbstractFlag {
     static MapHash<String, AbstractFlag> defineThreadFlags() {
         MapHash<String, AbstractFlag> threadflags = new MapHash<String, AbstractFlag>();
         threadflags.add(OP_FLAG_SYS_TDEBUG, new FlagTraceThread(FLAG_SYS_TDEBUG));
-        threadflags.add(OP_FLAG_TOP_FRAME, new FlagTraceThread(FLAG_SYS_TOP_FRAME));
+        threadflags.add(OP_FLAG_SYS_TOP_FRAME, new FlagTraceThread(FLAG_SYS_TOP_FRAME));
+        threadflags.add(OP_FLAG_SYS_THREAD_STORE, new FlagTraceThread(FLAG_SYS_THREAD_STORE));
         return threadflags;
     }
 
@@ -85,14 +90,29 @@ public final class FlagTraceThread extends AbstractFlag {
             throws EngineException, EngineMessage {
         switch (id) {
             case FLAG_SYS_TDEBUG:
-                Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(t);
-                if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
+                Controller contr = Controller.currentController(t);
+                if (contr == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                Supervisor s = (Supervisor) contr.getVisor();
                 return SpecialDefault.modeToAtom(s.flags & SpecialDefault.MASK_MODE_DEBG);
             case FLAG_SYS_TOP_FRAME:
-                s = (Supervisor) AbstractLivestock.currentLivestock(t);
-                if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
-                InterfaceStack stack = StackElement.skipNoTrace(s.inuse, en);
+                contr = Controller.currentController(t);
+                if (contr == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                Interpreter inter = contr.getInuse();
+                if (inter == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                Engine en2 = (Engine) inter.getEngine();
+                InterfaceStack stack = StackElement.skipNoTrace(en2, en);
                 return (stack != null ? stack : new SkelAtom(AbstractFlag.OP_NULL));
+            case FLAG_SYS_THREAD_STORE:
+                contr = Controller.currentController(t);
+                if (contr == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                inter = contr.getInuse();
+                if (inter == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                return inter.getKnowledgebase();
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

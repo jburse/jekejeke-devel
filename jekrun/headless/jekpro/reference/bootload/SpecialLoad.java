@@ -3,9 +3,9 @@ package jekpro.reference.bootload;
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.Branch;
-import jekpro.model.builtin.PropertyIndicator;
+import jekpro.model.builtin.InformationIndicator;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
@@ -280,26 +280,26 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractProperty[] props = branch.listPredProp(pick);
+            AbstractInformation[] props = branch.listPredProp(pick);
             for (int k = 0; k < props.length; k++) {
-                AbstractProperty prop = props[k];
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_HIDE) != 0)
+                AbstractInformation prop = props[k];
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_HIDE) != 0)
                     continue;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_NOCL) != 0 &&
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_NOCL) != 0 &&
                         hasClause(pick, source, en))
                     continue;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_SUPR) != 0 &&
                         sameVisible(source, pick, en))
                     continue;
                 Object[] vals = SpecialPred.getPropPred(pick, prop, en);
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_SLCF) != 0) {
                     vals = selectFirst(vals, source.getPathAtom());
-                } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0) {
+                } else if ((prop.getFlags() & AbstractInformation.MASK_PROP_PRJF) != 0) {
                     vals = projectFirst(vals);
-                } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
+                } else if ((prop.getFlags() & AbstractInformation.MASK_PROP_DELE) != 0) {
                     vals = delegateSpec(vals, pick, source, en);
                 }
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_MODI) != 0) {
                     for (int j = 0; j < vals.length; j++) {
                         if (modifiers == null)
                             modifiers = new ListArray<SkelAtom>();
@@ -334,7 +334,7 @@ public final class SpecialLoad extends AbstractSpecial {
             if (source != sa.scope)
                 continue;
             if (modifiers != null) {
-                Object decl = PropertyIndicator.storeKeyToColonSkel(
+                Object decl = InformationIndicator.storeKeyToColonSkel(
                         pick.getFun(), pick.getArity(), source, en);
                 decl = prependModifiers(modifiers, decl);
                 modifiers = null;
@@ -405,12 +405,12 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractProperty[] props = branch.listSrcProp();
+            AbstractInformation[] props = branch.listSrcProp();
             for (int k = 0; k < props.length; k++) {
-                AbstractProperty prop = props[k];
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_HIDE) != 0)
+                AbstractInformation prop = props[k];
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_HIDE) != 0)
                     continue;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODL) != 0 &&
+                if ((prop.getFlags() & AbstractInformation.MASK_PROP_MODL) != 0 &&
                         Branch.OP_USER.equals(src.getFullName()))
                     continue;
                 Object[] vals = SpecialSource.getPropSrc(prop, src, en);
@@ -600,10 +600,10 @@ public final class SpecialLoad extends AbstractSpecial {
      */
     private static boolean sameValues2(Object[] vals, Object[] vals2) {
         for (int i = 0; i < vals.length; i++)
-            if (AbstractProperty.indexValue(vals2, vals[i]) == -1)
+            if (AbstractInformation.indexValue(vals2, vals[i]) == -1)
                 return false;
         for (int i = 0; i < vals2.length; i++)
-            if (AbstractProperty.indexValue(vals, vals2[i]) == -1)
+            if (AbstractInformation.indexValue(vals, vals2[i]) == -1)
                 return false;
         return true;
     }

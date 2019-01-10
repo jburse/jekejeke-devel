@@ -2,7 +2,7 @@ package jekpro.reference.reflect;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -278,15 +278,15 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractProperty[] props = branch.listPredProp(pick);
+            AbstractInformation[] props = branch.listPredProp(pick);
             for (int j = props.length - 1; j >= 0; j--) {
-                AbstractProperty prop = props[j];
+                AbstractInformation prop = props[j];
                 Object t = en.skel;
                 Display d = en.display;
                 Object[] vals = getPropPred(pick, prop, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractProperty.consArray(multi, vals, en);
+                multi = AbstractInformation.consArray(multi, vals, en);
             }
         }
         return multi;
@@ -308,7 +308,7 @@ public final class SpecialPred extends AbstractSpecial {
         Object[] vals = getPropPred(pred, prop, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractProperty.consArray(false, vals, en);
+        return AbstractInformation.consArray(false, vals, en);
     }
 
     /**
@@ -361,7 +361,7 @@ public final class SpecialPred extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropPred(pred, prop, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
+        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(t, d));
         setPropPred(prop, pred, vals, en);
     }
 
@@ -380,7 +380,7 @@ public final class SpecialPred extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropPred(pred, prop, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
+        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(t, d));
         setPropPred(prop, pred, vals, en);
     }
 

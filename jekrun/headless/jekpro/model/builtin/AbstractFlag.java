@@ -9,7 +9,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 
 /**
- * <p>Abstract class for toolkit and capability flags.</p>
+ * <p>Abstract base class for flags.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

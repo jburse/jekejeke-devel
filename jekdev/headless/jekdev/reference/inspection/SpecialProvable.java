@@ -2,7 +2,7 @@ package jekdev.reference.inspection;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -240,7 +240,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 Object[] vals = getPropCallable(prop, t2, d2, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractProperty.consArray(multi, vals, en);
+                multi = AbstractInformation.consArray(multi, vals, en);
             }
         }
         return multi;
@@ -263,7 +263,7 @@ public final class SpecialProvable extends AbstractSpecial {
         Object[] vals = getPropCallable(prop, t2, d2, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractProperty.consArray(false, vals, en);
+        return AbstractInformation.consArray(false, vals, en);
     }
 
     /**
@@ -282,7 +282,7 @@ public final class SpecialProvable extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
+        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(t, d));
         setPropCallable(prop, t2, d2, vals, en);
     }
 
@@ -302,7 +302,7 @@ public final class SpecialProvable extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
+        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(t, d));
         setPropCallable(prop, t2, d2, vals, en);
     }
 

@@ -1,7 +1,7 @@
 package jekpro.reference.reflect;
 
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -181,7 +181,7 @@ public final class SpecialOper extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                removeOperProp(en.skel, en.display, oper, en);
+                removeOperProp(oper, en.skel, en.display, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -310,7 +310,7 @@ public final class SpecialOper extends AbstractSpecial {
             Object[] vals = getOperProp(op, key, en);
             en.skel = t;
             en.display = d;
-            multi = AbstractProperty.consArray(multi, vals, en);
+            multi = AbstractInformation.consArray(multi, vals, en);
         }
         return multi;
     }
@@ -331,7 +331,7 @@ public final class SpecialOper extends AbstractSpecial {
         Object[] vals = getOperProp(op, key, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractProperty.consArray(false, vals, en);
+        return AbstractInformation.consArray(false, vals, en);
     }
 
     /***********************************************************************/
@@ -342,38 +342,38 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Reset an operator property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
+     * @param op The operator.
      * @param t  The value skeleton.
      * @param d  The value display.
-     * @param op The operator.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void removeOperProp(Object t, Display d, Operator op,
-                                      Engine en)
+    public static void removeOperProp(Operator op, Object t, Display d,
+                                       Engine en)
             throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getOperProp(op, prop, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
-        setOperProp(prop, op, vals, en);
+        StoreKey sk = StackElement.callableToStoreKey(t);
+        Object[] vals = getOperProp(op, sk, en);
+        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(t, d));
+        setOperProp(sk, op, vals, en);
     }
 
     /**
      * <p>Set an operator property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
+     * @param op The operator.
      * @param t  The value skeleton.
      * @param d  The value display.
-     * @param op The operator.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void addOperProp(Object t, Display d, Operator op,
+    public static void addOperProp(Operator op, Object t, Display d,
                                    Engine en)
             throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getOperProp(op, prop, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
-        setOperProp(prop, op, vals, en);
+        StoreKey sk = StackElement.callableToStoreKey(t);
+        Object[] vals = getOperProp(op, sk, en);
+        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(t, d));
+        setOperProp(sk, op, vals, en);
     }
 
     /***********************************************************************/

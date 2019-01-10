@@ -3,7 +3,7 @@ package jekpro.frequent.experiment;
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.inter.*;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
@@ -271,7 +271,7 @@ public final class SpecialRef extends AbstractSpecial {
                 Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractProperty.consArray(multi, vals, en);
+                multi = AbstractInformation.consArray(multi, vals, en);
             }
         }
         return multi;
@@ -293,7 +293,7 @@ public final class SpecialRef extends AbstractSpecial {
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractProperty.consArray(false, vals, en);
+        return AbstractInformation.consArray(false, vals, en);
     }
 
     /**
@@ -311,7 +311,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(temp);
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(temp, ref));
+        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);
     }
 
@@ -330,7 +330,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(temp);
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(temp, ref));
+        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);
     }
 
