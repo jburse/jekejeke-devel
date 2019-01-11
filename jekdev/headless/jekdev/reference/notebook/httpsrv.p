@@ -7,11 +7,11 @@
  *
  * ?- server(<object>, <port>), fail; true.
  *
- * The server currently implements a minimal subset of the HTTP/1.0
+ * The server currently implements a minimal subset of the HTTP/1.1
  * protocol. The server will only read the first line of a request and
  * only process GET methods. The server is able to generate error messages
  * in the case the request is erroneous or in case the server object cannot
- * handle the request. The following HTTP/1.0 errors have been realized:
+ * handle the request. The following HTTP/1.1 errors have been realized:
  *
  * * 400 Bad Request: Request could not be parsed.
  * * 404 Not Found: Server object did not succeeds.
@@ -61,6 +61,7 @@
 :- use_module(library(stream/xml)).
 :- use_module(library(system/uri)).
 :- use_module(library(basic/lists)).
+:- use_module(library(system/domain)).
 
 /***************************************************************/
 /* HTTP Server                                                 */
@@ -97,51 +98,52 @@ accept(Port, Session) :-
 :- private handle/2.
 handle(Object, Session) :-
    open(Session, read, Request),
-   read_line_max(Request, 1024, What),
-   \+ atom_length(What, 1024),
-   atom_split(What, ' ', [Method,URI,_]), !,
-   handle_method(Object, Method, URI, Session).
+   read_request(Request, Method, URI),
+   read_header(Request, Header), !,
+   handle_method(Object, Method, URI, Header, Session).
 handle(_, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_error(Response, 400),                  /* Bad Request */
+      send_error(400, Response),                  /* Bad Request */
       close(Response)).
 
-% handle_method(+Object, +Atom, +Atom, +Socket)
-:- private handle_method/4.
-handle_method(Object, 'GET', URI, Session) :- !,
-   handle_get(Object, URI, Session).
-handle_method(_, _, _, Session) :-
+% handle_method(+Object, +Atom, +Atom, +List, +Socket)
+:- private handle_method/5.
+handle_method(Object, 'GET', URI, Header, Session) :- !,
+   handle_get(Object, URI, Header, Session).
+handle_method(_, _, _, _, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_error(Response, 501),                  /* Not Implemented */
+      send_error(501, Response),                  /* Not Implemented */
       close(Response)).
 
-% handle_get(+Object, +Atom, +Socket)
-:- private handle_get/3.
-handle_get(Object, URI, Session) :-
+% handle_get(+Object, +Atom, +List, +Socket)
+:- private handle_get/4.
+handle_get(Object, URI, Header, Session) :-
    make_uri(Spec, Query, _, URI),
-   params(Query, Assoc),
-   Object::dispatch(Spec, Assoc, Session), !.
-handle_get(_, _, Session) :-
+   make_parameter(Query, Parameter),
+   handle_object(Object, Spec, request(Parameter,Header), Session), !.
+handle_get(_, _, _, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_error(Response, 404),                  /* Not Found */
+      send_error(404, Response),                  /* Not Found */
       close(Response)).
 
-% params(+Atom, -Assoc)
-:- private params/2.
-params('', []) :- !.
-params(Query, [Name-Value|Assoc]) :-
-   make_query(Name, Value, Rest, Query),
-   params(Rest, Assoc).
+% handle_object(+Object, +Atom, +Request, +Socket)
+:- private handle_object/4.
+handle_object(Object, Spec, Request, Session) :-
+   http_header(Request, 'Upgrade', websocket),
+   http_header(Request, 'Connection', 'Upgrade'), !,
+   Object::upgrade(Spec, Request, Session).
+handle_object(Object, Spec, Request, Session) :-
+   Object::dispatch(Spec, Request, Session).
 
 /**
- * dispatch(O, P, A, S):
+ * dispatch(O, P, R, S):
  * The predicate succeeds in dispatching the request for object
- * O, with path P, with parameter list A and the session S.
+ * O, with path P, with request R and the session S.
  */
-% dispatch(+Object, +Spec, +Assoc, +Session)
+% dispatch(+Object, +Spec, +Request, +Session)
 :- public dispatch/4.
 dispatch(_, '/images/cookie.gif', _, Session) :- !,
    setup_call_cleanup(
@@ -149,20 +151,78 @@ dispatch(_, '/images/cookie.gif', _, Session) :- !,
       send_binary(library(notebook/images/cookie), Response),
       close(Response)).
 
+/**
+ * upgrade(O, P, R, S):
+ * The predicate succeeds in upgrading the request for object
+ * O, with path P, with request R and the session S.
+ */
+% upgrade(+Object, +Spec, +Request, +Session)
+:- public upgrade/4.
+:- static upgrade/4.
+
 /***************************************************************/
 /* HTTP Requests                                               */
 /***************************************************************/
 
 /**
- * http_parameter(A, N, V):
+ * http_parameter(R, N, V):
  * The predicate succeeds in V with the value of the parameter named N
- * from the parameter list A.
+ * from the request R.
  */
-% http_parameter(+Assoc, +Atom, -Atom)
+% http_parameter(+Request, +Atom, -Atom)
 :- public http_parameter/3.
-http_parameter(Assoc, Name, Value) :-
-   member(Name-Found, Assoc), !,
-   Value = Found.
+http_parameter(request(Parameter,_), Name, Value) :-
+   member(Name-Value, Parameter).
+
+/**
+ * http_header(R, N, V):
+ * The predicate succeeds in V with the value of the header named N
+ * from the request R.
+ */
+:- public http_header/3.
+http_header(request(_,Header), Name, Value) :-
+   member(Name-Value, Header).
+
+% read_request(+Stream, -Atom, -Atom)
+:- private read_request/3.
+read_request(Request, Method, URI) :-
+   read_line_max(Request, 1024, What),
+   \+ atom_length(What, 1024),
+   atom_split(What, ' ', [Method,URI,_]).
+
+% read_header(+Stream, -List)
+:- private read_header/2.
+read_header(Request, List) :-
+   read_line_max(Request, 1024, What),
+   \+ atom_length(What, 1024),
+   read_header(What, Request, List).
+
+% read_header(+Atom, +Stream, -List)
+:- private read_header/3.
+read_header('', _, []) :- !.
+read_header(What, Request, List) :-
+   make_header(What, List, List2),
+   read_header(Request, List2).
+
+% make_parameter(+Atom, -List)
+:- private make_parameter/2.
+make_parameter('', []) :- !.
+make_parameter(Query, [Name-Value|List]) :-
+   make_query(Name, Value, Rest, Query),
+   make_parameter(Rest, List).
+
+% make_header(+Atom, -List, +List)
+:- private make_header/3.
+make_header(Line, List, List2) :-
+   atom_split(Line, ': ', [Name,Rest]),
+   atom_split(Rest, ', ', Values),
+   make_header(Values, Name, List, List2).
+
+% make_header(+Atom, +List, -List, +List)
+:- private make_header/3.
+make_header([], _, List, List).
+make_header([Value|Rest], Name, [Name-Value|List], List2) :-
+   make_header(Rest, Name, List, List2).
 
 /***************************************************************/
 /* HTTP Response Text                                          */
@@ -175,7 +235,7 @@ http_parameter(Assoc, Name, Value) :-
 % response_text(+Stream)
 :- public response_text/1.
 response_text(Response) :-
-   write(Response, 'HTTP/1.0 200 OK\r\n'),
+   write(Response, 'HTTP/1.1 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
@@ -226,13 +286,14 @@ send_lines2(_, Response) :-
 % response_binary(+Stream)
 :- public response_binary/1.
 response_binary(Response) :-
-   write_bytes(Response, "HTTP/1.0 200 OK\r\n"),
-   write_bytes(Response, "Content-Type: application/octet-stream\r\n"),
-   write_bytes(Response, "\r\n").
+   write_bytes(Response, 'HTTP/1.1 200 OK\r\n'),
+   write_bytes(Response, 'Content-Type: application/octet-stream\r\n'),
+   write_bytes(Response, '\r\n').
 
-% write_bytes(+Stream, +Bytes)
-:- private write_bytes/2.
-write_bytes(Response, Bytes) :-
+% write_bytes(+Stream, +Atom)
+:- public write_bytes/2.
+write_bytes(Response, Atom) :-
+   atom_codes(Atom, Bytes),
    block_bytes(Block, Bytes),
    write_block(Response, Block).
 
@@ -281,57 +342,82 @@ html_escape(Response, Text) :-
 % response_redirect(+Atom, +Stream)
 :- public response_redirect/2.
 response_redirect(Location, Response) :-
-   write(Response, 'HTTP/1.0 302 Found\r\n'),
+   write(Response, 'HTTP/1.1 302 Found\r\n'),
    write(Response, 'Location: '),
    write(Response, Location),
    write(Response, '\r\n'),
    write(Response, '\r\n').
 
 /***************************************************************/
-/* Internal Error Generator                                    */
-/* https://www.w3.org/Protocols/HTTP/1.0/spec.html             */
+/* HTTP Response Upgrade                                       */
 /***************************************************************/
 
 /**
- * response_error(O, C):
+ * response_upgrade(L, O):
+ * Send an upgrade response to the binary output stream O.
+ */
+% response_upgrade(+Request, +Stream)
+:- public response_upgrade/2.
+response_upgrade(Request, Response) :-
+   http_header(Request, 'Sec-WebSocket-Key', Key),
+   http_header(Request, 'Sec-WebSocket-Version', '13'),
+   atom_concat(Key, '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', Key2),
+   atom_codes(Key2, List),
+   block_bytes(Bytes, List),
+   sha1_hash(Bytes, Hash),
+   base64_block(Key3, Hash),
+   write_bytes(Response, 'HTTP/1.1 101 Switching Protocols\r\n'),
+   write_bytes(Response, 'Upgrade: websocket\r\n'),
+   write_bytes(Response, 'Connection: Upgrade\r\n'),
+   write_bytes(Response, 'Sec-WebSocket-Accept: '),
+   write_bytes(Response, Key3),
+   write_bytes(Response, '\r\n'),
+   write_bytes(Response, '\r\n').
+
+/***************************************************************/
+/* Internal Error Generator                                    */
+/***************************************************************/
+
+/**
+ * response_error(C, O):
  * Send an error code C to the text output stream O.
  */
-% response_error(+Stream, +Integer)
+% response_error(+Integer, +Stream)
 :- private response_error/2.
-response_error(Response, 400) :- !,
-   write(Response, 'HTTP/1.0 400 Bad Request\r\n'),
+response_error(400, Response) :- !,
+   write(Response, 'HTTP/1.1 400 Bad Request\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
-response_error(Response, 404) :- !,
-   write(Response, 'HTTP/1.0 404 Not Found\r\n'),
+response_error(404, Response) :- !,
+   write(Response, 'HTTP/1.1 404 Not Found\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
-response_error(Response, 501) :- !,
-   write(Response, 'HTTP/1.0 501 Not Implemented\r\n'),
+response_error(501, Response) :- !,
+   write(Response, 'HTTP/1.1 501 Not Implemented\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 
 /**
- * send_error(O, C):
+ * send_error(C, O):
  * Send an error code C page to the text output stream O.
  */
-% send_error(+Stream, +Integer)
+% send_error(+Integer, +Stream)
 :- private send_error/2.
-send_error(Response, 400) :- !,
+send_error(400, Response) :- !,
    setup_call_cleanup(
       open_resource(library(notebook/pages/err400), Stream),
-      (  response_error(Response, 400),
+      (  response_error(400, Response),
          send_lines(Stream, Response)),
       close(Stream)).
-send_error(Response, 404) :- !,
+send_error(404, Response) :- !,
    setup_call_cleanup(
       open_resource(library(notebook/pages/err404), Stream),
-      (  response_error(Response, 404),
+      (  response_error(404, Response),
          send_lines(Stream, Response)),
       close(Stream)).
-send_error(Response, 501) :- !,
+send_error(501, Response) :- !,
    setup_call_cleanup(
       open_resource(library(notebook/pages/err501), Stream),
-      (  response_error(Response, 501),
+      (  response_error(501, Response),
          send_lines(Stream, Response)),
       close(Stream)).

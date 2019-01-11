@@ -40,7 +40,7 @@ import matula.util.format.AbstractDom;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-class TransformOpts extends SerializeOpts {
+final class TransformOpts extends SerializeOpts {
     /* sheet options */
     public final static String OP_VARIABLE = "variable";
 

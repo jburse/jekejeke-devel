@@ -42,7 +42,7 @@
  * The predicate succeeds in dispatching the request for object
  * O, with path P, with parameter list A and the session S.
  */
-% dispatch(+Object, +Spec, +Assoc, +Session)
+% dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/layout.html', _, Session) :- !,
@@ -50,8 +50,8 @@ dispatch(_, '/layout.html', _, Session) :- !,
       open(Session, write, Response),
       send_text(library(wire/pages/layout), Response),
       close(Response)).
-dispatch(Object, Spec, Assoc, Session) :-
-   wire/view:dispatch(Object, Spec, Assoc, Session).
+dispatch(Object, Spec, Request, Session) :-
+   wire/view:dispatch(Object, Spec, Request, Session).
 
 % html_target(+Object, +Stream, +Atom)
 :- public html_target/3.

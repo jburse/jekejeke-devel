@@ -46,7 +46,7 @@
  * The predicate succeeds in dispatching the request for object
  * O, with path P, with parameter list A and the session S.
  */
-% dispatch(+Object, +Spec, +Assoc, +Session)
+% dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(Object, '/thread.jsp', _, Session) :- !,
@@ -54,25 +54,25 @@ dispatch(Object, '/thread.jsp', _, Session) :- !,
       open(Session, write, Response),
       send_thread(Object, Response),
       close(Response)).
-dispatch(Object, '/stack.jsp', Assoc, Session) :- !,
+dispatch(Object, '/stack.jsp', Request, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_stack(Object, Assoc, Response),
+      send_stack(Object, Request, Response),
       close(Response)).
-dispatch(_, '/frame.jsp', Assoc, Session) :- !,
+dispatch(_, '/frame.jsp', Request, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_frame(Assoc, Response),
+      send_frame(Request, Response),
       close(Response)).
-dispatch(_, '/source.jsp', Assoc, Session) :- !,
+dispatch(_, '/source.jsp', Request, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_source(Assoc, Response),
+      send_source(Request, Response),
       close(Response)).
-dispatch(_, '/toggle.class', Assoc, Session) :- !,
+dispatch(_, '/toggle.class', Request, Session) :- !,
    setup_call_cleanup(
       open(Session, write, Response),
-      send_toggle(Assoc, Response),
+      send_toggle(Request, Response),
       close(Response)).
 
 /*************************************************************/
@@ -137,6 +137,9 @@ html_begin_opt(Response, [lines|Opt]) :-
    html_begin_opt(Response, Opt).
 html_begin_opt(Response, [margin|Opt]) :-
    script_margin(Response),
+   html_begin_opt(Response, Opt).
+html_begin_opt(Response, [socket|Opt]) :-
+   script_socket(Response),
    html_begin_opt(Response, Opt).
 html_begin_opt(_, []).
 

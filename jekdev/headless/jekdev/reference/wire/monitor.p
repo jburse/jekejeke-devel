@@ -42,6 +42,7 @@
 :- use_module(library(notebook/httpsrv)).
 :- use_module(library(stream/console)).
 :- use_module(library(runtime/distributed)).
+:- use_module(library(notebook/websock)).
 
 /**
  * start(P):
@@ -52,11 +53,11 @@ start(P) :-
    spawn((  server(wire/monitor, P), fail; true)).
 
 /**
- * dispatch(O, P, A, S):
+ * dispatch(O, P, R, S):
  * The predicate succeeds in dispatching the request for object
- * O, with path P, with parameter list A and the session S.
+ * O, with path P, with request R and the session S.
  */
-% dispatch(+Object, +Spec, +Assoc, +Session)
+% dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/images/closed.gif', _, Session) :- !,
@@ -84,15 +85,31 @@ dispatch(_, '/index.html', _, Session) :- !,
       open(Session, write, Response),
       send_text(library(wire/pages/index), Response),
       close(Response)).
-dispatch(_, Path, Params, Session) :-
+dispatch(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/desktop/'), !,
    Pos2 is Pos-1,
    sub_atom(Path, Pos2, _, 0, Path2),
-   wire/desktop::dispatch(Path2, Params, Session).
-dispatch(_, Path, Params, Session) :-
+   wire/desktop::dispatch(Path2, Request, Session).
+dispatch(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/mobile/'), !,
    Pos2 is Pos-1,
    sub_atom(Path, Pos2, _, 0, Path2),
-   wire/mobile::dispatch(Path2, Params, Session).
-dispatch(Object, Spec, Assoc, Session) :-
-   notebook/httpsrv:dispatch(Object, Spec, Assoc, Session).
+   wire/mobile::dispatch(Path2, Request, Session).
+dispatch(Object, Spec, Request, Session) :-
+   notebook/httpsrv:dispatch(Object, Spec, Request, Session).
+
+/**
+ * upgrade(O, P, R, S):
+ * The predicate succeeds in upgrading the request for object
+ * O, with path P, with request R and the session S.
+ */
+% upgrade(+Object, +Spec, +Request, +Session)
+:- override upgrade/4.
+:- public upgrade/4.
+upgrade(_, _, Request, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Output, [type(binary),buffer(0)]),
+      response_upgrade(Request, Output),
+      flush_output(Output)),
+   open(Session, read, Input, [type(binary),buffer(0)]),
+   endpoint(wire/pages/talkback, Input, Output).
