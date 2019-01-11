@@ -1,5 +1,15 @@
 /**
- * This module provides a web socket extension.
+ * This module provides a web socket end-point based on Pythonesk
+ * dispatch of an end-point object. The end-point can be started by
+ * providing the end-point object that will be responsible for
+ * handling web socket messages:
+ *
+ * :- endpoint(<Object>, <Input>, <Output>).
+ *
+ * The end-point object need to implement the predicates start/2,
+ * handle/4 and stop/4. The server can send messages to the client
+ * via the predicate send/3. The current implementation allows full
+ * duplex communication.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

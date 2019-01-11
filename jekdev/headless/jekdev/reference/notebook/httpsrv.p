@@ -7,11 +7,11 @@
  *
  * ?- server(<object>, <port>), fail; true.
  *
- * The server currently implements a minimal subset of the HTTP/1.1
- * protocol. The server will only read the first line of a request and
- * only process GET methods. The server is able to generate error messages
- * in the case the request is erroneous or in case the server object cannot
- * handle the request. The following HTTP/1.1 errors have been realized:
+ * The server currently implements a minimal subset of the HTTP/1.1 protocol
+ * restricted to GET method. The server will read the request line and the
+ * header lines. The server is able to gen-erate error messages in the case
+ * the request is erroneous or in case the server object cannot handle
+ * the request. The following HTTP/1.1 errors have been realized:
  *
  * * 400 Bad Request: Request could not be parsed.
  * * 404 Not Found: Server object did not succeeds.
@@ -337,7 +337,7 @@ html_escape(Response, Text) :-
 
 /**
  * response_redirect(L, O):
- * Send a redirect response to the text output stream O.
+ * Send a redirect response to location L to the text output stream O.
  */
 % response_redirect(+Atom, +Stream)
 :- public response_redirect/2.
@@ -353,8 +353,8 @@ response_redirect(Location, Response) :-
 /***************************************************************/
 
 /**
- * response_upgrade(L, O):
- * Send an upgrade response to the binary output stream O.
+ * response_upgrade(R, O):
+ * Send an upgrade response from request R to the binary output stream O.
  */
 % response_upgrade(+Request, +Stream)
 :- public response_upgrade/2.
