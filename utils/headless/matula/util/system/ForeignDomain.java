@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * <p>The foreign predicates for the module system/domain.
@@ -338,6 +340,25 @@ public final class ForeignDomain {
             throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
         }
         return dom;
+    }
+
+    /************************************************************/
+    /* SHA-1 Hash                                               */
+    /************************************************************/
+
+    /**
+     * <p>Compute the SHA-1 Hash of a payload.</p>
+     *
+     * @param data The payload.
+     * @return The SHA-1 Hash.
+     */
+    public static byte[] sysSHA1Hash(byte[] data) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            return md.digest(data);
+        } catch (NoSuchAlgorithmException e) {
+            return null;
+        }
     }
 
     /**
