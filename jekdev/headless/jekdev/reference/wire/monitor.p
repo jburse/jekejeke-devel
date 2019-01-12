@@ -40,9 +40,9 @@
 
 :- module(monitor, []).
 :- use_module(library(notebook/httpsrv)).
-:- use_module(library(stream/console)).
+:- use_module(library(misc/socket)).
 :- use_module(library(runtime/distributed)).
-:- use_module(library(notebook/websock)).
+:- use_module(pages/talkback).
 
 /**
  * start(P):
@@ -108,8 +108,8 @@ dispatch(Object, Spec, Request, Session) :-
 :- public upgrade/4.
 upgrade(_, _, Request, Session) :-
    setup_call_cleanup(
-      open(Session, write, Output, [type(binary),buffer(0)]),
+      open(Session, write, Output, [type(binary)]),
       response_upgrade(Request, Output),
       flush_output(Output)),
-   open(Session, read, Input, [type(binary),buffer(0)]),
-   endpoint(wire/pages/talkback, Input, Output).
+   websock_new(Session, WebSession),
+   spawn(worker(WebSession)).
