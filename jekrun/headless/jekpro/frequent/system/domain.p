@@ -157,7 +157,11 @@ uri_puny(X, Y) :-
 /* SHA-1 Hash                                               */
 /************************************************************/
 
+/**
+ * sha1_hash(B, H):
+ * The predicate succeeds in H with the SHA-1 hash block
+ * of the block B.
+ */
 % sha1_hash(+Bytes, -Bytes)
 :- public sha1_hash/2.
-:- foreign(sha1_hash/2, 'ForeignDomain',
-      sysSHA1Hash({byte})).
+:- foreign(sha1_hash/2, 'ForeignDomain', sysSHA1Hash({byte})).
