@@ -152,3 +152,12 @@ uri_puny(X, Y) :-
 :- private sys_uri_unpuny/2.
 :- foreign(sys_uri_unpuny/2, 'ForeignDomain',
       sysUriUnpuny('String')).
+
+/************************************************************/
+/* SHA-1 Hash                                               */
+/************************************************************/
+
+% sha1_hash(+Bytes, -Bytes)
+:- public sha1_hash/2.
+:- foreign(sha1_hash/2, 'ForeignDomain',
+      sysSHA1Hash({byte})).

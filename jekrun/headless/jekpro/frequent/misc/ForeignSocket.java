@@ -5,11 +5,10 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.ClosedByInterruptException;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 /**
- * Provides the methods for the module misc/text.
+ * Provides the methods for the module misc/socket.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -51,10 +50,11 @@ public final class ForeignSocket {
      */
     public static ServerSocket sysServerNew(int port)
             throws IOException {
-        ServerSocketChannel chan = ServerSocketChannel.open();
-        ServerSocket sock = chan.socket();
-        sock.bind(new InetSocketAddress(port));
-        return sock;
+//        ServerSocketChannel chan = ServerSocketChannel.open();
+//        ServerSocket sock = chan.socket();
+//        sock.bind(new InetSocketAddress(port));
+//        return sock;
+        return new ServerSocket(port);
     }
 
     /**
@@ -68,9 +68,10 @@ public final class ForeignSocket {
      */
     public static Socket sysServerAccept(ServerSocket sock)
             throws IOException {
-        ServerSocketChannel chan = sock.getChannel();
-        SocketChannel chan2 = chan.accept();
-        return chan2.socket();
+//        ServerSocketChannel chan = sock.getChannel();
+//        SocketChannel chan2 = chan.accept();
+//        return chan2.socket();
+        return sock.accept();
     }
 
     /**
@@ -85,9 +86,10 @@ public final class ForeignSocket {
      */
     public static Socket sysClientNew(String host, int port)
             throws IOException {
-        SocketChannel chan = SocketChannel.open();
-        chan.connect(new InetSocketAddress(host, port));
-        return chan.socket();
+//        SocketChannel chan = SocketChannel.open();
+//        chan.connect(new InetSocketAddress(host, port));
+//        return chan.socket();
+        return new Socket(host, port);
     }
 
 }

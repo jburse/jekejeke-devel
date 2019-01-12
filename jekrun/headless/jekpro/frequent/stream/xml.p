@@ -71,6 +71,16 @@ text_escape(X, Y) :-
 :- foreign(sys_text_unescape/2, 'ForeignXml',
       sysTextUnescape('String')).
 
+/****************************************************************/
+/* Base64 Conversion                                            */
+/****************************************************************/
+
+/**
+ * base64_block(T, E):
+ * If T is a variable then the predicate succeeds when T unifies with
+ * the based64 encode of E. Otherwise the predicate succeeds when E unifies
+ * with the base64 decode of T.
+ */
 % base64_block(+-Atom, -+Bytes)
 :- public base64_block/2.
 base64_block(X, Y) :-

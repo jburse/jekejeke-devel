@@ -43,6 +43,7 @@
 
 :- package(library(jekpro/frequent/misc)).
 :- use_package(foreign(jekpro/frequent/misc)).
+:- use_package(foreign(matula/util/misc)).
 :- use_package(foreign(java/net)).
 :- use_package(foreign(java/io)).
 
@@ -68,4 +69,11 @@
  */
 :- public client_new/3.
 :- foreign(client_new/3, 'ForeignSocket', sysClientNew('String',int)).
+
+/**
+ * websock_new(S, W):
+ * The predicate succeeds in a web socket W for the socket S.
+ */
+:- public websock_new/2.
+:- foreign_constructor(websock_new/2, 'Framed', new('Socket')).
 
