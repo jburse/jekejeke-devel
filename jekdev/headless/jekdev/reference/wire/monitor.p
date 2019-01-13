@@ -40,9 +40,9 @@
 
 :- module(monitor, []).
 :- use_module(library(notebook/httpsrv)).
-:- use_module(library(misc/socket)).
 :- use_module(library(runtime/distributed)).
-:- use_module(pages/talkback).
+:- use_module(library(system/thread)).
+:- use_module(hooks/stack).
 
 /**
  * start(P):
@@ -106,10 +106,30 @@ dispatch(Object, Spec, Request, Session) :-
 % upgrade(+Object, +Spec, +Request, +Session)
 :- override upgrade/4.
 :- public upgrade/4.
-upgrade(_, _, Request, Session) :-
-   setup_call_cleanup(
-      open(Session, write, Output, [type(binary)]),
-      response_upgrade(Request, Output),
-      flush_output(Output)),
-   websock_new(Session, WebSession),
-   spawn(worker(WebSession)).
+upgrade(_, Path, Request, Session) :-
+   sub_atom(Path, 0, Pos, '/talkback/'), !,
+   Pos2 is Pos-1,
+   sub_atom(Path, Pos2, _, 0, Path2),
+   wire/control::upgrade(Path2, Request, Session).
+
+/**
+ * goal_tracing(P, F):
+ * The predicate can be used to define a custom debugger call back
+ * for the port P and the frame F.
+ */
+% user:goal_tracing(+Atom, +Frame)
+:- public user:goal_tracing/2.
+:- multifile user:goal_tracing/2.
+user:goal_tracing(P, F) :-
+   tracing_broadcast(P, F), fail.
+
+% tracing_broadcast(+Atom, +Frame)
+:- private tracing_broadcast/2.
+tracing_broadcast(_, F) :-
+   sys_notrace_frame(F), !.
+tracing_broadcast(P, _) :-
+   sys_leashed_port(P), !,
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_name, Name),
+   broadcast_stack(Name).
+tracing_broadcast(_, _).

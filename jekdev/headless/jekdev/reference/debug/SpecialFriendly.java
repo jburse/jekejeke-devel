@@ -4,7 +4,6 @@ import jekdev.model.bugger.ClauseTrace;
 import jekdev.model.bugger.GoalTrace;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.*;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;

@@ -57,6 +57,7 @@
  * The predicate can be used to define a custom debugger call back
  * for the port P and the frame F.
  */
+% goal_tracing(+Atom, +Frame)
 :- public goal_tracing/2.
 :- multifile goal_tracing/2.
 :- static goal_tracing/2.
@@ -70,6 +71,11 @@
 :- public trace_goal/2.
 trace_goal(P, F) :-
    goal_tracing(P, F), !.
+trace_goal(_, F) :-
+   sys_notrace_frame(F), !.
+trace_goal(P, F) :-
+   sys_leashed_port(P), !,
+   sys_trace_prompt(P, F).
 trace_goal(P, F) :-
    sys_trace(P, F).
 
@@ -92,10 +98,39 @@ leash(Flags) :-
    set_prolog_flag(sys_leash, Flags).
 :- set_predicate_property(leash/1, sys_notrace).
 
+/******************************************************************/
+/* Default Debugger                                               */
+/******************************************************************/
+
+/**
+ * sys_notrace_frame(F):
+ * The predicate succeeds if the goal of frame F is sys_notrace.
+ */
+% sys_notrace_frame(+Frame)
+:- public sys_notrace_frame/1.
+:- special(sys_notrace_frame/1, 'SpecialDefault', 3).
+
+/**
+ * sys_leashed_port(P):
+ * The predicate succeeds when the port P is among the leashed ports.
+ */
+:- public sys_leashed_port/1.
+:- special(sys_leashed_port/1, 'SpecialDefault', 4).
+
 /**
  * sys_trace(P, F):
- * The default trace hook.
+ * The predicate displays the port P and the goal of frame F,
+ * and the continues debugging.
  */
 % sys_trace(+Atom, +Frame)
 :- private sys_trace/2.
-:- special(sys_trace/2, 'SpecialDefault', 3).
+:- special(sys_trace/2, 'SpecialDefault', 5).
+
+/**
+ * sys_trace_prompt(P, F):
+ * The predicate displays the port P and the goal of frame F,
+ * prompts the user for actions, and then continues debugging.
+ */
+% sys_trace_prompt(+Atom, +Frame)
+:- private sys_trace_prompt/2.
+:- special(sys_trace_prompt/2, 'SpecialDefault', 6).

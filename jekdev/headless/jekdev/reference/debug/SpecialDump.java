@@ -1,11 +1,9 @@
 package jekdev.reference.debug;
 
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -19,7 +17,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>Provides a special predicate for index dump.</p>
+ * <p>Provides a special predicates for index dump.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

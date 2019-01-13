@@ -138,9 +138,6 @@ html_begin_opt(Response, [lines|Opt]) :-
 html_begin_opt(Response, [margin|Opt]) :-
    script_margin(Response),
    html_begin_opt(Response, Opt).
-html_begin_opt(Response, [socket|Opt]) :-
-   script_socket(Response),
-   html_begin_opt(Response, Opt).
 html_begin_opt(_, []).
 
 /**
