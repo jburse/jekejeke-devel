@@ -1,5 +1,6 @@
-package jekdev.model.bugger;
+package jekdev.model.pretty;
 
+import jekdev.model.bugger.*;
 import jekdev.reference.system.SpecialMode;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
@@ -47,6 +48,8 @@ import jekpro.tools.term.SkelAtom;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class FoyerTrace extends Foyer {
+    public static final int DEFAULT_PORT = 8184;
+
     public final static String OP_SYS_IN = "sys_in";
     public final static String OP_SYS_OUT = "sys_out";
     public final static String OP_SYS_AT = "sys_at";
@@ -65,6 +68,26 @@ public abstract class FoyerTrace extends Foyer {
     public SkelAtom ATOM_SYS_IN;
     public SkelAtom ATOM_SYS_OUT;
     public SkelAtom ATOM_SYS_AT;
+
+    private int port = DEFAULT_PORT;
+
+    /**
+     * <p>Retrieve the monitor port.</p>
+     *
+     * @return The monitor port.
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * <p>Set the monitor port.</p>
+     *
+     * @param p The monitor port.
+     */
+    public void setPort(int p) {
+        port = p;
+    }
 
     /**********************************************************/
     /* Foyer Livecycle                                        */

@@ -1,5 +1,6 @@
 package jekdev.model.bugger;
 
+import jekdev.model.pretty.StoreTrace;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
