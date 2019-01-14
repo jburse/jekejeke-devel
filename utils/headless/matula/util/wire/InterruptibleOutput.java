@@ -1,16 +1,12 @@
-package jekpro.frequent.misc;
+package matula.util.wire;
 
-import matula.util.wire.AbstractLivestock;
-import matula.util.wire.Interruptible;
-
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.channels.ClosedByInterruptException;
+import java.io.OutputStream;
 
 /**
- * <p>Provides the methods for the module misc/socket.</p>
+ * <p>Provides an interruptible output.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,61 +36,57 @@ import java.nio.channels.ClosedByInterruptException;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignSocket {
+final class InterruptibleOutput extends FilterOutputStream {
 
     /**
-     * <p>Open a server socket.</p>
-     * <p>We use java.nio since it is interuptible.</p>
+     * <p>Create an interruptible output.</p>
      *
-     * @param port The port.
-     * @return The socket.
-     * @throws IOException I/O Error.
+     * @param out The output stream.
      */
-    public static ServerSocket sysServerNew(int port)
-            throws IOException {
-        return new ServerSocket(port);
+    InterruptibleOutput(OutputStream out) {
+        super(out);
     }
 
     /**
-     * <p>Derive a session socket from a server socket.</p>
-     * <p>We use java.nio since it is interuptible.</p>
+     * <p>Write a byte to the interruptible output.</p>
      *
-     * @param server The server socket.
-     * @return The session socket.
-     * @throws IOException                I/O Error.
-     * @throws ClosedByInterruptException Interrupted.
+     * @param b The byte.
+     * @throws IOException I/O Error.
      */
-    public static Socket sysServerAccept(ServerSocket server)
-            throws IOException {
+    public void write(int b) throws IOException {
         AbstractLivestock live = AbstractLivestock.currentLivestock(Thread.currentThread());
         if (live != null)
-            live.closer = server;
-        Socket sock;
+            live.closer = this;
         try {
-            sock = server.accept();
+            super.write(b);
         } finally {
             if (live != null)
                 live.closer = null;
             if (Thread.interrupted())
                 throw new InterruptedIOException();
         }
-        return new Interruptible(sock);
     }
 
     /**
-     * <p>Open a client socket.</p>
-     * <p>We use java.nio since it is interuptible.</p>
+     * <p>Write bytes to the interruptible output.</p>
      *
-     * @param host The host name.
-     * @param port The port.
-     * @return The socket.
-     * @throws IOException                I/O Error.
-     * @throws ClosedByInterruptException Interrupted.
+     * @param b   The bytes.
+     * @param off The offset.
+     * @param len The length.
+     * @throws IOException I/O Error.
      */
-    public static Socket sysClientNew(String host, int port)
-            throws IOException {
-        Socket sock = new Socket(host, port);
-        return new Interruptible(sock);
+    public void write(byte[] b, int off, int len) throws IOException {
+        AbstractLivestock live = AbstractLivestock.currentLivestock(Thread.currentThread());
+        if (live != null)
+            live.closer = this;
+        try {
+            super.write(b,off,len);
+        } finally {
+            if (live != null)
+                live.closer = null;
+            if (Thread.interrupted())
+                throw new InterruptedIOException();
+        }
     }
 
 }

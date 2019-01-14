@@ -50,7 +50,7 @@ final class FramedOutput extends FilterOutputStream {
      *
      * @param out The output stream.
      */
-    public FramedOutput(OutputStream out) {
+    FramedOutput(OutputStream out) {
         super(out);
     }
 

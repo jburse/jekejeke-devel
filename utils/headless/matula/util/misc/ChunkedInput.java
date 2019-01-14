@@ -43,7 +43,7 @@ final class ChunkedInput extends FilterInputStream {
      *
      * @param in The input stream.
      */
-    protected ChunkedInput(InputStream in) {
+    ChunkedInput(InputStream in) {
         super(in);
     }
 

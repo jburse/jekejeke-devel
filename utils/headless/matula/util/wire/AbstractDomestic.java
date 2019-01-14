@@ -1,5 +1,8 @@
 package matula.util.wire;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * <p>This class provides an abstract domestic.</p>
  * </p>
@@ -38,6 +41,7 @@ public abstract class AbstractDomestic {
     public Object signal;
     public Thread thread;
     public Object source;
+    public Closeable closer;
 
     /**
      * <p>Set the mask.</p>
@@ -51,7 +55,7 @@ public abstract class AbstractDomestic {
             if (f) {
                 flags &= ~MASK_LIVESTOCK_NOSG;
                 if (signal != null && thread != null)
-                    thread.interrupt();
+                    interruptWithCloser(thread);
             } else {
                 if (signal != null && thread != null) {
                     if (thread != Thread.currentThread())
@@ -77,7 +81,7 @@ public abstract class AbstractDomestic {
                 signal = m;
                 if ((flags & MASK_LIVESTOCK_NOSG) == 0
                         && thread != null)
-                    thread.interrupt();
+                    interruptWithCloser(thread);
             } else {
                 if ((flags & MASK_LIVESTOCK_NOSG) == 0
                         && thread != null) {
@@ -102,7 +106,7 @@ public abstract class AbstractDomestic {
                 thread = t;
                 if ((flags & MASK_LIVESTOCK_NOSG) == 0
                         && signal != null)
-                    thread.interrupt();
+                    interruptWithCloser(thread);
             } else {
                 if ((flags & MASK_LIVESTOCK_NOSG) == 0
                         && signal != null) {
@@ -112,6 +116,25 @@ public abstract class AbstractDomestic {
                 }
                 thread = null;
             }
+        }
+    }
+
+    /**
+     * <p>Interrupt a thread taking a closer in account.</p>
+     *
+     * @param t The thread.
+     */
+    private void interruptWithCloser(Thread t) {
+        Closeable c = closer;
+        if (c != null) {
+            t.interrupt();
+            try {
+                c.close();
+            } catch (IOException x) {
+                /* ignore */
+            }
+        } else {
+            t.interrupt();
         }
     }
 

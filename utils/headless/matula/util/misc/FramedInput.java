@@ -45,7 +45,7 @@ final class FramedInput extends FilterInputStream {
      *
      * @param in The input stream.
      */
-    protected FramedInput(InputStream in) {
+    FramedInput(InputStream in) {
         super(in);
     }
 

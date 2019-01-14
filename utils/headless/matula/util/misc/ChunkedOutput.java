@@ -47,7 +47,7 @@ final class ChunkedOutput extends FilterOutputStream {
      *
      * @param out The output stream.
      */
-    public ChunkedOutput(OutputStream out) {
+    ChunkedOutput(OutputStream out) {
         super(out);
     }
 
