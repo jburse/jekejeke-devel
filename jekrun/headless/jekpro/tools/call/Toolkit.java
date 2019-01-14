@@ -2,7 +2,7 @@ package jekpro.tools.call;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.proxy.FlagAPI;
+import jekpro.tools.array.FlagFactory;
 
 /**
  * This class represents the base for all toolkits. Each toolkit predefines
@@ -44,13 +44,13 @@ public abstract class Toolkit {
     private final AbstractFactory factory;
 
     /* interpreter */
-    public final static String PROP_SYS_DISP_INPUT = FlagAPI.OP_FLAG_SYS_DISP_INPUT;
-    public final static String PROP_SYS_DISP_OUTPUT = FlagAPI.OP_FLAG_SYS_DISP_OUTPUT;
-    public final static String PROP_SYS_DISP_ERROR = FlagAPI.OP_FLAG_SYS_DISP_ERROR;
-    public final static String PROP_SYS_CUR_INPUT = FlagAPI.OP_FLAG_SYS_CUR_INPUT;
-    public final static String PROP_SYS_CUR_OUTPUT = FlagAPI.OP_FLAG_SYS_CUR_OUTPUT;
-    public final static String PROP_SYS_CUR_ERROR = FlagAPI.OP_FLAG_SYS_CUR_ERROR;
-    public final static String PROP_SYS_ATTACHED_TO = FlagAPI.OP_FLAG_SYS_ATTACHED_TO;
+    public final static String PROP_SYS_DISP_INPUT = FlagFactory.OP_FLAG_SYS_DISP_INPUT;
+    public final static String PROP_SYS_DISP_OUTPUT = FlagFactory.OP_FLAG_SYS_DISP_OUTPUT;
+    public final static String PROP_SYS_DISP_ERROR = FlagFactory.OP_FLAG_SYS_DISP_ERROR;
+    public final static String PROP_SYS_CUR_INPUT = FlagFactory.OP_FLAG_SYS_CUR_INPUT;
+    public final static String PROP_SYS_CUR_OUTPUT = FlagFactory.OP_FLAG_SYS_CUR_OUTPUT;
+    public final static String PROP_SYS_CUR_ERROR = FlagFactory.OP_FLAG_SYS_CUR_ERROR;
+    public final static String PROP_SYS_ATTACHED_TO = FlagFactory.OP_FLAG_SYS_ATTACHED_TO;
 
     /**
      * <p>Create a new toolkit.</p>
@@ -98,7 +98,7 @@ public abstract class Toolkit {
      * @return The name.
      */
     public final String capabilityToString(Capability cap) {
-        return factory.branchToString((AbstractBranch) cap.getBranch());
+        return factory.getReflection().branchToString((AbstractBranch) cap.getBranch());
     }
 
     /***********************************************************/

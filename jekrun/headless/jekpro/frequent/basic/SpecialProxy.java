@@ -2,12 +2,16 @@ package jekpro.frequent.basic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.proxy.InterfaceSlots;
 import jekpro.tools.proxy.ProxyHandler;
 import jekpro.tools.proxy.ProxyState;
@@ -143,7 +147,8 @@ public final class SpecialProxy extends AbstractSpecial {
                     EngineMessage.OP_EXISTENCE_PROXY,
                     SpecialForeign.constructorToCallable(new Class[]{})));
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
-        return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{handler}, en);
+        AbstractFactory factory = scope.getStore().foyer.getFactory();
+        return factory.getReflection().newInstance(constr, new Object[]{handler}, en);
     }
 
     /**
@@ -166,7 +171,8 @@ public final class SpecialProxy extends AbstractSpecial {
                     SpecialForeign.constructorToCallable(new Class[]{Integer.TYPE})));
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
         ProxyState state = handler.createState(size);
-        return scope.getStore().foyer.getFactory().newInstance(constr, new Object[]{state}, en);
+        AbstractFactory factory = scope.getStore().foyer.getFactory();
+        return factory.getReflection().newInstance(constr, new Object[]{state}, en);
     }
 
     /**

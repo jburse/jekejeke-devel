@@ -108,10 +108,10 @@ public class Goal extends Intermediate {
 
         if (uniargs != null)
             unifyBody(u, en);
-        if ((flags & Intermediate.MASK_INTER_NLST) == 0) {
+        if ((flags & Intermediate.MASK_INTER_NLST) == 0 &&
+                (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
             DisplayClause u1 = u.contdisplay;
             if (u1 != null &&
-                    (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
                     u1.number >= en.number) {
                 Clause clause = u.contskel.getClause();
                 n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);

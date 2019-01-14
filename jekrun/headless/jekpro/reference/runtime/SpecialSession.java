@@ -6,14 +6,10 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.LoadForce;
-import jekpro.model.rope.PreClause;
+import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -157,7 +153,7 @@ public final class SpecialSession extends AbstractSpecial {
     private static String askSessionAction(Engine en)
             throws EngineMessage {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
 
         obj = en.visor.dispinput;
@@ -181,7 +177,7 @@ public final class SpecialSession extends AbstractSpecial {
     private static void detFeedback(Engine en)
             throws EngineMessage {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             wr.write('\n');
@@ -200,7 +196,7 @@ public final class SpecialSession extends AbstractSpecial {
     private static void failFeedback(Engine en)
             throws EngineMessage {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             Locale locale = en.store.foyer.locale;
@@ -226,7 +222,7 @@ public final class SpecialSession extends AbstractSpecial {
             throws EngineException {
         try {
             Object obj = en.visor.dispoutput;
-            FactoryAPI.checkTextWrite(obj);
+            LoadOpts.checkTextWrite(obj);
             Writer wr = (Writer) obj;
             try {
                 Locale locale = en.store.foyer.locale;
@@ -258,7 +254,7 @@ public final class SpecialSession extends AbstractSpecial {
     private static void promptQuery(AbstractSource src, Engine en)
             throws EngineMessage, EngineException {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             if (en.visor.breaklevel != 0) {
@@ -301,7 +297,7 @@ public final class SpecialSession extends AbstractSpecial {
             try {
                 AbstractSource src = en.visor.peekStack();
                 SpecialSession.promptQuery(src, en);
-                int flags=0;
+                int flags = 0;
                 if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
                         (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0)
                     flags |= PrologReader.FLAG_NEWV;
@@ -630,7 +626,7 @@ public final class SpecialSession extends AbstractSpecial {
             throw ex;
         } else {
             Object obj = en.visor.disperror;
-            FactoryAPI.checkTextWrite(obj);
+            LoadOpts.checkTextWrite(obj);
             Writer wr = (Writer) obj;
             try {
                 wr.write(ex.getMessage(en));
@@ -733,8 +729,8 @@ public final class SpecialSession extends AbstractSpecial {
      * @return The Prolog list.
      */
     public static Object addToRawAssoc(SkelVar sv, Display d,
-                                        String name, Object end,
-                                        Engine en) {
+                                       String name, Object end,
+                                       Engine en) {
         if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)
             return end;
         Object val = new SkelCompound(en.store.foyer.ATOM_EQUAL,

@@ -1,5 +1,6 @@
 package jekpro.tools.array;
 
+import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
@@ -8,12 +9,15 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
+import jekpro.tools.proxy.AbstractReflection;
 import matula.comp.sharik.AbstractFramework;
 import matula.util.data.MapHash;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * <p>This class provides an abstract factory.</p>
@@ -81,6 +85,32 @@ public abstract class AbstractFactory extends AbstractFramework {
     public Object toolerror;
     private MapHash<String, AbstractFlag> prologflags;
     private MapHash<String, AbstractFlag> threadflags;
+    private AbstractReflection reflection;
+
+    /**
+     * <p>Create an abstract factory.</p>
+     */
+    public AbstractFactory() {
+        setPrologFlags(FlagFactory.defineFlags());
+    }
+
+    /**
+     * <p>Retrieve the reflection.</p>
+     *
+     * @return The reflection.
+     */
+    public AbstractReflection getReflection() {
+        return reflection;
+    }
+
+    /**
+     * <p>Set the reflection.</p>
+     *
+     * @param r The reflection.
+     */
+    public void setReflection(AbstractReflection r) {
+        reflection = r;
+    }
 
     /****************************************************************/
     /* Prolog Flags                                                 */
@@ -151,109 +181,5 @@ public abstract class AbstractFactory extends AbstractFramework {
      */
     public abstract AbstractBranch getBrandBranch();
 
-    /*******************************************************************/
-    /* Delegate Factory                                                */
-    /*******************************************************************/
-
-    /**
-     * <p>Create a foreign delegate.</p>
-     * <p>Result or culprit is returned in the engine skel.</p>
-     *
-     * @param m  The method.
-     * @param en The engine.
-     * @param k  The predicate flag.
-     * @return True if creation of the delegate succeeded, otherwise false.
-     */
-    public abstract boolean createMethod(Method m, Engine en, boolean k);
-
-    /**
-     * <p>Create a foreign constructor delegate.</p>
-     * <p>Result or culprit is returned in the engine skel.</p>
-     *
-     * @param c  The constructor.
-     * @param en The engine.
-     * @return True if creation of the delegate succeeded, otherwise false.
-     */
-    public abstract boolean createConstructor(Constructor c, Engine en);
-
-    /**
-     * <p>Create a foreign getter or setter delegate.</p>
-     * <p>Result or culprit is returned in the engine skel.</p>
-     *
-     * @param f  The field.
-     * @param en The engine.
-     * @param k  The desired delegate.
-     * @return True if creation of the delegate succeeded, otherwise false.
-     */
-    public abstract boolean createField(Field f, Engine en, int k);
-
-    /**
-     * <p>Create a foreign array delegate.</p>
-     * <p>Result or culprit is returned in the engine skel.</p>
-     *
-     * @param c  The class.
-     * @param en The engine.
-     * @param k  The desired delegate.
-     * @return True if creation of the delegate succeeded, otherwise false.
-     */
-    public abstract boolean createArray(Class c, Engine en, int k);
-
-    /***********************************************************************/
-    /* Foreign Functions                                                   */
-    /***********************************************************************/
-
-    /**
-     * <p>Find a branch.</p>
-     *
-     * @param name   The name.
-     * @param loader The loader.
-     * @throws EngineMessage Shit happens.
-     */
-    public abstract AbstractBranch stringToBranch(String name,
-                                                  ClassLoader loader)
-            throws EngineMessage;
-
-    /**
-     * <p>Convert a branch to a string.</p>
-     *
-     * @param branch The branch.
-     * @return The name.
-     */
-    public abstract String branchToString(AbstractBranch branch);
-
-    /**
-     * <p>Validate the exception types.</p>
-     *
-     * @param exces The exception types.
-     * @param en    The engine.
-     */
-    public abstract boolean validateExceptionTypes(Class[] exces, Engine en);
-
-    /**
-     * <p>Create a special.</p>
-     *
-     * @param con  The constructor.
-     * @param args The constructor arguments.
-     * @param en   The engine.
-     * @return The special.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public abstract Object newInstance(Constructor con,
-                                       Object[] args, Engine en)
-            throws EngineException, EngineMessage;
-
-    /*******************************************************************/
-    /* Auto Loader Hook                                                */
-    /*******************************************************************/
-
-    /**
-     * <p>Create a foreign or verbatim source.</p>
-     *
-     * @param key   The source key.
-     * @param store The store.
-     * @return The foreign source.
-     */
-    public abstract AbstractSource createSynth(String key, Store store);
 
 }

@@ -96,7 +96,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_TYPE_METHOD, temp[2]), ref);
                 Class[] paras = SpecialForeign.formalParameters(temp[2], ref, en);
                 Method mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
-                if (!en.store.foyer.getFactory().createMethod(mth, en, true))
+                AbstractFactory factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createMethod(mth, en, true))
                     throw new EngineMessage(en.skel);
                 AbstractDelegate del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -119,7 +120,8 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_TYPE_CONSTRUCTOR, temp[2]), ref);
                 paras = SpecialForeign.formalParameters(temp[2], ref, en);
                 Constructor cstr = getDeclaredConstructor(clazz, paras);
-                if (!en.store.foyer.getFactory().createConstructor(cstr, en))
+                factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createConstructor(cstr, en))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -138,7 +140,8 @@ public final class SpecialForeign extends AbstractSpecial {
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
-                if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_PRED))
+                factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_GET_PRED))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -157,7 +160,8 @@ public final class SpecialForeign extends AbstractSpecial {
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
-                if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_SET))
+                factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_SET))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -177,7 +181,8 @@ public final class SpecialForeign extends AbstractSpecial {
                 name = SpecialForeign.methodName(temp[2], ref, en);
                 paras = SpecialForeign.formalParameters(temp[2], ref, en);
                 mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
-                if (!en.store.foyer.getFactory().createMethod(mth, en, false))
+                factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createMethod(mth, en, false))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -196,7 +201,8 @@ public final class SpecialForeign extends AbstractSpecial {
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
-                if (!en.store.foyer.getFactory().createField(fld, en, AbstractFactory.FIELD_GET_EVAL))
+                factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_GET_EVAL))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())

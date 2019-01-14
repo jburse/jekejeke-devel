@@ -10,11 +10,11 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadForce;
+import jekpro.model.rope.LoadOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
@@ -267,7 +267,7 @@ public final class ForeignEngine {
             throws EngineMessage {
         Engine en = (Engine) inter.getEngine();
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             Store store = en.store;

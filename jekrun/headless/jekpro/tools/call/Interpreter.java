@@ -3,7 +3,6 @@ package jekpro.tools.call;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -246,7 +245,7 @@ public final class Interpreter implements Comparator<Object> {
     /**
      * <p>Unparse the given term to a string.</p>
      *
-     * @param t The object.
+     * @param t   The object.
      * @param opt The write options.
      * @return The string.
      * @throws InterpreterMessage   Shit happens.

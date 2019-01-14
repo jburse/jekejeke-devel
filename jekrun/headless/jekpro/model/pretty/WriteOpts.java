@@ -1,11 +1,9 @@
 package jekpro.model.pretty;
 
-import jekpro.frequent.experiment.SpecialRef;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;

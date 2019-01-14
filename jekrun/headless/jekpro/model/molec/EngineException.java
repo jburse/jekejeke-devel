@@ -6,8 +6,8 @@ import jekpro.model.inter.InterfaceStack;
 import jekpro.model.inter.StackElement;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
+import jekpro.model.rope.LoadOpts;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -338,7 +338,7 @@ public final class EngineException extends Exception {
     public void printStackTrace(Engine en)
             throws EngineMessage, EngineException {
         Object obj = en.visor.disperror;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             Locale locale = en.store.foyer.locale;

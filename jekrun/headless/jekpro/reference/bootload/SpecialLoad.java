@@ -18,11 +18,12 @@ import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
-import matula.util.data.*;
+import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHashLink;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -142,7 +143,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     return false;
 
                 Object obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en.store);
@@ -170,7 +171,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (oper.getScope() != source)
                     return false;
                 obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en.store);
@@ -194,7 +195,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     return false;
 
                 obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
 
                 pw = Foyer.createWriter(Foyer.IO_TERM);
@@ -238,7 +239,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     return false;
 
                 obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
 
                 AbstractSource.showShortName(wr, source);

@@ -19,7 +19,10 @@ import matula.util.system.OpenCheck;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.PropertiesWithImport;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;

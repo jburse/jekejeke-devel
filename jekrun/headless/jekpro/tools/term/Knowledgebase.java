@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import jekpro.tools.foreign.LookupResource;
 import matula.util.data.MapEntry;
@@ -316,8 +317,9 @@ public class Knowledgebase extends AbstractRecognizer {
     public final Capability stringToCapability(String name)
             throws InterpreterMessage {
         Store store = (Store) getStore();
+        AbstractFactory factory = store.foyer.getFactory();
         try {
-            AbstractBranch branch = store.foyer.getFactory().stringToBranch(name, store.loader);
+            AbstractBranch branch = factory.getReflection().stringToBranch(name, store.loader);
             return (Capability) branch.proxy;
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);

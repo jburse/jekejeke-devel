@@ -4,8 +4,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.InterfaceStack;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
-import jekpro.tools.term.SkelVar;
-import matula.util.data.MapHashLink;
 
 /**
  * <p>The class provides a clause display.</p>
