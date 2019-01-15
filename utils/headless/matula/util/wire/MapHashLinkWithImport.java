@@ -2,6 +2,7 @@ package matula.util.wire;
 
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -47,6 +48,15 @@ public final class MapHashLinkWithImport<K, V> extends MapHashLink<K, V> {
         if (map == null)
             throw new NullPointerException("map missing");
         imports.add(map);
+    }
+
+    /**
+     * <p>Retrieve the imports.</p>
+     *
+     * @return The imports.
+     */
+    public ListArray<MapHashLink<K, V>> getImports() {
+        return imports;
     }
 
     /**

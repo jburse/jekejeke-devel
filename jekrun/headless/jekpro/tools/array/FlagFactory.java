@@ -95,7 +95,7 @@ public final class FlagFactory extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineFlags() {
+    public static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
         prologflags.add(OP_FLAG_SYS_MASK, new FlagFactory(FLAG_SYS_MASK));
         prologflags.add(OP_FLAG_SYS_DISP_INPUT, new FlagFactory(FLAG_SYS_DISP_INPUT));

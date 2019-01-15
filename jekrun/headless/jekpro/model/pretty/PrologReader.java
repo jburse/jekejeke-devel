@@ -999,24 +999,21 @@ public class PrologReader {
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
+     * @throws IOException I/O Error.
      */
     public final Object parseHeadStatement()
-            throws ScannerError, EngineMessage, EngineException {
-        try {
-            firstToken();
-            Reader lr = st.getReader();
-            clausestart = OpenOpts.getLineNumber(lr);
-            setVars(null);
-            setAnon(null);
-            setGensym(0);
-            if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
-                return makeEof();
-            if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
-                return parsePeriodIncomplete(OP_PERIOD);
-            return parseIncomplete(OP_PERIOD);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
+            throws ScannerError, EngineMessage, EngineException, IOException {
+        firstToken();
+        Reader lr = st.getReader();
+        clausestart = OpenOpts.getLineNumber(lr);
+        setVars(null);
+        setAnon(null);
+        setGensym(0);
+        if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
+            return makeEof();
+        if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
+            return parsePeriodIncomplete(OP_PERIOD);
+        return parseIncomplete(OP_PERIOD);
     }
 
     /**
@@ -1037,24 +1034,21 @@ public class PrologReader {
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
+     * @throws IOException I/O Error.
      */
     public final Object parseHeadInternal()
-            throws ScannerError, EngineMessage, EngineException {
-        try {
-            firstToken();
-            Reader lr = st.getReader();
-            clausestart = OpenOpts.getLineNumber(lr);
-            setVars(null);
-            setAnon(null);
-            setGensym(0);
-            if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
-                return null;
-            if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
-                return parsePeriodIncomplete(OP_EOF);
-            return parseIncomplete(OP_EOF);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
+            throws ScannerError, EngineMessage, EngineException, IOException {
+        firstToken();
+        Reader lr = st.getReader();
+        clausestart = OpenOpts.getLineNumber(lr);
+        setVars(null);
+        setAnon(null);
+        setGensym(0);
+        if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
+            return null;
+        if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
+            return parsePeriodIncomplete(OP_EOF);
+        return parseIncomplete(OP_EOF);
     }
 
     /**
@@ -1063,10 +1057,10 @@ public class PrologReader {
      *
      * @param templ The template.
      * @param e     The current error or null.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException I/O Error.
      */
     public final void parseTailError(String templ, ScannerError e)
-            throws EngineMessage {
+            throws IOException {
         if (e != null && (ScannerToken.OP_SYNTAX_END_OF_LINE_IN_STRING.equals(e.getError()) ||
                 ScannerToken.OP_SYNTAX_END_OF_LINE_IN_CHARACTER.equals(e.getError()) ||
                 ScannerToken.OP_SYNTAX_CONT_ESC_IN_CHARACTER.equals(e.getError())))
@@ -1080,8 +1074,6 @@ public class PrologReader {
                 st.pushBack();
         } catch (ScannerError z) {
             /* do nothing */
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
         }
     }
 

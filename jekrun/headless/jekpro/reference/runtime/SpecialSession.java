@@ -155,16 +155,19 @@ public final class SpecialSession extends AbstractSpecial {
         Object obj = en.visor.dispoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
-
+        try {
+            wr.write(" ");
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
         obj = en.visor.dispinput;
         PrologReader.checkTextRead(obj);
         Reader lr = (Reader) obj;
         try {
-            wr.write(" ");
-            wr.flush();
             return ForeignConsole.readLine(lr);
         } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
+            throw EngineMessage.mapIOProblem(x);
         }
     }
 
@@ -306,18 +309,22 @@ public final class SpecialSession extends AbstractSpecial {
                 rd.setSource(src);
                 Object val;
                 try {
-                    val = rd.parseHeadStatement();
-                } catch (ScannerError y) {
-                    String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                    rd.parseTailError(PrologReader.OP_PERIOD, y);
-                    EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getError()));
-                    pos = (OpenOpts.getPath(lr) != null ?
-                            new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
-                    throw new EngineException(x,
-                            EngineException.fetchPos(EngineException.fetchLoc(
-                                    EngineException.fetchStack(en),
-                                    pos, en), line, en)
-                    );
+                    try {
+                        val = rd.parseHeadStatement();
+                    } catch (ScannerError y) {
+                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
+                        rd.parseTailError(PrologReader.OP_PERIOD, y);
+                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getError()));
+                        pos = (OpenOpts.getPath(lr) != null ?
+                                new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
+                        throw new EngineException(x,
+                                EngineException.fetchPos(EngineException.fetchLoc(
+                                        EngineException.fetchStack(en),
+                                        pos, en), line, en)
+                        );
+                    }
+                } catch (IOException y) {
+                    throw EngineMessage.mapIOProblem(y);
                 }
                 pos = (OpenOpts.getPath(lr) != null ?
                         new PositionKey(OpenOpts.getPath(lr), rd.getClauseStart()) : null);
@@ -660,15 +667,19 @@ public final class SpecialSession extends AbstractSpecial {
         rd.setEngineRaw(en);
         Object val;
         try {
-            val = rd.parseHeadStatement();
-        } catch (ScannerError y) {
-            String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
-            rd.parseTailError(PrologReader.OP_EOF, y);
-            EngineMessage x = new EngineMessage(
-                    EngineMessage.syntaxError(y.getError()));
-            throw new EngineException(x,
-                    EngineException.fetchPos(
-                            EngineException.fetchStack(en), line, en));
+            try {
+                val = rd.parseHeadStatement();
+            } catch (ScannerError y) {
+                String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
+                rd.parseTailError(PrologReader.OP_EOF, y);
+                EngineMessage x = new EngineMessage(
+                        EngineMessage.syntaxError(y.getError()));
+                throw new EngineException(x,
+                        EngineException.fetchPos(
+                                EngineException.fetchStack(en), line, en));
+            }
+        } catch (IOException y) {
+            throw EngineMessage.mapIOException(y);
         }
         if (val instanceof SkelAtom &&
                 ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))

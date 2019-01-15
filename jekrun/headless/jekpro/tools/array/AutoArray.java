@@ -156,8 +156,7 @@ public final class AutoArray extends AbstractAuto {
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Engine en,
-                             boolean rec)
+    private void defineMeths(Engine en, boolean rec)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, AbstractLense> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {

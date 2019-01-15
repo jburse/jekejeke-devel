@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>The delegate class for a blocking delegate.</p>
+ * <p>The delegate class for a multi blocking delegate.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -47,7 +47,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class DefinedBlocking extends AbstractDefined {
+public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     private final Bouquet cr = new Bouquet();
     private final Nonescalable lock = new Nonescalable();
 
@@ -56,7 +56,7 @@ final class DefinedBlocking extends AbstractDefined {
      *
      * @param flags The store flags.
      */
-    DefinedBlocking(int flags) {
+    DefinedBlockingMulti(int flags) {
         super(flags);
     }
 

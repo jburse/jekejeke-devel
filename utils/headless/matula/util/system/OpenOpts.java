@@ -54,6 +54,8 @@ public final class OpenOpts extends OpenDuplex {
     public static final int MASK_OPEN_NOBR = 0x00000200;
     public static final int MASK_OPEN_BOMW = 0x00000400;
 
+    public static final int MASK_CLSE_FRCE = 0x00000001;
+
     private static final String ENC_UTF_16BE = "UTF-16BE";
     private static final String ENC_UTF_16LE = "UTF-16LE";
     private static final String ENC_UTF_8 = "UTF-8";

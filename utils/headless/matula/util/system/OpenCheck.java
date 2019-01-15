@@ -2,6 +2,7 @@ package matula.util.system;
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileLockInterruptionException;
 
@@ -189,6 +190,8 @@ public class OpenCheck {
         } else if (x instanceof FileLockInterruptionException) {
             return true;
         } else if (x instanceof ClosedByInterruptException) {
+            return true;
+        } else if (x instanceof AsynchronousCloseException) {
             return true;
         } else {
             return false;

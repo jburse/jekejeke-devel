@@ -72,6 +72,9 @@ public final class ForeignStream {
     public final static String OP_REPOSITION = "reposition";
     public final static String OP_NEWLINE = "newline";
 
+    /* close options */
+    public final static String OP_FORCE = "force";
+
     /* stream properties */
     public final static String OP_OUTPUT = "output";
     public final static String OP_INPUT = "input";
@@ -171,6 +174,28 @@ public final class ForeignStream {
         }
     }
 
+
+    /**
+     * <p>Convert an atom to a mode. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param fun The atom.
+     * @return The mode.
+     * @throws InterpreterMessage Validation error.
+     */
+    private static int atomToMode(String fun) throws InterpreterMessage {
+        if (fun.equals(OP_READ)) {
+            return MODE_READ;
+        } else if (fun.equals(OP_WRITE)) {
+            return MODE_WRITE;
+        } else if (fun.equals(OP_APPEND)) {
+            return MODE_APPEND;
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    EngineMessage.OP_DOMAIN_IO_MODE, fun));
+        }
+    }
+
     /**
      * <p>Close the closeable with the given option.</p>
      *
@@ -182,15 +207,80 @@ public final class ForeignStream {
      */
     public static void sysClose(Closeable str, Object opt)
             throws InterpreterMessage, IOException {
-        if (opt.equals(Foyer.OP_NIL)) {
-            /* */
+        int res = decodeCloseOpts(opt);
+        if ((res & OpenOpts.MASK_CLSE_FRCE) != 0) {
+            try {
+                str.close();
+            } catch (IOException x) {
+                if (OpenCheck.isInterrupt(x))
+                    throw x;
+            }
         } else {
-            InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, opt));
+            str.close();
         }
-        str.close();
     }
+
+    /****************************************************************/
+    /* Length & Position Properties                                 */
+    /****************************************************************/
+
+    /**
+     * <p>Reposition the stream.</p>
+     *
+     * @param str  The stream.
+     * @param fpos The position.
+     * @throws InterpreterMessage Validation or permission error.
+     */
+    public static void sysSetStreamPosition(Object str, long fpos)
+            throws InterpreterMessage, IOException {
+        RandomAccessFile raf = ForeignStream.getRaf(str);
+        if (raf == null)
+            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                    "reposition", "stream", str));
+        raf.seek(fpos);
+    }
+
+    /**
+     * <p>Truncate the stream.</p>
+     *
+     * @param str  The stream.
+     * @param fpos The position.
+     * @throws InterpreterMessage Validation or permission error.
+     */
+    public static void sysSetStreamLength(Object str, long fpos)
+            throws InterpreterMessage, IOException {
+        RandomAccessFile raf = ForeignStream.getRaf(str);
+        if (raf == null)
+            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                    "reposition", "stream", str));
+        raf.setLength(fpos);
+    }
+
+    /**
+     * <p>Helper to retrieve the raf of a stream.</p>
+     *
+     * @param str The stream.
+     * @return The raf or null.
+     */
+    private static RandomAccessFile getRaf(Object str) {
+        RandomAccessFile raf;
+        if (str instanceof ConnectionOutput) {
+            raf = ((ConnectionOutput) str).getRaf();
+        } else if (str instanceof ConnectionWriter) {
+            raf = ((ConnectionWriter) str).getRaf();
+        } else if (str instanceof ConnectionInput) {
+            raf = ((ConnectionInput) str).getRaf();
+        } else if (str instanceof ConnectionReader) {
+            raf = ((ConnectionReader) str).getRaf();
+        } else {
+            raf = null;
+        }
+        return raf;
+    }
+
+    /****************************************************************/
+    /* Stream Properties                                            */
+    /****************************************************************/
 
     /**
      * <p>Return the list of stream properties.</p>
@@ -250,65 +340,6 @@ public final class ForeignStream {
         }
         return res;
     }
-
-
-    /**
-     * <p>Reposition the stream.</p>
-     *
-     * @param str  The stream.
-     * @param fpos The position.
-     * @throws InterpreterMessage Validation or permission error.
-     */
-    public static void sysSetStreamPosition(Object str, long fpos)
-            throws InterpreterMessage, IOException {
-        RandomAccessFile raf = ForeignStream.getRaf(str);
-        if (raf == null)
-            throw new InterpreterMessage(InterpreterMessage.permissionError(
-                    "reposition", "stream", str));
-        raf.seek(fpos);
-    }
-
-    /**
-     * <p>Truncate the stream.</p>
-     *
-     * @param str  The stream.
-     * @param fpos The position.
-     * @throws InterpreterMessage Validation or permission error.
-     */
-    public static void sysSetStreamLength(Object str, long fpos)
-            throws InterpreterMessage, IOException {
-        RandomAccessFile raf = ForeignStream.getRaf(str);
-        if (raf == null)
-            throw new InterpreterMessage(InterpreterMessage.permissionError(
-                    "reposition", "stream", str));
-        raf.setLength(fpos);
-    }
-
-    /**
-     * <p>Helper to retrieve the raf of a stream.</p>
-     *
-     * @param str The stream.
-     * @return The raf or null.
-     */
-    private static RandomAccessFile getRaf(Object str) {
-        RandomAccessFile raf;
-        if (str instanceof ConnectionOutput) {
-            raf = ((ConnectionOutput) str).getRaf();
-        } else if (str instanceof ConnectionWriter) {
-            raf = ((ConnectionWriter) str).getRaf();
-        } else if (str instanceof ConnectionInput) {
-            raf = ((ConnectionInput) str).getRaf();
-        } else if (str instanceof ConnectionReader) {
-            raf = ((ConnectionReader) str).getRaf();
-        } else {
-            raf = null;
-        }
-        return raf;
-    }
-
-    /****************************************************************/
-    /* Stream Properties                                            */
-    /****************************************************************/
 
     /**
      * <p>Retrieve the properties of an input stream.</p>
@@ -450,67 +481,6 @@ public final class ForeignStream {
     /****************************************************************/
     /* Open Options                                                 */
     /****************************************************************/
-
-    /**
-     * <p>Convert an atom to a mode. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param fun The atom.
-     * @return The mode.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static int atomToMode(String fun) throws InterpreterMessage {
-        if (fun.equals(OP_READ)) {
-            return MODE_READ;
-        } else if (fun.equals(OP_WRITE)) {
-            return MODE_WRITE;
-        } else if (fun.equals(OP_APPEND)) {
-            return MODE_APPEND;
-        } else {
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    EngineMessage.OP_DOMAIN_IO_MODE, fun));
-        }
-    }
-
-    /**
-     * <p>Convert an atom to a type. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param t The type term.
-     * @return The type value.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static boolean atomToType(Object t) throws InterpreterMessage {
-        String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_BINARY)) {
-            return true;
-        } else if (val.equals(OP_TEXT)) {
-            return false;
-        } else {
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
-        }
-    }
-
-    /**
-     * <p>Convert an atom to a bool. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param t The bool term.
-     * @return The bool value.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static boolean atomToBool(Object t) throws InterpreterMessage {
-        String val = InterpreterMessage.castString(t);
-        if (val.equals(Foyer.OP_TRUE)) {
-            return true;
-        } else if (val.equals(AbstractFlag.OP_FALSE)) {
-            return false;
-        } else {
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
-        }
-    }
 
     /**
      * <p>Decode the duplex options.</p>
@@ -741,6 +711,91 @@ public final class ForeignStream {
                     InterpreterMessage.OP_TYPE_LIST, opt));
         }
         return res;
+    }
+
+    /**
+     * <p>Convert an atom to a type. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param t The type term.
+     * @return The type value.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static boolean atomToType(Object t) throws InterpreterMessage {
+        String val = InterpreterMessage.castString(t);
+        if (val.equals(OP_BINARY)) {
+            return true;
+        } else if (val.equals(OP_TEXT)) {
+            return false;
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
+        }
+    }
+
+    /****************************************************************/
+    /* Close Options                                                */
+    /****************************************************************/
+
+    /**
+     * <p>Decode the close options.</p>
+     *
+     * @param opt The close options term.
+     * @return The close options.
+     * @throws ClassCastException Validation error.
+     * @throws InterpreterMessage Validation error.
+     */
+    private static int decodeCloseOpts(Object opt)
+            throws ClassCastException, InterpreterMessage {
+        int res = 0;
+        while (opt instanceof TermCompound &&
+                ((TermCompound) opt).getArity() == 2 &&
+                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
+            Object temp = ((TermCompound) opt).getArg(0);
+            if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_FORCE)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                if (atomToBool(help)) {
+                    res |= OpenOpts.MASK_CLSE_FRCE;
+                } else {
+                    res &= ~OpenOpts.MASK_CLSE_FRCE;
+                }
+            } else {
+                InterpreterMessage.checkInstantiated(temp);
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        OP_OPEN_OPTION, temp));
+            }
+            opt = ((TermCompound) opt).getArg(1);
+        }
+        if (opt.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            InterpreterMessage.checkInstantiated(opt);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, opt));
+        }
+        return res;
+    }
+
+    /**
+     * <p>Convert an atom to a bool. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param t The bool term.
+     * @return The bool value.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static boolean atomToBool(Object t) throws InterpreterMessage {
+        String val = InterpreterMessage.castString(t);
+        if (val.equals(Foyer.OP_TRUE)) {
+            return true;
+        } else if (val.equals(AbstractFlag.OP_FALSE)) {
+            return false;
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
+        }
     }
 
 }

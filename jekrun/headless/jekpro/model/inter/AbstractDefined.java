@@ -51,16 +51,18 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static String OP_STATIC = "static";
     public final static String OP_DYNAMIC = "dynamic";
     public final static String OP_THREAD_LOCAL = "thread_local";
+    public final static String OP_GROUP_LOCAL = "group_local";
 
     /* predicate type */
     public final static int MASK_DEFI_STAT = 0x00000010;
     public final static int MASK_DEFI_DYNA = 0x00000020;
     public final static int MASK_DEFI_THLC = 0x00000040;
+    public final static int MASK_DEFI_GRLC = 0x00000080;
 
     public final static int MASK_DEFI_MASK = MASK_DEFI_STAT |
-            MASK_DEFI_DYNA | MASK_DEFI_THLC;
+            MASK_DEFI_DYNA | MASK_DEFI_THLC | MASK_DEFI_GRLC;
     public final static int MASK_DEFI_ASSE =
-            MASK_DEFI_DYNA | MASK_DEFI_THLC;
+            MASK_DEFI_DYNA | MASK_DEFI_THLC | MASK_DEFI_GRLC;
 
     /* clause compilation */
     public final static int MASK_DEFI_NOBR = 0x00000100;
@@ -122,6 +124,39 @@ public abstract class AbstractDefined extends AbstractDelegate {
     }
 
     /**
+     * <p>Promote predicate to static.</p>
+     * <p>Implicit during clause consult or explicit by static directive.</p>
+     *
+     * @param pick  The predicate.
+     * @param store The store.
+     * @return The promotion result.
+     */
+    public static AbstractDelegate promoteStatic(Predicate pick,
+                                                 Store store) {
+        AbstractDelegate fun = pick.del;
+        if (fun != null)
+            return fun;
+        AbstractDefined del;
+        synchronized (pick) {
+            fun = pick.del;
+            if (fun != null)
+                return fun;
+            if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
+                del = new DefinedBlockingMulti(store.foyer.getBits());
+            } else {
+                del = new DefinedLockfree(store.foyer.getBits());
+            }
+            if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
+                del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
+            if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
+                del.subflags |= AbstractDelegate.MASK_DELE_MULT;
+            del.subflags |= AbstractDefined.MASK_DEFI_STAT;
+            pick.del = del;
+        }
+        return del;
+    }
+
+    /**
      * <p>Promote predicate to dynamic.</p>
      * <p>Explicit by dynamic directive.</p>
      *
@@ -139,8 +174,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
             fun = pick.del;
             if (fun != null)
                 return fun;
-            int s = store.foyer.acquireHole();
-            del = new DefinedGroupLocal(s, store.foyer.getBits());
+            if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
+                del = new DefinedBlockingMulti(store.foyer.getBits());
+            } else {
+                del = new DefinedBlocking(store.foyer.getBits());
+            }
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
@@ -182,15 +220,15 @@ public abstract class AbstractDefined extends AbstractDelegate {
     }
 
     /**
-     * <p>Promote predicate to static.</p>
-     * <p>Implicit during clause consult or explicit by static directive.</p>
+     * <p>Promote predicate to thread locale.</p>
+     * <p>Explicit by thread_locale directive.</p>
      *
      * @param pick  The predicate.
      * @param store The store.
      * @return The promotion result.
      */
-    public static AbstractDelegate promoteStatic(Predicate pick,
-                                                 Store store) {
+    public static AbstractDelegate promoteGroupLocal(Predicate pick,
+                                                      Store store) {
         AbstractDelegate fun = pick.del;
         if (fun != null)
             return fun;
@@ -199,16 +237,13 @@ public abstract class AbstractDefined extends AbstractDelegate {
             fun = pick.del;
             if (fun != null)
                 return fun;
-            if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                del = new DefinedBlocking(store.foyer.getBits());
-            } else {
-                del = new DefinedLockfree(store.foyer.getBits());
-            }
+            int s = store.foyer.acquireHole();
+            del = new DefinedGroupLocal(s, store.foyer.getBits());
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
-            del.subflags |= AbstractDefined.MASK_DEFI_STAT;
+            del.subflags |= AbstractDefined.MASK_DEFI_GRLC;
             pick.del = del;
         }
         return del;
@@ -755,6 +790,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 return new SkelAtom(OP_DYNAMIC);
             case MASK_DEFI_THLC:
                 return new SkelAtom(OP_THREAD_LOCAL);
+            case MASK_DEFI_GRLC:
+                return new SkelAtom(OP_GROUP_LOCAL);
             default:
                 throw new IllegalArgumentException("illegal type");
         }

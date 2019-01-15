@@ -667,6 +667,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (rest != null)
                     rest.printStackTrace(en);
                 res = true;
+            } else if (!rec && t instanceof SkelAtom &&
+                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_READ_PROBLEM)) {
+                EngineException rest = ex.causeChainRest();
+                if (rest != null)
+                    rest.printStackTrace(en);
+                res = true;
             } else {
                 throw ex;
             }

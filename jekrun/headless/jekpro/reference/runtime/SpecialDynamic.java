@@ -54,11 +54,12 @@ import java.io.IOException;
 public final class SpecialDynamic extends AbstractSpecial {
     private final static int SPECIAL_SYS_ENSURE_SHARED_DYNAMIC = 0;
     private final static int SPECIAL_SYS_ENSURE_THREAD_LOCAL = 1;
-    private final static int SPECIAL_CLAUSE = 2;
-    private final static int SPECIAL_ASSERTA = 3;
-    private final static int SPECIAL_ASSERTZ = 4;
-    private final static int SPECIAL_ABOLISH_PREDICATE = 5;
-    private final static int SPECIAL_ABOLISH_OPER = 6;
+    private final static int SPECIAL_SYS_ENSURE_GROUP_LOCAL = 2;
+    private final static int SPECIAL_CLAUSE = 3;
+    private final static int SPECIAL_ASSERTA = 4;
+    private final static int SPECIAL_ASSERTZ = 5;
+    private final static int SPECIAL_ABOLISH_PREDICATE = 6;
+    private final static int SPECIAL_ABOLISH_OPER = 7;
 
     /**
      * <p>Create a predicate special.</p>
@@ -95,6 +96,13 @@ public final class SpecialDynamic extends AbstractSpecial {
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialDynamic.defineThreadLocal(pick, en);
+                return en.getNextRaw();
+            case SPECIAL_SYS_ENSURE_GROUP_LOCAL:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                SpecialDynamic.defineGroupLocal(pick, en);
                 return en.getNextRaw();
             case SPECIAL_CLAUSE:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE, en);
@@ -203,6 +211,26 @@ public final class SpecialDynamic extends AbstractSpecial {
             throws EngineMessage {
         AbstractDelegate fun = AbstractDefined.promoteThreadLocal(pick, en.store);
         if ((fun.subflags & AbstractDefined.MASK_DEFI_THLC) != 0)
+            return;
+        throw new EngineMessage(EngineMessage.permissionError(
+                EngineMessage.OP_PERMISSION_COERCE,
+                EngineMessage.OP_PERMISSION_PROCEDURE,
+                SpecialQuali.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Define thread local for a predicate.</p>
+     *
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void defineGroupLocal(Predicate pick, Engine en)
+            throws EngineMessage {
+        AbstractDelegate fun = AbstractDefined.promoteGroupLocal(pick, en.store);
+        if ((fun.subflags & AbstractDefined.MASK_DEFI_GRLC) != 0)
             return;
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,

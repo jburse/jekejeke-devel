@@ -20,8 +20,10 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.wire.MapHashWithImport;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -158,19 +160,31 @@ public final class ForeignEngine {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
-            for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
-                 entry2 != null; entry2 = pfs.successor(entry2)) {
-                res.add(entry2.key);
-            }
+            listFlags(branch.getPrologFlags(), res);
         }
         AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
+        listFlags(factory.getPrologFlags(), res);
+        return res;
+    }
+
+    /**
+     * <p>List the flag names from the hash table.</p>
+     *
+     * @param pfs The hash table.
+     * @param res The flag names.
+     */
+    private static void listFlags(MapHash<String, AbstractFlag> pfs,
+                                  ArrayList<String> res) {
+        if (pfs instanceof MapHashWithImport) {
+            ListArray<MapHash<String, AbstractFlag>> imps
+                    = ((MapHashWithImport<String, AbstractFlag>) pfs).getImports();
+            for (int i = 0; i < imps.size(); i++)
+                listFlags(imps.get(i), res);
+        }
         for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
              entry2 != null; entry2 = pfs.successor(entry2)) {
             res.add(entry2.key);
         }
-        return res;
     }
 
     /**

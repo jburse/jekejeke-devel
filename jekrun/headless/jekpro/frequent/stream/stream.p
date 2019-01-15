@@ -250,7 +250,7 @@ set_stream_length(Stream, Len) :-
 /*************************************************************************/
 
 :- private sys_alias/2.
-:- dynamic sys_alias/2.
+:- group_local sys_alias/2.
 
 % sys_get_alias(+Alias, -Stream)
 sys_get_alias(Alias, Stream) :-

@@ -88,13 +88,6 @@ public abstract class AbstractFactory extends AbstractFramework {
     private AbstractReflection reflection;
 
     /**
-     * <p>Create an abstract factory.</p>
-     */
-    public AbstractFactory() {
-        setPrologFlags(FlagFactory.defineFlags());
-    }
-
-    /**
      * <p>Retrieve the reflection.</p>
      *
      * @return The reflection.

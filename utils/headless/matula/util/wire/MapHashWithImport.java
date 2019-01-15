@@ -50,6 +50,15 @@ public final class MapHashWithImport<K, V> extends MapHash<K, V> {
     }
 
     /**
+     * <p>Retrieve the imports.</p>
+     *
+     * @return The imports.
+     */
+    public ListArray<MapHash<K, V>> getImports() {
+        return imports;
+    }
+
+    /**
      * <p>Find the entry in the map.</p>
      *
      * @param key The key.

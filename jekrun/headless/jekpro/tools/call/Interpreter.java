@@ -9,18 +9,12 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.reference.structure.SpecialLexical;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.MutableBit;
-import jekpro.tools.term.PositionKey;
+import jekpro.tools.term.*;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -404,30 +398,32 @@ public final class Interpreter implements Comparator<Object> {
             rd.getScanner().setReader(lr);
             rd.setEngineRaw(en);
             try {
-                if (stmt) {
-                    val = rd.parseHeadStatement();
-                } else {
-                    val = rd.parseHeadInternal();
+                try {
+                    if (stmt) {
+                        val = rd.parseHeadStatement();
+                    } else {
+                        val = rd.parseHeadInternal();
+                    }
+                } catch (ScannerError y) {
+                    String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
+                    rd.parseTailError(stmt ? PrologReader.OP_PERIOD : PrologReader.OP_EOF, y);
+                    EngineMessage x = new EngineMessage(
+                            EngineMessage.syntaxError(y.getError()));
+                    PositionKey pos = (OpenOpts.getPath(lr) != null ?
+                            new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
+                    throw new EngineException(x,
+                            EngineException.fetchPos(EngineException.fetchLoc(
+                                    EngineException.fetchStack(en),
+                                    pos, en), line, en));
                 }
-            } catch (ScannerError y) {
-                String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                rd.parseTailError(stmt ? PrologReader.OP_PERIOD : PrologReader.OP_EOF, y);
-                EngineMessage x = new EngineMessage(
-                        EngineMessage.syntaxError(y.getError()));
-                PositionKey pos = (OpenOpts.getPath(lr) != null ?
-                        new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
-                throw new EngineException(x,
-                        EngineException.fetchPos(EngineException.fetchLoc(
-                                EngineException.fetchStack(en),
-                                pos, en), line, en));
+            } catch (IOException y) {
+                throw EngineMessage.mapIOException(y);
             }
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        if (val == null)
-            return null;
         int size = rd.getGensym();
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         try {

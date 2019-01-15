@@ -77,6 +77,9 @@
 :- public prefix(thread_local).
 :- op(1150, fx, thread_local).
 
+:- public prefix(group_local).
+:- op(1150, fx, group_local).
+
 /***************************************************************/
 /* Predicate Types                                             */
 /***************************************************************/
@@ -112,7 +115,7 @@ sys_dynamic(I) :-
  * thread_local P, …:
  * The predicate sets the predicate P to thread local.
  */
-% thread_local +Indicator
+% thread_local +Indicators
 :- public (thread_local)/1.
 thread_local [P|Q] :- !,
    sys_thread_local(P),
@@ -135,27 +138,55 @@ sys_thread_local(I) :-
 :- private sys_ensure_thread_local/1.
 :- special(sys_ensure_thread_local/1, 'SpecialDynamic', 1).
 
+/**
+ * group_local P, …:
+ * The predicate sets the predicate P to group local.
+ */
+% group_local +Indicators
+:- public (group_local)/1.
+group_local [P|Q] :- !,
+   sys_group_local(P),
+   (group_local Q).
+group_local P,Q :- !,
+   sys_group_local(P),
+   (group_local Q).
+group_local [] :- !.
+group_local P :-
+   sys_group_local(P).
+
+:- private sys_group_local/1.
+sys_group_local(I) :-
+   sys_make_indicator(F, _, I),
+   sys_context_property(F, C),
+   sys_ensure_group_local(I),
+   set_predicate_property(I, sys_group_local(C)),
+   sys_check_style_predicate(I).
+
+:- private sys_ensure_group_local/1.
+:- special(sys_ensure_group_local/1, 'SpecialDynamic', 2).
+
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- public sys_declaration_indicator/2.
 :- multifile sys_declaration_indicator/2.
 sys_declaration_indicator((dynamic I), I).
 sys_declaration_indicator((thread_local I), I).
+sys_declaration_indicator((group_local I), I).
 
 /**
  * clause(H, B): [ISO 8.8.1]
  * The predicate succeeds with the user clauses that match H :- B.
- * The head predicate must be dynamic or thread local.
+ * The head predicate must be dynamic, thread local or group local.
  */
 % clause(-Term, -Goal)
 :- public clause/2.
 :- meta_predicate clause(-1,0).
-:- special(clause/2, 'SpecialDynamic', 2).
+:- special(clause/2, 'SpecialDynamic', 3).
 
 /**
  * retract(C): [ISO 8.9.3]
  * The predicate succeeds with and removes the user clauses that
- * match C. The head predicate must be dynamic or thread local.
+ * match C. The head predicate must be dynamic, thread local or group local.
  */
 % retract(-Term)
 :- public retract/1.
@@ -173,7 +204,7 @@ retract2(_).
 /**
  * retractall(H): [Corr.2 8.9.5]
  * The predicate succeeds and removes the user clauses that match
- * the head H. The head predicate must be dynamic or thread local.
+ * the head H. The head predicate must be dynamic, thread local or group local.
  */
 % retractall(+Term)
 :- public retractall/1.
@@ -186,22 +217,22 @@ retractall(_).
 /**
  * asserta(C): [ISO 8.9.1]
  * The predicate inserts the clause C at the top. The head predicate
- * must be dynamic or thread local.
+ * must be dynamic, thread local or group local.
  */
 % asserta(+Term)
 :- public asserta/1.
 :- meta_predicate asserta(-1).
-:- special(asserta/1, 'SpecialDynamic', 3).
+:- special(asserta/1, 'SpecialDynamic', 4).
 
 /**
  * assertz(C): [ISO 8.9.2]
  * The predicate inserts the clause C at the bottom. The head predicate
- * must be dynamic or thread local.
+ * must be dynamic, thread local or group local.
  */
 % assertz(+Term)
 :- public assertz/1.
 :- meta_predicate assertz(-1).
-:- special(assertz/1, 'SpecialDynamic', 4).
+:- special(assertz/1, 'SpecialDynamic', 5).
 
 /**
  * abolish(P): [ISO 8.9.4]
@@ -220,7 +251,7 @@ abolish(X) :-
    sys_abolish_predicate(X).
 
 :- private sys_abolish_predicate/1.
-:- special(sys_abolish_predicate/1, 'SpecialDynamic', 5).
+:- special(sys_abolish_predicate/1, 'SpecialDynamic', 6).
 
 :- private sys_abolish_oper/1.
-:- special(sys_abolish_oper/1, 'SpecialDynamic', 6).
+:- special(sys_abolish_oper/1, 'SpecialDynamic', 7).

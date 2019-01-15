@@ -121,9 +121,15 @@ final class FramedInput extends FilterInputStream {
      */
     private void readFrameStart() throws IOException {
         readOpCode();
+        if (opcode != Framed.OPCODE_CONNECTION_CLOSE &&
+                opcode != Framed.OPCODE_TEXT_FRAME &&
+                opcode != Framed.OPCODE_CONTINUATION_FRAME)
+            throw new StreamCorruptedException("unsupported opcode ("+opcode+")");
         int len = readLength();
         readMask();
         remaining = (opcode != Framed.OPCODE_CONNECTION_CLOSE ? len : -1);
+        if (remaining == 0)
+            throw new StreamCorruptedException("unsupported remaining ("+remaining+")");
         pos = 0;
     }
 

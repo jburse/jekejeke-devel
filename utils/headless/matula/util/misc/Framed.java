@@ -42,6 +42,8 @@ public final class Framed extends Socket {
     public static final byte OPCODE_TEXT_FRAME = 0x1;
     public static final byte OPCODE_BINARY_FRAME = 0x2;
     public static final byte OPCODE_CONNECTION_CLOSE = 0x8;
+    public static final byte OPCODE_CONNECTION_PING = 0x9;
+    public static final byte OPCODE_CONNECTION_PONG = 0xA;
 
     private FramedOutput out;
     private FramedInput in;

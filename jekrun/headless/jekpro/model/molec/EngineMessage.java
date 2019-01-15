@@ -191,6 +191,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYSTEM_MEMORY_THRESHOLD = "memory_threshold";
     public static final String OP_SYSTEM_DEADLOCK_TIMEOUT = "deadlock_timeout";
     public static final String OP_SYSTEM_TIMELIMIT_EXCEEDED = "timelimit_exceeded";
+    public static final String OP_SYSTEM_READ_PROBLEM = "read_problem";
 
     private static final String OP_RESOURCE_ERROR = "resource_error"; /* ISO */
     public static final String OP_RESOURCE_SOCKET_TIMEOUT = "socket_timeout";
@@ -572,6 +573,21 @@ public final class EngineMessage extends Exception {
         } else {
             return new EngineMessage(EngineMessage.resourceError(
                     x.getMessage()));
+        }
+    }
+
+    /**
+     * <p>Map an IOException.</p>
+     *
+     * @param x The IO Exception.
+     * @return The engine message.
+     */
+    public static EngineMessage mapIOProblem(IOException x) {
+        if (OpenCheck.isInterrupt(x)) {
+            return (EngineMessage) AbstractLivestock.sysThreadClear();
+        } else {
+            return new EngineMessage(EngineMessage.systemError(
+                    EngineMessage.OP_SYSTEM_READ_PROBLEM));
         }
     }
 
