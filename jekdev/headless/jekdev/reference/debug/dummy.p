@@ -1,4 +1,6 @@
 /**
+ * File that is loaded during debugger capability init.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -32,9 +34,10 @@
 
 :- module(user, []).
 
-:- ensure_loaded(library(debug/default)).
-:- ensure_loaded(library(debug/custom)).
-:- ensure_loaded(library(system/mode)).
+:- use_module(library(debug/default)).
+:- use_module(library(debug/custom)).
+:- use_module(library(system/mode)).
+:- use_module(library(wire/monitor)).
 
 /***********************************************************/
 /* Apropos Utility                                         */
@@ -47,3 +50,5 @@
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
 sys_apropos_table(library(debug/reference)).
+
+:- start_monitor.

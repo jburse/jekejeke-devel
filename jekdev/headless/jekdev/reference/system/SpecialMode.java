@@ -1,8 +1,8 @@
 package jekdev.reference.system;
 
-import jekdev.model.bugger.FoyerTrace;
+import jekdev.model.pretty.FoyerTrace;
 import jekdev.model.bugger.GoalTrace;
-import jekdev.model.bugger.StoreTrace;
+import jekdev.model.pretty.StoreTrace;
 import jekdev.model.bugger.SupervisorTrace;
 import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.inter.*;

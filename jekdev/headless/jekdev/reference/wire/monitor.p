@@ -3,9 +3,9 @@
  * threads, Prolog stack frames and Prolog variables of a
  * Prolog instance.
  *
- * Currently the HTTP object class only deals with GET requests
- * and provides a simple frame set based view. Extensions towards
- * web sockets and JSON RPC are planned.
+ * The HTTP object supports GET dispatch and GET upgrade to web
+ * sockets. The web sockets are used to notify the HTTP client
+ * of state changes.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -42,15 +42,47 @@
 :- use_module(library(notebook/httpsrv)).
 :- use_module(library(runtime/distributed)).
 :- use_module(library(system/thread)).
+:- use_module(library(misc/socket)).
 :- use_module(hooks/stack).
 
 /**
- * start(P):
- * The predicate starts the monitor at port P:
+ * start_monitor:
+ * The predicate starts the monitor in background.
  */
-:- public start/1.
-start(P) :-
-   spawn((  server(wire/monitor, P), fail; true)).
+% start_monitor
+:- public start_monitor/0.
+start_monitor :-
+   current_prolog_flag(sys_monitor_config, P),
+   start_monitor(P).
+
+% start_monitor(+Integer)
+:- private start_monitor/1.
+start_monitor(-1) :- !.
+start_monitor(P) :-
+   spawn((  run_http(wire/monitor, P), fail; true)).
+
+/**
+ * initialized(O, S):
+ * The predicate is called when the server S
+ * is initialized for object O.
+ */
+% initialized(+Object, +Server)
+:- override initialized/2.
+:- public initialized/2.
+initialized(_, Server) :-
+   server_port(Server, Port),
+   set_prolog_flag(sys_monitor_running, Port).
+
+/**
+ * destroyed(O, S):
+ * The predicate is called when the server S
+ * is destroyed for object O.
+ */
+% destroyed(+Object, +Server)
+:- override destroyed/2.
+:- public destroyed/2.
+destroyed(_, _) :-
+   set_prolog_flag(sys_monitor_running, -1).
 
 /**
  * dispatch(O, P, R, S):

@@ -75,8 +75,10 @@ subscribe_thread(Name, Response) :-
    write(Response, '         "/talkback/stack?thread="+thethread);\r\n'),
    write(Response, '      thesocket.onmessage = onMessage;\r\n'),
    write(Response, '      function onMessage(event) {\r\n'),
-   write(Response, '         thesocket.close();\r\n'),
    write(Response, '         location.reload();\r\n'),
    write(Response, '      };\r\n'),
+   write(Response, '   };\r\n'),
+   write(Response, '   window.onbeforeunload = function() {\r\n'),
+   write(Response, '      thesocket.close();\r\n'),
    write(Response, '   };\r\n'),
    write(Response, '</script>\r\n').

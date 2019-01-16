@@ -10,14 +10,10 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.PreClause;
+import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -115,7 +111,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                     return false;
 
                 Object obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en.store);
@@ -141,7 +137,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 if (pick.getDef(source) == null)
                     return false;
                 obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en.store);

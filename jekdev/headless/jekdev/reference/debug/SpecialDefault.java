@@ -1,6 +1,6 @@
 package jekdev.reference.debug;
 
-import jekdev.model.bugger.StoreTrace;
+import jekdev.model.pretty.StoreTrace;
 import jekdev.model.bugger.SupervisorTrace;
 import jekdev.reference.inspection.SpecialFrame;
 import jekdev.reference.system.SpecialMode;
@@ -11,6 +11,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
+import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialDynamic;
@@ -18,7 +19,6 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -242,7 +242,7 @@ public final class SpecialDefault extends AbstractSpecial {
                                   int depth, Engine en)
             throws EngineMessage, EngineException {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             int tflags = en.visor.flags & MASK_MODE_DEBG;
@@ -399,7 +399,7 @@ public final class SpecialDefault extends AbstractSpecial {
      */
     private static void dontAsk(Engine en) throws EngineMessage {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         SpecialLoad.newLineFlush(wr);
     }
@@ -412,7 +412,7 @@ public final class SpecialDefault extends AbstractSpecial {
      */
     private static void helpText(Engine en) throws EngineMessage {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
             Locale locale = en.store.foyer.locale;
@@ -436,7 +436,7 @@ public final class SpecialDefault extends AbstractSpecial {
     private static String askDebugAction(Engine en)
             throws EngineMessage {
         Object obj = en.visor.dispoutput;
-        FactoryAPI.checkTextWrite(obj);
+        LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
 
         obj = en.visor.dispinput;

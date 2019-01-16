@@ -2,14 +2,14 @@
  * This module provides a HTTP server based on Pythonesk dispatch of
  * a server object. The class of the server object need only implement
  * a predicate dispatch/4 with the Pythonesk convention that the receiver
- * appears in the first argument. The server can be started by providing
- * the server object that will be responsible for handling HTTP requests:
+ * appears in the first argument. The server can be run by providing the
+ * server object that will be responsible for handling HTTP requests:
  *
- * ?- server(<object>, <port>), fail; true.
+ * ?- run_http(<object>, <port>), fail; true.
  *
  * The server currently implements a minimal subset of the HTTP/1.1 protocol
  * restricted to GET method. The server will read the request line and the
- * header lines. The server is able to gen-erate error messages in the case
+ * header lines. The server is able to generate error messages in the case
  * the request is erroneous or in case the server object cannot handle
  * the request. The following HTTP/1.1 errors have been realized:
  *
@@ -68,27 +68,40 @@
 /***************************************************************/
 
 /**
- * server(O, P):
+ * run_http(O, P):
  * The predicate runs a web server with object O at port P.
  */
-% server(+Object, +Integer)
-:- public server/2.
-server(Object, Port) :-
-   balance((  accept(Port, Session),
+% run_http(+Object, +Integer)
+:- public run_http/2.
+run_http(Object, Port) :-
+   balance((  accept(Object, Port, Session),
               handle(Object, Session))).
 
 /**
- * accept(P, S):
- * The predicate repeatedly succeeds with accepted sessions S at port P.
+ * accept(O, P, S):
+ * The predicate repeatedly succeeds with accepted sessions S
+ * at port P for the object O.
  */
-% accept(+Integer, -Socket)
-:- private accept/2.
-accept(Port, Session) :-
+% accept(+Object, +Integer, -Socket)
+:- private accept/3.
+accept(Object, Port, Session) :-
    setup_call_cleanup(
-      server_new(Port, Server),
+      accept_new(Object, Port, Server),
       (  repeat,
          server_accept(Server, Session)),
-      close(Server)).
+      accept_close(Object, Server)).
+
+% accept_new(+Object, +Integer, -Server)
+:- private accept_new/3.
+accept_new(Object, Port, Server) :-
+   server_new(Port, Server),
+   Object::initialized(Server).
+
+% accept_close(+Object, +Server)
+:- private accept_close/2.
+accept_close(Object, Server) :-
+   close(Server),
+   Object::destroyed(Server).
 
 /**
  * handle(O, S):
@@ -137,6 +150,24 @@ handle_object(Object, Spec, Request, Session) :-
    Object::upgrade(Spec, Request, Session).
 handle_object(Object, Spec, Request, Session) :-
    Object::dispatch(Spec, Request, Session).
+
+/**
+ * initialized(O, S):
+ * The predicate is called when the server S
+ * is initialized for object O.
+ */
+% initialized(+Object, +Server)
+:- public initialized/2.
+:- static initialized/2.
+
+/**
+ * destroyed(O, S):
+ * The predicate is called when the server S
+ * is destroyed for object O.
+ */
+% destroyed(+Object, +Server)
+:- public destroyed/2.
+:- static destroyed/2.
 
 /**
  * dispatch(O, P, R, S):

@@ -7,10 +7,10 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.proxy.FactoryAPI;
 import jekpro.tools.term.SkelCompound;
 
 import java.io.IOException;
@@ -81,7 +81,7 @@ public final class SpecialDump extends AbstractSpecial {
                 AbstractDelegate fun = pick.del;
                 AbstractDefined.checkDefinedRead(fun, pick, en);
                 Object obj = en.visor.curoutput;
-                FactoryAPI.checkTextWrite(obj);
+                LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 dumpHeader(pick, wr);
                 ((AbstractDefined) fun).inspectClauses(wr, en);

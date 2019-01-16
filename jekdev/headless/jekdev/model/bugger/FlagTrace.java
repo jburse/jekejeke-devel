@@ -59,7 +59,6 @@ public final class FlagTrace extends AbstractFlag {
     public final static String OP_FLAG_SYS_QUERY_FRAME = "sys_query_frame";
     public final static String OP_FLAG_SYS_CLOAK = "sys_cloak";
     public final static String OP_FLAG_SYS_MAX_STACK = "sys_max_stack";
-    public final static String OP_FLAG_SYS_MONITOR_PORT = "sys_monitor_port";
 
     private static final int FLAG_UNKNOWN = 0;
     private static final int FLAG_DEBUG = 1;
@@ -73,7 +72,6 @@ public final class FlagTrace extends AbstractFlag {
     private static final int FLAG_SYS_QUERY_FRAME = 9;
     private static final int FLAG_SYS_CLOAK = 10;
     private static final int FLAG_SYS_MAX_STACK = 11;
-    private static final int FLAG_SYS_MONITOR_PORT = 12;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -103,7 +101,6 @@ public final class FlagTrace extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_QUERY_FRAME, new FlagTrace(FLAG_SYS_QUERY_FRAME));
         prologflags.add(OP_FLAG_SYS_CLOAK, new FlagTrace(FLAG_SYS_CLOAK));
         prologflags.add(OP_FLAG_SYS_MAX_STACK, new FlagTrace(FLAG_SYS_MAX_STACK));
-        prologflags.add(OP_FLAG_SYS_MONITOR_PORT, new FlagTrace(FLAG_SYS_MONITOR_PORT));
         return prologflags;
     }
 
@@ -141,8 +138,6 @@ public final class FlagTrace extends AbstractFlag {
                 return AbstractFlag.switchToAtom((en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0);
             case FLAG_SYS_MAX_STACK:
                 return Integer.valueOf(en.store.getMaxStack());
-            case FLAG_SYS_MONITOR_PORT:
-                return Integer.valueOf(((FoyerTrace)en.store.foyer).getPort());
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -209,12 +204,6 @@ public final class FlagTrace extends AbstractFlag {
                     SpecialEval.checkNotLessThanZero(num);
                     int n = SpecialEval.castIntValue(num);
                     en.store.setMaxStack(n);
-                    return true;
-                case FLAG_SYS_MONITOR_PORT:
-                    num = SpecialEval.derefAndCastInteger(m, d);
-                    SpecialEval.checkNotLessThanZero(num);
-                    n = SpecialEval.castIntValue(num);
-                    ((FoyerTrace)en.store.foyer).setPort(n);
                     return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");
