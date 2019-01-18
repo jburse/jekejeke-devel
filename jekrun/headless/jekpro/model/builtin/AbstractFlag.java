@@ -1,7 +1,6 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -95,7 +94,7 @@ public abstract class AbstractFlag {
      * @param en The engine.
      * @return The value.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     public Object getThreadFlag(Thread t, Engine en)
             throws EngineException, EngineMessage {

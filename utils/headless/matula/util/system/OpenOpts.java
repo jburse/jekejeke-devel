@@ -15,9 +15,9 @@ import java.nio.charset.UnsupportedCharsetException;
  * <p>This class represent the stream open options.</p>
  * <p>The following flags are supported:</p
  * <ul>
- *     <li><b>MASK_OPEN_RPOS:</b> Random access file.</li>
- *     <li><b>MASK_OPEN_NOBR:</b> Don't detect a BOM.</li>
- *     <li><b>MASK_OPEN_BOMW:</b> Write a BOM.</li>
+ * <li><b>MASK_OPEN_RPOS:</b> Random access file.</li>
+ * <li><b>MASK_OPEN_NOBR:</b> Don't detect a BOM.</li>
+ * <li><b>MASK_OPEN_BOMW:</b> Write a BOM.</li>
  * </ul>
  * <p>For text stream, if no encoding is specified, UTF-8 is used.</p>
  * <p/>
@@ -108,7 +108,7 @@ public final class OpenOpts extends OpenDuplex {
      * <p>Open a read stream.</p>
      *
      * @param know The knowledgebase.
-     * @param adr2  The uri.
+     * @param adr2 The uri.
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
      * @throws LicenseError             Decryption error.

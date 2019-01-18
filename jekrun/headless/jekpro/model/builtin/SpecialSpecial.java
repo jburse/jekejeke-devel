@@ -3,7 +3,10 @@ package jekpro.model.builtin;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelCompound;
 

@@ -44,7 +44,6 @@ public final class ForeignSocket {
 
     /**
      * <p>Open a server socket.</p>
-     * <p>We use java.nio since it is interuptible.</p>
      *
      * @param port The port.
      * @return The socket.
@@ -56,8 +55,17 @@ public final class ForeignSocket {
     }
 
     /**
+     * <p>Retrieve the server port.</p>
+     *
+     * @param server The server.
+     * @return The port.
+     */
+    public static int sysServerPort(ServerSocket server) {
+        return server.getLocalPort();
+    }
+
+    /**
      * <p>Derive a session socket from a server socket.</p>
-     * <p>We use java.nio since it is interuptible.</p>
      *
      * @param server The server socket.
      * @return The session socket.
@@ -83,7 +91,6 @@ public final class ForeignSocket {
 
     /**
      * <p>Open a client socket.</p>
-     * <p>We use java.nio since it is interuptible.</p>
      *
      * @param host The host name.
      * @param port The port.

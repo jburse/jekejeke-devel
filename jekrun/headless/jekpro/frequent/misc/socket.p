@@ -66,6 +66,13 @@
 :- foreign(server_new/2, 'ForeignSocket', sysServerNew(int)).
 
 /**
+ * server_port(S, P):
+ * The predicate succeeds in P with the port of the server socket S.
+ */
+:- public server_port/2.
+:- foreign(server_port/2, 'ForeignSocket', sysServerPort('ServerSocket')).
+
+/**
  * server_accept(S, H):
  * The predicate succeeds in H with a new session socket from server socket S.
  */

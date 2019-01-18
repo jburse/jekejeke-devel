@@ -228,7 +228,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return The promotion result.
      */
     public static AbstractDelegate promoteGroupLocal(Predicate pick,
-                                                      Store store) {
+                                                     Store store) {
         AbstractDelegate fun = pick.del;
         if (fun != null)
             return fun;

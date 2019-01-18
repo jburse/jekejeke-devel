@@ -1,7 +1,6 @@
 package matula.util.system;
 
 import matula.util.data.AssocArray;
-import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;

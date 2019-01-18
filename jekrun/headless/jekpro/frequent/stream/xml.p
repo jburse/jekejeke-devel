@@ -11,6 +11,12 @@
  * ?- text_escape(X, '&amp;lt;abc&amp;gt;').
  * X = '&lt;abc&gt;'
  *
+ * The predicate base64_block/2 can be used to base64 encode and decode
+ * a byte block. This code allows representing 8-bit bytes as ASCII
+ * characters. When generating base64 code the predicate will produce
+ * 10 blocks of 4 characters effectively encoding 30 bytes. While decoding
+ * the terminating characters = indicate the number of fill bytes.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -74,6 +80,28 @@ text_escape(X, Y) :-
 /****************************************************************/
 /* Base64 Conversion                                            */
 /****************************************************************/
+
+/**
+ * hex_block(T, E):
+ * If T is a variable then the predicate succeeds when T unifies with
+ * the hex encode of E. Otherwise the predicate succeeds when E unifies
+ * with the hex decode of T.
+ */
+% hex_block(+-Atom, -+Bytes)
+:- public hex_block/2.
+hex_block(X, Y) :-
+   var(X), !,
+   sys_hex_encode(Y, X).
+hex_block(X, Y) :-
+   sys_hex_decode(X, Y).
+
+:- private sys_hex_decode/2.
+:- foreign(sys_hex_decode/2, 'ForeignXml',
+      sysHexDecode('String')).
+
+:- private sys_hex_encode/2.
+:- foreign(sys_hex_encode/2, 'ForeignXml',
+      sysHexEncode({byte})).
 
 /**
  * base64_block(T, E):

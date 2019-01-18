@@ -10,6 +10,7 @@ import java.io.Writer;
 /**
  * <p>Refinement of the filter writer.</p>
  * <p>Allows the inspection of a couple of data.</p>
+ * <p>Translates '\n' to platform specific newline.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -228,17 +229,17 @@ public final class ConnectionWriter extends FilterWriter {
      * @throws IOException If an I/O error occurs
      */
     public void write(char cbuf[], int off, int len) throws IOException {
-        int k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
-        while (k != -1) {
-            synchronized (lock) {
+        if (!OpenDuplex.UNIX_NEWLINE.equals(newline)) {
+            int k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
+            while (k != -1) {
                 if (k != off)
                     out.write(cbuf, off, k - off);
                 out.write(newline);
+                k++;
+                len = len - k + off;
+                off = k;
+                k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
             }
-            k++;
-            len = len - k + off;
-            off = k;
-            k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
         }
         if (len != 0)
             out.write(cbuf, off, len);
@@ -270,17 +271,17 @@ public final class ConnectionWriter extends FilterWriter {
      * @throws IOException If an I/O error occurs
      */
     public void write(String str, int off, int len) throws IOException {
-        int k = indexOf(str, off, len, CodeType.LINE_EOL);
-        while (k != -1) {
-            synchronized (lock) {
+        if (!OpenDuplex.UNIX_NEWLINE.equals(newline)) {
+            int k = indexOf(str, off, len, CodeType.LINE_EOL);
+            while (k != -1) {
                 if (k != off)
                     out.write(str, off, k - off);
                 out.write(newline);
+                k++;
+                len = len - k + off;
+                off = k;
+                k = indexOf(str, off, len, CodeType.LINE_EOL);
             }
-            k++;
-            len = len - k + off;
-            off = k;
-            k = indexOf(str, off, len, CodeType.LINE_EOL);
         }
         if (len != 0)
             out.write(str, off, len);

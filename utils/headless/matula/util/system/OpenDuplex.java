@@ -10,7 +10,7 @@ import java.net.Socket;
  * <p>This class represent the socket open options.</p>
  * <p>The following flags are supported:</p>
  * <ul>
- *     <li><b>MASK_OPEN_BINR:</b> For binary stream.</li>
+ * <li><b>MASK_OPEN_BINR:</b> For binary stream.</li>
  * </ul>
  * <p>For text stream, if no encoding is specified, UTF-8 is used.</p>
  * <p/>
@@ -111,7 +111,7 @@ public class OpenDuplex extends OpenCheck {
      * <p>Open a read stream.</p>
      *
      * @param know The knowledgebase.
-     * @param sock  The socket.
+     * @param sock The socket.
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
      * @throws LicenseError             Decryption error.

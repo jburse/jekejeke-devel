@@ -303,17 +303,104 @@ public final class ForeignXml {
     }
 
     /*******************************************************************/
+    /* Base16 Decode/Encode                                            */
+    /*******************************************************************/
+
+    /**
+     * <p>Decode a hex string.</p>
+     *
+     * @param s The hex string.
+     * @return The bytes.
+     * @throws ParseException Problem parsing.
+     */
+    public static byte[] sysHexDecode(String s)
+            throws ParseException {
+        int n = s.length();
+        if (n % 2 != 0)
+            throw new ParseException("length problem", n);
+        int m = n / 2;
+        byte[] res = new byte[m];
+        int j = 0;
+        for (int i = 0; i < m; i++) {
+            char ch = s.charAt(j);
+            j++;
+            int v = hexToByte(ch);
+            if (v == -1)
+                throw new ParseException("decoding problem", j);
+            res[i] = (byte) (v << 4);
+            ch = s.charAt(j);
+            j++;
+            v = hexToByte(ch);
+            if (v == -1)
+                throw new ParseException("decoding problem", j);
+            res[i] |= v;
+        }
+        return res;
+    }
+
+    /**
+     * <p>Decode a character to a 4-bit value.</p>
+     *
+     * @param ch The character.
+     * @return The 6-bit value or -1.
+     */
+    private static int hexToByte(int ch) {
+        if (('A' <= ch) && (ch <= 'F')) {
+            return ch - 'A' + 10;
+        } else if (('0' <= ch) && (ch <= '9')) {
+            return ch - '0';
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * <p>Encode bytes in hex.</p>
+     *
+     * @param b The bytes.
+     * @return The string in hex.
+     */
+    public static String sysHexEncode(byte[] b) {
+        int m = b.length * 2;
+        char[] res = new char[m];
+        for (int i = 0; i < m; i++) {
+            int v = b[i / 2];
+            if (i % 2 == 0)
+                v = v >> 4;
+            res[i] = (char) byteToHex(v & 0xF);
+        }
+        return new String(res);
+    }
+
+    /**
+     * <p>Encode a 6-bit value to a character.</p>
+     *
+     * @param b The 6-bit value.
+     * @return The character.
+     */
+    private static int byteToHex(int b) {
+        if (b < 10) {
+            return '0' + b;
+        } else if (b < 16) {
+            return 'A' + b - 10;
+        } else {
+            throw new IllegalArgumentException("problem encoding");
+        }
+    }
+
+    /*******************************************************************/
     /* Base64 Decode/Encode                                            */
     /*******************************************************************/
 
     /**
-     * <p>Decode a string.</p>
+     * <p>Decode a base64 string.</p>
      *
-     * @param s The string.
+     * @param s The base64 string.
      * @return The bytes.
-     * @throws ParseException Shit happens.
+     * @throws ParseException Problem parsing.
      */
-    public static byte[] sysBase64Decode(String s) throws ParseException {
+    public static byte[] sysBase64Decode(String s)
+            throws ParseException {
         int n = s.length();
         int k = 0;
         for (int i = 0; i < n; i++) {
@@ -405,10 +492,10 @@ public final class ForeignXml {
     }
 
     /**
-     * <p>Encode bytes.</p>
+     * <p>Encode bytes in base64.</p>
      *
      * @param b The bytes.
-     * @return The string.
+     * @return The string in base64.
      */
     public static String sysBase64Encode(byte[] b) {
         int k = b.length / (GROUPS_PER_LINE * 3);

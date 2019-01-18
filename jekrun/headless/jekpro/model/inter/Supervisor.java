@@ -82,6 +82,7 @@ public class Supervisor extends AbstractLivestock {
 
         dispinput = foyer.getFactory().toolinput;
         dispoutput = foyer.getFactory().tooloutput;
+        disperror = foyer.getFactory().toolerror;
     }
 
     /***************************************************************/

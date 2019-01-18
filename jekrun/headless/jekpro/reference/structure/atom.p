@@ -672,6 +672,7 @@ atom_split2(Atom, _, [Atom]).
  * with the number unparsing of N. Otherwise the predicate
  * succeeds in N with the number parsing of A.
  */
+% atom_number(+-Atom, -+Number)
 :- public atom_number/2.
 atom_number(A, N) :-
    var(A), !,
@@ -680,6 +681,22 @@ atom_number(A, N) :-
 atom_number(A, N) :-
    atom_codes(A, L),
    number_codes(N, L).
+
+/**
+ * atom_block(A, B):
+ * If A is a variable, then the predicate succeeds in A
+ * with the atom for the block B. Otherwise the predicate
+ * succeeds in B with the atom for the block B.
+ */
+% atom_block(+-Atom, -+Bytes)
+:- public atom_block/2.
+atom_block(A, B) :-
+   var(A), !,
+   block_bytes(B, L),
+   atom_codes(A, L).
+atom_block(A, B) :-
+   atom_codes(A, L),
+   block_bytes(B, L).
 
 /****************************************************************/
 /* Term Conversion                                              */

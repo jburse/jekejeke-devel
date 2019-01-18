@@ -4,7 +4,10 @@ import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.InterfaceInit;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
@@ -780,11 +783,13 @@ public final class LoadOpts extends LoadForce {
             if (!(obj instanceof OutputStream)) {
                 throw new EngineMessage(EngineMessage.permissionError(
                         EngineMessage.OP_PERMISSION_OUTPUT,
-                        EngineMessage.OP_PERMISSION_STREAM, obj));
+                        EngineMessage.OP_PERMISSION_STREAM,
+                        (obj != null ? obj : new SkelAtom(AbstractFlag.OP_NULL))));
             } else {
                 throw new EngineMessage(EngineMessage.permissionError(
                         EngineMessage.OP_PERMISSION_OUTPUT,
-                        EngineMessage.OP_PERMISSION_BINARY_STREAM, obj));
+                        EngineMessage.OP_PERMISSION_BINARY_STREAM,
+                        (obj != null ? obj : new SkelAtom(AbstractFlag.OP_NULL))));
             }
         }
     }
