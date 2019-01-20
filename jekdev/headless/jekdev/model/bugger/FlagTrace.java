@@ -125,9 +125,9 @@ public final class FlagTrace extends AbstractFlag {
             case FLAG_SYS_TVISIBLE:
                 return SpecialDefault.portsToList(en, en.visor.flags >> 24);
             case FLAG_SYS_CLAUSE_INSTRUMENT:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NIST) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NIST) == 0);
             case FLAG_SYS_HEAD_WAKEUP:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NHWK) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
                 InterfaceStack frame = ((SupervisorTrace) en.visor).getSkipFrame();
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
@@ -176,16 +176,16 @@ public final class FlagTrace extends AbstractFlag {
                     return true;
                 case FLAG_SYS_CLAUSE_INSTRUMENT:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NIST);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NIST);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NIST);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NIST);
                     }
                     return true;
                 case FLAG_SYS_HEAD_WAKEUP:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NHWK);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NHWK);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NHWK);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NHWK);
                     }
                     return true;
                 case FLAG_SYS_SKIP_FRAME:

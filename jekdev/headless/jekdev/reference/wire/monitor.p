@@ -43,7 +43,7 @@
 :- use_module(library(runtime/distributed)).
 :- use_module(library(system/thread)).
 :- use_module(library(misc/socket)).
-:- use_module(hooks/stack).
+:- use_module(hooks/pause).
 
 /**
  * start_monitor:
@@ -163,5 +163,5 @@ tracing_broadcast(P, _) :-
    sys_leashed_port(P), !,
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
-   broadcast_stack(Name).
+   broadcast_pause(Name).
 tracing_broadcast(_, _).

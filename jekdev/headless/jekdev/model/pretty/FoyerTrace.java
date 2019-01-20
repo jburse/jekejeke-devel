@@ -54,6 +54,8 @@ public abstract class FoyerTrace extends Foyer {
 
     public final static String OP_TRACE_GOAL = "trace_goal";
 
+    public final static int MASK_FOYER_NLOG = 0x00100000;
+
     public SkelAtom ATOM_TRACE_GOAL = new SkelAtom(FoyerTrace.OP_TRACE_GOAL);
 
     public final SkelAtom ATOM_CALL = new SkelAtom(SpecialMode.OP_CALL);
@@ -171,7 +173,9 @@ public abstract class FoyerTrace extends Foyer {
      * @return The store.
      */
     public Store createStore() {
-        return new StoreTrace(this);
+        Store store = new StoreTrace(this, null);
+        store.loader = getClass().getClassLoader();
+        return store;
     }
 
     /**
@@ -181,7 +185,9 @@ public abstract class FoyerTrace extends Foyer {
      * @return The store.
      */
     public Store createStore(Class c) {
-        return new StoreTrace(this, c);
+        Store store = new StoreTrace(this, null);
+        store.loader = c.getClassLoader();
+        return store;
     }
 
     /**

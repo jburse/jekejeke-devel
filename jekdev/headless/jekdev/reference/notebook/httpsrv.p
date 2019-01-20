@@ -5,7 +5,7 @@
  * appears in the first argument. The server can be run by providing the
  * server object that will be responsible for handling HTTP requests:
  *
- * ?- run_http(<object>, <port>), fail; true.
+ * ?- run_http(&lt;object&gt;, &lt;port&gt;), fail; true.
  *
  * The server currently implements a minimal subset of the HTTP/1.1 protocol
  * restricted to GET method. The server will read the request line and the
@@ -317,15 +317,14 @@ send_lines2(_, Response) :-
 % response_binary(+Stream)
 :- public response_binary/1.
 response_binary(Response) :-
-   write_bytes(Response, 'HTTP/1.1 200 OK\r\n'),
-   write_bytes(Response, 'Content-Type: application/octet-stream\r\n'),
-   write_bytes(Response, '\r\n').
+   write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
+   write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
+   write_atom(Response, '\r\n').
 
-% write_bytes(+Stream, +Atom)
-:- public write_bytes/2.
-write_bytes(Response, Atom) :-
-   atom_codes(Atom, Bytes),
-   block_bytes(Block, Bytes),
+% write_atom(+Stream, +Atom)
+:- public write_atom/2.
+write_atom(Response, Atom) :-
+   atom_block(Atom, Block),
    write_block(Response, Block).
 
 /**
@@ -393,17 +392,16 @@ response_upgrade(Request, Response) :-
    http_header(Request, 'Sec-WebSocket-Key', Key),
    http_header(Request, 'Sec-WebSocket-Version', '13'),
    atom_concat(Key, '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', Key2),
-   atom_codes(Key2, List),
-   block_bytes(Bytes, List),
-   sha1_hash(Bytes, Hash),
+   atom_block(Key2, Block),
+   sha1_hash(Block, Hash),
    base64_block(Key3, Hash),
-   write_bytes(Response, 'HTTP/1.1 101 Switching Protocols\r\n'),
-   write_bytes(Response, 'Upgrade: websocket\r\n'),
-   write_bytes(Response, 'Connection: Upgrade\r\n'),
-   write_bytes(Response, 'Sec-WebSocket-Accept: '),
-   write_bytes(Response, Key3),
-   write_bytes(Response, '\r\n'),
-   write_bytes(Response, '\r\n').
+   write_atom(Response, 'HTTP/1.1 101 Switching Protocols\r\n'),
+   write_atom(Response, 'Upgrade: websocket\r\n'),
+   write_atom(Response, 'Connection: Upgrade\r\n'),
+   write_atom(Response, 'Sec-WebSocket-Accept: '),
+   write_atom(Response, Key3),
+   write_atom(Response, '\r\n'),
+   write_atom(Response, '\r\n').
 
 /***************************************************************/
 /* Internal Error Generator                                    */

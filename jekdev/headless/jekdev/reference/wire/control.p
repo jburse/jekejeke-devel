@@ -40,7 +40,8 @@
 :- use_module(library(notebook/httpsrv)).
 :- use_module(library(misc/socket)).
 :- use_module(library(runtime/distributed)).
-:- use_module(hooks/stack).
+:- use_module(hooks/pause).
+:- use_module(hooks/command).
 
 /**
  * upgrade(O, P, R, S):
@@ -50,35 +51,77 @@
 % upgrade(+Object, +Spec, +Request, +Session)
 :- override upgrade/4.
 :- public upgrade/4.
-upgrade(_, '/stack', Request, Session) :-
+upgrade(_, '/pause', Request, Session) :-
    http_parameter(Request, thread, Name), !,
    setup_call_cleanup(
       open(Session, write, Output, [type(binary)]),
       response_upgrade(Request, Output),
       flush_output(Output)),
    websock_new(Session, WebSession),
-   spawn(worker_stack(Name, WebSession)).
+   spawn(worker_pause(Name, WebSession)).
+upgrade(_, '/command', Request, Session) :-
+   http_parameter(Request, store, Name), !,
+   setup_call_cleanup(
+      open(Session, write, Output, [type(binary)]),
+      response_upgrade(Request, Output),
+      flush_output(Output)),
+   websock_new(Session, WebSession),
+   spawn(worker_command(Name, WebSession)).
 
 /***************************************************************/
 /* HTTP Response Text                                          */
 /***************************************************************/
 
-% subscribe_thread(+Atom, +Stream)
-:- public subscribe_thread/2.
-subscribe_thread(Name, Response) :-
+/**
+ * subscribe_pause(T, S):
+ * The predicate sends a subscribte to pause events for the thread T
+ * to the text output stream S.
+ */
+% subscribe_pause(+Atom, +Stream)
+:- public subscribe_pause/2.
+subscribe_pause(Name, Response) :-
    write(Response, '<script type="text/javascript">\r\n'),
    write(Response, '   window.onload = function() {\r\n'),
-   write(Response, '      thethread = "'),
+   write(Response, '      pausethread = "'),
    write(Response, Name),
    write(Response, '";\r\n'),
-   write(Response, '      thesocket=new WebSocket("ws://"+location.host+\r\n'),
-   write(Response, '         "/talkback/stack?thread="+thethread);\r\n'),
-   write(Response, '      thesocket.onmessage = onMessage;\r\n'),
+   write(Response, '      pausesocket=new WebSocket("ws://"+location.host+\r\n'),
+   write(Response, '         "/talkback/pause?thread="+pausethread);\r\n'),
+   write(Response, '      pausesocket.onmessage = onMessage;\r\n'),
    write(Response, '      function onMessage(event) {\r\n'),
    write(Response, '         location.reload();\r\n'),
    write(Response, '      };\r\n'),
    write(Response, '   };\r\n'),
    write(Response, '   window.onbeforeunload = function() {\r\n'),
-   write(Response, '      thesocket.close();\r\n'),
+   write(Response, '      pausesocket.close();\r\n'),
+   write(Response, '   };\r\n'),
+   write(Response, '</script>\r\n').
+
+/**
+ * subscribe_command(T, S):
+ * The predicate sends a subscribte to command events for the store T
+ * to the text output stream S.
+ */
+% subscribe_command(+Atom, +Stream)
+:- public subscribe_command/2.
+subscribe_command(Name, Response) :-
+   write(Response, '<script type="text/javascript">\r\n'),
+   write(Response, '   oldonloadcommand = window.onload;\r\n'),
+   write(Response, '   window.onload = function() {\r\n'),
+   write(Response, '      commandstore = "'),
+   write(Response, Name),
+   write(Response, '";\r\n'),
+   write(Response, '      commandsocket=new WebSocket("ws://"+location.host+\r\n'),
+   write(Response, '         "/talkback/command?store="+commandstore);\r\n'),
+   write(Response, '      commandsocket.onmessage = onMessage;\r\n'),
+   write(Response, '      function onMessage(event) {\r\n'),
+   write(Response, '         location.reload();\r\n'),
+   write(Response, '      };\r\n'),
+   write(Response, '      oldonloadcommand();\r\n'),
+   write(Response, '   };\r\n'),
+   write(Response, '   oldonbeforeunloadcommand = window.onbeforeunload;\r\n'),
+   write(Response, '   window.onbeforeunload = function() {\r\n'),
+   write(Response, '      commandsocket.close();\r\n'),
+   write(Response, '      oldonbeforeunloadcommand();\r\n'),
    write(Response, '   };\r\n'),
    write(Response, '</script>\r\n').

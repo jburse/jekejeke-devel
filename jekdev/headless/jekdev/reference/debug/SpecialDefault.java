@@ -319,7 +319,7 @@ public final class SpecialDefault extends AbstractSpecial {
                                  Object t, Display d,
                                  Engine en)
             throws EngineMessage, EngineException {
-        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0) {
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             /* write port and goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
             InterfaceStack frame = en.visor.ref;

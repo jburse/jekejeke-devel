@@ -1,6 +1,7 @@
 package jekdev.model.bugger;
 
 import jekdev.model.pretty.StoreTrace;
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -9,10 +10,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
@@ -49,8 +47,12 @@ import matula.util.data.MapHash;
  */
 public class PropertyTraceStore extends AbstractProperty {
     public final static String OP_SYS_BREAK = "sys_break";
+    public final static String OP_SYS_NAME = "sys_name";
+    public final static String OP_SYS_PARENT = "sys_parent";
 
     private static final int PROP_SYS_BREAK = 0;
+    private static final int PROP_SYS_NAME = 1;
+    private static final int PROP_SYS_PARENT = 2;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -69,6 +71,8 @@ public class PropertyTraceStore extends AbstractProperty {
     static MapHash<StoreKey, AbstractProperty> defineStoreProps() {
         MapHash<StoreKey, AbstractProperty> storeprops = new MapHash<StoreKey, AbstractProperty>();
         storeprops.add(new StoreKey(OP_SYS_BREAK, 2), new PropertyTraceStore(PROP_SYS_BREAK));
+        storeprops.add(new StoreKey(OP_SYS_NAME, 1), new PropertyTraceStore(PROP_SYS_NAME));
+        storeprops.add(new StoreKey(OP_SYS_PARENT, 1), new PropertyTraceStore(PROP_SYS_PARENT));
         return storeprops;
     }
 
@@ -94,6 +98,15 @@ public class PropertyTraceStore extends AbstractProperty {
                     res[i] = TermAtomic.createMolec(val, Display.DISPLAY_CONST);
                 }
                 return res;
+            case PROP_SYS_NAME:
+                Object val = new SkelCompound(new SkelAtom(OP_SYS_NAME),
+                        new SkelAtom(store.name));
+                return new Object[]{TermAtomic.createMolec(val, Display.DISPLAY_CONST)};
+            case PROP_SYS_PARENT:
+                Store parent = store.parent;
+                val = new SkelCompound(new SkelAtom(OP_SYS_PARENT),
+                        parent != null ? (Knowledgebase) parent.proxy : new SkelAtom(AbstractFlag.OP_NULL));
+                return new Object[]{TermAtomic.createMolec(val, Display.DISPLAY_CONST)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -108,7 +121,7 @@ public class PropertyTraceStore extends AbstractProperty {
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    public void setStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean setStoreProp(Store store, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -116,7 +129,11 @@ public class PropertyTraceStore extends AbstractProperty {
                     PositionKey pos = derefAndCastPositionKey(m, d, en);
                     StoreTrace storetrace = (StoreTrace) store;
                     storetrace.addBreakPoint(pos);
-                    break;
+                    return true;
+                case PROP_SYS_NAME:
+                    return false;
+                case PROP_SYS_PARENT:
+                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -135,7 +152,7 @@ public class PropertyTraceStore extends AbstractProperty {
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    public void resetStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean resetStoreProp(Store store, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -143,7 +160,11 @@ public class PropertyTraceStore extends AbstractProperty {
                     PositionKey pos = derefAndCastPositionKey(m, d, en);
                     StoreTrace storetrace = (StoreTrace) store;
                     storetrace.removeBreakPoint(pos);
-                    break;
+                    return true;
+                case PROP_SYS_NAME:
+                    return false;
+                case PROP_SYS_PARENT:
+                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }

@@ -337,7 +337,11 @@ public final class SpecialFrame extends AbstractSpecial {
             throws EngineMessage {
         StoreKey sk = StackElement.callableToStoreKey(m);
         AbstractProperty prop = findStoreProperty(sk, en);
-        prop.setStoreProp(store, m, d, en);
+        if (!prop.setStoreProp(store, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
     }
 
     /**
@@ -356,7 +360,11 @@ public final class SpecialFrame extends AbstractSpecial {
             throws EngineMessage {
         StoreKey sk = StackElement.callableToStoreKey(m);
         AbstractProperty prop = findStoreProperty(sk, en);
-        prop.resetStoreProp(store, m, d, en);
+        if (!prop.resetStoreProp(store, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
     }
 
     /**

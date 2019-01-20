@@ -1,5 +1,24 @@
 /**
- * t.b.d.
+ * Since recently we have introduce hierarchical knowledge bases.
+ * They are already used in the Swing GUI, but not in the Android GUI.
+ * Every Swing console window runs in its own sub knowledge base which
+ * provides a separate class loader. The current knowledge base stack
+ * can be listed by the store/0 command:
+ *
+ * Example, in Swing GUI:
+ * ?- stores.
+ * Store-1
+ * Store-0
+ *
+ * Example, in Android GUI:
+ * ?- stores.
+ * Store-0
+ *
+ * Knowledge base properties can be query by the predicate
+ * store_property/2. The predicates set_store_property/2 and
+ * reset_store_property/2 serve updating knowledge base properties.
+ * This module also provides accessing thread stack frames via
+ * the predicate frame_property/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -34,6 +53,8 @@
 :- use_package(foreign(jekdev/reference/inspection)).
 
 :- module(frame, []).
+:- use_module(library(system/thread)).
+:- use_module(library(stream/console)).
 
 % some frame property
 :- public sys_call_goal/1.
@@ -112,3 +133,25 @@ store_property(I, R) :-
 % reset_store_property(+Oper, +Property)
 :- public reset_store_property/2.
 :- special(reset_store_property/2, 'SpecialFrame', 7).
+
+/**
+ * stores:
+ * The predicate lists the store chain of the current thread.
+ */
+% stores
+:- public stores/0.
+stores :-
+   thread_current(T),
+   current_thread_flag(T, sys_thread_store, S),
+   stores(S).
+
+% stores(+Store)
+:- private stores/1.
+stores(null) :- !.
+stores(S) :-
+   store_property(S, sys_name(N)),
+   ttywrite(N), ttynl,
+   store_property(S, sys_parent(T)),
+   stores(T).
+
+
