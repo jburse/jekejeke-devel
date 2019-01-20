@@ -129,17 +129,17 @@ public final class Flag extends AbstractFlag {
     public Object getFlag(Engine en) {
         switch (id) {
             case FLAG_SYS_BODY_VARIABLE:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NBDY) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NLST) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NLST) == 0);
             case FLAG_SYS_HEAD_VARIABLE:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NHED) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NHED) == 0);
             case FLAG_SYS_BODY_CONVERT:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) != 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) != 0);
             case FLAG_SYS_CLAUSE_INDEX:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NIDX) == 0);
             case FLAG_BOUNDED:
                 return new SkelAtom(AbstractFlag.OP_FALSE);
             case FLAG_INTEGER_ROUNDING_FUNCTION:
@@ -219,44 +219,44 @@ public final class Flag extends AbstractFlag {
             switch (id) {
                 case FLAG_SYS_BODY_VARIABLE:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NBDY);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NBDY);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NBDY);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NBDY);
                     }
                     return true;
                 case FLAG_SYS_STACK_FRAME:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NLST);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NLST);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NLST);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NLST);
                     }
                     return true;
                 case FLAG_SYS_HEAD_VARIABLE:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NHED);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NHED);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NHED);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NHED);
                     }
                     return true;
                 case FLAG_SYS_BODY_CONVERT:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NBCV);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NBCV);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NBCV);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NBCV);
                     }
                     return true;
                 case FLAG_SYS_CLAUSE_EXPAND:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_CEXP);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_CEXP);
                     } else {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_CEXP);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_CEXP);
                     }
                     return true;
                 case FLAG_SYS_CLAUSE_INDEX:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_STORE_NIDX);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NIDX);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_STORE_NIDX);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NIDX);
                     }
                     return true;
                 case FLAG_BOUNDED:

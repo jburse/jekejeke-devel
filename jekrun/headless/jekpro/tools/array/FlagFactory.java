@@ -159,9 +159,9 @@ public final class FlagFactory extends AbstractFlag {
             case FLAG_VERBOSE:
                 k = 0;
                 int flags = en.store.foyer.getBits();
-                if ((flags & Foyer.MASK_STORE_SMRY) != 0)
+                if ((flags & Foyer.MASK_FOYER_SMRY) != 0)
                     k |= LoadOpts.VERBOSE_SUMMARY;
-                if ((flags & Foyer.MASK_STORE_DTLS) != 0)
+                if ((flags & Foyer.MASK_FOYER_DTLS) != 0)
                     k |= LoadOpts.VERBOSE_DETAILS;
                 String name;
                 switch (k) {
@@ -256,14 +256,14 @@ public final class FlagFactory extends AbstractFlag {
             case FLAG_VERBOSE:
                 int verb = LoadOpts.atomToVerbose(m, d);
                 if ((verb & LoadOpts.VERBOSE_SUMMARY) != 0) {
-                    en.store.foyer.setBit(Foyer.MASK_STORE_SMRY);
+                    en.store.foyer.setBit(Foyer.MASK_FOYER_SMRY);
                 } else {
-                    en.store.foyer.resetBit(Foyer.MASK_STORE_SMRY);
+                    en.store.foyer.resetBit(Foyer.MASK_FOYER_SMRY);
                 }
                 if ((verb & LoadOpts.VERBOSE_DETAILS) != 0) {
-                    en.store.foyer.setBit(Foyer.MASK_STORE_DTLS);
+                    en.store.foyer.setBit(Foyer.MASK_FOYER_DTLS);
                 } else {
-                    en.store.foyer.resetBit(Foyer.MASK_STORE_DTLS);
+                    en.store.foyer.resetBit(Foyer.MASK_FOYER_DTLS);
                 }
                 return true;
             case FLAG_SYS_HINT:

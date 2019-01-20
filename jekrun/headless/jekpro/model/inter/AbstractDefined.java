@@ -111,15 +111,15 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param flags The store flags.
      */
     AbstractDefined(int flags) {
-        if ((flags & Foyer.MASK_STORE_NBDY) != 0)
+        if ((flags & Foyer.MASK_FOYER_NBDY) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NBDY;
-        if ((flags & Foyer.MASK_STORE_NLST) != 0)
+        if ((flags & Foyer.MASK_FOYER_NLST) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NLST;
-        if ((flags & Foyer.MASK_STORE_NHED) != 0)
+        if ((flags & Foyer.MASK_FOYER_NHED) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NHED;
-        if ((flags & Foyer.MASK_STORE_NIST) != 0)
+        if ((flags & Foyer.MASK_FOYER_NIST) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NIST;
-        if ((flags & Foyer.MASK_STORE_NHWK) != 0)
+        if ((flags & Foyer.MASK_FOYER_NHWK) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NHWK;
     }
 

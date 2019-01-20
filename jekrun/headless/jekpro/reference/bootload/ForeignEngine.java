@@ -267,36 +267,6 @@ public final class ForeignEngine {
                 new SkelAtom(flag)));
     }
 
-    /**********************************************************/
-    /* Hierarchical Knowledgebases                            */
-    /**********************************************************/
-
-    /**
-     * <p>Show the knowledge base stack.</p>
-     *
-     * @param inter The interpreter.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void sysShowKnowledgebaseStack(Interpreter inter)
-            throws EngineMessage {
-        Engine en = (Engine) inter.getEngine();
-        Object obj = en.visor.dispoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            Store store = en.store;
-            while (store != null) {
-                wr.write("store ");
-                wr.write(store.toString());
-                wr.write('\n');
-                wr.flush();
-                store = store.parent;
-            }
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
     /*************************************************************/
     /* Prolog Data                                               */
     /*************************************************************/

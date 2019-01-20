@@ -71,9 +71,10 @@ public class AbstractProperty {
      * @param m     The property skeleton.
      * @param d     The property display.
      * @param en    The engine.
+     * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public void setStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean setStoreProp(Store store, Object m, Display d, Engine en)
             throws EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
@@ -85,9 +86,10 @@ public class AbstractProperty {
      * @param m     The property skeleton.
      * @param d     The property display.
      * @param en    The engine.
+     * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public void resetStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean resetStoreProp(Store store, Object m, Display d, Engine en)
             throws EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }

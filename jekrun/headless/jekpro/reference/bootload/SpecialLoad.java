@@ -718,7 +718,7 @@ public final class SpecialLoad extends AbstractSpecial {
                                      MapHashLink<String, SkelVar> vars,
                                      Engine en, int flags)
             throws EngineException, EngineMessage {
-        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 ||
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 ||
                 ((flags & MASK_SHOW_NRBD) != 0)) {
             int size = EngineCopy.displaySize(t);
             Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);

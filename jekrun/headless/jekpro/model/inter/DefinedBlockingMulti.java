@@ -153,7 +153,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
             Bouquet temp = cr;
             InterfaceRope set = temp.set;
             if (set != null && set.size() != 1 &&
-                    (en.store.foyer.getBits() & Foyer.MASK_STORE_NIDX) == 0)
+                    (en.store.foyer.getBits() & Foyer.MASK_FOYER_NIDX) == 0)
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {

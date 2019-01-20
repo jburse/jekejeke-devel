@@ -301,8 +301,8 @@ public final class SpecialSession extends AbstractSpecial {
                 AbstractSource src = en.visor.peekStack();
                 SpecialSession.promptQuery(src, en);
                 int flags = 0;
-                if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
-                        (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0)
+                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
+                        (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
                     flags |= PrologReader.FLAG_NEWV;
                 rd.setFlags(flags);
                 rd.setReadUtil(en.store);
@@ -441,8 +441,8 @@ public final class SpecialSession extends AbstractSpecial {
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
                                                PositionKey pos, Engine en)
             throws EngineException {
-        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0 &&
-                (en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
+                (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0) {
             PreClause pre = new PreClause();
             pre.molec = new SkelCompound(new SkelAtom(
                     PreClause.OP_TURNSTILE), t);
@@ -453,7 +453,7 @@ public final class SpecialSession extends AbstractSpecial {
         /* expand goal */
         AbstractBind mark = en.bind;
         Display d;
-        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_CEXP) == 0) {
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             int size = rd.getGensym();
             d = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
             en.fault = null;
@@ -552,7 +552,7 @@ public final class SpecialSession extends AbstractSpecial {
         }
         ec.vars = null;
         ec.flags = 0;
-        if ((en.store.foyer.getBits() & Foyer.MASK_STORE_NBCV) != 0) {
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0) {
             t = ec.copyRest(t, d);
         } else {
             t = ec.copyGoalAndWrap(t, d, en);

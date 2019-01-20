@@ -95,4 +95,4 @@ getenv(Name, Value) :-
  */
 % get_time(+Integer, -DateTime)
 :- public get_time/2.
-:- foreign(get_time/2, 'ForeignShell', sysNewDate('Interpreter',long)).
+:- foreign_constructor(get_time/2, 'Date', new(long)).

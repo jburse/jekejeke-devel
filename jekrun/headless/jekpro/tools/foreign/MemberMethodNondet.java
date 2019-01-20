@@ -122,7 +122,6 @@ final class MemberMethodNondet extends AbstractMember {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-
         CallOut co = new CallOut();
         AbstractBind mark = en.bind;
         Object temp = en.skel;

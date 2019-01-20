@@ -495,12 +495,12 @@ public final class LoadOpts extends LoadForce {
             throws EngineMessage {
         try {
             int flags = en.store.foyer.getBits();
-            if ((flags & Foyer.MASK_STORE_SMRY) != 0) {
+            if ((flags & Foyer.MASK_FOYER_SMRY) != 0) {
                 setFlags(getFlags() | LoadOpts.MASK_LOAD_SMRY);
             } else {
                 setFlags(getFlags() & ~LoadOpts.MASK_LOAD_SMRY);
             }
-            if ((flags & Foyer.MASK_STORE_DTLS) != 0) {
+            if ((flags & Foyer.MASK_FOYER_DTLS) != 0) {
                 setFlags(getFlags() | LoadOpts.MASK_LOAD_DTLS);
             } else {
                 setFlags(getFlags() & ~LoadOpts.MASK_LOAD_DTLS);

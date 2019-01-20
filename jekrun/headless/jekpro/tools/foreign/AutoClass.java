@@ -524,20 +524,6 @@ public final class AutoClass extends AbstractAuto {
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public static boolean createField(Field f, Engine en, int k) {
-        int hint = en.store.foyer.getHint();
-        switch (hint) {
-            case Foyer.HINT_WEB:
-                Class ret = f.getType();
-                if (ret.equals(Double.TYPE)) {
-                    en.skel = EngineMessage.domainError(
-                            AbstractFactory.OP_DOMAIN_FOREIGN_NOTYET,
-                            SpecialForeign.classToName(ret));
-                    return false;
-                }
-                break;
-            default:
-                break;
-        }
         AbstractMember del;
         switch (k) {
             case AbstractFactory.FIELD_GET_PRED:
@@ -652,7 +638,7 @@ public final class AutoClass extends AbstractAuto {
                 throw Types.mapThrowable(x);
             }
         } catch (Exception x) {
-            Throwable z = Types.mapException(x, constructor, en);
+            Throwable z = Types.mapException(x, constructor);
             if (z instanceof EngineException) {
                 throw (EngineException) z;
             } else {

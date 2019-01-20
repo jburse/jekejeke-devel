@@ -580,6 +580,7 @@ public final class Types {
      * @param y  The Java member.
      * @param en The engine.
      */
+    /*
     public static Throwable mapException(Exception z, Member y, Engine en) {
         int hint = en.store.foyer.getHint();
         switch (hint) {
@@ -600,6 +601,7 @@ public final class Types {
                 return Types.mapException(z, y);
         }
     }
+    */
 
     /**
      * <p>CHeck whether an exception is a reflection exception.</p>
@@ -607,6 +609,7 @@ public final class Types {
      * @param x The exeception.
      * @return True if the exception is a reflection exception, otherwise false.
      */
+    /*
     private static boolean isException(Exception x) {
         if (x instanceof IllegalAccessException) {
         } else if (x instanceof IllegalArgumentException) {
@@ -616,5 +619,6 @@ public final class Types {
         }
         return true;
     }
+    */
 
 }

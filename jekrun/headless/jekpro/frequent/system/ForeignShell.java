@@ -62,28 +62,6 @@ public final class ForeignShell {
     }
 
     /**
-     * <p>Create a new date.</p>
-     *
-     * @param inter The interpreter.
-     * @param time  The time.
-     * @return The date.
-     */
-    public static Date sysNewDate(Interpreter inter, long time) {
-        int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
-        Date res;
-        switch (hint) {
-            case Foyer.HINT_WEB:
-                res = new Date();
-                res.setTime(time);
-                break;
-            default:
-                res = new Date(time);
-                break;
-        }
-        return res;
-    }
-
-    /**
      * <p>Some testing.</p>
      *
      * @param args Not used.

@@ -123,7 +123,7 @@ sys_integer32(X) :-
 sys_integer64(X) :-
    integer(X),
    -9223372036854775808 =< X,
-   X =< -9223372036854775807.
+   X =< 9223372036854775807.
 
 /**
  * sys_integer32_or_float32(X):

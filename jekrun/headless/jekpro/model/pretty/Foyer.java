@@ -75,19 +75,19 @@ public abstract class Foyer extends Enforced {
     public final static String OP_INDEX = "sys_index";
     public final static String OP_STRUCT = "sys_struct";
 
-    public final static int MASK_STORE_NIST = 0x00000010;
-    public final static int MASK_STORE_NHWK = 0x00000020;
+    public final static int MASK_FOYER_NIST = 0x00000010;
+    public final static int MASK_FOYER_NHWK = 0x00000020;
 
-    public final static int MASK_STORE_NBDY = 0x00000100;
-    public final static int MASK_STORE_NLST = 0x00000200;
-    public final static int MASK_STORE_NHED = 0x00000400;
+    public final static int MASK_FOYER_NBDY = 0x00000100;
+    public final static int MASK_FOYER_NLST = 0x00000200;
+    public final static int MASK_FOYER_NHED = 0x00000400;
 
-    public final static int MASK_STORE_NIDX = 0x00002000;
-    public final static int MASK_STORE_NBCV = 0x00004000;
-    public final static int MASK_STORE_CEXP = 0x00008000;
+    public final static int MASK_FOYER_NIDX = 0x00002000;
+    public final static int MASK_FOYER_NBCV = 0x00004000;
+    public final static int MASK_FOYER_CEXP = 0x00008000;
 
-    public final static int MASK_STORE_SMRY = 0x00010000;
-    public final static int MASK_STORE_DTLS = 0x00020000;
+    public final static int MASK_FOYER_SMRY = 0x00010000;
+    public final static int MASK_FOYER_DTLS = 0x00020000;
 
     public final static int IO_TERM = 0;
     public final static int IO_ANNO = 1;
@@ -383,21 +383,27 @@ public abstract class Foyer extends Enforced {
 
     /**
      * <p>Factory for stores.</p>
+     * <p>Can be overridden by subclasses.</p>
      *
      * @return The store.
      */
     public Store createStore() {
-        return new Store(this);
+        Store store = new Store(this, null);
+        store.loader = getClass().getClassLoader();
+        return store;
     }
 
     /**
      * <p>Factory for stores.</p>
+     * <p>Can be overridden by subclasses.</p>
      *
      * @param c The class.
      * @return The store.
      */
     public Store createStore(Class c) {
-        return new Store(this, c);
+        Store store = new Store(this, null);
+        store.loader = c.getClassLoader();
+        return store;
     }
 
     /**
