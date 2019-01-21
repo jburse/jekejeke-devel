@@ -78,6 +78,7 @@ public final class JsonReader extends AbstractReader {
         JSON_COMPLANG.setLineComment("//");
         JSON_COMPLANG.setBlockCommentStart("/*");
         JSON_COMPLANG.setBlockCommentEnd("*/");
+        JSON_COMPLANG.setCodeEscapes("u");
     }
 
     /**
@@ -136,7 +137,7 @@ public final class JsonReader extends AbstractReader {
                                 st.getTokenOffset());
                     key = JSON_CODETYPE.resolveDouble(st.getData(),
                             st.getHint(), st.getTokenOffset());
-                    key = CompLang.resolveEscape(key, st.getHint(), true,
+                    key = JSON_COMPLANG.resolveEscape(key, st.getHint(), true,
                             st.getTokenOffset(), JSON_CODETYPE);
                     if (res != null && DomElement.indexAttr(res, key) != -1)
                         throw new ScannerError(JSON_DUPLICATE_KEY,
@@ -199,7 +200,7 @@ public final class JsonReader extends AbstractReader {
             if (st.getHint() != 0) {
                 String res = JSON_CODETYPE.resolveDouble(st.getData(),
                         st.getHint(), st.getTokenOffset());
-                res = CompLang.resolveEscape(res, st.getHint(), true,
+                res = JSON_COMPLANG.resolveEscape(res, st.getHint(), true,
                         st.getTokenOffset(), JSON_CODETYPE);
                 val = res;
             } else {

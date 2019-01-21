@@ -344,9 +344,10 @@ public final class ForeignAtom {
                         return TermAtomic.normBigInteger(new BigInteger(val, 16));
                     case CodeType.LINE_SINGLE:
                         k += Character.charCount(ch);
-                        val = CompLang.resolveEscape(
-                                CodeType.ISO_CODETYPE.resolveDouble(str.substring(k),
-                                        CodeType.LINE_SINGLE, k + offset), CodeType.LINE_SINGLE,
+                        val = CodeType.ISO_CODETYPE.resolveDouble(str.substring(k),
+                                CodeType.LINE_SINGLE, k + offset);
+                        val = CompLang.ISO_COMPLANG.resolveEscape(
+                                val, CodeType.LINE_SINGLE,
                                 false, k + offset, CodeType.ISO_CODETYPE);
                         int res = SpecialUniv.castCharacter(val);
                         return Integer.valueOf(res);

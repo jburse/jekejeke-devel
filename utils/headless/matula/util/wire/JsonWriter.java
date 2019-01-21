@@ -4,6 +4,7 @@ import matula.util.format.AbstractDom;
 import matula.util.format.AbstractWriter;
 import matula.util.format.DomElement;
 import matula.util.format.DomText;
+import matula.util.regex.CodeType;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -121,8 +122,10 @@ public final class JsonWriter extends AbstractWriter {
         if (!(data instanceof String)) {
             wr.write(data.toString());
         } else {
+            String t = JsonReader.JSON_COMPLANG.escapeControl((String) data, JsonReader.JSON_CODETYPE);
+            t = JsonReader.JSON_CODETYPE.doubleQuote(t, CodeType.LINE_DOUBLE);
             wr.write("\"");
-            wr.write((String) data);
+            wr.write(t);
             wr.write("\"");
         }
     }

@@ -94,11 +94,11 @@ public final class CodeType {
         ISO_CODETYPE.setInvalids("\uFFFD\b\f\r");
         ISO_CODETYPE.setJoiners("");
 
-        ISO_PAT_CODETYPE.setHints("\u200C\u200D");
-        ISO_PAT_CODETYPE.setDelemiters(",;!|%");
-        ISO_PAT_CODETYPE.setQuotes("\'\"`");
-        ISO_PAT_CODETYPE.setInvalids("\uFFFD\b\f\r");
-        ISO_PAT_CODETYPE.setJoiners("");
+        ISO_PAT_CODETYPE.setHints(ISO_CODETYPE.getHints());
+        ISO_PAT_CODETYPE.setDelemiters(ISO_CODETYPE.getDelemiters());
+        ISO_PAT_CODETYPE.setQuotes(ISO_CODETYPE.getQuotes());
+        ISO_PAT_CODETYPE.setInvalids(ISO_CODETYPE.getInvalids());
+        ISO_PAT_CODETYPE.setJoiners(ISO_CODETYPE.getJoiners());
         patternDelemiter(ISO_PAT_CODETYPE);
     }
 

@@ -40,11 +40,13 @@ public final class CompLang {
     private String linecomment;
     private String blockcommentstart;
     private String blockcommentend;
+    private String codeescapes;
 
     static {
         ISO_COMPLANG.setLineComment("%");
         ISO_COMPLANG.setBlockCommentStart("/*");
         ISO_COMPLANG.setBlockCommentEnd("*/");
+        ISO_COMPLANG.setCodeEscapes("x0");
     }
 
     /**
@@ -102,6 +104,24 @@ public final class CompLang {
     }
 
     /**
+     * <p>Set the code escapes.</p>
+     *
+     * @param c The code escapes.
+     */
+    public void setCodeEscapes(String c) {
+        codeescapes = c;
+    }
+
+    /**
+     * <p>Retrieve the code escapes.</p>
+     *
+     * @return The code escapes.
+     */
+    public String getCodeEscapes() {
+        return codeescapes;
+    }
+
+    /**
      * <p>Check whether the string is a relevant token.</p>
      * <p>The check consists of:</p>
      * <ul>
@@ -137,8 +157,8 @@ public final class CompLang {
      * @return The resolved token.
      * @throws ScannerError Parsing problem.
      */
-    public static String resolveEscape(String str, int quote, boolean cont,
-                                       int offset, CodeType d)
+    public String resolveEscape(String str, int quote, boolean cont,
+                                int offset, CodeType d)
             throws ScannerError {
         StringBuilder buf = null;
         int n = str.length();
@@ -181,20 +201,38 @@ public final class CompLang {
                             int i2 = i;
                             while (i < n && d.isAlfanum(k = str.codePointAt(i)))
                                 i += Character.charCount(k);
-                            if (i < n && str.codePointAt(i) == CodeType.LINE_BACKSLASH) {
-                                int val;
+                            if (i < n && (k = str.codePointAt(i)) == CodeType.LINE_BACKSLASH) {
                                 try {
-                                    val = Integer.parseInt(str.substring(i2, i), 16);
+                                    i2 = Integer.parseInt(str.substring(i2, i), 16);
                                 } catch (NumberFormatException x) {
                                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 }
-                                if (val < 0 || val > Character.MAX_CODE_POINT)
+                                if (i2 < 0 || i2 > Character.MAX_CODE_POINT)
                                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
-                                buf.appendCodePoint(val);
-                                k = CodeType.LINE_BACKSLASH;
+                                buf.appendCodePoint(i2);
                             } else {
                                 throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                             }
+                            break;
+                        case 'u':
+                            i += Character.charCount(k);
+                            i2 = i;
+                            for (int j = 0; j < 4; j++) {
+                                if (i < n && Character.digit(k = str.codePointAt(i), 16) != -1) {
+                                    if (j != 3)
+                                        i += Character.charCount(k);
+                                } else {
+                                    throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                                }
+                            }
+                            try {
+                                i2 = Integer.parseInt(str.substring(i2, i + Character.charCount(k)), 16);
+                            } catch (NumberFormatException x) {
+                                throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                            }
+                            if (i2 < 0 || i2 > Character.MAX_CODE_POINT)
+                                throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
+                            buf.appendCodePoint(i2);
                             break;
                         case CodeType.LINE_SINGLE:
                         case CodeType.LINE_DOUBLE:
@@ -211,17 +249,15 @@ public final class CompLang {
                                 i2 = i;
                                 while (i < n && d.isAlfanum(k = str.codePointAt(i)))
                                     i += Character.charCount(k);
-                                if (i < n && str.codePointAt(i) == CodeType.LINE_BACKSLASH) {
-                                    int val;
+                                if (i < n && (k = str.codePointAt(i)) == CodeType.LINE_BACKSLASH) {
                                     try {
-                                        val = Integer.parseInt(str.substring(i2, i), 8);
+                                        i2 = Integer.parseInt(str.substring(i2, i), 8);
                                     } catch (NumberFormatException x) {
                                         throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                     }
-                                    if (val < 0 || val > Character.MAX_CODE_POINT)
+                                    if (i2 < 0 || i2 > Character.MAX_CODE_POINT)
                                         throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
-                                    buf.appendCodePoint(val);
-                                    k = CodeType.LINE_BACKSLASH;
+                                    buf.appendCodePoint(i2);
                                 } else {
                                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
                                 }
@@ -262,7 +298,7 @@ public final class CompLang {
      * @param d   The delemiter.
      * @return The resolved string.
      */
-    public static String escapeControl(String str, CodeType d) {
+    public String escapeControl(String str, CodeType d) {
         StringBuilder buf = null;
         int n = str.length();
         for (int i = 0; i < n; i++) {
@@ -302,13 +338,25 @@ public final class CompLang {
                         buf.appendCodePoint(k);
                         break;
                     default:
-                        if (k < 512) {
+                        if (k <= 0x1FF && getCodeEscapes().indexOf('0') != -1) {
                             buf.append(Integer.toOctalString(k));
+                            buf.appendCodePoint(CodeType.LINE_BACKSLASH);
+                        } else if (getCodeEscapes().indexOf('u') != -1) {
+                            char[] res = Character.toChars(k);
+                            for (int j = 0; j < res.length; j++) {
+                                if (j != 0)
+                                    buf.appendCodePoint(CodeType.LINE_BACKSLASH);
+                                buf.appendCodePoint('u');
+                                String t = Integer.toHexString(k).toUpperCase();
+                                for (int i2 = t.length(); i2 < 4; i2++)
+                                    buf.appendCodePoint('0');
+                                buf.append(t);
+                            }
                         } else {
                             buf.appendCodePoint('x');
                             buf.append(Integer.toHexString(k).toUpperCase());
+                            buf.appendCodePoint(CodeType.LINE_BACKSLASH);
                         }
-                        buf.appendCodePoint(CodeType.LINE_BACKSLASH);
                         break;
                 }
             } else {

@@ -65,6 +65,8 @@ public final class WriteOpts {
     private final static String OP_ANNO_FILL = "filler";
     private final static String OP_ANNO_HINT = "hint";
 
+    private final static String OP_JSON = "json";
+
     private final static String OP_FORMAT_NEWL = "newline";
     private final static String OP_FORMAT_NAVI = "navigation";
 
@@ -74,6 +76,9 @@ public final class WriteOpts {
 
     private final static String OP_PART_CMMT = "comment";
     private final static String OP_PART_STMT = "statement";
+
+    public static final int QUOTED_TRUE = 1;
+    public static final int QUOTED_JSON = 2;
 
     public static final int FORMAT_NEWL = 1;
     public static final int FORMAT_NAVI = 2;
@@ -137,10 +142,16 @@ public final class WriteOpts {
                 if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_QUOTED)) {
-                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    int quoted = atomToQuoted(((SkelCompound) en.skel).args[0], en.display);
+                    if ((quoted & QUOTED_TRUE) != 0) {
                         flags |= PrologWriter.FLAG_QUOT;
                     } else {
                         flags &= ~PrologWriter.FLAG_QUOT;
+                    }
+                    if ((quoted & QUOTED_JSON) != 0) {
+                        flags |= PrologWriter.FLAG_JSON;
+                    } else {
+                        flags &= ~PrologWriter.FLAG_JSON;
                     }
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
@@ -316,6 +327,35 @@ public final class WriteOpts {
     }
 
     /**
+     * <p>Convert an atom to a quoted.</p>
+     * <p>The following values are accepted:</p>
+     * <ul>
+     * <li><b>false:</b> false.</li>
+     * <li><b>true:</b> QUOTED_TRUE.</li>
+     * <li><b>json:</b> QUOTED_TRUE | QUOTED_JSON.</li>
+     * </ul>
+     *
+     * @param m The bool skel.
+     * @param d The bool display.
+     * @return The bool value.
+     * @throws EngineMessage Shit happens.
+     */
+    public static int atomToQuoted(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if (fun.equals(AbstractFlag.OP_FALSE)) {
+            return 0;
+        } else if (fun.equals(Foyer.OP_TRUE)) {
+            return QUOTED_TRUE;
+        } else if (fun.equals(OP_JSON)) {
+            return QUOTED_TRUE | QUOTED_JSON;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+
+    /**
      * <p>Convert an atom to a bool.</p>
      * <p>The following values are accepted:</p>
      * <ul>
@@ -331,23 +371,24 @@ public final class WriteOpts {
     public static boolean atomToBool(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
-        if (fun.equals(Foyer.OP_TRUE)) {
-            return true;
-        } else if (fun.equals(AbstractFlag.OP_FALSE)) {
+        if (fun.equals(AbstractFlag.OP_FALSE)) {
             return false;
+        } else if (fun.equals(Foyer.OP_TRUE)) {
+            return true;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
-
     /**
      * <p>Convert an atom to a format.</p>
      * <p>The following values are accepted:</p>
      * <ul>
+     * <li><b>false:</b> 0.</li>
      * <li><b>newline:</b> FORMAT_NEWL.</li>
      * <li><b>navigation:</b> FORMAT_NAVI.</li>
+     * <li><b>true:</b> FORMAT_NEWL | FORMAT_NAVI.</li>
      * </ul>
      *
      * @param m The bool skel.
@@ -365,7 +406,7 @@ public final class WriteOpts {
         } else if (fun.equals(OP_FORMAT_NAVI)) {
             return FORMAT_NAVI;
         } else if (fun.equals(Foyer.OP_TRUE)) {
-            return FORMAT_NEWL + FORMAT_NAVI;
+            return FORMAT_NEWL | FORMAT_NAVI;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
@@ -520,9 +561,10 @@ public final class WriteOpts {
             return;
         if (printmap == null)
             return;
+        PrologWriter pw = new PrologWriter();
         for (MapEntry<Object, NamedDistance> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
-            if (PrologWriter.variableNeedsQuotes(entry.value.getName()))
+            if (pw.variableNeedsQuotes(entry.value.getName()))
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_VARIABLE_NAME, new SkelAtom(entry.value.getName())));
         }

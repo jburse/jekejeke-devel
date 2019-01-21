@@ -373,14 +373,8 @@ public final class Interpreter implements Comparator<Object> {
         Object val;
         PrologReader rd;
         try {
-            boolean stmt;
             if (!opt.equals(Knowledgebase.OP_NIL)) {
                 ReadOpts ro = new ReadOpts(en);
-                if (defstmt) {
-                    ro.flags |= PrologWriter.FLAG_STMT;
-                } else {
-                    ro.flags &= ~PrologWriter.FLAG_STMT;
-                }
                 ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
                 if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
                     rd = en.store.foyer.createReader(Foyer.IO_TERM);
@@ -388,25 +382,23 @@ public final class Interpreter implements Comparator<Object> {
                     rd = en.store.foyer.createReader(Foyer.IO_ANNO);
                 }
                 ro.setReadOpts(rd);
-                stmt = ((ro.flags & PrologWriter.FLAG_STMT) != 0);
             } else {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
                 rd.setReadUtil(en.store);
                 rd.setSource(en.store.user);
-                stmt = defstmt;
             }
             rd.getScanner().setReader(lr);
             rd.setEngineRaw(en);
             try {
                 try {
-                    if (stmt) {
+                    if (defstmt) {
                         val = rd.parseHeadStatement();
                     } else {
                         val = rd.parseHeadInternal();
                     }
                 } catch (ScannerError y) {
                     String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                    rd.parseTailError(stmt ? PrologReader.OP_PERIOD : PrologReader.OP_EOF, y);
+                    rd.parseTailError(defstmt ? PrologReader.OP_PERIOD : PrologReader.OP_EOF, y);
                     EngineMessage x = new EngineMessage(
                             EngineMessage.syntaxError(y.getError()));
                     PositionKey pos = (OpenOpts.getPath(lr) != null ?

@@ -913,7 +913,7 @@ public class PrologReader {
             throws ScannerError {
         String res = CodeType.ISO_CODETYPE.resolveDouble(st.getData(),
                 st.getHint(), st.getTokenOffset());
-        return CompLang.resolveEscape(res, st.getHint(), true,
+        return CompLang.ISO_COMPLANG.resolveEscape(res, st.getHint(), true,
                 st.getTokenOffset(), CodeType.ISO_CODETYPE);
     }
 

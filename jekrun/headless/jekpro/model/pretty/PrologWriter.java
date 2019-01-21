@@ -13,6 +13,7 @@ import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 import matula.util.regex.ScannerToken;
+import matula.util.wire.JsonReader;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -70,6 +71,7 @@ public class PrologWriter {
     public final static int FLAG_MKDT = 0x00000010;
     public final static int FLAG_FILL = 0x00000020;
     public final static int FLAG_HINT = 0x00000040;
+    public final static int FLAG_JSON = 0x00000080;
 
     /* only write opts */
     public final static int FLAG_NEWL = 0x00000100;
@@ -105,6 +107,8 @@ public class PrologWriter {
     private byte utilback = ReadOpts.UTIL_ERROR;
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     private AbstractSource source;
+    protected CodeType codetype = CodeType.ISO_CODETYPE;
+    protected CompLang complang = CompLang.ISO_COMPLANG;
 
     /**
      * <p>Set the engine.</p>
@@ -149,6 +153,13 @@ public class PrologWriter {
      */
     public void setFlags(int f) {
         flags = f;
+        if ((flags & FLAG_JSON) != 0) {
+            codetype = JsonReader.JSON_CODETYPE;
+            complang = JsonReader.JSON_COMPLANG;
+        } else {
+            codetype = CodeType.ISO_CODETYPE;
+            complang = CompLang.ISO_COMPLANG;
+        }
     }
 
     /**
@@ -516,11 +527,11 @@ public class PrologWriter {
      */
     protected final void safeSpace(String t) throws IOException {
         int ch = (t.length() == 0 ? -1 : t.codePointAt(0));
-        if (!CodeType.ISO_CODETYPE.wordBreak1(lch, ch) &&
-                !CodeType.ISO_CODETYPE.wordBreak2(lch, ch)) {
+        if (!codetype.wordBreak1(lch, ch) &&
+                !codetype.wordBreak2(lch, ch)) {
             append(' ');
         } else if (lch == ch &&
-                CodeType.ISO_CODETYPE.getQuotes().indexOf(lch) != -1) {
+                codetype.getQuotes().indexOf(lch) != -1) {
             append(' ');
         }
     }
@@ -574,11 +585,12 @@ public class PrologWriter {
      */
     private String variableQuotes(String var, int quote) {
         if ((flags & FLAG_QUOT) != 0) {
-            if (PrologWriter.variableNeedsQuotes(var)) {
+            if (variableNeedsQuotes(var)) {
                 StringBuilder buf = new StringBuilder();
                 buf.appendCodePoint(quote);
-                buf.append(CodeType.ISO_CODETYPE.doubleQuote(
-                        CompLang.escapeControl(var, CodeType.ISO_CODETYPE), quote));
+                var = complang.escapeControl(var, codetype);
+                var = codetype.doubleQuote(var, quote);
+                buf.append(var);
                 buf.appendCodePoint(quote);
                 return buf.toString();
             } else {
@@ -595,19 +607,19 @@ public class PrologWriter {
      * @param var The variable name.
      * @return True if the variable needs quotes, false otherwise.
      */
-    public static boolean variableNeedsQuotes(String var) {
+    public boolean variableNeedsQuotes(String var) {
         if (var.length() == 0)
             return true;
         int ch = var.codePointAt(0);
         if (var.length() == 1 && NO_FUNCTOR.indexOf(ch) != -1)
             return true;
-        if (!CodeType.ISO_CODETYPE.isUpper(ch) && !CodeType.ISO_CODETYPE.isUnderscore(ch))
+        if (!codetype.isUpper(ch) && !codetype.isUnderscore(ch))
             return true;
         if (Character.isDigit(ch))
             return true;
-        if (!CompLang.ISO_COMPLANG.relevantToken(var))
+        if (!complang.relevantToken(var))
             return true;
-        if (!CodeType.ISO_CODETYPE.singleToken(var))
+        if (!codetype.singleToken(var))
             return true;
         return false;
     }
@@ -683,11 +695,12 @@ public class PrologWriter {
      */
     private String atomQuotes(String fun, boolean oper, int quote) {
         if ((flags & FLAG_QUOT) != 0) {
-            if ((PrologWriter.atomNeedsQuotes(fun, oper))) {
+            if ((atomNeedsQuotes(fun, oper))) {
                 StringBuilder buf = new StringBuilder();
                 buf.appendCodePoint(quote);
-                buf.append(CodeType.ISO_CODETYPE.doubleQuote(
-                        CompLang.escapeControl(fun, CodeType.ISO_CODETYPE), quote));
+                fun = complang.escapeControl(fun, codetype);
+                fun = codetype.doubleQuote(fun, quote);
+                buf.append(fun);
                 buf.appendCodePoint(quote);
                 return buf.toString();
             } else {
@@ -705,19 +718,19 @@ public class PrologWriter {
      * @param oper True if oper, otherwise false.
      * @return True if the atom needs quotes, false otherwise.
      */
-    private static boolean atomNeedsQuotes(String fun, boolean oper) {
+    private boolean atomNeedsQuotes(String fun, boolean oper) {
         if (fun.length() == 0)
             return true;
         int ch = fun.codePointAt(0);
         if (fun.length() == 1 && (oper ? NO_FUNCTOR_OPER : NO_FUNCTOR).indexOf(ch) != -1)
             return true;
-        if (CodeType.ISO_CODETYPE.isUpper(ch) || CodeType.ISO_CODETYPE.isUnderscore(ch))
+        if (codetype.isUpper(ch) || codetype.isUnderscore(ch))
             return true;
         if (Character.isDigit(ch))
             return true;
-        if (!CompLang.ISO_COMPLANG.relevantToken(fun))
+        if (!complang.relevantToken(fun))
             return true;
-        if (!CodeType.ISO_CODETYPE.singleToken(fun) &&
+        if (!codetype.singleToken(fun) &&
                 !fun.equals(Foyer.OP_UNIT) &&
                 !fun.equals(Foyer.OP_SET) &&
                 !fun.equals(Foyer.OP_NIL))
@@ -1611,7 +1624,7 @@ public class PrologWriter {
         append(".");
         append(CodeType.LINE_EOL);
     }
-
+    
     /**
      * <p>Method to unparse a term into a writer.</p>
      *
