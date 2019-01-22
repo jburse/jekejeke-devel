@@ -21,9 +21,9 @@
  * The predicate atom_number/2 allows converting between atoms and numbers.
  *
  * Examples:
- * ?- atom_split(X,'_',[a,b,c]).
+ * ?- atom_split(X,'_', [a,b,c]).
  * X = a_b_c
- * ?- atom_split(a_b_c,'_',X).
+ * ?- atom_split(a_b_c, '_', X).
  * X = [a,b,c]
  *
  * The arguments of the below string predicates do not work with 16-bit

@@ -90,16 +90,16 @@
 :- public write/1.
 write(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [numbervars(true)]).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(false)]).
 
 % write(+AliasOrStream, +Term)
 :- public write/2.
 write(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [numbervars(true)]).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(false)]).
 write(Stream, Term) :-
-   sys_write_term(Stream, Term, [numbervars(true)]).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(false)]).
 
 /**
  * writeq(E): [ISO 8.14.2]
@@ -112,16 +112,16 @@ write(Stream, Term) :-
 :- public writeq/1.
 writeq(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 % writeq(+AliasOrStream, +Term)
 :- public writeq/2.
 writeq(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 writeq(Stream, Term) :-
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 /**
  * write_canonical(E): [ISO 8.14.2]
@@ -135,16 +135,16 @@ writeq(Stream, Term) :-
 :- public write_canonical/1.
 write_canonical(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [ignore_ops(true)]).
 
 % write_canonical(+AliasOrStream, +Term)
 :- public write_canonical/2.
 write_canonical(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [ignore_ops(true)]).
 write_canonical(Stream, Term) :-
-   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [ignore_ops(true)]).
 
 /**
  * write_term(E, O): [ISO 8.14.2]

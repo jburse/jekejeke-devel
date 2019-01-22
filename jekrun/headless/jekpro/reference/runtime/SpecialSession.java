@@ -90,34 +90,24 @@ public final class SpecialSession extends AbstractSpecial {
             case SPECIAL_BREAK:
                 /* increase level */
                 en.visor.breaklevel++;
-                if (en.visor.breaklevel == 0)
-                    en.visor.pushStack(en.store.user);
                 try {
                     SpecialSession.sessionTerminal(en);
-                    if (en.visor.breaklevel == 0)
-                        LoadForce.checkModuleEnd(en);
                 } catch (EngineMessage x) {
                     /* decrease level */
-                    if (en.visor.breaklevel == 0) {
+                    if (en.visor.breaklevel == 0)
                         LoadForce.undoNonEmptyStack(en);
-                        en.visor.popStack();
-                    }
                     en.visor.breaklevel--;
                     throw x;
                 } catch (EngineException x) {
                     /* decrease level */
-                    if (en.visor.breaklevel == 0) {
+                    if (en.visor.breaklevel == 0)
                         LoadForce.undoNonEmptyStack(en);
-                        en.visor.popStack();
-                    }
                     en.visor.breaklevel--;
                     throw x;
                 }
                 /* decrease level */
-                if (en.visor.breaklevel == 0) {
+                if (en.visor.breaklevel == 0)
                     LoadForce.undoNonEmptyStack(en);
-                    en.visor.popStack();
-                }
                 en.visor.breaklevel--;
                 return en.getNextRaw();
             case SPECIAL_SYS_QUOTED_VAR:
@@ -250,11 +240,10 @@ public final class SpecialSession extends AbstractSpecial {
     /**
      * <p>Prompt for the query.</p>
      *
-     * @param src The current source.
      * @param en  The engine trace.
      * @throws EngineMessage Shit happens.
      */
-    private static void promptQuery(AbstractSource src, Engine en)
+    private static void promptQuery(Engine en)
             throws EngineMessage, EngineException {
         Object obj = en.visor.dispoutput;
         LoadOpts.checkTextWrite(obj);
@@ -265,6 +254,7 @@ public final class SpecialSession extends AbstractSpecial {
                 wr.write(Integer.toString(en.visor.breaklevel));
                 wr.write("] ");
             }
+            AbstractSource src=en.visor.peekStack();
             String s = src.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 wr.write("(");
@@ -298,22 +288,20 @@ public final class SpecialSession extends AbstractSpecial {
         PositionKey pos = null;
         for (; ; ) {
             try {
-                AbstractSource src = en.visor.peekStack();
-                SpecialSession.promptQuery(src, en);
+                SpecialSession.promptQuery(en);
                 int flags = 0;
                 if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
                         (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
                     flags |= PrologReader.FLAG_NEWV;
                 rd.setFlags(flags);
-                rd.setReadUtil(en.store);
-                rd.setSource(src);
+                rd.setReadUtil(en);
                 Object val;
                 try {
                     try {
-                        val = rd.parseHeadStatement();
+                        val = rd.parseHeadStatement('.');
                     } catch (ScannerError y) {
                         String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                        rd.parseTailError(PrologReader.OP_PERIOD, y);
+                        rd.parseTailError('.', y);
                         EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getError()));
                         pos = (OpenOpts.getPath(lr) != null ?
                                 new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
@@ -373,7 +361,7 @@ public final class SpecialSession extends AbstractSpecial {
                                 helpText(pos, en);
                             } else {
                                 try {
-                                    if (parseAction(action, src, en)) {
+                                    if (parseAction(action, en)) {
                                         en.contskel = r;
                                         en.contdisplay = u;
                                         en.invokeChecked();
@@ -649,29 +637,26 @@ public final class SpecialSession extends AbstractSpecial {
      * <p>Parse the action.</p>
      *
      * @param action The action.
-     * @param src    The scope.
      * @param en     The engine.
      * @return True if a action was parsed, otherwise false.
      * @throws EngineException Shit happens.
      */
     public static boolean parseAction(String action,
-                                      AbstractSource src,
                                       Engine en)
             throws EngineMessage, EngineException {
         PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
         ConnectionReader cr = new ConnectionReader(new StringReader(action));
         cr.setLineNumber(1);
         rd.getScanner().setReader(cr);
-        rd.setReadUtil(en.store);
-        rd.setSource(src);
+        rd.setReadUtil(en);
         rd.setEngineRaw(en);
         Object val;
         try {
             try {
-                val = rd.parseHeadStatement();
+                val = rd.parseHeadStatement('.');
             } catch (ScannerError y) {
                 String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
-                rd.parseTailError(PrologReader.OP_EOF, y);
+                rd.parseTailError('.', y);
                 EngineMessage x = new EngineMessage(
                         EngineMessage.syntaxError(y.getError()));
                 throw new EngineException(x,
@@ -703,7 +688,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static SkelAtom sysQuoteVar(String fun, Engine en) {
         PrologWriter pw = new PrologWriter();
-        pw.setWriteUtil(en.store);
+        pw.setWriteUtil(en);
         return new SkelAtom(pw.variableQuoted(fun));
     }
 

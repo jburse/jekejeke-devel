@@ -146,10 +146,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en.store);
-                pw.setSource(en.store.user);
+                pw.setWriteUtil(en);
                 pw.setEngineRaw(en);
-                pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
+                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
@@ -174,10 +173,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en.store);
-                pw.setSource(en.store.user);
+                pw.setWriteUtil(en);
                 pw.setEngineRaw(en);
-                pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
+                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
@@ -199,10 +197,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 wr = (Writer) obj;
 
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en.store);
-                pw.setSource(en.store.user);
+                pw.setWriteUtil(en);
                 pw.setEngineRaw(en);
-                pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
+                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
@@ -345,9 +342,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause, en);
-            pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
+            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
-            pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_MKDT);
+            pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL| PrologWriter.FLAG_MKDT);
         }
     }
 

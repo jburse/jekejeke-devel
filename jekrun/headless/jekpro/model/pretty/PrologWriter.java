@@ -71,7 +71,7 @@ public class PrologWriter {
     public final static int FLAG_MKDT = 0x00000010;
     public final static int FLAG_FILL = 0x00000020;
     public final static int FLAG_HINT = 0x00000040;
-    public final static int FLAG_JSON = 0x00000080;
+    public final static int FLAG_JSQT = 0x00000080;
 
     /* only write opts */
     public final static int FLAG_NEWL = 0x00000100;
@@ -84,31 +84,32 @@ public class PrologWriter {
     public final static int SPEZ_META = 0x00000004;
     public final static int SPEZ_EVAL = 0x00000008;
 
-    public final static int SPEZ_FUNC = 0x00000100;
-    public final static int SPEZ_MINS = 0x00000200;
+    final static int SPEZ_FUNC = 0x00000100;
+    final static int SPEZ_MINS = 0x00000200;
 
-    public final static int SPEZ_ICUT = 0x00001000;
-    public final static int SPEZ_ICAT = 0x00002000;
+    final static int SPEZ_ICUT = 0x00001000;
+    final static int SPEZ_ICAT = 0x00002000;
 
-    public final static String NO_FUNCTOR = "([{}]),|.";
-    public final static String NO_FUNCTOR_OPER = "([{}])";
+    private final static String noTermChs = "([{}])";
+
+    final static int MASK_ATOM_OPER = 0x00000001;
+    final static int MASK_ATOM_FUNC = 0x00000002;
 
     public Engine engine;
     private Writer wr;
     private int toff;
     private int lch = -1;
     public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
-    public int lev = Operator.LEVEL_HIGH;
+    int lev = Operator.LEVEL_HIGH;
     private MapHashLink<Object, NamedDistance> printmap;
-    public int spez;
-    public int offset;
-    public int shift;
+    int spez;
+    int offset;
+    int shift;
     private byte utildouble = ReadOpts.UTIL_CODES;
     private byte utilback = ReadOpts.UTIL_ERROR;
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     private AbstractSource source;
-    protected CodeType codetype = CodeType.ISO_CODETYPE;
-    protected CompLang complang = CompLang.ISO_COMPLANG;
+    CompLang complang = CompLang.ISO_COMPLANG;
 
     /**
      * <p>Set the engine.</p>
@@ -153,11 +154,9 @@ public class PrologWriter {
      */
     public void setFlags(int f) {
         flags = f;
-        if ((flags & FLAG_JSON) != 0) {
-            codetype = JsonReader.JSON_CODETYPE;
+        if ((flags & FLAG_JSQT) != 0) {
             complang = JsonReader.JSON_COMPLANG;
         } else {
-            codetype = CodeType.ISO_CODETYPE;
             complang = CompLang.ISO_COMPLANG;
         }
     }
@@ -275,7 +274,7 @@ public class PrologWriter {
      *
      * @return The source.
      */
-    public AbstractSource getSource() {
+    AbstractSource getSource() {
         return source;
     }
 
@@ -284,19 +283,37 @@ public class PrologWriter {
      *
      * @param s The source.
      */
-    public void setSource(AbstractSource s) {
+    void setSource(AbstractSource s) {
         source = s;
     }
 
     /**
      * <p>Set the util flags to the stor util flags.</p>
      *
-     * @param store The store.
+     * @param en The engine.
      */
-    public void setWriteUtil(Store store) {
-        utildouble = (byte) store.foyer.getUtilDouble();
-        utilback = (byte) store.foyer.getUtilBack();
-        utilsingle = (byte) store.foyer.getUtilSingle();
+    public void setWriteUtil(Engine en) {
+        Foyer foyer = en.store.foyer;
+        utildouble = (byte) foyer.getUtilDouble();
+        utilback = (byte) foyer.getUtilBack();
+        utilsingle = (byte) foyer.getUtilSingle();
+        source = en.store.user;
+        int f = foyer.getBits();
+        if ((f & Foyer.MASK_FOYER_QUOT) != 0) {
+            flags |= PrologWriter.FLAG_QUOT;
+        } else {
+            flags &= ~PrologWriter.FLAG_QUOT;
+        }
+        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
+            flags |= PrologWriter.FLAG_JSQT;
+        } else {
+            flags &= ~PrologWriter.FLAG_JSQT;
+        }
+        if ((flags & FLAG_JSQT) != 0) {
+            complang = JsonReader.JSON_COMPLANG;
+        } else {
+            complang = CompLang.ISO_COMPLANG;
+        }
     }
 
     /***************************************************************/
@@ -527,11 +544,11 @@ public class PrologWriter {
      */
     protected final void safeSpace(String t) throws IOException {
         int ch = (t.length() == 0 ? -1 : t.codePointAt(0));
-        if (!codetype.wordBreak1(lch, ch) &&
-                !codetype.wordBreak2(lch, ch)) {
+        if (!CodeType.ISO_CODETYPE.wordBreak1(lch, ch) &&
+                !CodeType.ISO_CODETYPE.wordBreak2(lch, ch)) {
             append(' ');
         } else if (lch == ch &&
-                codetype.getQuotes().indexOf(lch) != -1) {
+                CodeType.ISO_CODETYPE.getQuotes().indexOf(lch) != -1) {
             append(' ');
         }
     }
@@ -588,8 +605,8 @@ public class PrologWriter {
             if (variableNeedsQuotes(var)) {
                 StringBuilder buf = new StringBuilder();
                 buf.appendCodePoint(quote);
-                var = complang.escapeControl(var, codetype);
-                var = codetype.doubleQuote(var, quote);
+                var = complang.escapeControl(var,
+                        CodeType.ISO_CODETYPE, quote);
                 buf.append(var);
                 buf.appendCodePoint(quote);
                 return buf.toString();
@@ -611,15 +628,16 @@ public class PrologWriter {
         if (var.length() == 0)
             return true;
         int ch = var.codePointAt(0);
-        if (var.length() == 1 && NO_FUNCTOR.indexOf(ch) != -1)
+        if (var.length() == 1 &&
+                (noTermChs.indexOf(ch) != -1 || isAtomQuoted(ch)))
             return true;
-        if (!codetype.isUpper(ch) && !codetype.isUnderscore(ch))
+        if (!CodeType.ISO_CODETYPE.isUpper(ch) && !CodeType.ISO_CODETYPE.isUnderscore(ch))
             return true;
         if (Character.isDigit(ch))
             return true;
         if (!complang.relevantToken(var))
             return true;
-        if (!codetype.singleToken(var))
+        if (!CodeType.ISO_CODETYPE.singleToken(var))
             return true;
         return false;
     }
@@ -633,13 +651,13 @@ public class PrologWriter {
      * <p>Can be overridden by sub classes.</p>
      *
      * @param sa  The atom.
-     * @param ref The display.
      * @param mod The module context, or null.
+     * @param nsa The module context, or null.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeAtom(SkelAtom sa, Display ref,
+    protected void writeAtom(SkelAtom sa,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
@@ -650,7 +668,7 @@ public class PrologWriter {
                 if ((spez & SPEZ_FUNC) != 0)
                     append(' ');
                 append(PrologReader.OP_LPAREN);
-                append(atomQuoted(sa.fun, false));
+                append(atomQuoted(sa.fun, 0));
                 append(PrologReader.OP_RPAREN);
                 return;
             }
@@ -661,7 +679,7 @@ public class PrologWriter {
             append(sa.fun);
             return;
         }
-        String t = atomQuoted(sa.fun, false);
+        String t = atomQuoted(sa.fun, 0);
         safeSpace(t);
         append(t);
     }
@@ -670,16 +688,16 @@ public class PrologWriter {
      * <p>Compute a quoted atom.</p>
      *
      * @param fun  The atom.
-     * @param oper True if infix, otherwise false.
+     * @param oper The atom flags.
      * @return The quoted atom.
      */
-    final String atomQuoted(String fun, boolean oper) {
-        if (utilsingle == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(fun, oper, CodeType.LINE_SINGLE);
-        } else if (utildouble == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(fun, oper, CodeType.LINE_DOUBLE);
+    final String atomQuoted(String fun, int oper) {
+        if (utildouble == ReadOpts.UTIL_ATOM) {
+            return atomQuotes(fun, CodeType.LINE_DOUBLE, oper);
+        } else if (utilsingle == ReadOpts.UTIL_ATOM) {
+            return atomQuotes(fun, CodeType.LINE_SINGLE, oper);
         } else if (utilback == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(fun, oper, CodeType.LINE_BACK);
+            return atomQuotes(fun, CodeType.LINE_BACK, oper);
         } else {
             return fun;
         }
@@ -689,17 +707,17 @@ public class PrologWriter {
      * <p>Quote a functor if necessary.</p>
      *
      * @param fun   The functor.
-     * @param oper  True if oper, otherwise false.
      * @param quote The quote.
+     * @param oper  The atom flags.
      * @return The functor, quoted if necessary.
      */
-    private String atomQuotes(String fun, boolean oper, int quote) {
+    private String atomQuotes(String fun, int quote, int oper) {
         if ((flags & FLAG_QUOT) != 0) {
-            if ((atomNeedsQuotes(fun, oper))) {
+            if (atomNeedsQuotes(fun, oper)) {
                 StringBuilder buf = new StringBuilder();
                 buf.appendCodePoint(quote);
-                fun = complang.escapeControl(fun, codetype);
-                fun = codetype.doubleQuote(fun, quote);
+                fun = complang.escapeControl(fun,
+                        CodeType.ISO_CODETYPE, quote);
                 buf.append(fun);
                 buf.appendCodePoint(quote);
                 return buf.toString();
@@ -715,25 +733,44 @@ public class PrologWriter {
      * <p>Check whether an atom needs quotes.</p>
      *
      * @param fun  The atom name.
-     * @param oper True if oper, otherwise false.
+     * @param oper The atom flags.
      * @return True if the atom needs quotes, false otherwise.
      */
-    private boolean atomNeedsQuotes(String fun, boolean oper) {
+    private boolean atomNeedsQuotes(String fun, int oper) {
+        if ((flags & FLAG_JSQT) != 0 &&
+                (oper & MASK_ATOM_FUNC) == 0)
+            return true;
         if (fun.length() == 0)
             return true;
         int ch = fun.codePointAt(0);
-        if (fun.length() == 1 && (oper ? NO_FUNCTOR_OPER : NO_FUNCTOR).indexOf(ch) != -1)
+        if (fun.length() == 1 &&
+                (noTermChs.indexOf(ch) != -1 ||
+                        ((oper & MASK_ATOM_OPER) == 0 && isAtomQuoted(ch))))
             return true;
-        if (codetype.isUpper(ch) || codetype.isUnderscore(ch))
+        if (CodeType.ISO_CODETYPE.isUpper(ch) || CodeType.ISO_CODETYPE.isUnderscore(ch))
             return true;
         if (Character.isDigit(ch))
             return true;
         if (!complang.relevantToken(fun))
             return true;
-        if (!codetype.singleToken(fun) &&
+        if (!CodeType.ISO_CODETYPE.singleToken(fun) &&
                 !fun.equals(Foyer.OP_UNIT) &&
                 !fun.equals(Foyer.OP_SET) &&
                 !fun.equals(Foyer.OP_NIL))
+            return true;
+        return false;
+    }
+
+    /**
+     * <p>Check whether the atom name is an operator quoted.</p>
+     *
+     * @param ch The operator character.
+     * @return If the operator name is an operator escape.
+     */
+    private boolean isAtomQuoted(int ch) {
+        if (complang.getStopOpers().indexOf(ch) != -1)
+            return true;
+        if (ch == '.')
             return true;
         return false;
     }
@@ -794,7 +831,7 @@ public class PrologWriter {
          * - spacing.
          * - anti specification
          */
-        String t = atomQuoted(op.getPortrayOrName(), false);
+        String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_FUNC);
         safeSpace(t);
         append(t);
         if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
@@ -838,7 +875,7 @@ public class PrologWriter {
             if ((backspez & SPEZ_ICUT) != 0) {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), true);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
                 safeSpace(t);
                 append(t);
                 if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
@@ -847,7 +884,7 @@ public class PrologWriter {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent - SPACES; i++)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), true);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
                 safeSpace(t);
                 append(t);
                 for (int i = t.length(); i < SPACES; i++)
@@ -855,7 +892,7 @@ public class PrologWriter {
             } else {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), true);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
                 safeSpace(t);
                 append(t);
                 append(CodeType.LINE_EOL);
@@ -869,7 +906,7 @@ public class PrologWriter {
                     (backspez & SPEZ_META) != 0 &&
                     (backspez & SPEZ_EVAL) == 0)
                 append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), true);
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
             safeSpace(t);
             append(t);
             if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
@@ -914,7 +951,7 @@ public class PrologWriter {
             writeStruct(sc, ref, cp, decl,
                     backshift, backspez, backoffset, mod, nsa);
         } else {
-            String t = atomQuoted(op.getPortrayOrName(), true);
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
             safeSpace(t);
             append(t);
         }
@@ -954,6 +991,7 @@ public class PrologWriter {
      * @param term The atomic or var.
      * @param ref  The display.
      * @param mod  The module context, or null.
+     * @param nsa  The module context, or null.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
@@ -963,7 +1001,7 @@ public class PrologWriter {
             throws IOException, EngineMessage, EngineException {
         if (term instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) term;
-            writeAtom(sa, ref, mod, nsa);
+            writeAtom(sa, mod, nsa);
         } else if (term instanceof SkelVar) {
             SkelVar sv = (SkelVar) term;
             if (printmap != null) {
@@ -1140,7 +1178,7 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        String t = atomQuoted(sc.sym.fun, false);
+        String t = atomQuoted(sc.sym.fun, MASK_ATOM_FUNC);
         safeSpace(t);
         append(t);
         append(PrologReader.OP_LPAREN);
@@ -1272,24 +1310,13 @@ public class PrologWriter {
     /**************************************************************/
 
     /**
-     * <p>Check whether the operator name is an operator escape.</p>
-     *
-     * @param s The operator name.
-     * @return If the operator name is an operator escape.
-     */
-    private static boolean isOperEscape(String s) {
-        return (PrologReader.OP_COMMA.equals(s) ||
-                PrologReader.OP_BAR.equals(s) ||
-                Foyer.OP_UNIT.equals(s));
-    }
-
-    /**
      * <p>Write a term.</p>
      *
      * @param term  The term skeleton.
      * @param ref   The term display.
      * @param level The level.
      * @param mod   The module context, or null.
+     * @param nsa   The module context, or null.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
@@ -1377,7 +1404,7 @@ public class PrologWriter {
                     /* left operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
                     spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                            (!isOperEscape(op.getPortrayOrName()) ? SPEZ_OPLE : 0) +
+                            (isOperEscape(op.getPortrayOrName()) ? 0 : SPEZ_OPLE) +
                             getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
@@ -1434,7 +1461,7 @@ public class PrologWriter {
                     /* left operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
                     spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                            (!isOperEscape(op.getPortrayOrName()) ? SPEZ_OPLE : 0) +
+                            (isOperEscape(op.getPortrayOrName()) ? 0 : SPEZ_OPLE) +
                             getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
@@ -1485,6 +1512,20 @@ public class PrologWriter {
             }
         }
         writeCompound(sc, ref, mod, nsa);
+    }
+
+    /**
+     * <p>Check whether the operator name is an operator escape.</p>
+     *
+     * @param s The operator name.
+     * @return If the operator name is an operator escape.
+     */
+    private boolean isOperEscape(String s) {
+        if (s.length() == 1) {
+            if (complang.getStopOpers().indexOf(s.charAt(0)) != -1)
+                return true;
+        }
+        return Foyer.OP_UNIT.equals(s);
     }
 
     /***********************************************************************/
@@ -1624,7 +1665,7 @@ public class PrologWriter {
         append(".");
         append(CodeType.LINE_EOL);
     }
-    
+
     /**
      * <p>Method to unparse a term into a writer.</p>
      *
@@ -1702,8 +1743,7 @@ public class PrologWriter {
             throws EngineMessage, EngineException {
         PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
         if (en != null) {
-            pw.setWriteUtil(en.store);
-            pw.setSource(en.store.user);
+            pw.setWriteUtil(en);
             pw.setEngineRaw(en);
         }
         pw.setFlags(flags);

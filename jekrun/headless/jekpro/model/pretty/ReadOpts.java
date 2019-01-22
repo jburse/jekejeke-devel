@@ -81,10 +81,17 @@ public final class ReadOpts {
      * @param en The engine.
      */
     public ReadOpts(Engine en) {
-        utildouble = (byte) en.store.foyer.getUtilDouble();
-        utilback = (byte) en.store.foyer.getUtilBack();
-        utilsingle = (byte) en.store.foyer.getUtilSingle();
-        source = en.store.user;
+        Foyer foyer = en.store.foyer;
+        utildouble = (byte) foyer.getUtilDouble();
+        utilback = (byte) foyer.getUtilBack();
+        utilsingle = (byte) foyer.getUtilSingle();
+        source = en.visor.peekStack();
+        int f = foyer.getBits();
+        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
+            flags |= PrologWriter.FLAG_JSQT;
+        } else {
+            flags &= ~PrologWriter.FLAG_JSQT;
+        }
     }
 
     /**
@@ -132,6 +139,15 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
                 utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_QUOTED)) {
+                int quoted = WriteOpts.atomToQuoted(((SkelCompound) en.skel).args[0], en.display);
+                if ((quoted & WriteOpts.QUOTED_JSON) != 0) {
+                    flags |= PrologWriter.FLAG_JSQT;
+                } else {
+                    flags &= ~PrologWriter.FLAG_JSQT;
+                }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
@@ -217,14 +233,13 @@ public final class ReadOpts {
      * @param d2 The read term display.
      * @param en The engine.
      * @return True if the options could be unified.
-     * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
     public static boolean decodeReadOptions(Object t, Display d,
                                             Object t2, Display d2,
                                             Engine en,
                                             PrologReader rd)
-            throws EngineMessage, EngineException {
+            throws EngineException {
         en.skel = t;
         en.display = d;
         en.deref();
@@ -264,6 +279,10 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
+                /* do nothing */
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_QUOTED)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -380,20 +399,27 @@ public final class ReadOpts {
      * @return The atom.
      */
     public static SkelAtom utilToAtom(int u) {
+        String res;
         switch (u) {
             case UTIL_ERROR:
-                return new SkelAtom(OP_VALUE_ERROR);
+                res = OP_VALUE_ERROR;
+                break;
             case UTIL_CODES:
-                return new SkelAtom(OP_VALUE_CODES);
+                res = OP_VALUE_CODES;
+                break;
             case UTIL_CHARS:
-                return new SkelAtom(OP_VALUE_CHARS);
+                res = OP_VALUE_CHARS;
+                break;
             case UTIL_ATOM:
-                return new SkelAtom(OP_VALUE_ATOM);
+                res = OP_VALUE_ATOM;
+                break;
             case UTIL_VARIABLE:
-                return new SkelAtom(OP_VALUE_VARIABLE);
+                res = OP_VALUE_VARIABLE;
+                break;
             default:
                 throw new IllegalArgumentException("illegal util");
         }
+        return new SkelAtom(res);
     }
 
     /**

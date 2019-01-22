@@ -16,6 +16,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.regex.*;
 import matula.util.system.OpenOpts;
+import matula.util.wire.JsonReader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,8 +72,8 @@ public class PrologReader {
     public final static String OP_RBRACE = "}";
 
     /* only read opts */
-    public final static int FLAG_SING = 0x00001000;
-    public final static int FLAG_NEWV = 0x00002000;
+    public final static int FLAG_SING = 0x00000100;
+    public final static int FLAG_NEWV = 0x00000200;
 
     public final static String ERROR_SYNTAX_PARENTHESIS_BALANCE = "parenthesis_balance";
     public final static String ERROR_SYNTAX_CANNOT_START_TERM = "cannot_start_term"; /* SWI */
@@ -80,9 +81,7 @@ public class PrologReader {
     public final static String ERROR_SYNTAX_BRACKET_BALANCE = "bracket_balance";
     public final static String ERROR_SYNTAX_OPERATOR_CLASH = "operator_clash"; /* SWI */
 
-    private final static String[] noTermTempls = {OP_EOF, OP_PERIOD,
-            OP_RPAREN, OP_RBRACE, OP_RBRACKET};
-    private final static String[] noOperTempls = {OP_COMMA, OP_BAR};
+    private final static String noTermChs = ".)}]";
 
     private Engine engine;
     protected AbstractSource source;
@@ -95,6 +94,7 @@ public class PrologReader {
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     private int flags;
     private int clausestart;
+    CompLang complang = CompLang.ISO_COMPLANG;
 
     /**
      * Construct a reader.
@@ -118,7 +118,7 @@ public class PrologReader {
      *
      * @param s The source.
      */
-    public void setSource(AbstractSource s) {
+    void setSource(AbstractSource s) {
         source = s;
     }
 
@@ -127,7 +127,7 @@ public class PrologReader {
      *
      * @return The source.
      */
-    public AbstractSource getSource() {
+    AbstractSource getSource() {
         return source;
     }
 
@@ -192,6 +192,11 @@ public class PrologReader {
      */
     public void setFlags(int f) {
         flags = f;
+        if ((flags & PrologWriter.FLAG_JSQT) != 0) {
+            complang = JsonReader.JSON_COMPLANG;
+        } else {
+            complang = CompLang.ISO_COMPLANG;
+        }
     }
 
     /**
@@ -251,12 +256,25 @@ public class PrologReader {
     /**
      * <p>Set the util flags to the stor util flags.</p>
      *
-     * @param store The store.
+     * @param en The engime.
      */
-    public void setReadUtil(Store store) {
-        utildouble = (byte) store.foyer.getUtilDouble();
-        utilback = (byte) store.foyer.getUtilBack();
-        utilsingle = (byte) store.foyer.getUtilSingle();
+    public void setReadUtil(Engine en) {
+        Foyer foyer = en.store.foyer;
+        utildouble = (byte) foyer.getUtilDouble();
+        utilback = (byte) foyer.getUtilBack();
+        utilsingle = (byte) foyer.getUtilSingle();
+        source = en.visor.peekStack();
+        int f = foyer.getBits();
+        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
+            flags |= PrologWriter.FLAG_JSQT;
+        } else {
+            flags &= ~PrologWriter.FLAG_JSQT;
+        }
+        if ((flags & PrologWriter.FLAG_JSQT) != 0) {
+            complang = JsonReader.JSON_COMPLANG;
+        } else {
+            complang = CompLang.ISO_COMPLANG;
+        }
     }
 
     /*******************************************************************/
@@ -275,7 +293,8 @@ public class PrologReader {
      */
     public Object read(int level)
             throws ScannerError, EngineMessage, EngineException, IOException {
-        if (isTemplates(noTermTempls) || isTemplates(noOperTempls))
+        if (isTemplate(-1) || isTemplates(noTermChs)
+                || isTemplates(complang.getStopOpers()))
             throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,
                     st.getTokenOffset());
         Object skel;
@@ -382,7 +401,8 @@ public class PrologReader {
             } else {
                 nextToken();
                 /* ISO 6.3.3.1 */
-                if (isTemplates(noTermTempls) || isTemplates(noOperTempls)) {
+                if (isTemplate(-1) || isTemplates(noTermChs)
+                        || isTemplates(complang.getStopOpers())) {
                     skel = makePos((String) skel, pos);
                     current = 0;
                 } else {
@@ -404,7 +424,7 @@ public class PrologReader {
             }
         }
         for (; ; ) {
-            if (isTemplates(noTermTempls))
+            if (isTemplate(-1) || isTemplates(noTermChs))
                 break;
             String fun;
             if (st.getHint() != 0) {
@@ -460,30 +480,39 @@ public class PrologReader {
     }
 
     /**
-     * <p>Check whether the given token matches a template.</p>
+     * <p>Check whether the given token matches a character template.</p>
      *
-     * @param templ The template.
-     * @return True if the token matches the template, otherwise false.
+     * @param ch The character template.
+     * @return True if the token matches the character template, otherwise false.
      * @throws IOException IO error.
      */
-    private boolean isTemplate(String templ) throws IOException {
-        if (st.getHint() != 0 || !templ.equals(st.getData()))
-            return false;
-        if (OP_PERIOD.equals(templ) && !st.isTerminalSuffix())
+    private boolean isTemplate(int ch) throws IOException {
+        if (ch != -1) {
+            if (st.getData().length() != 1)
+                return false;
+            if (st.getHint() != 0 || st.getData().charAt(0) != ch)
+                return false;
+        } else {
+            if (st.getData().length() != 0)
+                return false;
+            if (st.getHint() != 0)
+                return false;
+        }
+        if (ch == '.' && !st.isTerminalSuffix())
             return false;
         return true;
     }
 
     /**
-     * <p>Check whether the given token matches one of the templates.</p>
+     * <p>Check whether the given token matches one of the character templates.</p>
      *
-     * @param templs The templates.
+     * @param chs The character templates.
      * @return True if the token matches one of the templates, otherwise false.
      * @throws IOException IO error.
      */
-    private boolean isTemplates(String[] templs) throws IOException {
-        for (int i = 0; i < templs.length; i++) {
-            if (isTemplate(templs[i]))
+    private boolean isTemplates(String chs) throws IOException {
+        for (int i = 0; i < chs.length(); i++) {
+            if (isTemplate(chs.charAt(i)))
                 return true;
         }
         return false;
@@ -911,10 +940,8 @@ public class PrologReader {
      */
     protected final String readQuoted()
             throws ScannerError {
-        String res = CodeType.ISO_CODETYPE.resolveDouble(st.getData(),
-                st.getHint(), st.getTokenOffset());
-        return CompLang.ISO_COMPLANG.resolveEscape(res, st.getHint(), true,
-                st.getTokenOffset(), CodeType.ISO_CODETYPE);
+        return CompLang.ISO_COMPLANG.resolveEscape(st.getData(), st.getHint(),
+                true, st.getTokenOffset(), CodeType.ISO_CODETYPE);
     }
 
     /**
@@ -995,13 +1022,14 @@ public class PrologReader {
      * <p>The line will not be completed.</p>
      * <p>Returns end_of_file upon eof.</p>
      *
+     * @param ch The character template.
      * @return The term skeleton.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
-     * @throws IOException I/O Error.
+     * @throws IOException     I/O Error.
      */
-    public final Object parseHeadStatement()
+    public final Object parseHeadStatement(int ch)
             throws ScannerError, EngineMessage, EngineException, IOException {
         firstToken();
         Reader lr = st.getReader();
@@ -1010,10 +1038,10 @@ public class PrologReader {
         setAnon(null);
         setGensym(0);
         if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
-            return makeEof();
+            return (ch != -1 ? makeEof() : null);
         if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
-            return parsePeriodIncomplete(OP_PERIOD);
-        return parseIncomplete(OP_PERIOD);
+            return parsePeriodIncomplete(ch);
+        return parseIncomplete(ch);
     }
 
     /**
@@ -1028,45 +1056,20 @@ public class PrologReader {
 
     /**
      * <p>Convenience method that will read a term.</p>
-     * <p>Returns null upon eof.</p>
-     *
-     * @return The term skeleton.
-     * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     * @throws IOException I/O Error.
-     */
-    public final Object parseHeadInternal()
-            throws ScannerError, EngineMessage, EngineException, IOException {
-        firstToken();
-        Reader lr = st.getReader();
-        clausestart = OpenOpts.getLineNumber(lr);
-        setVars(null);
-        setAnon(null);
-        setGensym(0);
-        if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
-            return null;
-        if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
-            return parsePeriodIncomplete(OP_EOF);
-        return parseIncomplete(OP_EOF);
-    }
-
-    /**
-     * <p>Convenience method that will read a term.</p>
      * <p>Complete the line.</p>
      *
-     * @param templ The template.
-     * @param e     The current error or null.
+     * @param ch The character template.
+     * @param e  The current error or null.
      * @throws IOException I/O Error.
      */
-    public final void parseTailError(String templ, ScannerError e)
+    public final void parseTailError(int ch, ScannerError e)
             throws IOException {
         if (e != null && (ScannerToken.OP_SYNTAX_END_OF_LINE_IN_STRING.equals(e.getError()) ||
                 ScannerToken.OP_SYNTAX_END_OF_LINE_IN_CHARACTER.equals(e.getError()) ||
                 ScannerToken.OP_SYNTAX_CONT_ESC_IN_CHARACTER.equals(e.getError())))
             return;
         try {
-            while (!isTemplate(templ) && (st.getHint() != 0 || !OP_EOF.equals(st.getData())))
+            while (!isTemplate(ch) && (st.getHint() != 0 || !OP_EOF.equals(st.getData())))
                 nextToken();
             while (st.getHint() != 0 || (!OP_EOLN.equals(st.getData()) && !OP_EOF.equals(st.getData())))
                 nextTerminalSuffix();
@@ -1081,16 +1084,16 @@ public class PrologReader {
      * <p>Parse a term and wrap with period.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param templ The template.
+     * @param ch The character template.
      * @return term wrapped in a period.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected Object parsePeriodIncomplete(String templ)
+    protected Object parsePeriodIncomplete(int ch)
             throws ScannerError, EngineMessage, EngineException, IOException {
-        Object jack = parseIncomplete(templ);
+        Object jack = parseIncomplete(ch);
         SkelAtom help = new SkelAtom(Foyer.OP_CONS);
         return new SkelCompound(help, jack);
     }
@@ -1102,19 +1105,19 @@ public class PrologReader {
      * be additionally called to sync the parser with alleged end of
      * the clause.</p>
      *
-     * @param templ The template.
+     * @param ch The character template.
      * @return The term.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public final Object parseIncomplete(String templ)
+    public final Object parseIncomplete(int ch)
             throws ScannerError, EngineException, EngineMessage, IOException {
         Object jack = read(Operator.LEVEL_HIGH);
-        if (!isTemplate(templ))
+        if (!isTemplate(ch))
             throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                     st.getTokenOffset());
-        parseTailError(PrologReader.OP_PERIOD, null);
+        parseTailError(ch, null);
         return jack;
     }
 

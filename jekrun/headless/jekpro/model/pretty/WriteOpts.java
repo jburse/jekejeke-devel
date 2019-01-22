@@ -51,9 +51,8 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class WriteOpts {
-    private final static String OP_QUOTED = "quoted";
-    private final static String OP_NUMBERVARS = "numbervars";
     private final static String OP_IGNORE_OPS = "ignore_ops";
+    private final static String OP_NUMBERVARS = "numbervars";
     private final static String OP_IGNORE_MOD = "ignore_mod";
     private final static String OP_PRIORITY = "priority";
     private final static String OP_FORMAT = "format";
@@ -111,10 +110,22 @@ public final class WriteOpts {
      * @param en The engine.
      */
     public WriteOpts(Engine en) {
-        utildouble = (byte) en.store.foyer.getUtilDouble();
-        utilback = (byte) en.store.foyer.getUtilBack();
-        utilsingle = (byte) en.store.foyer.getUtilSingle();
+        Foyer foyer = en.store.foyer;
+        utildouble = (byte) foyer.getUtilDouble();
+        utilback = (byte) foyer.getUtilBack();
+        utilsingle = (byte) foyer.getUtilSingle();
         source = en.store.user;
+        int f = foyer.getBits();
+        if ((f & Foyer.MASK_FOYER_QUOT) != 0) {
+            flags |= PrologWriter.FLAG_QUOT;
+        } else {
+            flags &= ~PrologWriter.FLAG_QUOT;
+        }
+        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
+            flags |= PrologWriter.FLAG_JSQT;
+        } else {
+            flags &= ~PrologWriter.FLAG_JSQT;
+        }
     }
 
     /**
@@ -141,7 +152,7 @@ public final class WriteOpts {
                 en.deref();
                 if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(OP_QUOTED)) {
+                        ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_QUOTED)) {
                     int quoted = atomToQuoted(((SkelCompound) en.skel).args[0], en.display);
                     if ((quoted & QUOTED_TRUE) != 0) {
                         flags |= PrologWriter.FLAG_QUOT;
@@ -149,9 +160,9 @@ public final class WriteOpts {
                         flags &= ~PrologWriter.FLAG_QUOT;
                     }
                     if ((quoted & QUOTED_JSON) != 0) {
-                        flags |= PrologWriter.FLAG_JSON;
+                        flags |= PrologWriter.FLAG_JSQT;
                     } else {
-                        flags &= ~PrologWriter.FLAG_JSON;
+                        flags &= ~PrologWriter.FLAG_JSQT;
                     }
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
@@ -353,6 +364,30 @@ public final class WriteOpts {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
+    }
+
+    /**
+     * <p>Convert a quoted to an atom.</p>
+     *
+     * @param q The quoted.
+     * @return The atom.
+     */
+    public static SkelAtom quotedToAtom(int q) {
+        String res;
+        switch (q) {
+            case 0:
+                res = AbstractFlag.OP_FALSE;
+                break;
+            case QUOTED_TRUE:
+                res = Foyer.OP_TRUE;
+                break;
+            case QUOTED_TRUE | QUOTED_JSON:
+                res = OP_JSON;
+                break;
+            default:
+                throw new IllegalArgumentException("illegal quoted");
+        }
+        return new SkelAtom(res);
     }
 
     /**
