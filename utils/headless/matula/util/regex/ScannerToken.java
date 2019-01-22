@@ -281,24 +281,24 @@ public final class ScannerToken {
         if (ch == CodeType.LINE_BACKSLASH) {
             buf.appendCodePoint(ch);
             ch = sysGetCode(reader);
-            if (ch != CodeType.LINE_EOF) {
-                if (!cont && ch == CodeType.LINE_EOL)
-                    throw new ScannerError(OP_SYNTAX_CONT_ESC_IN_CHARACTER,
-                            OpenOpts.getOffset(reader));
-                if (Character.digit(ch, 8) != -1
-                        || ch == 'x') {
-                    while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
-                        buf.appendCodePoint(ch);
-                        ch = sysGetCode(reader);
-                    }
-                    if (ch == CodeType.LINE_BACKSLASH) {
-                        buf.appendCodePoint(ch);
-                        ch = sysGetCode(reader);
-                    }
-                } else {
+            if (ch == CodeType.LINE_EOF)
+                return;
+            if (!cont && ch == CodeType.LINE_EOL)
+                throw new ScannerError(OP_SYNTAX_CONT_ESC_IN_CHARACTER,
+                        OpenOpts.getOffset(reader));
+            if (Character.digit(ch, 8) != -1
+                    || ch == 'x') {
+                while (ch != CodeType.LINE_EOF && delemiter.isAlfanum(ch)) {
                     buf.appendCodePoint(ch);
                     ch = sysGetCode(reader);
                 }
+                if (ch == CodeType.LINE_BACKSLASH) {
+                    buf.appendCodePoint(ch);
+                    ch = sysGetCode(reader);
+                }
+            } else {
+                buf.appendCodePoint(ch);
+                ch = sysGetCode(reader);
             }
         } else if (ch == CodeType.LINE_EOL && (flags & MASK_ALLW_NEWL) == 0) {
             if (cont) {

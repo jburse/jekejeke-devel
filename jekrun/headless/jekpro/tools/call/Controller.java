@@ -4,6 +4,8 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
+import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
 import matula.util.wire.AbstractLivestock;
 
@@ -188,10 +190,12 @@ public final class Controller {
      *
      * @param l The lobby.
      */
-    public Controller(Lobby l) {
+    public Controller(Lobby l, Knowledgebase k) {
         Foyer foyer = (Foyer) l.getFoyer();
+        Store store = (Store) k.getStore();
 
         visor = foyer.createSupervisor();
+        visor.pushStack(store.user);
         visor.proxy = this;
     }
 

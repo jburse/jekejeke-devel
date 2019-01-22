@@ -143,7 +143,7 @@ public final class ScannerError extends Exception {
      * @return The scanner error as a string.
      */
     public String toString() {
-        String s=id;
+        String s = id;
         if (pos != -1)
             s += "@" + pos;
         return s;

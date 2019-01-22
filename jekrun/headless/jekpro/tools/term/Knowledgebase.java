@@ -173,7 +173,8 @@ public class Knowledgebase extends AbstractRecognizer {
      * @return The iterable.
      */
     public final Interpreter iterable() {
-        return new Interpreter(this, new Controller(getLobby()));
+        return new Interpreter(this,
+                new Controller(getLobby(), this));
     }
 
     /*******************************************************/
@@ -231,7 +232,7 @@ public class Knowledgebase extends AbstractRecognizer {
     public final void finiKnowledgebase()
             throws InterpreterMessage, InterpreterException {
         try {
-            store.finiStore(store);
+            store.finiStore();
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {

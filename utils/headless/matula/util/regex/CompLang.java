@@ -41,12 +41,14 @@ public final class CompLang {
     private String blockcommentstart;
     private String blockcommentend;
     private String codeescapes;
+    private String stopopers;
 
     static {
         ISO_COMPLANG.setLineComment("%");
         ISO_COMPLANG.setBlockCommentStart("/*");
         ISO_COMPLANG.setBlockCommentEnd("*/");
         ISO_COMPLANG.setCodeEscapes("x0");
+        ISO_COMPLANG.setStopOpers(",|");
     }
 
     /**
@@ -122,6 +124,24 @@ public final class CompLang {
     }
 
     /**
+     * <p>Set the stop opers.</p>
+     *
+     * @param s The stop opers.
+     */
+    public void setStopOpers(String s) {
+        stopopers = s;
+    }
+
+    /**
+     * <p>Retrieve the stop opers.</p>
+     *
+     * @return The stop opers.
+     */
+    public String getStopOpers() {
+        return stopopers;
+    }
+
+    /**
      * <p>Check whether the string is a relevant token.</p>
      * <p>The check consists of:</p>
      * <ul>
@@ -165,9 +185,12 @@ public final class CompLang {
         for (int i = 0; i < n; i++) {
             int k = str.codePointAt(i);
             if (k == quote) {
-                offset++;
-                if (buf != null)
-                    buf.appendCodePoint(k);
+                if (buf == null)
+                    buf = new StringBuilder(str.substring(0, i));
+                i += Character.charCount(k);
+                if (!(i < n) || (k = str.codePointAt(i)) != quote)
+                    throw new ScannerError(CodeType.OP_SYNTAX_DOUBLING_MISSING, offset + i);
+                buf.appendCodePoint(k);
             } else if (k == CodeType.LINE_BACKSLASH) {
                 if (buf == null)
                     buf = new StringBuilder(str.substring(0, i));
@@ -218,12 +241,10 @@ public final class CompLang {
                             i += Character.charCount(k);
                             i2 = i;
                             for (int j = 0; j < 4; j++) {
-                                if (i < n && Character.digit(k = str.codePointAt(i), 16) != -1) {
-                                    if (j != 3)
-                                        i += Character.charCount(k);
-                                } else {
+                                if (!(i < n) || Character.digit(k = str.codePointAt(i), 16) == -1)
                                     throw new ScannerError(OP_SYNTAX_ILLEGAL_ESCAPE, offset + i);
-                                }
+                                if (j != 3)
+                                    i += Character.charCount(k);
                             }
                             try {
                                 i2 = Integer.parseInt(str.substring(i2, i + Character.charCount(k)), 16);
@@ -294,16 +315,26 @@ public final class CompLang {
      * <p>Resolve the escapes in the string.</p>
      * <p>Version that can handle >16 bit Unicode.</p>
      *
-     * @param str The unresolved string.
-     * @param d   The delemiter.
+     * @param str   The unresolved string.
+     * @param d     The delemiter.
+     * @param quote The quote.
      * @return The resolved string.
      */
-    public String escapeControl(String str, CodeType d) {
+    public String escapeControl(String str, CodeType d, int quote) {
         StringBuilder buf = null;
         int n = str.length();
         for (int i = 0; i < n; i++) {
             int k = str.codePointAt(i);
-            if (k == CodeType.LINE_BACKSLASH
+            if (k == quote) {
+                if (buf == null)
+                    buf = new StringBuilder(str.substring(0, i));
+                if (getCodeEscapes().indexOf('u') != -1) {
+                    buf.appendCodePoint(CodeType.LINE_BACKSLASH);
+                } else {
+                    buf.appendCodePoint(k);
+                }
+                buf.appendCodePoint(k);
+            } else if (k == CodeType.LINE_BACKSLASH
                     || (k != ' ' && d.isLayout(k))
                     || !d.isValid(k)) {
                 if (buf == null)

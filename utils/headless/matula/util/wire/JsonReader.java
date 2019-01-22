@@ -46,7 +46,6 @@ import java.io.Reader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class JsonReader extends AbstractReader {
-    public final static CodeType JSON_CODETYPE = new CodeType();
     public final static CompLang JSON_COMPLANG = new CompLang();
 
     public final static String JSON_DUPLICATE_KEY = "json_duplicate_key";
@@ -69,16 +68,11 @@ public final class JsonReader extends AbstractReader {
     public ScannerToken st;
 
     static {
-        JSON_CODETYPE.setHints("\u200C\u200D");
-        JSON_CODETYPE.setDelemiters(",:");
-        JSON_CODETYPE.setQuotes("\"");
-        JSON_CODETYPE.setInvalids("\uFFFD\b\f\r");
-        JSON_CODETYPE.setJoiners("");
-
         JSON_COMPLANG.setLineComment("//");
         JSON_COMPLANG.setBlockCommentStart("/*");
         JSON_COMPLANG.setBlockCommentEnd("*/");
         JSON_COMPLANG.setCodeEscapes("u");
+        JSON_COMPLANG.setStopOpers(",|:");
     }
 
     /**
@@ -90,7 +84,7 @@ public final class JsonReader extends AbstractReader {
     public void setReader(Reader r)
             throws IOException {
         st = new ScannerToken();
-        st.setDelemiter(JSON_CODETYPE);
+        st.setDelemiter(CodeType.ISO_CODETYPE);
         st.setRemark(JSON_COMPLANG);
         st.setReader(r);
         st.setFlags(0);
@@ -132,13 +126,11 @@ public final class JsonReader extends AbstractReader {
             for (; ; ) {
                 String key;
                 if (keys) {
-                    if (st.getHint() == 0)
+                    if (st.getHint() != CodeType.LINE_DOUBLE)
                         throw new ScannerError(JSON_KEY_MISSING,
                                 st.getTokenOffset());
-                    key = JSON_CODETYPE.resolveDouble(st.getData(),
-                            st.getHint(), st.getTokenOffset());
-                    key = JSON_COMPLANG.resolveEscape(key, st.getHint(), true,
-                            st.getTokenOffset(), JSON_CODETYPE);
+                    key = JSON_COMPLANG.resolveEscape(st.getData(), st.getHint(), true,
+                            st.getTokenOffset(), CodeType.ISO_CODETYPE);
                     if (res != null && DomElement.indexAttr(res, key) != -1)
                         throw new ScannerError(JSON_DUPLICATE_KEY,
                                 st.getTokenOffset());
@@ -151,19 +143,8 @@ public final class JsonReader extends AbstractReader {
                 } else {
                     key = null;
                 }
-                if (st.getHint() != 0 ||
-                        (st.getData().length() > 0 &&
-                                Character.isDigit(st.getData().codePointAt(0))) ||
-                        ("-".equals(st.getData()) &&
-                                Character.isDigit(st.lookAhead()))) {
-                    DomText dt = new DomText();
-                    if (keys)
-                        dt.setKey(key);
-                    loadNode(dt);
-                    if (res == null)
-                        res = new ListArray<AbstractDom>();
-                    res.add(dt);
-                } else if (OP_LBRACKET.equals(st.getData()) || OP_LBRACE.equals(st.getData())) {
+                if (st.getHint() == 0 &&
+                        (OP_LBRACKET.equals(st.getData()) || OP_LBRACE.equals(st.getData()))) {
                     DomElement dh = new DomElement();
                     if (keys)
                         dh.setKey(key);
@@ -171,6 +152,14 @@ public final class JsonReader extends AbstractReader {
                     if (res == null)
                         res = new ListArray<AbstractDom>();
                     res.add(dh);
+                } else if (st.getHint() == CodeType.LINE_DOUBLE || st.getHint() == 0) {
+                    DomText dt = new DomText();
+                    if (keys)
+                        dt.setKey(key);
+                    loadNode(dt);
+                    if (res == null)
+                        res = new ListArray<AbstractDom>();
+                    res.add(dt);
                 } else {
                     throw new ScannerError(JSON_ELEMENT_MISSING,
                             st.getTokenOffset());
@@ -197,13 +186,10 @@ public final class JsonReader extends AbstractReader {
             throws IOException, ScannerError {
         if (node instanceof DomText) {
             Object val;
-            if (st.getHint() != 0) {
-                String res = JSON_CODETYPE.resolveDouble(st.getData(),
-                        st.getHint(), st.getTokenOffset());
-                res = JSON_COMPLANG.resolveEscape(res, st.getHint(), true,
-                        st.getTokenOffset(), JSON_CODETYPE);
-                val = res;
-            } else {
+            if (st.getHint() == CodeType.LINE_DOUBLE) {
+                val = JSON_COMPLANG.resolveEscape(st.getData(), st.getHint(), true,
+                        st.getTokenOffset(), CodeType.ISO_CODETYPE);
+            } else if (st.getHint() == 0) {
                 String valstr;
                 if ("-".equals(st.getData())) {
                     nextTagOrText();
@@ -221,11 +207,14 @@ public final class JsonReader extends AbstractReader {
                     throw new ScannerError(JSON_ILLEGAL_VALUE,
                             OpenOpts.getOffset(st.getTokenOffset()));
                 }
+            } else {
+                throw new ScannerError(JSON_ILLEGAL_VALUE,
+                        OpenOpts.getOffset(st.getTokenOffset()));
             }
             DomText dt = (DomText) node;
             dt.setDataObj(val);
         } else {
-            if (OP_LBRACKET.equals(st.getData())) {
+            if (st.getHint() == 0 && OP_LBRACKET.equals(st.getData())) {
                 ListArray<AbstractDom> newchildren = loadNodes(false);
                 if (st.getHint() != 0 ||
                         !OP_RBRACKET.equals(st.getData()))

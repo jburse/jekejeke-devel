@@ -9,6 +9,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadForce;
@@ -293,7 +294,7 @@ public final class AutoClass extends AbstractAuto {
                         AbstractMember del = dels[i];
                         SkelCompound goal = makeGoal(del, over, args, i);
                         if (i != dels.length - 1) {
-                            goal = new SkelCompound(new SkelAtom(",", this),
+                            goal = new SkelCompound(new SkelAtom(PrologReader.OP_COMMA, this),
                                     new SkelAtom("!", this), goal);
                             Object[] closures = del.getTests(this);
                             for (int j = args.length - 1; j >= 0; j--) {
@@ -301,7 +302,8 @@ public final class AutoClass extends AbstractAuto {
                                 if (closure == null)
                                     continue;
                                 SkelCompound test = makeTest(closure, args[j]);
-                                goal = new SkelCompound(new SkelAtom(",", this), test, goal);
+                                goal = new SkelCompound(new SkelAtom(PrologReader.OP_COMMA,
+                                        this), test, goal);
                             }
                         }
                         Object molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);

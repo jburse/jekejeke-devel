@@ -95,7 +95,7 @@ public abstract class AbstractPattern {
     /**
      * <p>Match the pattern in a given string.</p>
      *
-     * @param t     The string to match the pattern with.
+     * @param t The string to match the pattern with.
      * @return True if a match has been found, otherwise false.
      */
     public boolean matchPattern(String t) {

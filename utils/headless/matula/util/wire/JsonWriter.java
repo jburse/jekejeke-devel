@@ -122,11 +122,11 @@ public final class JsonWriter extends AbstractWriter {
         if (!(data instanceof String)) {
             wr.write(data.toString());
         } else {
-            String t = JsonReader.JSON_COMPLANG.escapeControl((String) data, JsonReader.JSON_CODETYPE);
-            t = JsonReader.JSON_CODETYPE.doubleQuote(t, CodeType.LINE_DOUBLE);
-            wr.write("\"");
+            String t = JsonReader.JSON_COMPLANG.escapeControl((String) data,
+                    CodeType.ISO_CODETYPE, CodeType.LINE_DOUBLE);
+            wr.write(CodeType.LINE_DOUBLE);
             wr.write(t);
-            wr.write("\"");
+            wr.write(CodeType.LINE_DOUBLE);
         }
     }
 

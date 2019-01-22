@@ -583,7 +583,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * @return The copy.
      */
     public AbstractSpecimen copyMatcher() {
-            /* the pattern */
+        /* the pattern */
         SpecimenSimple pm = new SpecimenSimple();
         pm.setPatDelemiter(patdelemiter);
         pm.setMatchDelemiter(matchdelemiter);
@@ -591,7 +591,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
         pm.setFlag(flag);
         pm.prepareMatch();
 
-            /* the target */
+        /* the target */
         if (target != null) {
             SpecimenSimple pr = new SpecimenSimple();
             pr.setPatDelemiter(patdelemiter);
@@ -601,7 +601,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
             pm.replaceTo(pr);
         }
 
-            /* the actual search */
+        /* the actual search */
         for (int i = 0; i < match.length; i++) {
             pm.match[i].start = match[i].start;
             pm.match[i].end = match[i].end;
