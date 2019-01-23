@@ -1,6 +1,5 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.experiment.SpecialRef;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
@@ -10,6 +9,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.NamedDistance;
 import jekpro.model.pretty.PrologReader;
+import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
@@ -48,8 +48,6 @@ import matula.util.data.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialVars extends AbstractSpecial {
-    public final static String OP_DOLLAR_VAR = "$VAR";
-
     private final static String OP_EXISTENTIAL = "^";
 
     private final static int SPECIAL_TERM_VARIABLES = 0;
@@ -291,7 +289,7 @@ public final class SpecialVars extends AbstractSpecial {
                         if (val == null)
                             return null;
                     } else {
-                        Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
+                        Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
                         if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                             return null;
                         val = Integer.valueOf(val.intValue() + 1);
@@ -304,7 +302,7 @@ public final class SpecialVars extends AbstractSpecial {
                 m = b.skel;
                 d = b.display;
             } else {
-                Object t = new SkelCompound(new SkelAtom(OP_DOLLAR_VAR), val);
+                Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
                 if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
                     return null;
                 return Integer.valueOf(val.intValue() + 1);

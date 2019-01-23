@@ -41,14 +41,12 @@ public final class CompLang {
     private String blockcommentstart;
     private String blockcommentend;
     private String codeescapes;
-    private String stopopers;
 
     static {
         ISO_COMPLANG.setLineComment("%");
         ISO_COMPLANG.setBlockCommentStart("/*");
         ISO_COMPLANG.setBlockCommentEnd("*/");
         ISO_COMPLANG.setCodeEscapes("x0");
-        ISO_COMPLANG.setStopOpers(",|");
     }
 
     /**
@@ -121,24 +119,6 @@ public final class CompLang {
      */
     public String getCodeEscapes() {
         return codeescapes;
-    }
-
-    /**
-     * <p>Set the stop opers.</p>
-     *
-     * @param s The stop opers.
-     */
-    public void setStopOpers(String s) {
-        stopopers = s;
-    }
-
-    /**
-     * <p>Retrieve the stop opers.</p>
-     *
-     * @return The stop opers.
-     */
-    public String getStopOpers() {
-        return stopopers;
     }
 
     /**

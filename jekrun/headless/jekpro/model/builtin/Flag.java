@@ -54,7 +54,6 @@ public final class Flag extends AbstractFlag {
     public final static String OP_FLAG_BACK_QUOTES = "back_quotes";
     public final static String OP_FLAG_SINGLE_QUOTES = "single_quotes";
     public final static String OP_FLAG_SYS_ACT_STATUS = "sys_act_status";
-    public final static String OP_FLAG_QUOTED = "quoted";
 
     private static final int FLAG_SYS_BODY_VARIABLE = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
@@ -79,7 +78,6 @@ public final class Flag extends AbstractFlag {
     private static final int FLAG_VERSION_DATA = 20;
     private static final int FLAG_SYS_RANDOM = 21;
     private static final int FLAG_SYS_TIMEOUT = 22;
-    private static final int FLAG_QUOTED = 23;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -120,7 +118,6 @@ public final class Flag extends AbstractFlag {
         prologflags.add("version_data", new Flag(FLAG_VERSION_DATA));
         prologflags.add("sys_random", new Flag(FLAG_SYS_RANDOM));
         prologflags.add("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
-        prologflags.add(OP_FLAG_QUOTED, new Flag(FLAG_QUOTED));
         return prologflags;
     }
 
@@ -203,14 +200,6 @@ public final class Flag extends AbstractFlag {
                 return en.store.foyer.random;
             case FLAG_SYS_TIMEOUT:
                 return TermAtomic.normBigInteger(en.store.foyer.timeout);
-            case FLAG_QUOTED:
-                int f = en.store.foyer.getBits();
-                int k = 0;
-                if ((f & Foyer.MASK_FOYER_QUOT) != 0)
-                    k |= WriteOpts.QUOTED_TRUE;
-                if ((f & Foyer.MASK_FOYER_JSQT) != 0)
-                    k |= WriteOpts.QUOTED_JSON;
-                return WriteOpts.quotedToAtom(k);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -336,19 +325,6 @@ public final class Flag extends AbstractFlag {
                 case FLAG_SYS_TIMEOUT:
                     Number num = SpecialEval.derefAndCastInteger(m, d);
                     en.store.foyer.timeout = SpecialEval.castLongValue(num);
-                    return true;
-                case FLAG_QUOTED:
-                    int k = WriteOpts.atomToQuoted(m, d);
-                    if ((k & WriteOpts.QUOTED_TRUE) != 0) {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_QUOT);
-                    } else {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_QUOT);
-                    }
-                    if ((k & WriteOpts.QUOTED_JSON) != 0) {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_JSQT);
-                    } else {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_JSQT);
-                    }
                     return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");

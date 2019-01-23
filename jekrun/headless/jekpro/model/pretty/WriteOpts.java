@@ -51,10 +51,11 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class WriteOpts {
+    public final static String OP_FLAG_QUOTED = "quoted";
     private final static String OP_IGNORE_OPS = "ignore_ops";
     private final static String OP_NUMBERVARS = "numbervars";
     private final static String OP_IGNORE_MOD = "ignore_mod";
-    private final static String OP_PRIORITY = "priority";
+    final static String OP_PRIORITY = "priority";
     private final static String OP_FORMAT = "format";
     private final static String OP_CONTEXT = "context";
     private final static String OP_OPERAND = "operand";
@@ -63,8 +64,6 @@ public final class WriteOpts {
     private final static String OP_ANNO_MKDT = "makedot";
     private final static String OP_ANNO_FILL = "filler";
     private final static String OP_ANNO_HINT = "hint";
-
-    private final static String OP_JSON = "json";
 
     private final static String OP_FORMAT_NEWL = "newline";
     private final static String OP_FORMAT_NAVI = "navigation";
@@ -89,7 +88,7 @@ public final class WriteOpts {
     public static final int PART_CMMT = 1;
     public static final int PART_STMT = 2;
 
-    public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
+    public int flags = PrologWriter.FLAG_DFLT;
     public int lev = Operator.LEVEL_HIGH;
     public int spez;
     public int offset;
@@ -115,17 +114,6 @@ public final class WriteOpts {
         utilback = (byte) foyer.getUtilBack();
         utilsingle = (byte) foyer.getUtilSingle();
         source = en.store.user;
-        int f = foyer.getBits();
-        if ((f & Foyer.MASK_FOYER_QUOT) != 0) {
-            flags |= PrologWriter.FLAG_QUOT;
-        } else {
-            flags &= ~PrologWriter.FLAG_QUOT;
-        }
-        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
-            flags |= PrologWriter.FLAG_JSQT;
-        } else {
-            flags &= ~PrologWriter.FLAG_JSQT;
-        }
     }
 
     /**
@@ -152,17 +140,11 @@ public final class WriteOpts {
                 en.deref();
                 if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_QUOTED)) {
-                    int quoted = atomToQuoted(((SkelCompound) en.skel).args[0], en.display);
-                    if ((quoted & QUOTED_TRUE) != 0) {
+                        ((SkelCompound) en.skel).sym.fun.equals(OP_FLAG_QUOTED)) {
+                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                         flags |= PrologWriter.FLAG_QUOT;
                     } else {
                         flags &= ~PrologWriter.FLAG_QUOT;
-                    }
-                    if ((quoted & QUOTED_JSON) != 0) {
-                        flags |= PrologWriter.FLAG_JSQT;
-                    } else {
-                        flags &= ~PrologWriter.FLAG_JSQT;
                     }
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
@@ -193,8 +175,9 @@ public final class WriteOpts {
                         ((SkelCompound) en.skel).sym.fun.equals(OP_PRIORITY)) {
                     Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
                     SpecialEval.checkNotLessThanZero(num);
-                    lev = SpecialEval.castIntValue(num);
-                    SpecialOper.checkOperatorLevel(lev);
+                    int k = SpecialEval.castIntValue(num);
+                    SpecialOper.checkOperatorLevel(k);
+                    lev = k;
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_FORMAT)) {
@@ -335,59 +318,6 @@ public final class WriteOpts {
         pw.setOffset(offset);
         pw.setShift(shift);
         pw.setPrintMap(printmap);
-    }
-
-    /**
-     * <p>Convert an atom to a quoted.</p>
-     * <p>The following values are accepted:</p>
-     * <ul>
-     * <li><b>false:</b> false.</li>
-     * <li><b>true:</b> QUOTED_TRUE.</li>
-     * <li><b>json:</b> QUOTED_TRUE | QUOTED_JSON.</li>
-     * </ul>
-     *
-     * @param m The bool skel.
-     * @param d The bool display.
-     * @return The bool value.
-     * @throws EngineMessage Shit happens.
-     */
-    public static int atomToQuoted(Object m, Display d)
-            throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(m, d);
-        if (fun.equals(AbstractFlag.OP_FALSE)) {
-            return 0;
-        } else if (fun.equals(Foyer.OP_TRUE)) {
-            return QUOTED_TRUE;
-        } else if (fun.equals(OP_JSON)) {
-            return QUOTED_TRUE | QUOTED_JSON;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
-    }
-
-    /**
-     * <p>Convert a quoted to an atom.</p>
-     *
-     * @param q The quoted.
-     * @return The atom.
-     */
-    public static SkelAtom quotedToAtom(int q) {
-        String res;
-        switch (q) {
-            case 0:
-                res = AbstractFlag.OP_FALSE;
-                break;
-            case QUOTED_TRUE:
-                res = Foyer.OP_TRUE;
-                break;
-            case QUOTED_TRUE | QUOTED_JSON:
-                res = OP_JSON;
-                break;
-            default:
-                throw new IllegalArgumentException("illegal quoted");
-        }
-        return new SkelAtom(res);
     }
 
     /**

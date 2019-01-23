@@ -85,10 +85,8 @@ public abstract class Foyer extends Enforced {
     public final static int MASK_FOYER_NHED = 0x00000400;
     public final static int MASK_FOYER_NIDX = 0x00000800;
 
-    public final static int MASK_FOYER_QUOT = 0x00001000;
-    public final static int MASK_FOYER_JSQT = 0x00002000;
-    public final static int MASK_FOYER_SMRY = 0x00004000;
-    public final static int MASK_FOYER_DTLS = 0x00008000;
+    public final static int MASK_FOYER_SMRY = 0x00001000;
+    public final static int MASK_FOYER_DTLS = 0x00002000;
 
     public final static int IO_TERM = 0;
     public final static int IO_ANNO = 1;
@@ -108,7 +106,7 @@ public abstract class Foyer extends Enforced {
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     public long timeout = 30000; /* half minute */
     public Random random = new Random();
-    private int flags = MASK_FOYER_QUOT;
+    private int flags;
     //    private int gensym;
     private int hint;
 

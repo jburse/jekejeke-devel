@@ -72,7 +72,6 @@ public final class JsonReader extends AbstractReader {
         JSON_COMPLANG.setBlockCommentStart("/*");
         JSON_COMPLANG.setBlockCommentEnd("*/");
         JSON_COMPLANG.setCodeEscapes("u");
-        JSON_COMPLANG.setStopOpers(",|:");
     }
 
     /**

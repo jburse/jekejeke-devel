@@ -7,7 +7,6 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.ForeignAtom;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
@@ -58,6 +57,9 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class PrologWriter {
+    public final static String OP_DOLLAR_VAR = "$VAR";
+    public final static String OP_DOLLAR_STR = "$STR";
+
     public final static int SPACES = 3;
 
     public final static int STANDALONE = 0;
@@ -71,13 +73,14 @@ public class PrologWriter {
     public final static int FLAG_MKDT = 0x00000010;
     public final static int FLAG_FILL = 0x00000020;
     public final static int FLAG_HINT = 0x00000040;
-    public final static int FLAG_JSQT = 0x00000080;
 
     /* only write opts */
     public final static int FLAG_NEWL = 0x00000100;
     public final static int FLAG_NAVI = 0x00000200;
     public final static int FLAG_CMMT = 0x00000400;
     public final static int FLAG_STMT = 0x00000800;
+
+    public final static int FLAG_DFLT = FLAG_CMMT | FLAG_STMT | FLAG_QUOT | FLAG_NUMV;
 
     public final static int SPEZ_OPLE = 0x00000001;
     public final static int SPEZ_LEFT = 0x00000002;
@@ -91,15 +94,15 @@ public class PrologWriter {
     final static int SPEZ_ICAT = 0x00002000;
 
     private final static String noTermChs = "([{}])";
+    private final static String noOperChs = ".,|";
 
     final static int MASK_ATOM_OPER = 0x00000001;
-    final static int MASK_ATOM_FUNC = 0x00000002;
 
     public Engine engine;
     private Writer wr;
     private int toff;
     private int lch = -1;
-    public int flags = PrologWriter.FLAG_CMMT + PrologWriter.FLAG_STMT;
+    public int flags = FLAG_DFLT;
     int lev = Operator.LEVEL_HIGH;
     private MapHashLink<Object, NamedDistance> printmap;
     int spez;
@@ -109,7 +112,6 @@ public class PrologWriter {
     private byte utilback = ReadOpts.UTIL_ERROR;
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     private AbstractSource source;
-    CompLang complang = CompLang.ISO_COMPLANG;
 
     /**
      * <p>Set the engine.</p>
@@ -154,11 +156,6 @@ public class PrologWriter {
      */
     public void setFlags(int f) {
         flags = f;
-        if ((flags & FLAG_JSQT) != 0) {
-            complang = JsonReader.JSON_COMPLANG;
-        } else {
-            complang = CompLang.ISO_COMPLANG;
-        }
     }
 
     /**
@@ -175,7 +172,7 @@ public class PrologWriter {
      *
      * @param l The operator level.
      */
-    public void setLevel(int l) {
+    void setLevel(int l) {
         lev = l;
     }
 
@@ -298,22 +295,6 @@ public class PrologWriter {
         utilback = (byte) foyer.getUtilBack();
         utilsingle = (byte) foyer.getUtilSingle();
         source = en.store.user;
-        int f = foyer.getBits();
-        if ((f & Foyer.MASK_FOYER_QUOT) != 0) {
-            flags |= PrologWriter.FLAG_QUOT;
-        } else {
-            flags &= ~PrologWriter.FLAG_QUOT;
-        }
-        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
-            flags |= PrologWriter.FLAG_JSQT;
-        } else {
-            flags &= ~PrologWriter.FLAG_JSQT;
-        }
-        if ((flags & FLAG_JSQT) != 0) {
-            complang = JsonReader.JSON_COMPLANG;
-        } else {
-            complang = CompLang.ISO_COMPLANG;
-        }
     }
 
     /***************************************************************/
@@ -582,30 +563,21 @@ public class PrologWriter {
      * @return The quoted variable.
      */
     public String variableQuoted(String var) {
+        int quote;
         if (utilsingle == ReadOpts.UTIL_VARIABLE) {
-            return variableQuotes(var, CodeType.LINE_SINGLE);
+            quote = CodeType.LINE_SINGLE;
         } else if (utildouble == ReadOpts.UTIL_VARIABLE) {
-            return variableQuotes(var, CodeType.LINE_DOUBLE);
+            quote = CodeType.LINE_DOUBLE;
         } else if (utilback == ReadOpts.UTIL_VARIABLE) {
-            return variableQuotes(var, CodeType.LINE_BACK);
+            quote = CodeType.LINE_BACK;
         } else {
             return var;
         }
-    }
-
-    /**
-     * <p>Quote a variable if necessary.</p>
-     *
-     * @param var   The variable.
-     * @param quote The quote.
-     * @return The variable, quoted if necessary.
-     */
-    private String variableQuotes(String var, int quote) {
         if ((flags & FLAG_QUOT) != 0) {
             if (variableNeedsQuotes(var)) {
                 StringBuilder buf = new StringBuilder();
                 buf.appendCodePoint(quote);
-                var = complang.escapeControl(var,
+                var = CompLang.ISO_COMPLANG.escapeControl(var,
                         CodeType.ISO_CODETYPE, quote);
                 buf.append(var);
                 buf.appendCodePoint(quote);
@@ -629,13 +601,13 @@ public class PrologWriter {
             return true;
         int ch = var.codePointAt(0);
         if (var.length() == 1 &&
-                (noTermChs.indexOf(ch) != -1 || isAtomQuoted(ch)))
+                (noTermChs.indexOf(ch) != -1 || noOperChs.indexOf(ch) != -1))
             return true;
         if (!CodeType.ISO_CODETYPE.isUpper(ch) && !CodeType.ISO_CODETYPE.isUnderscore(ch))
             return true;
         if (Character.isDigit(ch))
             return true;
-        if (!complang.relevantToken(var))
+        if (!CompLang.ISO_COMPLANG.relevantToken(var))
             return true;
         if (!CodeType.ISO_CODETYPE.singleToken(var))
             return true;
@@ -692,31 +664,21 @@ public class PrologWriter {
      * @return The quoted atom.
      */
     final String atomQuoted(String fun, int oper) {
+        int quote;
         if (utildouble == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(fun, CodeType.LINE_DOUBLE, oper);
+            quote = CodeType.LINE_DOUBLE;
         } else if (utilsingle == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(fun, CodeType.LINE_SINGLE, oper);
+            quote = CodeType.LINE_SINGLE;
         } else if (utilback == ReadOpts.UTIL_ATOM) {
-            return atomQuotes(fun, CodeType.LINE_BACK, oper);
+            quote = CodeType.LINE_BACK;
         } else {
             return fun;
         }
-    }
-
-    /**
-     * <p>Quote a functor if necessary.</p>
-     *
-     * @param fun   The functor.
-     * @param quote The quote.
-     * @param oper  The atom flags.
-     * @return The functor, quoted if necessary.
-     */
-    private String atomQuotes(String fun, int quote, int oper) {
         if ((flags & FLAG_QUOT) != 0) {
             if (atomNeedsQuotes(fun, oper)) {
                 StringBuilder buf = new StringBuilder();
                 buf.appendCodePoint(quote);
-                fun = complang.escapeControl(fun,
+                fun = CompLang.ISO_COMPLANG.escapeControl(fun,
                         CodeType.ISO_CODETYPE, quote);
                 buf.append(fun);
                 buf.appendCodePoint(quote);
@@ -737,21 +699,18 @@ public class PrologWriter {
      * @return True if the atom needs quotes, false otherwise.
      */
     private boolean atomNeedsQuotes(String fun, int oper) {
-        if ((flags & FLAG_JSQT) != 0 &&
-                (oper & MASK_ATOM_FUNC) == 0)
-            return true;
         if (fun.length() == 0)
             return true;
         int ch = fun.codePointAt(0);
         if (fun.length() == 1 &&
                 (noTermChs.indexOf(ch) != -1 ||
-                        ((oper & MASK_ATOM_OPER) == 0 && isAtomQuoted(ch))))
+                        ((oper & MASK_ATOM_OPER) == 0 && noOperChs.indexOf(ch) != -1)))
             return true;
         if (CodeType.ISO_CODETYPE.isUpper(ch) || CodeType.ISO_CODETYPE.isUnderscore(ch))
             return true;
         if (Character.isDigit(ch))
             return true;
-        if (!complang.relevantToken(fun))
+        if (!CompLang.ISO_COMPLANG.relevantToken(fun))
             return true;
         if (!CodeType.ISO_CODETYPE.singleToken(fun) &&
                 !fun.equals(Foyer.OP_UNIT) &&
@@ -762,17 +721,29 @@ public class PrologWriter {
     }
 
     /**
-     * <p>Check whether the atom name is an operator quoted.</p>
+     * <p>Compute a quoted atom.</p>
      *
-     * @param ch The operator character.
-     * @return If the operator name is an operator escape.
+     * @param fun The atom.
+     * @return The quoted atom or null.
      */
-    private boolean isAtomQuoted(int ch) {
-        if (complang.getStopOpers().indexOf(ch) != -1)
-            return true;
-        if (ch == '.')
-            return true;
-        return false;
+    final String stringQuoted(String fun) {
+        int quote;
+        if (utildouble == ReadOpts.UTIL_STRING) {
+            quote = CodeType.LINE_DOUBLE;
+        } else if (utilsingle == ReadOpts.UTIL_STRING) {
+            quote = CodeType.LINE_SINGLE;
+        } else if (utilback == ReadOpts.UTIL_STRING) {
+            quote = CodeType.LINE_BACK;
+        } else {
+            return null;
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.appendCodePoint(quote);
+        fun = JsonReader.JSON_COMPLANG.escapeControl(fun,
+                CodeType.ISO_CODETYPE, quote);
+        buf.append(fun);
+        buf.appendCodePoint(quote);
+        return buf.toString();
     }
 
     /********************************************************/
@@ -831,7 +802,7 @@ public class PrologWriter {
          * - spacing.
          * - anti specification
          */
-        String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_FUNC);
+        String t = atomQuoted(op.getPortrayOrName(), 0);
         safeSpace(t);
         append(t);
         if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
@@ -875,7 +846,7 @@ public class PrologWriter {
             if ((backspez & SPEZ_ICUT) != 0) {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 append(t);
                 if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
@@ -884,7 +855,7 @@ public class PrologWriter {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent - SPACES; i++)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 append(t);
                 for (int i = t.length(); i < SPACES; i++)
@@ -892,7 +863,7 @@ public class PrologWriter {
             } else {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 append(t);
                 append(CodeType.LINE_EOL);
@@ -906,7 +877,7 @@ public class PrologWriter {
                     (backspez & SPEZ_META) != 0 &&
                     (backspez & SPEZ_EVAL) == 0)
                 append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
             safeSpace(t);
             append(t);
             if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
@@ -951,7 +922,7 @@ public class PrologWriter {
             writeStruct(sc, ref, cp, decl,
                     backshift, backspez, backoffset, mod, nsa);
         } else {
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
             safeSpace(t);
             append(t);
         }
@@ -1178,7 +1149,7 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        String t = atomQuoted(sc.sym.fun, MASK_ATOM_FUNC);
+        String t = atomQuoted(sc.sym.fun, 0);
         safeSpace(t);
         append(t);
         append(PrologReader.OP_LPAREN);
@@ -1337,7 +1308,7 @@ public class PrologWriter {
         }
         SkelCompound sc = ((SkelCompound) term);
         if ((flags & FLAG_NUMV) != 0 && sc.args.length == 1 &&
-                sc.sym.fun.equals(SpecialVars.OP_DOLLAR_VAR)) {
+                sc.sym.fun.equals(OP_DOLLAR_VAR)) {
             Object help = sc.args[0];
             if (engine != null) {
                 engine.skel = help;
@@ -1345,8 +1316,26 @@ public class PrologWriter {
                 engine.deref();
                 help = engine.skel;
             }
-            if (help instanceof Integer && ((Integer) help).intValue() >= 0) {
+            if (help instanceof Integer &&
+                    ((Integer) help).intValue() >= 0) {
                 String t = SkelVar.sernoToString(((Integer) help).intValue(), false);
+                safeSpace(t);
+                append(t);
+                return;
+            }
+        }
+        if ((flags & FLAG_NUMV) != 0 && sc.args.length == 1 &&
+                sc.sym.fun.equals(OP_DOLLAR_STR)) {
+            Object help = sc.args[0];
+            if (engine != null) {
+                engine.skel = help;
+                engine.display = ref;
+                engine.deref();
+                help = engine.skel;
+            }
+            String t;
+            if (help instanceof SkelAtom &&
+                    (t = stringQuoted(((SkelAtom) help).fun)) != null) {
                 safeSpace(t);
                 append(t);
                 return;
@@ -1522,7 +1511,7 @@ public class PrologWriter {
      */
     private boolean isOperEscape(String s) {
         if (s.length() == 1) {
-            if (complang.getStopOpers().indexOf(s.charAt(0)) != -1)
+            if (PrologReader.noOperChs.indexOf(s.charAt(0)) != -1)
                 return true;
         }
         return Foyer.OP_UNIT.equals(s);

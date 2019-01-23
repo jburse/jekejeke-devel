@@ -7,6 +7,9 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.rope.Operator;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -56,16 +59,19 @@ public final class ReadOpts {
     public final static String OP_VALUE_ERROR = "error";
     private final static String OP_VALUE_CODES = "codes";
     private final static String OP_VALUE_CHARS = "chars";
-    private final static String OP_VALUE_ATOM = "atom";
     private final static String OP_VALUE_VARIABLE = "variable";
+    private final static String OP_VALUE_ATOM = "atom";
+    private final static String OP_VALUE_STRING = "string";
 
+    public final static int UTIL_ERROR = 0;
+    public final static int UTIL_CODES = 1;
     public final static int UTIL_CHARS = 2;
     public final static int UTIL_VARIABLE = 3;
-    public final static int UTIL_CODES = 1;
-    public final static int UTIL_ERROR = 0;
     public final static int UTIL_ATOM = 4;
+    public final static int UTIL_STRING = 5;
 
-    public int flags = PrologWriter.FLAG_STMT;
+    public int flags;
+    public int lev = Operator.LEVEL_HIGH;
     public byte utildouble;
     public byte utilback;
     public byte utilsingle;
@@ -86,12 +92,6 @@ public final class ReadOpts {
         utilback = (byte) foyer.getUtilBack();
         utilsingle = (byte) foyer.getUtilSingle();
         source = en.visor.peekStack();
-        int f = foyer.getBits();
-        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
-            flags |= PrologWriter.FLAG_JSQT;
-        } else {
-            flags &= ~PrologWriter.FLAG_JSQT;
-        }
     }
 
     /**
@@ -141,13 +141,12 @@ public final class ReadOpts {
                 utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_QUOTED)) {
-                int quoted = WriteOpts.atomToQuoted(((SkelCompound) en.skel).args[0], en.display);
-                if ((quoted & WriteOpts.QUOTED_JSON) != 0) {
-                    flags |= PrologWriter.FLAG_JSQT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_JSQT;
-                }
+                    ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PRIORITY)) {
+                Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
+                SpecialEval.checkNotLessThanZero(num);
+                int k = SpecialEval.castIntValue(num);
+                SpecialOper.checkOperatorLevel(k);
+                lev = k;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
@@ -180,15 +179,6 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
                 /* do nothing */
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PART)) {
-                int part = atomToReadPart(((SkelCompound) en.skel).args[0], en.display);
-                if ((part & WriteOpts.PART_STMT) != 0) {
-                    flags |= PrologWriter.FLAG_STMT;
-                } else {
-                    flags &= ~PrologWriter.FLAG_STMT;
-                }
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(
@@ -222,6 +212,7 @@ public final class ReadOpts {
         pr.setUtilBack(utilback);
         pr.setUtilSingle(utilsingle);
         pr.setSource(source);
+        pr.setLevel(lev);
     }
 
     /**
@@ -274,15 +265,15 @@ public final class ReadOpts {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PRIORITY)) {
+                /* do nothing */
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_BACK_QUOTES)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_SINGLE_QUOTES)) {
-                /* do nothing */
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_FLAG_QUOTED)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -298,10 +289,6 @@ public final class ReadOpts {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
                         Integer.valueOf(rd.getClauseStart()), Display.DISPLAY_CONST))
                     return false;
-            } else if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PART)) {
-                /* do nothing */
             } else {
                 throw new RuntimeException("internal error");
             }
@@ -382,10 +369,12 @@ public final class ReadOpts {
             return UTIL_CODES;
         } else if (fun.equals(OP_VALUE_CHARS)) {
             return UTIL_CHARS;
-        } else if (fun.equals(OP_VALUE_ATOM)) {
-            return UTIL_ATOM;
         } else if (fun.equals(OP_VALUE_VARIABLE)) {
             return UTIL_VARIABLE;
+        } else if (fun.equals(OP_VALUE_ATOM)) {
+            return UTIL_ATOM;
+        } else if (fun.equals(OP_VALUE_STRING)) {
+            return UTIL_STRING;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
@@ -410,11 +399,14 @@ public final class ReadOpts {
             case UTIL_CHARS:
                 res = OP_VALUE_CHARS;
                 break;
+            case UTIL_VARIABLE:
+                res = OP_VALUE_VARIABLE;
+                break;
             case UTIL_ATOM:
                 res = OP_VALUE_ATOM;
                 break;
-            case UTIL_VARIABLE:
-                res = OP_VALUE_VARIABLE;
+            case UTIL_STRING:
+                res = OP_VALUE_STRING;
                 break;
             default:
                 throw new IllegalArgumentException("illegal util");

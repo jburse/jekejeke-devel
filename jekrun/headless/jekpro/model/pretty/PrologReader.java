@@ -16,7 +16,6 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.regex.*;
 import matula.util.system.OpenOpts;
-import matula.util.wire.JsonReader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +81,10 @@ public class PrologReader {
     public final static String ERROR_SYNTAX_OPERATOR_CLASH = "operator_clash"; /* SWI */
 
     private final static String noTermChs = ".)}]";
+    final static String noOperChs = ",|";
 
+    private int flags;
+    int lev = Operator.LEVEL_HIGH;
     private Engine engine;
     protected AbstractSource source;
     public final ScannerToken st = new ScannerToken();
@@ -92,9 +94,7 @@ public class PrologReader {
     private byte utildouble = ReadOpts.UTIL_CODES;
     private byte utilback = ReadOpts.UTIL_ERROR;
     private byte utilsingle = ReadOpts.UTIL_ATOM;
-    private int flags;
     private int clausestart;
-    CompLang complang = CompLang.ISO_COMPLANG;
 
     /**
      * Construct a reader.
@@ -176,6 +176,16 @@ public class PrologReader {
         utilsingle = (byte) u;
     }
 
+
+    /**
+     * <p>Set the flags.</p>
+     *
+     * @param f The flags.
+     */
+    public void setFlags(int f) {
+        flags = f;
+    }
+
     /**
      * <p>Retrieve the flags.</p>
      *
@@ -186,17 +196,12 @@ public class PrologReader {
     }
 
     /**
-     * <p>Set the flags.</p>
+     * <p>Set the operator level.</p>
      *
-     * @param f The flags.
+     * @param l The operator level.
      */
-    public void setFlags(int f) {
-        flags = f;
-        if ((flags & PrologWriter.FLAG_JSQT) != 0) {
-            complang = JsonReader.JSON_COMPLANG;
-        } else {
-            complang = CompLang.ISO_COMPLANG;
-        }
+    void setLevel(int l) {
+        lev = l;
     }
 
     /**
@@ -264,17 +269,6 @@ public class PrologReader {
         utilback = (byte) foyer.getUtilBack();
         utilsingle = (byte) foyer.getUtilSingle();
         source = en.visor.peekStack();
-        int f = foyer.getBits();
-        if ((f & Foyer.MASK_FOYER_JSQT) != 0) {
-            flags |= PrologWriter.FLAG_JSQT;
-        } else {
-            flags &= ~PrologWriter.FLAG_JSQT;
-        }
-        if ((flags & PrologWriter.FLAG_JSQT) != 0) {
-            complang = JsonReader.JSON_COMPLANG;
-        } else {
-            complang = CompLang.ISO_COMPLANG;
-        }
     }
 
     /*******************************************************************/
@@ -293,8 +287,7 @@ public class PrologReader {
      */
     public Object read(int level)
             throws ScannerError, EngineMessage, EngineException, IOException {
-        if (isTemplate(-1) || isTemplates(noTermChs)
-                || isTemplates(complang.getStopOpers()))
+        if (isTemplate(-1) || isTemplates(noTermChs) || isTemplates(noOperChs))
             throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,
                     st.getTokenOffset());
         Object skel;
@@ -401,8 +394,7 @@ public class PrologReader {
             } else {
                 nextToken();
                 /* ISO 6.3.3.1 */
-                if (isTemplate(-1) || isTemplates(noTermChs)
-                        || isTemplates(complang.getStopOpers())) {
+                if (isTemplate(-1) || isTemplates(noTermChs) || isTemplates(noOperChs)) {
                     skel = makePos((String) skel, pos);
                     current = 0;
                 } else {
@@ -834,23 +826,26 @@ public class PrologReader {
     /**
      * <p>Convert an atom by util.</p>
      *
-     * @param s The atom.
-     * @param u The util.
+     * @param fun  The atom.
+     * @param util The util.
      * @return The converted atom.
      */
-    public final Object atomByUtil(String s, int u)
+    public final Object atomByUtil(String fun, int util)
             throws ScannerError {
-        switch (u) {
+        switch (util) {
             case ReadOpts.UTIL_ERROR:
                 throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM, st.getTokenOffset());
             case ReadOpts.UTIL_CODES:
-                return atomToList(s, REP_CODES);
+                return atomToList(fun, REP_CODES);
             case ReadOpts.UTIL_CHARS:
-                return atomToList(s, REP_CHARS);
-            case ReadOpts.UTIL_ATOM:
-                return makePos(s, getAtomPos());
+                return atomToList(fun, REP_CHARS);
             case ReadOpts.UTIL_VARIABLE:
-                return atomToVariable(s);
+                return atomToVariable(fun);
+            case ReadOpts.UTIL_ATOM:
+                return makePos(fun, getAtomPos());
+            case ReadOpts.UTIL_STRING:
+                return new SkelCompound(makePos(PrologWriter.OP_DOLLAR_STR, getAtomPos()),
+                        makePos(fun, getAtomPos()));
             default:
                 throw new IllegalArgumentException("illegal util");
         }
@@ -859,17 +854,17 @@ public class PrologReader {
     /**
      * <p>Convert a string to a code list.</p>
      *
-     * @param s   The atom.
+     * @param fun The atom.
      * @param rep The representation.
      * @return The code list.
      */
-    private Object atomToList(String s, int rep) {
+    private Object atomToList(String fun, int rep) {
         Object res = makePos(Foyer.OP_NIL, getAtomPos());
-        if (s.length() == 0)
+        if (fun.length() == 0)
             return res;
         SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
-        for (int i = s.length(); i > 0; i--) {
-            int ch = s.codePointBefore(i);
+        for (int i = fun.length(); i > 0; i--) {
+            int ch = fun.codePointBefore(i);
             Object val;
             switch (rep) {
                 case PrologReader.REP_CHARS:
@@ -1113,7 +1108,7 @@ public class PrologReader {
      */
     public final Object parseIncomplete(int ch)
             throws ScannerError, EngineException, EngineMessage, IOException {
-        Object jack = read(Operator.LEVEL_HIGH);
+        Object jack = read(lev);
         if (!isTemplate(ch))
             throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
                     st.getTokenOffset());

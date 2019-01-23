@@ -135,7 +135,7 @@ public final class PrologWriterAnno extends PrologWriter {
                 case CodeType.LINE_BACK:
                     StringBuilder buf = new StringBuilder();
                     buf.appendCodePoint(quote);
-                    String t = complang.escapeControl(sa.fun,
+                    String t = CompLang.ISO_COMPLANG.escapeControl(sa.fun,
                             CodeType.ISO_CODETYPE, quote);
                     buf.append(t);
                     buf.appendCodePoint(quote);
@@ -183,7 +183,7 @@ public final class PrologWriterAnno extends PrologWriter {
          * - spacing.
          * - anti specification
          */
-        String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_FUNC);
+        String t = atomQuoted(op.getPortrayOrName(), 0);
         safeSpace(t);
         if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
             writeLinkBegin(cp, backoffset >= 0);
@@ -235,7 +235,7 @@ public final class PrologWriterAnno extends PrologWriter {
             if ((backspez & SPEZ_ICUT) != 0) {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
                     writeLinkBegin(cp, backoffset >= 0);
@@ -254,7 +254,7 @@ public final class PrologWriterAnno extends PrologWriter {
                 }
                 for (int i = 0; i < indent - SPACES; i++)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
                     writeLinkBegin(cp, backoffset >= 0);
@@ -266,7 +266,7 @@ public final class PrologWriterAnno extends PrologWriter {
             } else {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
                     writeLinkBegin(cp, backoffset >= 0);
@@ -290,7 +290,7 @@ public final class PrologWriterAnno extends PrologWriter {
                     (backspez & SPEZ_META) != 0 &&
                     (backspez & SPEZ_EVAL) == 0)
                 append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
             safeSpace(t);
             if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
                 writeLinkBegin(cp, backoffset >= 0);
@@ -343,7 +343,7 @@ public final class PrologWriterAnno extends PrologWriter {
             writeStruct(sc, ref, cp, decl,
                     backshift, backspez, backoffset, mod, nsa);
         } else {
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER | MASK_ATOM_FUNC);
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
             safeSpace(t);
             if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
                 writeLinkBegin(cp, backoffset >= 0);
@@ -527,7 +527,7 @@ public final class PrologWriterAnno extends PrologWriter {
         int backoffset = offset;
         int backshift = shift;
         int indent = getTextOffset() + SPACES;
-        String t = atomQuoted(sc.sym.fun, MASK_ATOM_FUNC);
+        String t = atomQuoted(sc.sym.fun, 0);
         safeSpace(t);
         if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
             writeLinkBegin(cp, backoffset >= 0);
