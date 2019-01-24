@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 
@@ -47,8 +48,9 @@ public abstract class XSelect {
      *
      * @param d The dom element.
      * @return The value.
+     * @throws ScannerError Syntax error.
      */
-    public abstract Object evalElement(DomElement d) throws ParseException;
+    public abstract Object evalElement(DomElement d) throws ScannerError;
 
     /**
      * <p>Check an xpath select.</p>

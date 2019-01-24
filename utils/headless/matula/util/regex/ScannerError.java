@@ -1,5 +1,7 @@
 package matula.util.regex;
 
+import java.text.ParseException;
+
 /**
  * <p>The class provides a syntax error type and an error position.</p>
  * Warranty & Liability
@@ -30,9 +32,7 @@ package matula.util.regex;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ScannerError extends Exception {
-    private String id;
-    private int pos = -1;
+public final class ScannerError extends ParseException {
     private String line;
 
     /**
@@ -52,8 +52,7 @@ public final class ScannerError extends Exception {
      * @param p The error position.
      */
     public ScannerError(String i, int p) {
-        id = i;
-        pos = p;
+        super(i, p);
     }
 
     /**
@@ -62,16 +61,7 @@ public final class ScannerError extends Exception {
      * @return The error id.
      */
     public String getError() {
-        return id;
-    }
-
-    /**
-     * <p>Set the error position.</p>
-     *
-     * @param p The position.
-     */
-    public void setPos(int p) {
-        pos = p;
+        return getMessage();
     }
 
     /**
@@ -80,7 +70,7 @@ public final class ScannerError extends Exception {
      * @return The error position.
      */
     public int getPos() {
-        return pos;
+        return getErrorOffset();
     }
 
     /**
@@ -111,30 +101,35 @@ public final class ScannerError extends Exception {
      * @param s The scanner error as a string.
      */
     public ScannerError(String s) {
-        parse(s);
+        super(parseId(s), parsePos(s));
     }
 
     /**
-     * <p>Parse a scanner error.</p>
+     * <p>Parse a scanner id.</p>
      *
-     * @param s The scanner error as a string.
+     * @param s The scanner id.
      */
-    public void parse(String s) {
+    private static String parseId(String s) {
         int k1 = s.indexOf('@');
         if (k1 != -1) {
-            pos = Integer.parseInt(s.substring(k1 + 1));
-            s = s.substring(0, k1);
+            return s.substring(0, k1);
+        } else {
+            return s;
         }
-        id = s;
     }
 
     /**
-     * Returns the detail message.
+     * <p>Parse a scanner pos.</p>
      *
-     * @return The detail message.
+     * @param s The scanner pos.
      */
-    public String getMessage() {
-        return toString();
+    private static int parsePos(String s) {
+        int k1 = s.indexOf('@');
+        if (k1 != -1) {
+            return Integer.parseInt(s.substring(k1 + 1));
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -143,9 +138,9 @@ public final class ScannerError extends Exception {
      * @return The scanner error as a string.
      */
     public String toString() {
-        String s = id;
-        if (pos != -1)
-            s += "@" + pos;
+        String s = getMessage();
+        if (getErrorOffset() != -1)
+            s += "@" + getErrorOffset();
         return s;
     }
 

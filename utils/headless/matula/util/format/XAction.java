@@ -1,6 +1,7 @@
 package matula.util.format;
 
 import matula.util.data.ListArray;
+import matula.util.regex.ScannerError;
 import matula.util.transform.InterfacePath;
 
 import java.text.ParseException;
@@ -110,9 +111,10 @@ public final class XAction {
      * @param e    The source dom element.
      * @param path The path.
      * @return The result dom element.
+     * @throws ScannerError Syntax error.
      */
     public DomElement performActions(DomElement r, DomElement e,
-                                     InterfacePath path) throws ParseException {
+                                     InterfacePath path) throws ScannerError {
         if (acts != null) {
             for (int i = 0; i < acts.size(); i++) {
                 XActionFuncAggr act = acts.get(i);

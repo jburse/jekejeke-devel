@@ -218,8 +218,6 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
                 nextTagOrText();
         } catch (ScannerError x) {
             throw new RuntimeException("problem writing", x);
-        } catch (ParseException x) {
-            throw new RuntimeException("problem writing", x);
         } catch (InterruptedIOException x) {
             Thread.currentThread().interrupt();
         } catch (IOException x) {
@@ -232,8 +230,7 @@ public abstract class XmlAcceptor<T extends XmlMachine> extends PrintWriter {
      *
      * @throws IOException    IO error.
      * @throws ScannerError   Syntax error.
-     * @throws ParseException Shit happens.
      */
-    public abstract void nextTagOrText() throws IOException, ScannerError, ParseException;
+    public abstract void nextTagOrText() throws IOException, ScannerError;
 
 }

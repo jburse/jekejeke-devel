@@ -6,7 +6,6 @@ import matula.util.format.*;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 /**
  * <p>This class provides an XSL style sheet checker.</p>
@@ -79,7 +78,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     public void check(AbstractDom node)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         XMLCheck xc = new XMLCheck();
         xc.setMask(AbstractDom.MASK_TEXT);
         xc.setSchema(meta);
@@ -101,7 +100,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNode(AbstractDom dn)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         if (dn instanceof DomText) {
             /* */
         } else {
@@ -142,7 +141,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltNodes(AbstractDom[] nodes)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
             xsltNode(node);
@@ -162,7 +161,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltForEach(DomElement de)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         String attr = de.getAttr(XSLSheet.ATTR_FOREACH_SELECT);
         XPathReadCheck xr = new XPathReadCheck();
         xr.setMeta(meta);
@@ -200,9 +199,6 @@ public final class XSLSheetCheck extends XSLSheet {
         } catch (ValidationError x) {
             simulation = backsimulation;
             throw x;
-        } catch (ParseException x) {
-            simulation = backsimulation;
-            throw x;
         }
     }
 
@@ -215,7 +211,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltWithData(DomElement de)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         String bean = de.getAttr(XSLSheet.ATTR_WITHDATA_BEAN);
 
         XSDResolver resolver = schema.getResolver();
@@ -306,10 +302,9 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
-     * @throws ParseException  Parse error.
      */
     private void xsltIf(DomElement de)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         String test = de.getAttr(XSLSheet.ATTR_IF_TEST);
         attrTest(test);
         AbstractDom[] nodes = de.snapshotNodes();
@@ -325,7 +320,7 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws ValidationError Check error.
      */
     private void xsltChoose(DomElement de)
-            throws IOException, ScannerError, ValidationError, ParseException {
+            throws IOException, ScannerError, ValidationError {
         AbstractDom[] nodes = de.snapshotNodes();
         for (int i = 0; i < nodes.length; i++) {
             AbstractDom node = nodes[i];
@@ -358,10 +353,9 @@ public final class XSLSheetCheck extends XSLSheet {
      * @throws IOException     IO error.
      * @throws ScannerError    Syntax error.
      * @throws ValidationError Check error.
-     * @throws ParseException  Parse error.
      */
     private void xsltStyleSheet(DomElement de)
-            throws ValidationError, ScannerError, ParseException, IOException {
+            throws ValidationError, ScannerError, IOException {
         AbstractDom[] nodes = de.snapshotNodes();
         xsltNodes(nodes);
     }

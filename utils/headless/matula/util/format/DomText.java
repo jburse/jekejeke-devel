@@ -69,7 +69,7 @@ public final class DomText extends AbstractDom {
      * @return The boolean data.
      */
     public boolean getDataBoolean() {
-        return ((Boolean)data).booleanValue();
+        return ((Boolean) data).booleanValue();
     }
 
     /**

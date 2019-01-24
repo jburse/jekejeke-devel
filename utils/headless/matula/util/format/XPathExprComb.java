@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 
@@ -152,8 +153,9 @@ public final class XPathExprComb extends XPathExpr {
      *
      * @param e The dom element.
      * @return True if the the xpath expression is satisfied, otherwise false.
+     * @throws ScannerError Syntax error.
      */
-    public boolean evalElement(DomElement e) throws ParseException {
+    public boolean evalElement(DomElement e) throws ScannerError {
         switch (combination) {
             case EXPR_COMB_PRED:
                 for (MapEntry<String, XPathExpr> entry = exprs.getFirstEntry();

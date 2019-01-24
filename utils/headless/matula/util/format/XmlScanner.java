@@ -87,8 +87,8 @@ public class XmlScanner<T extends XmlMachine> {
                     return;
             }
         } catch (ScannerError sc) {
-            sc.setPos(OpenOpts.getOffset(reader) + sc.getPos());
-            throw sc;
+            throw new ScannerError(sc.getMessage(),
+                    OpenOpts.getOffset(reader) + sc.getErrorOffset());
         }
     }
 

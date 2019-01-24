@@ -2,12 +2,10 @@ package matula.util.format;
 
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
-import matula.util.system.ForeignXml;
 import matula.util.transform.XmlWriter;
 import matula.util.wire.JsonWriter;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 
 /**

@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 import java.text.ParseException;
 
 /**
@@ -92,8 +94,9 @@ public final class XActionFuncUpdate extends XActionFunc {
      * @param r The target dom element.
      * @param e The source dom element.
      * @return The result dom element.
+     * @throws ScannerError Syntax error.
      */
-    DomElement updateElement(DomElement r, DomElement e) throws ParseException {
+    DomElement updateElement(DomElement r, DomElement e) throws ScannerError {
         switch (update) {
             case UPDATE_NAME:
                 r.setName(keyorname);

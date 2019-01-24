@@ -2,6 +2,7 @@ package matula.util.format;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
 
 import java.text.ParseException;
 
@@ -168,8 +169,9 @@ public final class XActionFuncAggr extends XActionFunc {
      * @param r The target dom element.
      * @param e The source dom element.
      * @return The result dom element.
+     * @throws ScannerError Syntax error.
      */
-    DomElement updateElement(DomElement r, DomElement e) throws ParseException {
+    DomElement updateElement(DomElement r, DomElement e) throws ScannerError {
         for (MapEntry<String, XActionFunc> entry = funcs.getFirstEntry();
              entry != null; entry = funcs.successor(entry)) {
             r = entry.value.updateElement(r, e);

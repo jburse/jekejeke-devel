@@ -4,7 +4,6 @@ import matula.util.format.DomElement;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 /**
  * <p>This class provides a path interface.</p>
@@ -84,7 +83,7 @@ public interface InterfacePath {
      * @throws IOException  Shit happens.
      * @throws ScannerError Shit happens.
      */
-    boolean next() throws IOException, ScannerError, ParseException;
+    boolean next() throws IOException, ScannerError;
 
     /**
      * <p>Close the cursor.</p>

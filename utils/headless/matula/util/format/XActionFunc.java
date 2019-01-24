@@ -1,5 +1,7 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
+
 import java.text.ParseException;
 
 /**
@@ -41,8 +43,9 @@ public abstract class XActionFunc {
      * @param r The target dom element.
      * @param e The source dom element.
      * @return The result dom element.
+     * @throws ScannerError Syntax error.
      */
-    abstract DomElement updateElement(DomElement r, DomElement e) throws ParseException;
+    abstract DomElement updateElement(DomElement r, DomElement e) throws ScannerError;
 
     /**
      * <p>Convert this xaction function to a string.</p>

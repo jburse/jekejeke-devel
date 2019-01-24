@@ -5,7 +5,6 @@ import matula.util.regex.ScannerError;
 import matula.util.system.AbstractRuntime;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 /**
  * <p>This class provides an xml schema resolver.</p>
@@ -56,7 +55,7 @@ public final class XSDResolver {
      * @throws ValidationError Check errror.
      */
     public XSDSchema resolveSchema(Class<?> _class)
-            throws ValidationError, IOException, ScannerError, ParseException {
+            throws ValidationError, IOException, ScannerError {
         XSDSchema schema = resolved.get(_class);
         if (schema == null) {
             InterfacePath pu = newPath(_class);

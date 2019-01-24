@@ -3,8 +3,6 @@ package matula.util.format;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.regex.ScannerError;
-import matula.util.system.ForeignXml;
-import matula.util.system.OpenOpts;
 import matula.util.transform.XmlReader;
 import matula.util.wire.JsonReader;
 

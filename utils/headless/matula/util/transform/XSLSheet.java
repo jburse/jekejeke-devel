@@ -1,8 +1,8 @@
 package matula.util.transform;
 
 import matula.util.format.AbstractDom;
-import matula.util.format.DomElement;
 import matula.util.format.AbstractReader;
+import matula.util.format.DomElement;
 import matula.util.format.XPathOrder;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
@@ -11,7 +11,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 
 /**
  * <p>This class provides an XSL style sheet base.</p>
@@ -101,8 +100,6 @@ public abstract class XSLSheet {
         } catch (ValidationError x) {
             throw new RuntimeException("meta failed", x);
         } catch (IOException x) {
-            throw new RuntimeException("meta failed", x);
-        } catch (ParseException x) {
             throw new RuntimeException("meta failed", x);
         }
     }

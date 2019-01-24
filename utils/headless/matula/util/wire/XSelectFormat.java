@@ -224,16 +224,21 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
      *
      * @param d The dom element.
      * @return The value.
+     * @throws ScannerError Syntax error.
      */
-    public Object evalElement(DomElement d) throws ParseException {
+    public Object evalElement(DomElement d) throws ScannerError {
         switch (format) {
             case SELE_FORM_DATE:
             case SELE_FORM_DATE_PAT:
             case SELE_FORM_DATE_PAT_LOC:
                 String help = (String) date.evalElement(d);
                 SimpleDateFormat sdf2 = new SimpleDateFormat(PATTERN_DATE);
-                Date dateres = sdf2.parse(help);
-
+                Date dateres;
+                try {
+                    dateres = sdf2.parse(help);
+                } catch (ParseException x) {
+                    throw new ScannerError("illegal date", -1);
+                }
                 String patternres = (String) pattern.evalElement(d);
                 help = (String) locale.evalElement(d);
                 Locale loc = stringToLocale(help);
@@ -244,8 +249,11 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
             case SELE_FORM_DATETIME_PAT_LOC:
                 help = (String) date.evalElement(d);
                 sdf2 = new SimpleDateFormat(PATTERN_DATETIME);
-                dateres = sdf2.parse(help);
-
+                try {
+                    dateres = sdf2.parse(help);
+                } catch (ParseException x) {
+                    throw new ScannerError("illegal datetime", -1);
+                }
                 patternres = (String) pattern.evalElement(d);
                 help = (String) locale.evalElement(d);
                 loc = stringToLocale(help);

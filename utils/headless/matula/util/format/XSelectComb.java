@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 import matula.util.transform.XSDDeclAttr;
@@ -143,8 +144,9 @@ public final class XSelectComb extends XSelect {
      *
      * @param d The dom element.
      * @return The value.
+     * @throws ScannerError Syntax error.
      */
-    public Object evalElement(DomElement d) throws ParseException {
+    public Object evalElement(DomElement d) throws ScannerError {
         if (combination <= SELE_COMB_NEG) {
             Long val = (Long) first.evalElement(d);
             switch (combination) {

@@ -244,7 +244,7 @@ public final class Interpreter implements Comparator<Object> {
     public String unparseTerm(AbstractTerm t, Object opt)
             throws InterpreterMessage, InterpreterException {
         StringWriter sw = new StringWriter();
-        unparseTerm(sw, t, opt);
+        unparseTerm(sw, t, opt, true);
         return sw.toString();
     }
 
@@ -259,11 +259,28 @@ public final class Interpreter implements Comparator<Object> {
      */
     public void unparseTerm(Writer wr, AbstractTerm t, Object opt)
             throws InterpreterMessage, InterpreterException {
+        unparseTerm(wr, t, opt, false);
+    }
+
+    /**
+     * <p>Unparse the given term to a string.</p>
+     *
+     * @param wr  The writer.
+     * @param t   The term.
+     * @param opt The write options.
+     * @param qf  The quoted flag.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    private void unparseTerm(Writer wr, AbstractTerm t, Object opt, boolean qf)
+            throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         try {
             PrologWriter pw;
             if (!opt.equals(Knowledgebase.OP_NIL)) {
                 WriteOpts wo = new WriteOpts(en);
+                if (qf)
+                    wo.flags |= PrologWriter.FLAG_QUOT;
                 wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
                         AbstractTerm.getDisplay(opt), en);
                 if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
@@ -276,6 +293,8 @@ public final class Interpreter implements Comparator<Object> {
             } else {
                 pw = Foyer.createWriter(Foyer.IO_TERM);
                 pw.setWriteUtil(en);
+                if (qf)
+                    pw.flags |= PrologWriter.FLAG_QUOT;
             }
             pw.setEngineRaw(en);
             pw.setWriter(wr);
@@ -307,7 +326,7 @@ public final class Interpreter implements Comparator<Object> {
             throws InterpreterMessage, InterpreterException {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         cr.setLineNumber(1);
-        return parseTerm(cr, opt, -1);
+        return parseTerm(cr, opt, true);
     }
 
     /**
@@ -322,7 +341,7 @@ public final class Interpreter implements Comparator<Object> {
      */
     public AbstractTerm parseTerm(Reader lr, Object opt)
             throws InterpreterException, InterpreterMessage {
-        return parseTerm(lr, opt, '.');
+        return parseTerm(lr, opt, false);
     }
 
     /**
@@ -331,12 +350,12 @@ public final class Interpreter implements Comparator<Object> {
      *
      * @param lr  The line number reader.
      * @param opt The read options.
-     * @param ch  The character template.
+     * @param te  The end of line flag.
      * @return The term or null.
      * @throws InterpreterException Shit happens.
      * @throws InterpreterMessage   Shit happens.
      */
-    private AbstractTerm parseTerm(Reader lr, Object opt, int ch)
+    private AbstractTerm parseTerm(Reader lr, Object opt, boolean te)
             throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) getEngine();
         Object val;
@@ -344,6 +363,8 @@ public final class Interpreter implements Comparator<Object> {
         try {
             if (!opt.equals(Knowledgebase.OP_NIL)) {
                 ReadOpts ro = new ReadOpts(en);
+                if (te)
+                    ro.flags |= PrologReader.FLAG_TEOF;
                 ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
                 if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
                     rd = en.store.foyer.createReader(Foyer.IO_TERM);
@@ -354,17 +375,19 @@ public final class Interpreter implements Comparator<Object> {
             } else {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
                 rd.setReadUtil(en);
+                if (te)
+                    rd.flags |= PrologReader.FLAG_TEOF;
             }
             rd.getScanner().setReader(lr);
             rd.setEngineRaw(en);
             try {
                 try {
-                    val = rd.parseHeadStatement(ch);
+                    val = rd.parseHeadStatement();
                 } catch (ScannerError y) {
-                    String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                    rd.parseTailError(ch, y);
+                    String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
+                    rd.parseTailError(y);
                     EngineMessage x = new EngineMessage(
-                            EngineMessage.syntaxError(y.getError()));
+                            EngineMessage.syntaxError(y.getMessage()));
                     PositionKey pos = (OpenOpts.getPath(lr) != null ?
                             new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
                     throw new EngineException(x,

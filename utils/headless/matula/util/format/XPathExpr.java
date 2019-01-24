@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 
@@ -44,8 +45,9 @@ public abstract class XPathExpr {
      *
      * @param e The dom element.
      * @return True if the the xpath expression is satisfied, otherwise false.
+     * @throws ScannerError Syntax error.
      */
-    public abstract boolean evalElement(DomElement e) throws ParseException;
+    public abstract boolean evalElement(DomElement e) throws ScannerError;
 
     /**
      * <p>Check an xpath expression.</p>

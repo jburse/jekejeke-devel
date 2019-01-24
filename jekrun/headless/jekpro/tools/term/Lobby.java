@@ -183,7 +183,7 @@ public final class Lobby {
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
         } catch (ScannerError x) {
-            throw new InterpreterMessage(InterpreterMessage.syntaxError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.syntaxError(x.getMessage()));
         }
     }
 

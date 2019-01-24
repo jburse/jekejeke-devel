@@ -3,6 +3,7 @@ package matula.util.format;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 import matula.util.transform.XSDDeclElem;
@@ -108,8 +109,9 @@ public final class ChoicePoint {
      *
      * @param e The dom element.
      * @return The dom element, or null.
+     * @throws ScannerError Syntax error.
      */
-    DomElement findFirst(DomElement e) throws ParseException {
+    DomElement findFirst(DomElement e) throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 AbstractDom[] nodes = e.snapshotNodes();
@@ -141,8 +143,9 @@ public final class ChoicePoint {
      * <p>Advance the cursor.</p>
      *
      * @return The dom element, or null.
+     * @throws ScannerError Syntax error.
      */
-    DomElement findNext() throws ParseException {
+    DomElement findNext() throws ScannerError {
         switch (choice) {
             case ChoicePoint.CHOICEPOINT_CHILDREN:
                 AbstractDom[] nodes = children;

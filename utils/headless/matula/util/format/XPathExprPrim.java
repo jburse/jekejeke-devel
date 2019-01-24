@@ -1,5 +1,6 @@
 package matula.util.format;
 
+import matula.util.regex.ScannerError;
 import matula.util.transform.ValidationError;
 import matula.util.transform.XPathCheck;
 import matula.util.transform.XSDDeclAttr;
@@ -113,9 +114,10 @@ public final class XPathExprPrim extends XPathExpr {
      *
      * @param e The dom element.
      * @return True if the the xpath expression is satisfied, otherwise false.
+     * @throws ScannerError Syntax error.
      */
     public boolean evalElement(DomElement e)
-            throws IllegalArgumentException, ParseException {
+            throws IllegalArgumentException, ScannerError {
         if (primitive <= EXPR_PRIM_NAME) {
             String name = ((XSelectPrim) first).getAttr();
             switch (primitive) {
