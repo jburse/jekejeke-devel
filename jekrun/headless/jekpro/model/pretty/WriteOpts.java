@@ -58,7 +58,6 @@ public final class WriteOpts {
     final static String OP_PRIORITY = "priority";
     private final static String OP_FORMAT = "format";
     private final static String OP_CONTEXT = "context";
-    private final static String OP_OPERAND = "operand";
     final static String OP_PART = "part";
 
     private final static String OP_ANNO_MKDT = "makedot";
@@ -68,15 +67,8 @@ public final class WriteOpts {
     private final static String OP_FORMAT_NEWL = "newline";
     private final static String OP_FORMAT_NAVI = "navigation";
 
-    private final static String OP_OPERAND_NONE = "none";
-    private final static String OP_OPERAND_LEFT = "left";
-    private final static String OP_OPERAND_LEFTASSOC = "leftassoc";
-
     private final static String OP_PART_CMMT = "comment";
     private final static String OP_PART_STMT = "statement";
-
-    public static final int QUOTED_TRUE = 1;
-    public static final int QUOTED_JSON = 2;
 
     public static final int FORMAT_NEWL = 1;
     public static final int FORMAT_NAVI = 2;
@@ -223,11 +215,6 @@ public final class WriteOpts {
                     }
                     offset = spezToOffset(obj);
                     shift = spezToShift(obj);
-                } else if (en.skel instanceof SkelCompound &&
-                        ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(OP_OPERAND)) {
-                    int k = atomToOperand(((SkelCompound) en.skel).args[0], en.display, en);
-                    spez = ((spez & ~PrologWriter.SPEZ_OPLE) & ~PrologWriter.SPEZ_LEFT) | k;
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
@@ -480,36 +467,6 @@ public final class WriteOpts {
             return PART_STMT;
         } else if (fun.equals(Foyer.OP_TRUE)) {
             return PART_CMMT + PART_STMT;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
-    }
-
-    /**
-     * <p>Convert an atom to an operand.</p>
-     * <p>The following values are accepted:</p>
-     * <ul>
-     * <li><b>none:</b> 0.</li>
-     * <li><b>left:</b> SPEZ_OPLE + SPEZ_LEFT.</li>
-     * <li><b>right:</b> SPEZ_OPLE.</li>
-     * </ul>
-     *
-     * @param m  The bool skel.
-     * @param d  The bool display.
-     * @param en The engine.
-     * @return The bool value.
-     * @throws EngineMessage Shit happens.
-     */
-    private static int atomToOperand(Object m, Display d, Engine en)
-            throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(m, d);
-        if (fun.equals(OP_OPERAND_NONE)) {
-            return 0;
-        } else if (fun.equals(OP_OPERAND_LEFT)) {
-            return PrologWriter.SPEZ_OPLE;
-        } else if (fun.equals(OP_OPERAND_LEFTASSOC)) {
-            return PrologWriter.SPEZ_OPLE + PrologWriter.SPEZ_LEFT;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);

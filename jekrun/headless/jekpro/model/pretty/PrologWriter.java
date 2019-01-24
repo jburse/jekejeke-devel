@@ -80,7 +80,7 @@ public class PrologWriter {
     public final static int FLAG_CMMT = 0x00000400;
     public final static int FLAG_STMT = 0x00000800;
 
-    public final static int FLAG_DFLT = FLAG_CMMT | FLAG_STMT | FLAG_QUOT | FLAG_NUMV;
+    public final static int FLAG_DFLT = FLAG_CMMT | FLAG_STMT;
 
     public final static int SPEZ_OPLE = 0x00000001;
     public final static int SPEZ_LEFT = 0x00000002;
@@ -1324,8 +1324,7 @@ public class PrologWriter {
                 return;
             }
         }
-        if ((flags & FLAG_NUMV) != 0 && sc.args.length == 1 &&
-                sc.sym.fun.equals(OP_DOLLAR_STR)) {
+        if (sc.args.length == 1 && sc.sym.fun.equals(OP_DOLLAR_STR)) {
             Object help = sc.args[0];
             if (engine != null) {
                 engine.skel = help;

@@ -197,14 +197,14 @@ sys_show_name_or_eq(X is T, M) :- !,
    sys_quoted_var(X, Q),
    ttywrite(Q),
    ttywrite(' is '),
-   ttywrite_term(T, [priority(699),variable_names(M)]).
+   ttywrite_term(T, [priority(699),quoted(true),variable_names(M)]).
 sys_show_name_or_eq(X = T, M) :- !,
    sys_quoted_var(X, Q),
    ttywrite(Q),
    ttywrite(' = '),
-   ttywrite_term(T, [priority(699),variable_names(M)]).
+   ttywrite_term(T, [priority(699),quoted(true),variable_names(M)]).
 sys_show_name_or_eq(T, M) :-
-   ttywrite_term(T, [context(0),variable_names(M)]).
+   ttywrite_term(T, [context(0),quoted(true),variable_names(M)]).
 
 /**
  * sys_quoted_var(V, Q):

@@ -73,6 +73,8 @@ public class PrologReader {
     /* only read opts */
     public final static int FLAG_SING = 0x00000100;
     public final static int FLAG_NEWV = 0x00000200;
+    public final static int FLAG_TEOF = 0x00000400;
+    public final static int FLAG_TNON = 0x00000800;
 
     public final static String ERROR_SYNTAX_PARENTHESIS_BALANCE = "parenthesis_balance";
     public final static String ERROR_SYNTAX_CANNOT_START_TERM = "cannot_start_term"; /* SWI */
@@ -83,7 +85,7 @@ public class PrologReader {
     private final static String noTermChs = ".)}]";
     final static String noOperChs = ",|";
 
-    private int flags;
+    public int flags;
     int lev = Operator.LEVEL_HIGH;
     private Engine engine;
     protected AbstractSource source;
@@ -297,7 +299,6 @@ public class PrologReader {
             String fun = readQuoted();
             if (util != ReadOpts.UTIL_ATOM) {
                 skel = makeQuotedByUtil(fun, util);
-                nextToken();
                 current = 0;
             } else {
                 skel = fun;
@@ -313,7 +314,6 @@ public class PrologReader {
                 if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
                             st.getTokenOffset());
-                nextToken();
                 current = 0;
             }
         } else if (OP_LBRACE.equals(st.getData())) {
@@ -326,7 +326,6 @@ public class PrologReader {
                 if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
                             st.getTokenOffset());
-                nextToken();
                 current = 0;
             }
         } else if (OP_LBRACKET.equals(st.getData())) {
@@ -339,7 +338,6 @@ public class PrologReader {
                 if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
                             st.getTokenOffset());
-                nextToken();
                 current = 0;
             }
         } else {
@@ -347,12 +345,10 @@ public class PrologReader {
             if (CodeType.ISO_CODETYPE.isUpper(h) ||
                     CodeType.ISO_CODETYPE.isUnderscore(h)) {
                 skel = atomToVariable(st.getData());
-                nextToken();
                 current = 0;
             } else if (Character.isDigit(h) ||
                     (Foyer.OP_SUB.equals(st.getData()) && Character.isDigit(st.lookAhead()))) {
                 skel = readNumber();
-                nextToken();
                 current = 0;
             } else if (CodeType.ISO_CODETYPE.isValid(h)) {
                 skel = st.getData();
@@ -363,10 +359,9 @@ public class PrologReader {
             }
         }
         if (current == -1) {
-            PositionKey pos = getAtomPos();
             if (st.lookAhead() == OP_LPAREN.codePointAt(0)) {
+                skel = makePos((String) skel, getAtomPos());
                 nextToken();
-                skel = makePos((String) skel, pos);
                 current = 0;
                 nextToken();
                 if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
@@ -376,9 +371,8 @@ public class PrologReader {
                         if (op.getLevel() - op.getLeft() < current)
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
-                        SkelAtom help = makePos(op.getAliasOrName(), pos);
+                        SkelAtom help = makePos(op.getAliasOrName(), getAtomPos());
                         skel = new SkelCompound(help, skel);
-                        nextToken();
                         current = op.getLevel();
                     } else {
                         throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,
@@ -389,9 +383,14 @@ public class PrologReader {
                     if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
                         throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
                                 st.getTokenOffset());
-                    nextToken();
                 }
+                if (level == -1)
+                    return skel;
+                nextToken();
             } else {
+                PositionKey pos = getAtomPos();
+                if (level == -1)
+                    return makePos((String) skel, pos);
                 nextToken();
                 /* ISO 6.3.3.1 */
                 if (isTemplate(-1) || isTemplates(noTermChs) || isTemplates(noOperChs)) {
@@ -414,6 +413,10 @@ public class PrologReader {
                     }
                 }
             }
+        } else {
+            if (level == -1)
+                return skel;
+            nextToken();
         }
         for (; ; ) {
             if (isTemplate(-1) || isTemplates(noTermChs))
@@ -1017,14 +1020,13 @@ public class PrologReader {
      * <p>The line will not be completed.</p>
      * <p>Returns end_of_file upon eof.</p>
      *
-     * @param ch The character template.
      * @return The term skeleton.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      * @throws IOException     I/O Error.
      */
-    public final Object parseHeadStatement(int ch)
+    public final Object parseHeadStatement()
             throws ScannerError, EngineMessage, EngineException, IOException {
         firstToken();
         Reader lr = st.getReader();
@@ -1033,10 +1035,10 @@ public class PrologReader {
         setAnon(null);
         setGensym(0);
         if (st.getHint() == 0 && OP_EOF.equals(st.getData()))
-            return (ch != -1 ? makeEof() : null);
+            return makeEof();
         if ((getFlags() & PrologWriter.FLAG_MKDT) != 0)
-            return parsePeriodIncomplete(ch);
-        return parseIncomplete(ch);
+            return parsePeriodIncomplete();
+        return parseIncomplete();
     }
 
     /**
@@ -1046,26 +1048,30 @@ public class PrologReader {
      * @return The end of file.
      */
     protected Object makeEof() {
-        return new SkelAtom(AbstractSource.OP_END_OF_FILE);
+        if ((flags & FLAG_TEOF) != 0)
+            return null;
+        return makePos(AbstractSource.OP_END_OF_FILE, getAtomPos());
     }
 
     /**
      * <p>Convenience method that will read a term.</p>
      * <p>Complete the line.</p>
      *
-     * @param ch The character template.
-     * @param e  The current error or null.
+     * @param e The current error or null.
      * @throws IOException I/O Error.
      */
-    public final void parseTailError(int ch, ScannerError e)
+    public final void parseTailError(ScannerError e)
             throws IOException {
-        if (e != null && (ScannerToken.OP_SYNTAX_END_OF_LINE_IN_STRING.equals(e.getError()) ||
-                ScannerToken.OP_SYNTAX_END_OF_LINE_IN_CHARACTER.equals(e.getError()) ||
-                ScannerToken.OP_SYNTAX_CONT_ESC_IN_CHARACTER.equals(e.getError())))
+        if (e != null && (ScannerToken.OP_SYNTAX_END_OF_LINE_IN_STRING.equals(e.getMessage()) ||
+                ScannerToken.OP_SYNTAX_END_OF_LINE_IN_CHARACTER.equals(e.getMessage()) ||
+                ScannerToken.OP_SYNTAX_CONT_ESC_IN_CHARACTER.equals(e.getMessage())))
             return;
         try {
-            while (!isTemplate(ch) && (st.getHint() != 0 || !OP_EOF.equals(st.getData())))
-                nextToken();
+            if ((flags & FLAG_TNON) == 0) {
+                int ch = ((flags & FLAG_TEOF) == 0 ? '.' : -1);
+                while (!isTemplate(ch) && (st.getHint() != 0 || !OP_EOF.equals(st.getData())))
+                    nextToken();
+            }
             while (st.getHint() != 0 || (!OP_EOLN.equals(st.getData()) && !OP_EOF.equals(st.getData())))
                 nextTerminalSuffix();
             if (st.getHint() != 0 || !OP_EOLN.equals(st.getData()))
@@ -1079,16 +1085,15 @@ public class PrologReader {
      * <p>Parse a term and wrap with period.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param ch The character template.
      * @return term wrapped in a period.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected Object parsePeriodIncomplete(int ch)
+    protected Object parsePeriodIncomplete()
             throws ScannerError, EngineMessage, EngineException, IOException {
-        Object jack = parseIncomplete(ch);
+        Object jack = parseIncomplete();
         SkelAtom help = new SkelAtom(Foyer.OP_CONS);
         return new SkelCompound(help, jack);
     }
@@ -1100,19 +1105,21 @@ public class PrologReader {
      * be additionally called to sync the parser with alleged end of
      * the clause.</p>
      *
-     * @param ch The character template.
      * @return The term.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public final Object parseIncomplete(int ch)
+    final Object parseIncomplete()
             throws ScannerError, EngineException, EngineMessage, IOException {
-        Object jack = read(lev);
-        if (!isTemplate(ch))
-            throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
-                    st.getTokenOffset());
-        parseTailError(ch, null);
+        Object jack = read((flags & FLAG_TNON) == 0 ? lev : -1);
+        if ((flags & FLAG_TNON) == 0) {
+            int ch = ((flags & FLAG_TEOF) == 0 ? '.' : -1);
+            if (!isTemplate(ch))
+                throw new ScannerError(AbstractCompiler.ERROR_SYNTAX_END_OF_CLAUSE_EXPECTED,
+                        st.getTokenOffset());
+        }
+        parseTailError(null);
         return jack;
     }
 

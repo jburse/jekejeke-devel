@@ -297,9 +297,9 @@ public final class ForeignAtom {
                 num = toNumber(s, 0, MASK_NUMB_SIGN);
             }
         } catch (ScannerError y) {
-            String line = ScannerError.linePosition(s, y.getPos());
+            String line = ScannerError.linePosition(s, y.getErrorOffset());
             InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.syntaxError(y.getMessage()));
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));

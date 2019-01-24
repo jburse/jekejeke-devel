@@ -298,11 +298,11 @@ public final class SpecialSession extends AbstractSpecial {
                 Object val;
                 try {
                     try {
-                        val = rd.parseHeadStatement('.');
+                        val = rd.parseHeadStatement();
                     } catch (ScannerError y) {
-                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getPos());
-                        rd.parseTailError('.', y);
-                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getError()));
+                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
+                        rd.parseTailError(y);
+                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
                         pos = (OpenOpts.getPath(lr) != null ?
                                 new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
                         throw new EngineException(x,
@@ -653,12 +653,12 @@ public final class SpecialSession extends AbstractSpecial {
         Object val;
         try {
             try {
-                val = rd.parseHeadStatement('.');
+                val = rd.parseHeadStatement();
             } catch (ScannerError y) {
-                String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
-                rd.parseTailError('.', y);
+                String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getErrorOffset());
+                rd.parseTailError(y);
                 EngineMessage x = new EngineMessage(
-                        EngineMessage.syntaxError(y.getError()));
+                        EngineMessage.syntaxError(y.getMessage()));
                 throw new EngineException(x,
                         EngineException.fetchPos(
                                 EngineException.fetchStack(en), line, en));

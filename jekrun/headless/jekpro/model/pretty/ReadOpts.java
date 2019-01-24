@@ -1,7 +1,6 @@
 package jekpro.model.pretty;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -55,6 +54,7 @@ public final class ReadOpts {
     private final static String OP_SINGLETONS = "singletons";
     final static String OP_SOURCE = "source";
     final static String OP_ANNOTATION = "annotation";
+    final static String OP_TERMINATOR = "terminator";
 
     public final static String OP_VALUE_ERROR = "error";
     private final static String OP_VALUE_CODES = "codes";
@@ -69,6 +69,13 @@ public final class ReadOpts {
     public final static int UTIL_VARIABLE = 3;
     public final static int UTIL_ATOM = 4;
     public final static int UTIL_STRING = 5;
+
+    private final static String OP_TERMINATOR_PERIOD = "period";
+    private final static String OP_TERMINATOR_END_OF_FILE = "end_of_file";
+    private final static String OP_TERMINATOR_NONE = "none";
+
+    private final static int TERMINATOR_EOF = 0x00000001;
+    private final static int TERMINATOR_NONE = 0x00000002;
 
     public int flags;
     public int lev = Operator.LEVEL_HIGH;
@@ -165,6 +172,20 @@ public final class ReadOpts {
                     flags |= PrologWriter.FLAG_HINT;
                 } else {
                     flags &= ~PrologWriter.FLAG_HINT;
+                }
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_TERMINATOR)) {
+                int terminator = atomToTerminator(((SkelCompound) en.skel).args[0], en.display);
+                if ((terminator & TERMINATOR_EOF) != 0) {
+                    flags |= PrologReader.FLAG_TEOF;
+                } else {
+                    flags &= ~PrologReader.FLAG_TEOF;
+                }
+                if ((terminator & TERMINATOR_NONE) != 0) {
+                    flags |= PrologReader.FLAG_TNON;
+                } else {
+                    flags &= ~PrologReader.FLAG_TNON;
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -278,6 +299,10 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
+                /* do nothing */
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_TERMINATOR)) {
                 /* do nothing */
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -415,20 +440,22 @@ public final class ReadOpts {
     }
 
     /**
-     * <p>Convert an atom to a write part.</p>
+     * <p>Convert an atom to a terminator.</p>
      *
      * @param m The annotation mode skel.
      * @param d The annotation mode display.
      * @return The annotation mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToReadPart(Object m, Display d)
+    private static int atomToTerminator(Object m, Display d)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
-        if (fun.equals(AbstractFlag.OP_FALSE)) {
+        if (fun.equals(OP_TERMINATOR_PERIOD)) {
             return 0;
-        } else if (fun.equals(Foyer.OP_TRUE)) {
-            return WriteOpts.PART_STMT;
+        } else if (fun.equals(OP_TERMINATOR_END_OF_FILE)) {
+            return TERMINATOR_EOF;
+        } else if (fun.equals(OP_TERMINATOR_NONE)) {
+            return TERMINATOR_NONE;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
