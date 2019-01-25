@@ -131,16 +131,19 @@ unload_file(Path) :-
 [Path|_] :-
    var(Path),
    throw(error(instantiation_error,_)).
-[+Path|Y] :- !,
+[+ Path|Y] :- !,
    consult(Path),
    call(Y).
-[-Path|Y] :- !,
+[- Path|Y] :- !,
    unload_file(Path),
    call(Y).
 [Path|Y] :-
    ensure_loaded(Path),
    call(Y).
 :- set_predicate_property('.'/2, visible(public)).
+:- set_predicate_property('.'/2, (meta_predicate[0|0])).
+:- sys_context_property(here, C),
+   set_predicate_property('.'/2, sys_meta_predicate(C)).
 :- set_predicate_property('.'/2, sys_notrace).
 
 [].

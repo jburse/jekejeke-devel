@@ -6,7 +6,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.pretty.WriteOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -150,9 +149,9 @@ public final class Flag extends AbstractFlag {
             case FLAG_MAX_ARITY:
                 return Integer.valueOf(Integer.MAX_VALUE);
             case FLAG_DOUBLE_QUOTES:
-                return ReadOpts.utilToAtom(en.store.foyer.getUtilDouble());
+                return ReadOpts.utilToAtom(en.visor.peekStack().utildouble);
             case FLAG_BACK_QUOTES:
-                return ReadOpts.utilToAtom(en.store.foyer.getUtilBack());
+                return ReadOpts.utilToAtom(en.visor.peekStack().utilback);
             case FLAG_MAX_CODE:
                 return Integer.valueOf(Character.MAX_CODE_POINT);
             case FLAG_SYS_BREAK_LEVEL:
@@ -167,7 +166,7 @@ public final class Flag extends AbstractFlag {
             case FLAG_SYS_ACT_STATUS:
                 return new SkelAtom(en.store.foyer.getError());
             case FLAG_SINGLE_QUOTES:
-                return ReadOpts.utilToAtom(en.store.foyer.getUtilSingle());
+                return ReadOpts.utilToAtom(en.visor.peekStack().utilsingle);
             case FLAG_SYS_VARIABLES:
                 return Integer.valueOf(en.serno);
             case FLAG_SYS_CHOICES:
@@ -273,10 +272,10 @@ public final class Flag extends AbstractFlag {
                     /* can't modify */
                     return false;
                 case FLAG_DOUBLE_QUOTES:
-                    en.store.foyer.setUtilDouble(ReadOpts.atomToUtil(m, d));
+                    en.visor.peekStack().utildouble = (byte) ReadOpts.atomToUtil(m, d);
                     return true;
                 case FLAG_BACK_QUOTES:
-                    en.store.foyer.setUtilBack(ReadOpts.atomToUtil(m, d));
+                    en.visor.peekStack().utilback = (byte) ReadOpts.atomToUtil(m, d);
                     return true;
                 case FLAG_MAX_CODE:
                     /* can't modify */
@@ -299,7 +298,7 @@ public final class Flag extends AbstractFlag {
                     /* can't modify */
                     return false;
                 case FLAG_SINGLE_QUOTES:
-                    en.store.foyer.setUtilSingle(ReadOpts.atomToUtil(m, d));
+                    en.visor.peekStack().utilsingle = (byte) ReadOpts.atomToUtil(m, d);
                     return true;
                 case FLAG_SYS_VARIABLES:
                     /* can't modify */

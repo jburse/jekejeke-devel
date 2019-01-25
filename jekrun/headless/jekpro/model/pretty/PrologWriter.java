@@ -280,21 +280,11 @@ public class PrologWriter {
      *
      * @param s The source.
      */
-    void setSource(AbstractSource s) {
+    public void setSource(AbstractSource s) {
         source = s;
-    }
-
-    /**
-     * <p>Set the util flags to the stor util flags.</p>
-     *
-     * @param en The engine.
-     */
-    public void setWriteUtil(Engine en) {
-        Foyer foyer = en.store.foyer;
-        utildouble = (byte) foyer.getUtilDouble();
-        utilback = (byte) foyer.getUtilBack();
-        utilsingle = (byte) foyer.getUtilSingle();
-        source = en.store.user;
+        utildouble = s.utildouble;
+        utilback = s.utilback;
+        utilsingle = s.utilsingle;
     }
 
     /***************************************************************/
@@ -1731,7 +1721,7 @@ public class PrologWriter {
             throws EngineMessage, EngineException {
         PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
         if (en != null) {
-            pw.setWriteUtil(en);
+            pw.setSource(en.visor.peekStack());
             pw.setEngineRaw(en);
         }
         pw.setFlags(flags);

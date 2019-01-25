@@ -101,11 +101,10 @@ public final class WriteOpts {
      * @param en The engine.
      */
     public WriteOpts(Engine en) {
-        Foyer foyer = en.store.foyer;
-        utildouble = (byte) foyer.getUtilDouble();
-        utilback = (byte) foyer.getUtilBack();
-        utilsingle = (byte) foyer.getUtilSingle();
-        source = en.store.user;
+        source = en.visor.peekStack();
+        utildouble = source.utildouble;
+        utilback = source.utilback;
+        utilsingle = source.utilsingle;
     }
 
     /**

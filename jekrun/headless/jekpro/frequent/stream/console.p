@@ -247,7 +247,7 @@ ttynl :-
 :- public ttywrite/1.
 ttywrite(Term) :-
    current_prolog_flag(sys_disp_output, Stream),
-   sys_write_term(Stream, Term, [quoted(false)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 /**
  * ttywriteq(E):
@@ -258,7 +258,7 @@ ttywrite(Term) :-
 :- public ttywriteq/1.
 ttywriteq(Term) :-
    current_prolog_flag(sys_disp_output, Stream),
-   sys_write_term(Stream, Term, []).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 
 /**
  * ttywrite_term(E, O):

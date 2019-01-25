@@ -94,11 +94,10 @@ public final class ReadOpts {
      * @param en The engine.
      */
     public ReadOpts(Engine en) {
-        Foyer foyer = en.store.foyer;
-        utildouble = (byte) foyer.getUtilDouble();
-        utilback = (byte) foyer.getUtilBack();
-        utilsingle = (byte) foyer.getUtilSingle();
         source = en.visor.peekStack();
+        utildouble = source.utildouble;
+        utilback = source.utilback;
+        utilsingle = source.utilsingle;
     }
 
     /**

@@ -262,6 +262,9 @@ public class LoadForce {
 
         int f = source.addDep(peek, AbstractSource.MASK_IMPT_PAIM);
         CachePredicate.notifyImportvers(source, f);
+        source.utilsingle = parent.utilsingle;
+        source.utildouble = parent.utildouble;
+        source.utilback = parent.utilback;
     }
 
     /**

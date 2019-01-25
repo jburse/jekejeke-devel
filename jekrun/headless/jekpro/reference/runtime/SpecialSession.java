@@ -294,7 +294,7 @@ public final class SpecialSession extends AbstractSpecial {
                         (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
                     flags |= PrologReader.FLAG_NEWV;
                 rd.setFlags(flags);
-                rd.setReadUtil(en);
+                rd.setSource(en.visor.peekStack());
                 Object val;
                 try {
                     try {
@@ -648,7 +648,7 @@ public final class SpecialSession extends AbstractSpecial {
         ConnectionReader cr = new ConnectionReader(new StringReader(action));
         cr.setLineNumber(1);
         rd.getScanner().setReader(cr);
-        rd.setReadUtil(en);
+        rd.setSource(en.visor.peekStack());
         rd.setEngineRaw(en);
         Object val;
         try {
@@ -688,7 +688,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static SkelAtom sysQuoteVar(String fun, Engine en) {
         PrologWriter pw = new PrologWriter();
-        pw.setWriteUtil(en);
+        pw.setSource(en.visor.peekStack());
         return new SkelAtom(pw.variableQuoted(fun));
     }
 

@@ -2,10 +2,7 @@ package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
-import jekpro.model.builtin.Branch;
-import jekpro.model.builtin.InformationIndicator;
+import jekpro.model.builtin.*;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
@@ -75,7 +72,7 @@ public final class SpecialLoad extends AbstractSpecial {
     public static final int MASK_SHOW_NRBD = 0x00000002;
 
     public final static String OP_MODULE = "module";
-
+    public final static String OP_SET_PROLOG_FLAG = "set_prolog_flag";
     /**
      * <p>Create a load special.</p>
      *
@@ -146,7 +143,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en);
+                pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
@@ -173,7 +170,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en);
+                pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
@@ -197,7 +194,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 wr = (Writer) obj;
 
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en);
+                pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
                 pw.setSpez(PrologWriter.SPEZ_META);
@@ -342,8 +339,10 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause, en);
+            pw.setSource(source);
             pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
+            pw.setSource(en.visor.peekStack());
             pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL| PrologWriter.FLAG_MKDT);
         }
     }
@@ -421,6 +420,34 @@ public final class SpecialLoad extends AbstractSpecial {
                     SpecialLoad.flushWriter(pw.getWriter());
                 }
             }
+        }
+
+        if(src.utildouble != ReadOpts.UTIL_CODES) {
+            Object val = ReadOpts.utilToAtom(src.utildouble);
+            Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
+                    new SkelAtom(Flag.OP_FLAG_DOUBLE_QUOTES), val);
+            decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+            pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
+            SpecialLoad.flushWriter(pw.getWriter());
+        }
+        if (src.utilback != ReadOpts.UTIL_ERROR) {
+            Object val = ReadOpts.utilToAtom(src.utilback);
+            Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
+                    new SkelAtom(Flag.OP_FLAG_BACK_QUOTES), val);
+            decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+            pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
+            SpecialLoad.flushWriter(pw.getWriter());
+        }
+        if (src.utilsingle != ReadOpts.UTIL_ATOM) {
+            Object val = ReadOpts.utilToAtom(src.utilsingle);
+            Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
+                    new SkelAtom(Flag.OP_FLAG_SINGLE_QUOTES), val);
+            decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+            pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
+            SpecialLoad.flushWriter(pw.getWriter());
         }
     }
 

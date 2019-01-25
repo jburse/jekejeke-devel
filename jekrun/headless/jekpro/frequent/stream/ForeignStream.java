@@ -128,7 +128,7 @@ public final class ForeignStream {
                     x.getError()));
         } catch (ScannerError x) {
             throw new InterpreterMessage(InterpreterMessage.syntaxError(
-                    x.getError()));
+                    x.getMessage()));
         }
     }
 
@@ -170,7 +170,7 @@ public final class ForeignStream {
                     x.getError()));
         } catch (ScannerError x) {
             throw new InterpreterMessage(InterpreterMessage.syntaxError(
-                    x.getError()));
+                    x.getMessage()));
         }
     }
 

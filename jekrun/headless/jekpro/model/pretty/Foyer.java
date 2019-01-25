@@ -101,9 +101,6 @@ public abstract class Foyer extends Enforced {
     public Locale locale = Locale.getDefault();
     public Object proxy;
 
-    private byte utildouble = ReadOpts.UTIL_CODES;
-    private byte utilback = ReadOpts.UTIL_ERROR;
-    private byte utilsingle = ReadOpts.UTIL_ATOM;
     public long timeout = 30000; /* half minute */
     public Random random = new Random();
     private int flags;
@@ -194,64 +191,6 @@ public abstract class Foyer extends Enforced {
         synchronized (this) {
             hole.add(val);
         }
-    }
-
-    /************************************************************/
-    /* Quotes                                                   */
-    /************************************************************/
-
-    /**
-     * <p>Retrieve the double quotes utilization.</p>
-     *
-     * @return The utilization.
-     */
-    public int getUtilDouble() {
-        return utildouble;
-    }
-
-    /**
-     * <p>Set the double quotes utilization.</p>
-     *
-     * @param u The utilization.
-     */
-    public void setUtilDouble(int u) {
-        utildouble = (byte) u;
-    }
-
-    /**
-     * <p>Retrieve the back quotes utilization.</p>
-     *
-     * @return The utilization.
-     */
-    public int getUtilBack() {
-        return utilback;
-    }
-
-    /**
-     * <p>Set the back quotes utilization.</p>
-     *
-     * @param u The utilization.
-     */
-    public void setUtilBack(int u) {
-        utilback = (byte) u;
-    }
-
-    /**
-     * <p>Retrieve the single quotes utilization.</p>
-     *
-     * @return The utilization.
-     */
-    public int getUtilSingle() {
-        return utilsingle;
-    }
-
-    /**
-     * <p>Set the single quotes utilization.</p>
-     *
-     * @param u The utilization.
-     */
-    public void setUtilSingle(int u) {
-        utilsingle = (byte) u;
     }
 
     /**************************************************************/

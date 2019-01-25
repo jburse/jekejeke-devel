@@ -63,9 +63,9 @@ public final class ForeignText {
         try {
             spec = comp.createSpecimen(pat);
         } catch (ScannerError y) {
-            String line = ScannerError.linePosition(pat, y.getPos());
+            String line = ScannerError.linePosition(pat, y.getErrorOffset());
             InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.syntaxError(y.getMessage()));
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));
@@ -94,9 +94,9 @@ public final class ForeignText {
                 try {
                     spec = comp.createSpecimen(pat, flag);
                 } catch (ScannerError y) {
-                    String line = ScannerError.linePosition(pat, y.getPos());
+                    String line = ScannerError.linePosition(pat, y.getErrorOffset());
                     InterpreterMessage x = new InterpreterMessage(
-                            InterpreterMessage.syntaxError(y.getError()));
+                            InterpreterMessage.syntaxError(y.getMessage()));
                     throw new InterpreterException(x,
                             InterpreterException.fetchPos(
                                     InterpreterException.fetchStack(inter), line, inter));
@@ -108,9 +108,9 @@ public final class ForeignText {
                 try {
                     spec = comp.parseSpecimen(cr, flag);
                 } catch (ScannerError y) {
-                    String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getPos());
+                    String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getErrorOffset());
                     InterpreterMessage x = new InterpreterMessage(
-                            InterpreterMessage.syntaxError(y.getError()));
+                            InterpreterMessage.syntaxError(y.getMessage()));
                     throw new InterpreterException(x,
                             InterpreterException.fetchPos(
                                     InterpreterException.fetchStack(inter), line, inter));

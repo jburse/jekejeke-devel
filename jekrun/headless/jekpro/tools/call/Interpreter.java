@@ -292,7 +292,7 @@ public final class Interpreter implements Comparator<Object> {
                 wo.setWriteOpts(pw);
             } else {
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en);
+                pw.setSource(en.visor.peekStack());
                 if (qf)
                     pw.flags |= PrologWriter.FLAG_QUOT;
             }
@@ -374,7 +374,7 @@ public final class Interpreter implements Comparator<Object> {
                 ro.setReadOpts(rd);
             } else {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                rd.setReadUtil(en);
+                rd.setSource(en.visor.peekStack());
                 if (te)
                     rd.flags |= PrologReader.FLAG_TEOF;
             }

@@ -1,17 +1,21 @@
 /**
  * Terms can be written to text streams or read from text streams
- * depending on the current operator definitions. It is possible to
- * switch off using the current operator definitions. Further during
- * writing we might want to put atoms and variables back into quotes
- * when necessary. It is possible to switch on quoting of atoms and
- * variables. Finally terms of the form ‘$VAR’(&lt;number&gt;) are usually
- * recognized and written out as &lt;var&gt;. It is also possible to switch
- * off this variable numbering:
+ * depending on the current operator definitions. It is possible
+ * to switch off operator usage by the write option ignore_ops/1.
+ * Further during writing variables and atoms are put into quotes
+ * when necessary. It is possible to switch on quoting by the
+ * write option quoted/1.
+ *
+ * Finally terms of the form ‘$VAR’(<number>) are usually recognized
+ * and written out as <var>. It is possible to switch on the variable
+ * numbering by the write option numbervars/1. The Prolog system also
+ * supports '$STR'(<atom>) terms to represent strings and can read or
+ * write them as quoted strings.
  *
  * Table 13: Predefined Write Predicates
  * Predicate	numbervars	quoted	ignore_ops
  * write	Yes	No	No
- * writeq	No	Yes	No
+ * writeq	Yes	Yes	No
  * write_canonical	No	Yes	Yes
  *
  * The spacing is determined by the context type option. The context type
@@ -28,10 +32,8 @@
  * If the format option is newline then the spacing is enhanced by new
  * lines and further spaces so that the output matches the Prolog coding
  * guidelines as published in [9]. Further the priority option determines
- * whether parentheses are set around operator expressions. Finally the
- * operand option determines whether parentheses are set around single
- * standing operators and some pathological left associative cases
- * already mentioned in the ISO standard.
+ * whether parentheses are needed around an operator expressions depending
+ * on the level of the operator.
  *
  * When double quotes or back quotes are set to ‘variable’ and quote is
  * true, then variable names are automatically set into the corresponding
@@ -90,16 +92,16 @@
 :- public write/1.
 write(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [quoted(false)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 % write(+AliasOrStream, +Term)
 :- public write/2.
 write(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [quoted(false)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 write(Stream, Term) :-
-   sys_write_term(Stream, Term, [quoted(false)]).
+   sys_write_term(Stream, Term, [numbervars(true)]).
 
 /**
  * writeq(E): [ISO 8.14.2]
@@ -112,16 +114,16 @@ write(Stream, Term) :-
 :- public writeq/1.
 writeq(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, []).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 
 % writeq(+AliasOrStream, +Term)
 :- public writeq/2.
 writeq(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, []).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 writeq(Stream, Term) :-
-   sys_write_term(Stream, Term, []).
+   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
 
 /**
  * write_canonical(E): [ISO 8.14.2]
@@ -135,16 +137,16 @@ writeq(Stream, Term) :-
 :- public write_canonical/1.
 write_canonical(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [numbervars(false),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
 
 % write_canonical(+AliasOrStream, +Term)
 :- public write_canonical/2.
 write_canonical(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [numbervars(false),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
 write_canonical(Stream, Term) :-
-   sys_write_term(Stream, Term, [numbervars(false),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
 
 /**
  * write_term(E, O): [ISO 8.14.2]

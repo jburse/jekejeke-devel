@@ -120,8 +120,11 @@ public class PrologReader {
      *
      * @param s The source.
      */
-    void setSource(AbstractSource s) {
+    public void setSource(AbstractSource s) {
         source = s;
+        utildouble = s.utildouble;
+        utilback = s.utilback;
+        utilsingle = s.utilsingle;
     }
 
     /**
@@ -177,7 +180,6 @@ public class PrologReader {
     public void setUtilSingle(int u) {
         utilsingle = (byte) u;
     }
-
 
     /**
      * <p>Set the flags.</p>
@@ -258,19 +260,6 @@ public class PrologReader {
      */
     public void setAnon(MapHashLink<String, SkelVar> f) {
         anon = f;
-    }
-
-    /**
-     * <p>Set the util flags to the stor util flags.</p>
-     *
-     * @param en The engime.
-     */
-    public void setReadUtil(Engine en) {
-        Foyer foyer = en.store.foyer;
-        utildouble = (byte) foyer.getUtilDouble();
-        utilback = (byte) foyer.getUtilBack();
-        utilsingle = (byte) foyer.getUtilSingle();
-        source = en.visor.peekStack();
     }
 
     /*******************************************************************/
