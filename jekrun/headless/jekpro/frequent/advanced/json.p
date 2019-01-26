@@ -1,4 +1,6 @@
 /**
+ * This module provides JSON object access.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -37,7 +39,7 @@
  * The predicate succeeds with the value V of the key K in the
  * JSON object S.
  */
-% get_json(+Term, +Dict, -Term)
+% get_json(+Term, +Json, -Term)
 :- public get_json/3.
 get_json(_, T, _) :-
    var(T),
@@ -70,3 +72,87 @@ get_json_enum(K:V, K, V).
 get_json_enum((K:V,_), K, V).
 get_json_enum((_,M), K, V) :-
    get_json_enum(M, K, V).
+
+/**
+ * put_json(S, T, R):
+ * The predicate succeeds in R with the replacement of the
+ * key value pairs of S in the JSON object T.
+ */
+% put_json(+Json, +Json, -Json)
+:- public put_json/3.
+put_json(_, T, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+put_json(S, {}, R) :- !,
+   put_json2(S, true, R).
+put_json(_, {M}, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+put_json(S, {M}, R) :- !,
+   put_json2(S, M, R).
+put_json(_, T, _) :-
+   throw(error(type_error(json,T),_)).
+
+% put_json2(+Json, +Map, -Json)
+:- private put_json2/3.
+put_json2(S, _, _) :-
+   var(S),
+   throw(error(instantiation_error,_)).
+put_json2({}, M, R) :- !,
+   make_json(M, R).
+put_json2({M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+put_json2({N}, M, R) :- !,
+   put_json_unord(N, M, O),
+   make_json(O, R).
+put_json2(S, _, _) :-
+   throw(error(type_error(json,S),_)).
+
+% put_json_unord(+Map, +Map, -Map)
+:- private put_json_unord/3.
+put_json_unord(N, true, N) :- !.
+put_json_unord(K:V, M, N) :-
+   put_json_unord(M, K, V, N).
+put_json_unord((K:V,M), N, O) :-
+   put_json_unord(N, K, V, H),
+   put_json_unord(M, H, O).
+
+/**
+ * put_json(K, S, V, T):
+ * The predicate succeeds in T with the replacement of the
+ * new value V for the key K by in the JSON object S.
+ */
+% put_json(+Term, +Json, +Term, -Json)
+:- public put_json/4.
+put_json(_, T, _, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+put_json(K, _, _, _) :-
+   \+ ground(K),
+   throw(error(instantiation_error,_)).
+put_json(K, {}, V, R) :- !,
+   make_json(K:V, R).
+put_json(_, {M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+put_json(K, {M}, V, R) :- !,
+   put_json_unord(M, K, V, N),
+   make_json(N, R).
+put_json(_, T, _, _) :-
+   throw(error(type_error(json,T),_)).
+
+% put_json_unord(+Map, +Term, +Term, -Map)
+% See experiment/maps:put/4
+:- private put_json_unord/4.
+put_json_unord(K:_, K, W, K:W) :- !.
+put_json_unord(K:V, J, W, (K:V,J:W)).
+put_json_unord((K:_,M), K, W, (K:W,M)) :- !.
+put_json_unord((X,M), K, V, (X,N)) :-
+   put_json_unord(M, K, V, N).
+
+% make_json(+Map, -Json)
+:- private make_json/2.
+make_json(true, R) :- !,
+   R = {}.
+make_json(M, {M}).

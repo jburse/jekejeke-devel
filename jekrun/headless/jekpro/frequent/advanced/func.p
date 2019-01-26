@@ -109,6 +109,7 @@
 
 :- module(func, []).
 :- use_module(library(advanced/dict)).
+:- use_module(library(advanced/json)).
 :- use_module(library(basic/lists)).
 
 :- public infix('.').
@@ -131,13 +132,52 @@ _ := _ :-
 
 /**
  * D.F:
- * This rest expansion replaces a dot notation D.F by a
- * side condition that calls ('.')/3.
+ * This rest expansion replaces a dot notation D.F by a side
+ * condition that calls ('.')/3 so that the field F is accessed.
  */
 % user:rest_expansion(+Rest, -Rest)
 :- public user:rest_expansion/2.
 :- multifile user:rest_expansion/2.
-user:rest_expansion(D.F, sys_cond(X,'.'(D, F, X))).
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.F),
+   var(F),
+   sys_replace_site(H, G, sys_get_obj_var(F,D,X)).
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.F),
+   atomic(F),
+   sys_replace_site(H, G, sys_get_obj_atomic(F,D,X)).
+
+/**
+ * D.get(K):
+ * D.put(K, V):
+ * D.put(E):
+ * This rest expansion replaces a dot notation D.F by a side
+ * condition that calls ('.')/3 so that the field operation
+ * is performed.
+ */
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.get(F)),
+   sys_replace_site(H, G, sys_get_obj(F,D,X)).
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.put(F,V)),
+   sys_replace_site(H, G, sys_put_obj(F,D,V,X)).
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.put(F)),
+   sys_replace_site(H, G, sys_put_obj(F,D,X)).
+
+/**
+ * D.F():
+ * D.F(X1, .., Xn):
+ * This rest expansion replaces a dot notation D.F respectively
+ * D.F(X1, .., Xn) by a side condition that calls ('.')/3 so
+ * that a definition of F/0 respectively F/n is invoked.
+ */
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.F()),
+   sys_replace_site(H, G, sys_call_obj(F,D,X)).
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.F),
+   sys_replace_site(H, G, sys_call_obj(F,D,X)).
 
 /**
  * D.F := X:
@@ -154,57 +194,74 @@ user:term_expansion(A := _, _) :-
 user:term_expansion(_.A := _, _) :-
    var(A),
    throw(error(instantiation_error,_)).
-user:term_expansion(D.F() := X, H) :- !,
-   func_def(D, F, X, H).
-user:term_expansion(D.F := X, H) :-
-   func_def(D, F, X, H).
+user:term_expansion(G, H) :-
+   sys_eq(G, D.F():=X), !,
+   make_def(D, F, X, J),
+   sys_replace_site(H, G, J).
+user:term_expansion(G, H) :-
+   sys_eq(G, D.F:=X),
+   compound(F), !,
+   make_def(D, F, X, J),
+   sys_replace_site(H, G, J).
+user:term_expansion(_.A := _, _) :-
+   throw(error(type_error(compound,A),_)).
 
-:- private func_def/4.
-func_def(D, F, X, H) :-
-   callable(F), !,
+% make_def(+Obj, +Term, +Term, -Term)
+:- private make_def/4.
+make_def(D, F, X, H) :-
    F =.. [G|L],
    append(L, [X], R),
    H =.. [G,D|R].
-func_def(_, A, _, _) :-
-   throw(error(type_error(callable,A),_)).
 
-/**
- * '.'(D, F, X):
- * The predicate succeeds whenever the field access, field operation
- * or arbitrary arity function F applied to the argument D succeeds
- * with a value X.
- */
-:- public '.'/3.
-'.'(D, F, X) :-
-   var(F), !,
-   get_dict(F, D, X).
-'.'(D, K, V) :-
-   atomic(K), !,
-   get_dict_ex(K, D, V).
-'.'(D, get(K), V) :- !,
-   get_dict(K, D, V).
-'.'(D, put(K,V), E) :- !,
-   put_dict(K, D, V, E).
-'.'(D, put(E), F) :- !,
-   put_dict(E, D, F).
-'.'(D, F(), X) :- !,
-   func_call(D, F, X).
-'.'(D, F, X) :-
-   func_call(D, F, X).
+/***********************************************************/
+/* Runtime Support                                         */
+/***********************************************************/
 
-:- private func_call/3.
-func_call(D, F, X) :-
+% sys_call_obj(+Term, +Obj, -Term)
+:- public sys_call_obj/3.
+sys_call_obj(F, D, X) :-
    is_dict(D, T), !,
-   F =.. [G|L],
-   append(L, [X], R),
-   H =.. [G,D|R],
+   make_def(D, F, X, H),
    T:H.
-func_call(T, _, _) :-
-   throw(error(type_error(dict,T),_)).
+sys_call_obj(F, D, X) :-
+   make_def(D, F, X, H), H.
 
-:- private get_dict_ex/3.
-get_dict_ex(F, D, X) :-
-   get_dict(F, D, Y), !,
+% sys_get_obj_var(+Term, +Obj, -Term)
+:- public sys_get_obj_var/3.
+sys_get_obj_var(F, D, X) :-
+   var(F), !,
+   sys_get_obj(F, D, X).
+sys_get_obj_var(F, D, X) :-
+   sys_get_obj_atomic(F, D, X).
+
+% sys_get_obj_atomic(+Term, +Obj, -Term)
+:- public sys_get_obj_atomic/3.
+sys_get_obj_atomic(F, D, X) :-
+   sys_get_obj(F, D, Y), !,
    X = Y.
-get_dict_ex(F, _, _) :-
+sys_get_obj_atomic(F, _, _) :-
    throw(error(existence_error(key,F),_)).
+
+% sys_get_obj(+Term, +Obj, -Term)
+:- public sys_get_obj/3.
+sys_get_obj(K, D, V) :-
+   is_dict(D), !,
+   get_dict(K, D, V).
+sys_get_obj(K, D, V) :-
+   get_json('$STR'(K), D, V).
+
+% sys_put_obj(+Term, +Obj, +Term, -Obj)
+:- public sys_put_obj/4.
+sys_put_obj(K, D, V, E) :-
+   is_dict(D), !,
+   put_dict(K, D, V, E).
+sys_put_obj(K, D, V, E) :-
+   put_json('$STR'(K), D, V, E).
+
+% sys_put_obj(+Obj, +Obj, -Obj)
+:- public sys_put_obj/3.
+sys_put_obj(E, D, F) :-
+   is_dict(D), !,
+   put_dict(E, D, F).
+sys_put_obj(E, D, F) :-
+   put_json(E, D, F).

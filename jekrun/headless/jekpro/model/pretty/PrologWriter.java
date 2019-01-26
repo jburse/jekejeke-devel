@@ -1057,14 +1057,12 @@ public class PrologWriter {
      * @throws EngineException Auto load problem.
      */
     protected void writeList(SkelCompound sc, Display ref,
-                             Object mod, SkelAtom nsa)
+                             Object mod, SkelAtom nsa,
+                             int indent, int backspez,
+                             int backoffset, int backshift)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
         Object[] decl = predicateToMeta(cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        append(PrologReader.OP_LBRACKET);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1088,22 +1086,31 @@ public class PrologWriter {
                     ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONS)) {
                 cp = offsetToPredicate(term, null, null);
                 decl = predicateToMeta(cp);
-                int backspez2 = spez;
-                int backoffset2 = offset;
-                int backshift2 = shift;
-                z = getArg(decl, backshift2, backspez2, cp);
+                backspez = spez;
+                backoffset = offset;
+                backshift = shift;
+                z = getArg(decl, backshift, backspez, cp);
                 spez = getSpez(z);
-                offset = getOffset(z, backoffset2);
+                offset = getOffset(z, backoffset);
                 shift = getShift(z);
-                append(',');
-                if ((backspez2 & SPEZ_META) != 0 &&
-                        (backspez & SPEZ_EVAL) == 0)
-                    append(' ');
+                if ((backspez & SPEZ_META) != 0 &&
+                    (backspez & SPEZ_EVAL) == 0 &&
+                     (flags & FLAG_NEWL) != 0) {
+                    append(',');
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                } else {
+                    append(',');
+                    if ((backspez & SPEZ_META) != 0 &&
+                            (backspez & SPEZ_EVAL) == 0)
+                        append(' ');
+                }
                 sc = (SkelCompound) term;
                 write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-                z = getArg(decl, backshift2 + 1, backspez2, cp);
+                z = getArg(decl, backshift + 1, backspez, cp);
                 spez = getSpez(z);
-                offset = getOffset(z, backoffset2);
+                offset = getOffset(z, backoffset);
                 shift = getShift(z);
             } else if (!(term instanceof SkelAtom) ||
                     !((SkelAtom) term).fun.equals(Foyer.OP_NIL)) {
@@ -1114,10 +1121,6 @@ public class PrologWriter {
                 break;
             }
         }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RBRACKET);
     }
 
     /**
@@ -1400,7 +1403,21 @@ public class PrologWriter {
                 }
             }
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
-                writeList(sc, ref, mod, nsa);
+                int backspez = spez;
+                int backoffset = offset;
+                int backshift = shift;
+                int indent = -1;
+                append(PrologReader.OP_LBRACKET);
+                if ((backspez & SPEZ_META) != 0 &&
+                    (backspez & SPEZ_EVAL) == 0 &&
+                    (flags & FLAG_NEWL) != 0) {
+                    indent = getTextOffset();
+                }
+                writeList(sc, ref, mod, nsa, indent, backspez, backoffset, backshift);
+                spez = backspez;
+                offset = backoffset;
+                shift = backshift;
+                append(PrologReader.OP_RBRACKET);
                 return;
             }
             if (sc.args.length == 2) {

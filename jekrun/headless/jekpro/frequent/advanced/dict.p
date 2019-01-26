@@ -189,12 +189,6 @@ make_map(K, V, M, R) :-
 make_and(true, X, X) :- !.
 make_and(M, X, (X,M)).
 
-% make_dict(+Map, +Term, -Dict)
-:- private make_dict/3.
-make_dict(true, T, R) :- !,
-   R = T{}.
-make_dict(M, T, T{M}).
-
 % map_to_list(+Map, -List)
 :- private map_to_list/2.
 map_to_list(M, _) :-
@@ -444,43 +438,6 @@ del_dict_ord((X,M), K, V, N, R) :-
    make_and(O, X, R).
 
 /**
- * put_dict(K, S, V, T):
- * The predicate succeeds in T with the replacement of the
- * new value V for the key K by in the tagged structure S.
- */
-% put_dict(+Term, +Dict, +Term, -Dict)
-:- public put_dict/4.
-put_dict(_, T, _, _) :-
-   var(T),
-   throw(error(instantiation_error,_)).
-put_dict(K, _, _, _) :-
-   \+ ground(K),
-   throw(error(instantiation_error,_)).
-put_dict(K, T{}, V, R) :- !,
-   make_dict(K:V, T, R).
-put_dict(_, _{M}, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
-put_dict(K, T{M}, V, R) :- !,
-   put_dict_ord(M, K, V, N),
-   make_dict(N, T, R).
-put_dict(_, T, _, _) :-
-   throw(error(type_error(dict,T),_)).
-
-% put_dict_ord(+Map, +Term, +Term, -Map)
-% See experiment/ordmaps:ord_put/3
-:- private put_dict_ord/4.
-put_dict_ord(K:V, J, W, (J:W,K:V)) :-
-   J @< K, !.
-put_dict_ord(K:_, K, W, K:W) :- !.
-put_dict_ord(K:V, J, W, (K:V,J:W)).
-put_dict_ord((K:V,M), J, W, (J:W,K:V,M)) :-
-   J @< K, !.
-put_dict_ord((K:_,M), K, W, (K:W,M)) :- !.
-put_dict_ord((X,M), K, V, (X,N)) :-
-   put_dict_ord(M, K, V, N).
-
-/**
  * put_dict(S, T, R):
  * The predicate succeeds in R with the replacement of the
  * key value pairs of S in the tagged structure T.
@@ -525,7 +482,7 @@ put_dict_ord((K:V,M), N, O) :-
    put_dict_ord(N, K, V, M, O).
 
 % put_dict_ord(+Map, +Term, +Term, +Map, -Map)
-% See experiment/ordmaps:ord_put/3
+% See experiment/ordmaps:ord_put/4
 :- private put_dict_ord/5.
 put_dict_ord(K:V, J, W, M, (J:W,N)) :-
    J @< K, !,
@@ -539,3 +496,46 @@ put_dict_ord((K:_,M), K, W, N, (K:W,O)) :- !,
    put_dict_ord(N, M, O).
 put_dict_ord((X,M), K, V, N, (X,O)) :-
    put_dict_ord(M, K, V, N, O).
+
+/**
+ * put_dict(K, S, V, T):
+ * The predicate succeeds in T with the replacement of the
+ * new value V for the key K by in the tagged structure S.
+ */
+% put_dict(+Term, +Dict, +Term, -Dict)
+:- public put_dict/4.
+put_dict(_, T, _, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+put_dict(K, _, _, _) :-
+   \+ ground(K),
+   throw(error(instantiation_error,_)).
+put_dict(K, T{}, V, R) :- !,
+   make_dict(K:V, T, R).
+put_dict(_, _{M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+put_dict(K, T{M}, V, R) :- !,
+   put_dict_ord(M, K, V, N),
+   make_dict(N, T, R).
+put_dict(_, T, _, _) :-
+   throw(error(type_error(dict,T),_)).
+
+% put_dict_ord(+Map, +Term, +Term, -Map)
+% See experiment/ordmaps:ord_put/4
+:- private put_dict_ord/4.
+put_dict_ord(K:V, J, W, (J:W,K:V)) :-
+   J @< K, !.
+put_dict_ord(K:_, K, W, K:W) :- !.
+put_dict_ord(K:V, J, W, (K:V,J:W)).
+put_dict_ord((K:V,M), J, W, (J:W,K:V,M)) :-
+   J @< K, !.
+put_dict_ord((K:_,M), K, W, (K:W,M)) :- !.
+put_dict_ord((X,M), K, V, (X,N)) :-
+   put_dict_ord(M, K, V, N).
+
+% make_dict(+Map, +Term, -Dict)
+:- private make_dict/3.
+make_dict(true, T, R) :- !,
+   R = T{}.
+make_dict(M, T, T{M}).

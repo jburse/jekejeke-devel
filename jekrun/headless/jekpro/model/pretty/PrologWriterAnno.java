@@ -415,33 +415,20 @@ public final class PrologWriterAnno extends PrologWriter {
      * @throws EngineException Auto load problem.
      */
     protected final void writeList(SkelCompound sc, Display ref,
-                                   Object mod, SkelAtom nsa)
+                                   Object mod, SkelAtom nsa,
+                                   int indent, int backspez,
+                                   int backoffset, int backshift)
             throws IOException, EngineMessage, EngineException {
         if ((flags & FLAG_FILL) == 0 && (flags & FLAG_NAVI) == 0) {
-            super.writeList(sc, ref, mod, nsa);
+            super.writeList(sc, ref, mod, nsa, indent, backspez, backoffset, backshift);
             return;
         }
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
         Object[] decl = predicateToMeta(cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        int indent = getTextOffset() + SPACES;
-        append(PrologReader.OP_LBRACKET);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
-        if ((flags & FLAG_FILL) != 0) {
-            SkelAtom sa = sc.sym;
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            if (hasEol(fillers != null ? fillers[0] : null)) {
-                writeFiller(ENDLINE, fillers[0]);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-        }
         write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
         z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -462,32 +449,44 @@ public final class PrologWriterAnno extends PrologWriter {
                 sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
                 decl = predicateToMeta(cp);
-                int backspez2 = spez;
-                int backoffset2 = offset;
-                int backshift2 = shift;
-                z = getArg(decl, backshift2, backspez2, cp);
+                backspez = spez;
+                backoffset = offset;
+                backshift = shift;
+                z = getArg(decl, backshift, backspez, cp);
                 spez = getSpez(z);
-                offset = getOffset(z, backoffset2);
+                offset = getOffset(z, backoffset);
                 shift = getShift(z);
-                append(',');
-                if ((flags & FLAG_FILL) != 0) {
-                    SkelAtom sa = sc.sym;
-                    String[][] fillers = (sa instanceof SkelAtomAnno ?
-                            ((SkelAtomAnno) sa).getFillers() : null);
-                    if (hasEol(fillers != null ? fillers[0] : null)) {
-                        writeFiller(ENDLINE, fillers[0]);
-                        for (int i = 0; i < indent; i++)
-                            append(' ');
-                    } else {
-                        if ((backspez2 & SPEZ_META) != 0 &&
-                                (backspez & SPEZ_EVAL) == 0)
-                            append(' ');
+                if ((backspez & SPEZ_META) != 0 &&
+                        (backspez & SPEZ_EVAL) == 0 &&
+                        (flags & FLAG_NEWL) != 0) {
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkBegin(cp, backoffset >= 0);
+                    append(',');
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkEnd(cp);
+                    if ((flags & FLAG_FILL) != 0) {
+                        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
+                                ((SkelAtomAnno) sc.sym).getFillers() : null);
+                        writeFiller(ENDLINE, (fillers != null ? fillers[1] : null));
+                        if (!hasEol(fillers != null ? fillers[1] : null))
+                            append(CodeType.LINE_EOL);
                     }
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                } else {
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkBegin(cp, backoffset >= 0);
+                    append(',');
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkEnd(cp);
+                    if ((backspez & SPEZ_META) != 0 &&
+                            (backspez & SPEZ_EVAL) == 0)
+                        append(' ');
                 }
                 write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-                z = getArg(decl, backshift2 + 1, backspez2, cp);
+                z = getArg(decl, backshift + 1, backspez, cp);
                 spez = getSpez(z);
-                offset = getOffset(z, backoffset2);
+                offset = getOffset(z, backoffset);
                 shift = getShift(z);
             } else if (!(term instanceof SkelAtom) ||
                     !((SkelAtom) term).fun.equals(Foyer.OP_NIL)) {
@@ -498,10 +497,6 @@ public final class PrologWriterAnno extends PrologWriter {
                 break;
             }
         }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RBRACKET);
     }
 
     /**
