@@ -228,10 +228,10 @@ public final class ReadOpts {
      */
     public void setReadOpts(PrologReader pr) {
         pr.setFlags(flags);
+        pr.setSource(source);
         pr.setUtilDouble(utildouble);
         pr.setUtilBack(utilback);
         pr.setUtilSingle(utilsingle);
-        pr.setSource(source);
         pr.setLevel(lev);
     }
 

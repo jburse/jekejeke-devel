@@ -470,7 +470,7 @@ put_dict2(_{M}, _, _, _) :-
 put_dict2(_{N}, T, M, R) :- !,
    put_dict_ord(N, M, O),
    make_dict(O, T, R).
-put_dict2(S, _, _) :-
+put_dict2(S, _, _, _) :-
    throw(error(type_error(dict,S),_)).
 
 % put_dict_ord(+Map, +Map, -Map)
