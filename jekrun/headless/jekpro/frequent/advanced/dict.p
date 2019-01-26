@@ -11,12 +11,12 @@
  * ?- point{y:2, x:1} = point{x:1, y:2}.
  * Yes
  *
- * The keys inside a Prolog dictionary are not restricted to any Prolog
- * term category. All that is required is that they are ground. With the
- * introduction of function expansion in the Jekejeke Prolog runtime
- * library, the Prolog dictionaries will be automatically pre-sorted
- * during consult. This assures that they are equal even if they
- * differ in their key order.
+ * The keys inside tagged structures are not restricted to any Prolog
+ * term category. All that is required is that they are ground. With
+ * the introduction of function expansion in the Jekejeke Prolog runtime
+ * library, the tagged structures will be automatically pre-sorted during
+ * consult. This assures that they are equal even if they differ in
+ * their key order.
  *
  * Example:
  * ?- P = point{x:1,y:2}, get_dict(y, P, Y).
@@ -25,11 +25,11 @@
  * Tag = point,
  * Y = 2
  *
- * The set of predicates for Prolog dicts is modelled after the
- * corresponding SWI-Prolog library. We have adopted most of the
- * instantiation checks and most of the type checks. What this library
- * does not provide is the dot notation and the corresponding facility to
- * define and invoke functions for Prolog dictionaries.
+ * The set of predicates for tagged structures is modelled after the
+ * corresponding SWI-Prolog library for Prolog dicts. We have adopted
+ * most of the instantiation checks and most of the type checks. The
+ * tagged structures can be also used in connection with the dot
+ * notation. This functionality is provided through the module "func".
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

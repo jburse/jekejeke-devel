@@ -1,5 +1,22 @@
 /**
- * This module provides JSON object access.
+ * This module provides JSON object access. Compared to tagged
+ * structures the JSON objects do not have a tag and their key
+ * value pairs are not automatically sorted. In addition, it is
+ * more common for JSON objects to use strings instead of atoms
+ * as keys. Further, except for the strings syntax, JSON objects
+ * do not require some new syntax.
+ *
+ * Examples:
+ * ?- set_prolog_flag(double_quotes, string).
+ * Yes
+ * ?- X = {"y":2,"x":1}.
+ * X = {"y":2,"x":1}
+ *
+ * The set of predicates for JSON objects is again modelled after
+ * the corresponding SWI-Prolog library for Prolog dicts. The predicates
+ * thus resembles our predicates for tagged structures. The JSON
+ * objects can be also used in connection with the dot notation.
+ * Again, this functionality is provided through the module "func".
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
