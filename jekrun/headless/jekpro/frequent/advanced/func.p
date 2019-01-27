@@ -1,44 +1,41 @@
 /**
- * This module provides functions on tagged structures without the
- * sins of SWI-Prolog 7. Like already with the tagged structures
- * itself, no new Prolog term category is introduced and we stay
- * complete in the data model of the ISO core standard. Further, the
- * translation is such that head side conditions are added to the
- * end of a Prolog clause.
+ * This module provides functions on tagged structures and JSON objects.
+ * Like already with the tagged structures itself, no new Prolog term
+ * category is introduced and we stay complete in the data model of the
+ * ISO core standard. Further, the translation is such that head side
+ * conditions are added to the end of a Prolog clause.
  *
  * Examples:
  * ?- P = point{x:1,y:2}, X = P.x, Y = P.y.
  * X = 1, Y = 2
- * ?- P = point{x:1,y:2}, V = P.K.
+ * ?- P = {"x":1,"y":2}, V = P.K.
  * V = 1, K = x ;
  * V = 2, K = y
  *
- * After importing the module a dot notation by the operator (.)/2 will
+ * After importing the module a dot notation by the operator ('.')/2 will
  * be available to the importing module. The operator can be used to
- * access tagged structure fields anywhere inside the head or the body
- * of a Prolog clause. The operator will be replaced by (.)/3 side
- * conditions through the function expansion framework and by
- * a rest expansion.
+ * access tagged structure and JSON object fields anywhere inside the head
+ * or the body of a Prolog clause. The operator will be replaced through
+ * the function expansion framework by a rest expansion.
  *
  * Examples:
- * ?- D = point{x:1,y:2}.dist().
+ * ?- D = {"x":1,"y":2}.dist().
  * D = 2.23606797749979
  * ?- D = point{x:1,y:2}.offset(3,4).dist().
  * D = 7.211102550927978
  *
- * The operator ('.')/2 can be also used to invoke arbitrary arity
- * functions. To disambiguate be-tween a field access and a zero argument
- * function invocation the module a unit notation by the operator (())/1.
- * Arbitrary arity function definitions can be done by the further
- * operator (:=)/2. Our translation is Pythonesk, the self is placed
- * in the first argument.
+ * The operator ('.')/2 can be also used to perform a couple of field
+ * operations. Among the field operations we find get(K), which will
+ * return the field value. For a non-existing field the field operation
+ * will not throw an exception and fail instead. Further field operations
+ * include put(D) and put(K,V) to set multiple respectively a single
+ * key values at once.
  *
- * Finally the operator ('.')/2 can be also used to perform a couple
- * of field operations. Among the field operations we find get(K), which
- * will return the field value. For a non-existing field the field
- * operation will not throw an exception and fail instead. Further
- * field operations include put(K,V) and put(D) to set a single
- * respectively multiple key values at once.
+ * Finally the operator ('.')/2 can be also used to invoke arbitrary arity
+ * functions. To disambiguate between a field access and a zero argument
+ * function invocation the module a unit notation by the operator (())/1.
+ * Arbitrary arity function definitions can be done by the further operator
+ * (:=)/2. Our translation is Pythonesk, the self is placed in the first argument.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -132,8 +129,8 @@ _ := _ :-
 
 /**
  * D.F:
- * This rest expansion replaces a dot notation D.F by a side
- * condition that calls ('.')/3 so that the field F is accessed.
+ * This rest expansion replaces a dot notation D.F where F is a
+ * variable or atomic by a side condition to access the field F.
  */
 % user:rest_expansion(+Rest, -Rest)
 :- public user:rest_expansion/2.
@@ -149,28 +146,28 @@ user:rest_expansion(G, sys_cond(X,H)) :-
 
 /**
  * D.get(K):
- * D.put(K, V):
  * D.put(E):
- * This rest expansion replaces a dot notation D.F by a side
- * condition that calls ('.')/3 so that the field operation
- * is performed.
+ * D.put(K, V):
+ * This rest expansion replaces a dot notation D.get(K), D.put(E)
+ * respectively D.put(K,V) by a side condition to perform a field
+ * operation get/3, put/3 respectively put/4.
  */
 user:rest_expansion(G, sys_cond(X,H)) :-
    sys_eq(G, D.get(F)),
    sys_replace_site(H, G, sys_get_obj(F,D,X)).
 user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.put(F,V)),
-   sys_replace_site(H, G, sys_put_obj(F,D,V,X)).
-user:rest_expansion(G, sys_cond(X,H)) :-
    sys_eq(G, D.put(F)),
    sys_replace_site(H, G, sys_put_obj(F,D,X)).
+user:rest_expansion(G, sys_cond(X,H)) :-
+   sys_eq(G, D.put(F,V)),
+   sys_replace_site(H, G, sys_put_obj(F,D,V,X)).
 
 /**
  * D.F():
  * D.F(X1, .., Xn):
  * This rest expansion replaces a dot notation D.F respectively
- * D.F(X1, .., Xn) by a side condition that calls ('.')/3 so
- * that a definition of F/0 respectively F/n is invoked.
+ * D.F(X1, .., Xn) by a side condition to invoke the definition
+ * of F/0 respectively F/n.
  */
 user:rest_expansion(G, sys_cond(X,H)) :-
    sys_eq(G, D.F()),
@@ -180,9 +177,11 @@ user:rest_expansion(G, sys_cond(X,H)) :-
    sys_replace_site(H, G, sys_call_obj(F,D,X)).
 
 /**
- * D.F := X:
- * This term expansion replaces a dot notation D.F by a
- * clause head with result X.
+ * D.F() := X:
+ * D.F(X1, .., Xn) := X:
+ * This term expansion replaces a dot notation D.F() respectively
+ * D.F(X1, .., Xn) by a clause head with result X making up a
+ * definition for F/0 respectively F/n.
  */
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
@@ -194,15 +193,11 @@ user:term_expansion(A := _, _) :-
 user:term_expansion(_.A := _, _) :-
    var(A),
    throw(error(instantiation_error,_)).
-user:term_expansion(G, H) :-
-   sys_eq(G, D.F():=X), !,
-   make_def(D, F, X, J),
-   sys_replace_site(H, G, J).
-user:term_expansion(G, H) :-
-   sys_eq(G, D.F:=X),
+user:term_expansion(D.F() := X, H) :- !,
+   make_def(D, F, X, H).
+user:term_expansion(D.F := X, H) :-
    compound(F), !,
-   make_def(D, F, X, J),
-   sys_replace_site(H, G, J).
+   make_def(D, F, X, H).
 user:term_expansion(_.A := _, _) :-
    throw(error(type_error(compound,A),_)).
 
