@@ -47,6 +47,7 @@ import java.io.Writer;
 final class Index {
     public final static String OP_VAR = "var";
     public final static String OP_SYS_EQ = "sys_eq";
+    public final static String OP_FUNCTOR = "functor";
 
     static final Object VALUE_GUARD = new Object();
 
@@ -105,13 +106,14 @@ final class Index {
             Object molec = ic.goal;
             if (molec instanceof SkelCompound &&
                     ((SkelCompound) molec).args.length == 1 &&
-                    ((SkelCompound) molec).sym.fun.equals(OP_VAR)) {
+                    ((SkelCompound) molec).sym.fun.equals(Index.OP_VAR)) {
                 SkelCompound sc = (SkelCompound) molec;
                 if (sc.args[0] == sv)
                     return VALUE_GUARD;
             } else if (molec instanceof SkelCompound &&
                     ((SkelCompound) molec).args.length == 2 &&
-                    isEq(((SkelCompound) molec).sym.fun)) {
+                    (((SkelCompound) molec).sym.fun.equals(Foyer.OP_EQUAL) ||
+                            ((SkelCompound) molec).sym.fun.equals(Index.OP_SYS_EQ))) {
                 SkelCompound sc = (SkelCompound) molec;
                 if (sc.args[0] == sv) {
                     Object term = sc.args[1];
@@ -128,27 +130,21 @@ final class Index {
                         return keyValue(term);
                     }
                 }
+            } else if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 3 &&
+                    ((SkelCompound) molec).sym.fun.equals(Index.OP_FUNCTOR)) {
+                SkelCompound sc = (SkelCompound) molec;
+                if (sc.args[0] == sv) {
+                    Object term = sc.args[1];
+                    if (!(term instanceof SkelVar) && !(term instanceof SkelCompound))
+                        return keyValue(term);
+                }
             } else {
                 return null;
             }
             list = ic.next;
         }
         return null;
-    }
-
-
-    /**
-     * <p>Check whether the functor is a unification.</p>
-     *
-     * @param fun The functor.
-     * @return True if the functor is a unification, otherwise false.
-     */
-    private static boolean isEq(String fun) {
-        if (fun.equals(Foyer.OP_EQUAL))
-            return true;
-        if (fun.equals(OP_SYS_EQ))
-            return true;
-        return false;
     }
 
     /**
