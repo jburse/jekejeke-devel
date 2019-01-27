@@ -91,6 +91,99 @@ get_json_enum((_,M), K, V) :-
    get_json_enum(M, K, V).
 
 /**
+ * select_json(S, T, R):
+ * The predicate succeeds when R unifies with the removal of the
+ * key value pairs of S from the JSON object T.
+ */
+% select_json(+Json, +Json, -Json)
+:- public select_json/3.
+select_json(_, T, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+select_json(S, {}, R) :- !,
+   select_json2(S, true, R).
+select_json(_, {M}, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+select_json(S, {M}, R) :- !,
+   select_json2(S, M, R).
+select_json(_, T, _) :-
+   throw(error(type_error(json,T),_)).
+
+% select_json2(+Json, +Map, -Json)
+:- private select_json2/3.
+select_json2(S, _, _) :-
+   var(S),
+   throw(error(instantiation_error,_)).
+select_json2({}, M, R) :- !,
+   make_json(M, R).
+select_json2({M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+select_json2({N}, M, R) :- !,
+   del_json_unord(N, M, O),
+   make_json(O, R).
+select_json2(S, _, _) :-
+   throw(error(type_error(json,S),_)).
+
+% del_json_unord(+Map, +Map, -Map)
+:- private del_json_unord/3.
+del_json_unord(_, true, _) :- !, fail.
+del_json_unord(K:V, M, N) :-
+   del_json_unord(M, K, V, N).
+del_json_unord((K:V,M), N, O) :-
+   del_json_unord(N, K, V, H),
+   del_json_unord(M, H, O).
+
+/**
+ * del_json(K, S, V, T):
+ * The predicate succeeds in T with the deletion of the key K
+ * from the tagged structure S and in V with the old value.
+ */
+% del_json(+Term, +Json, -Term, -Json)
+:- public del_json/4.
+del_json(_, T, _, _) :-
+   var(T),
+   throw(error(instantiation_error,_)).
+del_json(_, {}, _, _) :- !, fail.
+del_json(_, {M}, _, _) :-
+   var(M),
+   throw(error(instantiation_error,_)).
+del_json(K, {M}, V, R) :-
+   ground(K), !,
+   del_json_unord(M, K, V, N),
+   make_json(N, R).
+del_json(K, {M}, V, R) :- !,
+   del_json_enum(M, K, V, N),
+   make_json(N, R).
+del_json(_, T, _, _) :-
+   throw(error(type_error(json,T),_)).
+
+% del_json_unord(+Map, +Term, -Term, -Map)
+% See experiment/maps:remove/3
+:- private del_json_unord/4.
+del_json_unord(K:V, K, W, true) :- !,
+   W = V.
+del_json_unord((K:V,M), K, W, M) :- !,
+   W = V.
+del_json_unord((X,M), K, V, R) :-
+   del_json_unord(M, K, V, N),
+   make_and(N, X, R).
+
+% del_json_enum(+Map, +Term, -Term, -Map)
+:- private del_json_enum/4.
+del_json_enum(K:V, K, V, true).
+del_json_enum((K:V,M), K, V, M).
+del_json_enum((X,M), K, V, R) :-
+   del_json_enum(M, K, V, N),
+   make_and(N, X, R).
+
+% make_and(+Map, +Pair, -Map)
+:- private make_and/3.
+make_and(true, X, X) :- !.
+make_and(M, X, (X,M)).
+
+/**
  * put_json(S, T, R):
  * The predicate succeeds in R with the replacement of the
  * key value pairs of S in the JSON object T.
