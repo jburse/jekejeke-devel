@@ -95,6 +95,8 @@ final class Index {
 
     /**
      * <p>Check whether the variable has a guard.</p>
+     * <p>Variant of step 2.2.2 of algorithm I of:</p>
+     * <p>http://user.it.uu.se/~kostis/Papers/iclp07.pdf</p>
      *
      * @param list The body of the clause.
      * @param sv   The variable.
