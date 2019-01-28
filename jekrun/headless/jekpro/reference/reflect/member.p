@@ -70,6 +70,7 @@ sys_oneof2([X|Y], Z, [W|T], W) :-
 :- special(sys_eq/2, 'SpecialMember', 0).
 :- set_predicate_property(sys_eq/2, visible(public)).
 :- set_predicate_property(sys_eq/2, sys_notrace).
+:- set_predicate_property(sys_eq/2, sys_noexpand).
 
 /*************************************************************************/
 /* Univ Helper                                                           */

@@ -138,7 +138,7 @@ del_json_unord((K:V,M), N, O) :-
 /**
  * del_json(K, S, V, T):
  * The predicate succeeds in T with the deletion of the key K
- * from the tagged structure S and in V with the old value.
+ * from the JSON object S and in V with the old value.
  */
 % del_json(+Term, +Json, -Term, -Json)
 :- public del_json/4.

@@ -568,7 +568,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static MapHashLink<Object, NamedDistance> assocToMap(Object t, Display d,
-                                                                       Engine en)
+                                                                Engine en)
             throws EngineMessage {
         MapHashLink<Object, NamedDistance> print = null;
         en.skel = t;
@@ -596,7 +596,7 @@ public final class SpecialVars extends AbstractSpecial {
             en.skel = mc2[1];
             int distance = NamedDistance.derefCount(en);
             if (en.skel instanceof SkelVar) {
-                Object pair = TermAtomic.createMolec(en.skel,en.display);
+                Object pair = TermAtomic.createMolec(en.skel, en.display);
                 if (print == null)
                     print = new MapHashLink<Object, NamedDistance>();
                 String name = SpecialUniv.derefAndCastString(mc2[0], d2);

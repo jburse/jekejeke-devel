@@ -1,6 +1,7 @@
 package jekpro.reference.structure;
 
 import jekpro.model.molec.AbstractBind;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -14,7 +15,6 @@ import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
 import matula.util.regex.ScannerToken;
 
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -557,6 +557,41 @@ public final class ForeignAtom {
     }
 
     /****************************************************************/
+    /* Atom Block Conversion                                        */
+    /****************************************************************/
+
+    /**
+     * <p>Convert a block to an atom.</p>
+     *
+     * @param buf The block.
+     * @return The atom.
+     */
+    public static String sysBlockToAtom(byte[] buf) {
+        return new String(buf, 0);
+    }
+
+    /**
+     * <p>Convert an atom to a block.</p>
+     *
+     * @param str The atom.
+     * @return The block.
+     */
+    public static byte[] sysAtomToBlock(String str) throws InterpreterMessage {
+        int n = str.length();
+        byte[] buf = new byte[n];
+        for (int i = 0; i < n; i++) {
+            int ch = str.charAt(i);
+            if (0 <= ch && ch <= 255) {
+                buf[i] = (byte) ch;
+            } else {
+                throw new InterpreterMessage(InterpreterMessage.representationError(
+                        EngineMessage.OP_REPRESENTATION_OCTET));
+            }
+        }
+        return buf;
+    }
+
+    /****************************************************************/
     /* Term Conversion                                              */
     /****************************************************************/
 
@@ -592,55 +627,18 @@ public final class ForeignAtom {
         return inter.unparseTerm(t, opt);
     }
 
-    /****************************************************************/
-    /* Block Bytes Conversion                                       */
-    /****************************************************************/
-
     /**
-     * <p>Convert a list of bytes to a byte block.</p>
+     * <p>Some testing.</p>
      *
-     * @param obj The list of bytes.
-     * @return The byte block.
-     * @throws InterpreterMessage Validation error.
-     * @throws ClassCastException Validation error.
+     * @param args Not used.
      */
-    public static byte[] sysBytesToBlock(Object obj)
-            throws ClassCastException, InterpreterMessage {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        while (obj instanceof TermCompound &&
-                ((TermCompound) obj).getArity() == 2 &&
-                ((TermCompound) obj).getFunctor().equals(
-                        Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) obj).getArg(0);
-            Number num = InterpreterMessage.castInteger(temp);
-            int n = SpecialEval.castOctet(num);
-            buf.write(n);
-            obj = ((TermCompound) obj).getArg(1);
-        }
-        if (obj.equals(Knowledgebase.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(obj);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, obj));
-        }
-        return buf.toByteArray();
+    /*
+    public static void main(String[] args) throws EngineMessage {
+        String str="?\u00FF?"; // "?\uFFFD?"
+        byte[] buf=sysAtomToBlock(str);
+        str=sysBlockToAtom(buf);
+        System.out.println("str="+str);
     }
-
-    /**
-     * <p>Convert a byte block to a list of bytes.</p>
-     *
-     * @param inter The interpreter.
-     * @param data  The byte block.
-     * @return The list of bytes.
-     */
-    public static Object sysBlockToBytes(Interpreter inter, byte[] data) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Object res = lobby.ATOM_NIL;
-        for (int i = data.length - 1; i >= 0; i--)
-            res = new TermCompound(lobby.ATOM_CONS,
-                    Integer.valueOf(data[i] & 0xFF), res);
-        return res;
-    }
+    */
 
 }

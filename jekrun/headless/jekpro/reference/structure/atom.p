@@ -692,11 +692,17 @@ atom_number(A, N) :-
 :- public atom_block/2.
 atom_block(A, B) :-
    var(A), !,
-   block_bytes(B, L),
-   atom_codes(A, L).
+   sys_block_to_atom(B, A).
 atom_block(A, B) :-
-   atom_codes(A, L),
-   block_bytes(B, L).
+   sys_atom_to_block(A, B).
+
+:- private sys_block_to_atom/2.
+:- foreign(sys_block_to_atom/2, 'ForeignAtom',
+      sysBlockToAtom({byte})).
+
+:- private sys_atom_to_block/2.
+:- foreign(sys_atom_to_block/2, 'ForeignAtom',
+      sysAtomToBlock('String')).
 
 /****************************************************************/
 /* Term Conversion                                              */
@@ -729,29 +735,3 @@ term_atom(T, A, O) :-
 :- private sys_unparse_term/3.
 :- foreign(sys_unparse_term/3, 'ForeignAtom',
       sysUnparseTerm('Interpreter','AbstractTerm','Object')).
-
-/****************************************************************/
-/* Block Bytes Conversion                                       */
-/****************************************************************/
-
-/**
- * block_bytes(B, L):
- * The predicate succeeds when L is a list of bytes and
- * B is a corresponding byte block.
- */
-% block_bytes(+-Bytes, -+List)
-:- public block_bytes/2.
-block_bytes(Block, Bytes) :-
-   ground(Bytes), !,
-   sys_bytes_to_block(Bytes, Block).
-block_bytes(Block, Bytes) :-
-   sys_block_to_bytes(Block, Bytes).
-
-:- private sys_bytes_to_block/2.
-:- foreign(sys_bytes_to_block/2, 'ForeignAtom',
-      sysBytesToBlock('Object')).
-
-:- private sys_block_to_bytes/2.
-:- foreign(sys_block_to_bytes/2, 'ForeignAtom',
-      sysBlockToBytes('Interpreter',{byte})).
-

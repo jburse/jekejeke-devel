@@ -1,7 +1,6 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.tools.term.AbstractTerm;
