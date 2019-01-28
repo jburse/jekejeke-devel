@@ -43,7 +43,7 @@ public final class ForeignXml {
     public static final String PREFIX_HTTP = "http:";
 
     private static final MapHash<String, Integer> entity = new MapHash<String, Integer>();
-    private static final String[] entityrev = new String[255];
+    private static final String[] entityrev = new String[256];
 
     static {
         addEntity("quot", XmlMachine.CHAR_DOUBLE);
@@ -585,9 +585,14 @@ public final class ForeignXml {
      *
      * @param args Not used.
      */
-    /*
     public static void main(String[] args) {
-        String str = "This is an \"experiment\"";
+
+        String str="aÿbc";
+        System.out.println("str=" + str);
+        System.out.println("sysTextEscape(str)=" + sysTextEscape(str));
+
+        /*
+        str = "This is an \"experiment\"";
         System.out.println("str=" + str);
         System.out.println("sysTextEscape(str)=" + sysTextEscape(str));
 
@@ -608,7 +613,8 @@ public final class ForeignXml {
         str = "This is an &#34;experiment&#34;";
         System.out.println("str=" + str);
         System.out.println("sysTextUnescape(str)=" + sysTextUnescape(str));
+        */
     }
-    */
+
 
 }

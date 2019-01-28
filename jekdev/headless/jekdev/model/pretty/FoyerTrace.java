@@ -54,7 +54,7 @@ public abstract class FoyerTrace extends Foyer {
 
     public final static String OP_TRACE_GOAL = "trace_goal";
 
-    public final static int MASK_FOYER_NLOG = 0x00100000;
+    public final static int MASK_FOYER_NLOG = 0x00010000;
 
     public SkelAtom ATOM_TRACE_GOAL = new SkelAtom(FoyerTrace.OP_TRACE_GOAL);
 
