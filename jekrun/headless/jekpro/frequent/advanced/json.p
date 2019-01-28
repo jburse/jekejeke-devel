@@ -52,6 +52,17 @@
 :- module(json, []).
 
 /**
+ * is_json(X):
+ * The predicate succeeds when X is a JSON object.
+ */
+% is_json(+Term)
+:- public is_json/1.
+is_json(X) :-
+   var(X), !, fail.
+is_json({}) :- !.
+is_json({_}).
+
+/**
  * get_json(K, S, V):
  * The predicate succeeds with the value V of the key K in the
  * JSON object S.

@@ -243,7 +243,10 @@ sys_get_obj(K, D, V) :-
    is_dict(D), !,
    get_dict(K, D, V).
 sys_get_obj(K, D, V) :-
+   is_json(D), !,
    get_json('$STR'(K), D, V).
+sys_get_obj(K, D, V) :-
+   nth0(K, D, V).
 
 % sys_put_obj(+Term, +Obj, +Term, -Obj)
 :- public sys_put_obj/4.
@@ -251,7 +254,11 @@ sys_put_obj(K, D, V, E) :-
    is_dict(D), !,
    put_dict(K, D, V, E).
 sys_put_obj(K, D, V, E) :-
+   is_json(D), !,
    put_json('$STR'(K), D, V, E).
+sys_put_obj(K, D, V, E) :-
+   nth0(K, D, _, H),
+   nth0(K, E, V, H).
 
 % sys_put_obj(+Obj, +Obj, -Obj)
 :- public sys_put_obj/3.
