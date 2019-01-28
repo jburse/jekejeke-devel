@@ -1,22 +1,22 @@
 /**
- * This module provides functions on tagged structures and JSON objects.
- * Like already with the tagged structures itself, no new Prolog term
- * category is introduced and we stay complete in the data model of the
- * ISO core standard. Further, the translation is such that head side
- * conditions are added to the end of a Prolog clause.
+ * This module provides functions on tagged structures and otherwise
+ * Prolog terms. Like already with the tagged structures itself, no
+ * new Prolog term category is introduced and we stay complete in the
+ * data model of the ISO core standard. Further, the translation is such
+ * that head side conditions are added to the end of a Prolog clause
  *
  * Examples:
  * ?- P = point{x:1,y:2}, X = P.x, Y = P.y.
  * X = 1, Y = 2
- * ?- P = {"x":1,"y":2}, V = P.K.
- * V = 1, K = x ;
- * V = 2, K = y
+ * ?- P = [1,2], V = P.K.
+ * V = 1, K = 0 ;
+ * V = 2, K = 1
  *
- * After importing the module a dot notation by the operator ('.')/2 will
- * be available to the importing module. The operator can be used to
- * access tagged structure and JSON object fields anywhere inside the head
- * or the body of a Prolog clause. The operator will be replaced through
- * the function expansion framework by a rest expansion.
+ * After importing the module a dot notation by the operator ('.')/2
+ * will be available to the importing module. The operator can be used to
+ * access tagged structure fields, JSON object fields and JSON array
+ * elements anywhere inside the head or the body of a Prolog clause.
+ * The operator will be replaced through the function expansion framework.
  *
  * Examples:
  * ?- D = {"x":1,"y":2}.dist().
