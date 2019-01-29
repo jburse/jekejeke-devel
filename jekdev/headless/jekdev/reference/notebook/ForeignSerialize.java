@@ -72,9 +72,9 @@ public final class ForeignSerialize {
             AbstractReader.load(reader, node,
                     res.getMask(), res.getControl());
         } catch (ScannerError y) {
-            String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getPos());
+            String line = ScannerError.linePosition(OpenOpts.getLine(reader), y.getErrorOffset());
             InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.syntaxError(y.getMessage()));
             PositionKey pos = (OpenOpts.getPath(reader) != null ?
                     new PositionKey(OpenOpts.getPath(reader), OpenOpts.getLineNumber(reader)) : null);
             throw new InterpreterException(x,

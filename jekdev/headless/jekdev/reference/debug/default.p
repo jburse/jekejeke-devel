@@ -160,23 +160,23 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
 :- public debugging/0.
 debugging :-
    current_prolog_flag(debug, X),
-   ttywrite_term((:-set_prolog_flag(debug,X)), [quoted(true),context(0)]),
+   ttywrite_term((:-set_prolog_flag(debug,X)), [context(0)]),
    ttywrite('.'), ttynl, fail.
 debugging :-
    current_prolog_flag(sys_visible, X),
-   ttywrite_term((:-visible(X)), [quoted(true),context(0)]),
+   ttywrite_term((:-visible(X)), [context(0)]),
    ttywrite('.'), ttynl, fail.
 debugging :-
    current_prolog_flag(sys_leash, X),
-   ttywrite_term((:-leash(X)), [quoted(true),context(0)]),
+   ttywrite_term((:-leash(X)), [context(0)]),
    ttywrite('.'), ttynl, fail.
 debugging :-
    spying(X),
-   ttywrite_term((:-spy(X)), [quoted(true),context(0)]),
+   ttywrite_term((:-spy(X)), [context(0)]),
    ttywrite('.'), ttynl, fail.
 debugging :-
    breaking(X, Y),
-   ttywrite_term((:-break(X,Y)), [quoted(true),context(0)]),
+   ttywrite_term((:-break(X,Y)), [context(0)]),
    ttywrite('.'), ttynl, fail.
 debugging.
 :- set_predicate_property(debugging/0, sys_notrace).
@@ -223,7 +223,8 @@ break(P, L) :-
    absolute_file_name(P, Q),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_store, Store),
-   set_store_property(Store, sys_break(Q,L)).
+   set_store_property(Store, sys_break(Q,L)),
+   change_store(Store).
 :- set_predicate_property(break/2, sys_notrace).
 
 /**
@@ -236,7 +237,8 @@ nobreak(P, L) :-
    absolute_file_name(P, Q),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_store, Store),
-   reset_store_property(Store, sys_break(Q,L)).
+   reset_store_property(Store, sys_break(Q,L)),
+   change_store(Store).
 :- set_predicate_property(nobreak/2, sys_notrace).
 
 /**

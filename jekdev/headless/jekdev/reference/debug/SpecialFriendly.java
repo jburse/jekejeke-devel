@@ -114,8 +114,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en.store);
-                pw.setSource(en.store.user);
+                pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setWriter(wr);
                 SpecialFriendly.intermediatePredicate(pw, pick, source, 0, en);
@@ -140,8 +139,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = Foyer.createWriter(Foyer.IO_TERM);
-                pw.setWriteUtil(en.store);
-                pw.setSource(en.store.user);
+                pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setWriter(wr);
                 SpecialFriendly.intermediatePredicate(pw, pick, source, MASK_FRIEND_DEBUG, en);
@@ -177,12 +175,14 @@ public final class SpecialFriendly extends AbstractSpecial {
             if (source != sa.scope)
                 continue;
             Object t = PreClause.intermediateToClause(clause, en);
-            pw.setFlags(PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
+            pw.setSource(source);
+            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setOffset(-1);
             Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
                     SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
-            pw.setFlags(PrologWriter.FLAG_QUOT);
+            pw.setSource(en.visor.peekStack());
+            pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL & ~PrologWriter.FLAG_MKDT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setOffset(0);
             intermediateClause(pw, t, clause, ref, flags);

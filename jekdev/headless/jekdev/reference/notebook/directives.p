@@ -136,7 +136,6 @@ user:term_expansion(V, _) :-
 user:term_expansion(S, T) :-
    S = '.'(T), !,
    sys_get_variable_names(N),
-   ttywrite_term(S, [quoted(true),context(-1),
-                       variable_names(N),annotation((makedot|filler))]), ttyflush_output.
+   ttywrite_term(S, [context(-1),quoted(true),variable_names(N),annotation((makedot|filler))]), ttyflush_output.
 user:term_expansion((?- G), unit) :-
    sys_show_all(G).

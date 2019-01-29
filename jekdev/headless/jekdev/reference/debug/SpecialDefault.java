@@ -269,10 +269,8 @@ public final class SpecialDefault extends AbstractSpecial {
             wr.write(PrologWriter.align(Integer.toString(depth), 3, false));
             wr.write(" ");
             PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
-            pw.setWriteUtil(en.store);
-            pw.setSource(en.store.user);
+            pw.setSource(en.visor.peekStack());
             pw.setEngineRaw(en);
-            pw.setFlags(PrologWriter.FLAG_QUOT);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setWriter(wr);
             StackElement.callGoal(frame.getContSkel(), frame.getContDisplay(), en);
@@ -561,8 +559,7 @@ public final class SpecialDefault extends AbstractSpecial {
                 helpText(en);
             } else {
                 try {
-                    AbstractSource src = en.visor.peekStack();
-                    if (SpecialSession.parseAction(action, src, en)) {
+                    if (SpecialSession.parseAction(action, en)) {
                         en.invokeChecked();
                     } else {
                         found = false;

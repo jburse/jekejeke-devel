@@ -63,21 +63,42 @@
 :- static goal_tracing/2.
 
 /**
+ * store_changing(S):
+ * The predicate can be used to define a custom debugger call back
+ * for the store S.
+ */
+% store_changing(+Store)
+:- public store_changing/1.
+:- multifile store_changing/1.
+:- static store_changing/1.
+
+/**
  * trace_goal(P, F):
  * The predicate invokes the current debugger call back for
  * the port P and the frame F.
  */
 % trace_goal(+Port, +Frame)
 :- public trace_goal/2.
-trace_goal(P, F) :-
-   goal_tracing(P, F), !.
-trace_goal(_, F) :-
-   sys_notrace_frame(F), !.
-trace_goal(P, F) :-
-   sys_leashed_port(P), !,
-   sys_trace_prompt(P, F).
-trace_goal(P, F) :-
-   sys_trace(P, F).
+trace_goal(Port, Frame) :-
+   goal_tracing(Port, Frame), !.
+trace_goal(_, Frame) :-
+   sys_notrace_frame(Frame), !.
+trace_goal(Port, Frame) :-
+   sys_leashed_port(Port), !,
+   sys_trace_prompt(Port, Frame).
+trace_goal(Port, Frame) :-
+   sys_trace(Port, Frame).
+
+/**
+ * change_store(S):
+ * The predicate invokes the current debugger call back for
+ * the store S.
+ */
+% change_store(+Store)
+:- public change_store/1.
+change_store(Store) :-
+   store_changing(Store), !.
+change_store(_).
 
 /**
  * leash(L):

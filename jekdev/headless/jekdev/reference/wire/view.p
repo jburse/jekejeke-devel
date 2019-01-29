@@ -34,7 +34,7 @@
 
 :- module(view, []).
 :- use_module(monitor).
-:- use_module(library(notebook/httpsrv)).
+:- use_module(library(misc/http)).
 :- use_module(library(inspection/frame)).
 :- use_module(pages/thread).
 :- use_module(pages/stack).

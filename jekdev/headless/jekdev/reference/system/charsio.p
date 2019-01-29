@@ -80,7 +80,8 @@ with_output_to(bytes(L), G) :- !,
       (  G,
          fetch_output(B)),
       set_output(S)),
-   block_bytes(B, L).
+   atom_block(A, B),
+   atom_codes(A, L).
 
 /**
   * with_input_from(C, G):
@@ -100,7 +101,8 @@ with_input_from(atom(A), G) :- !,
       set_input(S)).
 with_input_from(bytes(L), G) :- !,
    current_input(S),
-   block_bytes(B, L),
+   atom_codes(A, L),
+   atom_block(A, B),
    memory_read(B, [type(binary)], T),
    try_call_finally(
       set_input(T),

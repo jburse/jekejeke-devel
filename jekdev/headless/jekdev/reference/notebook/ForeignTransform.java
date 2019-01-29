@@ -10,7 +10,6 @@ import matula.util.transform.*;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.text.ParseException;
 
 /**
  * <p>The foreign predicates for the module stream/xsl.</p>
@@ -57,13 +56,13 @@ public final class ForeignTransform {
      */
     public static void sysXsdDigest(Interpreter inter,
                                     XSDSchema xs, DomElement de)
-            throws InterpreterMessage, IOException, InterpreterException, ParseException {
+            throws InterpreterMessage, IOException, InterpreterException {
         try {
             xs.digestElements(de);
         } catch (ScannerError y) {
-            String line = ScannerError.linePosition(y.getLine(), y.getPos());
+            String line = ScannerError.linePosition(y.getLine(), y.getErrorOffset());
             InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.syntaxError(y.getMessage()));
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));
@@ -111,7 +110,7 @@ public final class ForeignTransform {
     public static void sysXSLTransform(Interpreter inter,
                                        AbstractDom dn, Writer writer,
                                        String comment, Object opts)
-            throws InterpreterMessage, IOException, InterpreterException, ParseException {
+            throws InterpreterMessage, IOException, InterpreterException {
         TransformOpts res = TransformOpts.decodeTransformOpts(opts);
         XmlWriter dw = new XmlWriter();
         dw.setWriter(writer);
@@ -124,9 +123,9 @@ public final class ForeignTransform {
         try {
             xt.xslt(dn, comment);
         } catch (ScannerError y) {
-            String line = ScannerError.linePosition(y.getLine(), y.getPos());
+            String line = ScannerError.linePosition(y.getLine(), y.getErrorOffset());
             InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.syntaxError(y.getMessage()));
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));
@@ -147,17 +146,16 @@ public final class ForeignTransform {
      */
     public static void sysXSLCheck(Interpreter inter,
                                    AbstractDom dn, Object opts)
-            throws InterpreterMessage, IOException,
-            InterpreterException, ParseException {
+            throws InterpreterMessage, IOException, InterpreterException {
         TransformOpts res = TransformOpts.decodeTransformOpts(opts);
         XSLSheetCheck xc = new XSLSheetCheck();
         xc.setMask(res.getMask());
         try {
             xc.check(dn);
         } catch (ScannerError y) {
-            String line = ScannerError.linePosition(y.getLine(), y.getPos());
+            String line = ScannerError.linePosition(y.getLine(), y.getErrorOffset());
             InterpreterMessage x = new InterpreterMessage(
-                    InterpreterMessage.syntaxError(y.getError()));
+                    InterpreterMessage.syntaxError(y.getMessage()));
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));

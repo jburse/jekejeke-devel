@@ -34,7 +34,7 @@
 
 :- module(desktop, []).
 :- use_module(monitor).
-:- use_module(library(notebook/httpsrv)).
+:- use_module(library(misc/http)).
 :- reexport(view).
 
 /**
@@ -46,10 +46,7 @@
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/layout.html', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_text(library(wire/pages/layout), Response),
-      close(Response)).
+   catch(handle_text(library(wire/pages/layout), Session), _, true).
 dispatch(Object, Spec, Request, Session) :-
    wire/view:dispatch(Object, Spec, Request, Session).
 

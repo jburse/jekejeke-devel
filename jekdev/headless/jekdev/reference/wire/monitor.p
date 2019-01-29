@@ -39,11 +39,13 @@
 :- package(library(jekdev/reference/wire)).
 
 :- module(monitor, []).
-:- use_module(library(notebook/httpsrv)).
+:- use_module(library(misc/http)).
 :- use_module(library(runtime/distributed)).
 :- use_module(library(system/thread)).
 :- use_module(library(misc/socket)).
+:- use_module(library(inspection/frame)).
 :- use_module(hooks/pause).
+:- use_module(hooks/command).
 
 /**
  * start_monitor:
@@ -93,30 +95,15 @@ destroyed(_, _) :-
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/images/closed.gif', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/images/closed), Response),
-      close(Response)).
+   catch(handle_binary(library(wire/images/closed), Session), _, true).
 dispatch(_, '/images/open.gif', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/images/open), Response),
-      close(Response)).
+   catch(handle_binary(library(wire/images/open), Session), _, true).
 dispatch(_, '/images/blank.gif', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/images/blank), Response),
-      close(Response)).
+   catch(handle_binary(library(wire/images/blank), Session), _, true).
 dispatch(_, '/images/break.gif', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response, [type(binary)]),
-      send_binary(library(wire/images/break), Response),
-      close(Response)).
+   catch(handle_binary(library(wire/images/break), Session), _, true).
 dispatch(_, '/index.html', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_text(library(wire/pages/index), Response),
-      close(Response)).
+   catch(handle_text(library(wire/pages/index), Session), _, true).
 dispatch(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/desktop/'), !,
    Pos2 is Pos-1,
@@ -128,7 +115,7 @@ dispatch(_, Path, Request, Session) :-
    sub_atom(Path, Pos2, _, 0, Path2),
    wire/mobile::dispatch(Path2, Request, Session).
 dispatch(Object, Spec, Request, Session) :-
-   notebook/httpsrv:dispatch(Object, Spec, Request, Session).
+   misc/http:dispatch(Object, Spec, Request, Session).
 
 /**
  * upgrade(O, P, R, S):
@@ -145,23 +132,40 @@ upgrade(_, Path, Request, Session) :-
    wire/control::upgrade(Path2, Request, Session).
 
 /**
- * goal_tracing(P, F):
+ * user:goal_tracing(P, F):
  * The predicate can be used to define a custom debugger call back
  * for the port P and the frame F.
  */
 % user:goal_tracing(+Atom, +Frame)
 :- public user:goal_tracing/2.
 :- multifile user:goal_tracing/2.
-user:goal_tracing(P, F) :-
-   tracing_broadcast(P, F), fail.
+user:goal_tracing(Port, Frame) :-
+   tracing_broadcast(Port, Frame), fail.
 
 % tracing_broadcast(+Atom, +Frame)
 :- private tracing_broadcast/2.
-tracing_broadcast(_, F) :-
-   sys_notrace_frame(F), !.
-tracing_broadcast(P, _) :-
-   sys_leashed_port(P), !,
+tracing_broadcast(_, Frame) :-
+   sys_notrace_frame(Frame), !.
+tracing_broadcast(Port, _) :-
+   sys_leashed_port(Port), !,
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    broadcast_pause(Name).
 tracing_broadcast(_, _).
+
+/**
+ * user:store_changing(S):
+ * The predicate can be used to define a custom debugger call back
+ * for the store S.
+ */
+% user:store_changing(+Store)
+:- public user:store_changing/1.
+:- multifile user:store_changing/1.
+user:store_changing(Store) :-
+   changing_broadcast(Store), fail.
+
+% changing_broadcast(+Store)
+:- private changing_broadcast/1.
+changing_broadcast(Store) :-
+   store_property(Store, sys_name(Name)),
+   broadcast_command(Name).

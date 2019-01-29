@@ -37,7 +37,7 @@
 :- package(library(jekdev/reference/wire)).
 
 :- module(control, []).
-:- use_module(library(notebook/httpsrv)).
+:- use_module(library(misc/http)).
 :- use_module(library(misc/socket)).
 :- use_module(library(runtime/distributed)).
 :- use_module(hooks/pause).
