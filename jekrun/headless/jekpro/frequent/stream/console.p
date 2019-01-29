@@ -63,7 +63,7 @@
 :- use_module(library(system/locale)).
 
 /****************************************************************/
-/* Read Utils                                                   */
+/* Read Line                                                    */
 /****************************************************************/
 
 /**
@@ -117,6 +117,64 @@ read_line_max(Stream, Length, Atom) :-
 :- private sys_read_line_max/3.
 :- foreign(sys_read_line_max/3, 'ForeignConsole',
       readLineMax('Reader','Integer')).
+
+/****************************************************************/
+/* Read Punch                                                   */
+/****************************************************************/
+
+/**
+ * read_punch(C):
+ * read_punch(T, C):
+ * The predicate succeeds in C in reading a punch. The predicate fails
+ * upon end of file. The punch must end in CR LF, otherwise an exception
+ * is thrown. The binary predicate allows specifying a binary stream T.
+ */
+% read_punch(-Block)
+:- public read_punch/1.
+read_punch(Block) :-
+   current_input(Stream),
+   sys_read_punch(Stream, Block).
+
+% read_punch(+AliasOrStream, -Block)
+:- public read_punch/2.
+read_punch(Alias, Block) :-
+   atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_read_punch(Stream, Block).
+read_punch(Stream, Block) :-
+   sys_read_punch(Stream, Block).
+
+:- private sys_read_punch/2.
+:- foreign(sys_read_punch/2, 'ForeignConsole',
+      readPunch('InputStream')).
+
+/**
+ * read_punch_max(L, C):
+ * read_punch_max(T, L, C):
+ * The predicate succeeds in C in reading a punch with maximally L
+ * bytes. The predicate fails upon end of file. If less than L
+ * bytes different from CR are read, the punch must end in CR LF
+ * otherwise an exception is thrown. The ternary predicate allows
+ * specifying a binary stream T.
+ */
+% read_punch_max(+Integer, -Block)
+:- public read_punch_max/2.
+read_punch_max(Length, Block) :-
+   current_input(Stream),
+   sys_read_punch_max(Stream, Length, Block).
+
+% read_punch_max(+AliasOrStream, +Integer, -Block)
+:- public read_punch_max/3.
+read_punch_max(Alias, Length, Block) :-
+   atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_read_punch_max(Stream, Length, Block).
+read_punch_max(Stream, Length, Block) :-
+   sys_read_punch_max(Stream, Length, Block).
+
+:- private sys_read_punch_max/3.
+:- foreign(sys_read_punch_max/3, 'ForeignConsole',
+      readPunchMax('InputStream','Integer')).
 
 /****************************************************************/
 /* Formatted Output                                             */

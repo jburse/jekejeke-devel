@@ -3,17 +3,15 @@ package jekpro.frequent.stream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
+import matula.util.regex.CodeType;
 import matula.util.regex.ScannerToken;
 import matula.util.wire.XSelectFormat;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -51,7 +49,7 @@ import java.util.Properties;
 public final class ForeignConsole {
 
     /****************************************************************/
-    /* Read Utils                                                   */
+    /* Read Line                                                    */
     /****************************************************************/
 
     /**
@@ -65,11 +63,11 @@ public final class ForeignConsole {
             throws IOException {
         StringBuilder buf = new StringBuilder();
         int ch = ScannerToken.sysGetCode(reader);
-        while (ch != '\n' && ch != -1) {
+        while (ch != CodeType.LINE_EOL && ch != CodeType.LINE_EOF) {
             buf.appendCodePoint(ch);
             ch = ScannerToken.sysGetCode(reader);
         }
-        if (ch == -1 && buf.length() == 0)
+        if (ch == CodeType.LINE_EOF && buf.length() == 0)
             return null;
         return buf.toString();
     }
@@ -87,20 +85,80 @@ public final class ForeignConsole {
         int len = arg.intValue();
         StringBuilder buf = new StringBuilder();
         int pos = 0;
-        int ch = (pos < len ? ScannerToken.sysGetCode(reader) : '\n');
-        while (ch != '\n' && ch != -1) {
+        int ch = (pos < len ? ScannerToken.sysGetCode(reader) : CodeType.LINE_EOL);
+        while (ch != CodeType.LINE_EOL && ch != CodeType.LINE_EOF) {
             buf.appendCodePoint(ch);
             pos++;
-            ch = (pos < len ? ScannerToken.sysGetCode(reader) : '\n');
+            ch = (pos < len ? ScannerToken.sysGetCode(reader) : CodeType.LINE_EOL);
         }
-        if (ch == -1 && buf.length() == 0)
+        if (ch == CodeType.LINE_EOF && buf.length() == 0)
             return null;
         return buf.toString();
     }
 
-    /*******************************************************/
-    /* Stack Trace Printing                                */
-    /*******************************************************/
+    /****************************************************************/
+    /* Read Punch                                                   */
+    /****************************************************************/
+
+    /**
+     * <p>Read a punch.</p>
+     *
+     * @param in The input stream.
+     * @return The line.
+     * @throws IOException IO error.
+     */
+    public static byte[] readPunch(InputStream in)
+            throws IOException {
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int ch = in.read();
+        while (ch != CodeType.LINE_WIN && ch != CodeType.LINE_EOF) {
+            buf.write(ch);
+            ch = in.read();
+        }
+        if (ch == CodeType.LINE_EOF && buf.size() == 0)
+            return null;
+        if (ch != CodeType.LINE_WIN)
+            throw new StreamCorruptedException("cr missing");
+        ch = in.read();
+        if (ch != CodeType.LINE_EOL)
+            throw new StreamCorruptedException("lf missing");
+        return buf.toByteArray();
+    }
+
+    /**
+     * <p>Read a punch with maximum length.</p>
+     *
+     * @param in The input stream.
+     * @param arg    The maximum length.
+     * @return The line.
+     * @throws IOException IO error.
+     */
+    public static byte[] readPunchMax(InputStream in, Integer arg)
+            throws IOException {
+        int len = arg.intValue();
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int pos = 0;
+        int ch = (pos < len ? in.read() : CodeType.LINE_WIN);
+        while (ch != CodeType.LINE_WIN && ch != CodeType.LINE_EOF) {
+            buf.write(ch);
+            pos++;
+            ch = (pos < len ? in.read() : CodeType.LINE_WIN);
+        }
+        if (ch == CodeType.LINE_EOF && buf.size() == 0)
+            return null;
+        if (!(pos < len))
+            return buf.toByteArray();
+        if (ch != CodeType.LINE_WIN)
+            throw new StreamCorruptedException("cr missing");
+        ch = in.read();
+        if (ch != CodeType.LINE_EOL)
+            throw new StreamCorruptedException("lf missing");
+        return buf.toByteArray();
+    }
+
+    /****************************************************************/
+    /* Stack Trace Printing                                         */
+    /****************************************************************/
 
     /**
      * <p>Print an exception.</p>
