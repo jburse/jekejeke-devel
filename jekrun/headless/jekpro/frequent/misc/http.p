@@ -15,13 +15,16 @@
  *
  * * 400 Bad Request: Request could not be parsed.
  * * 404 Not Found: Server object did not succeeds.
+ * * 415 Unsupported Media Type: Server object could not decode parameters.
+ * * 422 Unprocessable Entity: Server object could not validate parameters.
  * * 501 Not Implemented: Request method not supported.
  *
- * The predicate http_parameter/3 can be used by the server object to access
- * URI query parameters. The predicate response_text/1, response_binary/1 and
- * html_escape/1 can be used to generate dynamic content by the server
- * object. The predicates send_text/2 and send_binary/2 can be used by the
- * server object to deliver static content.
+ * The predicate http_parameter/3 can be used by the server object to
+ * access URI query parameters. The predicate response_text/2,
+ * response_binary/2 and html_escape/2 can be used to generate dynamic
+ * content by the server object. The predicates dispatch_text/3 and
+ * dispatch_binary/3 can be used by the server object to deliver
+ * static content.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -110,13 +113,18 @@ accept_close(Object, Server) :-
 % handle(+Object, +Socket)
 :- private handle/2.
 handle(Object, Session) :-
-   open(Session, read, Request, [type(binary)]),
-   read_request(Request, Method, URI),
-   read_header(Request, Header), !,
+   catch(recieve_http(Method, URI, Header, Session), _, fail), !,
    handle_method(Object, Method, URI, Header, Session).
 handle(_, Session) :-
    catch(handle_error(400, Session), _, true).
 /* Bad Request */
+
+% recieve_http(-Atom, -Atom, -List, +Socket)
+:- private recieve_http/4.
+recieve_http(Method, URI, Header, Session) :-
+   open(Session, read, Request, [type(binary)]),
+   read_request(Request, Method, URI),
+   read_header(Request, Header).
 
 % handle_method(+Object, +Atom, +Atom, +List, +Socket)
 :- private handle_method/5.
@@ -135,14 +143,6 @@ handle_get(Object, URI, Header, Session) :-
 handle_get(_, _, _, Session) :-
    catch(handle_error(404, Session), _, true).
 /* Not Found */
-
-% handle_error(+Integer, +Socket)
-:- private handle_error/2.
-handle_error(Code, Session) :-
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_error(Code, Response),
-      close(Response)).
 
 % handle_object(+Object, +Atom, +Request, +Socket)
 :- private handle_object/4.
@@ -176,10 +176,10 @@ handle_object(Object, Spec, Request, Session) :-
  * The predicate succeeds in dispatching the request for object
  * O, with path P, with request R and the session S.
  */
-% dispatch(+Object, +Spec, +Request, +Session)
+% dispatch(+Object, +Spec, +Request, +Socket)
 :- public dispatch/4.
-dispatch(_, '/images/cookie.gif', _, Session) :- !,
-   catch(handle_binary(library(misc/images/cookie), Session), _, true).
+dispatch(_, '/images/cookie.gif', Request, Session) :- !,
+   dispatch_binary(library(misc/images/cookie), Request, Session).
 
 /**
  * upgrade(O, P, R, S):
@@ -261,34 +261,54 @@ make_parameter(Query, [Name-Value|List]) :-
 /***************************************************************/
 
 /**
- * response_text(O):
- * Send an OK response to the text output stream.
+ * response_text(E, O):
+ * Send an OK response with ETag E to the text output stream O.
  */
-% response_text(+Stream)
-:- public response_text/1.
-response_text(Response) :-
+% response_text(+Atom, +Stream)
+:- public response_text/2.
+response_text('', Response) :- !,
    write(Response, 'HTTP/1.1 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
+response_text(Etag, Response) :-
+   write(Response, 'HTTP/1.1 200 OK\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, 'ETag: '),
+   write(Response, Etag),
+   write(Response, '\r\n'),
+   write(Response, '\r\n').
 
 /**
- * handle_text(F, O):
- * The predicate sends the HTML resource F to the session O.
+ * dispatch_text(F, R, O):
+ * The predicate sends the HTML resource F for request R to the session O.
  */
-% handle_text(+File, +Socket)
-:- public handle_text/2.
-handle_text(File, Session) :-
+:- public dispatch_text/3.
+dispatch_text(File, Request, Session) :-
+   resource_etag(File, ETag),
+   dispatch_text(File, Request, ETag, Session).
+
+% dispatch_text(+File, +Request, +Atom, +Socket)
+:- private dispatch_text/4.
+dispatch_text(_, Request, ETag, Session) :-
+   http_header(Request, 'If-None-Match', ETag), !,
+   catch(handle_not_modified(ETag, Session), _, true).
+dispatch_text(File, _, ETag, Session) :-
+   catch(handle_text(File, ETag, Session), _, true).
+
+% handle_text(+File, +Atom, +Socket)
+:- private handle_text/3.
+handle_text(File, Etag, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_text(File, Response),
+      send_text(File, Etag, Response),
       close(Response)).
 
-% send_text(+File, +Stream)
-:- private send_text/2.
-send_text(File, Response) :-
+% send_text(+File, +Atom, +Stream)
+:- private send_text/3.
+send_text(File, Etag, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream),
-      (  response_text(Response),
+      (  response_text(Etag, Response),
          send_lines(Stream, Response)),
       close(Stream)).
 
@@ -320,50 +340,87 @@ send_lines2(_, Response) :-
 /***************************************************************/
 
 /**
- * response_binary(O):
- * Send an OK response to the binary output stream.
+ * response_binary(E, O):
+ * Send an OK response with ETag E to the binary output stream O.
  */
-% response_binary(+Stream)
-:- public response_binary/1.
-response_binary(Response) :-
+% response_binary(+Atom, +Stream)
+:- public response_binary/2.
+response_binary('', Response) :-
    write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
    write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
    write_atom(Response, '\r\n').
+response_binary(Etag, Response) :-
+   write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
+   write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
+   write_atom(Response, 'ETag: '),
+   write_atom(Response, Etag),
+   write_atom(Response, '\r\n'),
+   write_atom(Response, '\r\n').
 
 % write_atom(+Stream, +Atom)
-:- public write_atom/2.
+:- private write_atom/2.
 write_atom(Response, Atom) :-
    atom_block(Atom, Block),
    write_block(Response, Block).
 
 /**
- * handle_binary(F, O):
- * The predicate sends the binary resource F to the socket O.
+ * dispatch_binary(F, R, O):
+ * The predicate dispatches the binary resource F for request R to the session O.
  */
-% handle_binary(+File, +Socket)
-:- public handle_binary/2.
-handle_binary(File, Session) :-
+% dispatch_binary(+File, +Request, +Socket)
+:- public dispatch_binary/3.
+dispatch_binary(File, Request, Session) :-
+   resource_etag(File, ETag),
+   dispatch_binary(File, Request, ETag, Session).
+
+% dispatch_binary(+File, +Request, +Atom, +Socket)
+:- private dispatch_binary/4.
+dispatch_binary(_, Request, ETag, Session) :-
+   http_header(Request, 'If-None-Match', ETag), !,
+   catch(handle_not_modified(ETag, Session), _, true).
+dispatch_binary(File, _, ETag, Session) :-
+   catch(handle_binary(File, ETag, Session), _, true).
+
+% handle_binary(+File, +Atom, +Socket)
+:- private handle_binary/3.
+handle_binary(File, Etag, Session) :-
    setup_call_cleanup(
       open(Session, write, Response, [type(binary)]),
-      send_binary(File, Response),
+      send_binary(File, Etag, Response),
       close(Response)).
 
-% send_binary(+File, +Stream)
-:- private send_binary/2.
-send_binary(File, Response) :-
+% send_binary(+File, +Atom, +Stream)
+:- private send_binary/3.
+send_binary(File, Etag, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]),
-      (  response_binary(Response),
+      (  response_binary(Etag, Response),
          send_blocks(Stream, Response)),
       close(Stream)).
 
 % send_blocks(+Stream, +Stream)
 :- private send_blocks/2.
 send_blocks(Stream, Response) :-
-   read_block(Stream, 1024, Block), !,
+   read_block(Stream, 8192, Block), !,
    write_block(Response, Block),
    send_blocks(Stream, Response).
 send_blocks(_, _).
+
+% resource_etag(+File, -Atom)
+:- private resource_etag/2.
+resource_etag(File, Etag) :-
+   setup_call_cleanup(
+      open_resource(File, Stream, [type(binary)]),
+      stream_property(Stream, last_modified(Date)),
+      close(Stream)),
+   date_etag(Date, Etag).
+
+% date_etag(+Integer, -Atom)
+:- private date_etag/2.
+date_etag(-1, '') :- !.
+date_etag(Date, Etag) :-
+   atom_number(DateStr, Date),
+   atom_split(Etag, '', ['"',DateStr,'"']).
 
 /***************************************************************/
 /* HTTP Response Dynamic                                       */
@@ -379,24 +436,7 @@ html_escape(Response, Text) :-
    write(Response, Escape).
 
 /***************************************************************/
-/* HTTP Response Redirect                                      */
-/***************************************************************/
-
-/**
- * response_redirect(L, O):
- * Send a redirect response to location L to the text output stream O.
- */
-% response_redirect(+Atom, +Stream)
-:- public response_redirect/2.
-response_redirect(Location, Response) :-
-   write(Response, 'HTTP/1.1 302 Found\r\n'),
-   write(Response, 'Location: '),
-   write(Response, Location),
-   write(Response, '\r\n'),
-   write(Response, '\r\n').
-
-/***************************************************************/
-/* HTTP Response Upgrade                                       */
+/* Special HTTP Responses                                      */
 /***************************************************************/
 
 /**
@@ -420,9 +460,63 @@ response_upgrade(Request, Response) :-
    write_atom(Response, '\r\n'),
    write_atom(Response, '\r\n').
 
+/**
+ * handle_redirect(L, O):
+ * Send a redirect response to location L to the socket O.
+ */
+% handle_redirect(+Atom, +Socket)
+:- public handle_redirect/2.
+handle_redirect(Location, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      response_redirect(Location, Response),
+      close(Response)).
+
+% response_redirect(+Atom, +Stream)
+:- private response_redirect/2.
+response_redirect(Location, Response) :-
+   write(Response, 'HTTP/1.1 302 Found\r\n'),
+   write(Response, 'Location: '),
+   write(Response, Location),
+   write(Response, '\r\n'),
+   write(Response, '\r\n').
+
+/**
+ * handle_not_modified(E, O):
+ * Send a not modified response with ETag E to the socket O.
+ */
+% handle_not_modified(+Atom, +Socket)
+:- public handle_not_modified/2.
+handle_not_modified(Etag, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      response_not_modified(Etag, Response),
+      close(Response)).
+
+% response_not_modified(+Atom, +Stream)
+:- private response_not_modified/2.
+response_not_modified(Etag, Response) :-
+   write(Response, 'HTTP/1.1 304 Not Modified\r\n'),
+   write(Response, 'ETag: '),
+   write(Response, Etag),
+   write(Response, '\r\n'),
+   write(Response, '\r\n').
+
 /***************************************************************/
-/* Internal Error Generator                                    */
+/* Error HTTP Responses                                        */
 /***************************************************************/
+
+/**
+ * handle_error(E, O):
+ * The predicate sends the error E to the socket O.
+ */
+% handle_error(+Integer, +Socket)
+:- public handle_error/2.
+handle_error(Code, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_error(Code, Response),
+      close(Response)).
 
 /**
  * response_error(C, O):
@@ -436,6 +530,14 @@ response_error(400, Response) :- !,
    write(Response, '\r\n').
 response_error(404, Response) :- !,
    write(Response, 'HTTP/1.1 404 Not Found\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(415, Response) :- !,
+   write(Response, 'HTTP/1.1 415 Unsupported Media Type\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(422, Response) :- !,
+   write(Response, 'HTTP/1.1 422 Unprocessable Entity\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
    write(Response, '\r\n').
 response_error(501, Response) :- !,
@@ -459,6 +561,18 @@ send_error(404, Response) :- !,
    setup_call_cleanup(
       open_resource(library(misc/pages/err404), Stream),
       (  response_error(404, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(415, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err415), Stream),
+      (  response_error(415, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(422, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err422), Stream),
+      (  response_error(422, Response),
          send_lines(Stream, Response)),
       close(Stream)).
 send_error(501, Response) :- !,

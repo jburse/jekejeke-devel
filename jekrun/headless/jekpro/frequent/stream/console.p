@@ -19,10 +19,10 @@
  * res=           123123123.1230
  * Yes
  *
- * The third part consist Edinburgh Prolog inspired terminal
- * input/output. Among the terminal input/output there are
- * currently the predicates ttynl/0, ttywrite/1, ttywrite_term/2,
- * ttyflush_output/0, ttyread_line/1 and ttyread_line_max/2.
+ * Since the line read predicates work with a text stream and does
+ * not fully consume a line, so that it can cater for different line
+ * formats with CR LF, LF or CR termination, we introduced further
+ * predicates read_punch/[1,2] and read_punch_max/[2,3].
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -233,7 +233,7 @@ print_message(AliasOrStream, Message) :-
 % print_error(+Term)
 :- public print_error/1.
 print_error(Error) :-
-   current_prolog_flag(sys_disp_error, Stream),
+   current_prolog_flag(sys_cur_error, Stream),
    get_error_properties(Props),
    error_make(Props, Error, Atom),
    write(Stream, Atom),
@@ -258,7 +258,7 @@ print_error(AliasOrStream, Error) :-
 % print_stack_trace(+Term)
 :- public print_stack_trace/1.
 print_stack_trace(Error) :-
-   current_prolog_flag(sys_disp_error, Stream),
+   current_prolog_flag(sys_cur_error, Stream),
    current_prolog_flag(sys_locale, Locale),
    get_error_properties(Props),
    sys_print_stack_trace(Stream, Error, Locale, Props).
@@ -281,83 +281,3 @@ print_stack_trace(Stream, Error) :-
       sysPrintStackTrace('Interpreter','Writer','Object',
          'String','Properties')).
 
-/****************************************************************/
-/* Edinburgh Style                                              */
-/****************************************************************/
-
-/**
- * ttynl:
- * The predicate writes the system end of line sequence to the
- * terminal and flushes it.
- */
-% ttynl
-:- public ttynl/0.
-ttynl :-
-   current_prolog_flag(sys_disp_output, Stream),
-   sys_nl(Stream).
-
-/**
- * ttywrite(E):
- * The predicate writes the term E to the terminal whereby
- * numbering variables.
- */
-% ttywrite(+Term)
-:- public ttywrite/1.
-ttywrite(Term) :-
-   current_prolog_flag(sys_disp_output, Stream),
-   sys_write_term(Stream, Term, [numbervars(true)]).
-
-/**
- * ttywriteq(E):
- * The predicate writes the term E to the terminal whereby
- * quoting atoms and variables if necessary.
- */
-% ttywriteq(+Term)
-:- public ttywriteq/1.
-ttywriteq(Term) :-
-   current_prolog_flag(sys_disp_output, Stream),
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
-
-/**
- * ttywrite_term(E, O):
- * The predicate writes the term E to the terminal taking
- * into account the write options O.
- */
-% ttywrite_term(+Term, +Term)
-:- public ttywrite_term/2.
-ttywrite_term(Term, Opt) :-
-   current_prolog_flag(sys_disp_output, Stream),
-   sys_write_term(Stream, Term, Opt).
-
-/**
- * ttyflush_output:
- * The predicate flushes the terminal.
- */
-% ttyflush_output
-:- public ttyflush_output/0.
-ttyflush_output :-
-   current_prolog_flag(sys_disp_output, Stream),
-   sys_flush_output(Stream).
-
-/**
- * ttyread_line(C):
- * The predicate succeeds in C in reading a line from the terminal.
- * The predicate fails upon an empty line and an end of file.
- */
-% ttyread_line(-Atom)
-:- public ttyread_line/1.
-ttyread_line(Atom) :-
-   current_prolog_flag(sys_disp_input, Stream),
-   sys_read_line(Stream, Atom).
-
-/**
- * ttyread_line_max(L, C):
- * The predicate succeeds in C in reading a line with maximally L
- * characters from the terminal. The predicate fails upon an empty
- * line and an end of file.
- */
-% ttyread_line_max(+Integer, -Atom)
-:- public ttyread_line_max/2.
-ttyread_line_max(Length, Atom) :-
-   current_prolog_flag(sys_disp_input, Stream),
-   sys_read_line_max(Stream, Length, Atom).

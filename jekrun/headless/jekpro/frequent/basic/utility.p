@@ -80,8 +80,8 @@ sys_apropos_keys :-
    sys_get_lang(info, P),
    sys_apropos_key(K),
    message_make(P, apropos_key(K), M),
-   ttywrite(M), fail.
-sys_apropos_keys :- ttynl.
+   write(M), fail.
+sys_apropos_keys :- nl.
 
 % sys_apropos_values(+Row)
 :- private sys_apropos_values/1.
@@ -90,8 +90,8 @@ sys_apropos_values(A) :-
    sys_apropos_key(K),
    sys_apropos_value(A, K, V),
    message_make(P, apropos_value(K,V), M),
-   ttywrite(M), fail.
-sys_apropos_values(_) :- ttynl.
+   write(M), fail.
+sys_apropos_values(_) :- nl.
 
 % sys_apropos_key(-Atom)
 :- private sys_apropos_key/1.

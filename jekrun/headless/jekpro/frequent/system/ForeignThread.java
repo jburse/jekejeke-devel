@@ -89,7 +89,7 @@ public final class ForeignThread {
     static Interpreter makeInterpreter(Interpreter inter)
             throws InterpreterMessage {
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
-        Object rd = inter.getProperty(Toolkit.PROP_SYS_DISP_INPUT);
+        Object rd = inter.getProperty(Toolkit.PROP_SYS_CUR_INPUT);
         ConnectionReader cr;
         if (rd instanceof ConnectionReader && (cr = (ConnectionReader) rd).getBuffer() != 0) {
             ConnectionReader rp = new ConnectionReader(new BufferedReader(cr.getUnbuf(), BUF_SIZE));
@@ -98,9 +98,8 @@ public final class ForeignThread {
             rp.setUnbuf(cr.getUnbuf());
             rd = rp;
         }
-        inter2.setProperty(Toolkit.PROP_SYS_DISP_INPUT, rd);
         inter2.setProperty(Toolkit.PROP_SYS_CUR_INPUT, rd);
-        Object wr = inter.getProperty(Toolkit.PROP_SYS_DISP_OUTPUT);
+        Object wr = inter.getProperty(Toolkit.PROP_SYS_CUR_OUTPUT);
         ConnectionWriter cw;
         if (wr instanceof ConnectionWriter && (cw = (ConnectionWriter) wr).getBuffer() != 0) {
             ConnectionWriter wp = new ConnectionWriter(new BufferedWriter(cw.getUnbuf(), BUF_SIZE));
@@ -109,9 +108,8 @@ public final class ForeignThread {
             wp.setUnbuf(cw.getUnbuf());
             wr = wp;
         }
-        inter2.setProperty(Toolkit.PROP_SYS_DISP_OUTPUT, wr);
         inter2.setProperty(Toolkit.PROP_SYS_CUR_OUTPUT, wr);
-        wr = inter.getProperty(Toolkit.PROP_SYS_DISP_ERROR);
+        wr = inter.getProperty(Toolkit.PROP_SYS_CUR_ERROR);
         if (wr instanceof ConnectionWriter && (cw = (ConnectionWriter) wr).getBuffer() != 0) {
             ConnectionWriter wp = new ConnectionWriter(new BufferedWriter(cw.getUnbuf(), BUF_SIZE));
             wp.setBuffer(BUF_SIZE);
@@ -119,7 +117,6 @@ public final class ForeignThread {
             wp.setUnbuf(cw.getUnbuf());
             wr = wp;
         }
-        inter2.setProperty(Toolkit.PROP_SYS_DISP_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_CUR_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_ATTACHED_TO, inter.getProperty(Toolkit.PROP_SYS_ATTACHED_TO));
         return inter2;

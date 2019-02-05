@@ -189,8 +189,8 @@ thread_show_keys :-
    sys_get_lang(show, P),
    sys_current_show_stat(K),
    message_make(P, thread_show_key(K), M),
-   ttywrite(M), fail.
-thread_show_keys :- ttynl.
+   write(M), fail.
+thread_show_keys :- nl.
 
 % thread_show_values(+Thread)
 :- private thread_show_values/1.
@@ -199,8 +199,8 @@ thread_show_values(T) :-
    sys_current_show_stat(K),
    sys_get_show_stat(T, K, V),
    message_make(P, thread_show_value(K,V), M),
-   ttywrite(M), fail.
-thread_show_values(_) :- ttynl.
+   write(M), fail.
+thread_show_values(_) :- nl.
 
 % sys_current_show_stat(-Atom)
 :- private sys_current_show_stat/1.
