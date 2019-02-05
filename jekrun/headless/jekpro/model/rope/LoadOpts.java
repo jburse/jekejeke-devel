@@ -410,7 +410,7 @@ public final class LoadOpts extends LoadForce {
                 AbstractSource src = sources[j].value;
                 if (getVisited().contains(src))
                     continue;
-                performClear(src, en.visor.dispoutput);
+                performClear(src, en.visor.curoutput);
                 store.removeSource(src.getPath());
             }
         }
@@ -692,7 +692,7 @@ public final class LoadOpts extends LoadForce {
                 Locale locale = en.store.foyer.locale;
                 Properties error = EngineMessage.getErrorLang(locale, en.store);
                 String text = EngineMessage.messageMake(sk, Display.DISPLAY_CONST, locale, error, en);
-                Object obj = en.visor.dispoutput;
+                Object obj = en.visor.curoutput;
                 checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 wr.write(text);
@@ -756,7 +756,7 @@ public final class LoadOpts extends LoadForce {
                 Locale locale = en.store.foyer.locale;
                 Properties error = EngineMessage.getErrorLang(locale, en.store);
                 String text = EngineMessage.messageMake(sk, Display.DISPLAY_CONST, locale, error, en);
-                Object obj = en.visor.dispoutput;
+                Object obj = en.visor.curoutput;
                 checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 wr.write(text);

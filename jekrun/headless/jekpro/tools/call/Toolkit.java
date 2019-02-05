@@ -44,9 +44,6 @@ public abstract class Toolkit {
     private final AbstractFactory factory;
 
     /* interpreter */
-    public final static String PROP_SYS_DISP_INPUT = FlagFactory.OP_FLAG_SYS_DISP_INPUT;
-    public final static String PROP_SYS_DISP_OUTPUT = FlagFactory.OP_FLAG_SYS_DISP_OUTPUT;
-    public final static String PROP_SYS_DISP_ERROR = FlagFactory.OP_FLAG_SYS_DISP_ERROR;
     public final static String PROP_SYS_CUR_INPUT = FlagFactory.OP_FLAG_SYS_CUR_INPUT;
     public final static String PROP_SYS_CUR_OUTPUT = FlagFactory.OP_FLAG_SYS_CUR_OUTPUT;
     public final static String PROP_SYS_CUR_ERROR = FlagFactory.OP_FLAG_SYS_CUR_ERROR;

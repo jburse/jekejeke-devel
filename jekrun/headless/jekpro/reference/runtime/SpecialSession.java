@@ -142,7 +142,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static String askSessionAction(Engine en)
             throws EngineMessage {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
@@ -151,7 +151,7 @@ public final class SpecialSession extends AbstractSpecial {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
-        obj = en.visor.dispinput;
+        obj = en.visor.curinput;
         PrologReader.checkTextRead(obj);
         Reader lr = (Reader) obj;
         try {
@@ -169,7 +169,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static void detFeedback(Engine en)
             throws EngineMessage {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
@@ -188,7 +188,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static void failFeedback(Engine en)
             throws EngineMessage {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
@@ -214,7 +214,7 @@ public final class SpecialSession extends AbstractSpecial {
                                  Engine en)
             throws EngineException {
         try {
-            Object obj = en.visor.dispoutput;
+            Object obj = en.visor.curoutput;
             LoadOpts.checkTextWrite(obj);
             Writer wr = (Writer) obj;
             try {
@@ -245,7 +245,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static void promptQuery(Engine en)
             throws EngineMessage, EngineException {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
@@ -278,7 +278,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static void sessionTerminal(Engine en)
             throws EngineException, EngineMessage {
-        Object obj = en.visor.dispinput;
+        Object obj = en.visor.curinput;
         PrologReader.checkTextRead(obj);
         Reader lr = (Reader) obj;
 
@@ -620,7 +620,7 @@ public final class SpecialSession extends AbstractSpecial {
                 m.messageType(EngineMessage.OP_SYSTEM_ERROR) != null) {
             throw ex;
         } else {
-            Object obj = en.visor.disperror;
+            Object obj = en.visor.curerror;
             LoadOpts.checkTextWrite(obj);
             Writer wr = (Writer) obj;
             try {

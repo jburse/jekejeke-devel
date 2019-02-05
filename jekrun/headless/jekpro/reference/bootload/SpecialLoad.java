@@ -475,7 +475,7 @@ public final class SpecialLoad extends AbstractSpecial {
             scope.loadModule(reader, en, true);
             scope.closeReader(reader);
         } else {
-            Object obj = en.visor.dispinput;
+            Object obj = en.visor.curinput;
             PrologReader.checkTextRead(obj);
             reader = (Reader) obj;
             scope.loadModule(reader, en, true);

@@ -151,15 +151,26 @@ setup_balance(Q, N) :-
                    sys_take_all(I, F, 1), T), N).
 
 /**
- * spawn(C):
- * The predicate succeeds in running a copy of the goal C
- * in a new thread.
+ * submit(C, N):
+ * The predicate succeeds in running a copy of the goal C in a new
+ * thread and unifies N with its new name.
  */
-:- public spawn/1.
-:- meta_predicate spawn(0).
-spawn(C) :-
-   thread_new(C, I),
-   thread_start(I).
+:- public submit/2.
+:- meta_predicate submit(0,?).
+submit(Goal, Name) :-
+   thread_new(Goal, Thread),
+   current_thread_flag(Thread, sys_thread_name, Name),
+   thread_start(Thread).
+
+/**
+ * cancel(N):
+ * The predicate succeeds in stopping the thread with the name N.
+ */
+:- public cancel/1.
+cancel(Name) :-
+   current_thread(Thread),
+   current_thread_flag(Thread, sys_thread_name, Name), !,
+   sys_thread_fini(Thread).
 
 /**********************************************************/
 /* Pipe Utilities                                         */
@@ -231,10 +242,10 @@ sys_group_clean(G) :-
  */
 % sys_group_fini(+Group)
 :- private sys_group_fini/1.
-sys_group_fini(G) :-
-   group_thread(G, T), !,
-   sys_thread_fini(T),
-   sys_group_fini(G).
+sys_group_fini(Group) :-
+   group_thread(Group, Thread), !,
+   sys_thread_fini(Thread),
+   sys_group_fini(Group).
 sys_group_fini(_).
 
 /**
@@ -243,9 +254,9 @@ sys_group_fini(_).
  */
 % sys_thread_fini(+Thread)
 :- private sys_thread_fini/1.
-sys_thread_fini(T) :-
-   thread_abort(T, system_error(user_close)),
-   thread_join(T).
+sys_thread_fini(Thread) :-
+   thread_abort(Thread, system_error(user_close)),
+   thread_join(Thread).
 
 /**********************************************************/
 /* Thread Utilities                                       */
@@ -259,9 +270,9 @@ sys_thread_fini(T) :-
 % sys_thread_init(+Group, +Goal)
 :- private sys_thread_init/2.
 :- meta_predicate sys_thread_init(?,0).
-sys_thread_init(G, C) :-
-   thread_new(G, C, I),
-   thread_start(I).
+sys_thread_init(Group, Goal) :-
+   thread_new(Group, Goal, Thread),
+   thread_start(Thread).
 
 /**
  * sys_thread_inits(G, C, N):
@@ -272,8 +283,8 @@ sys_thread_init(G, C) :-
 :- private sys_thread_inits/3.
 :- meta_predicate sys_thread_inits(?,0,?).
 sys_thread_inits(_, _, 0) :- !.
-sys_thread_inits(G, C, N) :-
+sys_thread_inits(Group, Goal, N) :-
    N > 0,
-   sys_thread_init(G, C),
+   sys_thread_init(Group, Goal),
    M is N-1,
-   sys_thread_inits(G, C, M).
+   sys_thread_inits(Group, Goal, M).

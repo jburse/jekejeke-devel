@@ -337,7 +337,7 @@ public final class EngineException extends Exception {
      */
     public void printStackTrace(Engine en)
             throws EngineMessage, EngineException {
-        Object obj = en.visor.disperror;
+        Object obj = en.visor.curerror;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {

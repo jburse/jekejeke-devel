@@ -7,11 +7,12 @@
  *
  * ?- run_http(&lt;object&gt;, &lt;port&gt;), fail; true.
  *
- * The server currently implements a minimal subset of the HTTP/1.1 protocol
- * restricted to GET method. The server will read the request line and the
- * header lines. The server is able to generate error messages in the case
- * the request is erroneous or in case the server object cannot handle
- * the request. The following HTTP/1.1 errors have been realized:
+ * The server currently implements a minimal subset of the HTTP/1.1
+ * protocol restricted to GET method. The server will read the request
+ * line and the header lines. The server is able to generate error
+ * messages through the predicate handle_error/2. It will automatically
+ * call the predicate when dispatch/4 failed. The following HTTP/1.1
+ * errors have been realized:
  *
  * * 400 Bad Request: Request could not be parsed.
  * * 404 Not Found: Server object did not succeeds.
@@ -20,11 +21,22 @@
  * * 501 Not Implemented: Request method not supported.
  *
  * The predicate http_parameter/3 can be used by the server object to
- * access URI query parameters. The predicate response_text/2,
+ * access URI query parameters. The predicates response_text/2,
  * response_binary/2 and html_escape/2 can be used to generate dynamic
  * content by the server object. The predicates dispatch_text/3 and
  * dispatch_binary/3 can be used by the server object to deliver
  * static content.
+ *
+ * * 101 Switching Protocols: Server object can start web socket worker.
+ * * 200 Ok: Server object delivers content and optionally ETag.
+ * * 302 Found: Server object can redirect to new location after transaction.
+ * * 04 Not Modified: Server object notifies that ETag did not change.
+ *
+ * The web server also supports the above HTTP/1.1 codes, which might
+ * have additional re-sponse headers. The predicate handle_upgrade/2 will
+ * automatically generate a web socket accept key and can be used to
+ * implement upgrade/4. The predicate handle_redirect/2 requires a location,
+ * whereas the predicate handle_not_modified/2 requires an ETag.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -257,6 +269,86 @@ make_parameter(Query, [Name-Value|List]) :-
    make_parameter(Rest, List).
 
 /***************************************************************/
+/* Error HTTP Responses                                        */
+/***************************************************************/
+
+/**
+ * handle_error(E, O):
+ * The predicate sends the error E to the socket O.
+ */
+% handle_error(+Integer, +Socket)
+:- public handle_error/2.
+handle_error(Code, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Response),
+      send_error(Code, Response),
+      close(Response)).
+
+/**
+ * response_error(C, O):
+ * Send an error code C to the text output stream O.
+ */
+% response_error(+Integer, +Stream)
+:- private response_error/2.
+response_error(400, Response) :- !,
+   write(Response, 'HTTP/1.1 400 Bad Request\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(404, Response) :- !,
+   write(Response, 'HTTP/1.1 404 Not Found\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(415, Response) :- !,
+   write(Response, 'HTTP/1.1 415 Unsupported Media Type\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(422, Response) :- !,
+   write(Response, 'HTTP/1.1 422 Unprocessable Entity\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+response_error(501, Response) :- !,
+   write(Response, 'HTTP/1.1 501 Not Implemented\r\n'),
+   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   write(Response, '\r\n').
+
+/**
+ * send_error(C, O):
+ * Send an error code C page to the text output stream O.
+ */
+% send_error(+Integer, +Stream)
+:- private send_error/2.
+send_error(400, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err400), Stream),
+      (  response_error(400, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(404, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err404), Stream),
+      (  response_error(404, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(415, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err415), Stream),
+      (  response_error(415, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(422, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err422), Stream),
+      (  response_error(422, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+send_error(501, Response) :- !,
+   setup_call_cleanup(
+      open_resource(library(misc/pages/err501), Stream),
+      (  response_error(501, Response),
+         send_lines(Stream, Response)),
+      close(Stream)).
+
+/***************************************************************/
 /* HTTP Response Text                                          */
 /***************************************************************/
 
@@ -280,7 +372,7 @@ response_text(Etag, Response) :-
 
 /**
  * dispatch_text(F, R, O):
- * The predicate sends the HTML resource F for request R to the session O.
+ * The predicate sends the HTML resource F for request R to the socket O.
  */
 :- public dispatch_text/3.
 dispatch_text(File, Request, Session) :-
@@ -365,7 +457,7 @@ write_atom(Response, Atom) :-
 
 /**
  * dispatch_binary(F, R, O):
- * The predicate dispatches the binary resource F for request R to the session O.
+ * The predicate dispatches the binary resource F for request R to the socket O.
  */
 % dispatch_binary(+File, +Request, +Socket)
 :- public dispatch_binary/3.
@@ -428,7 +520,7 @@ date_etag(Date, Etag) :-
 
 /**
  * html_escape(O, T):
- * The predicate sends the text T escaped to the output stream O.
+ * The predicate sends the text T escaped to the text output stream O.
  */
 :- public html_escape/2.
 html_escape(Response, Text) :-
@@ -440,11 +532,19 @@ html_escape(Response, Text) :-
 /***************************************************************/
 
 /**
- * response_upgrade(R, O):
- * Send an upgrade response from request R to the binary output stream O.
+ * handle_upgrade(R, O):
+ * Send an upgrade response from request R to the socket O.
  */
+% handle_upgrade(+Request, +Socket)
+:- public handle_upgrade/2.
+handle_upgrade(Request, Session) :-
+   setup_call_cleanup(
+      open(Session, write, Output, [type(binary)]),
+      response_upgrade(Request, Output),
+      flush_output(Output)).
+
 % response_upgrade(+Request, +Stream)
-:- public response_upgrade/2.
+:- private response_upgrade/2.
 response_upgrade(Request, Response) :-
    http_header(Request, 'Sec-WebSocket-Key', Key),
    http_header(Request, 'Sec-WebSocket-Version', '13'),
@@ -501,83 +601,3 @@ response_not_modified(Etag, Response) :-
    write(Response, Etag),
    write(Response, '\r\n'),
    write(Response, '\r\n').
-
-/***************************************************************/
-/* Error HTTP Responses                                        */
-/***************************************************************/
-
-/**
- * handle_error(E, O):
- * The predicate sends the error E to the socket O.
- */
-% handle_error(+Integer, +Socket)
-:- public handle_error/2.
-handle_error(Code, Session) :-
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_error(Code, Response),
-      close(Response)).
-
-/**
- * response_error(C, O):
- * Send an error code C to the text output stream O.
- */
-% response_error(+Integer, +Stream)
-:- private response_error/2.
-response_error(400, Response) :- !,
-   write(Response, 'HTTP/1.1 400 Bad Request\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
-response_error(404, Response) :- !,
-   write(Response, 'HTTP/1.1 404 Not Found\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
-response_error(415, Response) :- !,
-   write(Response, 'HTTP/1.1 415 Unsupported Media Type\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
-response_error(422, Response) :- !,
-   write(Response, 'HTTP/1.1 422 Unprocessable Entity\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
-response_error(501, Response) :- !,
-   write(Response, 'HTTP/1.1 501 Not Implemented\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, '\r\n').
-
-/**
- * send_error(C, O):
- * Send an error code C page to the text output stream O.
- */
-% send_error(+Integer, +Stream)
-:- private send_error/2.
-send_error(400, Response) :- !,
-   setup_call_cleanup(
-      open_resource(library(misc/pages/err400), Stream),
-      (  response_error(400, Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-send_error(404, Response) :- !,
-   setup_call_cleanup(
-      open_resource(library(misc/pages/err404), Stream),
-      (  response_error(404, Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-send_error(415, Response) :- !,
-   setup_call_cleanup(
-      open_resource(library(misc/pages/err415), Stream),
-      (  response_error(415, Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-send_error(422, Response) :- !,
-   setup_call_cleanup(
-      open_resource(library(misc/pages/err422), Stream),
-      (  response_error(422, Response),
-         send_lines(Stream, Response)),
-      close(Stream)).
-send_error(501, Response) :- !,
-   setup_call_cleanup(
-      open_resource(library(misc/pages/err501), Stream),
-      (  response_error(501, Response),
-         send_lines(Stream, Response)),
-      close(Stream)).

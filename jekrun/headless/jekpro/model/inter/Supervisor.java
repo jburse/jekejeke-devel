@@ -54,9 +54,6 @@ public class Supervisor extends AbstractLivestock {
     public Object curinput;
     public Object curoutput;
     public Object curerror;
-    public Object dispinput;
-    public Object dispoutput;
-    public Object disperror;
     public ListArray<LocalLockfree> privates;
     public Object attachedto;
     public int breaklevel = -1;
@@ -79,10 +76,6 @@ public class Supervisor extends AbstractLivestock {
         curinput = foyer.getFactory().toolinput;
         curoutput = foyer.getFactory().tooloutput;
         curerror = foyer.getFactory().toolerror;
-
-        dispinput = foyer.getFactory().toolinput;
-        dispoutput = foyer.getFactory().tooloutput;
-        disperror = foyer.getFactory().toolerror;
     }
 
     /***************************************************************/

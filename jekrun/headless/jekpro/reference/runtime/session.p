@@ -166,10 +166,10 @@ sys_filter_variable_names([], _, L, L).
 sys_show_name_or_eq_list([], _) :-
    sys_get_lang(runtime, P),
    get_property(P, 'query.yes', V),
-   ttywrite(V).
+   write(V).
 sys_show_name_or_eq_list([X,Y|Z], M) :- !,
    sys_show_name_or_eq(X, M),
-   ttywrite(','), ttynl,
+   write(','), nl,
    sys_show_name_or_eq_list([Y|Z], M).
 sys_show_name_or_eq_list([X], M) :-
    sys_show_name_or_eq(X, M).
@@ -183,7 +183,7 @@ sys_show_name_or_eq_list([X], M) :-
 sys_show_no :-
    sys_get_lang(runtime, P),
    get_property(P, 'query.no', V),
-   ttywrite(V).
+   write(V).
 
 /**
  * sys_show_name_or_eq(E, M):
@@ -195,16 +195,16 @@ sys_show_no :-
 :- meta_predicate sys_show_name_or_eq(0,?).
 sys_show_name_or_eq(X is T, M) :- !,
    sys_quoted_var(X, Q),
-   ttywrite(Q),
-   ttywrite(' is '),
-   ttywrite_term(T, [priority(699),quoted(true),variable_names(M)]).
+   write(Q),
+   write(' is '),
+   write_term(T, [priority(699),quoted(true),variable_names(M)]).
 sys_show_name_or_eq(X = T, M) :- !,
    sys_quoted_var(X, Q),
-   ttywrite(Q),
-   ttywrite(' = '),
-   ttywrite_term(T, [priority(699),quoted(true),variable_names(M)]).
+   write(Q),
+   write(' = '),
+   write_term(T, [priority(699),quoted(true),variable_names(M)]).
 sys_show_name_or_eq(T, M) :-
-   ttywrite_term(T, [context(0),quoted(true),variable_names(M)]).
+   write_term(T, [context(0),quoted(true),variable_names(M)]).
 
 /**
  * sys_quoted_var(V, Q):

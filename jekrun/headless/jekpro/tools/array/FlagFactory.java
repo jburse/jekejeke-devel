@@ -50,9 +50,6 @@ import java.io.Writer;
  */
 public final class FlagFactory extends AbstractFlag {
     public final static String OP_FLAG_SYS_MASK = "sys_mask";
-    public final static String OP_FLAG_SYS_DISP_INPUT = "sys_disp_input";
-    public final static String OP_FLAG_SYS_DISP_OUTPUT = "sys_disp_output";
-    public final static String OP_FLAG_SYS_DISP_ERROR = "sys_disp_error";
     public final static String OP_FLAG_SYS_CUR_INPUT = "sys_cur_input";
     public final static String OP_FLAG_SYS_CUR_OUTPUT = "sys_cur_output";
     public final static String OP_FLAG_SYS_CUR_ERROR = "sys_cur_error";
@@ -66,9 +63,6 @@ public final class FlagFactory extends AbstractFlag {
     public final static String OP_FLAG_SYS_HINT = "sys_hint";
 
     private static final int FLAG_SYS_MASK = 0;
-    private static final int FLAG_SYS_DISP_INPUT = 1;
-    private static final int FLAG_SYS_DISP_OUTPUT = 2;
-    private static final int FLAG_SYS_DISP_ERROR = 3;
     private static final int FLAG_SYS_CUR_INPUT = 4;
     private static final int FLAG_SYS_CUR_OUTPUT = 5;
     private static final int FLAG_SYS_CUR_ERROR = 6;
@@ -98,9 +92,6 @@ public final class FlagFactory extends AbstractFlag {
     public static MapHash<String, AbstractFlag> defineFlags() {
         MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
         prologflags.add(OP_FLAG_SYS_MASK, new FlagFactory(FLAG_SYS_MASK));
-        prologflags.add(OP_FLAG_SYS_DISP_INPUT, new FlagFactory(FLAG_SYS_DISP_INPUT));
-        prologflags.add(OP_FLAG_SYS_DISP_OUTPUT, new FlagFactory(FLAG_SYS_DISP_OUTPUT));
-        prologflags.add(OP_FLAG_SYS_DISP_ERROR, new FlagFactory(FLAG_SYS_DISP_ERROR));
         prologflags.add(OP_FLAG_SYS_CUR_INPUT, new FlagFactory(FLAG_SYS_CUR_INPUT));
         prologflags.add(OP_FLAG_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
         prologflags.add(OP_FLAG_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
@@ -125,12 +116,6 @@ public final class FlagFactory extends AbstractFlag {
         switch (id) {
             case FLAG_SYS_MASK:
                 return AbstractFlag.switchToAtom((en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0);
-            case FLAG_SYS_DISP_INPUT:
-                return en.visor.dispinput;
-            case FLAG_SYS_DISP_OUTPUT:
-                return en.visor.dispoutput;
-            case FLAG_SYS_DISP_ERROR:
-                return en.visor.disperror;
             case FLAG_SYS_CUR_INPUT:
                 return en.visor.curinput;
             case FLAG_SYS_CUR_OUTPUT:
@@ -202,21 +187,6 @@ public final class FlagFactory extends AbstractFlag {
         switch (id) {
             case FLAG_SYS_MASK:
                 en.visor.setMask(AbstractFlag.atomToSwitch(m, d));
-                return true;
-            case FLAG_SYS_DISP_INPUT:
-                m = SpecialUniv.derefAndCastRef(m, d);
-                checkRead(m);
-                en.visor.dispinput = m;
-                return true;
-            case FLAG_SYS_DISP_OUTPUT:
-                m = SpecialUniv.derefAndCastRef(m, d);
-                checkWrite(m);
-                en.visor.dispoutput = m;
-                return true;
-            case FLAG_SYS_DISP_ERROR:
-                m = SpecialUniv.derefAndCastRef(m, d);
-                checkWrite(m);
-                en.visor.disperror = m;
                 return true;
             case FLAG_SYS_CUR_INPUT:
                 m = SpecialUniv.derefAndCastRef(m, d);

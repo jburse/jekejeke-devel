@@ -108,9 +108,9 @@ welcome :- version.
 :- public version/0.
 version :-
    sys_prolog_version(V),
-   ttywrite(V), ttynl,
+   write(V), nl,
    sys_prolog_vendor(W),
-   ttywrite(W), ttynl.
+   write(W), nl.
 :- set_predicate_property(version/0, sys_notrace).
 
 :- private sys_prolog_version/1.
