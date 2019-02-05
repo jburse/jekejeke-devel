@@ -64,8 +64,9 @@ sys_sum_oknok([], 0-0).
 /* Report Files                                                */
 /***************************************************************/
 
-% report_begin_html(+Atom, +Atom)
-report_begin_html(P, T) :-
+% report_begin_html(+Atom, +Atom, -Stream)
+report_begin_html(P, T, Y) :-
+   current_output(Y),
    open(P, write, X),
    set_output(X),
    write('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'), nl,
@@ -78,14 +79,13 @@ report_begin_html(P, T) :-
    write('  </head>'), nl,
    write('  <body>'), nl.
 
-% report_end_html
-report_end_html :-
+% report_end_html(+Stream)
+report_end_html(Y) :-
    write('  </body>'), nl,
    write('</html>'), nl,
    current_output(X),
-   current_prolog_flag(sys_disp_output, Y),
-   set_output(Y),
-   close(X).
+   close(X),
+   set_output(Y).
 
 /***************************************************************/
 /* String Evaluation                                           */

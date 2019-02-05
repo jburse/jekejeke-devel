@@ -241,7 +241,7 @@ public final class SpecialDefault extends AbstractSpecial {
     private static void traceGoal(int port, InterfaceStack frame,
                                   int depth, Engine en)
             throws EngineMessage, EngineException {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
@@ -396,7 +396,7 @@ public final class SpecialDefault extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void dontAsk(Engine en) throws EngineMessage {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         SpecialLoad.newLineFlush(wr);
@@ -409,7 +409,7 @@ public final class SpecialDefault extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void helpText(Engine en) throws EngineMessage {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
         try {
@@ -433,11 +433,11 @@ public final class SpecialDefault extends AbstractSpecial {
      */
     private static String askDebugAction(Engine en)
             throws EngineMessage {
-        Object obj = en.visor.dispoutput;
+        Object obj = en.visor.curoutput;
         LoadOpts.checkTextWrite(obj);
         Writer wr = (Writer) obj;
 
-        obj = en.visor.dispinput;
+        obj = en.visor.curinput;
         PrologReader.checkTextRead(obj);
         Reader lr = (Reader) obj;
         try {

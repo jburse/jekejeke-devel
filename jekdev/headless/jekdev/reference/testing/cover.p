@@ -75,9 +75,9 @@ cover_summary :-
    write('.'), nl,
    sys_get_lang(testing, P),
    get_property(P, 'cover.summary.title', V),
-   setup_call_cleanup(report_begin_html('package.html', V),
+   setup_call_cleanup(report_begin_html('package.html', V, Y),
       html_list_summary,
-      report_end_html).
+      report_end_html(Y)).
 
 % html_list_summary
 :- private html_list_summary/0.
@@ -157,9 +157,9 @@ cover_packages :-
    Q is_atom '0'+I+'_'+D+'/package.html',
    write('Generating '),
    write('.'/D), nl,
-   setup_call_cleanup(report_begin_html(Q, D),
+   setup_call_cleanup(report_begin_html(Q, D, Y),
       html_list_package(D, L),
-      report_end_html), fail.
+      report_end_html(Y)), fail.
 cover_packages.
 
 % html_list_package(+Atom, +List)
@@ -242,9 +242,9 @@ cover_sources(Z) :-
    P is_atom '0'+I+'_'+D+ / +'0'+J+'_'+N+'.html',
    write('Generating '),
    write('.'/D/N), nl,
-   setup_call_cleanup(report_begin_html(P, N),
+   setup_call_cleanup(report_begin_html(P, N, Y),
       html_list_source(T, N, Z),
-      report_end_html), fail.
+      report_end_html(Y)), fail.
 cover_sources(_).
 
 % html_list_source(+Atom, +Atom, +RelUrl)

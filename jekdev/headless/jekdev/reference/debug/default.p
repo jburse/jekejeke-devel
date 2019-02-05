@@ -160,24 +160,24 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
 :- public debugging/0.
 debugging :-
    current_prolog_flag(debug, X),
-   ttywrite_term((:-set_prolog_flag(debug,X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-set_prolog_flag(debug,X)), [context(0)]),
+   write('.'), nl, fail.
 debugging :-
    current_prolog_flag(sys_visible, X),
-   ttywrite_term((:-visible(X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-visible(X)), [context(0)]),
+   write('.'), nl, fail.
 debugging :-
    current_prolog_flag(sys_leash, X),
-   ttywrite_term((:-leash(X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-leash(X)), [context(0)]),
+   write('.'), nl, fail.
 debugging :-
    spying(X),
-   ttywrite_term((:-spy(X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-spy(X)), [context(0)]),
+   write('.'), nl, fail.
 debugging :-
    breaking(X, Y),
-   ttywrite_term((:-break(X,Y)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-break(X,Y)), [context(0)]),
+   write('.'), nl, fail.
 debugging.
 :- set_predicate_property(debugging/0, sys_notrace).
 

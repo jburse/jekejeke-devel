@@ -54,8 +54,8 @@
 
 /**
  * goal_tracing(P, F):
- * The predicate can be used to define a custom debugger call back
- * for the port P and the frame F.
+ * The predicate can be used to define a custom debugger
+ * call back for the port P and the frame F.
  */
 % goal_tracing(+Atom, +Frame)
 :- public goal_tracing/2.
@@ -63,19 +63,10 @@
 :- static goal_tracing/2.
 
 /**
- * store_changing(S):
- * The predicate can be used to define a custom debugger call back
- * for the store S.
- */
-% store_changing(+Store)
-:- public store_changing/1.
-:- multifile store_changing/1.
-:- static store_changing/1.
-
-/**
  * trace_goal(P, F):
  * The predicate invokes the current debugger call back for
- * the port P and the frame F.
+ * the port P and the frame F. If no call back is defined then
+ * the current goal is traced and optionally prompted.
  */
 % trace_goal(+Port, +Frame)
 :- public trace_goal/2.
@@ -90,9 +81,19 @@ trace_goal(Port, Frame) :-
    sys_trace(Port, Frame).
 
 /**
+ * store_changing(S):
+ * The predicate can be used to define a custom debugger
+ * call back for the store S.
+ */
+% store_changing(+Store)
+:- public store_changing/1.
+:- multifile store_changing/1.
+:- static store_changing/1.
+
+/**
  * change_store(S):
  * The predicate invokes the current debugger call back for
- * the store S.
+ * the store S. If no call back is defined then does nothing.
  */
 % change_store(+Store)
 :- public change_store/1.

@@ -49,31 +49,16 @@
 % dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
-dispatch(Object, '/thread.jsp', _, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_thread(Object, Response),
-      close(Response)).
-dispatch(Object, '/stack.jsp', Request, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_stack(Object, Request, Response),
-      close(Response)).
 dispatch(_, '/frame.jsp', Request, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_frame(Request, Response),
-      close(Response)).
+   dispatch_frame(Request, Session).
 dispatch(_, '/source.jsp', Request, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_source(Request, Response),
-      close(Response)).
+   dispatch_source(Request, Session).
 dispatch(_, '/toggle.class', Request, Session) :- !,
-   setup_call_cleanup(
-      open(Session, write, Response),
-      send_toggle(Request, Response),
-      close(Response)).
+   dispatch_toggle(Request, Session).
+dispatch(Object, '/stack.jsp', Request, Session) :- !,
+   dispatch_stack(Object, Request, Session).
+dispatch(Object, '/thread.jsp', _, Session) :- !,
+   dispatch_thread(Object, Session).
 
 /*************************************************************/
 /* Some Utility                                              */
@@ -106,7 +91,7 @@ frame_begin(Response, Title) :-
 % frame_begin(+Stream, +Atom, +List)
 :- public frame_begin/3.
 frame_begin(Response, Title, Opt) :-
-   response_text(Response),
+   response_text('', Response),
    html_begin(Response, Title, Opt),
    write(Response, '<h3>'),
    html_escape(Response, Title),

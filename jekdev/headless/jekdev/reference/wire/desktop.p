@@ -45,8 +45,8 @@
 % dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
-dispatch(_, '/layout.html', _, Session) :- !,
-   catch(handle_text(library(wire/pages/layout), Session), _, true).
+dispatch(_, '/layout.html', Request, Session) :- !,
+   dispatch_text(library(wire/pages/layout), Request, Session).
 dispatch(Object, Spec, Request, Session) :-
    wire/view:dispatch(Object, Spec, Request, Session).
 

@@ -37,9 +37,6 @@
 :- package(library(jekdev/reference/wire)).
 
 :- module(control, []).
-:- use_module(library(misc/http)).
-:- use_module(library(misc/socket)).
-:- use_module(library(runtime/distributed)).
 :- use_module(hooks/pause).
 :- use_module(hooks/command).
 
@@ -49,24 +46,11 @@
  * O, with path P, with request R and the session S.
  */
 % upgrade(+Object, +Spec, +Request, +Session)
-:- override upgrade/4.
 :- public upgrade/4.
-upgrade(_, '/pause', Request, Session) :-
-   http_parameter(Request, thread, Name), !,
-   setup_call_cleanup(
-      open(Session, write, Output, [type(binary)]),
-      response_upgrade(Request, Output),
-      flush_output(Output)),
-   websock_new(Session, WebSession),
-   spawn(worker_pause(Name, WebSession)).
-upgrade(_, '/command', Request, Session) :-
-   http_parameter(Request, store, Name), !,
-   setup_call_cleanup(
-      open(Session, write, Output, [type(binary)]),
-      response_upgrade(Request, Output),
-      flush_output(Output)),
-   websock_new(Session, WebSession),
-   spawn(worker_command(Name, WebSession)).
+upgrade(_, '/pause', Request, Session) :- !,
+   upgrade_pause(Request, Session).
+upgrade(_, '/command', Request, Session) :- !,
+   upgrade_command(Request, Session).
 
 /***************************************************************/
 /* HTTP Response Text                                          */

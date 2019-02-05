@@ -161,24 +161,24 @@ tdebugging :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_tdebug, X),
    tdebugging_tdebug(X, C),
-   ttywrite_term((:-C), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-C), [context(0)]),
+   write('.'), nl, fail.
 tdebugging :-
    current_prolog_flag(sys_tvisible, X),
-   ttywrite_term((:-tvisible(X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-tvisible(X)), [context(0)]),
+   write('.'), nl, fail.
 tdebugging :-
    current_prolog_flag(sys_tleash, X),
-   ttywrite_term((:-tleash(X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-tleash(X)), [context(0)]),
+   write('.'), nl, fail.
 tdebugging :-
    tspying(X),
-   ttywrite_term((:-tspy(X)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-tspy(X)), [context(0)]),
+   write('.'), nl, fail.
 tdebugging :-
    tbreaking(X, Y),
-   ttywrite_term((:-tbreak(X,Y)), [context(0)]),
-   ttywrite('.'), ttynl, fail.
+   write_term((:-tbreak(X,Y)), [context(0)]),
+   write('.'), nl, fail.
 tdebugging.
 :- set_predicate_property(tdebugging/0, sys_notrace).
 

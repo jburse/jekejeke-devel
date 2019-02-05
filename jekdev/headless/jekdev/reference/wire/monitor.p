@@ -61,7 +61,7 @@ start_monitor :-
 :- private start_monitor/1.
 start_monitor(-1) :- !.
 start_monitor(P) :-
-   spawn((  run_http(wire/monitor, P), fail; true)).
+   submit((  run_http(wire/monitor, P), fail; true), _).
 
 /**
  * initialized(O, S):
@@ -94,16 +94,16 @@ destroyed(_, _) :-
 % dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
-dispatch(_, '/images/closed.gif', _, Session) :- !,
-   catch(handle_binary(library(wire/images/closed), Session), _, true).
-dispatch(_, '/images/open.gif', _, Session) :- !,
-   catch(handle_binary(library(wire/images/open), Session), _, true).
-dispatch(_, '/images/blank.gif', _, Session) :- !,
-   catch(handle_binary(library(wire/images/blank), Session), _, true).
-dispatch(_, '/images/break.gif', _, Session) :- !,
-   catch(handle_binary(library(wire/images/break), Session), _, true).
-dispatch(_, '/index.html', _, Session) :- !,
-   catch(handle_text(library(wire/pages/index), Session), _, true).
+dispatch(_, '/images/closed.gif', Request, Session) :- !,
+   dispatch_binary(library(wire/images/closed), Request, Session).
+dispatch(_, '/images/open.gif', Request, Session) :- !,
+   dispatch_binary(library(wire/images/open), Request, Session).
+dispatch(_, '/images/blank.gif', Request, Session) :- !,
+   dispatch_binary(library(wire/images/blank), Request, Session).
+dispatch(_, '/images/break.gif', Request, Session) :- !,
+   dispatch_binary(library(wire/images/break), Request, Session).
+dispatch(_, '/index.html', Request, Session) :- !,
+   dispatch_text(library(wire/pages/index), Request, Session).
 dispatch(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/desktop/'), !,
    Pos2 is Pos-1,

@@ -150,7 +150,7 @@ stores :-
 stores(null) :- !.
 stores(S) :-
    store_property(S, sys_name(N)),
-   ttywrite(N), ttynl,
+   write(N), nl,
    store_property(S, sys_parent(T)),
    stores(T).
 

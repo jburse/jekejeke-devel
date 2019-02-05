@@ -92,11 +92,11 @@ sys_show_all(_).
 sys_show_answer(the(R)) :-
    sys_get_variable_names(M),
    sys_show_name_or_eq_list(R, M),
-   ttywrite(' ;'), ttynl.
+   write(' ;'), nl.
 sys_show_answer(last(R)) :-
    sys_get_variable_names(M),
-   sys_show_name_or_eq_list(R, M), ttynl.
-sys_show_answer(no) :- sys_show_no, ttynl.
+   sys_show_name_or_eq_list(R, M), nl.
+sys_show_answer(no) :- sys_show_no, nl.
 sys_show_answer(ball(E)) :-
    print_stack_trace(E).
 
@@ -136,6 +136,6 @@ user:term_expansion(V, _) :-
 user:term_expansion(S, T) :-
    S = '.'(T), !,
    sys_get_variable_names(N),
-   ttywrite_term(S, [context(-1),quoted(true),variable_names(N),annotation((makedot|filler))]), ttyflush_output.
+   write_term(S, [context(-1),quoted(true),variable_names(N),annotation((makedot|filler))]), flush_output.
 user:term_expansion((?- G), unit) :-
    sys_show_all(G).

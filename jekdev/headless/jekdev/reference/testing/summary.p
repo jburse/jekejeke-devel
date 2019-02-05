@@ -68,9 +68,9 @@ summary_batch(C) :-
    write('.'), nl,
    sys_get_lang(testing, P),
    get_property(P, 'summary.summary.title', V),
-   setup_call_cleanup(report_begin_html('06_summary.html', V),
+   setup_call_cleanup(report_begin_html('06_summary.html', V, Y),
       html_page(C),
-      report_end_html).
+      report_end_html(Y)).
 
 % html_page(+Atom)
 :- private html_page/1.

@@ -61,17 +61,17 @@
 % protocol(+Atom)
 :- public protocol/1.
 protocol(_) :-
-   current_prolog_flag(sys_disp_input, Input),
+   current_prolog_flag(sys_cur_input, Input),
    sys_get_stream_protocol(Input, Protocol),
    Protocol \== null,
    throw(error(permission_error(protocol,state,Protocol),_)).
 protocol(Name) :-
    open(Name, append, Protocol),
-   current_prolog_flag(sys_disp_input, Input),
+   current_prolog_flag(sys_cur_input, Input),
    sys_set_stream_protocol(Input, Protocol),
-   current_prolog_flag(sys_disp_output, Output),
+   current_prolog_flag(sys_cur_output, Output),
    sys_set_stream_protocol(Output, Protocol),
-   current_prolog_flag(sys_disp_error, Error),
+   current_prolog_flag(sys_cur_error, Error),
    sys_set_stream_protocol(Error, Protocol).
 :- set_predicate_property(protocol/1, sys_notrace).
 
@@ -83,18 +83,18 @@ protocol(Name) :-
 % noprotocol
 :- public noprotocol/0.
 noprotocol :-
-   current_prolog_flag(sys_disp_input, Input),
+   current_prolog_flag(sys_cur_input, Input),
    sys_get_stream_protocol(Input, Protocol),
    Protocol == null,
    throw(error(permission_error(protocol,state,Protocol),_)).
 noprotocol :-
-   current_prolog_flag(sys_disp_input, Input),
+   current_prolog_flag(sys_cur_input, Input),
    sys_get_stream_protocol(Input, Protocol),
    close(Protocol),
    sys_set_stream_protocol(Input, null),
-   current_prolog_flag(sys_disp_output, Output),
+   current_prolog_flag(sys_cur_output, Output),
    sys_set_stream_protocol(Output, null),
-   current_prolog_flag(sys_disp_error, Error),
+   current_prolog_flag(sys_cur_error, Error),
    sys_set_stream_protocol(Error, null).
 :- set_predicate_property(noprotocol/0, sys_notrace).
 
