@@ -26,7 +26,7 @@
  * property value from a properties file. The lookup and retrieval
  * is fast, since we memory load and cache properties files.
  *
- * The predicate atom_format/[3,4] allows formatting a list of arguments
+ * The predicate format_atom/[3,4] allows formatting a list of arguments
  * based on a template and a locale. The predicates message_make/[3,4]
  * and error_make/[3,4] allow formatting a term based on properties
  * file and a locale. The predicates get_error_properties/[1,2] and
@@ -112,22 +112,22 @@ sys_get_lang(Slash, Locale, Props) :-
       sysGetProperty('Properties','String','String')).
 
 /**
- * atom_format(F, A, S):
- * atom_format(L, F, A, S):
+ * format_atom(F, A, S):
+ * format_atom(L, F, A, S):
  * The predicate formats the arguments A from the format F and unifies
  * the result with S. The quaternary predicate allows specifying
  * a locale L.
  */
-% atom_format(+Format, +Arguments, -Atom)
-:- public atom_format/3.
-atom_format(Format, Arguments, Atom) :-
+% format_atom(+Format, +Arguments, -Atom)
+:- public format_atom/3.
+format_atom(Format, Arguments, Atom) :-
    current_prolog_flag(sys_locale, Locale),
-   atom_format(Locale, Format, Arguments, Atom).
+   format_atom(Locale, Format, Arguments, Atom).
 
-% atom_format(+Locale, +Format, +List, -Atom)
-:- public atom_format/4.
-:- foreign(atom_format/4, 'ForeignLocale',
-      sysAtomFormat('Interpreter','String','String','Object')).
+% format_atom(+Locale, +Format, +List, -Atom)
+:- public format_atom/4.
+:- foreign(format_atom/4, 'ForeignLocale',
+      sysFormatToString('Interpreter','String','String','Object')).
 
 /**
  * message_make(P, M, S):

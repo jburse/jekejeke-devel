@@ -167,26 +167,26 @@ handle_object(Object, Spec, Request, Session) :-
 
 /**
  * initialized(O, S):
- * The predicate is called when the server S
+ * The predicate is called when the socket S
  * is initialized for object O.
  */
-% initialized(+Object, +Server)
+% initialized(+Object, +Socket)
 :- public initialized/2.
-:- static initialized/2.
+initialized(_, _).
 
 /**
  * destroyed(O, S):
- * The predicate is called when the server S
+ * The predicate is called when the socket S
  * is destroyed for object O.
  */
-% destroyed(+Object, +Server)
+% destroyed(+Object, +Socket)
 :- public destroyed/2.
-:- static destroyed/2.
+destroyed(_, _).
 
 /**
  * dispatch(O, P, R, S):
  * The predicate succeeds in dispatching the request for object
- * O, with path P, with request R and the session S.
+ * O, with path P, with request R and the socket S.
  */
 % dispatch(+Object, +Spec, +Request, +Socket)
 :- public dispatch/4.
@@ -196,9 +196,9 @@ dispatch(_, '/images/cookie.gif', Request, Session) :- !,
 /**
  * upgrade(O, P, R, S):
  * The predicate succeeds in upgrading the request for object
- * O, with path P, with request R and the session S.
+ * O, with path P, with request R and the socket S.
  */
-% upgrade(+Object, +Spec, +Request, +Session)
+% upgrade(+Object, +Spec, +Request, +Socket)
 :- public upgrade/4.
 :- static upgrade/4.
 
@@ -353,22 +353,31 @@ send_error(501, Response) :- !,
 /***************************************************************/
 
 /**
- * response_text(E, O):
- * Send an OK response with ETag E to the text output stream O.
+ * response_text(H, O):
+ * Send an OK response with headers H to the text output stream O.
  */
-% response_text(+Atom, +Stream)
+% response_text(+List, +Stream)
 :- public response_text/2.
-response_text('', Response) :- !,
+response_text(Headers, Response) :- !,
    write(Response, 'HTTP/1.1 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
-response_text(Etag, Response) :-
-   write(Response, 'HTTP/1.1 200 OK\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   write(Response, 'ETag: '),
-   write(Response, Etag),
+
+% response_text_headers(+List, +Stream)
+:- private response_text_headers/2.
+response_text_headers(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+response_text_headers([], _) :- !.
+response_text_headers([Name-Value|Rest], Response) :- !,
+   write(Response, Name),
+   write(Response, ': '),
+   write(Response, Value),
    write(Response, '\r\n'),
-   write(Response, '\r\n').
+   response_text_headers(Rest, Response).
+response_text_headers(X, _) :-
+   throw(error(type_error(list,X),_)).
 
 /**
  * dispatch_text(F, R, O):
@@ -376,31 +385,32 @@ response_text(Etag, Response) :-
  */
 :- public dispatch_text/3.
 dispatch_text(File, Request, Session) :-
-   resource_etag(File, ETag),
-   dispatch_text(File, Request, ETag, Session).
+   resource_etag(File, Headers),
+   dispatch_text(File, Request, Headers, Session).
 
-% dispatch_text(+File, +Request, +Atom, +Socket)
+% dispatch_text(+File, +Request, +List, +Socket)
 :- private dispatch_text/4.
-dispatch_text(_, Request, ETag, Session) :-
+dispatch_text(_, Request, Headers, Session) :-
+   member('ETag'-ETag, Headers),
    http_header(Request, 'If-None-Match', ETag), !,
-   catch(handle_not_modified(ETag, Session), _, true).
-dispatch_text(File, _, ETag, Session) :-
-   catch(handle_text(File, ETag, Session), _, true).
+   catch(handle_not_modified(Headers, Session), _, true).
+dispatch_text(File, _, Headers, Session) :-
+   catch(handle_text(File, Headers, Session), _, true).
 
-% handle_text(+File, +Atom, +Socket)
+% handle_text(+File, +List, +Socket)
 :- private handle_text/3.
-handle_text(File, Etag, Session) :-
+handle_text(File, Headers, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      send_text(File, Etag, Response),
+      send_text(File, Headers, Response),
       close(Response)).
 
-% send_text(+File, +Atom, +Stream)
+% send_text(+File, +List, +Stream)
 :- private send_text/3.
-send_text(File, Etag, Response) :-
+send_text(File, Headers, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream),
-      (  response_text(Etag, Response),
+      (  response_text(Headers, Response),
          send_lines(Stream, Response)),
       close(Stream)).
 
@@ -432,22 +442,31 @@ send_lines2(_, Response) :-
 /***************************************************************/
 
 /**
- * response_binary(E, O):
- * Send an OK response with ETag E to the binary output stream O.
+ * response_binary(H, O):
+ * Send an OK response with headers H to the binary output stream O.
  */
-% response_binary(+Atom, +Stream)
+% response_binary(+List, +Stream)
 :- public response_binary/2.
-response_binary('', Response) :-
+response_binary(Headers, Response) :-
    write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
    write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
+   response_binary_headers(Headers, Response),
    write_atom(Response, '\r\n').
-response_binary(Etag, Response) :-
-   write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
-   write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
-   write_atom(Response, 'ETag: '),
-   write_atom(Response, Etag),
+
+% response_binary_headers(+List, +Stream)
+:- private response_binary_headers/2.
+response_binary_headers(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+response_binary_headers([], _) :- !.
+response_binary_headers([Name-Value|Rest], Response) :- !,
+   write_atom(Response, Name),
+   write_atom(Response, ': '),
+   write_atom(Response, Value),
    write_atom(Response, '\r\n'),
-   write_atom(Response, '\r\n').
+   response_binary_headers(Rest, Response).
+response_binary_headers(X, _) :-
+   throw(error(type_error(list,X),_)).
 
 % write_atom(+Stream, +Atom)
 :- private write_atom/2.
@@ -462,31 +481,32 @@ write_atom(Response, Atom) :-
 % dispatch_binary(+File, +Request, +Socket)
 :- public dispatch_binary/3.
 dispatch_binary(File, Request, Session) :-
-   resource_etag(File, ETag),
-   dispatch_binary(File, Request, ETag, Session).
+   resource_etag(File, Headers),
+   dispatch_binary(File, Request, Headers, Session).
 
-% dispatch_binary(+File, +Request, +Atom, +Socket)
+% dispatch_binary(+File, +Request, +List, +Socket)
 :- private dispatch_binary/4.
-dispatch_binary(_, Request, ETag, Session) :-
+dispatch_binary(_, Request, Headers, Session) :-
+   member('ETag'-ETag, Headers),
    http_header(Request, 'If-None-Match', ETag), !,
-   catch(handle_not_modified(ETag, Session), _, true).
-dispatch_binary(File, _, ETag, Session) :-
-   catch(handle_binary(File, ETag, Session), _, true).
+   catch(handle_not_modified(Headers, Session), _, true).
+dispatch_binary(File, _, Headers, Session) :-
+   catch(handle_binary(File, Headers, Session), _, true).
 
-% handle_binary(+File, +Atom, +Socket)
+% handle_binary(+File, +List, +Socket)
 :- private handle_binary/3.
-handle_binary(File, Etag, Session) :-
+handle_binary(File, Headers, Session) :-
    setup_call_cleanup(
       open(Session, write, Response, [type(binary)]),
-      send_binary(File, Etag, Response),
+      send_binary(File, Headers, Response),
       close(Response)).
 
-% send_binary(+File, +Atom, +Stream)
+% send_binary(+File, +List, +Stream)
 :- private send_binary/3.
-send_binary(File, Etag, Response) :-
+send_binary(File, Headers, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]),
-      (  response_binary(Etag, Response),
+      (  response_binary(Headers, Response),
          send_blocks(Stream, Response)),
       close(Stream)).
 
@@ -498,21 +518,21 @@ send_blocks(Stream, Response) :-
    send_blocks(Stream, Response).
 send_blocks(_, _).
 
-% resource_etag(+File, -Atom)
+% resource_etag(+File, -List)
 :- private resource_etag/2.
-resource_etag(File, Etag) :-
+resource_etag(File, Headers) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]),
       stream_property(Stream, last_modified(Date)),
       close(Stream)),
-   date_etag(Date, Etag).
+   date_etag(Date, Headers).
 
-% date_etag(+Integer, -Atom)
+% date_etag(+Integer, -List)
 :- private date_etag/2.
-date_etag(-1, '') :- !.
-date_etag(Date, Etag) :-
+date_etag(-1, []) :- !.
+date_etag(Date, ['ETag'-ETag]) :-
    atom_number(DateStr, Date),
-   atom_split(Etag, '', ['"',DateStr,'"']).
+   atom_split(ETag, '', ['"',DateStr,'"']).
 
 /***************************************************************/
 /* HTTP Response Dynamic                                       */
@@ -582,22 +602,20 @@ response_redirect(Location, Response) :-
    write(Response, '\r\n').
 
 /**
- * handle_not_modified(E, O):
- * Send a not modified response with ETag E to the socket O.
+ * handle_not_modified(H, O):
+ * Send a not modified response with headers H to the socket O.
  */
-% handle_not_modified(+Atom, +Socket)
+% handle_not_modified(+List, +Socket)
 :- public handle_not_modified/2.
-handle_not_modified(Etag, Session) :-
+handle_not_modified(Headers, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
-      response_not_modified(Etag, Response),
+      response_not_modified(Headers, Response),
       close(Response)).
 
-% response_not_modified(+Atom, +Stream)
+% response_not_modified(+List, +Stream)
 :- private response_not_modified/2.
-response_not_modified(Etag, Response) :-
+response_not_modified(Headers, Response) :-
    write(Response, 'HTTP/1.1 304 Not Modified\r\n'),
-   write(Response, 'ETag: '),
-   write(Response, Etag),
-   write(Response, '\r\n'),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').

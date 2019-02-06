@@ -1,12 +1,14 @@
 package jekpro.frequent.system;
 
-import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
+import matula.util.wire.XSelectFormat;
 
-import java.util.Date;
-import java.util.Iterator;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * <p>The foreign predicates for the module system/shell.</p>
@@ -61,6 +63,67 @@ public final class ForeignShell {
         return res;
     }
 
+    /*****************************************************************/
+    /* Retrieve Date & Calendar                                      */
+    /*****************************************************************/
+
+    /**
+     * <p>Retrieve a time zoned date.</p>
+     *
+     * @param time The time in milliseconds and current time zone.
+     * @param zone The desired time zone.
+     * @return The date.
+     */
+    public static Calendar sysGetTime(long time, String zone) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zone));
+        cal.setTimeInMillis(time);
+        return cal;
+    }
+
+    /*****************************************************************/
+    /* Format Date & Calendar                                        */
+    /*****************************************************************/
+
+    /**
+     * <p>Convert a date or time zoned date to a string.</p>
+     *
+     * @param locstr The locale.
+     * @param format The format.
+     * @param date   The date.
+     * @return The unparsed string.
+     */
+    public static String sysDateToString(String locstr,
+                                         String format, Object date) {
+        Locale locale = XSelectFormat.stringToLocale(locstr);
+        SimpleDateFormat sf = new SimpleDateFormat(format, locale);
+        if (date instanceof Calendar) {
+            sf.setTimeZone(((Calendar) date).getTimeZone());
+            return sf.format(((Calendar) date).getTime());
+        } else {
+            return sf.format(date);
+        }
+    }
+
+    /**
+     * <p>Convert a string to a date.</p>
+     *
+     * @param locstr The locale.
+     * @param format The format.
+     * @param str    The string.
+     * @return The parsed date.
+     */
+    public static Object sysStringToDate(String locstr,
+                                         String format, String str)
+            throws InterpreterMessage {
+        try {
+            Locale locale = XSelectFormat.stringToLocale(locstr);
+            SimpleDateFormat sf = new SimpleDateFormat(format, locale);
+            return sf.parse(str);
+        } catch (ParseException x) {
+            throw new InterpreterMessage(InterpreterMessage.syntaxError(x.getMessage()));
+        }
+    }
+
     /**
      * <p>Some testing.</p>
      *
@@ -75,6 +138,32 @@ public final class ForeignShell {
             Object value = prop.get(key);
             System.out.println(key + "\t" + value);
         }
+    }
+    */
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) throws ParseException {
+        long time = 1549463357000L;
+        SimpleDateFormat sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        sf.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
+        System.out.println("sf=" + sf.format(time)+ ", tmz=" + sf.getTimeZone().getID());
+
+        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+        sf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        System.out.println("sf=" + sf.format(time)+ ", tmz=" + sf.getTimeZone().getID());
+
+        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        Date date = sf.parse("Mi, 06 Feb 2019 15:29:17 MEZ");
+        System.out.println("time=" + date.getTime() + ", tmz=" + sf.getTimeZone().getID());
+
+        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+        date = sf.parse("Wed, 06 Feb 2019 14:29:17 GMT");
+        System.out.println("time=" + date.getTime() + ", tmz=" + sf.getTimeZone().getID());
     }
     */
 

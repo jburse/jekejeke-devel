@@ -191,13 +191,13 @@ read_punch_max(Stream, Length, Block) :-
 % format(+Atom, +List)
 :- public format/2.
 format(Format, Arguments) :-
-   atom_format(Format, Arguments, Atom),
+   format_atom(Format, Arguments, Atom),
    write(Atom).
 
 % format(+AliasOrStream, +Atom, +List)
 :- public format/3.
 format(AliasOrStream, Format, Arguments) :-
-   atom_format(Format, Arguments, Atom),
+   format_atom(Format, Arguments, Atom),
    write(AliasOrStream, Atom).
 
 /**

@@ -75,24 +75,76 @@ getenv(Name, Value) :-
 :- foreign(sys_list_env/1, 'ForeignShell', sysListEnv('Interpreter')).
 
 /*****************************************************************/
-/* System Date & Time                                            */
+/* Retrieve Date & Calendar                                      */
 /*****************************************************************/
 
 /**
  * get_time(S):
  * The predicate succeeds with a current time object S.
- * The time object is suitable for format/2 and friends.
  */
 % get_time(-DateTime)
 :- public get_time/1.
 :- foreign_constructor(get_time/1, 'Date', new).
 
 /**
- * get_time(T, S):
- * The predicate succeeds with a time object S for the time
+ * get_time(T, D):
+ * The predicate succeeds with a date object D for the time
  * T in milliseconds since January 1, 1970, 00:00:00 GMT.
- * The time object is suitable for format/2 and friends.
  */
 % get_time(+Integer, -DateTime)
 :- public get_time/2.
-:- foreign_constructor(get_time/2, 'Date', new(long)).
+get_time(T, D) :-
+   var(D), !,
+   sys_long_to_date(T, D).
+get_time(T, D) :-
+   sys_date_to_long(D, T).
+
+:- private sys_long_to_date/2.
+:- foreign_constructor(sys_long_to_date/2, 'Date', new(long)).
+
+:- private sys_date_to_long/2.
+:- virtual sys_date_to_long/2.
+:- foreign(sys_date_to_long/2, 'Date', getTime).
+
+/**
+ * get_time(T, Z, C):
+ * The predicate succeeds with a calendar object C for the time
+ * T in milliseconds since January 1, 1970, 00:00:00 GMT,
+ * in the desired time zone Z.
+ */
+% get_time(+Integer, +Atom, -DateTime)
+:- public get_time/3.
+:- foreign(get_time/3, 'ForeignShell', sysGetTime(long,'String')).
+
+/*****************************************************************/
+/* Format Date & Calendar                                        */
+/*****************************************************************/
+
+/**
+ * date_atom(F, T, S):
+ * date_atom(L, F, T, S):
+ * The predicate succeeds in S with the date or calendar T
+ * formatted to the format F. The quaternary predicate allows
+ * specifying a locale L.
+ */
+% date_atom(+Format, +DateTime, -Atom)
+:- public date_atom/3.
+date_atom(Format, Argument, Atom) :-
+   current_prolog_flag(sys_locale, Locale),
+   date_atom(Locale, Format, Argument, Atom).
+
+% date_atom(+Locale, +Format, +DateTime, -Atom)
+:- public date_atom/4.
+date_atom(Locale, Format, Argument, Atom) :-
+   var(Atom), !,
+   sys_date_to_string(Locale, Format, Argument, Atom).
+date_atom(Locale, Format, Argument, Atom) :-
+   sys_string_to_date(Locale, Format, Atom, Argument).
+
+:- private sys_date_to_string/4.
+:- foreign(sys_date_to_string/4, 'ForeignShell',
+      sysDateToString('String','String','Object')).
+
+:- private sys_string_to_date/4.
+:- foreign(sys_string_to_date/4, 'ForeignShell',
+      sysStringToDate('String','String','String')).
