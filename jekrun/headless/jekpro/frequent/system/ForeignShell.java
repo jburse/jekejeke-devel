@@ -8,7 +8,10 @@ import matula.util.wire.XSelectFormat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * <p>The foreign predicates for the module system/shell.</p>
@@ -42,6 +45,7 @@ import java.util.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignShell {
+    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
 
     /*****************************************************************/
     /* Environment Variables                                         */
@@ -70,13 +74,21 @@ public final class ForeignShell {
     /**
      * <p>Retrieve a time zoned date.</p>
      *
-     * @param time The time in milliseconds and current time zone.
-     * @param zone The desired time zone.
+     * @param locstr The locale.
+     * @param time   The time in milliseconds and current time zone.
+     * @param zone   The desired time zone.
      * @return The date.
      */
-    public static Calendar sysGetTime(long time, String zone) {
-        TimeZone tz = TimeZone.getTimeZone(zone);
-        Calendar cal = Calendar.getInstance(tz);
+    public static Calendar sysGetTime(String locstr,
+                                      long time, String zone) {
+        Locale locale = XSelectFormat.stringToLocale(locstr);
+        TimeZone tz;
+        if (!"GMT".equals(zone)) {
+            tz = TimeZone.getTimeZone(zone);
+        } else {
+            tz = GMT;
+        }
+        Calendar cal = Calendar.getInstance(tz, locale);
         cal.setTimeInMillis(time);
         return cal;
     }
@@ -98,7 +110,7 @@ public final class ForeignShell {
         Locale locale = XSelectFormat.stringToLocale(locstr);
         SimpleDateFormat sf = new SimpleDateFormat(format, locale);
         if (date instanceof Calendar) {
-            sf.setTimeZone(((Calendar) date).getTimeZone());
+            sf.setCalendar((Calendar) date);
             return sf.format(((Calendar) date).getTime());
         } else {
             return sf.format(date);
@@ -130,25 +142,20 @@ public final class ForeignShell {
      *
      * @param args Not used.
      */
-    /*
-    public static void main(String[] args) throws ParseException {
-        long time = 1549463357000L;
-        SimpleDateFormat sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-        sf.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
-        System.out.println("sf=" + sf.format(time));
+    public static void main(String[] args) {
+        /*
+        Locale WAREKI_LOCALE = new Locale("ja", "JP", "JP");
+        TimeZone tz = TimeZone.getTimeZone("JST");
+        Calendar jcal = Calendar.getInstance(tz, WAREKI_LOCALE);
 
-        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH);
-        sf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        System.out.println("sf=" + sf.format(time));
+        SimpleDateFormat sdf = new SimpleDateFormat("GGGG y-MM-dd zzz", WAREKI_LOCALE);
+        sdf.setCalendar(jcal);
+        SimpleDateFormat sdf2 = new SimpleDateFormat("GGGG y-MM-dd zzz", Locale.UK);
+        System.out.println("got = " + sdf.format(1549556043201L) + " (" + sdf2.format(1549556043201L) + ")");
 
-        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-        Date date = sf.parse("Mi, 06 Feb 2019 15:29:17 MEZ");
-        System.out.println("time=" + date.getTime());
-
-        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
-        date = sf.parse("Wed, 06 Feb 2019 14:29:17 GMT");
-        System.out.println("time=" + date.getTime());
+        System.out.println("got = " + sdf.format(-1357544756799L) + " (" + sdf2.format(-1357544756799L) + ")");
+        */
     }
-    */
+
 
 }

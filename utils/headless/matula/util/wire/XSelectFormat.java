@@ -414,18 +414,22 @@ public final class XSelectFormat extends XSelect implements InterfaceFunc {
      * @return The locale.
      */
     public static Locale stringToLocale(String locstr) {
-        int k1 = locstr.indexOf('_');
-        if (k1 == -1) {
-            return new Locale(locstr);
-        } else {
-            int k2 = locstr.indexOf('_', k1 + 1);
-            if (k2 == -1) {
-                return new Locale(locstr.substring(0, k1),
-                        locstr.substring(k1 + 1));
+        if (!"en_GB".equals(locstr)) {
+            int k1 = locstr.indexOf('_');
+            if (k1 == -1) {
+                return new Locale(locstr);
             } else {
-                return new Locale(locstr.substring(0, k1),
-                        locstr.substring(k1 + 1, k2), locstr.substring(k2 + 1));
+                int k2 = locstr.indexOf('_', k1 + 1);
+                if (k2 == -1) {
+                    return new Locale(locstr.substring(0, k1),
+                            locstr.substring(k1 + 1));
+                } else {
+                    return new Locale(locstr.substring(0, k1),
+                            locstr.substring(k1 + 1, k2), locstr.substring(k2 + 1));
+                }
             }
+        } else {
+            return Locale.UK;
         }
     }
 

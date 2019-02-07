@@ -109,13 +109,21 @@ get_time(Millis, DateTime) :-
 
 /**
  * get_time(T, Z, C):
+ * get_time(L, T, Z, C):
  * The predicate succeeds with a calendar object C for the time
  * T in milliseconds since January 1, 1970, 00:00:00 GMT,
- * in the desired time zone Z.
+ * in the desired time zone Z. The quaternary predicate allows
+ * specifying a locale L.
  */
 % get_time(+Integer, +Atom, -DateTime)
 :- public get_time/3.
-:- foreign(get_time/3, 'ForeignShell', sysGetTime(long,'String')).
+get_time(Millis, Zone, DateTime) :-
+   current_prolog_flag(sys_locale, Locale),
+   get_time(Locale, Millis, Zone, DateTime).
+
+% get_time(+Atom, +Integer, +Atom, -DateTime)
+:- public get_time/4.
+:- foreign(get_time/4, 'ForeignShell', sysGetTime('String',long,'String')).
 
 /*****************************************************************/
 /* Format Date & Calendar                                        */
@@ -160,7 +168,7 @@ date_atom(Locale, Format, DateTime, Formatted) :-
 :- public rfc1123_atom/2.
 rfc1123_atom(Millis, Formatted) :-
    var(Formatted), !,
-   get_time(Millis, 'GMT', Calendar),
+   get_time(en_GB, Millis, 'GMT', Calendar),
    date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss ''GMT''', Calendar, Formatted).
 rfc1123_atom(Millis, Formatted) :-
    date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss zzz', Calendar, Formatted),
