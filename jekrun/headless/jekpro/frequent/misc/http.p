@@ -394,6 +394,7 @@ response_text_headers(X, _) :-
  * dispatch_text(F, R, O):
  * The predicate sends the HTML resource F for request R to the socket O.
  */
+% dispatch_text(+File, +Request, +Socket)
 :- public dispatch_text/3.
 dispatch_text(File, Request, Session) :-
    resource_meta(File, Headers),

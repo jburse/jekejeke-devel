@@ -161,7 +161,7 @@ date_atom(Locale, Format, DateTime, Formatted) :-
 rfc1123_atom(Millis, Formatted) :-
    var(Formatted), !,
    get_time(Millis, 'GMT', Calendar),
-   date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss zzz', Calendar, Formatted).
+   date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss ''GMT''', Calendar, Formatted).
 rfc1123_atom(Millis, Formatted) :-
    date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss zzz', Calendar, Formatted),
    get_time(Millis, Calendar).

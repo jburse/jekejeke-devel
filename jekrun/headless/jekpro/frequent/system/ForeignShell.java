@@ -75,7 +75,8 @@ public final class ForeignShell {
      * @return The date.
      */
     public static Calendar sysGetTime(long time, String zone) {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(zone));
+        TimeZone tz = TimeZone.getTimeZone(zone);
+        Calendar cal = Calendar.getInstance(tz);
         cal.setTimeInMillis(time);
         return cal;
     }
@@ -130,53 +131,24 @@ public final class ForeignShell {
      * @param args Not used.
      */
     /*
-    public static void main(String[] args) {
-        Properties prop = System.getProperties();
-        Enumeration<Object> keys = prop.keys();
-        while (keys.hasMoreElements()) {
-            Object key = keys.nextElement();
-            Object value = prop.get(key);
-            System.out.println(key + "\t" + value);
-        }
-    }
-    */
-
-    /**
-     * <p>Some testing.</p>
-     *
-     * @param args Not used.
-     */
     public static void main(String[] args) throws ParseException {
-        SimpleDateFormat sf = new SimpleDateFormat("dd MMM yyyy");
-        Date date=sf.parse("29 Feb 2020");
-        System.out.println("date="+date);
-
-        Calendar calendar=Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.add(Calendar.YEAR, -1);
-        System.out.println("date="+calendar.getTime());
-
-        calendar.add(Calendar.YEAR, 1);
-        System.out.println("date="+calendar.getTime());
-
-  /*
         long time = 1549463357000L;
         SimpleDateFormat sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         sf.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
-        System.out.println("sf=" + sf.format(time)+ ", tmz=" + sf.getTimeZone().getID());
+        System.out.println("sf=" + sf.format(time));
 
-        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+        sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH);
         sf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        System.out.println("sf=" + sf.format(time)+ ", tmz=" + sf.getTimeZone().getID());
+        System.out.println("sf=" + sf.format(time));
 
         sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         Date date = sf.parse("Mi, 06 Feb 2019 15:29:17 MEZ");
-        System.out.println("time=" + date.getTime() + ", tmz=" + sf.getTimeZone().getID());
+        System.out.println("time=" + date.getTime());
 
         sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
         date = sf.parse("Wed, 06 Feb 2019 14:29:17 GMT");
-        System.out.println("time=" + date.getTime() + ", tmz=" + sf.getTimeZone().getID());
-       */
+        System.out.println("time=" + date.getTime());
     }
+    */
 
 }
