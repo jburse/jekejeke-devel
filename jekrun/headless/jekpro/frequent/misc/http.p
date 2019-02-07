@@ -77,6 +77,8 @@
 :- use_module(library(system/uri)).
 :- use_module(library(basic/lists)).
 :- use_module(library(system/domain)).
+:- use_module(library(system/shell)).
+:- use_module(library(misc/text)).
 
 /***************************************************************/
 /* HTTP Server                                                 */
@@ -159,8 +161,8 @@ handle_get(_, _, _, Session) :-
 % handle_object(+Object, +Atom, +Request, +Socket)
 :- private handle_object/4.
 handle_object(Object, Spec, Request, Session) :-
-   http_header(Request, 'Upgrade', websocket),
-   http_header(Request, 'Connection', 'Upgrade'), !,
+   http_header(Request, upgrade, websocket),
+   http_header(Request, connection, 'Upgrade'), !,
    Object::upgrade(Spec, Request, Session).
 handle_object(Object, Spec, Request, Session) :-
    Object::dispatch(Spec, Request, Session).
@@ -252,14 +254,22 @@ read_header(What, Request, List) :-
 :- private make_header/3.
 make_header(Line, List, List2) :-
    atom_split(Line, ': ', [Name,Rest]),
-   atom_split(Rest, ', ', Values),
-   make_header(Values, Name, List, List2).
+   downcase_atom(Name, Name2),
+   make_header2(Name2, Rest, List, List2).
 
-% make_header(+Atom, +List, -List, +List)
-:- private make_header/3.
-make_header([], _, List, List).
-make_header([Value|Rest], Name, [Name-Value|List], List2) :-
-   make_header(Rest, Name, List, List2).
+% make_header2(+Atom, +Atom, -List, +List)
+:- private make_header2/4.
+make_header2(Name, Rest, [Name-Rest|List], List) :-
+   Name = 'if-modified-since', !.
+make_header2(Name, Rest, List, List2) :-
+   atom_split(Rest, ', ', Values),
+   make_header3(Values, Name, List, List2).
+
+% make_header3(+Atom, +List, -List, +List)
+:- private make_header3/4.
+make_header3([], _, List, List).
+make_header3([Value|Rest], Name, [Name-Value|List], List2) :-
+   make_header3(Rest, Name, List, List2).
 
 % make_parameter(+Atom, -List)
 :- private make_parameter/2.
@@ -354,14 +364,15 @@ send_error(501, Response) :- !,
 
 /**
  * response_text(H, O):
- * Send an OK response with headers H to the text output stream O.
+ * Send an OK response with meta-data headers H to the text output stream O.
  */
 % response_text(+List, +Stream)
 :- public response_text/2.
 response_text(Headers, Response) :- !,
    write(Response, 'HTTP/1.1 200 OK\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   response_text_headers(Headers, Response),
+   response_date(Headers2, Headers),
+   response_text_headers(Headers2, Response),
    write(Response, '\r\n').
 
 % response_text_headers(+List, +Stream)
@@ -385,17 +396,16 @@ response_text_headers(X, _) :-
  */
 :- public dispatch_text/3.
 dispatch_text(File, Request, Session) :-
-   resource_etag(File, Headers),
+   resource_meta(File, Headers),
    dispatch_text(File, Request, Headers, Session).
 
 % dispatch_text(+File, +Request, +List, +Socket)
 :- private dispatch_text/4.
-dispatch_text(_, Request, Headers, Session) :-
-   member('ETag'-ETag, Headers),
-   http_header(Request, 'If-None-Match', ETag), !,
-   catch(handle_not_modified(Headers, Session), _, true).
-dispatch_text(File, _, Headers, Session) :-
+dispatch_text(File, Request, Headers, Session) :-
+   validate_meta(Request, Headers), !,
    catch(handle_text(File, Headers, Session), _, true).
+dispatch_text(_, _, Headers, Session) :-
+   catch(handle_not_modified(Headers, Session), _, true).
 
 % handle_text(+File, +List, +Socket)
 :- private handle_text/3.
@@ -443,14 +453,15 @@ send_lines2(_, Response) :-
 
 /**
  * response_binary(H, O):
- * Send an OK response with headers H to the binary output stream O.
+ * Send an OK response with meta-data headers H to the binary output stream O.
  */
 % response_binary(+List, +Stream)
 :- public response_binary/2.
 response_binary(Headers, Response) :-
    write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
    write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
-   response_binary_headers(Headers, Response),
+   response_date(Headers2, Headers),
+   response_binary_headers(Headers2, Response),
    write_atom(Response, '\r\n').
 
 % response_binary_headers(+List, +Stream)
@@ -481,17 +492,16 @@ write_atom(Response, Atom) :-
 % dispatch_binary(+File, +Request, +Socket)
 :- public dispatch_binary/3.
 dispatch_binary(File, Request, Session) :-
-   resource_etag(File, Headers),
+   resource_meta(File, Headers),
    dispatch_binary(File, Request, Headers, Session).
 
 % dispatch_binary(+File, +Request, +List, +Socket)
 :- private dispatch_binary/4.
-dispatch_binary(_, Request, Headers, Session) :-
-   member('ETag'-ETag, Headers),
-   http_header(Request, 'If-None-Match', ETag), !,
-   catch(handle_not_modified(Headers, Session), _, true).
-dispatch_binary(File, _, Headers, Session) :-
+dispatch_binary(File, Request, Headers, Session) :-
+   validate_meta(Request, Headers), !,
    catch(handle_binary(File, Headers, Session), _, true).
+dispatch_binary(_, _, Headers, Session) :-
+   catch(handle_not_modified(Headers, Session), _, true).
 
 % handle_binary(+File, +List, +Socket)
 :- private handle_binary/3.
@@ -518,21 +528,38 @@ send_blocks(Stream, Response) :-
    send_blocks(Stream, Response).
 send_blocks(_, _).
 
-% resource_etag(+File, -List)
-:- private resource_etag/2.
-resource_etag(File, Headers) :-
+/***************************************************************/
+/* Date & Version Utility                                      */
+/***************************************************************/
+
+% resource_meta(+File, -List)
+:- private resource_meta/2.
+resource_meta(File, Headers) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]),
-      stream_property(Stream, last_modified(Date)),
+      (  stream_property(Stream, last_modified(Millis)),
+         stream_property(Stream, version_tag(ETag))),
       close(Stream)),
-   date_etag(Date, Headers).
+   resource_meta_last(Millis, Headers, Headers2),
+   resource_meta_etag(ETag, Headers2, []).
 
-% date_etag(+Integer, -List)
-:- private date_etag/2.
-date_etag(-1, []) :- !.
-date_etag(Date, ['ETag'-ETag]) :-
-   atom_number(DateStr, Date),
-   atom_split(ETag, '', ['"',DateStr,'"']).
+% resource_meta_last(+Integer, -List, +List)
+:- private resource_meta_last/3.
+resource_meta_last(0, Headers, Headers) :- !.
+resource_meta_last(Millis, ['Last-Modified'-Formatted|Rest], Rest) :-
+   rfc1123_atom(Millis, Formatted).
+
+% resource_meta_etag(+Integer, -List, +List)
+:- private resource_meta_etag/3.
+resource_meta_etag('', Headers, Headers) :- !.
+resource_meta_etag(ETag, ['ETag'-ETagQuoted|Rest], Rest) :-
+   atom_split(ETagQuoted, '', ['"',ETag,'"']).
+
+% response_date(-List, +List)
+:- private response_date/2.
+response_date(['Date'-Formatted|Rest], Rest) :-
+   statistics(wall, Millis),
+   rfc1123_atom(Millis, Formatted).
 
 /***************************************************************/
 /* HTTP Response Dynamic                                       */
@@ -566,8 +593,8 @@ handle_upgrade(Request, Session) :-
 % response_upgrade(+Request, +Stream)
 :- private response_upgrade/2.
 response_upgrade(Request, Response) :-
-   http_header(Request, 'Sec-WebSocket-Key', Key),
-   http_header(Request, 'Sec-WebSocket-Version', '13'),
+   http_header(Request, 'sec-websocket-key', Key),
+   http_header(Request, 'sec-websocket-version', '13'),
    atom_concat(Key, '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', Key2),
    atom_block(Key2, Block),
    sha1_hash(Block, Hash),
@@ -601,6 +628,46 @@ response_redirect(Location, Response) :-
    write(Response, '\r\n'),
    write(Response, '\r\n').
 
+/***************************************************************/
+/* Precondition Validation                                     */
+/***************************************************************/
+
+/**
+ * validate_meta(R, H):
+ * The predicate succeeds when the resource meta-data in the
+ * headers H satisfies the conditions in the request R.
+ */
+% validate_meta(+Request, +List)
+:- public validate_meta/2.
+validate_meta(Request, Headers) :-
+   http_header(Request, 'if-none-match', _), !,
+   validate_meta_etag(Request, Headers).
+validate_meta(Request, Headers) :-
+   http_header(Request, 'if-modified-since', Formatted), !,
+   validate_meta_last(Formatted, Headers).
+validate_meta(_, _).
+
+% validate_meta_etag(+Atom, +List)
+:- private validate_meta_etag/2.
+validate_meta_etag(Request, Headers) :-
+   member('ETag'-ETagQuoted2, Headers),
+   http_header(Request, 'if-none-match', ETagQuoted),
+   ETagQuoted2 == ETagQuoted, !, fail.
+validate_meta_etag(_, _).
+
+% validate_meta_last(+Atom, +List)
+:- private validate_meta_last/2.
+validate_meta_last(Formatted, Headers) :-
+   member('Last-Modified'-Formatted2, Headers),
+   rfc1123_atom(Millis2, Formatted2),
+   rfc1123_atom(Millis, Formatted),
+   Millis >= Millis2, !, fail.
+validate_meta_last(_, _).
+
+/***************************************************************/
+/* Validation HTTP Response                                    */
+/***************************************************************/
+
 /**
  * handle_not_modified(H, O):
  * Send a not modified response with headers H to the socket O.
@@ -617,5 +684,6 @@ handle_not_modified(Headers, Session) :-
 :- private response_not_modified/2.
 response_not_modified(Headers, Response) :-
    write(Response, 'HTTP/1.1 304 Not Modified\r\n'),
-   response_text_headers(Headers, Response),
+   response_date(Headers2, Headers),
+   response_text_headers(Headers2, Response),
    write(Response, '\r\n').

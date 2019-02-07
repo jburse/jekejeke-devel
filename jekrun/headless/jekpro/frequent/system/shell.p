@@ -79,8 +79,8 @@ getenv(Name, Value) :-
 /*****************************************************************/
 
 /**
- * get_time(S):
- * The predicate succeeds with a current time object S.
+ * get_time(D):
+ * The predicate succeeds with a date object S for the current time.
  */
 % get_time(-DateTime)
 :- public get_time/1.
@@ -89,15 +89,16 @@ getenv(Name, Value) :-
 /**
  * get_time(T, D):
  * The predicate succeeds with a date object D for the time
- * T in milliseconds since January 1, 1970, 00:00:00 GMT.
+ * T in milliseconds since January 1, 1970, 00:00:00 GMT and
+ * vice versa.
  */
-% get_time(+Integer, -DateTime)
+% get_time(+-Integer, -+DateTime)
 :- public get_time/2.
-get_time(T, D) :-
-   var(D), !,
-   sys_long_to_date(T, D).
-get_time(T, D) :-
-   sys_date_to_long(D, T).
+get_time(Millis, DateTime) :-
+   var(DateTime), !,
+   sys_long_to_date(Millis, DateTime).
+get_time(Millis, DateTime) :-
+   sys_date_to_long(DateTime, Millis).
 
 :- private sys_long_to_date/2.
 :- foreign_constructor(sys_long_to_date/2, 'Date', new(long)).
@@ -123,23 +124,23 @@ get_time(T, D) :-
 /**
  * date_atom(F, T, S):
  * date_atom(L, F, T, S):
- * The predicate succeeds in S with the date or calendar T
- * formatted to the format F. The quaternary predicate allows
+ * The predicate succeeds in S with the date or calendar T formatted
+ * to the format F and vice versa. The quaternary predicate allows
  * specifying a locale L.
  */
-% date_atom(+Format, +DateTime, -Atom)
+% date_atom(+Format, +-DateTime, -+Atom)
 :- public date_atom/3.
-date_atom(Format, Argument, Atom) :-
+date_atom(Format, DateTime, Formatted) :-
    current_prolog_flag(sys_locale, Locale),
-   date_atom(Locale, Format, Argument, Atom).
+   date_atom(Locale, Format, DateTime, Formatted).
 
-% date_atom(+Locale, +Format, +DateTime, -Atom)
+% date_atom(+Locale, +Format, +-DateTime, -+Atom)
 :- public date_atom/4.
-date_atom(Locale, Format, Argument, Atom) :-
-   var(Atom), !,
-   sys_date_to_string(Locale, Format, Argument, Atom).
-date_atom(Locale, Format, Argument, Atom) :-
-   sys_string_to_date(Locale, Format, Atom, Argument).
+date_atom(Locale, Format, DateTime, Formatted) :-
+   var(Formatted), !,
+   sys_date_to_string(Locale, Format, DateTime, Formatted).
+date_atom(Locale, Format, DateTime, Formatted) :-
+   sys_string_to_date(Locale, Format, Formatted, DateTime).
 
 :- private sys_date_to_string/4.
 :- foreign(sys_date_to_string/4, 'ForeignShell',
@@ -148,3 +149,19 @@ date_atom(Locale, Format, Argument, Atom) :-
 :- private sys_string_to_date/4.
 :- foreign(sys_string_to_date/4, 'ForeignShell',
       sysStringToDate('String','String','String')).
+
+/**
+ * rfc1123_atom(T, A):
+ * The predicate succeeds in A with the RFC1123 formatted time
+ * T in milliseconds since January 1, 1970, 00:00:00 GMT
+ * and vice versa.
+ */
+% rfc1123_atom(+-Integer, -+Atom)
+:- public rfc1123_atom/2.
+rfc1123_atom(Millis, Formatted) :-
+   var(Formatted), !,
+   get_time(Millis, 'GMT', Calendar),
+   date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss zzz', Calendar, Formatted).
+rfc1123_atom(Millis, Formatted) :-
+   date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss zzz', Calendar, Formatted),
+   get_time(Millis, Calendar).

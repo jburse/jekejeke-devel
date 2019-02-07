@@ -146,8 +146,20 @@ public final class ForeignShell {
      *
      * @param args Not used.
      */
-    /*
     public static void main(String[] args) throws ParseException {
+        SimpleDateFormat sf = new SimpleDateFormat("dd MMM yyyy");
+        Date date=sf.parse("29 Feb 2020");
+        System.out.println("date="+date);
+
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.YEAR, -1);
+        System.out.println("date="+calendar.getTime());
+
+        calendar.add(Calendar.YEAR, 1);
+        System.out.println("date="+calendar.getTime());
+
+  /*
         long time = 1549463357000L;
         SimpleDateFormat sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
         sf.setTimeZone(TimeZone.getTimeZone("Europe/Berlin"));
@@ -164,7 +176,7 @@ public final class ForeignShell {
         sf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
         date = sf.parse("Wed, 06 Feb 2019 14:29:17 GMT");
         System.out.println("time=" + date.getTime() + ", tmz=" + sf.getTimeZone().getID());
+       */
     }
-    */
 
 }

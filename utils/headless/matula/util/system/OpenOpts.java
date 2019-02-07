@@ -143,6 +143,7 @@ public final class OpenOpts extends OpenDuplex {
                     cin = new ConnectionInput(in);
                 }
                 cin.setLastModified(file.lastModified());
+                cin.setETag(Long.toString(cin.getLastModified()));
                 cin.setRaf(raf);
                 cin.setPath(adr2);
                 return cin;
@@ -168,6 +169,7 @@ public final class OpenOpts extends OpenDuplex {
                 crd.setEncoding(isr.getEncoding());
                 crd.setUnbuf(isr);
                 crd.setLastModified(file.lastModified());
+                crd.setETag(Long.toString(crd.getLastModified()));
                 crd.setLineNumber(1);
                 crd.setRaf(raf);
                 crd.setPath(adr2);
@@ -201,6 +203,7 @@ public final class OpenOpts extends OpenDuplex {
                         cin = new ConnectionInput(in);
                     }
                     cin.setLastModified(file.lastModified());
+                    cin.setETag(Long.toString(cin.getLastModified()));
                     cin.setPath(adr2);
                     return cin;
                 } else {
@@ -238,6 +241,7 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setUnbuf(isr);
                     crd.setBom(hasbom);
                     crd.setLastModified(file.lastModified());
+                    crd.setETag(Long.toString(crd.getLastModified()));
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
                     return crd;
@@ -266,14 +270,13 @@ public final class OpenOpts extends OpenDuplex {
                 }
 
                 /* client change check */
-                if (ims != 0) {
-                    long modified = OpenOpts.getLastModified(con);
-                    if (modified != 0 && ims >= modified)
-                        return null;
-                }
                 if (!"".equals(inm)) {
                     String etag = OpenOpts.getETag(con);
                     if (!"".equals(etag) && inm.equals(etag))
+                        return null;
+                } else if (ims != 0) {
+                    long modified = OpenOpts.getLastModified(con);
+                    if (modified != 0 && ims >= modified)
                         return null;
                 }
 
@@ -568,7 +571,8 @@ public final class OpenOpts extends OpenDuplex {
     private static long getLastModified(URLConnection con)
             throws IOException {
         if (con instanceof JarURLConnection) {
-            return ((JarURLConnection) con).getJarEntry().getTime();
+            long res = ((JarURLConnection) con).getJarEntry().getTime();
+            return (res != -1 ? res : 0);
         } else {
             return con.getLastModified();
         }
@@ -593,10 +597,16 @@ public final class OpenOpts extends OpenDuplex {
      *
      * @param con The connection.
      * @return The ETag, or "".
+     * @throws IOException IO error.
      */
-    public static String getETag(URLConnection con) {
-        String res = con.getHeaderField("ETag");
-        return (res != null ? res : "");
+    public static String getETag(URLConnection con) throws IOException {
+        if (con instanceof JarURLConnection) {
+            long res = ((JarURLConnection) con).getJarEntry().getTime();
+            return (res != -1 ? Long.toString(res) : "");
+        } else {
+            String res = con.getHeaderField("ETag");
+            return (res != null ? res : "");
+        }
     }
 
     /*************************************************************/
