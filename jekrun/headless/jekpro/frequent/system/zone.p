@@ -1,17 +1,38 @@
 /**
- * The module provides access to the shell that started the interpreter.
- * The predicate getenv/2 allows accessing and enumerating shell
- * environment variables. The access is always case insensitive.
+ * The module provides access to different time zones. The Java class
+ * date is used to represent time in the default time zone. On the
+ * other hand, the Java class calendar is able to represent in a
+ * different time zone. Both representations use time in milliseconds
+ * since January 1, 1970, 00:00:00 GMT under the hood.
  *
  * Examples:
  * ?- get_time(D), format('%tc\n', [D]).
  * Mon Aug 22 17:07:24 CEST 2016
+ *
  * ?- statistics(wall, T), get_time(T, D), format('%tc\n', [D]).
  * Mon Aug 22 17:07:39 CEST 2016
  *
- * The predicates get_time/1 and get_time/2 can be used to retrieve a
- * time object that is suitable for format/2 and friends. The predicate
- * get_time/2 has an integer time stamp constructor parameter.
+ * The predicates get_time/[1,2] allow creating a Java date instance
+ * from the current time respectively from a given time in milliseconds.
+ * The predicates get_time/[3,4] on the other hand will create a Java
+ * calendar instance from a given time in milliseconds. The values can
+ * be used with the format predicates from the modules
+ * "console" and "locale".
+ *
+ * Examples:
+ * ?- get_time('ja_JP_JP', 1549556043201, 'JST', D),
+ *    date_atom('en_GB','GGGG y-MM-dd zzz', D, R).
+ * R = 'Heisei 31-02-08 JST'
+ *
+ * ?- get_time('ja_JP_JP', -1357544756799, 'JST', D),
+ *    date_atom('ja_JP_JP','GGGG y-MM-dd zzz', D, R)
+ * R = '昭和 1-12-26 JST'
+ *
+ * The predicates data_atom/[3,4] supplement the format predicates in
+ * that they also allow parsing of dates and not only the un-parsing of
+ * dates and calendars. The locale of the predicate determines the
+ * vocabulary but not the calendar. The predicate rfc1123_atom/2 parses and
+ * un-parses RFC1123 formatted time.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

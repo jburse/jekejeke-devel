@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 /**
- * <p>The foreign predicates for the module system/shell.</p>
+ * <p>The foreign predicates for the module system/zone.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
