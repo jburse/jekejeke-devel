@@ -4,7 +4,6 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -336,7 +335,7 @@ public final class ForeignThread {
      * @param flag  The thread flag.
      * @return The value.
      * @throws InterpreterException Flag undefined.
-     * @throws InterpreterMessage Flag undefined.
+     * @throws InterpreterMessage   Flag undefined.
      */
     public static Object sysGetThreadFlag(Interpreter inter, Thread t,
                                           String flag)

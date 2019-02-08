@@ -77,7 +77,7 @@
 :- use_module(library(system/uri)).
 :- use_module(library(basic/lists)).
 :- use_module(library(system/domain)).
-:- use_module(library(system/shell)).
+:- use_module(library(system/zone)).
 :- use_module(library(misc/text)).
 
 /***************************************************************/

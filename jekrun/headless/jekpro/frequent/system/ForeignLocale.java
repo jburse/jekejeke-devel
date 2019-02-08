@@ -119,7 +119,7 @@ public final class ForeignLocale {
      * @throws InterpreterException Not a list.
      */
     public static String sysFormatToString(Interpreter inter, String locstr,
-                                       String format, Object list)
+                                           String format, Object list)
             throws InterpreterMessage, InterpreterException {
         Locale locale = XSelectFormat.stringToLocale(locstr);
         Object[] args = ForeignLocale.prepareArguments(inter, list);

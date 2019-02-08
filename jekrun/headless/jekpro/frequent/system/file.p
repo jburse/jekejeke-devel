@@ -308,3 +308,27 @@ follow_path(B, R, A) :-
 :- public canonical_path/2.
 :- foreign(canonical_path/2, 'ForeignFile',
       sysCanonicalPath('String')).
+
+/*****************************************************************/
+/* Environment Variables                                         */
+/*****************************************************************/
+
+/**
+ * getenv(N, V):
+ * The predicate succeeds for the value V of the environment
+ * variable named N.
+ */
+% getenv(-Atom, -Atom)
+:- public getenv/2.
+getenv(Name, Value) :-
+   ground(Name), !,
+   sys_get_env(Name, Value).
+getenv(Name, Value) :-
+   sys_current_env(Name),
+   sys_get_env(Name, Value).
+
+:- private sys_get_env/2.
+:- foreign(sys_get_env/2, 'System', getenv('String')).
+
+:- private sys_current_env/1.
+:- foreign(sys_current_env/1, 'ForeignDirectory', sysCurrentEnv('CallOut')).

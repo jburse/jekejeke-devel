@@ -1,15 +1,11 @@
 package jekpro.frequent.system;
 
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Lobby;
-import jekpro.tools.term.TermCompound;
 import matula.util.wire.XSelectFormat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -46,26 +42,6 @@ import java.util.TimeZone;
  */
 public final class ForeignShell {
     private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
-
-    /*****************************************************************/
-    /* Environment Variables                                         */
-    /*****************************************************************/
-
-    /**
-     * <p>List the environment variable names.</p>
-     *
-     * @return The environment variable names.
-     */
-    public static Object sysListEnv(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Iterator<String> iter = System.getenv().keySet().iterator();
-        Object res = lobby.ATOM_NIL;
-        while (iter.hasNext()) {
-            res = new TermCompound(lobby.ATOM_CONS,
-                    iter.next(), res);
-        }
-        return res;
-    }
 
     /*****************************************************************/
     /* Retrieve Date & Calendar                                      */

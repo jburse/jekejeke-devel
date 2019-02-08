@@ -47,32 +47,7 @@
 :- use_package(foreign(java/util)).
 :- use_package(foreign(jekpro/tools/call)).
 
-:- module(shell, []).
-
-/*****************************************************************/
-/* Environment Variables                                         */
-/*****************************************************************/
-
-/**
- * getenv(N, V):
- * The predicate succeeds for the value V of the environment
- * variable named N.
- */
-% getenv(-Atom, -Atom)
-:- public getenv/2.
-getenv(Name, Value) :-
-   ground(Name), !,
-   sys_get_env(Name, Value).
-getenv(Name, Value) :-
-   sys_list_env(List),
-   sys_member(Name, List),
-   sys_get_env(Name, Value).
-
-:- private sys_get_env/2.
-:- foreign(sys_get_env/2, 'System', getenv('String')).
-
-:- private sys_list_env/1.
-:- foreign(sys_list_env/1, 'ForeignShell', sysListEnv('Interpreter')).
+:- module(zone, []).
 
 /*****************************************************************/
 /* Retrieve Date & Calendar                                      */

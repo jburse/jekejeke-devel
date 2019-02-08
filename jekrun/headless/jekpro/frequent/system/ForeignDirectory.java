@@ -8,6 +8,7 @@ import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * <p>The foreign predicates for the module system/file.</p>
@@ -207,6 +208,34 @@ public final class ForeignDirectory {
                     EngineMessage.OP_PERMISSION_SOURCE_SINK, adr));
         String path = ForeignUri.sysSpecPath(spec);
         return path.replace('/', File.separatorChar);
+    }
+
+    /*****************************************************************/
+    /* Environment Variables                                         */
+    /*****************************************************************/
+
+    /**
+     * <p>List the environment variable names.</p>
+     *
+     * @param co The call out.
+     * @return The environment variable names.
+     */
+    public static String sysCurrentEnv(CallOut co) {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            Set<String> keys = System.getenv().keySet();
+            String[] names = new String[keys.size()];
+            keys.toArray(names);
+            dc = new ArrayEnumeration<String>(names);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
     }
 
 }
