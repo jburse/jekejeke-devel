@@ -8,7 +8,6 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.regex.ScannerError;
 import matula.util.system.AbstractRecognizer;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
@@ -168,12 +167,11 @@ public abstract class AbstractFile extends AbstractSource {
      *
      * @param if_modified The if modified flag.
      * @param lopts       The options.
-     * @param en          The engine.
      * @return The reader or null.
      * @throws EngineMessage Shit happens.
      */
     public Reader openReader(boolean if_modified,
-                             LoadOpts lopts, Engine en)
+                             LoadOpts lopts)
             throws EngineMessage {
         if ((getBits() & AbstractSource.MASK_SRC_PREL) != 0) {
             if (if_modified)
@@ -181,33 +179,25 @@ public abstract class AbstractFile extends AbstractSource {
             if_modified = true;
         }
 
-        if ((lopts.getFlags() & LoadOpts.MASK_LOAD_CACH) != 0) {
+        OpenOpts fopts = new OpenOpts();
+        if (if_modified) {
+            fopts.setIfModifiedSince(getLastModified());
+            fopts.setIfNoneMatch(getETag());
+            fopts.setFlags(fopts.getFlags() & ~OpenOpts.MASK_OPEN_CACH);
+        } else {
             long expiration = getExpiration();
             if (expiration != 0 &&
                     System.currentTimeMillis() < expiration)
                 return null;
-        }
-
-        OpenOpts fopts = new OpenOpts();
-        if ((lopts.getFlags() & LoadOpts.MASK_LOAD_NOBO) != 0)
-            fopts.setFlags(fopts.getFlags() | OpenOpts.MASK_OPEN_NOBR);
-        if ((lopts.getFlags() & LoadOpts.MASK_LOAD_CACH) != 0)
             fopts.setFlags(fopts.getFlags() | OpenOpts.MASK_OPEN_CACH);
-        fopts.setEncoding(lopts.getEncoding());
-        fopts.setBuffer(lopts.getBuffer());
-        if (if_modified) {
-            fopts.setIfModifiedSince(getLastModified());
-            fopts.setIfNoneMatch(getETag());
         }
         Reader reader;
         try {
-            reader = (Reader) fopts.openRead((AbstractRecognizer) en.store.proxy, getPath());
+            reader = (Reader) fopts.openRead((AbstractRecognizer) getStore().proxy, getPath());
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         } catch (LicenseError x) {
             throw new EngineMessage(EngineMessage.licenseError(x.getError()));
-        } catch (ScannerError x) {
-            throw new EngineMessage(EngineMessage.syntaxError(x.getMessage()));
         }
         return reader;
     }

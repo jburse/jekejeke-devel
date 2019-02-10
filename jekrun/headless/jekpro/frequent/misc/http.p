@@ -370,8 +370,7 @@ send_error(501, Response) :- !,
 :- public response_text/2.
 response_text(Headers, Response) :- !,
    write(Response, 'HTTP/1.1 200 OK\r\n'),
-   write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
-   response_date(Headers2, Headers),
+   make_header_date(Headers2, Headers),
    response_text_headers(Headers2, Response),
    write(Response, '\r\n').
 
@@ -397,7 +396,7 @@ response_text_headers(X, _) :-
 % dispatch_text(+File, +Request, +Socket)
 :- public dispatch_text/3.
 dispatch_text(File, Request, Session) :-
-   resource_meta(File, Headers),
+   meta_text(File, Headers),
    dispatch_text(File, Request, Headers, Session).
 
 % dispatch_text(+File, +Request, +List, +Socket)
@@ -460,8 +459,7 @@ send_lines2(_, Response) :-
 :- public response_binary/2.
 response_binary(Headers, Response) :-
    write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
-   write_atom(Response, 'Content-Type: application/octet-stream\r\n'),
-   response_date(Headers2, Headers),
+   make_header_date(Headers2, Headers),
    response_binary_headers(Headers2, Response),
    write_atom(Response, '\r\n').
 
@@ -493,7 +491,7 @@ write_atom(Response, Atom) :-
 % dispatch_binary(+File, +Request, +Socket)
 :- public dispatch_binary/3.
 dispatch_binary(File, Request, Session) :-
-   resource_meta(File, Headers),
+   meta_binary(File, Headers),
    dispatch_binary(File, Request, Headers, Session).
 
 % dispatch_binary(+File, +Request, +List, +Socket)
@@ -524,43 +522,10 @@ send_binary(File, Headers, Response) :-
 % send_blocks(+Stream, +Stream)
 :- private send_blocks/2.
 send_blocks(Stream, Response) :-
-   read_block(Stream, 8192, Block), !,
+   read_block(Stream, 1024, Block), !,
    write_block(Response, Block),
    send_blocks(Stream, Response).
 send_blocks(_, _).
-
-/***************************************************************/
-/* Date & Version Utility                                      */
-/***************************************************************/
-
-% resource_meta(+File, -List)
-:- private resource_meta/2.
-resource_meta(File, Headers) :-
-   setup_call_cleanup(
-      open_resource(File, Stream, [type(binary)]),
-      (  stream_property(Stream, last_modified(Millis)),
-         stream_property(Stream, version_tag(ETag))),
-      close(Stream)),
-   resource_meta_last(Millis, Headers, Headers2),
-   resource_meta_etag(ETag, Headers2, []).
-
-% resource_meta_last(+Integer, -List, +List)
-:- private resource_meta_last/3.
-resource_meta_last(0, Headers, Headers) :- !.
-resource_meta_last(Millis, ['Last-Modified'-Formatted|Rest], Rest) :-
-   rfc1123_atom(Millis, Formatted).
-
-% resource_meta_etag(+Integer, -List, +List)
-:- private resource_meta_etag/3.
-resource_meta_etag('', Headers, Headers) :- !.
-resource_meta_etag(ETag, ['ETag'-ETagQuoted|Rest], Rest) :-
-   atom_split(ETagQuoted, '', ['"',ETag,'"']).
-
-% response_date(-List, +List)
-:- private response_date/2.
-response_date(['Date'-Formatted|Rest], Rest) :-
-   statistics(wall, Millis),
-   rfc1123_atom(Millis, Formatted).
 
 /***************************************************************/
 /* HTTP Response Dynamic                                       */
@@ -630,6 +595,61 @@ response_redirect(Location, Response) :-
    write(Response, '\r\n').
 
 /***************************************************************/
+/* Date & Version Utility                                      */
+/***************************************************************/
+
+% meta_binary(+File, -List)
+:- private meta_binary/2.
+meta_binary(File, Headers) :-
+   setup_call_cleanup(
+      open_resource(File, Stream, [type(binary)]),
+      (  stream_property(Stream, last_modified(Millis)),
+         stream_property(Stream, version_tag(ETag)),
+         stream_property(Stream, mime_type(MimeType))),
+      close(Stream)),
+   make_header_last(Millis, Headers, Headers2),
+   make_header_etag(ETag, Headers2, Headers3),
+   make_header_ctyp(MimeType, '', Headers3, []).
+
+% meta_text(+File, -List)
+:- private meta_text/2.
+meta_text(File, Headers) :-
+   setup_call_cleanup(
+      open_resource(File, Stream),
+      (  stream_property(Stream, last_modified(Millis)),
+         stream_property(Stream, version_tag(ETag)),
+         stream_property(Stream, mime_type(MimeType))),
+      close(Stream)),
+   make_header_last(Millis, Headers, Headers2),
+   make_header_etag(ETag, Headers2, Headers3),
+   make_header_ctyp(MimeType, 'UTF-8', Headers3, []).
+
+% make_header_last(+Integer, -List, +List)
+:- private make_header_last/3.
+make_header_last(0, Headers, Headers) :- !.
+make_header_last(Millis, ['Last-Modified'-Formatted|Rest], Rest) :-
+   rfc1123_atom(Millis, Formatted).
+
+% make_header_etag(+Integer, -List, +List)
+:- private make_header_etag/3.
+make_header_etag('', Headers, Headers) :- !.
+make_header_etag(ETag, ['ETag'-ETagQuoted|Rest], Rest) :-
+   atom_split(ETagQuoted, '', ['"',ETag,'"']).
+
+% make_header_ctyp(+Atom, +Atom, -List, +List)
+:- private make_header_ctyp/4.
+make_header_ctyp('', '', Headers, Headers) :- !.
+make_header_ctyp(MimeType, '', ['Content-Type'-MimeType|Rest], Rest) :- !.
+make_header_ctyp(MimeType, Encoding, ['Content-Type'-ContentType|Rest], Rest) :-
+   atom_split(ContentType, '', [MimeType,'; charset=',Encoding]).
+
+% make_header_date(-List, +List)
+:- private make_header_date/2.
+make_header_date(['Date'-Formatted|Rest], Rest) :-
+   statistics(wall, Millis),
+   rfc1123_atom(Millis, Formatted).
+
+/***************************************************************/
 /* Precondition Validation                                     */
 /***************************************************************/
 
@@ -642,28 +662,28 @@ response_redirect(Location, Response) :-
 :- public validate_meta/2.
 validate_meta(Request, Headers) :-
    http_header(Request, 'if-none-match', _), !,
-   validate_meta_etag(Request, Headers).
+   validate_make_header_etag(Request, Headers).
 validate_meta(Request, Headers) :-
    http_header(Request, 'if-modified-since', Formatted), !,
-   validate_meta_last(Formatted, Headers).
+   validate_make_header_last(Formatted, Headers).
 validate_meta(_, _).
 
-% validate_meta_etag(+Atom, +List)
-:- private validate_meta_etag/2.
-validate_meta_etag(Request, Headers) :-
+% validate_make_header_etag(+Atom, +List)
+:- private validate_make_header_etag/2.
+validate_make_header_etag(Request, Headers) :-
    member('ETag'-ETagQuoted2, Headers),
    http_header(Request, 'if-none-match', ETagQuoted),
    ETagQuoted2 == ETagQuoted, !, fail.
-validate_meta_etag(_, _).
+validate_make_header_etag(_, _).
 
-% validate_meta_last(+Atom, +List)
-:- private validate_meta_last/2.
-validate_meta_last(Formatted, Headers) :-
+% validate_make_header_last(+Atom, +List)
+:- private validate_make_header_last/2.
+validate_make_header_last(Formatted, Headers) :-
    member('Last-Modified'-Formatted2, Headers),
    rfc1123_atom(Millis2, Formatted2),
    rfc1123_atom(Millis, Formatted),
    Millis >= Millis2, !, fail.
-validate_meta_last(_, _).
+validate_make_header_last(_, _).
 
 /***************************************************************/
 /* Validation HTTP Response                                    */
@@ -685,6 +705,6 @@ handle_not_modified(Headers, Session) :-
 :- private response_not_modified/2.
 response_not_modified(Headers, Response) :-
    write(Response, 'HTTP/1.1 304 Not Modified\r\n'),
-   response_date(Headers2, Headers),
+   make_header_date(Headers2, Headers),
    response_text_headers(Headers2, Response),
    write(Response, '\r\n').

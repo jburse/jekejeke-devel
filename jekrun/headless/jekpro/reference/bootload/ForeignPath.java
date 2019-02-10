@@ -13,6 +13,7 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
+import matula.util.system.FileExtension;
 
 import java.io.IOException;
 
@@ -371,12 +372,24 @@ public final class ForeignPath {
      * <p>Add a file extension.</p>
      *
      * @param inter The interpreter.
-     * @param ext   The file extension.
-     * @param type  The type.
+     * @param e     The file extension.
+     * @param t     The type.
+     * @param m     The mime type.
      */
     public static void sysAddFileExtenstion(Interpreter inter,
-                                            String ext, int type) {
-        inter.getKnowledgebase().addFileExtension(ext, type);
+                                            String e, int t, String m) {
+        inter.getKnowledgebase().addFileExtension(e, t, m);
+    }
+
+    /**
+     * <p>Remove a file extension.</p>
+     *
+     * @param inter The interpreter.
+     * @param e     The file extension.
+     */
+    public static void sysRemoveFileExtenstion(Interpreter inter,
+                                               String e) {
+        inter.getKnowledgebase().removeFileExtension(e);
     }
 
     /**
@@ -389,15 +402,15 @@ public final class ForeignPath {
         Lobby lobby = inter.getKnowledgebase().getLobby();
         Knowledgebase know = inter.getKnowledgebase();
         Object end = lobby.ATOM_NIL;
-        while (know != null) {
-            MapEntry<String, Integer>[] exts = know.getFileExtensions();
+        do {
+            MapEntry<String,FileExtension>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {
-                MapEntry<String, Integer> ext = exts[i];
-                Object val = new TermCompound(Knowledgebase.OP_SUB, ext.key, ext.value);
+                MapEntry<String,FileExtension> ext = exts[i];
+                Object val = new TermCompound("ext", ext.key, ext.value.getType(), ext.value.getMimeType());
                 end = new TermCompound(lobby.ATOM_CONS, val, end);
             }
             know = know.getParent();
-        }
+        } while (know != null);
         return end;
     }
 

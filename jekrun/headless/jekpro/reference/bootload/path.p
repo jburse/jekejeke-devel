@@ -14,7 +14,7 @@
  * ?- set_prolog_flag(base_url, '/C:/Users/Jan Burse/Desktop/').
  * Yes
  *
- * ?- sys_add_file_extension(text('.dcg')).
+ * ?- sys_add_file_extension(text('.dcg', 'text/prolog')).
  * Yes
  *
  * ?- absolute_file_name('my folder/my file', X).
@@ -126,30 +126,40 @@ sys_current_path(Path) :-
 
 /**
  * sys_add_file_extension(E):
- * The predicate succeeds in adding the file extension E
- * to the current knowledge base.
+ * The predicate succeeds in adding the file extension database
+ * entry E to the current knowledge base. For a list of recognized
+ * database entries see the API documentation.
  */
-sys_add_file_extension(text(E)) :- !,
+sys_add_file_extension(text(E,M)) :- !,
    sys_get_suffix_text(T),
-   sys_add_file_extension(E, T).
-sys_add_file_extension(binary(E)) :- !,
+   sys_add_file_extension(E, T, M).
+sys_add_file_extension(binary(E,M)) :- !,
    sys_get_suffix_binary(T),
-   sys_add_file_extension(E, T).
-sys_add_file_extension(resource(E)) :- !,
+   sys_add_file_extension(E, T, M).
+sys_add_file_extension(resource(E,M)) :- !,
    sys_get_suffix_resource(T),
-   sys_add_file_extension(E, T).
+   sys_add_file_extension(E, T, M).
 sys_add_file_extension(E) :-
    throw(error(domain_error(fix_option,E),_)).
 :- set_predicate_property(sys_add_file_extension/1, visible(public)).
 
-:- foreign(sys_add_file_extension/2, 'ForeignPath',
-      sysAddFileExtenstion('Interpreter','String',int)).
-:- set_predicate_property(sys_add_file_extension/2, visible(private)).
+:- foreign(sys_add_file_extension/3, 'ForeignPath',
+      sysAddFileExtenstion('Interpreter','String',int,'String')).
+:- set_predicate_property(sys_add_file_extension/3, visible(private)).
+
+/**
+ * sys_remove_file_extension(E):
+ * The predicate succeeds in removing file extension database entry
+ * with the name suffix E from the current knowledge base
+ */
+:- foreign(sys_remove_file_extension/1, 'ForeignPath',
+      sysRemoveFileExtenstion('Interpreter','String')).
+:- set_predicate_property(sys_remove_file_extension/1, visible(public)).
 
 /**
  * sys_current_file_extension(E):
  * The predicate succeeds in E with the currently added
- * file extensions along the knowledge bases.
+ * file extension database entries along the knowledge bases.
  */
 sys_current_file_extension(E) :-
    sys_get_file_extensions(L),
@@ -161,34 +171,34 @@ sys_current_file_extension(E) :-
       sysGetFileExtenstions('Interpreter')).
 :- set_predicate_property(sys_get_file_extensions/1, visible(private)).
 
-sys_map_file_extensions([E-T|L], R) :-
-   sys_map_extension_text(T, E, H, I),
-   sys_map_extension_binary(T, E, I, J),
-   sys_map_extension_resource(T, E, J, R),
+sys_map_file_extensions([ext(E,T,M)|L], R) :-
+   sys_map_extension_text(T, E, M, H, I),
+   sys_map_extension_binary(T, E, M, I, J),
+   sys_map_extension_resource(T, E, M, J, R),
    sys_map_file_extensions(L, H).
 sys_map_file_extensions([], []).
 :- set_predicate_property(sys_map_file_extensions/2, visible(private)).
 
-sys_map_extension_text(T, E, H, R) :-
-   sys_get_suffix_text(M),
-   0 =\= T/\M, !,
-   R = [text(E)|H].
-sys_map_extension_text(_, _, R, R).
-:- set_predicate_property(sys_map_extension_text/4, visible(private)).
+sys_map_extension_text(T, E, M, H, R) :-
+   sys_get_suffix_text(P),
+   0 =\= T/\P, !,
+   R = [text(E,M)|H].
+sys_map_extension_text(_, _, _, R, R).
+:- set_predicate_property(sys_map_extension_text/5, visible(private)).
 
-sys_map_extension_binary(T, E, H, R) :-
-   sys_get_suffix_binary(M),
-   0 =\= T/\M, !,
-   R = [binary(E)|H].
-sys_map_extension_binary(_, _, R, R).
-:- set_predicate_property(sys_map_extension_binary/4, visible(private)).
+sys_map_extension_binary(T, E, M, H, R) :-
+   sys_get_suffix_binary(P),
+   0 =\= T/\P, !,
+   R = [binary(E,M)|H].
+sys_map_extension_binary(_, _, _, R, R).
+:- set_predicate_property(sys_map_extension_binary/5, visible(private)).
 
-sys_map_extension_resource(T, E, H, R) :-
-   sys_get_suffix_resource(M),
-   0 =\= T/\M, !,
-   R = [resource(E)|H].
-sys_map_extension_resource(_, _, R, R).
-:- set_predicate_property(sys_map_extension_resource/4, visible(private)).
+sys_map_extension_resource(T, E, M, H, R) :-
+   sys_get_suffix_resource(P),
+   0 =\= T/\P, !,
+   R = [resource(E,M)|H].
+sys_map_extension_resource(_, _, _, R, R).
+:- set_predicate_property(sys_map_extension_resource/5, visible(private)).
 
 :- foreign_getter(sys_get_suffix_text/1, 'ForeignPath', 'MASK_SUFX_TEXT').
 :- set_predicate_property(sys_get_suffix_text/1, visible(private)).

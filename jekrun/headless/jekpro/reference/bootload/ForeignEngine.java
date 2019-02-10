@@ -8,9 +8,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadForce;
-import jekpro.model.rope.LoadOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
@@ -25,8 +23,6 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.wire.MapHashWithImport;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Properties;

@@ -73,6 +73,7 @@ public final class SpecialLoad extends AbstractSpecial {
 
     public final static String OP_MODULE = "module";
     public final static String OP_SET_PROLOG_FLAG = "set_prolog_flag";
+
     /**
      * <p>Create a load special.</p>
      *
@@ -343,7 +344,7 @@ public final class SpecialLoad extends AbstractSpecial {
             pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setSource(en.visor.peekStack());
-            pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL| PrologWriter.FLAG_MKDT);
+            pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
         }
     }
 
@@ -422,7 +423,7 @@ public final class SpecialLoad extends AbstractSpecial {
             }
         }
 
-        if(src.utildouble != ReadOpts.UTIL_CODES) {
+        if (src.utildouble != ReadOpts.UTIL_CODES) {
             Object val = ReadOpts.utilToAtom(src.utildouble);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
                     new SkelAtom(Flag.OP_FLAG_DOUBLE_QUOTES), val);
@@ -471,7 +472,7 @@ public final class SpecialLoad extends AbstractSpecial {
         AbstractSource source = scope.getStore().getSourceDefined(key, false);
         Reader reader;
         if (!Branch.OP_USER.equals(source.getPath())) {
-            reader = source.openReader(false, opts, en);
+            reader = source.openReader(false, opts);
             scope.loadModule(reader, en, true);
             scope.closeReader(reader);
         } else {

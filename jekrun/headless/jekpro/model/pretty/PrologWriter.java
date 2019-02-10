@@ -1094,8 +1094,8 @@ public class PrologWriter {
                 offset = getOffset(z, backoffset);
                 shift = getShift(z);
                 if ((backspez & SPEZ_META) != 0 &&
-                    (backspez & SPEZ_EVAL) == 0 &&
-                     (flags & FLAG_NEWL) != 0) {
+                        (backspez & SPEZ_EVAL) == 0 &&
+                        (flags & FLAG_NEWL) != 0) {
                     append(',');
                     append(CodeType.LINE_EOL);
                     for (int i = 0; i < indent; i++)
@@ -1409,8 +1409,8 @@ public class PrologWriter {
                 int indent = -1;
                 append(PrologReader.OP_LBRACKET);
                 if ((backspez & SPEZ_META) != 0 &&
-                    (backspez & SPEZ_EVAL) == 0 &&
-                    (flags & FLAG_NEWL) != 0) {
+                        (backspez & SPEZ_EVAL) == 0 &&
+                        (flags & FLAG_NEWL) != 0) {
                     indent = getTextOffset();
                 }
                 writeList(sc, ref, mod, nsa, indent, backspez, backoffset, backshift);

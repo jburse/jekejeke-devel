@@ -125,11 +125,6 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
     public static final int MASK_USES_LIBR = 0x00000004;
     public static final int MASK_USES_FRGN = 0x00000008;
 
-    /* suffix relationship flags */
-    public static final int MASK_USES_TEXT = 0x00000010;
-    public static final int MASK_USES_BNRY = 0x00000020;
-    public static final int MASK_USES_RSCS = 0x00000040;
-
     private final String path;
     private int flags = MASK_SRC_VSPU;
     public Object importvers;
@@ -285,12 +280,11 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
      *
      * @param if_modified The if modified flag.
      * @param opts        The options.
-     * @param en          The engine.
      * @return The reader or null.
      * @throws EngineMessage Shit happens.
      */
     public abstract Reader openReader(boolean if_modified,
-                                      LoadOpts opts, Engine en)
+                                      LoadOpts opts)
             throws EngineMessage;
 
     /**

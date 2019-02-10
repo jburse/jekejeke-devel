@@ -50,7 +50,7 @@
 :- module(user, []).
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
-:- use_module(library(system/shell)).
+:- use_module(library(system/zone)).
 :- use_module(library(system/thread)).
 :- sys_load_resource(gestalt).
 
@@ -92,7 +92,7 @@ statistics :-
    statistics(K, V),
    sys_convert_stat(K, V, W),
    message_make(P, statistics(K,W), M),
-   ttywrite(M), ttynl, fail.
+   write(M), nl, fail.
 statistics.
 :- set_predicate_property(statistics/0, sys_notrace).
 
@@ -150,8 +150,8 @@ sys_show_time_record(T) :-
    sys_current_record_stat(T, K, V),
    sys_convert_stat(K, V, W),
    message_make(P, time(K,W), M),
-   ttywrite(M), fail.
-sys_show_time_record(_) :- ttynl.
+   write(M), fail.
+sys_show_time_record(_) :- nl.
 
 % sys_current_record_stat(+TimeRecord, +Atom, -Atomic)
 :- private sys_current_record_stat/3.

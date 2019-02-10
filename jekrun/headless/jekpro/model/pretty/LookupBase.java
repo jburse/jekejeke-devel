@@ -4,6 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
+import matula.util.system.FileExtension;
 import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenCheck;
@@ -173,35 +174,35 @@ public final class LookupBase {
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
             Store store = src.getStore();
-            while (store != null) {
-                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+            do {
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
+                    MapEntry<String, FileExtension> fix = fixes[i];
+                    if ((fix.value.getType() & FileExtension.MASK_USES_TEXT) != 0) {
                         String key = findRead(addSuffix(path, fix.key), src, en);
                         if (key != null)
                             return key;
                     }
                 }
                 store = store.parent;
-            }
+            } while (store != null);
         }
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
             Store store = src.getStore();
-            while (store != null) {
-                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+            do {
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
+                    MapEntry<String, FileExtension> fix = fixes[i];
+                    if ((fix.value.getType() & FileExtension.MASK_USES_RSCS) != 0) {
                         String key = findRead(addSuffix(path, fix.key), src, en);
                         if (key != null)
                             return key;
                     }
                 }
                 store = store.parent;
-            }
+            } while (store != null);
         }
 
         // failure
@@ -220,8 +221,7 @@ public final class LookupBase {
         String query = ForeignUri.sysUriQuery(adr);
         String hash = ForeignUri.sysUriHash(adr);
 
-        adr = ForeignUri.sysUriMake(spec + suffix, query, hash);
-        return adr;
+        return ForeignUri.sysUriMake(spec + suffix, query, hash);
     }
 
     /**
@@ -243,43 +243,60 @@ public final class LookupBase {
         /* system text suffix */
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
             Store store = src.getStore();
-            while (store != null) {
-                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+            do {
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & AbstractSource.MASK_USES_TEXT) != 0) {
-                        if (path.endsWith(fix.key)) {
-                            String path2 = path.substring(0, path.length() - fix.key.length());
+                    MapEntry<String, FileExtension> fix = fixes[i];
+                    if ((fix.value.getType() & FileExtension.MASK_USES_TEXT) != 0) {
+                        String path2;
+                        if ((path2 = removeSuffix(path, fix.key)) != null) {
                             if (path.equals(findReadSuffix(path2, src, mask, en)))
                                 return path2;
                         }
                     }
                 }
                 store = store.parent;
-            }
+            } while (store != null);
         }
 
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
             Store store = src.getStore();
-            while (store != null) {
-                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+            do {
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & AbstractSource.MASK_USES_RSCS) != 0) {
-                        if (path.endsWith(fix.key)) {
-                            String path2 = path.substring(0, path.length() - fix.key.length());
+                    MapEntry<String, FileExtension> fix = fixes[i];
+                    if ((fix.value.getType() & FileExtension.MASK_USES_RSCS) != 0) {
+                        String path2;
+                        if ((path2 = removeSuffix(path, fix.key)) != null) {
                             if (path.equals(findReadSuffix(path2, src, mask, en)))
                                 return path2;
                         }
                     }
                 }
                 store = store.parent;
-            }
+            } while (store != null);
         }
 
         // failure
         return null;
+    }
+
+    /**
+     * <p>Remove a suffix.</p>
+     *
+     * @param adr    The URI.
+     * @param suffix The suffix.
+     * @return The result or null.
+     */
+    private static String removeSuffix(String adr, String suffix) {
+        String spec = ForeignUri.sysUriSpec(adr);
+        if (!spec.endsWith(suffix))
+            return null;
+        String query = ForeignUri.sysUriQuery(adr);
+        String hash = ForeignUri.sysUriHash(adr);
+
+        return ForeignUri.sysUriMake(spec.substring(0, spec.length() - suffix.length()), query, hash);
     }
 
 }

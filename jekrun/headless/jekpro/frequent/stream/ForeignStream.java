@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.ReadOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
@@ -83,6 +84,7 @@ public final class ForeignStream {
     public final static String OP_LAST_MODIFIED = "last_modified";
     public final static String OP_VERSION_TAG = "version_tag";
     public final static String OP_EXPIRATION = "expiration";
+    public final static String OP_MIME_TYPE = "mime_type";
 
     /* error terms */
     public final static String OP_PERMISSION_OPEN = "open";
@@ -126,9 +128,6 @@ public final class ForeignStream {
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
                     x.getError()));
-        } catch (ScannerError x) {
-            throw new InterpreterMessage(InterpreterMessage.syntaxError(
-                    x.getMessage()));
         }
     }
 
@@ -168,9 +167,6 @@ public final class ForeignStream {
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
                     x.getError()));
-        } catch (ScannerError x) {
-            throw new InterpreterMessage(InterpreterMessage.syntaxError(
-                    x.getMessage()));
         }
     }
 
@@ -348,26 +344,25 @@ public final class ForeignStream {
      * @return The properties after.
      */
     public static Object sysInputProperties(ConnectionInput in, Object res) {
-        long lastmodified = in.getLastModified();
-        String etag = in.getETag();
-        long expiration = in.getExpiration();
-        String path = in.getPath();
-        int buffer = in.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_LAST_MODIFIED,
-                        TermAtomic.normBigInteger(lastmodified)), res);
+                        TermAtomic.normBigInteger(in.getLastModified())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_VERSION_TAG,
-                        etag), res);
+                        in.getETag()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_EXPIRATION,
-                        TermAtomic.normBigInteger(expiration)), res);
+                        TermAtomic.normBigInteger(in.getExpiration())), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(OP_MIME_TYPE,
+                        in.getMimeType()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
-                        Integer.valueOf(buffer)), res);
+                        Integer.valueOf(in.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
                         OP_READ), res);
+        String path = in.getPath();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
@@ -383,15 +378,13 @@ public final class ForeignStream {
      */
     public static Object sysOutputProperties(ConnectionOutput out,
                                              Object res) {
-        String path = out.getPath();
-        boolean append = out.getAppend();
-        int buffer = out.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
-                        Integer.valueOf(buffer)), res);
+                        Integer.valueOf(out.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
-                        (append ? OP_APPEND : OP_WRITE)), res);
+                        (out.getAppend() ? OP_APPEND : OP_WRITE)), res);
+        String path = out.getPath();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
@@ -407,38 +400,34 @@ public final class ForeignStream {
      */
     public static Object sysReaderProperties(ConnectionReader read,
                                              Object res) {
-        boolean bom = read.getBom();
-        String encoding = read.getEncoding();
-        long lastmodified = read.getLastModified();
-        String etag = read.getETag();
-        long expiration = read.getExpiration();
-        String path = read.getPath();
-        int lineno = read.getLineNumber();
-        int buffer = read.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_ENCODING,
-                        encoding), res);
+                        read.getEncoding()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BOM, (bom ? Foyer.OP_TRUE :
+                new TermCompound(OP_BOM, (read.getBom() ? Foyer.OP_TRUE :
                         AbstractFlag.OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_LAST_MODIFIED,
-                        TermAtomic.normBigInteger(lastmodified)), res);
+                        TermAtomic.normBigInteger(read.getLastModified())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_VERSION_TAG,
-                        etag), res);
+                        read.getETag()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_EXPIRATION,
-                        TermAtomic.normBigInteger(expiration)), res);
+                        TermAtomic.normBigInteger(read.getExpiration())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound("line_no",
-                        Integer.valueOf(lineno)), res);
+                new TermCompound(OP_MIME_TYPE,
+                        read.getMimeType()), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(ReadOpts.OP_LINE_NO,
+                        Integer.valueOf(read.getLineNumber())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
-                        Integer.valueOf(buffer)), res);
+                        Integer.valueOf(read.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
                         OP_READ), res);
+        String path = read.getPath();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);
@@ -454,24 +443,20 @@ public final class ForeignStream {
      */
     public static Object sysWriterProperties(ConnectionWriter write,
                                              Object res) {
-        boolean bom = write.getBom();
-        String encoding = write.getEncoding();
-        String path = write.getPath();
-        boolean append = write.getAppend();
-        int buffer = write.getBuffer();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_ENCODING,
-                        encoding), res);
+                        write.getEncoding()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BOM,
-                        (bom ? Foyer.OP_TRUE :
+                        (write.getBom() ? Foyer.OP_TRUE :
                                 AbstractFlag.OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
-                        Integer.valueOf(buffer)), res);
+                        Integer.valueOf(write.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
-                        (append ? OP_APPEND : OP_WRITE)), res);
+                        (write.getAppend() ? OP_APPEND : OP_WRITE)), res);
+        String path = write.getPath();
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_FILE_NAME,
                         (path != null ? path : "")), res);

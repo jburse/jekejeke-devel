@@ -88,36 +88,13 @@ public final class LoadOpts extends LoadForce {
     public final static int VERBOSE_SUMMARY = 1;
     public final static int VERBOSE_DETAILS = 2;
 
-    public static final int MASK_LOAD_NOBO = 0x00001000;
     public static final int MASK_LOAD_MASK = 0x00002000;
-    public static final int MASK_LOAD_CACH = 0x00004000;
 
     public static final int MASK_LOAD_SMRY = 0x00010000;
     public static final int MASK_LOAD_DTLS = 0x00020000;
     public static final int MASK_LOAD_COND = 0x00040000;
 
-    private String encoding;
-    private int buffer = 8192;
     private InterfaceInit init;
-
-    /**
-     * <p>Retrieve the character set encoding.</p>
-     *
-     * @return The character set encoding, or null.
-     */
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * <p>Retrieve the buffer size.</p>
-     *
-     * @return The buffer size.
-     */
-    public int getBuffer() {
-        return buffer;
-    }
-
 
     /**
      * <p>Retrieve the init.</p>
@@ -169,7 +146,7 @@ public final class LoadOpts extends LoadForce {
             if (!en.visor.cond.getVisited().contains(source)) {
                 en.visor.cond.getVisited().add(source);
                 boolean cond = ((en.visor.cond.getFlags() & LoadOpts.MASK_LOAD_COND) != 0);
-                Reader reader = source.openReader(cond, this, en);
+                Reader reader = source.openReader(cond, this);
                 if (reader != null) {
                     performEnsureLoaded(reader, source, en, backcond != null);
                     if ((en.visor.cond.getFlags() & LoadOpts.MASK_LOAD_MASK) != 0)
@@ -517,38 +494,12 @@ public final class LoadOpts extends LoadForce {
                 en.deref();
                 if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(ForeignStream.OP_BOM)) {
-                    if (AbstractFlag.atomToSwitch(((SkelCompound) en.skel).args[0], en.display)) {
-                        setFlags(getFlags() & ~LoadOpts.MASK_LOAD_NOBO);
-                    } else {
-                        setFlags(getFlags() | LoadOpts.MASK_LOAD_NOBO);
-                    }
-                } else if (en.skel instanceof SkelCompound &&
-                        ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(ForeignStream.OP_USE_CACHES)) {
-                    if (AbstractFlag.atomToSwitch(((SkelCompound) en.skel).args[0], en.display)) {
-                        setFlags(getFlags() | LoadOpts.MASK_LOAD_CACH);
-                    } else {
-                        setFlags(getFlags() & ~LoadOpts.MASK_LOAD_CACH);
-                    }
-                } else if (en.skel instanceof SkelCompound &&
-                        ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(LoadOpts.OP_MASK)) {
                     if (AbstractFlag.atomToSwitch(((SkelCompound) en.skel).args[0], en.display)) {
                         setFlags(getFlags() | LoadOpts.MASK_LOAD_MASK);
                     } else {
                         setFlags(getFlags() & ~LoadOpts.MASK_LOAD_MASK);
                     }
-                } else if (en.skel instanceof SkelCompound &&
-                        ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(ForeignStream.OP_ENCODING)) {
-                    encoding = SpecialUniv.derefAndCastString(((SkelCompound) en.skel).args[0], en.display);
-                } else if (en.skel instanceof SkelCompound &&
-                        ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(ForeignStream.OP_BUFFER)) {
-                    Number num = SpecialEval.derefAndCastInteger(((SkelCompound) en.skel).args[0], en.display);
-                    SpecialEval.checkNotLessThanZero(num);
-                    buffer = SpecialEval.castIntValue(num);
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(LoadOpts.OP_COND)) {
