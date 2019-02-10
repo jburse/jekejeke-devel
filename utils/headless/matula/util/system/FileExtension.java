@@ -1,9 +1,13 @@
-package matula.util.regex;
-
-import java.util.Comparator;
+package matula.util.system;
 
 /**
- * <p>Case insensitive comparator faithful to simple specimen.</p>
+ * <p>An object that encapsulates a file extension.</p>
+ * <p>The following flags are supported:</p
+ * <ul>
+ * <li><b>MASK_USES_TEXT:</b> Library file.</li>
+ * <li><b>MASK_USES_BNRY:</b> Foreign file.</li>
+ * <li><b>MASK_USES_RSCS:</b> Resource file.</li>
+ * </ul>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -33,52 +37,45 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class IgnoreCase implements Comparator<String> {
-    public static final IgnoreCase DEFAULT = new IgnoreCase(true);
-    public static final IgnoreCase DEFAULT_NONE = new IgnoreCase(false);
+public final class FileExtension {
+    /* suffix relationship flags */
+    public static final int MASK_USES_TEXT = 0x00000010;
+    public static final int MASK_USES_BNRY = 0x00000020;
+    public static final int MASK_USES_RSCS = 0x00000040;
 
-    private boolean ignore;
+    private int type;
+    private String mimetype;
 
     /**
-     * <p>Create a ignore case comparator.</p>
+     * <p>Create a new file extension object.</p>
      *
-     * @param i The ignore case flag.
+     * @param e The extension.
+     * @param t The type.
+     * @param m The mimetype.
      */
-    private IgnoreCase(boolean i) {
-        ignore = i;
+    public FileExtension(int t, String m) {
+        if (m == null)
+            throw new NullPointerException("mimetype missing");
+        type = t;
+        mimetype = m;
     }
 
     /**
-     * <p>Compare two strings.</p>
+     * <p>Retrieve the type.</p>
      *
-     * @param o1 The first string.
-     * @param o2 The second string.
-     * @return < 0 if less than, 0 if equal, > 0 if greater than.
+     * @return The type.
      */
-    public int compare(String o1, String o2) {
-        int k1 = 0;
-        int k2 = 0;
-        while (k1 < o1.length() && k2 < o2.length()) {
-            int ch1 = o1.codePointAt(k1);
-            int ch2 = o2.codePointAt(k2);
-            k1 += Character.charCount(ch1);
-            k2 += Character.charCount(ch2);
-            if (ignore) {
-                ch1 = Character.toLowerCase(ch1);
-                ch2 = Character.toLowerCase(ch2);
-            }
-            if (ch1 != ch2)
-                return ch1 - ch2;
-        }
-        if (!(k1 < o1.length())) {
-            if (!(k2 < o2.length())) {
-                return 0;
-            } else {
-                return -1;
-            }
-        } else {
-            return 1;
-        }
+    public int getType() {
+        return type;
+    }
+
+    /**
+     * <p>Retrieve the mime type.</p>
+     *
+     * @return The mime type.
+     */
+    public String getMimeType() {
+        return mimetype;
     }
 
 }

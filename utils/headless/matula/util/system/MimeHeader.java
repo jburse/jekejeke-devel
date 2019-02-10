@@ -49,7 +49,7 @@ public final class MimeHeader {
 
     private String type = "";
     private String subtype = "";
-    private AssocArray<String, String> kvs = new AssocArray<String, String>();
+    private AssocArray<String, String> kvs;
 
     /**
      * <p>Create a mime header from a string.</p>
@@ -63,6 +63,22 @@ public final class MimeHeader {
         } catch (IOException x) {
             throw new RuntimeException("internal error", x);
         }
+    }
+
+    /**
+     * <p>Retrieve a mime header.</p>
+     *
+     * @param s The string.
+     * @return The mime header or null.
+     */
+    public static MimeHeader getInstance(String s) {
+        MimeHeader mh;
+        try {
+            mh = new MimeHeader(s);
+        } catch (ScannerError x) {
+            mh = null;
+        }
+        return mh;
     }
 
     /**
@@ -91,6 +107,8 @@ public final class MimeHeader {
      * @return The value, or null.
      */
     public String getValue(String a) {
+        if (kvs == null)
+            return null;
         for (int i = 0; i < kvs.size(); i++) {
             if (kvs.getKey(i).equalsIgnoreCase(a))
                 return kvs.getValue(i);
@@ -112,6 +130,19 @@ public final class MimeHeader {
         if (v == null)
             return d;
         return v;
+    }
+
+    /**
+     * <p>Retrieve the mime type.</p>
+     *
+     * @return The mime type.
+     */
+    public String getMimeType() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(type);
+        buf.appendCodePoint('/');
+        buf.append(subtype);
+        return buf.toString();
     }
 
     /*******************************************************************/
@@ -171,6 +202,8 @@ public final class MimeHeader {
             } else {
                 throw new ScannerError(ERROR_VALUE_MISSING, -1);
             }
+            if (kvs == null)
+                kvs = new AssocArray<String, String>();
             kvs.add(a, v);
         }
         if (st.ttype != StreamTokenizer.TT_EOF)
@@ -193,17 +226,19 @@ public final class MimeHeader {
         buf.append(type);
         buf.append("/");
         buf.append(subtype);
-        for (int i = 0; i < kvs.size(); i++) {
-            buf.append("; ");
-            buf.append(kvs.getKey(i));
-            buf.append("=");
-            String v = kvs.getValue(i);
-            if (needsQuote(v)) {
-                buf.append('"');
-                buf.append(quoteString(v));
-                buf.append('"');
-            } else {
-                buf.append(v);
+        if (kvs != null) {
+            for (int i = 0; i < kvs.size(); i++) {
+                buf.append("; ");
+                buf.append(kvs.getKey(i));
+                buf.append("=");
+                String v = kvs.getValue(i);
+                if (needsQuote(v)) {
+                    buf.append('"');
+                    buf.append(quoteString(v));
+                    buf.append('"');
+                } else {
+                    buf.append(v);
+                }
             }
         }
         return buf.toString();
@@ -262,8 +297,10 @@ public final class MimeHeader {
         String str = "text/plain; charset=UTF-8";
         System.out.println("str=" + str);
 
-        MimeHeader mime = new MimeHeader(str);
-        System.out.println("mime(str)=" + mime);
+        MimeHeader mh = new MimeHeader(str);
+        System.out.println("mime(str)=" + mh);
+        System.out.println("mime(str).mimetype=" + mh.getMimeType());
+        System.out.println("mime(str).attr(charset)=" + mh.getValue(MimeHeader.MIME_CHARSET));
     }
     */
 

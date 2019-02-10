@@ -1,5 +1,7 @@
 package matula.util.system;
 
+import matula.util.data.MapEntry;
+
 /**
  * <p>An abstract recognizer such as a knowledgebase.</p>
  * <p/>
@@ -40,5 +42,40 @@ public abstract class AbstractRecognizer {
      * @return The decoder, or null.
      */
     public abstract AbstractDecoder pathToDecoder(String path);
+
+    /**
+     * <p>Retrieve the file extensions.</p>
+     * <p>Returns a copy which should be treated immutable.</p>
+     *
+     * @return The file extensions and their type.
+     */
+    public abstract MapEntry<String, FileExtension>[] getFileExtensions();
+
+    /**
+     * <p>Retrieve the parent.</p>
+     *
+     * @return The parent.
+     */
+    public abstract AbstractRecognizer getParent();
+
+    /**
+     * <p>Retrieve the mime type of a file path.</p>
+     *
+     * @param path The file path.
+     * @return The mime header or null.
+     */
+    public String getMimeType(String path) {
+        AbstractRecognizer recognizer = this;
+        do {
+            MapEntry<String, FileExtension>[] exts = recognizer.getFileExtensions();
+            for (int i = 0; i < exts.length; i++) {
+                MapEntry<String, FileExtension> ext = exts[i];
+                if (path.endsWith(ext.key))
+                    return ext.value.getMimeType();
+            }
+            recognizer = recognizer.getParent();
+        } while (recognizer != null);
+        return null;
+    }
 
 }

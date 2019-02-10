@@ -41,6 +41,7 @@ public final class ConnectionInput extends FilterInputStream {
     private long lastmodified;
     private String etag = "";
     private long expiration;
+    private String mimetype = "";
     private RandomAccessFile raf;
     private String path;
     private int buffer;
@@ -52,19 +53,6 @@ public final class ConnectionInput extends FilterInputStream {
      */
     ConnectionInput(InputStream i) {
         super(i);
-    }
-
-    /**
-     * <p>Compensate for lack of overriding in filter output stream.</p>
-     *
-     * @param b The bytes.
-     * @return the total number of bytes read into the buffer, or
-     * <code>-1</code> if there is no more data because the end of
-     * the stream has been reached.
-     * @throws IOException IO error.
-     */
-    public int read(byte b[]) throws IOException {
-        return in.read(b);
     }
 
     /**
@@ -119,6 +107,24 @@ public final class ConnectionInput extends FilterInputStream {
      */
     void setExpiration(long e) {
         expiration = e;
+    }
+
+    /**
+     * <p>Retrieve the mime type.</p>
+     *
+     * @return The mime type.
+     */
+    public String getMimeType() {
+        return mimetype;
+    }
+
+    /**
+     * <p>Set the mime type.</p>
+     *
+     * @param m The mime type.
+     */
+    public void setMimeType(String m) {
+        mimetype = m;
     }
 
     /**

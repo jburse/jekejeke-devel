@@ -1,9 +1,7 @@
 package matula.util.wire;
 
 import matula.util.data.AssocArray;
-import matula.util.data.ListArray;
 import matula.util.regex.ScannerError;
-import matula.util.system.MimeHeader;
 import qa.info.cust.bean.TidyComment;
 
 import java.io.IOException;
@@ -120,7 +118,7 @@ public final class StyleAttribute {
         st.whitespaceChars(0, ' ');
         st.quoteChar('\'');
         st.nextToken();
-        for (;;) {
+        for (; ; ) {
             String a;
             if (st.ttype != StreamTokenizer.TT_WORD)
                 throw new ScannerError(ERROR_NAME_MISSING, -1);
@@ -164,7 +162,7 @@ public final class StyleAttribute {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < kvs.size(); i++) {
-            if (i!=0)
+            if (i != 0)
                 buf.append("; ");
             buf.append(kvs.getKey(i));
             buf.append(": ");
@@ -233,7 +231,7 @@ public final class StyleAttribute {
      *
      * @param val The em value.
      * @return The pixel value.
-     * @throws ScannerError Shit happens.
+     * @throws ScannerError          Shit happens.
      * @throws NumberFormatException Shit happens.
      */
     public static int emToPixel(String val)

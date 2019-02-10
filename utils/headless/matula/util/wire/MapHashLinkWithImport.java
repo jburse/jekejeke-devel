@@ -2,7 +2,6 @@ package matula.util.wire;
 
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**

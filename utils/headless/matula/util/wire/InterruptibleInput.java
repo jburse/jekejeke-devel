@@ -53,12 +53,14 @@ final class InterruptibleInput extends FilterInputStream {
      * @return The byte or -1.
      * @throws IOException I/O Error.
      */
-    public int read() throws IOException {
-        AbstractLivestock live = AbstractLivestock.currentLivestock(Thread.currentThread());
+    public int read()
+            throws IOException {
+        AbstractLivestock live = AbstractLivestock.currentLivestock(
+                Thread.currentThread());
         if (live != null)
             live.closer = this;
         try {
-            return super.read();
+            return in.read();
         } finally {
             if (live != null)
                 live.closer = null;
@@ -76,12 +78,14 @@ final class InterruptibleInput extends FilterInputStream {
      * @return The length or -1.
      * @throws IOException I/O Error.
      */
-    public int read(byte[] b, int off, int len) throws IOException {
-        AbstractLivestock live = AbstractLivestock.currentLivestock(Thread.currentThread());
+    public int read(byte[] b, int off, int len)
+            throws IOException {
+        AbstractLivestock live = AbstractLivestock.currentLivestock(
+                Thread.currentThread());
         if (live != null)
             live.closer = this;
         try {
-            return super.read(b,off,len);
+            return in.read(b, off, len);
         } finally {
             if (live != null)
                 live.closer = null;

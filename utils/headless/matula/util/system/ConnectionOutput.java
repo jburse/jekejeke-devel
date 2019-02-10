@@ -55,16 +55,6 @@ public final class ConnectionOutput extends FilterOutputStream {
     /**
      * <p>Compensate for lack of overriding in filter output stream.</p>
      *
-     * @param b The bytes.
-     * @throws IOException IO error.
-     */
-    public void write(byte b[]) throws IOException {
-        out.write(b);
-    }
-
-    /**
-     * <p>Compensate for lack of overriding in filter output stream.</p>
-     *
      * @param b   The bytes.
      * @param off the start offset in the data.
      * @param len the number of bytes to write.

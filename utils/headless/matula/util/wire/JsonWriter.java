@@ -7,7 +7,6 @@ import matula.util.format.DomText;
 import matula.util.regex.CodeType;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
 
 /**

@@ -77,8 +77,6 @@ public final class Lobby {
     public final TermAtomic ATOM_CONS;
     public final TermAtomic ATOM_NIL;
 
-    public final TermAtomic GOAL_TRUE = new TermAtomic(OP_TRUE);
-
     /**
      * <p>Create a new lobby.</p>
      *

@@ -587,7 +587,7 @@ public final class ForeignXml {
      */
     public static void main(String[] args) {
 
-        String str="aÿbc";
+        String str = "aÿbc";
         System.out.println("str=" + str);
         System.out.println("sysTextEscape(str)=" + sysTextEscape(str));
 

@@ -131,11 +131,10 @@ public abstract class AbstractAuto extends AbstractSource {
      *
      * @param if_modified The if modified flag.
      * @param opts        The options.
-     * @param en          The engine.
      * @return The reader or null.
      */
     public Reader openReader(boolean if_modified,
-                             LoadOpts opts, Engine en) {
+                             LoadOpts opts) {
         if ((getBits() & AbstractSource.MASK_SRC_PREL) != 0) {
             if (if_modified)
                 return null;

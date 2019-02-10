@@ -9,6 +9,7 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractRuntime;
+import matula.util.system.FileExtension;
 
 /**
  * <p>Concerned with the lookup of binaries, escpecially Java classes</p>
@@ -97,11 +98,11 @@ public final class LookupBinary {
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
             Store store = src.getStore();
-            while (store != null) {
-                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+            do {
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
+                    MapEntry<String, FileExtension> fix = fixes[i];
+                    if ((fix.value.getType() & FileExtension.MASK_USES_BNRY) != 0) {
                         String key = relpath + fix.key;
                         Class clazz = keyToClass(key, src.getStore());
                         if (clazz != null)
@@ -109,7 +110,7 @@ public final class LookupBinary {
                     }
                 }
                 store = store.parent;
-            }
+            } while (store != null);
         }
 
         // failure
@@ -131,11 +132,11 @@ public final class LookupBinary {
         /* system binary suffix */
         if ((mask & ForeignPath.MASK_SUFX_BNRY) != 0) {
             Store store = src.getStore();
-            while (store != null) {
-                MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
+            do {
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & AbstractSource.MASK_USES_BNRY) != 0) {
+                    MapEntry<String, FileExtension> fix = fixes[i];
+                    if ((fix.value.getType() & FileExtension.MASK_USES_BNRY) != 0) {
                         if (relpath.endsWith(fix.key)) {
                             String path2 = relpath.substring(0, relpath.length() - fix.key.length());
                             if (relpath.equals(findBinarySuffix(path2, src, mask)))
@@ -144,7 +145,7 @@ public final class LookupBinary {
                     }
                 }
                 store = store.parent;
-            }
+            } while (store != null);
         }
 
         // failure

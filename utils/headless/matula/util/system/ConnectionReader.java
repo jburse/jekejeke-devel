@@ -49,6 +49,7 @@ public final class ConnectionReader extends FilterReader {
     private long lastmodified;
     private String etag = "";
     private long expiration;
+    private String mimetype = "";
     private RandomAccessFile raf;
     private String path;
     private int buffer;
@@ -158,6 +159,24 @@ public final class ConnectionReader extends FilterReader {
      */
     void setExpiration(long e) {
         expiration = e;
+    }
+
+    /**
+     * <p>Retrieve the mime type.</p>
+     *
+     * @return The mime type.
+     */
+    public String getMimeType() {
+        return mimetype;
+    }
+
+    /**
+     * <p>Set the mime type.</p>
+     *
+     * @param m The mime type.
+     */
+    public void setMimeType(String m) {
+        mimetype = m;
     }
 
     /**

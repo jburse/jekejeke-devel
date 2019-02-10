@@ -13,6 +13,7 @@ import jekpro.tools.foreign.LookupResource;
 import matula.util.data.MapEntry;
 import matula.util.system.AbstractDecoder;
 import matula.util.system.AbstractRecognizer;
+import matula.util.system.FileExtension;
 import matula.util.system.ForeignUri;
 
 import java.io.IOException;
@@ -287,11 +288,21 @@ public class Knowledgebase extends AbstractRecognizer {
     /**
      * <p>Add a file extension.</p>
      *
-     * @param ext  The file extension.
-     * @param type The type.
+     * @param e The file extension.
+     * @param t The type.
+     * @param m The mime type.
      */
-    public final void addFileExtension(String ext, int type) {
-        store.addFileExtension(ext, type);
+    public final void addFileExtension(String e, int t, String m) {
+        store.addFileExtension(e, t, m);
+    }
+
+    /**
+     * <p>Remove a file extension.</p>
+     *
+     * @param e The file extension.
+     */
+    public final void removeFileExtension(String e) {
+        store.removeFileExtension(e);
     }
 
     /**
@@ -300,7 +311,7 @@ public class Knowledgebase extends AbstractRecognizer {
      *
      * @return The file extensions and their type.
      */
-    public final MapEntry<String, Integer>[] getFileExtensions() {
+    public final MapEntry<String,FileExtension>[] getFileExtensions() {
         return store.snapshotFileExtensions();
     }
 

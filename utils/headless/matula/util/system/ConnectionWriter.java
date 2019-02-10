@@ -213,11 +213,15 @@ public final class ConnectionWriter extends FilterWriter {
      * @throws IOException If an I/O error occurs
      */
     public void write(int c) throws IOException {
-        if (c == CodeType.LINE_EOL) {
-            out.write(newline);
-            return;
+        if (!OpenDuplex.UNIX_NEWLINE.equals(newline)) {
+            if (c == CodeType.LINE_EOL) {
+                out.write(newline);
+            } else {
+                out.write(c);
+            }
+        } else {
+            out.write(c);
         }
-        out.write(c);
     }
 
     /**

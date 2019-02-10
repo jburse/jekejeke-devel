@@ -1,7 +1,6 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
-import matula.util.regex.ScannerError;
 
 import java.io.*;
 import java.net.Socket;
@@ -115,11 +114,10 @@ public class OpenDuplex extends OpenCheck {
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
      * @throws LicenseError             Decryption error.
-     * @throws ScannerError             Parsing error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openRead(AbstractRecognizer know, Socket sock)
-            throws IOException, LicenseError, ScannerError {
+            throws IOException, LicenseError {
         InputStream in = sock.getInputStream();
         if ((getFlags() & MASK_OPEN_BINR) != 0) {
             ConnectionInput cin;

@@ -1,6 +1,5 @@
 package matula.util.wire;
 
-import matula.util.data.MapHash;
 import matula.util.format.DomElement;
 import matula.util.format.XSelect;
 import matula.util.format.XSelectPrim;

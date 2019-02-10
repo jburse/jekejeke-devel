@@ -53,12 +53,14 @@ final class InterruptibleOutput extends FilterOutputStream {
      * @param b The byte.
      * @throws IOException I/O Error.
      */
-    public void write(int b) throws IOException {
-        AbstractLivestock live = AbstractLivestock.currentLivestock(Thread.currentThread());
+    public void write(int b)
+            throws IOException {
+        AbstractLivestock live = AbstractLivestock.currentLivestock(
+                Thread.currentThread());
         if (live != null)
             live.closer = this;
         try {
-            super.write(b);
+            out.write(b);
         } finally {
             if (live != null)
                 live.closer = null;
@@ -75,12 +77,14 @@ final class InterruptibleOutput extends FilterOutputStream {
      * @param len The length.
      * @throws IOException I/O Error.
      */
-    public void write(byte[] b, int off, int len) throws IOException {
-        AbstractLivestock live = AbstractLivestock.currentLivestock(Thread.currentThread());
+    public void write(byte[] b, int off, int len)
+            throws IOException {
+        AbstractLivestock live = AbstractLivestock.currentLivestock(
+                Thread.currentThread());
         if (live != null)
             live.closer = this;
         try {
-            super.write(b,off,len);
+            out.write(b, off, len);
         } finally {
             if (live != null)
                 live.closer = null;

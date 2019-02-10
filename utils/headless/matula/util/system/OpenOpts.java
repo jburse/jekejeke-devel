@@ -1,7 +1,6 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
-import matula.util.regex.ScannerError;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -112,11 +111,10 @@ public final class OpenOpts extends OpenDuplex {
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
      * @throws LicenseError             Decryption error.
-     * @throws ScannerError             Parsing error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openRead(AbstractRecognizer know, String adr2)
-            throws LicenseError, IOException, ScannerError {
+            throws LicenseError, IOException {
         if ((getFlags() & MASK_OPEN_RPOS) != 0) {
             String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
@@ -134,45 +132,53 @@ public final class OpenOpts extends OpenDuplex {
             }
             RandomAccessFile raf = new RandomAccessFile(file, "r");
             InputStream in = new FileInputStream(raf.getFD());
+            AbstractDecoder cap = know.pathToDecoder(adr2);
+            if (cap != null)
+                in = cap.prepareStream(in, know);
+            if (getBuffer() != 0)
+                in = new BufferedInputStream(in, getBuffer());
+            String mt = know.getMimeType(path);
             if ((getFlags() & MASK_OPEN_BINR) != 0) {
-                ConnectionInput cin;
-                if (getBuffer() != 0) {
-                    cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
-                    cin.setBuffer(getBuffer());
-                } else {
-                    cin = new ConnectionInput(in);
-                }
+                ConnectionInput cin = new ConnectionInput(in);
                 cin.setLastModified(file.lastModified());
                 cin.setETag(Long.toString(cin.getLastModified()));
+                cin.setMimeType(mt != null ? mt : "");
                 cin.setRaf(raf);
                 cin.setPath(adr2);
+                cin.setBuffer(getBuffer());
                 return cin;
             } else {
-                String theenconding = getEncoding();
-                if (theenconding == null)
-                    theenconding = ForeignUri.ENCODING_UTF8;
+                boolean hasbom = false;
+                String theencoding = getEncoding();
+                if ((getFlags() & MASK_OPEN_NOBR) == 0 &&
+                        theencoding == null &&
+                        getBuffer() != 0) {
+                    in.mark(3);
+                    theencoding = detectBom(in);
+                    in.reset();
+                    hasbom = (theencoding != null);
+                }
+                if (theencoding == null)
+                    theencoding = ForeignUri.ENCODING_UTF8;
                 InputStreamReader isr;
                 try {
-                    isr = new InputStreamReader(in, theenconding);
+                    isr = new InputStreamReader(in, theencoding);
                 } catch (UnsupportedEncodingException x) {
                     in.close();
                     raf.close();
                     throw x;
                 }
-                ConnectionReader crd;
-                if (getBuffer() != 0) {
-                    crd = new ConnectionReader(new BufferedReader(isr, getBuffer()));
-                    crd.setBuffer(getBuffer());
-                } else {
-                    crd = new ConnectionReader(isr);
-                }
+                ConnectionReader crd = new ConnectionReader(isr);
                 crd.setEncoding(isr.getEncoding());
                 crd.setUnbuf(isr);
+                crd.setBom(hasbom);
                 crd.setLastModified(file.lastModified());
                 crd.setETag(Long.toString(crd.getLastModified()));
+                crd.setMimeType(mt != null ? mt : "");
                 crd.setLineNumber(1);
                 crd.setRaf(raf);
                 crd.setPath(adr2);
+                crd.setBuffer(getBuffer());
                 return crd;
             }
         } else {
@@ -194,32 +200,25 @@ public final class OpenOpts extends OpenDuplex {
                 AbstractDecoder cap = know.pathToDecoder(adr2);
                 if (cap != null)
                     in = cap.prepareStream(in, know);
+                if (getBuffer() != 0)
+                    in = new BufferedInputStream(in, getBuffer());
+                String mt = know.getMimeType(path);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
-                    ConnectionInput cin;
-                    if (getBuffer() != 0) {
-                        cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
-                        cin.setBuffer(getBuffer());
-                    } else {
-                        cin = new ConnectionInput(in);
-                    }
+                    ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(file.lastModified());
                     cin.setETag(Long.toString(cin.getLastModified()));
+                    cin.setMimeType(mt != null ? mt : "");
                     cin.setPath(adr2);
+                    cin.setBuffer(getBuffer());
                     return cin;
                 } else {
                     boolean hasbom = false;
                     String theencoding = getEncoding();
-                    if ((getFlags() & MASK_OPEN_NOBR) == 0 && theencoding == null) {
-                        String val = detectBom(in);
-                        if (val != null) {
-                            theencoding = val;
-                            hasbom = true;
-                        } else {
-                            in.close();
-                            in = new FileInputStream(file);
-                            if (cap != null)
-                                in = cap.prepareStream(in, know);
-                        }
+                    if ((getFlags() & MASK_OPEN_NOBR) == 0 && theencoding == null && getBuffer() != 0) {
+                        in.mark(3);
+                        theencoding = detectBom(in);
+                        in.reset();
+                        hasbom = (theencoding != null);
                     }
                     if (theencoding == null)
                         theencoding = ForeignUri.ENCODING_UTF8;
@@ -230,20 +229,16 @@ public final class OpenOpts extends OpenDuplex {
                         in.close();
                         throw x;
                     }
-                    ConnectionReader crd;
-                    if (getBuffer() != 0) {
-                        crd = new ConnectionReader(new BufferedReader(isr, getBuffer()));
-                        crd.setBuffer(getBuffer());
-                    } else {
-                        crd = new ConnectionReader(isr);
-                    }
+                    ConnectionReader crd = new ConnectionReader(isr);
                     crd.setEncoding(isr.getEncoding());
                     crd.setUnbuf(isr);
                     crd.setBom(hasbom);
                     crd.setLastModified(file.lastModified());
                     crd.setETag(Long.toString(crd.getLastModified()));
+                    crd.setMimeType(mt != null ? mt : "");
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
+                    crd.setBuffer(getBuffer());
                     return crd;
                 }
             } else {
@@ -284,29 +279,28 @@ public final class OpenOpts extends OpenDuplex {
                 AbstractDecoder cap = know.pathToDecoder(adr2);
                 if (cap != null)
                     in = cap.prepareStream(in, know);
+                if (getBuffer() != 0)
+                    in = new BufferedInputStream(in, getBuffer());
+                MimeHeader mh = getMimeHeader(con, know);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
-                    ConnectionInput cin;
-                    if (getBuffer() != 0) {
-                        cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
-                        cin.setBuffer(getBuffer());
-                    } else {
-                        cin = new ConnectionInput(in);
-                    }
+                    ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(OpenOpts.getLastModified(con));
                     cin.setETag(OpenOpts.getETag(con));
                     cin.setExpiration(OpenOpts.getExpiration(con));
+                    cin.setMimeType(mh != null ? mh.getMimeType() : "");
                     cin.setPath(adr2);
+                    cin.setBuffer(getBuffer());
                     return cin;
                 } else {
+                    boolean hasbom = false;
                     String theencoding = getEncoding();
-                    if (theencoding == null) {
-                        String typ = con.getContentType();
-                        if (typ != null) {
-                            MimeHeader mh = new MimeHeader(typ);
-                            String val = mh.getValue(MimeHeader.MIME_CHARSET);
-                            if (val != null)
-                                theencoding = val;
-                        }
+                    if (theencoding == null)
+                        theencoding = (mh != null ? mh.getValue(MimeHeader.MIME_CHARSET) : null);
+                    if ((getFlags() & MASK_OPEN_NOBR) == 0 && theencoding == null && getBuffer() != 0) {
+                        in.mark(3);
+                        theencoding = detectBom(in);
+                        in.reset();
+                        hasbom = (theencoding != null);
                     }
                     if (theencoding == null)
                         theencoding = ForeignUri.ENCODING_UTF8;
@@ -317,20 +311,17 @@ public final class OpenOpts extends OpenDuplex {
                         in.close();
                         throw x;
                     }
-                    ConnectionReader crd;
-                    if (getBuffer() != 0) {
-                        crd = new ConnectionReader(new BufferedReader(isr, getBuffer()));
-                        crd.setBuffer(getBuffer());
-                    } else {
-                        crd = new ConnectionReader(isr);
-                    }
+                    ConnectionReader crd = new ConnectionReader(isr);
                     crd.setEncoding(isr.getEncoding());
                     crd.setUnbuf(isr);
+                    crd.setBom(hasbom);
                     crd.setLastModified(OpenOpts.getLastModified(con));
                     crd.setETag(OpenOpts.getETag(con));
                     crd.setExpiration(OpenOpts.getExpiration(con));
+                    crd.setMimeType(mh != null ? mh.getMimeType() : "");
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
+                    crd.setBuffer(getBuffer());
                     return crd;
                 }
             }
@@ -607,6 +598,25 @@ public final class OpenOpts extends OpenDuplex {
             String res = con.getHeaderField("ETag");
             return (res != null ? res : "");
         }
+    }
+
+    /**
+     * <p>Retrieve the mime header.</p>
+     *
+     * @param con  The connection.
+     * @param know The recognizer.
+     * @return The mime header.
+     */
+    public static MimeHeader getMimeHeader(URLConnection con,
+                                           AbstractRecognizer know) {
+        String typ;
+        if (con instanceof JarURLConnection) {
+            String name = ((JarURLConnection) con).getEntryName();
+            typ = (name != null ? know.getMimeType(name) : null);
+        } else {
+            typ = con.getContentType();
+        }
+        return (typ != null ? MimeHeader.getInstance(typ) : null);
     }
 
     /*************************************************************/

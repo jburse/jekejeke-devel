@@ -68,7 +68,6 @@ public final class SkelCompound extends AbstractSkel {
         this(f, a, makeExtra(a));
     }
 
-
     /**
      * <p>Add new variables from all the spines of the
      * arguments but one in a list.</p>
