@@ -9,11 +9,12 @@ import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.Controller;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.TermAtomic;
 import matula.util.data.MapHash;
-import matula.util.wire.AbstractLivestock;
 
 /**
  * <p>Thread flags on development environment level.</p>
@@ -50,10 +51,12 @@ public final class FlagTraceThread extends AbstractFlag {
     public final static String OP_FLAG_SYS_TDEBUG = "sys_tdebug";
     public final static String OP_FLAG_SYS_TOP_FRAME = "sys_top_frame";
     public final static String OP_FLAG_SYS_THREAD_STORE = "sys_thread_store";
+    public final static String OP_FLAG_SYS_THREAD_LASTMOD = "sys_thread_lastmod";
 
     private static final int FLAG_SYS_TDEBUG = 0;
     private static final int FLAG_SYS_TOP_FRAME = 1;
     private static final int FLAG_SYS_THREAD_STORE = 2;
+    private static final int FLAG_SYS_THREAD_LASTMOD = 3;
 
     /**
      * <p>Create a thread flag.</p>
@@ -74,6 +77,7 @@ public final class FlagTraceThread extends AbstractFlag {
         threadflags.add(OP_FLAG_SYS_TDEBUG, new FlagTraceThread(FLAG_SYS_TDEBUG));
         threadflags.add(OP_FLAG_SYS_TOP_FRAME, new FlagTraceThread(FLAG_SYS_TOP_FRAME));
         threadflags.add(OP_FLAG_SYS_THREAD_STORE, new FlagTraceThread(FLAG_SYS_THREAD_STORE));
+        threadflags.add(OP_FLAG_SYS_THREAD_LASTMOD, new FlagTraceThread(FLAG_SYS_THREAD_LASTMOD));
         return threadflags;
     }
 
@@ -113,6 +117,12 @@ public final class FlagTraceThread extends AbstractFlag {
                 if (inter == null) return new SkelAtom(AbstractFlag.OP_NULL);
 
                 return inter.getKnowledgebase();
+            case FLAG_SYS_THREAD_LASTMOD:
+                contr = Controller.currentController(t);
+                if (contr == null) return Integer.valueOf(0);
+
+                s = (Supervisor) contr.getVisor();
+                return TermAtomic.normBigInteger(((SupervisorTrace) s).getLastModified());
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -131,15 +141,35 @@ public final class FlagTraceThread extends AbstractFlag {
     public boolean setThreadFlag(Object m, Display d,
                                  Thread t, Engine en)
             throws EngineMessage {
-        switch (id) {
-            case FLAG_SYS_TDEBUG:
-                SupervisorTrace s = (SupervisorTrace) AbstractLivestock.currentLivestock(t);
-                if (s == null) return true;
-                s.setThreadMode(SpecialDefault.atomToMode(m, d));
-                return true;
-            case FLAG_SYS_TOP_FRAME:
-            default:
-                throw new IllegalArgumentException("illegal flag");
+        try {
+            switch (id) {
+                case FLAG_SYS_TDEBUG:
+                    Controller contr = Controller.currentController(t);
+                    if (contr == null) return true;
+
+                    Supervisor s = (Supervisor) contr.getVisor();
+                    ((SupervisorTrace) s).setThreadMode(SpecialDefault.atomToMode(m, d));
+                    return true;
+                case FLAG_SYS_TOP_FRAME:
+                    /* can't modify */
+                    return false;
+                case FLAG_SYS_THREAD_STORE:
+                    /* can't modify */
+                    return false;
+                case FLAG_SYS_THREAD_LASTMOD:
+                    contr = Controller.currentController(t);
+                    if (contr == null) return true;
+
+                    s = (Supervisor) contr.getVisor();
+                    Number num = SpecialEval.derefAndCastInteger(m, d);
+                    ((SupervisorTrace) s).setLastModified(SpecialEval.castLongValue(num));
+                    return true;
+                default:
+                    throw new IllegalArgumentException("illegal flag");
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

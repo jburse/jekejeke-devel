@@ -48,7 +48,7 @@
 
 :- use_module(library(basic/lists)).
 :- use_module(library(system/locale)).
-:- use_module(library(system/shell)).
+:- use_module(library(system/zone)).
 :- use_module(tracker).
 :- use_module(helper).
 :- sys_load_resource(testing).
@@ -84,7 +84,7 @@ cover_summary :-
 html_list_summary :-
    write('<h1 date='''),
    get_time(S),
-   write_atom(atom_format('%1$tF %1$tT',S)),
+   write_atom(format_atom('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'cover.summary.h1', V1),
    write('''>'),
@@ -167,7 +167,7 @@ cover_packages.
 html_list_package(D, L) :-
    write('<h1 date='''),
    get_time(S),
-   write_atom(atom_format('%1$tF %1$tT',S)),
+   write_atom(format_atom('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'cover.package.h1', V1),
    write('''>'),
@@ -252,7 +252,7 @@ cover_sources(_).
 html_list_source(T, N, Z) :-
    write('<h1 date='''),
    get_time(S),
-   write_atom(atom_format('%1$tF %1$tT',S)),
+   write_atom(format_atom('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'cover.source.h1', V1),
    write('''>'),

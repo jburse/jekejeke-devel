@@ -43,6 +43,7 @@ public final class SupervisorTrace extends Supervisor {
     private InterfaceStack skipframe;
     private MapHash<String, ListArray<Integer>> tspys;
     private SetHash<PositionKey> tbreakpoints;
+    private long lastmod;
 
     /**
      * <p>Create a supervisor for a store.</p>
@@ -57,6 +58,24 @@ public final class SupervisorTrace extends Supervisor {
     /***************************************************************/
     /* Thread Mode Handling                                        */
     /***************************************************************/
+
+    /**
+     * <p>Retrieve the skip frame.</p>
+     *
+     * @return The skip frame.
+     */
+    public InterfaceStack getSkipFrame() {
+        return skipframe;
+    }
+
+    /**
+     * <p>Set the skip frame.</p>
+     *
+     * @param d The skip frame.
+     */
+    public void setSkipFrame(InterfaceStack d) {
+        skipframe = d;
+    }
 
     /**
      * <p>Set the engine debug mode.</p>
@@ -92,21 +111,21 @@ public final class SupervisorTrace extends Supervisor {
     }
 
     /**
-     * <p>Retrieve the skip frame.</p>
+     * <p>Retrieve the last modified.</p>
      *
-     * @return The skip frame.
+     * @return The last modified.
      */
-    public InterfaceStack getSkipFrame() {
-        return skipframe;
+    public long getLastModified() {
+        return lastmod;
     }
 
     /**
-     * <p>Set the skip frame.</p>
+     * <p>Set the last modified.</p>
      *
-     * @param d The skip frame.
+     * @param l The last modified.
      */
-    public void setSkipFrame(InterfaceStack d) {
-        skipframe = d;
+    public void setLastModified(long l) {
+        lastmod = l;
     }
 
     /***************************************************************/

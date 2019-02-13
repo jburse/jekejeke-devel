@@ -141,17 +141,17 @@ store_property(I, R) :-
 % stores
 :- public stores/0.
 stores :-
-   thread_current(T),
-   current_thread_flag(T, sys_thread_store, S),
-   stores(S).
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_store, Store),
+   stores(Store).
 
 % stores(+Store)
 :- private stores/1.
 stores(null) :- !.
-stores(S) :-
-   store_property(S, sys_name(N)),
+stores(Store) :-
+   store_property(Store, sys_name(N)),
    write(N), nl,
-   store_property(S, sys_parent(T)),
-   stores(T).
+   store_property(Store, sys_parent(Store2)),
+   stores(Store2).
 
 

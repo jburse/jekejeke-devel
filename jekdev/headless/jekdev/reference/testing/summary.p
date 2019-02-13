@@ -40,7 +40,7 @@
 
 :- use_module(library(basic/lists)).
 :- use_module(library(system/locale)).
-:- use_module(library(system/shell)).
+:- use_module(library(system/zone)).
 :- use_module(runner).
 :- use_module(tracker).
 :- use_module(helper).
@@ -77,7 +77,7 @@ summary_batch(C) :-
 html_page(true) :- !,
    write('<h1 date='''),
    get_time(S),
-   write_atom(atom_format('%1$tF %1$tT',S)),
+   write_atom(format_atom('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'summary.cover_and_result.h1', V1),
    write('''>'),
@@ -86,7 +86,7 @@ html_page(true) :- !,
 html_page(_) :-
    write('<h1 date='''),
    get_time(S),
-   write_atom(atom_format('%1$tF %1$tT',S)),
+   write_atom(format_atom('%1$tF %1$tT',S)),
    sys_get_lang(testing, P),
    get_property(P, 'summary.result.h1', V1),
    write('''>'),

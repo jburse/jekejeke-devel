@@ -40,6 +40,8 @@
 :- use_module(pages/stack).
 :- use_module(pages/frame).
 :- use_module(pages/source).
+:- use_module(library(system/thread)).
+:- use_module(library(system/zone)).
 
 /**
  * dispatch(O, P, A, S):
@@ -80,18 +82,39 @@ find_call_stack(Frame, Count, Result) :-
    find_call_stack(Other, Count2, Result).
 
 /***************************************************************/
-/* HTTP Response Text                                          */
+/* Date & Version Utility                                      */
 /***************************************************************/
 
-% frame_begin(+Stream, +Atom)
-:- public frame_begin/2.
-frame_begin(Response, Title) :-
-   frame_begin(Response, Title, []).
+% meta_thread(+Thread, -List)
+:- public meta_thread/2.
+meta_thread(Thread, Headers) :-
+   current_thread_flag(Thread, sys_thread_lastmod, Millis),
+   make_header_all(Millis, Headers, []).
+
+% meta_both(+Thread, -List)
+:- public meta_both/2.
+meta_both(Thread, Headers) :-
+   current_thread_flag(Thread, sys_thread_lastmod, Millis1),
+   current_thread_flag(Thread, sys_thread_store, Store),
+   store_property(Store, sys_lastmod(Millis2)),
+   Millis is max(Millis1,Millis2),
+   make_header_all(Millis, Headers, []).
+
+% make_header_all(+Integer, -List, +List)
+:- private make_header_all/3.
+make_header_all(0, Headers, Headers) :- !.
+make_header_all(Millis, ['Content-Type'-'text/html; charset=UTF-8','Last-Modified'-Formatted,'ETag'-Quoted|Rest], Rest) :-
+   rfc1123_atom(Millis, Formatted),
+   atom_number(Atom, Millis),
+   atom_split(Quoted, '', ['"',Atom,'"']).
+
+/***************************************************************/
+/* HTTP Response Text                                          */
+/***************************************************************/
 
 % frame_begin(+Stream, +Atom, +List)
 :- public frame_begin/3.
 frame_begin(Response, Title, Opt) :-
-   response_text('', Response),
    html_begin(Response, Title, Opt),
    write(Response, '<h3>'),
    html_escape(Response, Title),

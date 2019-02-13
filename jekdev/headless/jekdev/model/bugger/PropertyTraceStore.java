@@ -49,10 +49,12 @@ public class PropertyTraceStore extends AbstractProperty {
     public final static String OP_SYS_BREAK = "sys_break";
     public final static String OP_SYS_NAME = "sys_name";
     public final static String OP_SYS_PARENT = "sys_parent";
+    public final static String OP_SYS_LASTMOD = "sys_lastmod";
 
     private static final int PROP_SYS_BREAK = 0;
     private static final int PROP_SYS_NAME = 1;
     private static final int PROP_SYS_PARENT = 2;
+    private static final int PROP_SYS_LASTMOD = 3;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -73,6 +75,7 @@ public class PropertyTraceStore extends AbstractProperty {
         storeprops.add(new StoreKey(OP_SYS_BREAK, 2), new PropertyTraceStore(PROP_SYS_BREAK));
         storeprops.add(new StoreKey(OP_SYS_NAME, 1), new PropertyTraceStore(PROP_SYS_NAME));
         storeprops.add(new StoreKey(OP_SYS_PARENT, 1), new PropertyTraceStore(PROP_SYS_PARENT));
+        storeprops.add(new StoreKey(OP_SYS_LASTMOD, 1), new PropertyTraceStore(PROP_SYS_LASTMOD));
         return storeprops;
     }
 
@@ -107,6 +110,11 @@ public class PropertyTraceStore extends AbstractProperty {
                 val = new SkelCompound(new SkelAtom(OP_SYS_PARENT),
                         parent != null ? (Knowledgebase) parent.proxy : new SkelAtom(AbstractFlag.OP_NULL));
                 return new Object[]{TermAtomic.createMolec(val, Display.DISPLAY_CONST)};
+            case PROP_SYS_LASTMOD:
+                storetrace = (StoreTrace) store;
+                val = new SkelCompound(new SkelAtom(OP_SYS_LASTMOD),
+                        TermAtomic.normBigInteger(storetrace.getLastModified()));
+                return new Object[]{TermAtomic.createMolec(val, Display.DISPLAY_CONST)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -134,6 +142,11 @@ public class PropertyTraceStore extends AbstractProperty {
                     return false;
                 case PROP_SYS_PARENT:
                     return false;
+                case PROP_SYS_LASTMOD:
+                    long lastmod = derefAndCastLastMod(m, d, en);
+                    storetrace = (StoreTrace) store;
+                    storetrace.setLastModified(lastmod);
+                    return true;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -165,6 +178,8 @@ public class PropertyTraceStore extends AbstractProperty {
                     return false;
                 case PROP_SYS_PARENT:
                     return false;
+                case PROP_SYS_LASTMOD:
+                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -186,9 +201,10 @@ public class PropertyTraceStore extends AbstractProperty {
      * @param en The engine.
      * @return The position key.
      * @throws EngineMessage Shit happens.
+     * @throws ClassCastException Shit happens.
      */
     public PositionKey derefAndCastPositionKey(Object m, Display d, Engine en)
-            throws EngineMessage {
+            throws EngineMessage, ClassCastException {
         en.skel = m;
         en.display = d;
         en.deref();
@@ -201,6 +217,34 @@ public class PropertyTraceStore extends AbstractProperty {
             SpecialEval.checkNotLessThanZero(num);
             int line = SpecialEval.castIntValue(num);
             return new PositionKey(orig, line);
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel), en.display);
+        }
+    }
+
+    /**
+     * <p>Deref and cast to position key.</p>
+     *
+     * @param m  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The position key.
+     * @throws EngineMessage Shit happens.
+     * @throws ClassCastException Shit happens.
+     */
+    public long derefAndCastLastMod(Object m, Display d, Engine en)
+            throws EngineMessage {
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        if (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 1 &&
+                ((SkelCompound) en.skel).sym.fun.equals(OP_SYS_LASTMOD)) {
+            SkelCompound sc = (SkelCompound) en.skel;
+            Number num = SpecialEval.derefAndCastInteger(sc.args[0], en.display);
+            return SpecialEval.castLongValue(num);
         } else {
             EngineMessage.checkInstantiated(en.skel);
             throw new EngineMessage(EngineMessage.domainError(

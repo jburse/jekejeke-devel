@@ -65,10 +65,10 @@ start_monitor(P) :-
 
 /**
  * initialized(O, S):
- * The predicate is called when the server S
+ * The predicate is called when the socket S
  * is initialized for object O.
  */
-% initialized(+Object, +Server)
+% initialized(+Object, +Socket)
 :- override initialized/2.
 :- public initialized/2.
 initialized(_, Server) :-
@@ -77,10 +77,10 @@ initialized(_, Server) :-
 
 /**
  * destroyed(O, S):
- * The predicate is called when the server S
+ * The predicate is called when the socket S
  * is destroyed for object O.
  */
-% destroyed(+Object, +Server)
+% destroyed(+Object, +Socket)
 :- override destroyed/2.
 :- public destroyed/2.
 destroyed(_, _) :-
@@ -89,9 +89,9 @@ destroyed(_, _) :-
 /**
  * dispatch(O, P, R, S):
  * The predicate succeeds in dispatching the request for object
- * O, with path P, with request R and the session S.
+ * O, with path P, with request R and the socket S.
  */
-% dispatch(+Object, +Spec, +Request, +Session)
+% dispatch(+Object, +Spec, +Request, +Socket)
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/images/closed.gif', Request, Session) :- !,
@@ -120,9 +120,9 @@ dispatch(Object, Spec, Request, Session) :-
 /**
  * upgrade(O, P, R, S):
  * The predicate succeeds in upgrading the request for object
- * O, with path P, with request R and the session S.
+ * O, with path P, with request R and the socket S.
  */
-% upgrade(+Object, +Spec, +Request, +Session)
+% upgrade(+Object, +Spec, +Request, +Socket)
 :- override upgrade/4.
 :- public upgrade/4.
 upgrade(_, Path, Request, Session) :-
@@ -149,6 +149,8 @@ tracing_broadcast(_, Frame) :-
 tracing_broadcast(Port, _) :-
    sys_leashed_port(Port), !,
    thread_current(Thread),
+   statistics(wall, Millis),
+   set_thread_flag(Thread, sys_thread_lastmod, Millis),
    current_thread_flag(Thread, sys_thread_name, Name),
    broadcast_pause(Name).
 tracing_broadcast(_, _).
@@ -167,5 +169,7 @@ user:store_changing(Store) :-
 % changing_broadcast(+Store)
 :- private changing_broadcast/1.
 changing_broadcast(Store) :-
+   statistics(wall, Millis),
+   set_store_property(Store, sys_lastmod(Millis)),
    store_property(Store, sys_name(Name)),
    broadcast_command(Name).

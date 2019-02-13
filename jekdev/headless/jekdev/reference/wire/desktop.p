@@ -47,6 +47,8 @@
 :- public dispatch/4.
 dispatch(_, '/layout.html', Request, Session) :- !,
    dispatch_text(library(wire/pages/layout), Request, Session).
+dispatch(_, '/white.html', Request, Session) :- !,
+   dispatch_text(library(wire/pages/white), Request, Session).
 dispatch(Object, Spec, Request, Session) :-
    wire/view:dispatch(Object, Spec, Request, Session).
 

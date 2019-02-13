@@ -74,7 +74,7 @@ public final class ProtocolReader extends FilterReader {
      * @throws IOException IO Error.
      */
     public int read() throws IOException {
-        int ch = super.read();
+        int ch = in.read();
         if (ch == -1)
             return -1;
         if (!peeking) {
@@ -94,7 +94,7 @@ public final class ProtocolReader extends FilterReader {
      * @throws IOException Shit happens.
      */
     public int read(char[] cbuf, int off, int len) throws IOException {
-        int n = super.read(cbuf, off, len);
+        int n = in.read(cbuf, off, len);
         if (n == -1)
             return -1;
         if (!peeking) {
@@ -111,7 +111,7 @@ public final class ProtocolReader extends FilterReader {
      * @throws IOException IO Error.
      */
     public void mark(int a) throws IOException {
-        super.mark(a);
+        in.mark(a);
         peeking = true;
     }
 
@@ -121,7 +121,7 @@ public final class ProtocolReader extends FilterReader {
      * @throws IOException IO Error.
      */
     public void reset() throws IOException {
-        super.reset();
+        in.reset();
         peeking = false;
     }
 

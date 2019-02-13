@@ -113,8 +113,8 @@ X is_atom uri(A,B) :- !,
    Y is_atom A,
    Z is_atom B,
    make_uri(Y, '', Z, X).
-X is_atom atom_format(F,C) :- !,
-   atom_format(F, [C], X).
+X is_atom format_atom(F,C) :- !,
+   format_atom(F, [C], X).
 
 X is_atom indicator(M:F,A) :- !,
    X is_atom package(M)+ : +F+ / +A.

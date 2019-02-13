@@ -72,7 +72,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void write(int c) throws IOException {
-        super.write(c);
+        out.write(c);
         if (protocol != null)
             protocol.write(c);
     }
@@ -86,7 +86,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void write(char cbuf[], int off, int len) throws IOException {
-        super.write(cbuf, off, len);
+        out.write(cbuf, off, len);
         if (protocol != null)
             protocol.write(cbuf, off, len);
     }
@@ -100,7 +100,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void write(String str, int off, int len) throws IOException {
-        super.write(str, off, len);
+        out.write(str, off, len);
         if (protocol != null)
             protocol.write(str, off, len);
     }
@@ -111,7 +111,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO error.
      */
     public void flush() throws IOException {
-        super.flush();
+        out.flush();
         if (protocol != null)
             protocol.flush();
     }
@@ -122,7 +122,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void close() throws IOException {
-        super.close();
+        out.close();
         if (protocol != null)
             protocol.close();
     }
