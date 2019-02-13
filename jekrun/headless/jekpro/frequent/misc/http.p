@@ -9,9 +9,9 @@
  *
  * The server currently implements a minimal subset of the HTTP/1.1
  * protocol restricted to GET method. The server will read the request
- * line and the header lines. The server is able to generate error
- * messages through the predicate handle_error/2. It will automatically
- * call the predicate when dispatch/4 failed. The following HTTP/1.1
+ * line and the header lines. The server is able to gen-erate error
+ * messages through the predicate dispatch_error/2. The server will
+ * generate a 404 error when dispatch/4 failed. The following HTTP/1.1
  * errors have been realized:
  *
  * * 400 Bad Request: Request could not be parsed.
@@ -28,15 +28,16 @@
  * static content.
  *
  * * 101 Switching Protocols: Server object can start web socket worker.
- * * 200 Ok: Server object delivers content and optionally ETag.
- * * 302 Found: Server object can redirect to new location after transaction.
- * * 04 Not Modified: Server object notifies that ETag did not change.
+ * * 200 Ok: Server object delivers content and optionally meta-data.
+ * * 204 No Content: Server object delivers optionally meta-data only.
+ * * 302 Found: Server object redirects to new location.
+ * * 304 Not Modified: Server object notifies that meta-data did not change.
  *
  * The web server also supports the above HTTP/1.1 codes, which might
- * have additional re-sponse headers. The predicate handle_upgrade/2 will
- * automatically generate a web socket accept key and can be used to
- * implement upgrade/4. The predicate handle_redirect/2 requires a location,
- * whereas the predicate handle_not_modified/2 requires an ETag.
+ * have additional response headers. The predicate dispatch_upgrade/2
+ * will automatically generate a web socket accept key and can be used
+ * to implement upgrade/4. The predicate dispatch_redirect/2 requires a
+ * location, whereas the predicate dispatch_not_modified/2 requires meta-data.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -130,7 +131,7 @@ handle(Object, Session) :-
    catch(recieve_http(Method, URI, Header, Session), _, fail), !,
    handle_method(Object, Method, URI, Header, Session).
 handle(_, Session) :-
-   catch(handle_error(400, Session), _, true).
+   dispatch_error(400, Session).
 /* Bad Request */
 
 % recieve_http(-Atom, -Atom, -List, +Socket)
@@ -145,7 +146,7 @@ recieve_http(Method, URI, Header, Session) :-
 handle_method(Object, 'GET', URI, Header, Session) :- !,
    handle_get(Object, URI, Header, Session).
 handle_method(_, _, _, _, Session) :-
-   catch(handle_error(501, Session), _, true).
+   dispatch_error(501, Session).
 /* Not Implemented */
 
 % handle_get(+Object, +Atom, +List, +Socket)
@@ -155,7 +156,7 @@ handle_get(Object, URI, Header, Session) :-
    make_parameter(Query, Parameter),
    handle_object(Object, Spec, request(Parameter,Header), Session), !.
 handle_get(_, _, _, Session) :-
-   catch(handle_error(404, Session), _, true).
+   dispatch_error(404, Session).
 /* Not Found */
 
 % handle_object(+Object, +Atom, +Request, +Socket)
@@ -283,11 +284,17 @@ make_parameter(Query, [Name-Value|List]) :-
 /***************************************************************/
 
 /**
- * handle_error(E, O):
- * The predicate sends the error E to the socket O.
+ * dispatch_error(E, O):
+ * The predicate sends the error code E to the socket O. The
+ * error codes from 4xx and 5xx are supported.
  */
+% dispatch_error(+Integer, +Socket)
+:- public dispatch_error/2.
+dispatch_error(Code, Session) :-
+   catch(handle_error(Code, Session), _, true).
+
 % handle_error(+Integer, +Socket)
-:- public handle_error/2.
+:- private handle_error/2.
 handle_error(Code, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
@@ -300,25 +307,35 @@ handle_error(Code, Session) :-
  */
 % response_error(+Integer, +Stream)
 :- private response_error/2.
-response_error(400, Response) :- !,
+response_error(400, Response) :-
    write(Response, 'HTTP/1.1 400 Bad Request\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   make_header_date(Headers, []),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
-response_error(404, Response) :- !,
+response_error(404, Response) :-
    write(Response, 'HTTP/1.1 404 Not Found\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   make_header_date(Headers, []),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
-response_error(415, Response) :- !,
+response_error(415, Response) :-
    write(Response, 'HTTP/1.1 415 Unsupported Media Type\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   make_header_date(Headers, []),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
-response_error(422, Response) :- !,
+response_error(422, Response) :-
    write(Response, 'HTTP/1.1 422 Unprocessable Entity\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   make_header_date(Headers, []),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
-response_error(501, Response) :- !,
+response_error(501, Response) :-
    write(Response, 'HTTP/1.1 501 Not Implemented\r\n'),
    write(Response, 'Content-Type: text/html; charset=UTF-8\r\n'),
+   make_header_date(Headers, []),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
 
 /**
@@ -363,13 +380,19 @@ send_error(501, Response) :- !,
 /***************************************************************/
 
 /**
- * response_text(H, O):
- * Send an OK response with meta-data headers H to the text output stream O.
+ * response_text(C, H, O):
+ * Send an OK response C with meta-data headers H to the text
+ * output stream O. The OK responses from 2xx are supported.
  */
-% response_text(+List, +Stream)
-:- public response_text/2.
-response_text(Headers, Response) :- !,
+% response_text(+Integer, +List, +Stream)
+:- public response_text/3.
+response_text(200, Headers, Response) :-
    write(Response, 'HTTP/1.1 200 OK\r\n'),
+   make_header_date(Headers2, Headers),
+   response_text_headers(Headers2, Response),
+   write(Response, '\r\n').
+response_text(204, Headers, Response) :-
+   write(Response, 'HTTP/1.1 204 No Content\r\n'),
    make_header_date(Headers2, Headers),
    response_text_headers(Headers2, Response),
    write(Response, '\r\n').
@@ -391,12 +414,14 @@ response_text_headers(X, _) :-
 
 /**
  * dispatch_text(F, R, O):
- * The predicate sends the HTML resource F for request R to the socket O.
+ * The predicate sends the text resource F for request R to the socket O.
+ * Mime type determined from resource. Meta data determined from resource
+ * and validated with request conditions.
  */
 % dispatch_text(+File, +Request, +Socket)
 :- public dispatch_text/3.
 dispatch_text(File, Request, Session) :-
-   meta_text(File, Headers),
+   catch(meta_text(File, Headers), _, fail),
    dispatch_text(File, Request, Headers, Session).
 
 % dispatch_text(+File, +Request, +List, +Socket)
@@ -405,7 +430,7 @@ dispatch_text(File, Request, Headers, Session) :-
    validate_meta(Request, Headers), !,
    catch(handle_text(File, Headers, Session), _, true).
 dispatch_text(_, _, Headers, Session) :-
-   catch(handle_not_modified(Headers, Session), _, true).
+   dispatch_not_modified(Headers, Session).
 
 % handle_text(+File, +List, +Socket)
 :- private handle_text/3.
@@ -420,7 +445,7 @@ handle_text(File, Headers, Session) :-
 send_text(File, Headers, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream),
-      (  response_text(Headers, Response),
+      (  response_text(200, Headers, Response),
          send_lines(Stream, Response)),
       close(Stream)).
 
@@ -452,13 +477,19 @@ send_lines2(_, Response) :-
 /***************************************************************/
 
 /**
- * response_binary(H, O):
- * Send an OK response with meta-data headers H to the binary output stream O.
+ * response_binary(C, H, O):
+ * Send an OK response C with meta-data headers H to the binary
+ * output stream O. The OK responses from 2xx are supported.
  */
-% response_binary(+List, +Stream)
-:- public response_binary/2.
-response_binary(Headers, Response) :-
+% response_binary(+Integer, +List, +Stream)
+:- public response_binary/3.
+response_binary(200, Headers, Response) :-
    write_atom(Response, 'HTTP/1.1 200 OK\r\n'),
+   make_header_date(Headers2, Headers),
+   response_binary_headers(Headers2, Response),
+   write_atom(Response, '\r\n').
+response_binary(204, Headers, Response) :-
+   write_atom(Response, 'HTTP/1.1 204 No Content\r\n'),
    make_header_date(Headers2, Headers),
    response_binary_headers(Headers2, Response),
    write_atom(Response, '\r\n').
@@ -486,12 +517,14 @@ write_atom(Response, Atom) :-
 
 /**
  * dispatch_binary(F, R, O):
- * The predicate dispatches the binary resource F for request R to the socket O.
+ * The predicate sends  the binary resource F for request R to the socket O.
+ * Mime type determined from resource. Meta data determined from resource and
+ * validated with request conditions.
  */
 % dispatch_binary(+File, +Request, +Socket)
 :- public dispatch_binary/3.
 dispatch_binary(File, Request, Session) :-
-   meta_binary(File, Headers),
+   catch(meta_binary(File, Headers), _, fail),
    dispatch_binary(File, Request, Headers, Session).
 
 % dispatch_binary(+File, +Request, +List, +Socket)
@@ -500,7 +533,7 @@ dispatch_binary(File, Request, Headers, Session) :-
    validate_meta(Request, Headers), !,
    catch(handle_binary(File, Headers, Session), _, true).
 dispatch_binary(_, _, Headers, Session) :-
-   catch(handle_not_modified(Headers, Session), _, true).
+   dispatch_not_modified(Headers, Session).
 
 % handle_binary(+File, +List, +Socket)
 :- private handle_binary/3.
@@ -515,7 +548,7 @@ handle_binary(File, Headers, Session) :-
 send_binary(File, Headers, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]),
-      (  response_binary(Headers, Response),
+      (  response_binary(200, Headers, Response),
          send_blocks(Stream, Response)),
       close(Stream)).
 
@@ -545,11 +578,16 @@ html_escape(Response, Text) :-
 /***************************************************************/
 
 /**
- * handle_upgrade(R, O):
+ * dispatch_upgrade(R, O):
  * Send an upgrade response from request R to the socket O.
  */
+% dispatch_upgrade(+Request, +Socket)
+:- public dispatch_upgrade/2.
+dispatch_upgrade(Request, Session) :-
+   catch(handle_upgrade(Request, Session), _, true).
+
 % handle_upgrade(+Request, +Socket)
-:- public handle_upgrade/2.
+:- private handle_upgrade/2.
 handle_upgrade(Request, Session) :-
    setup_call_cleanup(
       open(Session, write, Output, [type(binary)]),
@@ -571,14 +609,21 @@ response_upgrade(Request, Response) :-
    write_atom(Response, 'Sec-WebSocket-Accept: '),
    write_atom(Response, Key3),
    write_atom(Response, '\r\n'),
+   make_header_date(Headers, []),
+   response_binary_headers(Headers, Response),
    write_atom(Response, '\r\n').
 
 /**
- * handle_redirect(L, O):
+ * dispatch_redirect(L, O):
  * Send a redirect response to location L to the socket O.
  */
+% dispatch_redirect(+Atom, +Socket)
+:- public dispatch_redirect/2.
+dispatch_redirect(Location, Session) :-
+   catch(handle_redirect(Location, Session), _, true).
+
 % handle_redirect(+Atom, +Socket)
-:- public handle_redirect/2.
+:- private handle_redirect/2.
 handle_redirect(Location, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),
@@ -592,12 +637,18 @@ response_redirect(Location, Response) :-
    write(Response, 'Location: '),
    write(Response, Location),
    write(Response, '\r\n'),
+   make_header_date(Headers, []),
+   response_text_headers(Headers, Response),
    write(Response, '\r\n').
 
 /***************************************************************/
 /* Date & Version Utility                                      */
 /***************************************************************/
 
+/**
+ * meta_binary(F, L):
+ * The predicate succeeds in L with the meta headers of the text file F.
+ */
 % meta_binary(+File, -List)
 :- private meta_binary/2.
 meta_binary(File, Headers) :-
@@ -611,6 +662,10 @@ meta_binary(File, Headers) :-
    make_header_etag(ETag, Headers2, Headers3),
    make_header_ctyp(MimeType, '', Headers3, []).
 
+/**
+ * meta_text(F, L):
+ * The predicate succeeds in L with the meta headers of the text file F.
+ */
 % meta_text(+File, -List)
 :- private meta_text/2.
 meta_text(File, Headers) :-
@@ -633,8 +688,8 @@ make_header_last(Millis, ['Last-Modified'-Formatted|Rest], Rest) :-
 % make_header_etag(+Integer, -List, +List)
 :- private make_header_etag/3.
 make_header_etag('', Headers, Headers) :- !.
-make_header_etag(ETag, ['ETag'-ETagQuoted|Rest], Rest) :-
-   atom_split(ETagQuoted, '', ['"',ETag,'"']).
+make_header_etag(ETag, ['ETag'-Quoted|Rest], Rest) :-
+   atom_split(Quoted, '', ['"',ETag,'"']).
 
 % make_header_ctyp(+Atom, +Atom, -List, +List)
 :- private make_header_ctyp/4.
@@ -671,9 +726,9 @@ validate_meta(_, _).
 % validate_make_header_etag(+Atom, +List)
 :- private validate_make_header_etag/2.
 validate_make_header_etag(Request, Headers) :-
-   member('ETag'-ETagQuoted2, Headers),
-   http_header(Request, 'if-none-match', ETagQuoted),
-   ETagQuoted2 == ETagQuoted, !, fail.
+   member('ETag'-Quoted2, Headers),
+   http_header(Request, 'if-none-match', Quoted),
+   Quoted2 == Quoted, !, fail.
 validate_make_header_etag(_, _).
 
 % validate_make_header_last(+Atom, +List)
@@ -690,11 +745,20 @@ validate_make_header_last(_, _).
 /***************************************************************/
 
 /**
+ * dispatch_not_modified(H, O):
+ * Send a not modified response with meta data headers H to the socket O.
+ */
+% dispatch_not_modified(+List, +Socket)
+:- public dispatch_not_modified/2.
+dispatch_not_modified(Headers, Session) :-
+   catch(handle_not_modified(Headers, Session), _, true).
+
+/**
  * handle_not_modified(H, O):
  * Send a not modified response with headers H to the socket O.
  */
 % handle_not_modified(+List, +Socket)
-:- public handle_not_modified/2.
+:- private handle_not_modified/2.
 handle_not_modified(Headers, Session) :-
    setup_call_cleanup(
       open(Session, write, Response),

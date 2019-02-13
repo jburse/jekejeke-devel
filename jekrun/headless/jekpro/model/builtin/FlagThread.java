@@ -61,9 +61,9 @@ public final class FlagThread extends AbstractFlag {
      */
     static MapHash<String, AbstractFlag> defineThreadFlags() {
         MapHash<String, AbstractFlag> threadflags = new MapHash<String, AbstractFlag>();
-        threadflags.add("sys_thread_name", new FlagThread(FLAG_SYS_THREAD_NAME));
-        threadflags.add("sys_thread_state", new FlagThread(FLAG_SYS_THREAD_STATE));
-        threadflags.add("sys_thread_group", new FlagThread(FLAG_SYS_THREAD_GROUP));
+        threadflags.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
+        threadflags.add(OP_FLAG_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
+        threadflags.add(OP_FLAG_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
         return threadflags;
     }
 

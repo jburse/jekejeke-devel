@@ -58,6 +58,8 @@ public abstract class AbstractFile extends AbstractSource {
     private long expiration;
     private String encoding;
     private int buffer;
+    private long date;
+    private int maxage = -1;
 
     /**
      * <p>Retrieve the last modified date.</p>
@@ -158,6 +160,42 @@ public abstract class AbstractFile extends AbstractSource {
         super(p);
     }
 
+    /**
+     * <p>Retrieve the access time.</p>
+     *
+     * @return The access time.
+     */
+    public long getDate() {
+        return date;
+    }
+
+    /**
+     * <p>Set the access time.</p>
+     *
+     * @param d The acess time.
+     */
+    void setDate(long d) {
+        date = d;
+    }
+
+    /**
+     * <p>Retrieve the max age.</p>
+     *
+     * @return The max age.
+     */
+    public int getMaxAge() {
+        return maxage;
+    }
+
+    /**
+     * <p>Set the max age.</p>
+     *
+     * @param m The max age.
+     */
+    public void setMaxAge(int m) {
+        maxage = m;
+    }
+
     /***************************************************************/
     /* Open & Close Reader                                         */
     /***************************************************************/
@@ -179,16 +217,25 @@ public abstract class AbstractFile extends AbstractSource {
             if_modified = true;
         }
 
+        if (if_modified) {
+            long expiration = getExpiration();
+            int max_age = getMaxAge();
+            long date = getDate();
+            if (max_age != -1 && date != 0) {
+                if (System.currentTimeMillis() < date + max_age*1000L)
+                    return null;
+            } else if (expiration != 0) {
+                if (System.currentTimeMillis() < expiration)
+                    return null;
+            }
+        }
+
         OpenOpts fopts = new OpenOpts();
         if (if_modified) {
             fopts.setIfModifiedSince(getLastModified());
             fopts.setIfNoneMatch(getETag());
             fopts.setFlags(fopts.getFlags() & ~OpenOpts.MASK_OPEN_CACH);
         } else {
-            long expiration = getExpiration();
-            if (expiration != 0 &&
-                    System.currentTimeMillis() < expiration)
-                return null;
             fopts.setFlags(fopts.getFlags() | OpenOpts.MASK_OPEN_CACH);
         }
         Reader reader;
@@ -217,16 +264,11 @@ public abstract class AbstractFile extends AbstractSource {
             return;
 
         ConnectionReader cr = (ConnectionReader) reader;
-        setEncoding(cr.getEncoding());
         setLastModified(cr.getLastModified());
         setETag(cr.getETag());
         setExpiration(cr.getExpiration());
-        if (cr.getBom()) {
-            setBit(AbstractFile.MASK_SRC_FBOM);
-        } else {
-            resetBit(AbstractFile.MASK_SRC_FBOM);
-        }
-        setBuffer(cr.getBuffer());
+        setDate(cr.getDate());
+        setMaxAge(cr.getMaxAge());
     }
 
     /**************************************************************/

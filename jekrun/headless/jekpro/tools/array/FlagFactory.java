@@ -61,19 +61,25 @@ public final class FlagFactory extends AbstractFlag {
     public final static String OP_FLAG_SYS_RUNTIME_VERSION = "sys_runtime_version";
     public final static String OP_FLAG_VERBOSE = "verbose";
     public final static String OP_FLAG_SYS_HINT = "sys_hint";
+    public final static String OP_FLAG_SYS_TOOL_INPUT = "sys_tool_input";
+    public final static String OP_FLAG_SYS_TOOL_OUTPUT = "sys_tool_output";
+    public final static String OP_FLAG_SYS_TOOL_ERROR = "sys_tool_error";
 
     private static final int FLAG_SYS_MASK = 0;
-    private static final int FLAG_SYS_CUR_INPUT = 4;
-    private static final int FLAG_SYS_CUR_OUTPUT = 5;
-    private static final int FLAG_SYS_CUR_ERROR = 6;
-    private static final int FLAG_SYS_ATTACHED_TO = 7;
-    private static final int FLAG_BASE_URL = 8;
-    private static final int FLAG_SYS_LOCALE = 9;
-    private static final int FLAG_SYS_BELONGS_TO = 10;
-    private static final int FLAG_SYS_CPU_COUNT = 11;
-    private static final int FLAG_SYS_RUNTIME_VERSION = 12;
-    private static final int FLAG_VERBOSE = 13;
-    private static final int FLAG_SYS_HINT = 14;
+    private static final int FLAG_SYS_CUR_INPUT = 1;
+    private static final int FLAG_SYS_CUR_OUTPUT = 2;
+    private static final int FLAG_SYS_CUR_ERROR = 3;
+    private static final int FLAG_SYS_ATTACHED_TO = 4;
+    private static final int FLAG_BASE_URL = 5;
+    private static final int FLAG_SYS_LOCALE = 6;
+    private static final int FLAG_SYS_BELONGS_TO = 7;
+    private static final int FLAG_SYS_CPU_COUNT = 8;
+    private static final int FLAG_SYS_RUNTIME_VERSION = 9;
+    private static final int FLAG_VERBOSE = 10;
+    private static final int FLAG_SYS_HINT = 11;
+    private static final int FLAG_SYS_TOOL_INPUT = 12;
+    private static final int FLAG_SYS_TOOL_OUTPUT = 13;
+    private static final int FLAG_SYS_TOOL_ERROR = 14;
 
     /**
      * <p>Create a flag.</p>
@@ -103,6 +109,9 @@ public final class FlagFactory extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
         prologflags.add(OP_FLAG_VERBOSE, new FlagFactory(FLAG_VERBOSE));
         prologflags.add(OP_FLAG_SYS_HINT, new FlagFactory(FLAG_SYS_HINT));
+        prologflags.add(OP_FLAG_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
+        prologflags.add(OP_FLAG_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
+        prologflags.add(OP_FLAG_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
         return prologflags;
     }
 
@@ -168,6 +177,12 @@ public final class FlagFactory extends AbstractFlag {
                 return new SkelAtom(name);
             case FLAG_SYS_HINT:
                 return Integer.valueOf(en.store.foyer.getHint());
+            case FLAG_SYS_TOOL_INPUT:
+                return en.store.foyer.getFactory().toolinput;
+            case FLAG_SYS_TOOL_OUTPUT:
+                return en.store.foyer.getFactory().tooloutput;
+            case FLAG_SYS_TOOL_ERROR:
+                return en.store.foyer.getFactory().toolerror;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -239,6 +254,21 @@ public final class FlagFactory extends AbstractFlag {
             case FLAG_SYS_HINT:
                 /* can't modify */
                 return false;
+            case FLAG_SYS_TOOL_INPUT:
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkRead(m);
+                en.store.foyer.getFactory().toolinput = m;
+                return true;
+            case FLAG_SYS_TOOL_OUTPUT:
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkWrite(m);
+                en.store.foyer.getFactory().tooloutput = m;
+                return true;
+            case FLAG_SYS_TOOL_ERROR:
+                m = SpecialUniv.derefAndCastRef(m, d);
+                checkWrite(m);
+                en.store.foyer.getFactory().toolerror = m;
+                return true;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

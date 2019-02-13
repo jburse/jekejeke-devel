@@ -1,5 +1,8 @@
 package matula.util.misc;
 
+import matula.util.regex.CodeType;
+import matula.util.regex.ScannerToken;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -75,6 +78,19 @@ public final class Framed extends Socket {
      */
     public InputStream getInputStream() {
         return in;
+    }
+
+    /**
+     * Converts this socket to a {@code String}.
+     *
+     * @return a string representation of this socket.
+     */
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.appendCodePoint(CodeType.LINE_ZERO);
+        buf.appendCodePoint(ScannerToken.PREFIX_REFERENCE);
+        buf.append(Integer.toHexString(hashCode()));
+        return buf.toString();
     }
 
 }

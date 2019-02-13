@@ -85,6 +85,8 @@ public final class ForeignStream {
     public final static String OP_VERSION_TAG = "version_tag";
     public final static String OP_EXPIRATION = "expiration";
     public final static String OP_MIME_TYPE = "mime_type";
+    public final static String OP_DATE = "date";
+    public final static String OP_MAX_AGE = "max_age";
 
     /* error terms */
     public final static String OP_PERMISSION_OPEN = "open";
@@ -360,6 +362,12 @@ public final class ForeignStream {
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(in.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(OP_DATE,
+                        TermAtomic.normBigInteger(in.getDate())), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(OP_MAX_AGE,
+                        Integer.valueOf(in.getMaxAge())), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
                         OP_READ), res);
         String path = in.getPath();
@@ -424,6 +432,12 @@ public final class ForeignStream {
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(read.getBuffer())), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(OP_DATE,
+                        TermAtomic.normBigInteger(read.getDate())), res);
+        res = new TermCompound(Knowledgebase.OP_CONS,
+                new TermCompound(OP_MAX_AGE,
+                        Integer.valueOf(read.getMaxAge())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
                         OP_READ), res);

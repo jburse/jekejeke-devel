@@ -53,6 +53,8 @@ public final class ConnectionReader extends FilterReader {
     private RandomAccessFile raf;
     private String path;
     private int buffer;
+    private long date;
+    private int maxage = -1;
     private Reader unbuf;
 
     private String line = "";
@@ -231,6 +233,42 @@ public final class ConnectionReader extends FilterReader {
      */
     public void setBuffer(int b) {
         buffer = b;
+    }
+
+    /**
+     * <p>Retrieve the access time.</p>
+     *
+     * @return The access time.
+     */
+    public long getDate() {
+        return date;
+    }
+
+    /**
+     * <p>Set the access time.</p>
+     *
+     * @param a The access time.
+     */
+    void setDate(long a) {
+        date = a;
+    }
+
+    /**
+     * <p>Retrieve the max age.</p>
+     *
+     * @return The max age.
+     */
+    public int getMaxAge() {
+        return maxage;
+    }
+
+    /**
+     * <p>Set the max age.</p>
+     *
+     * @param m The max age.
+     */
+    void setMaxAge(int m) {
+        maxage = m;
     }
 
     /**

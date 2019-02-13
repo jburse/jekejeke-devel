@@ -9,6 +9,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.List;
 
 /**
  * <p>This class represent the stream open options.</p>
@@ -146,6 +147,7 @@ public final class OpenOpts extends OpenDuplex {
                 cin.setRaf(raf);
                 cin.setPath(adr2);
                 cin.setBuffer(getBuffer());
+                cin.setDate(System.currentTimeMillis());
                 return cin;
             } else {
                 boolean hasbom = false;
@@ -179,6 +181,7 @@ public final class OpenOpts extends OpenDuplex {
                 crd.setRaf(raf);
                 crd.setPath(adr2);
                 crd.setBuffer(getBuffer());
+                crd.setDate(System.currentTimeMillis());
                 return crd;
             }
         } else {
@@ -210,6 +213,7 @@ public final class OpenOpts extends OpenDuplex {
                     cin.setMimeType(mt != null ? mt : "");
                     cin.setPath(adr2);
                     cin.setBuffer(getBuffer());
+                    cin.setDate(System.currentTimeMillis());
                     return cin;
                 } else {
                     boolean hasbom = false;
@@ -239,6 +243,7 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
                     crd.setBuffer(getBuffer());
+                    crd.setDate(System.currentTimeMillis());
                     return crd;
                 }
             } else {
@@ -290,6 +295,8 @@ public final class OpenOpts extends OpenDuplex {
                     cin.setMimeType(mh != null ? mh.getMimeType() : "");
                     cin.setPath(adr2);
                     cin.setBuffer(getBuffer());
+                    cin.setDate(con.getDate());
+                    cin.setMaxAge(OpenOpts.getMaxAge(con));
                     return cin;
                 } else {
                     boolean hasbom = false;
@@ -322,6 +329,8 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
                     crd.setBuffer(getBuffer());
+                    crd.setDate(con.getDate());
+                    crd.setMaxAge(OpenOpts.getMaxAge(con));
                     return crd;
                 }
             }
@@ -607,7 +616,7 @@ public final class OpenOpts extends OpenDuplex {
      * @param know The recognizer.
      * @return The mime header.
      */
-    public static MimeHeader getMimeHeader(URLConnection con,
+    private static MimeHeader getMimeHeader(URLConnection con,
                                            AbstractRecognizer know) {
         String typ;
         if (con instanceof JarURLConnection) {
@@ -617,6 +626,28 @@ public final class OpenOpts extends OpenDuplex {
             typ = con.getContentType();
         }
         return (typ != null ? MimeHeader.getInstance(typ) : null);
+    }
+
+    /**
+     * <p>Retrieve the cache control max age of the connection.</p>
+     *
+     * @param con The connection.
+     * @return The cache control max age.
+     */
+    private static int getMaxAge(URLConnection con) {
+        if (con instanceof JarURLConnection) {
+            return -1;
+        } else {
+            List<String> controls = con.getHeaderFields().get("cache-control");
+            if (controls == null)
+                return -1;
+            for (int i = 0; i < controls.size(); i++) {
+                String control = controls.get(i);
+                if (control.startsWith("max-age="))
+                    return Integer.parseInt(control.substring("max-age=".length()));
+            }
+            return -1;
+        }
     }
 
     /*************************************************************/

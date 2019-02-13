@@ -76,9 +76,6 @@ import java.util.Comparator;
 public abstract class AbstractSource implements Comparator<StoreKey> {
     public final static String OP_SYS_SOURCE_PRELOAD = "sys_source_preload";
     public final static String OP_SHORT_NAME = "short_name";
-    public final static String OP_LAST_MODIFIED = "last_modified";
-    public final static String OP_VERSION_TAG = "version_tag";
-    public final static String OP_EXPIRATION = "expiration";
     public final static String OP_SYS_TIMING = "sys_timing";
     public final static String OP_SYS_SOURCE_NAME = "sys_source_name";
 
