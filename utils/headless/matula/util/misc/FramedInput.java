@@ -181,7 +181,7 @@ final class FramedInput extends FilterInputStream {
                 opcode != Framed.OPCODE_CONTINUATION_FRAME &&
                 opcode != Framed.OPCODE_CONNECTION_PING &&
                 opcode != Framed.OPCODE_CONNECTION_PONG)
-            throw new StreamCorruptedException("unsupported opcode 0x"+Integer.toHexString(opcode));
+            throw new StreamCorruptedException("unsupported opcode");
         int len = readLength();
         if (len > Framed.CONTROL_MAX &&
                 (opcode == Framed.OPCODE_CONNECTION_CLOSE ||
