@@ -36,14 +36,13 @@ import java.io.OutputStream;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class FramedOutput extends FilterOutputStream {
-    private static final int FRAME_SIZE = 1024;
-
     private int count;
-    private byte[] buf = new byte[FRAME_SIZE];
+    private byte[] buf;
     private boolean cont;
-    public boolean fin;
-    public byte opcode;
-    public byte[] masking;
+    private boolean fin;
+    private byte opcode;
+    private byte[] masking;
+    private Object lock;
 
     /**
      * <p>Create a web socket output.</p>
@@ -52,6 +51,51 @@ final class FramedOutput extends FilterOutputStream {
      */
     FramedOutput(OutputStream out) {
         super(out);
+    }
+
+    /**
+     * <p>Retrieve the output stream.</p>
+     *
+     * @return The output stream.
+     */
+    OutputStream getOut() {
+        return out;
+    }
+
+    /**
+     * <p>Set the buffer.</p>
+     *
+     * @param b The buffer.
+     */
+    void setBuf(byte[] b) {
+        buf = b;
+    }
+
+    /**
+     * <p>Set the lock.</p>
+     *
+     * @param l The lock.
+     */
+    void setLock(Object l) {
+        lock = l;
+    }
+
+    /**
+     * <p>Retrieve the lock.</p>
+     *
+     * @return The lock.
+     */
+    Object getLock() {
+        return lock;
+    }
+
+    /**
+     * <p>Set the masking.</p>
+     *
+     * @param m The masking.
+     */
+    void setMasking(byte[] m) {
+        masking = m;
     }
 
     /**
@@ -65,7 +109,9 @@ final class FramedOutput extends FilterOutputStream {
         if (count >= buf.length) {
             fin = false;
             opcode = (!cont ? Framed.OPCODE_TEXT_FRAME : Framed.OPCODE_CONTINUATION_FRAME);
-            writeFrame();
+            synchronized (lock) {
+                writeFrame();
+            }
             cont = true;
         }
     }
@@ -86,7 +132,9 @@ final class FramedOutput extends FilterOutputStream {
             if (count >= buf.length) {
                 fin = false;
                 opcode = (!cont ? Framed.OPCODE_TEXT_FRAME : Framed.OPCODE_CONTINUATION_FRAME);
-                writeFrame();
+                synchronized (lock) {
+                    writeFrame();
+                }
                 cont = true;
             }
             off += fill;
@@ -104,10 +152,16 @@ final class FramedOutput extends FilterOutputStream {
         if (count > 0) {
             fin = true;
             opcode = (!cont ? Framed.OPCODE_TEXT_FRAME : Framed.OPCODE_CONTINUATION_FRAME);
-            writeFrame();
+            synchronized (lock) {
+                writeFrame();
+                out.flush();
+            }
             cont = false;
+        } else {
+            synchronized (lock) {
+               out.flush();
+            }
         }
-        out.flush();
     }
 
     /**
@@ -119,8 +173,25 @@ final class FramedOutput extends FilterOutputStream {
         flush();
         fin = true;
         opcode = Framed.OPCODE_CONNECTION_CLOSE;
-        writeFrame();
-        out.close();
+        synchronized (lock) {
+            writeFrame();
+            out.close();
+        }
+    }
+
+    /**
+     * <p>Send a pong.</p>
+     *
+     * @throws IOException I/O Error.
+     */
+    void pong() throws IOException {
+        fin = true;
+        opcode = Framed.OPCODE_CONNECTION_PONG;
+        count = buf.length;
+        synchronized (lock) {
+            writeFrame();
+            out.flush();
+        }
     }
 
     /***************************************************************/

@@ -35,10 +35,13 @@ import java.io.*;
  */
 final class FramedInput extends FilterInputStream {
     private int remaining;
-    public boolean fin;
-    public byte opcode;
-    public byte[] masking;
-    public int pos;
+    private boolean fin;
+    private byte opcode;
+    private byte[] masking;
+    private int pos;
+    /* pong */
+    private OutputStream out;
+    private Object lock;
 
     /**
      * <p>Create a web socket input.</p>
@@ -50,6 +53,24 @@ final class FramedInput extends FilterInputStream {
     }
 
     /**
+     * <p>Set the pong output.</p>
+     *
+     * @param o The pong output.
+     */
+    void setOut(OutputStream o) {
+        out = o;
+    }
+
+    /**
+     * <p>Set the pong lock.</p>
+     *
+     * @param l The pong lock.
+     */
+    void setLock(Object l) {
+        lock = l;
+    }
+
+    /**
      * <p>Read a byte from chunked input.</p>
      *
      * @return The byte or -1.
@@ -57,7 +78,7 @@ final class FramedInput extends FilterInputStream {
      */
     public int read() throws IOException {
         if (remaining == 0)
-            readFrameStart();
+            readMessageStart();
         if (remaining == -1)
             return -1;
         byte b = readByteOrThrow();
@@ -79,7 +100,7 @@ final class FramedInput extends FilterInputStream {
      */
     public int read(byte[] b, int off, int len) throws IOException {
         if (remaining == 0)
-            readFrameStart();
+            readMessageStart();
         if (remaining == -1)
             return -1;
         int fill = Math.min(remaining, len);
@@ -103,11 +124,45 @@ final class FramedInput extends FilterInputStream {
      */
     public int available() throws IOException {
         if (remaining == 0)
-            readFrameStart();
+            readMessageStart();
         if (remaining == -1)
             return 0;
         int n = in.available();
         return Math.min(n, remaining);
+    }
+
+    /**
+     * <p>Read a chunk data start or last chunk.</p>
+     *
+     * @throws IOException I/O Error.
+     */
+    private void readMessageStart() throws IOException {
+        int len = readFrameStart();
+        for (;;) {
+            if (opcode == Framed.OPCODE_CONNECTION_PING) {
+                byte[] data = new byte[len];
+                readBytesOrThrow(data);
+                if (masking != null) {
+                    for (int i = 0; i < len; i++)
+                        data[i] ^= masking[i & 0x3];
+                }
+                FramedOutput res = new FramedOutput(out);
+                res.setBuf(data);
+                res.setLock(lock);
+                res.setMasking(masking);
+                res.pong();
+            } else if (opcode == Framed.OPCODE_CONNECTION_PONG) {
+                byte[] data = new byte[len];
+                readBytesOrThrow(data);
+            } else {
+                remaining = (opcode != Framed.OPCODE_CONNECTION_CLOSE ? len : -1);
+                if (remaining == 0)
+                    throw new StreamCorruptedException("unsupported remaining");
+                pos = 0;
+                break;
+            }
+            len = readFrameStart();
+        }
     }
 
     /***************************************************************/
@@ -115,26 +170,32 @@ final class FramedInput extends FilterInputStream {
     /***************************************************************/
 
     /**
-     * <p>Read a chunk data start or last chunk.</p>
+     * <p>Read message or contral frame start.</p>
      *
      * @throws IOException I/O Error.
      */
-    private void readFrameStart() throws IOException {
+    private int readFrameStart() throws IOException {
         readOpCode();
         if (opcode != Framed.OPCODE_CONNECTION_CLOSE &&
                 opcode != Framed.OPCODE_TEXT_FRAME &&
-                opcode != Framed.OPCODE_CONTINUATION_FRAME)
-            throw new StreamCorruptedException("unsupported opcode");
+                opcode != Framed.OPCODE_CONTINUATION_FRAME &&
+                opcode != Framed.OPCODE_CONNECTION_PING &&
+                opcode != Framed.OPCODE_CONNECTION_PONG)
+            throw new StreamCorruptedException("unsupported opcode 0x"+Integer.toHexString(opcode));
         int len = readLength();
+        if (len > Framed.CONTROL_MAX &&
+                (opcode == Framed.OPCODE_CONNECTION_CLOSE ||
+                        opcode == Framed.OPCODE_CONNECTION_PING||
+                        opcode == Framed.OPCODE_CONNECTION_PONG))
+            throw new StreamCorruptedException("unsupported length");
         readMask();
-        remaining = (opcode != Framed.OPCODE_CONNECTION_CLOSE ? len : -1);
-        if (remaining == 0)
-            throw new StreamCorruptedException("unsupported remaining");
-        pos = 0;
+        return len;
     }
 
     /**
      * <p>Read the op code.</p>
+     *
+     * @throws IOException I/O Error.
      */
     private void readOpCode() throws IOException {
         byte b = readByteOrThrow();
@@ -150,6 +211,9 @@ final class FramedInput extends FilterInputStream {
 
     /**
      * <p>Read the length.</p>
+     *
+     * @return The length.
+     * @throws IOException I/O Error.
      */
     private int readLength() throws IOException {
         byte b = readByteOrThrow();
@@ -190,24 +254,42 @@ final class FramedInput extends FilterInputStream {
 
     /**
      * <p>Read the mask.</p>
+     *
+     * @throws IOException I/O Error.
      */
     private void readMask() throws IOException {
         if (masking == null)
             return;
-        masking[0] = readByteOrThrow();
-        masking[1] = readByteOrThrow();
-        masking[2] = readByteOrThrow();
-        masking[3] = readByteOrThrow();
+        readBytesOrThrow(masking);
     }
 
     /**
      * <p>Read a byte.</p>
+     *
+     * @throws IOException I/O Error.
      */
     private byte readByteOrThrow() throws IOException {
         int b = in.read();
         if (b == -1)
             throw new EOFException("eof occured");
         return (byte) b;
+    }
+
+    /**
+     * <p>Read multiple bytes.</p>
+     *
+     * @param b The target buffer.
+     * @throws IOException I/O Error.
+     */
+    private void readBytesOrThrow(byte[] b) throws IOException {
+        int pos = 0;
+        int len = in.read(b, pos, b.length - pos);
+        while (len != -1 && pos + len < b.length) {
+            pos += len;
+            len = in.read(b, pos, b.length - pos);
+        }
+        if (len == -1)
+            throw new EOFException("eof occured");
     }
 
     /***************************************************************/

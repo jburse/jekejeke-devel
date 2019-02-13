@@ -48,6 +48,9 @@ public final class Framed extends Socket {
     public static final byte OPCODE_CONNECTION_PING = 0x9;
     public static final byte OPCODE_CONNECTION_PONG = 0xA;
 
+    public static final int FRAME_SIZE = 1024;
+    public static final int CONTROL_MAX = 125;
+
     private FramedOutput out;
     private FramedInput in;
 
@@ -59,7 +62,11 @@ public final class Framed extends Socket {
     public Framed(Socket s) throws IOException {
         super((SocketImpl) null);
         out = new FramedOutput(s.getOutputStream());
+        out.setBuf(new byte[FRAME_SIZE]);
+        out.setLock(new Object());
         in = new FramedInput(s.getInputStream());
+        in.setOut(out.getOut());
+        in.setLock(out.getLock());
     }
 
     /**
