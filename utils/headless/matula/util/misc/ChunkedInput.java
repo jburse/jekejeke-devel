@@ -97,7 +97,7 @@ final class ChunkedInput extends FilterInputStream {
      */
     public int available() throws IOException {
         if (remaining == 0)
-            readChunkStart();
+            return 0;
         if (remaining == -1)
             return 0;
         int n = in.available();

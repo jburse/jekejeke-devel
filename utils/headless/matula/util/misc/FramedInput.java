@@ -124,7 +124,7 @@ final class FramedInput extends FilterInputStream {
      */
     public int available() throws IOException {
         if (remaining == 0)
-            readMessageStart();
+            return 0;
         if (remaining == -1)
             return 0;
         int n = in.available();
