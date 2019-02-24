@@ -121,7 +121,7 @@ sys_follow_eqs([], V, V, L, L).
 sys_follow_eqs2(G, V, V, L, L) :-
    contains(G, L), !.
 sys_follow_eqs2(G, V, W, L, R) :-
-   term_variables(G, U),
+   safe_term_variables(G, U),
    sys_follow_vars(U, V, W, [G|L], R).
 
 /***********************************************************/
@@ -136,7 +136,7 @@ sys_follow_eqs2(G, V, W, L, R) :-
 % sys_term_eq_list(+Term, -Goals)
 :- public sys_term_eq_list/2.
 sys_term_eq_list(T, L) :-
-   term_variables(T, H),
+   safe_term_variables(T, H),
    sys_follow_vars(H, [], _, [], L).
 
 /**

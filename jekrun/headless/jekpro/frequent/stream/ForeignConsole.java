@@ -128,8 +128,8 @@ public final class ForeignConsole {
     /**
      * <p>Read a punch with maximum length.</p>
      *
-     * @param in The input stream.
-     * @param arg    The maximum length.
+     * @param in  The input stream.
+     * @param arg The maximum length.
      * @return The line.
      * @throws IOException IO error.
      */

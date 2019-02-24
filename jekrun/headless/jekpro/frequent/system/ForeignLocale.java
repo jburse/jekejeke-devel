@@ -4,6 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
@@ -77,7 +78,7 @@ public final class ForeignLocale {
             return null;
         locstr = "_" + locstr;
         Properties prop = ForeignCache.getCached(cache, locstr);
-        return ForeignCache.getLang(prop, know, pin, locstr);
+        return ForeignCache.getLang(prop, (Store)know.getStore(), pin, locstr);
     }
 
     /**

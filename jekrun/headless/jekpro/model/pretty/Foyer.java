@@ -97,7 +97,7 @@ public abstract class Foyer extends Enforced {
 
     private final ListArray<Integer> hole = new ListArray<Integer>();
     private int nextseqid;
-    public Object belongsto;
+    public Object goodfor;
     public Locale locale = Locale.getDefault();
     public Object proxy;
 

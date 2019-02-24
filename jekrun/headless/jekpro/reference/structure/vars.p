@@ -71,15 +71,16 @@
  * term_variables(X, L): [TC2 8.5.5]
  * term_variables(X, L, R):
  * The predicate succeeds when L unifies with the variables of X.
- * The variant with a third argument produces a difference list.
+ * The ternary variant produces a difference list.
  */
 % term_variables(+Term, -List)
 :- public term_variables/2.
-:- special(term_variables/2, 'SpecialVars', 0).
+term_variables(X, L) :-
+   term_variables(X, L, []).
 
 % term_variables(+Term, -List, +List)
 :- public term_variables/3.
-:- special(term_variables/3, 'SpecialVars', 1).
+:- special(term_variables/3, 'SpecialVars', 0).
 
 /**
  * sys_term_singletons(X, L):
@@ -88,7 +89,7 @@
  */
 % sys_term_singletons(+Term, -List)
 :- public sys_term_singletons/2.
-:- special(sys_term_singletons/2, 'SpecialVars', 2).
+:- special(sys_term_singletons/2, 'SpecialVars', 1).
 
 /**
  * sys_goal_kernel(G, K):
@@ -96,7 +97,7 @@
  */
 % sys_goal_kernel(+GoalQuant, -Goal)
 :- public sys_goal_kernel/2.
-:- special(sys_goal_kernel/2, 'SpecialVars', 3).
+:- special(sys_goal_kernel/2, 'SpecialVars', 2).
 
 /**
  * sys_goal_globals(G, L):
@@ -104,7 +105,7 @@
  */
 % sys_goal_globals(+GoalQuant, -List)
 :- public sys_goal_globals/2.
-:- special(sys_goal_globals/2, 'SpecialVars', 4).
+:- special(sys_goal_globals/2, 'SpecialVars', 3).
 
 /**
  * numbervars(X, N, M):
@@ -114,7 +115,7 @@
  */
 % numbervars(+Term, +Integer, -Integer)
 :- public numbervars/3.
-:- special(numbervars/3, 'SpecialVars', 5).
+:- special(numbervars/3, 'SpecialVars', 4).
 
 /**
  * sys_number_variables(V, N, S, M):
@@ -124,7 +125,7 @@
  */
 % sys_number_variables(+List, +Assoc, +List, -Assoc)
 :- public sys_number_variables/4.
-:- special(sys_number_variables/4, 'SpecialVars', 6).
+:- special(sys_number_variables/4, 'SpecialVars', 5).
 
 /**
  * ground(X): [TC2 8.3.10]
@@ -140,7 +141,7 @@
  */
 % sys_get_variable_names(-VariableNames)
 :- public sys_get_variable_names/1.
-:- special(sys_get_variable_names/1, 'SpecialVars', 7).
+:- special(sys_get_variable_names/1, 'SpecialVars', 6).
 
 /**
  * acyclic_term(X): [TC2 8.3.11]
@@ -149,4 +150,20 @@
  */
 % acyclic_term(+Term)
 :- public acyclic_term/1.
-:- special(acyclic_term/1, 'SpecialVars', 8).
+:- special(acyclic_term/1, 'SpecialVars', 7).
+
+/**
+ * safe_term_variables(X, L):
+ * safe_term_variables(X, L, R):
+ * The predicate succeeds when L unifies with the variables of X,
+ * even when X is a cyclic term. The ternary variant produces a
+ * difference list.
+ */
+% safe_term_variables(+Term, -List)
+:- public safe_term_variables/2.
+safe_term_variables(X, L) :-
+   safe_term_variables(X, L, []).
+
+% safe_term_variables(+Term, -List, +List)
+:- public safe_term_variables/3.
+:- special(safe_term_variables/3, 'SpecialVars', 8).

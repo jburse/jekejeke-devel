@@ -43,9 +43,10 @@ import matula.util.data.SetHashLink;
 public final class EngineVars {
     public SetHashLink<Object> vars; /* input order */
     public SetHashLink<Object> anon; /* input order */
+    public SetHashLink<BindVar> visit; /* input order */
 
     /****************************************************************/
-    /* Molec Operations                                             */
+    /* Variable & Singletons                                        */
     /****************************************************************/
 
     /**
@@ -74,14 +75,7 @@ public final class EngineVars {
                     if (b.display != null) {
                         varInclude(b.skel, b.display);
                     } else {
-                        Object key = AbstractTerm.createMolec(v, d);
-                        if (vars == null) {
-                            vars = new SetHashLink<Object>();
-                            vars.add(key);
-                        } else {
-                            if (vars.getKey(key) == null)
-                                vars.add(key);
-                        }
+                        varsAdd(v, d);
                     }
                 }
                 v = temp[j];
@@ -91,16 +85,26 @@ public final class EngineVars {
                 t = b.skel;
                 d = b.display;
             } else {
-                Object key = AbstractTerm.createMolec(v, d);
-                if (vars == null) {
-                    vars = new SetHashLink<Object>();
-                    vars.add(key);
-                } else {
-                    if (vars.getKey(key) == null)
-                        vars.add(key);
-                }
+                varsAdd(v, d);
                 break;
             }
+        }
+    }
+
+    /**
+     * <p>Add a variable to the variable list.</p>
+     *
+     * @param m The variable skeleton.
+     * @param d The variable display.
+     */
+    private void varsAdd(Object m, Display d) {
+        Object key = AbstractTerm.createMolec(m, d);
+        if (vars == null) {
+            vars = new SetHashLink<Object>();
+            vars.add(key);
+        } else {
+            if (vars.getKey(key) == null)
+                vars.add(key);
         }
     }
 
@@ -210,6 +214,10 @@ public final class EngineVars {
         }
     }
 
+    /****************************************************************/
+    /* Cyclic Terms                                                 */
+    /****************************************************************/
+
     /**
      * <p>Check whether the given term is acyclic.</p>
      * <p>Tail recursive solution.</p>
@@ -234,37 +242,19 @@ public final class EngineVars {
                     v = temp[j];
                     BindVar b = d.bind[v.id];
                     if (b.display != null) {
-                        Object key = AbstractTerm.createMolec(v, d);
-                        if (vars == null) {
-                            vars = new SetHashLink<Object>();
-                            vars.add(key);
-                        } else {
-                            if (vars.getKey(key) == null) {
-                                vars.add(key);
-                            } else {
-                                return false;
-                            }
-                        }
+                        if (visitAdd(b))
+                            return false;
                         if (!isAcyclic(b.skel, b.display))
                             return false;
-                        vars.remove(key);
+                        visit.remove(b);
                     }
                 }
                 v = temp[j];
             }
             BindVar b = d.bind[v.id];
             if (b.display != null) {
-                Object key = AbstractTerm.createMolec(v, d);
-                if (vars == null) {
-                    vars = new SetHashLink<Object>();
-                    vars.add(key);
-                } else {
-                    if (vars.getKey(key) == null) {
-                        vars.add(key);
-                    } else {
-                        return false;
-                    }
-                }
+                if (visitAdd(b))
+                    return false;
                 undo++;
                 t = b.skel;
                 d = b.display;
@@ -273,11 +263,82 @@ public final class EngineVars {
             }
         }
         while (undo > 0) {
-            SetEntry<Object> entry = vars.getLastEntry();
-            vars.remove(entry.key);
+            SetEntry<BindVar> entry = visit.getLastEntry();
+            visit.remove(entry.key);
             undo--;
         }
         return true;
+    }
+
+    /**
+     * <p>Add a bind to the visit list.</p>
+     *
+     * @param b The bind.
+     * @return True if the bind already exists, otherwise false.
+     */
+    private boolean visitAdd(BindVar b) {
+        if (visit == null) {
+            visit = new SetHashLink<BindVar>();
+            visit.add(b);
+        } else {
+            if (visit.getKey(b) == null) {
+                visit.add(b);
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * <p>Tail recursive solution.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     */
+    public void safeVars(Object t, Display d) {
+        int undo = 0;
+        for (; ; ) {
+            Object var = EngineCopy.getVar(t);
+            if (var == null)
+                break;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
+                    BindVar b = d.bind[v.id];
+                    if (b.display != null) {
+                        if (visitAdd(b))
+                            continue;
+                        safeVars(b.skel, b.display);
+                        visit.remove(b);
+                    } else {
+                        varsAdd(v, d);
+                    }
+                }
+                v = temp[j];
+            }
+            BindVar b = d.bind[v.id];
+            if (b.display != null) {
+                if (visitAdd(b))
+                    break;
+                undo++;
+                t = b.skel;
+                d = b.display;
+            } else {
+                varsAdd(v, d);
+                break;
+            }
+        }
+        while (undo > 0) {
+            SetEntry<BindVar> entry = visit.getLastEntry();
+            visit.remove(entry.key);
+            undo--;
+        }
     }
 
 }

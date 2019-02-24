@@ -240,7 +240,7 @@ public abstract class AbstractFile extends AbstractSource {
         }
         Reader reader;
         try {
-            reader = (Reader) fopts.openRead((AbstractRecognizer) getStore().proxy, getPath());
+            reader = (Reader) fopts.openRead(getStore(), getPath());
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         } catch (LicenseError x) {

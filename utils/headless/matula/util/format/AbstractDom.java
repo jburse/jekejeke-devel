@@ -57,7 +57,7 @@ public abstract class AbstractDom
     /**
      * <p>Retrieve the parent.</p>
      *
-     * @return The parent.
+     * @return The parent, can be null.
      */
     public DomElement getParent() {
         return parent;
@@ -66,11 +66,9 @@ public abstract class AbstractDom
     /**
      * <p>Set the parent.</p>
      *
-     * @param p The parent.
+     * @param p The parent, can be null.
      */
     public void setParent(DomElement p) {
-        if (p == null)
-            throw new NullPointerException("parent missing");
         parent = p;
     }
 

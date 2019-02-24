@@ -550,7 +550,6 @@ public final class SpecialSession extends AbstractSpecial {
         pre.molec = new SkelCompound(new SkelAtom(
                 PreClause.OP_TURNSTILE), t);
         ec.vars = null;
-        ec.printmap = null;
         return pre;
     }
 

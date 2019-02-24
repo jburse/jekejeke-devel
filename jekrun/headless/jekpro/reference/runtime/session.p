@@ -197,14 +197,21 @@ sys_show_name_or_eq(X is T, M) :- !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' is '),
-   write_term(T, [priority(699),quoted(true),variable_names(M)]).
+   sys_show_value(T, M).
 sys_show_name_or_eq(X = T, M) :- !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' = '),
-   write_term(T, [priority(699),quoted(true),variable_names(M)]).
+   sys_show_value(T, M).
 sys_show_name_or_eq(T, M) :-
    write_term(T, [context(0),quoted(true),variable_names(M)]).
+
+:- private sys_show_value/2.
+sys_show_value(T, M) :-
+   acyclic_term(T), !,
+   write_term(T, [priority(699),quoted(true),variable_names(M)]).
+sys_show_value(_, _) :-
+   write('<cyclic term>').
 
 /**
  * sys_quoted_var(V, Q):

@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.data.MapEntry;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -138,7 +139,7 @@ public final class OpenOpts extends OpenDuplex {
                 in = cap.prepareStream(in, know);
             if (getBuffer() != 0)
                 in = new BufferedInputStream(in, getBuffer());
-            String mt = know.getMimeType(path);
+            String mt = OpenOpts.getMimeType(know, path);
             if ((getFlags() & MASK_OPEN_BINR) != 0) {
                 ConnectionInput cin = new ConnectionInput(in);
                 cin.setLastModified(file.lastModified());
@@ -205,7 +206,7 @@ public final class OpenOpts extends OpenDuplex {
                     in = cap.prepareStream(in, know);
                 if (getBuffer() != 0)
                     in = new BufferedInputStream(in, getBuffer());
-                String mt = know.getMimeType(path);
+                String mt = OpenOpts.getMimeType(know, path);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
                     ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(file.lastModified());
@@ -286,7 +287,7 @@ public final class OpenOpts extends OpenDuplex {
                     in = cap.prepareStream(in, know);
                 if (getBuffer() != 0)
                     in = new BufferedInputStream(in, getBuffer());
-                MimeHeader mh = getMimeHeader(con, know);
+                MimeHeader mh = OpenOpts.getMimeHeader(con, know);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
                     ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(OpenOpts.getLastModified(con));
@@ -621,11 +622,31 @@ public final class OpenOpts extends OpenDuplex {
         String typ;
         if (con instanceof JarURLConnection) {
             String name = ((JarURLConnection) con).getEntryName();
-            typ = (name != null ? know.getMimeType(name) : null);
+            typ = (name != null ? OpenOpts.getMimeType(know, name) : null);
         } else {
             typ = con.getContentType();
         }
         return (typ != null ? MimeHeader.getInstance(typ) : null);
+    }
+
+    /**
+     * <p>Retrieve the mime type of a file path.</p>
+     *
+     * @param know The recognizer.
+     * @param path The file path.
+     * @return The mime header or null.
+     */
+    private static String getMimeType(AbstractRecognizer know, String path) {
+        do {
+            MapEntry<String, FileExtension>[] exts = know.snapshotFileExtensions();
+            for (int i = 0; i < exts.length; i++) {
+                MapEntry<String, FileExtension> ext = exts[i];
+                if (path.endsWith(ext.key))
+                    return ext.value.getMimeType();
+            }
+            know = know.getParent();
+        } while (know != null);
+        return null;
     }
 
     /**

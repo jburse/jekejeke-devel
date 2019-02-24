@@ -95,7 +95,7 @@ import java.util.Properties;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Knowledgebase extends AbstractRecognizer {
+public class Knowledgebase {
     private final Store store;
 
     public static final String OP_ON = AbstractFlag.OP_ON;
@@ -336,26 +336,6 @@ public class Knowledgebase extends AbstractRecognizer {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-    }
-
-    /*******************************************************/
-    /* Auto Loader                                         */
-    /*******************************************************/
-
-    /**
-     * <p>Determine the capability for a path.</p>
-     *
-     * @param path The path.
-     * @return The branch, or null.
-     */
-    public final AbstractDecoder pathToDecoder(String path) {
-        AbstractBranch branch;
-        if (ForeignUri.sysUriIsRelative(path)) {
-            branch = LookupResource.RelativeURIstoRoots(path, store);
-        } else {
-            branch = LookupResource.AbsoluteURIstoRoots(path, store);
-        }
-        return (branch != null ? (Capability) branch.proxy : null);
     }
 
     /***********************************************************/

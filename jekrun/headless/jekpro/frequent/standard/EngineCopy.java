@@ -48,7 +48,6 @@ public final class EngineCopy {
     public MapHash<BindCount, SkelVar> vars;
     public MapHash<BindCount, SkelVar> anon;
     public int flags;
-    public MapHashLink<BindCount, NamedDistance> printmap;
 
     /**
      * <p>Retrieve the variable or variable array.</p>

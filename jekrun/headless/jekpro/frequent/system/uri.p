@@ -256,3 +256,42 @@ uri_encode(X, Y) :-
 :- private sys_uri_decode/2.
 :- foreign(sys_uri_decode/2, 'ForeignUri',
       sysUriDecode('String')).
+
+/***************************************************************/
+/* Link Constructor & Destructor                               */
+/***************************************************************/
+
+/**
+ * make_link(S, P, H, L):
+ * If L is a variable, then the predicate succeeds in L with the
+ * URI composed of the spec S, the parameters P and the hash H.
+ * Otherwise the predicate succeeds in decomposing the URI.
+ */
+% make_link(-+Atom, -+List, -+Atom, +-Atom)
+:- public make_link/4.
+make_link(Spec, Parameter, Hash, URI) :-
+   var(URI), !,
+   make_parameter2(Parameter, Query),
+   make_uri(Spec, Query, Hash, URI).
+make_link(Spec, Parameter, Hash, URI) :-
+   make_uri(Spec, Query, Hash, URI),
+   make_parameter(Query, Parameter).
+
+% make_parameter(+Atom, -List)
+:- private make_parameter/2.
+make_parameter('', []) :- !.
+make_parameter(Query, [Key-Value|List]) :-
+   make_query(Key, Value, Rest, Query),
+   make_parameter(Rest, List).
+
+% make_parameter2(+List, -Atom)
+:- private make_parameter2/2.
+make_parameter2(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+make_parameter2([], '') :- !.
+make_parameter2([Key-Value|List], Query) :- !,
+   make_parameter2(List, Rest),
+   make_query(Key, Value, Rest, Query).
+make_parameter2(X, _) :-
+   throw(error(type_error(list,X),_)).

@@ -5,13 +5,13 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
+import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
-import matula.util.regex.ScannerError;
 import matula.util.system.*;
 
 import java.io.*;
@@ -116,7 +116,8 @@ public final class ForeignStream {
             OpenDuplex options = decodeOpenDuplex(modecode, opt);
             switch (modecode) {
                 case MODE_READ:
-                    return options.openRead(inter.getKnowledgebase(), sock);
+                    Knowledgebase know = inter.getKnowledgebase();
+                    return options.openRead((Store) know.getStore(), sock);
                 case MODE_WRITE:
                     return options.openWrite(sock);
                 default:
@@ -153,7 +154,8 @@ public final class ForeignStream {
             OpenOpts options = decodeOpenOpts(modecode, opt);
             switch (modecode) {
                 case MODE_READ:
-                    return options.openRead(inter.getKnowledgebase(), adr);
+                    Knowledgebase know = inter.getKnowledgebase();
+                    return options.openRead((Store) know.getStore(), adr);
                 case MODE_WRITE:
                     return options.openWrite(adr);
                 case MODE_APPEND:

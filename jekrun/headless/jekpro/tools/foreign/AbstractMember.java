@@ -228,7 +228,7 @@ abstract class AbstractMember extends AbstractLense
     /**
      * <p>Check the receiver.</p>
      *
-     * @param val The reciever.
+     * @param val The receiver.
      * @throws EngineMessage FFI error.
      */
     final void checkRecv(Object val) throws EngineMessage {

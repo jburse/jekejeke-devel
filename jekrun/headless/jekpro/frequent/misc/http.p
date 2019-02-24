@@ -29,7 +29,6 @@
  *
  * * 101 Switching Protocols: Server object can start web socket worker.
  * * 200 Ok: Server object delivers content and optionally meta-data.
- * * 204 No Content: Server object delivers optionally meta-data only.
  * * 302 Found: Server object redirects to new location.
  * * 304 Not Modified: Server object notifies that meta-data did not change.
  *
@@ -37,7 +36,7 @@
  * have additional response headers. The predicate dispatch_upgrade/2
  * will automatically generate a web socket accept key and can be used
  * to implement upgrade/4. The predicate dispatch_redirect/2 requires a
- * location, whereas the predicate dispatch_not_modified/2 requires meta-data.
+ * location, whereas the predicate dispatch_head/3 requires meta-data.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -128,15 +127,15 @@ accept_close(Object, Server) :-
 % handle(+Object, +Socket)
 :- private handle/2.
 handle(Object, Session) :-
-   catch(recieve_http(Method, URI, Header, Session), _, fail), !,
+   catch(receive_http(Method, URI, Header, Session), _, fail), !,
    handle_method(Object, Method, URI, Header, Session).
 handle(_, Session) :-
    dispatch_error(400, Session).
 /* Bad Request */
 
-% recieve_http(-Atom, -Atom, -List, +Socket)
-:- private recieve_http/4.
-recieve_http(Method, URI, Header, Session) :-
+% receive_http(-Atom, -Atom, -List, +Socket)
+:- private receive_http/4.
+receive_http(Method, URI, Header, Session) :-
    open(Session, read, Request, [type(binary)]),
    read_request(Request, Method, URI),
    read_header(Request, Header).
@@ -152,8 +151,7 @@ handle_method(_, _, _, _, Session) :-
 % handle_get(+Object, +Atom, +List, +Socket)
 :- private handle_get/4.
 handle_get(Object, URI, Header, Session) :-
-   make_uri(Spec, Query, _, URI),
-   make_parameter(Query, Parameter),
+   make_link(Spec, Parameter, _, URI),
    handle_object(Object, Spec, request(Parameter,Header), Session), !.
 handle_get(_, _, _, Session) :-
    dispatch_error(404, Session).
@@ -272,13 +270,6 @@ make_header3([], _, List, List).
 make_header3([Value|Rest], Name, [Name-Value|List], List2) :-
    make_header3(Rest, Name, List, List2).
 
-% make_parameter(+Atom, -List)
-:- private make_parameter/2.
-make_parameter('', []) :- !.
-make_parameter(Query, [Name-Value|List]) :-
-   make_query(Name, Value, Rest, Query),
-   make_parameter(Rest, List).
-
 /***************************************************************/
 /* Error HTTP Responses                                        */
 /***************************************************************/
@@ -376,23 +367,18 @@ send_error(501, Response) :- !,
       close(Stream)).
 
 /***************************************************************/
-/* HTTP Response Text                                          */
+/* Text HTTP Response                                          */
 /***************************************************************/
 
 /**
  * response_text(C, H, O):
  * Send an OK response C with meta-data headers H to the text
- * output stream O. The OK responses from 2xx are supported.
+ * output stream O.
  */
 % response_text(+Integer, +List, +Stream)
 :- public response_text/3.
 response_text(200, Headers, Response) :-
    write(Response, 'HTTP/1.1 200 OK\r\n'),
-   make_header_date(Headers2, Headers),
-   response_text_headers(Headers2, Response),
-   write(Response, '\r\n').
-response_text(204, Headers, Response) :-
-   write(Response, 'HTTP/1.1 204 No Content\r\n'),
    make_header_date(Headers2, Headers),
    response_text_headers(Headers2, Response),
    write(Response, '\r\n').
@@ -430,7 +416,7 @@ dispatch_text(File, Request, Headers, Session) :-
    validate_meta(Request, Headers), !,
    catch(handle_text(File, Headers, Session), _, true).
 dispatch_text(_, _, Headers, Session) :-
-   dispatch_not_modified(Headers, Session).
+   dispatch_head(304, Headers, Session).
 
 % handle_text(+File, +List, +Socket)
 :- private handle_text/3.
@@ -473,13 +459,13 @@ send_lines2(_, Response) :-
    write(Response, '\r\n').
 
 /***************************************************************/
-/* HTTP Response Binary                                        */
+/* Binary HTTP Response                                        */
 /***************************************************************/
 
 /**
  * response_binary(C, H, O):
  * Send an OK response C with meta-data headers H to the binary
- * output stream O. The OK responses from 2xx are supported.
+ * output stream O. The OK responses from 2xx and 3xx are supported.
  */
 % response_binary(+Integer, +List, +Stream)
 :- public response_binary/3.
@@ -488,8 +474,8 @@ response_binary(200, Headers, Response) :-
    make_header_date(Headers2, Headers),
    response_binary_headers(Headers2, Response),
    write_atom(Response, '\r\n').
-response_binary(204, Headers, Response) :-
-   write_atom(Response, 'HTTP/1.1 204 No Content\r\n'),
+response_binary(304, Headers, Response) :-
+   write_atom(Response, 'HTTP/1.1 304 Not Modified\r\n'),
    make_header_date(Headers2, Headers),
    response_binary_headers(Headers2, Response),
    write_atom(Response, '\r\n').
@@ -533,7 +519,7 @@ dispatch_binary(File, Request, Headers, Session) :-
    validate_meta(Request, Headers), !,
    catch(handle_binary(File, Headers, Session), _, true).
 dispatch_binary(_, _, Headers, Session) :-
-   dispatch_not_modified(Headers, Session).
+   dispatch_head(304, Headers, Session).
 
 % handle_binary(+File, +List, +Socket)
 :- private handle_binary/3.
@@ -741,34 +727,23 @@ validate_make_header_last(Formatted, Headers) :-
 validate_make_header_last(_, _).
 
 /***************************************************************/
-/* Validation HTTP Response                                    */
+/* Head HTTP Response                                          */
 /***************************************************************/
 
 /**
- * dispatch_not_modified(H, O):
- * Send a not modified response with meta data headers H to the socket O.
+ * dispatch_head(C, H, O):
+ * Send an OK response C with meta data headers H to the socket O.
+ * The OK responses from 2xx and 3xx are supported.
  */
-% dispatch_not_modified(+List, +Socket)
-:- public dispatch_not_modified/2.
-dispatch_not_modified(Headers, Session) :-
-   catch(handle_not_modified(Headers, Session), _, true).
+% dispatch_head(+Integer, +List, +Socket)
+:- public dispatch_head/3.
+dispatch_head(Code, Headers, Session) :-
+   catch(handle_head(Code, Headers, Session), _, true).
 
-/**
- * handle_not_modified(H, O):
- * Send a not modified response with headers H to the socket O.
- */
-% handle_not_modified(+List, +Socket)
-:- private handle_not_modified/2.
-handle_not_modified(Headers, Session) :-
+% handle_head(+Integer, +List, +Socket)
+:- private handle_head/3.
+handle_head(Code, Headers, Session) :-
    setup_call_cleanup(
-      open(Session, write, Response),
-      response_not_modified(Headers, Response),
+      open(Session, write, Response, [type(binary)]),
+      response_binary(Code, Headers, Response),
       close(Response)).
-
-% response_not_modified(+List, +Stream)
-:- private response_not_modified/2.
-response_not_modified(Headers, Response) :-
-   write(Response, 'HTTP/1.1 304 Not Modified\r\n'),
-   make_header_date(Headers2, Headers),
-   response_text_headers(Headers2, Response),
-   write(Response, '\r\n').

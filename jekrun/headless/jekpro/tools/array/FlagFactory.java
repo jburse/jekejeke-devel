@@ -56,7 +56,7 @@ public final class FlagFactory extends AbstractFlag {
     public final static String OP_FLAG_SYS_ATTACHED_TO = "sys_attached_to";
     public final static String OP_FLAG_BASE_URL = "base_url";
     public final static String OP_FLAG_SYS_LOCALE = "sys_locale";
-    public final static String OP_FLAG_SYS_BELONGS_TO = "sys_belongs_to";
+    public final static String OP_FLAG_SYS_GOOD_FOR = "sys_good_for";
     public final static String OP_FLAG_SYS_CPU_COUNT = "sys_cpu_count";
     public final static String OP_FLAG_SYS_RUNTIME_VERSION = "sys_runtime_version";
     public final static String OP_FLAG_VERBOSE = "verbose";
@@ -64,6 +64,7 @@ public final class FlagFactory extends AbstractFlag {
     public final static String OP_FLAG_SYS_TOOL_INPUT = "sys_tool_input";
     public final static String OP_FLAG_SYS_TOOL_OUTPUT = "sys_tool_output";
     public final static String OP_FLAG_SYS_TOOL_ERROR = "sys_tool_error";
+    public final static String OP_FLAG_SYS_BELONGS_TO = "sys_belongs_to";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_CUR_INPUT = 1;
@@ -72,7 +73,7 @@ public final class FlagFactory extends AbstractFlag {
     private static final int FLAG_SYS_ATTACHED_TO = 4;
     private static final int FLAG_BASE_URL = 5;
     private static final int FLAG_SYS_LOCALE = 6;
-    private static final int FLAG_SYS_BELONGS_TO = 7;
+    private static final int FLAG_SYS_GOOD_FOR = 7;
     private static final int FLAG_SYS_CPU_COUNT = 8;
     private static final int FLAG_SYS_RUNTIME_VERSION = 9;
     private static final int FLAG_VERBOSE = 10;
@@ -80,6 +81,7 @@ public final class FlagFactory extends AbstractFlag {
     private static final int FLAG_SYS_TOOL_INPUT = 12;
     private static final int FLAG_SYS_TOOL_OUTPUT = 13;
     private static final int FLAG_SYS_TOOL_ERROR = 14;
+    private static final int FLAG_SYS_BELONGS_TO = 15;
 
     /**
      * <p>Create a flag.</p>
@@ -104,7 +106,7 @@ public final class FlagFactory extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
         prologflags.add(OP_FLAG_BASE_URL, new FlagFactory(FLAG_BASE_URL));
         prologflags.add(OP_FLAG_SYS_LOCALE, new FlagFactory(FLAG_SYS_LOCALE));
-        prologflags.add(OP_FLAG_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
+        prologflags.add(OP_FLAG_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
         prologflags.add(OP_FLAG_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
         prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
         prologflags.add(OP_FLAG_VERBOSE, new FlagFactory(FLAG_VERBOSE));
@@ -112,6 +114,7 @@ public final class FlagFactory extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
         prologflags.add(OP_FLAG_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
         prologflags.add(OP_FLAG_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
+        prologflags.add(OP_FLAG_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
         return prologflags;
     }
 
@@ -139,8 +142,8 @@ public final class FlagFactory extends AbstractFlag {
                 return new SkelAtom(path != null ? path : "");
             case FLAG_SYS_LOCALE:
                 return new SkelAtom(en.store.foyer.locale.toString());
-            case FLAG_SYS_BELONGS_TO:
-                val = en.store.foyer.belongsto;
+            case FLAG_SYS_GOOD_FOR:
+                val = en.store.foyer.goodfor;
                 return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
             case FLAG_SYS_CPU_COUNT:
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
@@ -183,6 +186,9 @@ public final class FlagFactory extends AbstractFlag {
                 return en.store.foyer.getFactory().tooloutput;
             case FLAG_SYS_TOOL_ERROR:
                 return en.store.foyer.getFactory().toolerror;
+            case FLAG_SYS_BELONGS_TO:
+                val = en.store.belongsto;
+                return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -229,8 +235,8 @@ public final class FlagFactory extends AbstractFlag {
                 fun = SpecialUniv.derefAndCastString(m, d);
                 en.store.foyer.locale = XSelectFormat.stringToLocale(fun);
                 return true;
-            case FLAG_SYS_BELONGS_TO:
-                en.store.foyer.belongsto = SpecialUniv.derefAndCastRefOrNull(m, d);
+            case FLAG_SYS_GOOD_FOR:
+                en.store.foyer.goodfor = SpecialUniv.derefAndCastRefOrNull(m, d);
                 return true;
             case FLAG_SYS_CPU_COUNT:
                 /* can't modify */
@@ -268,6 +274,9 @@ public final class FlagFactory extends AbstractFlag {
                 m = SpecialUniv.derefAndCastRef(m, d);
                 checkWrite(m);
                 en.store.foyer.getFactory().toolerror = m;
+                return true;
+            case FLAG_SYS_BELONGS_TO:
+                en.store.belongsto = SpecialUniv.derefAndCastRefOrNull(m, d);
                 return true;
             default:
                 throw new IllegalArgumentException("illegal flag");

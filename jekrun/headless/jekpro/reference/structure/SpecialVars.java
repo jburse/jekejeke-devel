@@ -51,14 +51,14 @@ public final class SpecialVars extends AbstractSpecial {
     private final static String OP_EXISTENTIAL = "^";
 
     private final static int SPECIAL_TERM_VARIABLES = 0;
-    private final static int SPECIAL_TERM_VARIABLES_DIFF = 1;
-    private final static int SPECIAL_SYS_TERM_SINGELTONS = 2;
-    private final static int SPECIAL_SYS_GOAL_KERNEL = 3;
-    private final static int SPECIAL_SYS_GOAL_GLOBALS = 4;
-    private final static int SPECIAL_NUMBERVARS = 5;
-    private final static int SPECIAL_SYS_NUMBER_VARIABLES = 6;
-    private final static int SPECIAL_SYS_GET_VARIABLE_NAMES = 7;
-    private final static int SPECIAL_ACYCLIC_TERM = 8;
+    private final static int SPECIAL_SYS_TERM_SINGELTONS = 1;
+    private final static int SPECIAL_SYS_GOAL_KERNEL = 2;
+    private final static int SPECIAL_SYS_GOAL_GLOBALS = 3;
+    private final static int SPECIAL_NUMBERVARS = 4;
+    private final static int SPECIAL_SYS_NUMBER_VARIABLES = 5;
+    private final static int SPECIAL_SYS_GET_VARIABLE_NAMES = 6;
+    private final static int SPECIAL_ACYCLIC_TERM = 7;
+    private final static int SPECIAL_SAFE_TERM_VARIABLES = 8;
 
     /**
      * <p>Create a vars special.</p>
@@ -90,21 +90,8 @@ public final class SpecialVars extends AbstractSpecial {
                     Display ref = en.display;
                     EngineVars ev = new EngineVars();
                     ev.varInclude(temp[0], ref);
-                    boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                            Display.DISPLAY_CONST, ev.vars, en);
+                    boolean multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
                     Display d = en.display;
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                        return false;
-                    if (multi)
-                        BindCount.remTab(d.bind, en);
-                    return en.getNext();
-                case SPECIAL_TERM_VARIABLES_DIFF:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    ev = new EngineVars();
-                    ev.varInclude(temp[0], ref);
-                    multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
-                    d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
@@ -181,6 +168,18 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!ev.isAcyclic(temp[0], ref))
                         return false;
                     return en.getNextRaw();
+                case SPECIAL_SAFE_TERM_VARIABLES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    ev = new EngineVars();
+                    ev.safeVars(temp[0], ref);
+                    multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        BindCount.remTab(d.bind, en);
+                    return en.getNext();
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }

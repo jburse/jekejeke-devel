@@ -49,7 +49,7 @@ public abstract class AbstractRecognizer {
      *
      * @return The file extensions and their type.
      */
-    public abstract MapEntry<String, FileExtension>[] getFileExtensions();
+    public abstract MapEntry<String, FileExtension>[] snapshotFileExtensions();
 
     /**
      * <p>Retrieve the parent.</p>
@@ -57,25 +57,5 @@ public abstract class AbstractRecognizer {
      * @return The parent.
      */
     public abstract AbstractRecognizer getParent();
-
-    /**
-     * <p>Retrieve the mime type of a file path.</p>
-     *
-     * @param path The file path.
-     * @return The mime header or null.
-     */
-    public String getMimeType(String path) {
-        AbstractRecognizer recognizer = this;
-        do {
-            MapEntry<String, FileExtension>[] exts = recognizer.getFileExtensions();
-            for (int i = 0; i < exts.length; i++) {
-                MapEntry<String, FileExtension> ext = exts[i];
-                if (path.endsWith(ext.key))
-                    return ext.value.getMimeType();
-            }
-            recognizer = recognizer.getParent();
-        } while (recognizer != null);
-        return null;
-    }
 
 }
