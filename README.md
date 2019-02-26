@@ -1,6 +1,6 @@
 # What is this?
 
-[![release badge](https://img.shields.io/badge/release-v1.3.3-green.svg)](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.3)
+[![release badge](https://img.shields.io/badge/release-v1.3.5-green.svg)](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.5)
 
 This repository contains Prolog text excerpts from
 the Jekejeke Prolog source. Here and then you might
@@ -50,4 +50,4 @@ Feel free to fork for non-commercial attributed use. There
 request if you find issues, but there is also no service
 agreement by us. Note also that Jekejeke is a trademark.
 
-Jan Burse, 24.02.2018 (updated 29.12.2018)
+Jan Burse, 24.02.2018 (updated 26.02.2019)
