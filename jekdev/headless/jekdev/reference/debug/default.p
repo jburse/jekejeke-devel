@@ -71,6 +71,7 @@
 :- use_module(library(stream/console)).
 :- use_module(library(system/thread)).
 :- use_module(library(inspection/frame)).
+:- use_module(library(inspection/store)).
 
 /***********************************************************************/
 /* Debugging Mode                                                      */

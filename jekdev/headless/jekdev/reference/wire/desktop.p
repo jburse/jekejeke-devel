@@ -36,6 +36,7 @@
 :- use_module(monitor).
 :- use_module(library(misc/http)).
 :- reexport(view).
+:- use_module(pages/layout).
 
 /**
  * dispatch(O, P, A, S):
@@ -45,8 +46,8 @@
 % dispatch(+Object, +Spec, +Request, +Session)
 :- override dispatch/4.
 :- public dispatch/4.
-dispatch(_, '/layout.html', Request, Session) :- !,
-   dispatch_text(library(wire/pages/layout), Request, Session).
+dispatch(_, '/layout.jsp', Request, Session) :- !,
+   dispatch_layout(Request, Session).
 dispatch(_, '/white.html', Request, Session) :- !,
    dispatch_text(library(wire/pages/white), Request, Session).
 dispatch(Object, Spec, Request, Session) :-

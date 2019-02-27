@@ -36,12 +36,17 @@
 :- use_module(monitor).
 :- use_module(library(misc/http)).
 :- use_module(library(inspection/frame)).
+:- use_module(library(inspection/store)).
 :- use_module(pages/thread).
 :- use_module(pages/stack).
 :- use_module(pages/frame).
 :- use_module(pages/source).
 :- use_module(library(system/thread)).
 :- use_module(library(system/zone)).
+:- use_module(hooks/call).
+:- use_module(hooks/code).
+:- use_module(hooks/list).
+:- use_module(hooks/tree).
 
 /**
  * dispatch(O, P, A, S):
@@ -55,12 +60,27 @@ dispatch(_, '/frame.jsp', Request, Session) :- !,
    dispatch_frame(Request, Session).
 dispatch(_, '/source.jsp', Request, Session) :- !,
    dispatch_source(Request, Session).
-dispatch(_, '/toggle.class', Request, Session) :- !,
-   dispatch_toggle(Request, Session).
 dispatch(Object, '/stack.jsp', Request, Session) :- !,
    dispatch_stack(Object, Request, Session).
 dispatch(Object, '/thread.jsp', _, Session) :- !,
    dispatch_thread(Object, Session).
+
+/**
+ * upgrade(O, P, R, S):
+ * The predicate succeeds in upgrading the request for object
+ * O, with path P, with request R and the session S.
+ */
+% upgrade(+Object, +Spec, +Request, +Session)
+:- override upgrade/4.
+:- public upgrade/4.
+upgrade(_, '/call', Request, Session) :- !,
+   upgrade_call(Request, Session).
+upgrade(_, '/code', Request, Session) :- !,
+   upgrade_code(Request, Session).
+upgrade(_, '/list', Request, Session) :- !,
+   upgrade_list(Request, Session).
+upgrade(_, '/tree', Request, Session) :- !,
+   upgrade_tree(Request, Session).
 
 /*************************************************************/
 /* Some Utility                                              */
@@ -109,20 +129,31 @@ make_header_all(Millis, ['Content-Type'-'text/html; charset=UTF-8','Last-Modifie
    atom_split(Quoted, '', ['"',Atom,'"']).
 
 /***************************************************************/
-/* HTTP Response Text                                          */
+/* HTML Response Text                                          */
 /***************************************************************/
 
-% frame_begin(+Stream, +Atom, +List)
-:- public frame_begin/3.
-frame_begin(Response, Title, Opt) :-
-   html_begin(Response, Title, Opt),
-   write(Response, '<h3>'),
-   html_escape(Response, Title),
-   write(Response, '</h3>\r\n').
-
 % html_begin(+Stream, +Atom, +List)
-:- private html_begin/3.
+:- public html_begin/3.
 html_begin(Response, Title, Opt) :-
+   raw_begin(Response, Title, Opt),
+   write(Response, '  <body>\r\n').
+
+% html_h3(+Stream, +Atom)
+:- public html_h3/2.
+html_h3(Response, Title) :-
+   write(Response, '    <h3>'),
+   html_escape(Response, Title),
+   write(Response, '    </h3>\r\n').
+
+% html_end(+Stream)
+:- public html_end/1.
+html_end(Response) :-
+   write(Response, '   </body>\r\n'),
+   raw_end(Response).
+
+% raw_begin(+Stream, +Atom, +List)
+:- public raw_begin/3.
+raw_begin(Response, Title, Opt) :-
    write(Response, '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\r\n'),
    write(Response, '<html>\r\n'),
    write(Response, '  <head>\r\n'),
@@ -132,8 +163,7 @@ html_begin(Response, Title, Opt) :-
    html_escape(Response, Title),
    write(Response, '</title>\r\n'),
    html_begin_opt(Response, Opt),
-   write(Response, '  </head>\r\n'),
-   write(Response, '  <body>\r\n').
+   write(Response, '  </head>\r\n').
 
 % html_begin_opt(+Stream, List)
 :- private html_begin_opt/2.
@@ -148,12 +178,7 @@ html_begin_opt(Response, [margin|Opt]) :-
    html_begin_opt(Response, Opt).
 html_begin_opt(_, []).
 
-/**
- * frame_end(O):
- * The predicate sends the html end to the output stream O.
- */
-% frame_end(+Stream)
-:- public frame_end/1.
-frame_end(Response) :-
-   write(Response, '   </body>\r\n'),
+% raw_end(+Stream)
+:- public raw_end/1.
+raw_end(Response) :-
    write(Response, '</html>\r\n').

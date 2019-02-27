@@ -45,11 +45,11 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class PropertyTraceStore extends AbstractProperty {
-    public final static String OP_SYS_BREAK = "sys_break";
-    public final static String OP_SYS_NAME = "sys_name";
-    public final static String OP_SYS_PARENT = "sys_parent";
-    public final static String OP_SYS_LASTMOD = "sys_lastmod";
+public final class PropertyTraceStore extends AbstractProperty<Store> {
+    private final static String OP_SYS_BREAK = "sys_break";
+    private final static String OP_SYS_NAME = "sys_name";
+    private final static String OP_SYS_PARENT = "sys_parent";
+    private final static String OP_SYS_LASTMOD = "sys_lastmod";
 
     private static final int PROP_SYS_BREAK = 0;
     private static final int PROP_SYS_NAME = 1;
@@ -57,28 +57,27 @@ public class PropertyTraceStore extends AbstractProperty {
     private static final int PROP_SYS_LASTMOD = 3;
 
     /**
-     * <p>Create a Prolog flag.</p>
+     * <p>Create a store property.</p>
      *
-     * @param i The id of the Prolog flag.
+     * @param i The id of the store property.
      */
     private PropertyTraceStore(int i) {
         super(i);
     }
 
     /**
-     * <p>Define the prolog flags.</p>
+     * <p>Define the store properties.</p>
      *
-     * @return The prolog flags.
+     * @return The store properties.
      */
-    static MapHash<StoreKey, AbstractProperty> defineStoreProps() {
-        MapHash<StoreKey, AbstractProperty> storeprops = new MapHash<StoreKey, AbstractProperty>();
+    static MapHash<StoreKey, AbstractProperty<Store>> defineStoreProps() {
+        MapHash<StoreKey, AbstractProperty<Store>> storeprops = new MapHash<StoreKey, AbstractProperty<Store>>();
         storeprops.add(new StoreKey(OP_SYS_BREAK, 2), new PropertyTraceStore(PROP_SYS_BREAK));
         storeprops.add(new StoreKey(OP_SYS_NAME, 1), new PropertyTraceStore(PROP_SYS_NAME));
         storeprops.add(new StoreKey(OP_SYS_PARENT, 1), new PropertyTraceStore(PROP_SYS_PARENT));
         storeprops.add(new StoreKey(OP_SYS_LASTMOD, 1), new PropertyTraceStore(PROP_SYS_LASTMOD));
         return storeprops;
     }
-
 
     /**
      * <p>Retrieve a store property.</p>
@@ -87,7 +86,7 @@ public class PropertyTraceStore extends AbstractProperty {
      * @param en    The engine.
      * @return The property.
      */
-    public Object[] getStoreProp(Store store, Engine en) {
+    public Object[] getObjProp(Store store, Engine en) {
         switch (id) {
             case PROP_SYS_BREAK:
                 StoreTrace storetrace = (StoreTrace) store;
@@ -129,7 +128,7 @@ public class PropertyTraceStore extends AbstractProperty {
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean setObjProp(Store store, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -165,7 +164,7 @@ public class PropertyTraceStore extends AbstractProperty {
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    public boolean resetStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean resetObjProp(Store store, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {

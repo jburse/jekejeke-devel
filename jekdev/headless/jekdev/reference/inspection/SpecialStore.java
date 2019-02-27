@@ -4,11 +4,16 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.InterfaceStack;
+import jekpro.model.inter.StackElement;
+import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.Goal;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelCompound;
@@ -18,7 +23,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
 /**
- * <p>This module provides built-ins for frame access.</p>
+ * <p>This module provides built-ins for store access.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -48,21 +53,20 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialFrame extends AbstractSpecial {
-    private final static int SPECIAL_RULE_FRAME = 0;
-    private final static int SPECIAL_SYS_FRAME_PROPERTY = 2;
-    private final static int SPECIAL_SYS_FRAME_PROPERTY_CHK = 3;
+public final class SpecialStore extends AbstractSpecial {
+    private final static int SPECIAL_SYS_STORE_PROPERTY = 0;
+    private final static int SPECIAL_SYS_STORE_PROPERTY_CHK = 1;
+    private final static int SPECIAL_SET_STORE_PROPERTY = 2;
+    private final static int SPECIAL_RESET_STORE_PROPERTY = 3;
 
-    private final static String OP_DOMAIN_NOT_NULL = "not_null";
-    private final static String OP_DOMAIN_STACK = "stack";
-
+    private final static String OP_DOMAIN_STORE = "store";
 
     /**
-     * <p>Create a frame special.</p>
+     * <p>Create a store special.</p>
      *
      * @param i The built-in ID.
      */
-    public SpecialFrame(int i) {
+    public SpecialStore(int i) {
         super(i);
     }
 
@@ -80,56 +84,70 @@ public final class SpecialFrame extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_RULE_FRAME:
-                return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_DEFN |
-                        AbstractDefined.OPT_RSLT_FRME, en);
-            case SPECIAL_SYS_FRAME_PROPERTY:
+            case SPECIAL_SYS_STORE_PROPERTY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                InterfaceStack frame = derefAndCastStackElement(temp[0], ref);
-                checkNotNull(frame);
-                boolean multi = SpecialFrame.frameToProperties(frame, en);
+                Knowledgebase know = derefAndCastStore(temp[0], ref);
+                boolean multi = storeToProperties((Store) know.getStore(), en);
                 Display d = en.display;
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
                     BindCount.remTab(d.bind, en);
                 return en.getNext();
-            case SPECIAL_SYS_FRAME_PROPERTY_CHK:
+            case SPECIAL_SYS_STORE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                frame = derefAndCastStackElement(temp[0], ref);
-                checkNotNull(frame);
+                know = derefAndCastStore(temp[0], ref);
                 StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialFrame.frameToProperty(frame, sk, en);
+                multi = storeToProperty((Store) know.getStore(), sk, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
                     BindCount.remTab(d.bind, en);
                 return en.getNext();
-
+            case SPECIAL_SET_STORE_PROPERTY:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                know = derefAndCastStore(temp[0], ref);
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                setStoreProp((Store) know.getStore(), en.skel, en.display, en);
+                return en.getNextRaw();
+            case SPECIAL_RESET_STORE_PROPERTY:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                know = derefAndCastStore(temp[0], ref);
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                resetStoreProp((Store) know.getStore(), en.skel, en.display, en);
+                return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
     }
 
     /*******************************************************************/
-    /* Retrieve Frame Property                                         */
+    /* Retrieve Store Property                                         */
     /*******************************************************************/
 
     /**
-     * <p>Create a prolog list for the properties of the given frame.</p>
+     * <p>Create a prolog list for the properties of the given store.</p>
      * <p>Result is returned in skeleton and display.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param frame The frame, non null.
+     * @param store The store.
      * @param en    The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
-    private static boolean frameToProperties(InterfaceStack frame,
-                                             Engine en)
+    private static boolean storeToProperties(Store store, Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
@@ -142,14 +160,14 @@ public final class SpecialFrame extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<InterfaceStack>> props = branch.getFrameProps();
-            for (MapEntry<StoreKey, AbstractProperty<InterfaceStack>> entry2 =
+            MapHash<StoreKey, AbstractProperty<Store>> props = branch.getStoreProps();
+            for (MapEntry<StoreKey, AbstractProperty<Store>> entry2 =
                  (props != null ? props.getLastEntry() : null);
                  entry2 != null; entry2 = props.predecessor(entry2)) {
                 AbstractProperty prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
-                Object[] vals = prop.getObjProp(frame, en);
+                Object[] vals = prop.getObjProp(store, en);
                 en.skel = t;
                 en.display = d;
                 multi = AbstractInformation.consArray(multi, vals, en);
@@ -159,37 +177,90 @@ public final class SpecialFrame extends AbstractSpecial {
     }
 
     /**
-     * <p>Create a prolog list for the property of the given display.</p>
+     * <p>Retrieve a store property.</p>
+     * <p>Throws a domain error for undefined display properties.</p>
      * <p>Result is returned in skeleton and display.</p>
+     * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param frame The frame, non null.
+     * @param store The store, non null.
      * @param sk    The property.
      * @param en    The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
-    private static boolean frameToProperty(InterfaceStack frame, StoreKey sk,
+    private static boolean storeToProperty(Store store, StoreKey sk,
                                            Engine en)
             throws EngineMessage, EngineException {
-        AbstractProperty<InterfaceStack> prop = findFrameProperty(sk, en);
-        Object[] vals = prop.getObjProp(frame, en);
+        AbstractProperty<Store> prop = findStoreProperty(sk, en);
+        Object[] vals = prop.getObjProp(store, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         return AbstractInformation.consArray(false, vals, en);
     }
 
+    /*******************************************************************/
+    /* Set/Reset Store Property                                        */
+    /*******************************************************************/
+
     /**
-     * <p>Retrieve a frame property.</p>
+     * <p>Set a store property.</p>
+     * <p>Throws a domain error for undefined display properties.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param store The store.
+     * @param m     The term skeleton.
+     * @param d     The term display.
+     * @param en    The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void setStoreProp(Store store,
+                                     Object m, Display d, Engine en)
+            throws EngineMessage {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty prop = findStoreProperty(sk, en);
+        if (!prop.setObjProp(store, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+    }
+
+    /**
+     * <p>Set a store property.</p>
+     * <p>Throws a domain error for undefined display properties.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param store The store.
+     * @param m     The term skeleton.
+     * @param d     The term display.
+     * @param en    The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void resetStoreProp(Store store,
+                                       Object m, Display d, Engine en)
+            throws EngineMessage {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty prop = findStoreProperty(sk, en);
+        if (!prop.resetObjProp(store, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+    }
+
+    /**
+     * <p>Find a store property.</p>
      * <p>Throws a domain error for undefined display properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param sk The property.
      * @param en The engine.
-     * @return The frame property.
+     * @return The store property.
      * @throws EngineMessage Shit happens.
      */
-    private static AbstractProperty<InterfaceStack> findFrameProperty(StoreKey sk,
-                                         Engine en)
+    private static AbstractProperty<Store> findStoreProperty(StoreKey sk,
+                                                      Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
@@ -199,7 +270,7 @@ public final class SpecialFrame extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<InterfaceStack>> props = branch.getFrameProps();
+            MapHash<StoreKey, AbstractProperty<Store>> props = branch.getStoreProps();
             AbstractProperty prop = (props != null ? props.get(sk) : null);
             if (prop != null)
                 return prop;
@@ -214,37 +285,21 @@ public final class SpecialFrame extends AbstractSpecial {
     /*******************************************************************/
 
     /**
-     * <p>Check whether the object is a not null.</p>
-     *
-     * @param f The object.
-     * @throws EngineMessage A null frame.
-     */
-    public static void checkNotNull(Object f)
-            throws EngineMessage {
-        if (f != null) {
-            /* */
-        } else {
-            throw new EngineMessage(EngineMessage.representationError(
-                    SpecialFrame.OP_DOMAIN_NOT_NULL));
-        }
-    }
-
-    /**
-     * <p>Cast a frame or null.</p>
+     * <p>Cast a store.</p>
      *
      * @param m The term skel.
      * @param d The term display.
-     * @return The frame.
+     * @return The szore.
      * @throws EngineMessage Shit happens.
      */
-    public static InterfaceStack derefAndCastStackElement(Object m, Display d)
+    public static Knowledgebase derefAndCastStore(Object m, Display d)
             throws EngineMessage {
-        m = SpecialUniv.derefAndCastRefOrNull(m, d);
-        if (m == null || m instanceof InterfaceStack) {
-            return (InterfaceStack) m;
+        m = SpecialUniv.derefAndCastRef(m, d);
+        if (m instanceof Knowledgebase) {
+            return (Knowledgebase) m;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    OP_DOMAIN_STACK, m), d);
+                    OP_DOMAIN_STORE, m), d);
         }
     }
 

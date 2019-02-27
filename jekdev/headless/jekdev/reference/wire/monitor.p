@@ -44,8 +44,9 @@
 :- use_module(library(system/thread)).
 :- use_module(library(misc/socket)).
 :- use_module(library(inspection/frame)).
-:- use_module(hooks/pause).
-:- use_module(hooks/command).
+:- use_module(library(inspection/store)).
+:- use_module(hooks/room).
+:- use_module(pages/index).
 
 /**
  * start_monitor:
@@ -102,8 +103,8 @@ dispatch(_, '/images/blank.gif', Request, Session) :- !,
    dispatch_binary(library(wire/images/blank), Request, Session).
 dispatch(_, '/images/break.gif', Request, Session) :- !,
    dispatch_binary(library(wire/images/break), Request, Session).
-dispatch(_, '/index.html', Request, Session) :- !,
-   dispatch_text(library(wire/pages/index), Request, Session).
+dispatch(_, '/index.jsp', Request, Session) :- !,
+   dispatch_index(Request, Session).
 dispatch(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/desktop/'), !,
    Pos2 is Pos-1,
@@ -129,7 +130,7 @@ upgrade(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/talkback/'), !,
    Pos2 is Pos-1,
    sub_atom(Path, Pos2, _, 0, Path2),
-   wire/control::upgrade(Path2, Request, Session).
+   wire/view::upgrade(Path2, Request, Session).
 
 /**
  * user:goal_tracing(P, F):
@@ -152,7 +153,7 @@ tracing_broadcast(Port, _) :-
    statistics(wall, Millis),
    set_thread_flag(Thread, sys_thread_lastmod, Millis),
    current_thread_flag(Thread, sys_thread_name, Name),
-   broadcast_pause(Name).
+   broadcast_subscribers(reload, Name).
 tracing_broadcast(_, _).
 
 /**
@@ -172,4 +173,4 @@ changing_broadcast(Store) :-
    statistics(wall, Millis),
    set_store_property(Store, sys_lastmod(Millis)),
    store_property(Store, sys_name(Name)),
-   broadcast_command(Name).
+   broadcast_subscribers(reload, Name).
