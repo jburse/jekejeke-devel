@@ -11,7 +11,7 @@ import jekpro.reference.bootload.ForeignEngine;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.MutableBit;
+import jekpro.tools.term.ResetableBit;
 import jekpro.tools.term.PositionKey;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
@@ -416,7 +416,7 @@ public final class Interpreter implements Comparator<Object> {
         }
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+            AbstractTerm.setMarker(res, new ResetableBit());
         return res;
     }
 

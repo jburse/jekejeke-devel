@@ -98,6 +98,7 @@ public final class SpecialApply extends AbstractSpecial {
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 DisplayClause ref2 = new DisplayClause();
                 ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+                ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
                     BindCount.remTab(ref.bind, en);

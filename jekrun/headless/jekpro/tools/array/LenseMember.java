@@ -2,14 +2,13 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.MutableBit;
+import jekpro.tools.term.ResetableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -135,7 +134,7 @@ final class LenseMember extends AbstractLense {
             en.skel = AbstractTerm.getSkel(res);
             en.display = AbstractTerm.getDisplay(res);
             Object check = AbstractTerm.getMarker(res);
-            return (check != null && ((MutableBit) check).getBit());
+            return (check != null && ((ResetableBit) check).getBit());
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));

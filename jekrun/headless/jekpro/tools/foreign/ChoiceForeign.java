@@ -132,9 +132,9 @@ final class ChoiceForeign extends AbstractChoice {
                 }
             } else {
                 Object check = AbstractTerm.getMarker(res);
-                if (check != null && ((MutableBit) check).getBit()) {
+                if (check != null && ((ResetableBit) check).getBit()) {
                     BindCount.remTab(d.bind, en);
-                    ((MutableBit) check).setBit(false);
+                    ((ResetableBit) check).resetBit();
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     /* meta argument change */

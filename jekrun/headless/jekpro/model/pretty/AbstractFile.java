@@ -8,7 +8,6 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.system.AbstractRecognizer;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
 
@@ -222,7 +221,7 @@ public abstract class AbstractFile extends AbstractSource {
             int max_age = getMaxAge();
             long date = getDate();
             if (max_age != -1 && date != 0) {
-                if (System.currentTimeMillis() < date + max_age*1000L)
+                if (System.currentTimeMillis() < date + max_age * 1000L)
                     return null;
             } else if (expiration != 0) {
                 if (System.currentTimeMillis() < expiration)

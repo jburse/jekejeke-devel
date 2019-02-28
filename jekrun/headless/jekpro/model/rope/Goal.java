@@ -48,7 +48,6 @@ public class Goal extends Intermediate {
     public final Object goal;
     public final int[] uniargs;
     public final int endalloc;
-    public final Clause def;
     public int endgc;
 
     /**
@@ -59,10 +58,9 @@ public class Goal extends Intermediate {
      * @param n  The next.
      * @param f2 The endalloc.
      * @param f3 The flags.
-     * @param c  The parent clause.
      */
     public Goal(Object t, int[] u, Intermediate n,
-                int f2, int f3, Clause c) {
+                int f2, int f3) {
         next = n;
         goal = t;
         uniargs = u;
@@ -70,16 +68,6 @@ public class Goal extends Intermediate {
         if (t instanceof SkelVar)
             f3 |= Goal.MASK_GOAL_NAKE;
         flags = f3;
-        def = c;
-    }
-
-    /**
-     * <p>Retrieve the clause.</p>
-     *
-     * @return The clause.
-     */
-    public final Clause getClause() {
-        return def;
     }
 
     /**
@@ -98,7 +86,7 @@ public class Goal extends Intermediate {
             int n = endgc;
             int i = u.lastgc;
             if (i < n)
-                u.lastgc = def.disposeBind(i, n, u.bind, en);
+                u.lastgc = u.def.disposeBind(i, n, u.bind, en);
         }
 
         int n = endalloc;
@@ -107,13 +95,13 @@ public class Goal extends Intermediate {
             u.lastalloc = Engine.newBind(i, n, u.bind);
 
         if (uniargs != null)
-            unifyBody(u, en);
+            Goal.unifyBody(uniargs, u, en);
         if ((flags & Intermediate.MASK_INTER_NLST) == 0 &&
                 (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
             DisplayClause u1 = u.contdisplay;
             if (u1 != null &&
                     u1.number >= en.number) {
-                Clause clause = u.contskel.getClause();
+                Clause clause = u1.def;
                 n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
                 i = u1.lastgc;
                 if (i < n)
@@ -180,7 +168,7 @@ public class Goal extends Intermediate {
      * @param u  The continuation display.
      * @param en The engine.
      */
-    private void unifyBody(DisplayClause u, Engine en) {
+    private static void unifyBody(int[] arr, DisplayClause u, Engine en) {
         Goal ir = (Goal) u.contskel;
         Object alfa = ir.goal;
         Display ref = u.contdisplay;
@@ -194,8 +182,7 @@ public class Goal extends Intermediate {
             }
         }
         Object[] t1 = ((SkelCompound) alfa).args;
-        Object[] t2 = ((SkelCompound) def.head).args;
-        int[] arr = uniargs;
+        Object[] t2 = ((SkelCompound) u.def.head).args;
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
             alfa = t1[n];

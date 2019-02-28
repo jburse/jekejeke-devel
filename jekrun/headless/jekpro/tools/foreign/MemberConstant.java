@@ -1,16 +1,14 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.MutableBit;
+import jekpro.tools.term.ResetableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -139,7 +137,7 @@ final class MemberConstant extends AbstractMember {
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
         Object check = AbstractTerm.getMarker(res);
-        return (check != null && ((MutableBit) check).getBit());
+        return (check != null && ((ResetableBit) check).getBit());
     }
 
     /***************************************************************/

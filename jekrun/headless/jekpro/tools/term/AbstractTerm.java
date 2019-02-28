@@ -352,7 +352,7 @@ public abstract class AbstractTerm {
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         Object res = AbstractTerm.createTerm(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+            AbstractTerm.setMarker(res, new ResetableBit());
         return res;
     }
 
@@ -383,7 +383,7 @@ public abstract class AbstractTerm {
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+            AbstractTerm.setMarker(res, new ResetableBit());
         return res;
     }
 
@@ -414,7 +414,7 @@ public abstract class AbstractTerm {
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         Object res = AbstractTerm.createMolec(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+            AbstractTerm.setMarker(res, new ResetableBit());
         return res;
     }
 

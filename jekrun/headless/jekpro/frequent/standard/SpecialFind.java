@@ -157,6 +157,7 @@ public final class SpecialFind extends AbstractSpecial {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
             ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.def = clause;
             ref2.addArgument(en.skel, en.display, en);
             if (multi)
                 BindCount.remTab(ref.bind, en);

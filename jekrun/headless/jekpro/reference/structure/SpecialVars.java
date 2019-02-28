@@ -152,9 +152,8 @@ public final class SpecialVars extends AbstractSpecial {
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    InterfaceStack frame = en.visor.ref;
-                    Display ref2 = (frame != null ? frame.getContDisplay() : null);
-                    Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+                    DisplayClause ref2 = en.visor.query;
+                    Clause def = (ref2 != null ? ref2.def : null);
                     MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
                     MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
                     mapToAssoc(print, en);

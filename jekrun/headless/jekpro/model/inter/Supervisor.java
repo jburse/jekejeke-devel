@@ -2,6 +2,7 @@ package jekpro.model.inter;
 
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.BindVar;
+import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
@@ -58,7 +59,7 @@ public class Supervisor extends AbstractLivestock {
     public Object attachedto;
     public int breaklevel = -1;
     public ListArray<AbstractSource> modstack;
-    public InterfaceStack ref;
+    public DisplayClause query;
     public StoreKey lastsk;
     public LoadOpts cond;
     public Object proxy;

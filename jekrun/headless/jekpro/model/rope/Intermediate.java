@@ -72,13 +72,6 @@ public abstract class Intermediate {
     }
 
     /**
-     * <p>Retrieve the clause.</p>
-     *
-     * @return The clause.
-     */
-    public abstract Clause getClause();
-
-    /**
      * <p>Resolve the current goal.</p>
      *
      * @param en The engine.

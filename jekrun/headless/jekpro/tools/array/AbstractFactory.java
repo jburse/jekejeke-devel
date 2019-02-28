@@ -1,23 +1,11 @@
 package jekpro.tools.array;
 
-import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.Store;
 import jekpro.tools.proxy.AbstractReflection;
 import matula.comp.sharik.AbstractFramework;
 import matula.util.data.MapHash;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>This class provides an abstract factory.</p>

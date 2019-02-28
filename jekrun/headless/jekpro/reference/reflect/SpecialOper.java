@@ -457,8 +457,8 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         if (KEY_FULL_NAME.equals(prop)) {
             Object val = new SkelAtom(oper.getKey());
-            return new Object[]{new TermCompound(new SkelCompound(
-                    new SkelAtom(OP_FULL_NAME), val))};
+            return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                    new SkelAtom(OP_FULL_NAME), val), Display.DISPLAY_CONST)};
         } else if (KEY_NSPL.equals(prop)) {
             if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
                 return new Object[]{new SkelAtom(OP_NSPL)};
@@ -475,8 +475,8 @@ public final class SpecialOper extends AbstractSpecial {
             int level = oper.getLevel();
             if (level != 0) {
                 Object val = Integer.valueOf(oper.getLevel());
-                return new Object[]{new TermCompound(
-                        new SkelCompound(new SkelAtom(OP_LEVEL), val))};
+                return new Object[]{AbstractTerm.createMolec(
+                        new SkelCompound(new SkelAtom(OP_LEVEL), val), Display.DISPLAY_CONST)};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }
@@ -485,21 +485,21 @@ public final class SpecialOper extends AbstractSpecial {
             if ((flags & Operator.MASK_OPER_DEFI) != 0) {
                 Object val = new SkelAtom(leftRightTypeToAtom(
                         flags & Operator.MASK_OPER_MODE, oper.getType()));
-                return new Object[]{new TermCompound(
-                        new SkelCompound(new SkelAtom(OP_MODE), val))};
+                return new Object[]{AbstractTerm.createMolec(
+                        new SkelCompound(new SkelAtom(OP_MODE), val), Display.DISPLAY_CONST)};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }
         } else if (KEY_VISIBLE.equals(prop)) {
             int flags = oper.getBits();
             if ((flags & Operator.MASK_OPER_VSPR) != 0) {
-                return new Object[]{new TermCompound(new SkelCompound(
+                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                         new SkelAtom(OP_VISIBLE),
-                        new SkelAtom(AbstractSource.OP_PRIVATE)))};
+                        new SkelAtom(AbstractSource.OP_PRIVATE)), Display.DISPLAY_CONST)};
             } else if ((flags & Operator.MASK_OPER_VSPU) != 0) {
-                return new Object[]{new TermCompound(new SkelCompound(
+                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                         new SkelAtom(OP_VISIBLE),
-                        new SkelAtom(AbstractSource.OP_PUBLIC)))};
+                        new SkelAtom(AbstractSource.OP_PUBLIC)), Display.DISPLAY_CONST)};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }
@@ -515,15 +515,15 @@ public final class SpecialOper extends AbstractSpecial {
                 return AbstractBranch.FALSE_PROPERTY;
             if (!Clause.ancestorSource(src, en))
                 return AbstractBranch.FALSE_PROPERTY;
-            return new Object[]{new TermCompound(new SkelCompound(
+            return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                     new SkelAtom(SpecialOper.OP_SYS_USAGE),
-                    src.getPathAtom()))};
+                    src.getPathAtom()), Display.DISPLAY_CONST)};
         } else if (KEY_SYS_PORTRAY.equals(prop)) {
             String portray = oper.getPortray();
             if (portray != null) {
                 SkelAtom val = new SkelAtom(portray);
-                return new Object[]{new TermCompound(new SkelCompound(
-                        new SkelAtom(OP_SYS_PORTRAY), val))};
+                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                        new SkelAtom(OP_SYS_PORTRAY), val), Display.DISPLAY_CONST)};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }
@@ -531,8 +531,8 @@ public final class SpecialOper extends AbstractSpecial {
             String alias = oper.getAlias();
             if (alias != null) {
                 SkelAtom val = new SkelAtom(alias);
-                return new Object[]{new TermCompound(new SkelCompound(
-                        new SkelAtom(OP_SYS_ALIAS), val))};
+                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                        new SkelAtom(OP_SYS_ALIAS), val), Display.DISPLAY_CONST)};
             } else {
                 return AbstractBranch.FALSE_PROPERTY;
             }

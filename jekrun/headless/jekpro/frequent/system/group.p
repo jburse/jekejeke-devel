@@ -159,14 +159,13 @@ current_group_flag(T, K, V) :-
 :- public current_thread/1.
 current_thread(X) :-
    var(X), !,
-   sys_current_thread(L),
-   sys_member(X, L).
+   sys_current_thread(X).
 current_thread(X) :-
    sys_current_thread_chk(X).
 
 :- private sys_current_thread/1.
 :- foreign(sys_current_thread/1, 'ForeignGroup',
-      sysCurrentThread('Interpreter')).
+      sysCurrentThread('CallOut','Interpreter')).
 
 :- private sys_current_thread_chk/1.
 :- foreign(sys_current_thread_chk/1, 'ForeignGroup',

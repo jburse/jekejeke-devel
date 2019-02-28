@@ -120,9 +120,8 @@ public final class SpecialSession extends AbstractSpecial {
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                InterfaceStack frame = en.visor.ref;
-                Display ref2 = (frame != null ? frame.getContDisplay() : null);
-                Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+                DisplayClause ref2 = en.visor.query;
+                Clause def = (ref2 != null ? ref2.def : null);
                 MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
                 en.skel = SpecialSession.hashToRawAssoc(vars, ref2, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
@@ -240,7 +239,7 @@ public final class SpecialSession extends AbstractSpecial {
     /**
      * <p>Prompt for the query.</p>
      *
-     * @param en  The engine trace.
+     * @param en The engine trace.
      * @throws EngineMessage Shit happens.
      */
     private static void promptQuery(Engine en)
@@ -254,7 +253,7 @@ public final class SpecialSession extends AbstractSpecial {
                 wr.write(Integer.toString(en.visor.breaklevel));
                 wr.write("] ");
             }
-            AbstractSource src=en.visor.peekStack();
+            AbstractSource src = en.visor.peekStack();
             String s = src.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 wr.write("(");
@@ -330,12 +329,12 @@ public final class SpecialSession extends AbstractSpecial {
                 DisplayClause u = en.contdisplay;
                 AbstractBind mark = en.bind;
                 int snap = en.number;
-                InterfaceStack backref = en.visor.ref;
+                DisplayClause backref = en.visor.query;
                 try {
                     DisplayClause ref = new DisplayClause();
                     ref.bind = DisplayClause.newBindClause(clause.dispsize);
                     ref.def = clause;
-                    en.visor.ref = new StackElement(clause, ref);
+                    en.visor.query = ref;
                     ref.setEngine(en);
                     en.contskel = clause.getNextRaw(en);
                     en.contdisplay = ref;
@@ -384,14 +383,14 @@ public final class SpecialSession extends AbstractSpecial {
                             EngineException.fetchLoc(
                                     EngineException.fetchStack(en), pos, en));
                     en.releaseBind(mark);
-                    en.visor.ref = backref;
+                    en.visor.query = backref;
                     throw en.fault;
                 } catch (EngineException x) {
                     en.contskel = r;
                     en.contdisplay = u;
                     en.fault = x;
                     en.releaseBind(mark);
-                    en.visor.ref = backref;
+                    en.visor.query = backref;
                     throw en.fault;
                 }
                 en.contskel = r;
@@ -400,7 +399,7 @@ public final class SpecialSession extends AbstractSpecial {
                 en.fault = null;
                 en.cutChoices(snap);
                 en.releaseBind(mark);
-                en.visor.ref = backref;
+                en.visor.query = backref;
                 if (en.fault != null)
                     throw en.fault;
             } catch (EngineMessage x) {
@@ -458,12 +457,13 @@ public final class SpecialSession extends AbstractSpecial {
             clause.analyzeBody(molec, en);
 
             int snap = en.number;
-            InterfaceStack backref = en.visor.ref;
+            DisplayClause backref = en.visor.query;
             DisplayClause ref;
             try {
                 ref = new DisplayClause();
                 ref.bind = DisplayClause.newBindClause(clause.dispsize);
-                en.visor.ref = new StackElement(clause, ref);
+                ref.def = clause;
+                en.visor.query = ref;
                 ref.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref;
@@ -476,14 +476,14 @@ public final class SpecialSession extends AbstractSpecial {
                 en.fault = new EngineException(x, EngineException.fetchLoc(
                         EngineException.fetchStack(en), pos, en));
                 en.releaseBind(mark);
-                en.visor.ref = backref;
+                en.visor.query = backref;
                 throw en.fault;
             } catch (EngineException x) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.fault = x;
                 en.releaseBind(mark);
-                en.visor.ref = backref;
+                en.visor.query = backref;
                 throw en.fault;
             }
             en.contskel = r;
@@ -491,7 +491,7 @@ public final class SpecialSession extends AbstractSpecial {
             en.window = null;
             en.fault = null;
             en.cutChoices(snap);
-            en.visor.ref = backref;
+            en.visor.query = backref;
             t = var;
             d = ref;
         }

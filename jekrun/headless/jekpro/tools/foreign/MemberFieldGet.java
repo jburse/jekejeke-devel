@@ -7,7 +7,6 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.*;
 
@@ -142,9 +141,9 @@ final class MemberFieldGet extends AbstractMember {
                         AbstractTerm.getSkel(res), d))
             return false;
         Object check = AbstractTerm.getMarker(res);
-        if (check != null && ((MutableBit) check).getBit()) {
+        if (check != null && ((ResetableBit) check).getBit()) {
             BindCount.remTab(d.bind, en);
-            ((MutableBit) check).setBit(false);
+            ((ResetableBit) check).resetBit();
         }
         return en.getNext();
     }

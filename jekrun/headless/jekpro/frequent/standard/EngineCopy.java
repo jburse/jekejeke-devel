@@ -4,12 +4,10 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.NamedDistance;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHash;
-import matula.util.data.MapHashLink;
 
 /**
  * <p>This class provides basic functions to copy terms.</p>

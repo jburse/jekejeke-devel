@@ -76,15 +76,6 @@ public class Clause extends Intermediate implements InterfaceReference {
     }
 
     /**
-     * <p>Retrieve the clause.</p>
-     *
-     * @return The clause.
-     */
-    public final Clause getClause() {
-        return this;
-    }
-
-    /**
      * <p>Move to continuation.</p>
      *
      * @param en The engine.
@@ -179,7 +170,7 @@ public class Clause extends Intermediate implements InterfaceReference {
             int[] args = OptimizationArray.tempBind(t, i, vars);
 
             /* normal code */
-            end = new Goal(t, args, end, size2, f2 | f3, this);
+            end = new Goal(t, args, end, size2, f2 | f3);
             if ((flags & Clause.MASK_CLAUSE_NBDY) == 0)
                 ((Goal) end).endgc = size;
 

@@ -5,7 +5,6 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.term.*;
@@ -168,9 +167,9 @@ final class MemberMethodNondet extends AbstractMember {
                 co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
                 Object check = AbstractTerm.getMarker(res);
-                if (check != null && ((MutableBit) check).getBit()) {
+                if (check != null && ((ResetableBit) check).getBit()) {
                     BindCount.remTab(d.bind, en);
-                    ((MutableBit) check).setBit(false);
+                    ((ResetableBit) check).resetBit();
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     ChoiceForeign cp = new ChoiceForeign(en.choices);

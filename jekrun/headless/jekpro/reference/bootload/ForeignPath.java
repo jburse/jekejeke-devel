@@ -403,9 +403,9 @@ public final class ForeignPath {
         Knowledgebase know = inter.getKnowledgebase();
         Object end = lobby.ATOM_NIL;
         do {
-            MapEntry<String,FileExtension>[] exts = know.getFileExtensions();
+            MapEntry<String, FileExtension>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {
-                MapEntry<String,FileExtension> ext = exts[i];
+                MapEntry<String, FileExtension> ext = exts[i];
                 Object val = new TermCompound("ext", ext.key, ext.value.getType(), ext.value.getMimeType());
                 end = new TermCompound(lobby.ATOM_CONS, val, end);
             }

@@ -332,6 +332,7 @@ public class Engine implements InterfaceStack, Comparator<Object> {
         Clause clause = store.foyer.CLAUSE_CONT;
         DisplayClause ref2 = new DisplayClause();
         ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+        ref2.def = clause;
         ref2.addArgument(skel, ref, this);
         if (multi || ext)
             BindCount.remTab(ref.bind, this);
@@ -498,6 +499,7 @@ public class Engine implements InterfaceStack, Comparator<Object> {
             Clause clause = store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
             ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.def = clause;
             ref2.addArgument(skel, ref, this);
             if (multi)
                 BindCount.remTab(ref.bind, this);

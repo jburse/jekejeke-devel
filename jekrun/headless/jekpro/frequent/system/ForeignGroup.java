@@ -5,7 +5,7 @@ import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Lobby;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.TermCompound;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.Fence;
@@ -116,7 +116,7 @@ public final class ForeignGroup {
     public static Thread sysCurrentThread(CallOut co, ThreadGroup tg) {
         ArrayEnumeration<Thread> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<Thread>(snapshotThreads(tg));
+            dc = new ArrayEnumeration<Thread>(snapshotThreadsOfGroup(tg));
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<Thread>) co.getData();
@@ -125,6 +125,24 @@ public final class ForeignGroup {
             return null;
         Thread res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Compute a snapshot of the threads of a thread group.</p>
+     *
+     * @param tg The thread group.
+     * @return The snapshot of the threads of the thread group.
+     */
+    private static Thread[] snapshotThreadsOfGroup(ThreadGroup tg) {
+        Thread[] threads = new Thread[4];
+        int num = tg.enumerate(threads, false);
+        while (num == threads.length) {
+            threads = new Thread[threads.length * 2];
+            num = tg.enumerate(threads, false);
+        }
+        Thread[] res = new Thread[num];
+        System.arraycopy(threads, 0, res, 0, num);
         return res;
     }
 
@@ -138,7 +156,7 @@ public final class ForeignGroup {
     public static ThreadGroup sysCurrentGroup(CallOut co, ThreadGroup tg) {
         ArrayEnumeration<ThreadGroup> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<ThreadGroup>(snapshotGroups(tg));
+            dc = new ArrayEnumeration<ThreadGroup>(snapshotGroupsOfGroup(tg));
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<ThreadGroup>) co.getData();
@@ -151,30 +169,12 @@ public final class ForeignGroup {
     }
 
     /**
-     * <p>Compute a snapshot of the threads a thread group.</p>
-     *
-     * @param tg The thread group.
-     * @return The snapshot of the threads of the thread group.
-     */
-    private static Thread[] snapshotThreads(ThreadGroup tg) {
-        Thread[] threads = new Thread[4];
-        int num = tg.enumerate(threads, false);
-        while (num == threads.length) {
-            threads = new Thread[threads.length * 2];
-            num = tg.enumerate(threads, false);
-        }
-        Thread[] res = new Thread[num];
-        System.arraycopy(threads, 0, res, 0, num);
-        return res;
-    }
-
-    /**
-     * <p>Compute a snapshot of the groups a thread group.</p>
+     * <p>Compute a snapshot of the groups of a thread group.</p>
      *
      * @param tg The thread group.
      * @return The snapshot of the groups of the thread group.
      */
-    private static ThreadGroup[] snapshotGroups(ThreadGroup tg) {
+    private static ThreadGroup[] snapshotGroupsOfGroup(ThreadGroup tg) {
         ThreadGroup[] groups = new ThreadGroup[4];
         int num = tg.enumerate(groups, false);
         while (num == groups.length) {
@@ -239,19 +239,43 @@ public final class ForeignGroup {
     /**
      * <p>Retrieve the managed threads.</p>
      *
+     * @param co The call out.
      * @param inter The interpreter.
      * @return The Prolog list of managed threads.
      */
-    public static Object sysCurrentThread(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Object res = lobby.ATOM_NIL;
+    public static Object sysCurrentThread(CallOut co, Interpreter inter) {
+        ArrayEnumeration<Thread> dc;
+        if (co.getFirst()) {
+            Lobby lobby = inter.getKnowledgebase().getLobby();
+            dc = new ArrayEnumeration<Thread>(snapshotManagedThreads(lobby));
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<Thread>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        Thread res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>Compute a snapshot of the managed threads.</p>
+     *
+     * @param lobby The lobby.
+     * @return The managed thread.
+     */
+    private static Thread[] snapshotManagedThreads(Lobby lobby) {
+        ListArray<Thread> list = new ListArray<Thread>();
         MapEntry<Thread, AbstractLivestock>[] snapshot = Fence.DEFAULT.snapshotLivestocks();
         for (int i = snapshot.length - 1; i >= 0; i--) {
             AbstractLivestock al = snapshot[i].value;
             if (al.source != lobby.getFoyer())
                 continue;
-            res = new TermCompound(lobby.ATOM_CONS, snapshot[i].key, res);
+            list.add(snapshot[i].key);
         }
+        Thread[] res=new Thread[list.size()];
+        list.toArray(res);
         return res;
     }
 

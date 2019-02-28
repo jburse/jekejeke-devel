@@ -771,6 +771,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref = new DisplayClause();
             ref.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref.def = clause;
             ref.addArgument(t, dc, en);
             ref.setEngine(en);
             en.contskel = clause.getNextRaw(en);

@@ -73,16 +73,6 @@ public final class TermCompound extends AbstractTerm {
     }
 
     /**
-     * <p>Constructor for internal use only.</p>
-     *
-     * @param s The compound skel.
-     */
-    public TermCompound(SkelCompound s) {
-        display = Display.DISPLAY_CONST;
-        skel = s;
-    }
-
-    /**
      * <p>Create a compound from functor and arguments.</p>
      * <p>The arguments must have single display.</p>
      *
@@ -352,7 +342,7 @@ public final class TermCompound extends AbstractTerm {
         }
         if (multi) {
             last = new Display(Display.newBind(countvar));
-            marker = new MutableBit().setBit(true);
+            marker = new ResetableBit();
         } else {
             marker = check;
         }
@@ -390,9 +380,9 @@ public final class TermCompound extends AbstractTerm {
                 countvar++;
                 d3.bind[sv.id].bindVar(t, d, en);
                 Object check = AbstractTerm.getMarker(obj);
-                if (check != null && ((MutableBit) check).getBit()) {
+                if (check != null && ((ResetableBit) check).getBit()) {
                     BindCount.remTab(d.bind, en);
-                    ((MutableBit) check).setBit(false);
+                    ((ResetableBit) check).resetBit();
                 }
                 args[i] = sv;
             } else {

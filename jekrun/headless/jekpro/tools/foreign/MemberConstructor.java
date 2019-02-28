@@ -152,9 +152,9 @@ final class MemberConstructor extends AbstractMember {
                         AbstractTerm.getSkel(res), d))
             return false;
         Object check = AbstractTerm.getMarker(res);
-        if (check != null && ((MutableBit) check).getBit()) {
+        if (check != null && ((ResetableBit) check).getBit()) {
             BindCount.remTab(d.bind, en);
-            ((MutableBit) check).setBit(false);
+            ((ResetableBit) check).resetBit();
         }
         return en.getNext();
     }

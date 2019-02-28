@@ -2,8 +2,8 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Store;
 
 /**
  * <p>Abstract base class for properties.</p>
@@ -36,7 +36,7 @@ import jekpro.model.pretty.Store;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class AbstractProperty {
+public class AbstractProperty<T> {
 
     protected final int id;
 
@@ -50,49 +50,51 @@ public class AbstractProperty {
     }
 
     /************************************************************/
-    /* Store Properties                                         */
+    /* Object Properties                                        */
     /************************************************************/
 
     /**
-     * <p>Retrieve all the store properties.</p>
+     * <p>Retrieve all the object properties.</p>
      *
-     * @param store The store.
-     * @param en    The engine.
+     * @param obj The object.
+     * @param en  The engine.
      * @return The properties.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
-    public Object[] getStoreProp(Store store, Engine en) {
+    public Object[] getObjProp(T obj, Engine en)
+            throws EngineException, EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
 
     /**
-     * <p>Set a store property.</p>
+     * <p>Set a object property.</p>
      *
-     * @param store The store.
-     * @param m     The property skeleton.
-     * @param d     The property display.
-     * @param en    The engine.
+     * @param obj The object.
+     * @param m   The property skeleton.
+     * @param d   The property display.
+     * @param en  The engine.
      * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean setObjProp(T obj, Object m, Display d, Engine en)
             throws EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
 
     /**
-     * <p>Reset a store property.</p>
+     * <p>Reset a object property.</p>
      *
-     * @param store The store.
-     * @param m     The property skeleton.
-     * @param d     The property display.
-     * @param en    The engine.
+     * @param obj The object.
+     * @param m   The property skeleton.
+     * @param d   The property display.
+     * @param en  The engine.
      * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean resetStoreProp(Store store, Object m, Display d, Engine en)
+    public boolean resetObjProp(T obj, Object m, Display d, Engine en)
             throws EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
-
 
 }

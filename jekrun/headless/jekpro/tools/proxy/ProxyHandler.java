@@ -2,14 +2,13 @@ package jekpro.tools.proxy;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.MutableBit;
+import jekpro.tools.term.ResetableBit;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -204,7 +203,7 @@ public final class ProxyHandler implements InvocationHandler {
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(m, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new MutableBit().setBit(true));
+            AbstractTerm.setMarker(res, new ResetableBit());
         return res;
     }
 
