@@ -199,7 +199,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      * @param d  The term display.
      * @param en The engine.
      * @return The position key.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage      Shit happens.
      * @throws ClassCastException Shit happens.
      */
     public PositionKey derefAndCastPositionKey(Object m, Display d, Engine en)
@@ -232,7 +232,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      * @param d  The term display.
      * @param en The engine.
      * @return The position key.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage      Shit happens.
      * @throws ClassCastException Shit happens.
      */
     public long derefAndCastLastMod(Object m, Display d, Engine en)

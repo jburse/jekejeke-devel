@@ -57,7 +57,7 @@
 
 /**
  * store_property(F, P):
- * The predicate succeeds for the properties P of the store F.
+ * The predicate succeeds for the properties P of the knowledge base F.
  */
 % store_property(+Frame, -Property)
 :- public store_property/2.
@@ -80,7 +80,7 @@ store_property(I, R) :-
 
 /**
  * set_store_property(S, Q):
- * The predicate assigns the property Q to the store S.
+ * The predicate assigns the property Q to the knowledge base S.
  */
 % set_store_property(+Oper, +Property)
 :- public set_store_property/2.
@@ -89,12 +89,32 @@ store_property(I, R) :-
 
 /**
  * reset_store_property(S, Q):
- * The predicate de-assigns the property Q from the store S.
+ * The predicate de-assigns the property Q from the knowledge base S.
  */
 % reset_store_property(+Oper, +Property)
 :- public reset_store_property/2.
 :- foreign(reset_store_property/2, 'ForeignStore',
       sysResetStoreProperty('Interpreter','Knowledgebase','Object')).
+
+/**
+ * current_store(T):
+ * The predicate succeeds in T with the managed knowledge bases.
+ */
+% current_store(-Thread)
+:- public current_store/1.
+current_store(X) :-
+   var(X), !,
+   sys_current_store(X).
+current_store(X) :-
+   sys_current_store_chk(X).
+
+:- private sys_current_store/1.
+:- foreign(sys_current_store/1, 'ForeignStore',
+      sysCurrentStore('CallOut','Interpreter')).
+
+:- private sys_current_store_chk/1.
+:- foreign(sys_current_store_chk/1, 'ForeignStore',
+      sysCurrentStoreChk('Interpreter','Knowledgebase')).
 
 /**
  * stores:

@@ -4,13 +4,16 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.*;
-import jekpro.model.molec.*;
-import jekpro.model.pretty.Store;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.InterfaceStack;
+import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.Goal;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
@@ -189,7 +192,7 @@ public final class SpecialFrame extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static AbstractProperty<InterfaceStack> findFrameProperty(StoreKey sk,
-                                         Engine en)
+                                                                      Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();

@@ -9,11 +9,10 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.ResetableBit;
@@ -116,7 +115,7 @@ public final class ForeignStore {
      * @param inter The interpreter.
      * @param know  The knowledge base.
      * @param obj   The properties name and value.
-     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterMessage Shit happens.
      */
     public static void sysSetStoreProperty(Interpreter inter,
                                            Knowledgebase know, Object obj)
@@ -136,7 +135,7 @@ public final class ForeignStore {
      * @param inter The interpreter.
      * @param know  The knowledge base.
      * @param obj   The properties name.
-     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterMessage Shit happens.
      */
     public static void sysResetStoreProperty(Interpreter inter,
                                              Knowledgebase know, Object obj)
@@ -148,6 +147,48 @@ public final class ForeignStore {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
+    }
+
+    /****************************************************************/
+    /* Managed Stores                                              */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the managed knowledge bases.</p>
+     *
+     * @param co    The call out.
+     * @param inter The interpreter.
+     * @return The managed knowledge base.
+     */
+    public static Knowledgebase sysCurrentStore(CallOut co,
+                                                Interpreter inter) {
+        ArrayEnumeration<Store> dc;
+        if (co.getFirst()) {
+            Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
+            dc = new ArrayEnumeration<Store>(foyer.snapshotStores());
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<Store>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        Store res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return (Knowledgebase) res.proxy;
+    }
+
+    /**
+     * <p>Check whether the knowledge base is managed.</p>
+     *
+     * @param inter The interpreter.
+     * @param know  The knowledge base.
+     * @return True if the knowledge base is managed, otherwise false.
+     */
+    public static boolean sysCurrentStoreChk(Interpreter inter,
+                                             Knowledgebase know) {
+        Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
+        Store store = (Store) know.getStore();
+        return (store.foyer == foyer);
     }
 
     /*******************************************************************/
@@ -162,7 +203,7 @@ public final class ForeignStore {
      * @param store The store.
      * @param en    The engine.
      * @return The multi flag.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static boolean storeToProperties(Store store, Engine en)
@@ -204,11 +245,11 @@ public final class ForeignStore {
      * @param sk    The property.
      * @param en    The engine.
      * @return The multi flag.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static boolean storeToProperty(Store store, StoreKey sk,
-                                           Engine en)
+                                          Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Store> prop = findStoreProperty(sk, en);
         Object[] vals = prop.getObjProp(store, en);
@@ -281,7 +322,7 @@ public final class ForeignStore {
      * @throws EngineMessage Shit happens.
      */
     private static AbstractProperty<Store> findStoreProperty(StoreKey sk,
-                                                     Engine en)
+                                                             Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
