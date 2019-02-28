@@ -124,13 +124,10 @@ public final class SpecialNotation extends AbstractSpecial {
             case SPECIAL_SYS_INDICATOR_TO_COLON:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                arity = StoreKey.propToIndicator(en);
+                int arityint = StoreKey.derefAndCastIndicator(temp[0], ref, en);
                 obj = SpecialQuali.indicatorToColonSkel(
                         ((SkelAtom) en.skel).fun, ((SkelAtom) en.skel).scope,
-                        arity.intValue(), en);
+                        arityint, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return en.getNext();

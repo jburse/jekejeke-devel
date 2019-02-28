@@ -1,7 +1,7 @@
 package jekdev.reference.debug;
 
-import jekdev.model.pretty.StoreTrace;
 import jekdev.model.bugger.SupervisorTrace;
+import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.inspection.SpecialFrame;
 import jekdev.reference.system.SpecialMode;
 import jekpro.frequent.stream.ForeignConsole;
@@ -320,9 +320,8 @@ public final class SpecialDefault extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             /* write port and goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
-            InterfaceStack frame = en.visor.ref;
-            Display ref2 = (frame != null ? frame.getContDisplay() : null);
-            Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+            DisplayClause ref2 = en.visor.query;
+            Clause def = (ref2 != null ? ref2.def : null);
             MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
             MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
             pw.setPrintMap(print);
@@ -343,6 +342,7 @@ public final class SpecialDefault extends AbstractSpecial {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref = new DisplayClause();
             ref.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref.def = clause;
             ref.addArgument(t, dc, en);
             ref.setEngine(en);
             en.contskel = clause.getNextRaw(en);
@@ -376,9 +376,8 @@ public final class SpecialDefault extends AbstractSpecial {
 
         /* write goal */
         showPort(pw, SpecialMode.portToAtom(port, en), en);
-        InterfaceStack frame = en.visor.ref;
-        Display ref2 = (frame != null ? frame.getContDisplay() : null);
-        Clause def = (frame != null ? frame.getContSkel().getClause() : null);
+        DisplayClause ref2 = en.visor.query;
+        Clause def = (ref2 != null ? ref2.def : null);
         MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
         MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
         pw.setPrintMap(print);

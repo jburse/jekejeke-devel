@@ -1,9 +1,9 @@
 package jekdev.reference.system;
 
-import jekdev.model.pretty.FoyerTrace;
 import jekdev.model.bugger.GoalTrace;
-import jekdev.model.pretty.StoreTrace;
 import jekdev.model.bugger.SupervisorTrace;
+import jekdev.model.pretty.FoyerTrace;
+import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
@@ -295,6 +295,7 @@ public final class SpecialMode extends AbstractSpecial {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
             ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi)
                 BindCount.remTab(ref.bind, en);
@@ -352,6 +353,7 @@ public final class SpecialMode extends AbstractSpecial {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
             ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi)
                 BindCount.remTab(ref.bind, en);
@@ -451,7 +453,7 @@ public final class SpecialMode extends AbstractSpecial {
                 return ((GoalTrace) u.contskel).back;
             case CODE_HEAD:
             case CODE_CHOP:
-                return ((Goal) u.contskel).def;
+                return u.contdisplay.def;
             default:
                 throw new IllegalArgumentException("illegal port");
         }

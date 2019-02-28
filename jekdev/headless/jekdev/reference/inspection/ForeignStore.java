@@ -4,26 +4,26 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.ResetableBit;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
 /**
- * <p>This module provides built-ins for store access.</p>
+ * The foreign predicates for the module system/group.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -53,82 +53,100 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialStore extends AbstractSpecial {
-    private final static int SPECIAL_SYS_STORE_PROPERTY = 0;
-    private final static int SPECIAL_SYS_STORE_PROPERTY_CHK = 1;
-    private final static int SPECIAL_SET_STORE_PROPERTY = 2;
-    private final static int SPECIAL_RESET_STORE_PROPERTY = 3;
-
-    private final static String OP_DOMAIN_STORE = "store";
+public final class ForeignStore {
 
     /**
-     * <p>Create a store special.</p>
+     * <p>Retrieve all the properties of a knowledge base.</p>
      *
-     * @param i The built-in ID.
+     * @param inter The interpreter.
+     * @param know  The knowledge base.
+     * @return The properties.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      */
-    public SpecialStore(int i) {
-        super(i);
+    public static Object sysStoreProperty(Interpreter inter,
+                                          Knowledgebase know)
+            throws InterpreterException, InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            boolean multi = storeToProperties((Store) know.getStore(), en);
+            Object res = AbstractTerm.createTerm(en.skel, en.display);
+            if (multi)
+                AbstractTerm.setMarker(res, new ResetableBit());
+            return res;
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
-     * <p>The new continuation is returned via the skel and display of the engine.</p>
+     * <p>Retrieve some properties of a knowledge base.</p>
      *
-     * @param en The engine.
-     * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @param inter The interpreter.
+     * @param know  The knowledge base.
+     * @param obj   The properties name.
+     * @return The properties.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      */
-    public final boolean moniFirst(Engine en)
-            throws EngineMessage, EngineException {
-        switch (id) {
-            case SPECIAL_SYS_STORE_PROPERTY:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                Knowledgebase know = derefAndCastStore(temp[0], ref);
-                boolean multi = storeToProperties((Store) know.getStore(), en);
-                Display d = en.display;
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
-            case SPECIAL_SYS_STORE_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                know = derefAndCastStore(temp[0], ref);
-                StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = storeToProperty((Store) know.getStore(), sk, en);
-                d = en.display;
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
-            case SPECIAL_SET_STORE_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                know = derefAndCastStore(temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                setStoreProp((Store) know.getStore(), en.skel, en.display, en);
-                return en.getNextRaw();
-            case SPECIAL_RESET_STORE_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                know = derefAndCastStore(temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                resetStoreProp((Store) know.getStore(), en.skel, en.display, en);
-                return en.getNextRaw();
-            default:
-                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+    public static Object sysStorePropertyChk(Interpreter inter,
+                                             Knowledgebase know, Object obj)
+            throws InterpreterException, InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(obj),
+                    AbstractTerm.getDisplay(obj), en);
+            boolean multi = storeToProperty((Store) know.getStore(), sk, en);
+            Object res = AbstractTerm.createTerm(en.skel, en.display);
+            if (multi)
+                AbstractTerm.setMarker(res, new ResetableBit());
+            return res;
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
+     * <p>Set some properties of a knowledge base.</p>
+     *
+     * @param inter The interpreter.
+     * @param know  The knowledge base.
+     * @param obj   The properties name and value.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    public static void sysSetStoreProperty(Interpreter inter,
+                                           Knowledgebase know, Object obj)
+            throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            setStoreProp((Store) know.getStore(),
+                    AbstractTerm.getSkel(obj), AbstractTerm.getDisplay(obj), en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
+     * <p>Set some properties of a knowledge base.</p>
+     *
+     * @param inter The interpreter.
+     * @param know  The knowledge base.
+     * @param obj   The properties name.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    public static void sysResetStoreProperty(Interpreter inter,
+                                             Knowledgebase know, Object obj)
+            throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            resetStoreProp((Store) know.getStore(),
+                    AbstractTerm.getSkel(obj), AbstractTerm.getDisplay(obj), en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
     }
 
@@ -147,7 +165,7 @@ public final class SpecialStore extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static boolean storeToProperties(Store store, Engine en)
+    public static boolean storeToProperties(Store store, Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
@@ -164,7 +182,7 @@ public final class SpecialStore extends AbstractSpecial {
             for (MapEntry<StoreKey, AbstractProperty<Store>> entry2 =
                  (props != null ? props.getLastEntry() : null);
                  entry2 != null; entry2 = props.predecessor(entry2)) {
-                AbstractProperty prop = entry2.value;
+                AbstractProperty<Store> prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
                 Object[] vals = prop.getObjProp(store, en);
@@ -189,7 +207,7 @@ public final class SpecialStore extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static boolean storeToProperty(Store store, StoreKey sk,
+    public static boolean storeToProperty(Store store, StoreKey sk,
                                            Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Store> prop = findStoreProperty(sk, en);
@@ -217,8 +235,9 @@ public final class SpecialStore extends AbstractSpecial {
     private static void setStoreProp(Store store,
                                      Object m, Display d, Engine en)
             throws EngineMessage {
+        EngineMessage.checkCallable(m, d);
         StoreKey sk = StackElement.callableToStoreKey(m);
-        AbstractProperty prop = findStoreProperty(sk, en);
+        AbstractProperty<Store> prop = findStoreProperty(sk, en);
         if (!prop.setObjProp(store, m, d, en))
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
@@ -240,14 +259,16 @@ public final class SpecialStore extends AbstractSpecial {
     private static void resetStoreProp(Store store,
                                        Object m, Display d, Engine en)
             throws EngineMessage {
+        EngineMessage.checkCallable(m, d);
         StoreKey sk = StackElement.callableToStoreKey(m);
-        AbstractProperty prop = findStoreProperty(sk, en);
+        AbstractProperty<Store> prop = findStoreProperty(sk, en);
         if (!prop.resetObjProp(store, m, d, en))
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
                     StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
     }
+
 
     /**
      * <p>Find a store property.</p>
@@ -260,7 +281,7 @@ public final class SpecialStore extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static AbstractProperty<Store> findStoreProperty(StoreKey sk,
-                                                      Engine en)
+                                                     Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
@@ -271,36 +292,13 @@ public final class SpecialStore extends AbstractSpecial {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<StoreKey, AbstractProperty<Store>> props = branch.getStoreProps();
-            AbstractProperty prop = (props != null ? props.get(sk) : null);
+            AbstractProperty<Store> prop = (props != null ? props.get(sk) : null);
             if (prop != null)
                 return prop;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
                 StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
-    }
-
-    /*******************************************************************/
-    /* Deref Utility                                                   */
-    /*******************************************************************/
-
-    /**
-     * <p>Cast a store.</p>
-     *
-     * @param m The term skel.
-     * @param d The term display.
-     * @return The szore.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Knowledgebase derefAndCastStore(Object m, Display d)
-            throws EngineMessage {
-        m = SpecialUniv.derefAndCastRef(m, d);
-        if (m instanceof Knowledgebase) {
-            return (Knowledgebase) m;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    OP_DOMAIN_STORE, m), d);
-        }
     }
 
 }

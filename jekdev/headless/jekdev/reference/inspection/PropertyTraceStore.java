@@ -1,4 +1,4 @@
-package jekdev.model.bugger;
+package jekdev.reference.inspection;
 
 import jekdev.model.pretty.StoreTrace;
 import jekpro.model.builtin.AbstractFlag;
@@ -70,7 +70,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      *
      * @return The store properties.
      */
-    static MapHash<StoreKey, AbstractProperty<Store>> defineStoreProps() {
+    public static MapHash<StoreKey, AbstractProperty<Store>> defineStoreProps() {
         MapHash<StoreKey, AbstractProperty<Store>> storeprops = new MapHash<StoreKey, AbstractProperty<Store>>();
         storeprops.add(new StoreKey(OP_SYS_BREAK, 2), new PropertyTraceStore(PROP_SYS_BREAK));
         storeprops.add(new StoreKey(OP_SYS_NAME, 1), new PropertyTraceStore(PROP_SYS_NAME));
@@ -207,19 +207,21 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
         en.skel = m;
         en.display = d;
         en.deref();
-        if (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(OP_SYS_BREAK)) {
-            SkelCompound sc = (SkelCompound) en.skel;
-            String orig = SpecialUniv.derefAndCastString(sc.args[0], en.display);
-            Number num = SpecialEval.derefAndCastInteger(sc.args[1], en.display);
+        m = en.skel;
+        d = en.display;
+        if (m instanceof SkelCompound &&
+                ((SkelCompound) m).args.length == 2 &&
+                ((SkelCompound) m).sym.fun.equals(OP_SYS_BREAK)) {
+            SkelCompound sc = (SkelCompound) m;
+            String orig = SpecialUniv.derefAndCastString(sc.args[0], d);
+            Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
             SpecialEval.checkNotLessThanZero(num);
             int line = SpecialEval.castIntValue(num);
             return new PositionKey(orig, line);
         } else {
-            EngineMessage.checkInstantiated(en.skel);
+            EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel), en.display);
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 
@@ -238,16 +240,18 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
         en.skel = m;
         en.display = d;
         en.deref();
-        if (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 1 &&
-                ((SkelCompound) en.skel).sym.fun.equals(OP_SYS_LASTMOD)) {
-            SkelCompound sc = (SkelCompound) en.skel;
-            Number num = SpecialEval.derefAndCastInteger(sc.args[0], en.display);
+        m = en.skel;
+        d = en.display;
+        if (m instanceof SkelCompound &&
+                ((SkelCompound) m).args.length == 1 &&
+                ((SkelCompound) m).sym.fun.equals(OP_SYS_LASTMOD)) {
+            SkelCompound sc = (SkelCompound) m;
+            Number num = SpecialEval.derefAndCastInteger(sc.args[0], d);
             return SpecialEval.castLongValue(num);
         } else {
-            EngineMessage.checkInstantiated(en.skel);
+            EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, en.skel), en.display);
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
 

@@ -8,6 +8,7 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.InterfaceStack;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
@@ -56,7 +57,6 @@ public final class FlagTrace extends AbstractFlag {
     public final static String OP_FLAG_SYS_CLAUSE_INSTRUMENT = "sys_clause_instrument";
     public final static String OP_FLAG_SYS_HEAD_WAKEUP = "sys_head_wakeup";
     public final static String OP_FLAG_SYS_SKIP_FRAME = "sys_skip_frame";
-    public final static String OP_FLAG_SYS_QUERY_FRAME = "sys_query_frame";
     public final static String OP_FLAG_SYS_CLOAK = "sys_cloak";
     public final static String OP_FLAG_SYS_MAX_STACK = "sys_max_stack";
 
@@ -69,9 +69,8 @@ public final class FlagTrace extends AbstractFlag {
     private static final int FLAG_SYS_CLAUSE_INSTRUMENT = 6;
     private static final int FLAG_SYS_HEAD_WAKEUP = 7;
     private static final int FLAG_SYS_SKIP_FRAME = 8;
-    private static final int FLAG_SYS_QUERY_FRAME = 9;
-    private static final int FLAG_SYS_CLOAK = 10;
-    private static final int FLAG_SYS_MAX_STACK = 11;
+    private static final int FLAG_SYS_CLOAK = 9;
+    private static final int FLAG_SYS_MAX_STACK = 10;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -98,7 +97,6 @@ public final class FlagTrace extends AbstractFlag {
         prologflags.add(OP_FLAG_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
         prologflags.add(OP_FLAG_SYS_HEAD_WAKEUP, new FlagTrace(FLAG_SYS_HEAD_WAKEUP));
         prologflags.add(OP_FLAG_SYS_SKIP_FRAME, new FlagTrace(FLAG_SYS_SKIP_FRAME));
-        prologflags.add(OP_FLAG_SYS_QUERY_FRAME, new FlagTrace(FLAG_SYS_QUERY_FRAME));
         prologflags.add(OP_FLAG_SYS_CLOAK, new FlagTrace(FLAG_SYS_CLOAK));
         prologflags.add(OP_FLAG_SYS_MAX_STACK, new FlagTrace(FLAG_SYS_MAX_STACK));
         return prologflags;
@@ -130,9 +128,6 @@ public final class FlagTrace extends AbstractFlag {
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
                 InterfaceStack frame = ((SupervisorTrace) en.visor).getSkipFrame();
-                return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
-            case FLAG_SYS_QUERY_FRAME:
-                frame = en.visor.ref;
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_CLOAK:
                 return AbstractFlag.switchToAtom((en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0);
@@ -191,10 +186,6 @@ public final class FlagTrace extends AbstractFlag {
                 case FLAG_SYS_SKIP_FRAME:
                     InterfaceStack frame = SpecialFrame.derefAndCastStackElement(m, d);
                     ((SupervisorTrace) en.visor).setSkipFrame(frame);
-                    return true;
-                case FLAG_SYS_QUERY_FRAME:
-                    frame = SpecialFrame.derefAndCastStackElement(m, d);
-                    en.visor.ref = frame;
                     return true;
                 case FLAG_SYS_CLOAK:
                     en.visor.setIgnore(AbstractFlag.atomToSwitch(m, d));

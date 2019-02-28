@@ -112,7 +112,7 @@ public final class SpecialSyntax extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.addOperProp(op, en.skel, en.display, en);
+                SpecialOper.setOperProp(op, en.skel, en.display, en);
                 return en.getNextRaw();
             case SPECIAL_RESET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -123,7 +123,7 @@ public final class SpecialSyntax extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.removeOperProp(op, en.skel, en.display, en);
+                SpecialOper.resetOperProp(op, en.skel, en.display, en);
                 return en.getNextRaw();
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);

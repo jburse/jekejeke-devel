@@ -49,8 +49,11 @@
 
 :- package(library(jekdev/reference/inspection)).
 :- use_package(foreign(jekdev/reference/inspection)).
+:- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/tools/term)).
 
 :- module(store, []).
+:- use_module(library(system/thread)).
 
 /**
  * store_property(F, P):
@@ -68,10 +71,12 @@ store_property(I, R) :-
    sys_member(R, P).
 
 :- private sys_store_property/2.
-:- special(sys_store_property/2, 'SpecialStore', 0).
+:- foreign(sys_store_property/2, 'ForeignStore',
+      sysStoreProperty('Interpreter','Knowledgebase')).
 
 :- private sys_store_property_chk/3.
-:- special(sys_store_property_chk/3, 'SpecialStore', 1).
+:- foreign(sys_store_property_chk/3, 'ForeignStore',
+      sysStorePropertyChk('Interpreter','Knowledgebase','Object')).
 
 /**
  * set_store_property(S, Q):
@@ -79,7 +84,8 @@ store_property(I, R) :-
  */
 % set_store_property(+Oper, +Property)
 :- public set_store_property/2.
-:- special(set_store_property/2, 'SpecialFrame', 2).
+:- foreign(set_store_property/2, 'ForeignStore',
+      sysSetStoreProperty('Interpreter','Knowledgebase','Object')).
 
 /**
  * reset_store_property(S, Q):
@@ -87,7 +93,8 @@ store_property(I, R) :-
  */
 % reset_store_property(+Oper, +Property)
 :- public reset_store_property/2.
-:- special(reset_store_property/2, 'SpecialFrame', 3).
+:- foreign(reset_store_property/2, 'ForeignStore',
+      sysResetStoreProperty('Interpreter','Knowledgebase','Object')).
 
 /**
  * stores:
