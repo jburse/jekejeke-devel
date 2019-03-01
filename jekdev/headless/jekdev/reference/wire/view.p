@@ -1,5 +1,5 @@
 /**
- * The base class for a monitor.
+ * The base class for a thread monitor.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -62,8 +62,8 @@ dispatch(_, '/source.jsp', Request, Session) :- !,
    dispatch_source(Request, Session).
 dispatch(Object, '/stack.jsp', Request, Session) :- !,
    dispatch_stack(Object, Request, Session).
-dispatch(Object, '/thread.jsp', _, Session) :- !,
-   dispatch_thread(Object, Session).
+dispatch(Object, '/thread.jsp', Request, Session) :- !,
+   dispatch_thread(Object, Request, Session).
 
 /**
  * upgrade(O, P, R, S):

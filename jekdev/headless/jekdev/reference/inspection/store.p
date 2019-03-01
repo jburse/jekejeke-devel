@@ -17,6 +17,8 @@
  * Knowledge base properties can be query by the predicate
  * store_property/2. The predicates set_store_property/2 and
  * reset_store_property/2 serve updating knowledge base properties.
+ * The predicate current_store/1 can be used to enumerate the
+ * managed knowledge bases.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
