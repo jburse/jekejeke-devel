@@ -41,9 +41,9 @@ public class AbstractProperty<T> {
     protected final int id;
 
     /**
-     * <p>Create a flag.</p>
+     * <p>Create a property.</p>
      *
-     * @param i The id of the flag.
+     * @param i The id of the property.
      */
     protected AbstractProperty(int i) {
         id = i;

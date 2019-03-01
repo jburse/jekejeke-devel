@@ -1,7 +1,9 @@
 package jekpro.reference.reflect;
 
+import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
+import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -18,9 +20,11 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.TermCompound;
+import matula.comp.sharik.AbstractBundle;
+import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 
 /**
  * <p>Provides built-in predicates for the operators.</p>
@@ -75,7 +79,6 @@ public final class SpecialOper extends AbstractSpecial {
     private final static String OP_MODE = "mode";
     public final static String OP_VISIBLE = "visible";
     public final static String OP_OVERRIDE = "override";
-    public final static String OP_SYS_CONTEXT = "sys_context";
     public final static String OP_SYS_USAGE = "sys_usage";
     public final static String OP_SYS_PORTRAY = "sys_portray";
     public final static String OP_SYS_ALIAS = "sys_alias";
@@ -153,7 +156,7 @@ public final class SpecialOper extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = operToProperty(prop, oper, en);
+                multi = operToProperty(oper, prop, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
@@ -181,7 +184,7 @@ public final class SpecialOper extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                removeOperProp(oper, en.skel, en.display, en);
+                resetOperProp(oper, en.skel, en.display, en);
                 return en.getNextRaw();
             case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -190,7 +193,7 @@ public final class SpecialOper extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialOper.operToProperty(prop, oper, en);
+                multi = SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
@@ -291,26 +294,37 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Create a prolog list for the properties of the given operator.</p>
      * <p>Result is returned in skeleton and display.</p>
      *
-     * @param op The operator.
-     * @param en The engine.
+     * @param oper The operator.
+     * @param en   The engine.
      * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean operToProperties(Operator op,
+    public static boolean operToProperties(Operator oper,
                                            Engine en)
-            throws EngineMessage {
+            throws EngineMessage, EngineException {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         boolean multi = false;
-        StoreKey[] keys = listOperProp();
-        for (int j = keys.length - 1; j >= 0; j--) {
-            StoreKey key = keys[j];
-            Object t = en.skel;
-            Display d = en.display;
-            Object[] vals = getOperProp(op, key, en);
-            en.skel = t;
-            en.display = d;
-            multi = AbstractInformation.consArray(multi, vals, en);
+        for (int i = snapshot.length - 1; i >= 0; i--) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            for (MapEntry<StoreKey, AbstractProperty<Operator>> entry2 =
+                 (props != null ? props.getLastEntry() : null);
+                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                AbstractProperty<Operator> prop = entry2.value;
+                Object t = en.skel;
+                Display d = en.display;
+                Object[] vals = prop.getObjProp(oper, en);
+                en.skel = t;
+                en.display = d;
+                multi = AbstractInformation.consArray(multi, vals, en);
+            }
         }
         return multi;
     }
@@ -319,16 +333,18 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Create a prolog list for the property of the given operator.</p>
      * <p>Result is returned in skeleton and display.</p>
      *
-     * @param key The property.
-     * @param op  The operator.
-     * @param en  The engine.
+     * @param oper The operator.
+     * @param sk   The property.
+     * @param en   The engine.
      * @return The multi flag.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
-    public static boolean operToProperty(StoreKey key, Operator op,
+    public static boolean operToProperty(Operator oper, StoreKey sk,
                                          Engine en)
-            throws EngineMessage {
-        Object[] vals = getOperProp(op, key, en);
+            throws EngineMessage, EngineException {
+        AbstractProperty<Operator> prop = SpecialOper.findOperProperty(sk, en);
+        Object[] vals = prop.getObjProp(oper, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         return AbstractInformation.consArray(false, vals, en);
@@ -339,41 +355,78 @@ public final class SpecialOper extends AbstractSpecial {
     /***********************************************************************/
 
     /**
-     * <p>Reset an operator property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param op The operator.
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void removeOperProp(Operator op, Object t, Display d,
-                                       Engine en)
-            throws EngineMessage {
-        StoreKey sk = StackElement.callableToStoreKey(t);
-        Object[] vals = getOperProp(op, sk, en);
-        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(t, d));
-        setOperProp(sk, op, vals, en);
-    }
-
-    /**
      * <p>Set an operator property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param op The operator.
-     * @param t  The value skeleton.
+     * @param oper The operator.
+     * @param m  The value skeleton.
      * @param d  The value display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void addOperProp(Operator op, Object t, Display d,
-                                   Engine en)
+    public static void setOperProp(Operator oper,
+                                   Object m, Display d, Engine en)
             throws EngineMessage {
-        StoreKey sk = StackElement.callableToStoreKey(t);
-        Object[] vals = getOperProp(op, sk, en);
-        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(t, d));
-        setOperProp(sk, op, vals, en);
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Operator> prop = findOperProperty(sk, en);
+        if (!prop.setObjProp(oper, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+    }
+
+    /**
+     * <p>Reset an operator property.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     *
+     * @param oper The operator.
+     * @param m  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void resetOperProp(Operator oper,
+                                     Object m, Display d, Engine en)
+            throws EngineMessage {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Operator> prop = findOperProperty(sk, en);
+        if (!prop.resetObjProp(oper, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+    }
+
+    /**
+     * <p>Find a operator property.</p>
+     * <p>Throws a domain error for undefined display properties.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param sk The property.
+     * @param en The engine.
+     * @return The operator property.
+     * @throws EngineMessage Shit happens.
+     */
+    private static AbstractProperty<Operator> findOperProperty(StoreKey sk,
+                                                               Engine en)
+            throws EngineMessage {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            AbstractProperty<Operator> prop = (props != null ? props.get(sk) : null);
+            if (prop != null)
+                return prop;
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
+                StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
     }
 
     /***********************************************************************/
@@ -413,18 +466,6 @@ public final class SpecialOper extends AbstractSpecial {
     private static final StoreKey KEY_SYS_PORTRAY = new StoreKey(OP_SYS_PORTRAY, 1);
     private static final StoreKey KEY_SYS_ALIAS = new StoreKey(OP_SYS_ALIAS, 1);
 
-    private final static StoreKey[] OP_OPER_PROPS = {
-            KEY_NSPL,
-            KEY_NSPR,
-            KEY_VISIBLE,
-            KEY_LEVEL,
-            KEY_MODE,
-            KEY_FULL_NAME,
-            KEY_OVERRIDE,
-            KEY_SYS_USAGE,
-            KEY_SYS_PORTRAY,
-            KEY_SYS_ALIAS};
-
     /**
      * <p>Create a syntax special.</p>
      *
@@ -432,271 +473,6 @@ public final class SpecialOper extends AbstractSpecial {
      */
     public SpecialOper(int i) {
         super(i);
-    }
-
-    /**
-     * <p>Retrieve the list of operator properties.</p>
-     *
-     * @return The operator properties.
-     */
-    public static StoreKey[] listOperProp() {
-        return OP_OPER_PROPS;
-    }
-
-    /**
-     * <p>Retrieve some property of an operator.</p>
-     *
-     * @param oper The operator.
-     * @param prop The property.
-     * @param en   The engine.
-     * @return The values.
-     * @throws EngineMessage Shit happends.
-     */
-    private static Object[] getOperProp(Operator oper, StoreKey prop,
-                                        Engine en)
-            throws EngineMessage {
-        if (KEY_FULL_NAME.equals(prop)) {
-            Object val = new SkelAtom(oper.getKey());
-            return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                    new SkelAtom(OP_FULL_NAME), val), Display.DISPLAY_CONST)};
-        } else if (KEY_NSPL.equals(prop)) {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
-                return new Object[]{new SkelAtom(OP_NSPL)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_NSPR.equals(prop)) {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPR) != 0) {
-                return new Object[]{new SkelAtom(OP_NSPR)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_LEVEL.equals(prop)) {
-            int level = oper.getLevel();
-            if (level != 0) {
-                Object val = Integer.valueOf(oper.getLevel());
-                return new Object[]{AbstractTerm.createMolec(
-                        new SkelCompound(new SkelAtom(OP_LEVEL), val), Display.DISPLAY_CONST)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_MODE.equals(prop)) {
-            int flags = oper.getBits();
-            if ((flags & Operator.MASK_OPER_DEFI) != 0) {
-                Object val = new SkelAtom(leftRightTypeToAtom(
-                        flags & Operator.MASK_OPER_MODE, oper.getType()));
-                return new Object[]{AbstractTerm.createMolec(
-                        new SkelCompound(new SkelAtom(OP_MODE), val), Display.DISPLAY_CONST)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_VISIBLE.equals(prop)) {
-            int flags = oper.getBits();
-            if ((flags & Operator.MASK_OPER_VSPR) != 0) {
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(OP_VISIBLE),
-                        new SkelAtom(AbstractSource.OP_PRIVATE)), Display.DISPLAY_CONST)};
-            } else if ((flags & Operator.MASK_OPER_VSPU) != 0) {
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(OP_VISIBLE),
-                        new SkelAtom(AbstractSource.OP_PUBLIC)), Display.DISPLAY_CONST)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_OVERRIDE.equals(prop)) {
-            if ((oper.getBits() & Operator.MASK_OPER_OVRD) != 0) {
-                return new Object[]{new SkelAtom(OP_OVERRIDE)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_SYS_USAGE.equals(prop)) {
-            AbstractSource src = oper.getScope();
-            if (src == null)
-                return AbstractBranch.FALSE_PROPERTY;
-            if (!Clause.ancestorSource(src, en))
-                return AbstractBranch.FALSE_PROPERTY;
-            return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                    new SkelAtom(SpecialOper.OP_SYS_USAGE),
-                    src.getPathAtom()), Display.DISPLAY_CONST)};
-        } else if (KEY_SYS_PORTRAY.equals(prop)) {
-            String portray = oper.getPortray();
-            if (portray != null) {
-                SkelAtom val = new SkelAtom(portray);
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(OP_SYS_PORTRAY), val), Display.DISPLAY_CONST)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else if (KEY_SYS_ALIAS.equals(prop)) {
-            String alias = oper.getAlias();
-            if (alias != null) {
-                SkelAtom val = new SkelAtom(alias);
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(OP_SYS_ALIAS), val), Display.DISPLAY_CONST)};
-            } else {
-                return AbstractBranch.FALSE_PROPERTY;
-            }
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-        }
-    }
-
-    /**
-     * <p>Set some property of an operator.</p>
-     *
-     * @param prop The property.
-     * @param op   The operator.
-     * @param vals The values.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happends.
-     */
-    private static void setOperProp(StoreKey prop, Operator op,
-                                    Object[] vals, Engine en)
-            throws EngineMessage {
-        try {
-            if (KEY_FULL_NAME.equals(prop)) {
-                /* can't modify */
-            } else if (KEY_NSPL.equals(prop)) {
-                if (vals.length != 0) {
-                    op.setBit(Operator.MASK_OPER_NSPL);
-                } else {
-                    op.resetBit(Operator.MASK_OPER_NSPL);
-                }
-                return;
-            } else if (KEY_NSPR.equals(prop)) {
-                if (vals.length != 0) {
-                    op.setBit(Operator.MASK_OPER_NSPR);
-                } else {
-                    op.resetBit(Operator.MASK_OPER_NSPR);
-                }
-                return;
-            } else if (KEY_LEVEL.equals(prop)) {
-                int level;
-                if (vals.length != 0) {
-                    Object molec = vals[vals.length - 1];
-                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                    Number num = SpecialEval.derefAndCastInteger(sc.args[0], AbstractTerm.getDisplay(molec));
-                    SpecialEval.checkNotLessThanZero(num);
-                    level = SpecialEval.castIntValue(num);
-                    SpecialOper.checkOperatorLevel(level);
-                    if (vals.length > 1)
-                        throw new EngineMessage(EngineMessage.permissionError(
-                                EngineMessage.OP_PERMISSION_ADD,
-                                EngineMessage.OP_PERMISSION_VALUE,
-                                new SkelCompound(new SkelAtom(OP_LEVEL),
-                                        Integer.valueOf(level))));
-                } else {
-                    level = 0;
-                }
-                op.setLevel(level);
-                return;
-            } else if (KEY_MODE.equals(prop)) {
-                int leftright;
-                if (vals.length != 0) {
-                    Object molec = vals[vals.length - 1];
-                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                    String fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
-                    leftright = SpecialOper.atomToLeftRight(fun);
-                    if (vals.length > 1)
-                        throw new EngineMessage(EngineMessage.permissionError(
-                                EngineMessage.OP_PERMISSION_ADD,
-                                EngineMessage.OP_PERMISSION_VALUE,
-                                new SkelCompound(new SkelAtom(OP_MODE),
-                                        new SkelAtom(fun))));
-                } else {
-                    leftright = 0;
-                }
-                op.resetBit(Operator.MASK_OPER_MODE);
-                op.setBit(leftright);
-                return;
-            } else if (KEY_VISIBLE.equals(prop)) {
-                String fun;
-                if (vals.length != 0) {
-                    Object molec = vals[vals.length - 1];
-                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                    fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
-                    if (vals.length > 1)
-                        throw new EngineMessage(EngineMessage.permissionError(
-                                EngineMessage.OP_PERMISSION_ADD,
-                                EngineMessage.OP_PERMISSION_VALUE,
-                                new SkelCompound(new SkelAtom(OP_VISIBLE),
-                                        new SkelAtom(fun))));
-                } else {
-                    fun = null;
-                }
-                if (AbstractSource.OP_PRIVATE.equals(fun)) {
-                    op.setBit(Operator.MASK_OPER_VSPR);
-                    op.resetBit(Operator.MASK_OPER_VSPU);
-                } else if (AbstractSource.OP_PUBLIC.equals(fun)) {
-                    op.setBit(Operator.MASK_OPER_VSPU);
-                    op.resetBit(Operator.MASK_OPER_VSPR);
-                } else if (fun == null) {
-                    op.resetBit(Operator.MASK_OPER_VSPR);
-                    op.resetBit(Operator.MASK_OPER_VSPU);
-                } else {
-                    throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_PROPERTY_VALUE,
-                            new SkelAtom(fun)));
-                }
-                return;
-            } else if (KEY_OVERRIDE.equals(prop)) {
-                if (vals.length != 0) {
-                    op.setBit(Operator.MASK_OPER_OVRD);
-                } else {
-                    op.resetBit(Operator.MASK_OPER_OVRD);
-                }
-                return;
-            } else if (KEY_SYS_USAGE.equals(prop)) {
-                /* can't modify */
-            } else if (KEY_SYS_PORTRAY.equals(prop)) {
-                String fun;
-                if (vals.length != 0) {
-                    Object molec = vals[vals.length - 1];
-                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                    fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
-                    if (vals.length > 1)
-                        throw new EngineMessage(EngineMessage.permissionError(
-                                EngineMessage.OP_PERMISSION_ADD,
-                                EngineMessage.OP_PERMISSION_VALUE,
-                                new SkelCompound(new SkelAtom(OP_SYS_PORTRAY),
-                                        new SkelAtom(fun))));
-                } else {
-                    fun = null;
-                }
-                op.setPortray(fun);
-                return;
-            } else if (KEY_SYS_ALIAS.equals(prop)) {
-                String fun;
-                if (vals.length != 0) {
-                    Object molec = vals[vals.length - 1];
-                    SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(molec);
-                    fun = SpecialUniv.derefAndCastString(sc.args[0], AbstractTerm.getDisplay(molec));
-                    if (vals.length > 1)
-                        throw new EngineMessage(EngineMessage.permissionError(
-                                EngineMessage.OP_PERMISSION_ADD,
-                                EngineMessage.OP_PERMISSION_VALUE,
-                                new SkelCompound(new SkelAtom(OP_SYS_ALIAS),
-                                        new SkelAtom(fun))));
-                } else {
-                    fun = null;
-                }
-                op.setAlias(fun);
-                return;
-            } else {
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                        StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-            }
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
-        }
     }
 
     /**
@@ -746,13 +522,13 @@ public final class SpecialOper extends AbstractSpecial {
     /*************************************************************************/
 
     /**
-     * <p>Convert a leftright and type to an atom</p>
+     * <p>Convert a mode and type to an atom</p>
      *
      * @param leftright The leftright.
      * @param type      The type.
      * @return The atom.
      */
-    public static String leftRightTypeToAtom(int leftright, int type) {
+    public static String modeTypeToAtom(int leftright, int type) {
         switch (type) {
             case Operator.TYPE_PREFIX:
                 if ((leftright & Operator.MASK_OPER_RGHT) != 0) {
@@ -782,39 +558,39 @@ public final class SpecialOper extends AbstractSpecial {
     }
 
     /**
-     * <p>Decode an operator left right.</p>
+     * <p>Decode an operator mode.</p>
      * <p>The following syntax is recognized:</p>
      * <pre>
      *     mode = "fx" | "fy" | "xfx" | "xfy" | "yfx" | "xf" | "yf".
      * </pre>
      *
      * @param modestr The mode string.
-     * @return The left right.
+     * @return The operator mode.
      * @throws EngineMessage Shit happens.
      */
-    public static int atomToLeftRight(String modestr)
+    public static int atomToMode(String modestr)
             throws EngineMessage {
-        int leftright;
+        int mode;
         if (modestr.equals(OP_FX)) {
-            leftright = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_RGHT;
+            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_RGHT;
         } else if (modestr.equals(OP_FY)) {
-            leftright = Operator.MASK_OPER_DEFI;
+            mode = Operator.MASK_OPER_DEFI;
         } else if (modestr.equals(OP_XFX)) {
-            leftright = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT + Operator.MASK_OPER_RGHT;
+            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT + Operator.MASK_OPER_RGHT;
         } else if (modestr.equals(OP_XFY)) {
-            leftright = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT;
+            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT;
         } else if (modestr.equals(OP_YFX)) {
-            leftright = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_RGHT;
+            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_RGHT;
         } else if (modestr.equals(OP_XF)) {
-            leftright = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT;
+            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT;
         } else if (modestr.equals(OP_YF)) {
-            leftright = Operator.MASK_OPER_DEFI;
+            mode = Operator.MASK_OPER_DEFI;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_OPERATOR_SPECIFIER,
                     new SkelAtom(modestr)));
         }
-        return leftright;
+        return mode;
     }
 
     /**
@@ -825,7 +601,7 @@ public final class SpecialOper extends AbstractSpecial {
      * </pre>
      *
      * @param modestr The mode string.
-     * @return The type.
+     * @return The operator type.
      * @throws EngineMessage Shit happens.
      */
     public static int atomToType(String modestr)
@@ -851,6 +627,32 @@ public final class SpecialOper extends AbstractSpecial {
                     new SkelAtom(modestr)));
         }
         return type;
+    }
+
+    /**
+     * <p>Decode an operator visibility.</p>
+     * <p>The following syntax is recognized:</p>
+     * <pre>
+     *     mode = "private" | "public"".
+     * </pre>
+     *
+     * @param fun The visibility string.
+     * @return The operator visibility.
+     * @throws EngineMessage Shit happens.
+     */
+    public static int atomToVisible(String fun)
+            throws EngineMessage {
+        int flags;
+        if (AbstractSource.OP_PRIVATE.equals(fun)) {
+            flags = Operator.MASK_OPER_VSPR;
+        } else if (AbstractSource.OP_PUBLIC.equals(fun)) {
+            flags = Operator.MASK_OPER_VSPU;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_PROPERTY_VALUE,
+                    new SkelAtom(fun)));
+        }
+        return flags;
     }
 
     /*************************************************************************/

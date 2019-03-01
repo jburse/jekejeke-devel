@@ -1,14 +1,15 @@
 package jekpro.frequent.system;
 
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Lobby;
-import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.Fence;
+import matula.util.wire.ManagedGroup;
 
 /**
  * The foreign predicates for the module system/group.
@@ -44,17 +45,12 @@ import matula.util.wire.Fence;
 public final class ForeignGroup {
     private final static String OP_SYS_GROUP_NAME = "sys_group_name";
     private final static String OP_SYS_GROUP_GROUP = "sys_group_group";
+    private final static String OP_SYS_GROUP_STORE = "sys_group_store";
 
     private final static String[] OP_PROPS = {
             OP_SYS_GROUP_NAME,
-            OP_SYS_GROUP_GROUP};
-
-    /* For autonumbering anonymous groups. */
-    private static int groupInitNumber;
-
-    private static synchronized int nextGroupNum() {
-        return groupInitNumber++;
-    }
+            OP_SYS_GROUP_GROUP,
+            OP_SYS_GROUP_STORE};
 
     /****************************************************************/
     /* Group Creation                                               */
@@ -63,10 +59,12 @@ public final class ForeignGroup {
     /**
      * <p>Create a new annoymous thread group.</p>
      *
+     * @param inter The interpreter.
      * @return The new annonymous trhead group.
      */
-    public static ThreadGroup sysGroupNew() {
-        ThreadGroup tg = new ThreadGroup("Group-" + nextGroupNum());
+    public static ThreadGroup sysGroupNew(Interpreter inter) {
+        Store store = (Store) inter.getKnowledgebase().getStore();
+        ThreadGroup tg = new ManagedGroup(store);
         tg.setDaemon(true);
         return tg;
     }
@@ -225,7 +223,10 @@ public final class ForeignGroup {
             return tg.getName();
         } else if (OP_SYS_GROUP_GROUP.equals(name)) {
             ThreadGroup val = tg.getParent();
-            return (val != null ? val : new SkelAtom(AbstractFlag.OP_NULL));
+            return (val != null ? val : AbstractFlag.OP_NULL);
+        } else if (OP_SYS_GROUP_STORE.equals(name)) {
+            Object val = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
+            return (val != null ? ((Store)val).proxy : AbstractFlag.OP_NULL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
@@ -239,15 +240,15 @@ public final class ForeignGroup {
     /**
      * <p>Retrieve the managed threads.</p>
      *
-     * @param co The call out.
+     * @param co    The call out.
      * @param inter The interpreter.
-     * @return The Prolog list of managed threads.
+     * @return The managed thread.
      */
-    public static Object sysCurrentThread(CallOut co, Interpreter inter) {
+    public static Thread sysCurrentThread(CallOut co, Interpreter inter) {
         ArrayEnumeration<Thread> dc;
         if (co.getFirst()) {
-            Lobby lobby = inter.getKnowledgebase().getLobby();
-            dc = new ArrayEnumeration<Thread>(snapshotManagedThreads(lobby));
+            Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
+            dc = new ArrayEnumeration<Thread>(snapshotManagedThreads(foyer));
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<Thread>) co.getData();
@@ -262,19 +263,19 @@ public final class ForeignGroup {
     /**
      * <p>Compute a snapshot of the managed threads.</p>
      *
-     * @param lobby The lobby.
-     * @return The managed thread.
+     * @param foyer The foyer.
+     * @return The managed threads.
      */
-    private static Thread[] snapshotManagedThreads(Lobby lobby) {
+    private static Thread[] snapshotManagedThreads(Foyer foyer) {
         ListArray<Thread> list = new ListArray<Thread>();
         MapEntry<Thread, AbstractLivestock>[] snapshot = Fence.DEFAULT.snapshotLivestocks();
         for (int i = snapshot.length - 1; i >= 0; i--) {
             AbstractLivestock al = snapshot[i].value;
-            if (al.source != lobby.getFoyer())
+            if (al.source != foyer)
                 continue;
             list.add(snapshot[i].key);
         }
-        Thread[] res=new Thread[list.size()];
+        Thread[] res = new Thread[list.size()];
         list.toArray(res);
         return res;
     }
@@ -287,9 +288,9 @@ public final class ForeignGroup {
      * @return True if the thread is managed, otherwise false.
      */
     public static boolean sysCurrentThreadChk(Interpreter inter, Thread t) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
         AbstractLivestock al = Fence.DEFAULT.getLivestock(t);
-        return (al != null && al.source == lobby.getFoyer());
+        return (al != null && al.source == foyer);
     }
 
     /****************************************************************/

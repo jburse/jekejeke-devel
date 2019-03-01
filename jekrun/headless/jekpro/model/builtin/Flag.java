@@ -159,7 +159,7 @@ public final class Flag extends AbstractFlag {
             case FLAG_SYS_LAST_PRED:
                 StoreKey sk = en.visor.lastsk;
                 if (sk == null) {
-                    return new SkelAtom(AbstractFlag.OP_NULL);
+                    return AbstractFlag.OP_NULL;
                 } else {
                     return StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity());
                 }

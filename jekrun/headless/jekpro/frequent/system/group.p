@@ -70,7 +70,7 @@
  */
 % group_new(-Group)
 :- public group_new/1.
-:- foreign(group_new/1, 'ForeignGroup', sysGroupNew).
+:- foreign(group_new/1, 'ForeignGroup', sysGroupNew('Interpreter')).
 
 /**
  * thread_new(G, C, T):

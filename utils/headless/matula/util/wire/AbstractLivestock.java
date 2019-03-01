@@ -94,6 +94,16 @@ public abstract class AbstractLivestock extends AbstractDomestic {
     /****************************************************************/
 
     /**
+     * <p>Peek the signal.</p>
+     *
+     * @return The signal.
+     */
+    public static Object sysThreadGet() {
+        Thread t = Thread.currentThread();
+        return liveGetSignal(t);
+    }
+
+    /**
      * <p>Clear the signal.</p>
      *
      * @return The old signal, can be null.
@@ -128,7 +138,7 @@ public abstract class AbstractLivestock extends AbstractDomestic {
      * @param t The the thread.
      * @return The signal, can be null.
      */
-    public static Object liveGetSignal(Thread t) {
+    private static Object liveGetSignal(Thread t) {
         AbstractLivestock live = currentLivestock(t);
         if (live == null)
             return null;

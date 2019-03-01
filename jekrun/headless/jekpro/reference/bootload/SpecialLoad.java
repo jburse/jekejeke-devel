@@ -509,7 +509,7 @@ public final class SpecialLoad extends AbstractSpecial {
             } else {
                 Object[] newargs = new Object[sc.args.length - 1];
                 System.arraycopy(sc.args, 1, newargs, 0, newargs.length);
-                res.add(AbstractTerm.createTerm(new SkelCompound(sc.sym, newargs),
+                res.add(AbstractTerm.createMolec(new SkelCompound(sc.sym, newargs),
                         AbstractTerm.getDisplay(val2)));
             }
         }

@@ -136,7 +136,7 @@ public final class FlagFactory extends AbstractFlag {
                 return en.visor.curerror;
             case FLAG_SYS_ATTACHED_TO:
                 Object val = en.visor.attachedto;
-                return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
+                return val != null ? val : AbstractFlag.OP_NULL;
             case FLAG_BASE_URL:
                 String path = en.store.getBase();
                 return new SkelAtom(path != null ? path : "");
@@ -144,7 +144,7 @@ public final class FlagFactory extends AbstractFlag {
                 return new SkelAtom(en.store.foyer.locale.toString());
             case FLAG_SYS_GOOD_FOR:
                 val = en.store.foyer.goodfor;
-                return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
+                return val != null ? val : AbstractFlag.OP_NULL;
             case FLAG_SYS_CPU_COUNT:
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
             case FLAG_SYS_RUNTIME_VERSION:
@@ -188,7 +188,7 @@ public final class FlagFactory extends AbstractFlag {
                 return en.store.foyer.getFactory().toolerror;
             case FLAG_SYS_BELONGS_TO:
                 val = en.store.belongsto;
-                return val != null ? val : new SkelAtom(AbstractFlag.OP_NULL);
+                return val != null ? val : AbstractFlag.OP_NULL;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
