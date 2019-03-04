@@ -8,10 +8,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 
 /**
  * <p>This is the base class for all predicate delegates. It also
@@ -204,16 +201,14 @@ public abstract class AbstractDelegate {
             en.display = ref;
             en.deref();
             Object val = AbstractTerm.createMolec(en.skel, en.display);
-            if (EngineCopy.getVar(en.skel) != null)
-                AbstractTerm.setMarker(val, Boolean.FALSE);
             args[i] = val;
             i++;
         }
         for (; i < help.length; i++) {
             boolean multi = en.computeExpr(help[i], ref);
             Object val = AbstractTerm.createMolec(en.skel, en.display);
-            if (EngineCopy.getVar(en.skel) != null)
-                AbstractTerm.setMarker(val, Boolean.valueOf(multi));
+            if (multi)
+                AbstractTerm.setMarker(val, new ResetableBit());
             args[i] = val;
         }
         return args;
@@ -256,12 +251,14 @@ public abstract class AbstractDelegate {
             Object temp = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(temp) != null) {
                 Display ref2 = AbstractTerm.getDisplay(obj);
-                boolean multi = ((Boolean) AbstractTerm.getMarker(obj)).booleanValue();
                 SkelVar sv = vars[countvar];
                 countvar++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
-                if (multi)
+                ResetableBit check = AbstractTerm.getMarker(obj);
+                if (check !=null && check.getBit()) {
                     BindCount.remTab(ref2.bind, en);
+                    check.resetBit();
+                }
                 args[i] = sv;
             } else {
                 args[i] = temp;

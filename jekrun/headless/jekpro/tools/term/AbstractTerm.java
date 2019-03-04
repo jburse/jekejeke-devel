@@ -191,7 +191,7 @@ public abstract class AbstractTerm {
      * @param t The term.
      * @param m The multi flag.
      */
-    public static void setMarker(Object t, Object m) {
+    public static void setMarker(Object t, ResetableBit m) {
         if (t instanceof TermVar) {
             ((TermVar) t).marker = m;
         } else if (t instanceof TermCompound) {
@@ -207,7 +207,7 @@ public abstract class AbstractTerm {
      * @param t The term.
      * @return The multi flag.
      */
-    public static Object getMarker(Object t) {
+    public static ResetableBit getMarker(Object t) {
         if (t instanceof TermVar) {
             return ((TermVar) t).marker;
         } else if (t instanceof TermCompound) {

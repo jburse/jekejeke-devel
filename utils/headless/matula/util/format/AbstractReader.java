@@ -116,6 +116,7 @@ public abstract class AbstractReader {
         if ((mask & AbstractDom.MASK_LIST) != 0) {
             DomElement de = (DomElement) node;
             ListArray<AbstractDom> cs = dr.loadNodes();
+            de.setName("");
             de.setChildrenFast(cs);
         } else {
             dr.nextTagOrText();
@@ -150,6 +151,7 @@ public abstract class AbstractReader {
         if ((mask & AbstractDom.MASK_LIST) != 0) {
             DomElement de = (DomElement) node;
             ListArray<AbstractDom> cs = dr.loadNodes();
+            de.setName("");
             de.setChildrenFast(cs);
         } else {
             dr.nextTagOrText();

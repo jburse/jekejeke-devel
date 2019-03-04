@@ -140,10 +140,10 @@ final class MemberFieldGet extends AbstractMember {
                 !en.unifyTerm(temp[temp.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
-        Object check = AbstractTerm.getMarker(res);
-        if (check != null && ((ResetableBit) check).getBit()) {
+        ResetableBit check = AbstractTerm.getMarker(res);
+        if (check != null && check.getBit()) {
             BindCount.remTab(d.bind, en);
-            ((ResetableBit) check).resetBit();
+            check.resetBit();
         }
         return en.getNext();
     }

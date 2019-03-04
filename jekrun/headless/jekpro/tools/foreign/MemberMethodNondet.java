@@ -166,10 +166,10 @@ final class MemberMethodNondet extends AbstractMember {
                 co.flags &= ~CallOut.MASK_CALL_SPECI;
                 co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
-                Object check = AbstractTerm.getMarker(res);
-                if (check != null && ((ResetableBit) check).getBit()) {
+                ResetableBit check = AbstractTerm.getMarker(res);
+                if (check != null && check.getBit()) {
                     BindCount.remTab(d.bind, en);
-                    ((ResetableBit) check).resetBit();
+                    check.resetBit();
                 }
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     ChoiceForeign cp = new ChoiceForeign(en.choices);

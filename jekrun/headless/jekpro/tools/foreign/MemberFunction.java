@@ -139,8 +139,8 @@ final class MemberFunction extends AbstractMember {
                     AbstractFactory.OP_REPRESENTATION_NULL));
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
-        Object check = AbstractTerm.getMarker(res);
-        return (check != null && ((ResetableBit) check).getBit());
+        ResetableBit check = AbstractTerm.getMarker(res);
+        return (check != null && check.getBit());
     }
 
     /***************************************************************/

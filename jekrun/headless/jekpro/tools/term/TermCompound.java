@@ -59,7 +59,7 @@ import jekpro.tools.call.Interpreter;
 public final class TermCompound extends AbstractTerm {
     final SkelCompound skel;
     final Display display;
-    Object marker;
+    ResetableBit marker;
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -284,13 +284,13 @@ public final class TermCompound extends AbstractTerm {
      */
     private Display makeCount(Object[] args) {
         Display last = Display.DISPLAY_CONST;
-        Object check = null;
+        ResetableBit check = null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             Object t = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
-                Object c = AbstractTerm.getMarker(obj);
+                ResetableBit c = AbstractTerm.getMarker(obj);
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
                     check = c;
@@ -320,7 +320,7 @@ public final class TermCompound extends AbstractTerm {
         int countvar = 0;
         boolean multi = false;
         Display last = Display.DISPLAY_CONST;
-        Object check = null;
+        ResetableBit check = null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             /* fast lane */
@@ -330,7 +330,7 @@ public final class TermCompound extends AbstractTerm {
             Object t = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
-                Object c = AbstractTerm.getMarker(obj);
+                ResetableBit c = AbstractTerm.getMarker(obj);
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
@@ -379,10 +379,10 @@ public final class TermCompound extends AbstractTerm {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 d3.bind[sv.id].bindVar(t, d, en);
-                Object check = AbstractTerm.getMarker(obj);
-                if (check != null && ((ResetableBit) check).getBit()) {
+                ResetableBit check = AbstractTerm.getMarker(obj);
+                if (check != null && check.getBit()) {
                     BindCount.remTab(d.bind, en);
-                    ((ResetableBit) check).resetBit();
+                    check.resetBit();
                 }
                 args[i] = sv;
             } else {

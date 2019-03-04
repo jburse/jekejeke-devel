@@ -54,7 +54,7 @@ import jekpro.tools.call.Interpreter;
 public final class TermVar extends AbstractTerm {
     final SkelVar skel;
     final Display display;
-    Object marker;
+    ResetableBit marker;
 
     /**
      * <p>Constructor for internal use only.</p>
