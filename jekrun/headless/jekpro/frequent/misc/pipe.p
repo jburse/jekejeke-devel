@@ -80,7 +80,7 @@
 % pipe_put(+Pipe, +Term)
 :- public pipe_put/2.
 :- foreign(pipe_put/2, 'ForeignPipe',
-      sysPipePut('Interpreter','AbstractPipe','AbstractTerm')).
+      sysPipePut('Interpreter','InterfacePipe','AbstractTerm')).
 
 /**
  * pipe_offer(P, O):
@@ -109,7 +109,7 @@
 % pipe_take(+Pipe, -Term)
 :- public pipe_take/2.
 :- virtual pipe_take/2.
-:- foreign(pipe_take/2, 'AbstractPipe', take).
+:- foreign(pipe_take/2, 'InterfacePipe', take).
 
 /**
  * pipe_poll(P, O):
@@ -119,7 +119,7 @@
 % pipe_poll(+Pipe, -Term)
 :- public pipe_poll/2.
 :- virtual pipe_poll/2.
-:- foreign(pipe_poll/2, 'AbstractPipe', poll).
+:- foreign(pipe_poll/2, 'InterfacePipe', poll).
 
 /**
  * pipe_poll(P, T, O):
@@ -129,4 +129,4 @@
 % pipe_poll(+Pipe, +Integer, -Term)
 :- public pipe_poll/3.
 :- virtual pipe_poll/3.
-:- foreign(pipe_poll/3, 'AbstractPipe', poll(long)).
+:- foreign(pipe_poll/3, 'InterfacePipe', poll(long)).

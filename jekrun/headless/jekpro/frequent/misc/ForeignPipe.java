@@ -2,7 +2,7 @@ package jekpro.frequent.misc;
 
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractTerm;
-import matula.util.misc.AbstractPipe;
+import matula.util.misc.InterfacePipe;
 import matula.util.misc.Queue;
 
 /**
@@ -49,7 +49,7 @@ public final class ForeignPipe {
      * @param t     The term.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static void sysPipePut(Interpreter inter, AbstractPipe q, AbstractTerm t)
+    public static void sysPipePut(Interpreter inter, InterfacePipe q, AbstractTerm t)
             throws InterruptedException {
         Object obj = AbstractTerm.copyMolec(inter, t);
         q.put(obj);
