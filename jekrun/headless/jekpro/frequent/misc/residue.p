@@ -175,3 +175,11 @@ printable(E, E).
 :- public sys_printable_value/2.
 :- multifile sys_printable_value/2.
 :- static sys_printable_value/2.
+
+/**
+ * surrogate_new(K):
+ * Creates a new surrogate key K.
+ */
+% surrogate_new(-Ref)
+:- public surrogate_new/1.
+:- foreign_constructor(surrogate_new/1, 'Object', new).

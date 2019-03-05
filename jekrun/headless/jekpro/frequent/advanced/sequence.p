@@ -74,7 +74,7 @@ limit(C, G) :-
 :- meta_predicate offset(?,0).
 offset(C, G) :-
    call_nth(G, N),
-   (  N =< C -> fail; true).
+   N > C.
 
 /**
  * call_nth(G, C):
