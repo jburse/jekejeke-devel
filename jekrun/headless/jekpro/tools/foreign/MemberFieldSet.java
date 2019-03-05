@@ -131,7 +131,7 @@ final class MemberFieldSet extends AbstractMember {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object arg = Types.denormProlog(encodeparas[0], temp[temp.length - 1], ref);
+        Object arg = Types.denormProlog(encodeparas[0], temp[temp.length - 1], ref, null);
         invokeSetter(obj, arg);
         return en.getNextRaw();
     }

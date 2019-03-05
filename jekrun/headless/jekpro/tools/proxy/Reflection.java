@@ -1,6 +1,5 @@
 package jekpro.tools.proxy;
 
-import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Branch;
@@ -23,8 +22,6 @@ import matula.util.system.ForeignUri;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>The ordinary Java reflection.</p>

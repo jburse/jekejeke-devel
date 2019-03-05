@@ -114,9 +114,9 @@ final class LenseLength extends AbstractLense {
      */
     public final boolean moniEvaluate(Engine en)
             throws EngineMessage {
-        Object temp = en.skel;
+        Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        Object obj = Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+        Object obj = Types.denormProlog(encodeobj, temp[0], ref, null);
         en.skel = Integer.valueOf(getLength(obj));
         en.display = Display.DISPLAY_CONST;
         return false;

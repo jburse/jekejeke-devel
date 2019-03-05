@@ -1,6 +1,5 @@
 package jekpro.tools.proxy;
 
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -138,7 +137,7 @@ final class ExecutorFunction extends AbstractExecutor {
             callin.close();
 
             return Types.denormProlog(encoderet, AbstractTerm.getSkel(help),
-                    AbstractTerm.getDisplay(help));
+                    AbstractTerm.getDisplay(help), AbstractTerm.getMarker(help));
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }

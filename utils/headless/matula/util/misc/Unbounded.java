@@ -32,7 +32,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Unbounded extends AbstractPipe {
+public final class Unbounded implements InterfacePipe {
     private final ListArray<Object> list;
 
     /**
@@ -49,7 +49,7 @@ public final class Unbounded extends AbstractPipe {
      */
     public void put(Object t) {
         if (t == null)
-            throw new NullPointerException("null element");
+            throw new NullPointerException("null_element");
         synchronized (this) {
             list.add(t);
         }

@@ -255,7 +255,7 @@ public abstract class AbstractDelegate {
                 countvar++;
                 ref.bind[sv.id].bindVar(temp, ref2, en);
                 ResetableBit check = AbstractTerm.getMarker(obj);
-                if (check !=null && check.getBit()) {
+                if (check != null && check.getBit()) {
                     BindCount.remTab(ref2.bind, en);
                     check.resetBit();
                 }

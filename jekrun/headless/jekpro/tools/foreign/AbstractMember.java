@@ -1,7 +1,6 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -152,8 +151,9 @@ abstract class AbstractMember extends AbstractLense
     final Object[] computeAndConvertArgs(Object temp, Display ref,
                                          Engine en)
             throws EngineMessage, EngineException {
-        Object[] args = (encodeparas.length != 0 ?
-                new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
+        if (encodeparas.length == 0)
+            return AbstractMember.VOID_ARGS;
+        Object[] args = new Object[encodeparas.length];
         int k = 0;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
             k++;
@@ -164,7 +164,7 @@ abstract class AbstractMember extends AbstractLense
             } else {
                 en.computeExpr(((SkelCompound) temp).args[k], ref);
                 k++;
-                args[i] = Types.denormProlog(typ, en.skel, en.display);
+                args[i] = Types.denormProlog(typ, en.skel, en.display, null);
             }
         }
         return args;
@@ -181,7 +181,7 @@ abstract class AbstractMember extends AbstractLense
     final Object convertRecv(Object temp, Display ref)
             throws EngineMessage {
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
+            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref, null);
         } else {
             return null;
         }
@@ -201,8 +201,9 @@ abstract class AbstractMember extends AbstractLense
     final Object[] convertArgs(Object temp, Display ref,
                                Engine en, CallOut co)
             throws EngineMessage {
-        Object[] args = (encodeparas.length != 0 ?
-                new Object[encodeparas.length] : AbstractMember.VOID_ARGS);
+        if (encodeparas.length == 0)
+            return AbstractMember.VOID_ARGS;
+        Object[] args = new Object[encodeparas.length];
         int k = 0;
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
             k++;
@@ -213,8 +214,7 @@ abstract class AbstractMember extends AbstractLense
             } else if (typ == Types.TYPE_CALLOUT) {
                 args[i] = co;
             } else {
-                args[i] = Types.denormProlog(typ,
-                        ((SkelCompound) temp).args[k], ref);
+                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref, null);
                 k++;
             }
         }

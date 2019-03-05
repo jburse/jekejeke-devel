@@ -159,7 +159,7 @@ final class FramedOutput extends FilterOutputStream {
             cont = false;
         } else {
             synchronized (lock) {
-               out.flush();
+                out.flush();
             }
         }
     }

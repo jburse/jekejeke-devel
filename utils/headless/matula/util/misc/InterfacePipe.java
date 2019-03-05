@@ -30,44 +30,45 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractPipe {
+public interface InterfacePipe {
 
     /**
-     * <p>Post an object.</p>
-     * <p>Blocks if queue is full.</p>
+     * <p>Add an object to the end of the pipe.</p>
+     * <p>Blocks if pipe is full.</p>
      *
      * @param t The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    public abstract void put(Object t)
+    void put(Object t)
             throws InterruptedException;
 
     /**
-     * <p>Take an object.</p>
-     * <p>Blocks if queue is empty.</p>
+     * <p>Remove an object from the front of the pipe.</p>
+     * <p>Blocks if pipe is empty.</p>
      *
      * @return The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    public abstract Object take()
+    Object take()
             throws InterruptedException;
 
     /**
-     * <p>Take an object.</p>
-     * <p>Fails if queue is empty.</p>
+     * <p>Remove an object from the front of the pipe.</p>
+     * <p>Fails if pipe is empty.</p>
      *
      * @return The object or null if no object was taken.
      */
-    public abstract Object poll();
+    Object poll();
 
     /**
-     * <p>Take an object or time-out.</p>
+     * <p>Remove an object from the front of the pipe.</p>
+     * <p>Fails if pipe is still empty after time-out.</p>
      *
      * @param sleep The time-out.
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    public abstract Object poll(long sleep)
+    Object poll(long sleep)
             throws InterruptedException;
 
 }

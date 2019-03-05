@@ -119,7 +119,7 @@ final class LenseElement extends AbstractLense {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
-            Object obj = Types.denormProlog(encodeobj, temp[0], ref);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref, null);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);

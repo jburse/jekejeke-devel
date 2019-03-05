@@ -138,7 +138,7 @@ final class FramedInput extends FilterInputStream {
      */
     private void readMessageStart() throws IOException {
         int len = readFrameStart();
-        for (;;) {
+        for (; ; ) {
             if (opcode == Framed.OPCODE_CONNECTION_PING) {
                 byte[] data = new byte[len];
                 readBytesOrThrow(data);
@@ -185,7 +185,7 @@ final class FramedInput extends FilterInputStream {
         int len = readLength();
         if (len > Framed.CONTROL_MAX &&
                 (opcode == Framed.OPCODE_CONNECTION_CLOSE ||
-                        opcode == Framed.OPCODE_CONNECTION_PING||
+                        opcode == Framed.OPCODE_CONNECTION_PING ||
                         opcode == Framed.OPCODE_CONNECTION_PONG))
             throw new StreamCorruptedException("unsupported length");
         readMask();

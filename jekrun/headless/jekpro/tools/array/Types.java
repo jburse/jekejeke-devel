@@ -260,10 +260,12 @@ public final class Types {
      * @param typ The Java type.
      * @param t   The argument skeleton.
      * @param d   The argument display.
+     * @param c   The marker.
      * @return The denormalized argument.
      * @throws EngineMessage FFI error.
      */
-    public static Object denormProlog(int typ, Object t, Display d)
+    public static Object denormProlog(int typ, Object t,
+                                      Display d, ResetableBit c)
             throws EngineMessage {
         try {
             switch (typ) {
@@ -336,14 +338,20 @@ public final class Types {
                         t = b.skel;
                         d = b.display;
                     }
-                    return AbstractTerm.createTerm(t, d);
+                    t = AbstractTerm.createTerm(t, d);
+                    if (c != null)
+                        AbstractTerm.setMarker(t, c);
+                    return t;
                 case Types.TYPE_TERM:
                     while (t instanceof SkelVar &&
                             (b = d.bind[((SkelVar) t).id]).display != null) {
                         t = b.skel;
                         d = b.display;
                     }
-                    return AbstractTerm.createTermWrapped(t, d);
+                    t = AbstractTerm.createTermWrapped(t, d);
+                    if (c != null)
+                        AbstractTerm.setMarker(t, c);
+                    return t;
                 case Types.TYPE_ATOMIC:
                     while (t instanceof SkelVar &&
                             (b = d.bind[((SkelVar) t).id]).display != null) {

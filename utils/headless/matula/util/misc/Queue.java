@@ -50,7 +50,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Queue extends AbstractPipe {
+public final class Queue implements InterfacePipe {
     private final ListArray<Object> list;
     private final int max;
 
@@ -76,7 +76,7 @@ public final class Queue extends AbstractPipe {
     public void put(Object t)
             throws InterruptedException {
         if (t == null)
-            throw new NullPointerException("null element");
+            throw new NullPointerException("null_element");
         synchronized (this) {
             while (list.size() >= max)
                 this.wait();
@@ -93,7 +93,7 @@ public final class Queue extends AbstractPipe {
      */
     public boolean offer(Object t) {
         if (t == null)
-            throw new NullPointerException("null element");
+            throw new NullPointerException("null_element");
         synchronized (this) {
             if (list.size() < max) {
                 list.add(t);
@@ -114,7 +114,7 @@ public final class Queue extends AbstractPipe {
     public boolean offer(Object t, long sleep)
             throws InterruptedException {
         if (t == null)
-            throw new NullPointerException("null element");
+            throw new NullPointerException("null_element");
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
             while (list.size() >= max && sleep > 0) {

@@ -5,6 +5,7 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.ResetableBit;
 
 /**
  * <p>The call-in object can be obtained from an interpreter by providing
@@ -54,7 +55,7 @@ public final class CallIn {
     private AbstractBind mark;
     private int snap;
     private int state;
-    private final Object goal;
+    private Object goal;
     private final Interpreter inter;
 
     private static final int STATE_FIRST = 0;
@@ -99,7 +100,7 @@ public final class CallIn {
         switch (state) {
             case STATE_FIRST:
                 state = STATE_FAILURE;
-                if (unfoldFirst(goal))
+                if (unfoldFirst())
                     state = STATE_SUCCESS;
                 break;
             case STATE_NEXT:
@@ -128,7 +129,7 @@ public final class CallIn {
         switch (state) {
             case STATE_FIRST:
                 state = STATE_FAILURE;
-                if (unfoldFirst(goal))
+                if (unfoldFirst())
                     state = STATE_NEXT;
                 break;
             case STATE_NEXT:
@@ -266,11 +267,10 @@ public final class CallIn {
      * <p>Start searching solutions for the given goal for the first time.</p>
      * <p>If failed or exception bindings are undone and exceptions are aggregated.</p>
      *
-     * @param goal The goal.
      * @return True if the goal succeeded, otherwise false.
      * @throws InterpreterException Shit happens.
      */
-    private boolean unfoldFirst(Object goal)
+    private boolean unfoldFirst()
             throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
@@ -278,19 +278,26 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         en.skel = AbstractTerm.getSkel(goal);
-        en.display = AbstractTerm.getDisplay(goal);
+        Display ref = AbstractTerm.getDisplay(goal);
+        en.display = ref;
         en.deref();
+        ResetableBit check = AbstractTerm.getMarker(goal);
+        goal = null;
         mark = en.bind;
         snap = en.number;
         try {
             boolean multi = en.wrapGoal();
-            Display ref = en.display;
+            if (multi && (check != null && check.getBit())) {
+                BindCount.remTab(ref.bind, en);
+                check.resetBit();
+            }
+            ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
             ref2.bind = DisplayClause.newBindClause(clause.dispsize);
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
-            if (multi)
+            if (multi || (check != null && check.getBit()))
                 BindCount.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
