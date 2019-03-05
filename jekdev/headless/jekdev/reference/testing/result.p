@@ -49,6 +49,7 @@
 :- use_module(library(basic/lists)).
 :- use_module(library(system/locale)).
 :- use_module(library(system/zone)).
+:- use_module(library(advanced/sequence)).
 :- use_module(runner).
 :- use_module(helper).
 :- sys_load_resource(testing).
@@ -90,7 +91,7 @@ html_list_summary :-
    write('''>'),
    write_atom(escape(V1)),
    write('</h1>'), nl,
-   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
+   call_nth(bagof(N, U^result_suite_view(D, N, U), L), I),
    findall(W, (  member(N, L),
                  result_suite_view(D, N, W)), V),
    sys_sum_oknok(V, Z),
@@ -134,7 +135,7 @@ html_list_summary.
 % html_list_element(+Atom, +Atom, +List)
 :- private html_list_element/3.
 html_list_element(R, D, L) :-
-   numbered_solution(member(N, L), Z),
+   call_nth(member(N, L), Z),
    result_suite_view(D, N, P),
    html_zebra_row(Z),
    write('  <td><a href="'),
@@ -153,7 +154,7 @@ html_list_element(_, _, _).
 % result_packages.
 :- private result_packages/0.
 result_packages :-
-   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
+   call_nth(bagof(N, U^result_suite_view(D, N, U), L), I),
    Q is_atom '0'+I+'_'+D+'/package.html',
    write('Generating '),
    write('.'/D), nl,
@@ -175,7 +176,7 @@ html_list_package(D, L) :-
    write(' '),
    write_atom(escape(D)),
    write('</h1>'), nl,
-   numbered_solution(member(N, L), J),
+   call_nth(member(N, L), J),
    T is_atom D+'_'+N,
    result_suite(T, U),
    R is_atom '0'+J+'_'+N+'.html',
@@ -218,7 +219,7 @@ html_list_package(_, _).
 % html_list_member(+Atom, +Atom)
 :- private html_list_member/2.
 html_list_member(R, T) :-
-   numbered_solution(result_predicate(F, A, T, P), Z),
+   call_nth(result_predicate(F, A, T, P), Z),
    html_zebra_row(Z),
    write('  <td><a href="'),
    write_atom(escape(encode(uri(R,indicator(F,A))))),
@@ -236,8 +237,8 @@ html_list_member(_, _).
 % result_suites(+RelUrl)
 :- private result_suites/1.
 result_suites(Z) :-
-   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
-   numbered_solution(member(N, L), J),
+   call_nth(bagof(N, U^result_suite_view(D, N, U), L), I),
+   call_nth(member(N, L), J),
    T is_atom D+'_'+N,
    P is_atom '0'+I+'_'+D+ / +'0'+J+'_'+N+'.html',
    write('Generating '),
@@ -301,7 +302,7 @@ html_list_suite(_, _, _).
 html_list_predicate(F, A, T, Z) :-
    split_suite(T, D, M),
    R is_atom Z+D+ / +M+'.html',
-   numbered_solution(result(F, A, T, N, P), I),
+   call_nth(result(F, A, T, N, P), I),
    html_zebra_row(I),
    write('  <td><a href="'),
    write_atom(escape(encode(uri(R,N)))),

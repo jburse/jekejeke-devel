@@ -163,17 +163,6 @@ html_functor_type(_) :-
 /* Zebra Tables                                                */
 /***************************************************************/
 
-/**
- * numbered_solution(G, N):
- * The predicate succeeds whenever G succeeds numbering the solutions in N.
- */
-% numbered_solution(+Goal, -Integer)
-:- meta_predicate numbered_solution(0,?).
-numbered_solution(Goal, Index) :-
-   term_variables(Goal, Vars),
-   findall(Vars, Goal, List),
-   nth1(Index, List, Vars).
-
 % html_zebra_row(+Integer)
 html_zebra_row(N) :-
    1 =:= N mod 2, !,

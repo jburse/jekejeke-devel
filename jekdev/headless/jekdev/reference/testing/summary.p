@@ -41,6 +41,7 @@
 :- use_module(library(basic/lists)).
 :- use_module(library(system/locale)).
 :- use_module(library(system/zone)).
+:- use_module(library(advanced/sequence)).
 :- use_module(runner).
 :- use_module(tracker).
 :- use_module(helper).
@@ -135,7 +136,7 @@ html_result_list.
 % html_result_member
 :- private html_result_member/0.
 html_result_member :-
-   numbered_solution(bagof(N, U^result_suite_view(D, N, U), L), I),
+   call_nth(bagof(N, U^result_suite_view(D, N, U), L), I),
    findall(W, (  member(N, L),
                  result_suite_view(D, N, W)), V),
    sys_sum_oknok(V, Z),
@@ -191,7 +192,7 @@ html_cover_list.
 % html_cover_member
 :- private html_cover_member/0.
 html_cover_member :-
-   numbered_solution(bagof(N, U^cover_source_view(D, N, U), L), I),
+   call_nth(bagof(N, U^cover_source_view(D, N, U), L), I),
    findall(W, (  member(N, L),
                  cover_source_view(D, N, W)), V),
    sys_sum_oknok(V, Z),
