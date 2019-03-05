@@ -12,10 +12,10 @@
  * X = 7 ;
  * X = 8
  *
- * The predicates are implemented with thread local annonymous state
- * variables and setup_call_cleanup/3, they thus work without
- * synchronization and are interrupt safe. Predicates for ORDER BY,
- * DISTINCT and GROUP BY are currently not yet implemented.
+ * The current implementation is based on call_nth/2, which is also
+ * provided through this module. call_nth/2 is in turn implemented with
+ * pivots, an alternative to nb_setarg/3 which does not destruct a
+ * Prolog term, but instead a Java object.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -49,8 +49,7 @@
 :- package(library(jekpro/frequent/advanced)).
 
 :- module(sequence, []).
-:- use_module(library(experiment/surrogate)).
-:- use_module(library(misc/struc)).
+:- use_module(library(advanced/micro)).
 
 /**
  * limit(C, G):
@@ -60,21 +59,10 @@
 % limit(+Integer, +Goal)
 :- public limit/2.
 :- meta_predicate limit(?,0).
-limit(C, _) :-
-   var(C),
-   throw(error(instantiation_error,_)).
-limit(C, _) :-
-   \+ integer(C),
-   throw(error(type_error(integer,C),_)).
 limit(C, G) :-
-   setup_call_cleanup(
-      new_local(K, 0),
-      (  call(G),
-         get_local(K, M),
-         N is M+1,
-         (  N < C
-         -> set_local(K, N); !)),
-      free_local(K)).
+   C > 0,
+   call_nth(G, N),
+   (  N < C -> true; !).
 
 /**
  * offset(C, G):
@@ -84,18 +72,24 @@ limit(C, G) :-
 % offset(+Integer, +Goal)
 :- public offset/2.
 :- meta_predicate offset(?,0).
-offset(C, _) :-
-   var(C),
-   throw(error(instantiation_error,_)).
-offset(C, _) :-
-   \+ integer(C),
-   throw(error(type_error(integer,C),_)).
 offset(C, G) :-
-   setup_call_cleanup(
-      new_local(K, 0),
-      (  call(G),
-         get_local(K, M),
-         (  M < C
-         -> N is M+1,
-            set_local(K, N), fail; true)),
-      free_local(K)).
+   call_nth(G, N),
+   (  N =< C -> fail; true).
+
+/**
+ * call_nth(G, C):
+ * The predicate succeeds whenever G succeeds and unifies C with
+ * the numbering of the succeesses.
+ */
+% call_nth(+Goal, -Integer)
+:- public call_nth/2.
+:- meta_predicate call_nth(0,?).
+call_nth(G, C) :-
+   pivot_new(P),
+   pivot_put(P, 0),
+   call(G),
+   pivot_take(P, M),
+   N is M+1,
+   pivot_put(P, N),
+   C = N.
+
