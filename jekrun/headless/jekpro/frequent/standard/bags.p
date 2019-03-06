@@ -163,7 +163,7 @@ sys_run_values_rest([K-V|P], J, [V|L], Q) :-
 sys_run_values_rest(P, _, [], P).
 
 /**********************************************************/
-/* All Solutions                                          */
+/* All Solutions I                                        */
 /**********************************************************/
 
 /**
@@ -205,3 +205,58 @@ forall(A, B) :-
 % copy_term(+Term, -Term)
 :- public copy_term/2.
 :- special(copy_term/2, 'SpecialFind', 2).
+
+/**********************************************************/
+/* All Solutions II                                       */
+/**********************************************************/
+
+/**
+ * foreach(F, G):
+ * Calls the conjunction of those goal instances of G where F succeeds.
+ * Variables occuring in G and not occuring in F are shared.
+ */
+% foreach(+Generator, +Goal)
+:- public foreach/2.
+:- meta_predicate foreach(0,0).
+foreach(F, G) :-
+   sys_goal_kernel(G, B),
+   sys_goal_globals(F^G, W),
+   findall(W-B, F, H),
+   sys_join_keys(H, W),
+   sys_call_values(H).
+
+% sys_call_values(+Pairs)
+:- private sys_call_values/1.
+sys_call_values([]).
+sys_call_values([_-V|L]) :-
+   call(V),
+   sys_call_values(L).
+
+/**
+ * foreach(F, G, I, O):
+ * Calls the conjunction of those closure instances of G where F succeeds
+ * threading them with input I and output O. Variables occuring in G and
+ * not occuring in F are shared.
+ */
+% foreach(+Generator, +Goal, +Term, -Term)
+:- public foreach/4.
+:- meta_predicate foreach(0,2,?,?).
+foreach(F, G, I, O) :-
+   sys_goal_kernel(G, B),
+   sys_goal_globals(F^G, W),
+   findall(W-B, F, H),
+   sys_join_keys(H, W),
+   sys_call_values(H, I, O).
+
+% sys_call_values(+Pairs, +Term, -Term)
+:- private sys_call_values/3.
+sys_call_values([], L, L).
+sys_call_values([_-V|L], I, O) :-
+   call(V, I, H),
+   sys_call_values(L, H, O).
+
+% sys_join_keys(+Pairs, +Key)
+:- private sys_join_keys/2.
+sys_join_keys([], _).
+sys_join_keys([K-_|L], K) :-
+   sys_join_keys(L, K).

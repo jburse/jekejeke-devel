@@ -61,7 +61,7 @@
 :- meta_predicate limit(?,0).
 limit(C, G) :-
    C > 0,
-   call_nth(G, N),
+   call_nth2(G, N),
    (  N < C -> true; !).
 
 /**
@@ -73,7 +73,7 @@ limit(C, G) :-
 :- public offset/2.
 :- meta_predicate offset(?,0).
 offset(C, G) :-
-   call_nth(G, N),
+   call_nth2(G, N),
    N > C.
 
 /**
@@ -85,11 +85,20 @@ offset(C, G) :-
 :- public call_nth/2.
 :- meta_predicate call_nth(0,?).
 call_nth(G, C) :-
+   var(C), !,
+   call_nth2(G, N),
+   C = N.
+call_nth(G, C) :-
+   C > 0,
+   call_nth2(G, N),
+   (  C =:= N -> !; fail).
+
+:- private call_nth2/2.
+:- meta_predicate call_nth2(0,?).
+call_nth2(G, N) :-
    pivot_new(P),
    pivot_put(P, 0),
    call(G),
    pivot_take(P, M),
    N is M+1,
-   pivot_put(P, N),
-   C = N.
-
+   pivot_put(P, N).
