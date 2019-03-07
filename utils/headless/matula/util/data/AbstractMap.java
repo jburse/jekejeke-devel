@@ -44,20 +44,6 @@ public abstract class AbstractMap<K, V>
      *
      * @param key   The key, can be null.
      * @param value The value.
-     * @return The new enry.
-     */
-    public final MapEntry<K, V> put(K key, V value) {
-        MapEntry<K, V> e = newEntry(key, value);
-        putEntry(e);
-        return e;
-    }
-
-    /**
-     * <p>Add the key to the map.</p>
-     * <p>Assumption is that key is not yet present.</p>
-     *
-     * @param key   The key, can be null.
-     * @param value The value.
      */
     public final void add(K key, V value) {
         MapEntry<K, V> e = newEntry(key, value);

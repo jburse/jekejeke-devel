@@ -107,7 +107,10 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
      * @return The entry.
      */
     public MapEntry<K, V> newEntry(K key, V value) {
-        return new MapHashEntry<K, V>(key, value);
+        MapEntry<K, V> h = new MapHashEntry<K, V>();
+        h.key = key;
+        h.value = value;
+        return h;
     }
 
     /**

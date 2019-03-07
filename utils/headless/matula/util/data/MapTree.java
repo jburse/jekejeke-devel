@@ -33,7 +33,13 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class MapTree<K, V> extends AbstractMap<K, V> {
+public class MapTree<K, V> extends AbstractMap<K, V> {
+    public static final Comparator<String> DEFAULT = new Comparator<String>() {
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+    };
+
     final Comparator<K> comparator;
     MapTreeEntry<K, V> root;
 
@@ -43,6 +49,8 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
      * @param c The comparator.
      */
     public MapTree(Comparator<K> c) {
+        if (c == null)
+            throw new NullPointerException("comparator missing");
         comparator = c;
         reinitialize(0);
     }
@@ -60,10 +68,10 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
     public MapEntry<K, V> getEntry(K key) {
         MapTreeEntry<K, V> p = root;
         while (p != null) {
-            int k = comparator.compare(key, p.key);
-            if (k < 0) {
+            int k = comparator.compare(p.key, key);
+            if (k > 0) {
                 p = p.left;
-            } else if (k > 0) {
+            } else if (k < 0) {
                 p = p.right;
             } else {
                 return p;
@@ -88,10 +96,10 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
         int k = 0;
         while (p != null) {
             b = p;
-            k = comparator.compare(e.key, p.key);
-            if (k < 0) {
+            k = comparator.compare(p.key, e.key);
+            if (k > 0) {
                 p = p.left;
-            } else if (k > 0) {
+            } else if (k < 0) {
                 p = p.right;
             } else {
                 throw new IllegalStateException("duplicate key");
@@ -103,7 +111,7 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
         if (b == null) {
             root = e;
         } else {
-            if (k < 0) {
+            if (k > 0) {
                 b.left = e;
             } else {
                 b.right = e;
@@ -121,7 +129,10 @@ public final class MapTree<K, V> extends AbstractMap<K, V> {
      * @return The entry.
      */
     public MapEntry<K, V> newEntry(K key, V value) {
-        return new MapTreeEntry<K, V>(key, value);
+        MapEntry<K, V> h = new MapTreeEntry<K, V>();
+        h.key = key;
+        h.value = value;
+        return h;
     }
 
     /**

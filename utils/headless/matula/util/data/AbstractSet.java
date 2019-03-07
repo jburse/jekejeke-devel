@@ -46,7 +46,7 @@ public abstract class AbstractSet<E>
      */
     public final E getKey(E key) {
         SetEntry<E> e = getEntry(key);
-        return (e != null ? e.key : null);
+        return (e != null ? e.value : null);
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class AbstractSet<E>
     public final void toArray(E[] target, int pos) {
         for (SetEntry<E> entry = getFirstEntry();
              entry != null; entry = successor(entry)) {
-            target[pos] = entry.key;
+            target[pos] = entry.value;
             pos++;
         }
     }
@@ -185,11 +185,11 @@ public abstract class AbstractSet<E>
             return "[]";
         StringBuilder buf = new StringBuilder();
         buf.append("[");
-        buf.append(entry.key);
+        buf.append(entry.value);
         entry = successor(entry);
         while (entry != null) {
             buf.append(",");
-            buf.append(entry.key);
+            buf.append(entry.value);
             entry = successor(entry);
         }
         buf.append("]");
@@ -205,7 +205,7 @@ public abstract class AbstractSet<E>
         AbstractSet<E> res = (AbstractSet<E>) super.clone();
         for (SetEntry<E> entry = getFirstEntry();
              entry != null; entry = successor(entry))
-            res.add(entry.key);
+            res.add(entry.value);
         return res;
     }
 

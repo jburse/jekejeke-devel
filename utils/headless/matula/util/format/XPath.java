@@ -287,7 +287,7 @@ public final class XPath implements Comparator<Object[]> {
             ListArray<DomElement> vec = tm.get(key);
             if (vec == null) {
                 vec = new ListArray<DomElement>();
-                tm.put(key, vec);
+                tm.add(key, vec);
             }
             vec.add(found);
             found = findNext();

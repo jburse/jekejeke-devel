@@ -36,14 +36,4 @@ public class SetHashLinkEntry<K> extends SetEntry<K> {
     SetHashLinkEntry<K> next;
     SetHashLinkEntry<K> before;
     SetHashLinkEntry<K> after;
-
-    /**
-     * <p>Create a linked list hash set.</p>
-     *
-     * @param k The key.
-     */
-    public SetHashLinkEntry(K k) {
-        super(k);
-    }
-
 }

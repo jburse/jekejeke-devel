@@ -39,15 +39,4 @@ final class MapTreeEntry<K, V> extends MapEntry<K, V> {
     MapTreeEntry<K, V> right;
     MapTreeEntry<K, V> parent;
     boolean color = BLACK;
-
-    /**
-     * <p>Create an entry.</p>
-     *
-     * @param k The key.
-     * @param v The value.
-     */
-    MapTreeEntry(K k, V v) {
-        super(k, v);
-    }
-
 }

@@ -43,6 +43,8 @@ public final class SetTree<E> extends AbstractSet<E> {
      * @param c The comparator.
      */
     public SetTree(Comparator<E> c) {
+        if (c == null)
+            throw new NullPointerException("comparator missing");
         comparator = c;
         reinitialize(0);
     }
@@ -60,10 +62,10 @@ public final class SetTree<E> extends AbstractSet<E> {
     public SetEntry<E> getEntry(E key) {
         SetTreeEntry<E> p = root;
         while (p != null) {
-            int k = comparator.compare(key, p.key);
-            if (k < 0) {
+            int k = comparator.compare(p.value, key);
+            if (k > 0) {
                 p = p.left;
-            } else if (k > 0) {
+            } else if (k < 0) {
                 p = p.right;
             } else {
                 return p;
@@ -89,10 +91,10 @@ public final class SetTree<E> extends AbstractSet<E> {
         int k = 0;
         while (p != null) {
             b = p;
-            k = comparator.compare(e.key, p.key);
-            if (k < 0) {
+            k = comparator.compare(p.value, e.value);
+            if (k > 0) {
                 p = p.left;
-            } else if (k > 0) {
+            } else if (k < 0) {
                 p = p.right;
             } else {
                 throw new IllegalStateException("duplicate key");
@@ -104,7 +106,7 @@ public final class SetTree<E> extends AbstractSet<E> {
         if (b == null) {
             root = e;
         } else {
-            if (k < 0) {
+            if (k > 0) {
                 b.left = e;
             } else {
                 b.right = e;
@@ -121,7 +123,9 @@ public final class SetTree<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        return new SetTreeEntry<E>(key);
+        SetEntry<E> h = new SetTreeEntry<E>();
+        h.value = key;
+        return h;
     }
 
     /**
@@ -148,7 +152,7 @@ public final class SetTree<E> extends AbstractSet<E> {
         // point to successor.
         if (p.left != null && p.right != null) {
             SetTreeEntry<E> s = (SetTreeEntry<E>) successor(p);
-            p.key = s.key;
+            p.value = s.value;
             p = s;
         } // p has 2 children
 

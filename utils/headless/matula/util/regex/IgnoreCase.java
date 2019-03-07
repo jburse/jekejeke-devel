@@ -34,18 +34,12 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class IgnoreCase implements Comparator<String> {
-    public static final IgnoreCase DEFAULT = new IgnoreCase(true);
-    public static final IgnoreCase DEFAULT_NONE = new IgnoreCase(false);
-
-    private boolean ignore;
+    public static final Comparator<String> DEFAULT = new IgnoreCase();
 
     /**
      * <p>Create a ignore case comparator.</p>
-     *
-     * @param i The ignore case flag.
      */
-    private IgnoreCase(boolean i) {
-        ignore = i;
+    private IgnoreCase() {
     }
 
     /**
@@ -63,10 +57,8 @@ public final class IgnoreCase implements Comparator<String> {
             int ch2 = o2.codePointAt(k2);
             k1 += Character.charCount(ch1);
             k2 += Character.charCount(ch2);
-            if (ignore) {
-                ch1 = Character.toLowerCase(ch1);
-                ch2 = Character.toLowerCase(ch2);
-            }
+            ch1 = Character.toLowerCase(ch1);
+            ch2 = Character.toLowerCase(ch2);
             if (ch1 != ch2)
                 return ch1 - ch2;
         }

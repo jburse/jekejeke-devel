@@ -36,15 +36,4 @@ public class MapHashLinkEntry<K, V> extends MapEntry<K, V> {
     MapHashLinkEntry<K, V> next;
     MapHashLinkEntry<K, V> after;
     MapHashLinkEntry<K, V> before;
-
-    /**
-     * <p>Create an entry.</p>
-     *
-     * @param k The key.
-     * @param v The value.
-     */
-    public MapHashLinkEntry(K k, V v) {
-        super(k, v);
-    }
-
 }

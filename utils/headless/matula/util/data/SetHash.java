@@ -69,7 +69,7 @@ public final class SetHash<E> extends AbstractSet<E> {
 
         SetHashEntry<E> e;
         for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
+                !(key != null ? key.equals(e.value) : null == e.value); e = e.next)
             ;
 
         return e;
@@ -86,7 +86,7 @@ public final class SetHash<E> extends AbstractSet<E> {
             throw new NullPointerException("entry missing");
         SetHashEntry<E> e = (SetHashEntry<E>) f;
 
-        int i = index(e.key);
+        int i = index(e.value);
 
         e.prev = null;
         SetHashEntry<E> g = table[i];
@@ -107,7 +107,9 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        return new SetHashEntry<E>(key);
+        SetEntry<E> h = new SetHashEntry<E>();
+        h.value = key;
+        return h;
     }
 
     /**
@@ -130,7 +132,7 @@ public final class SetHash<E> extends AbstractSet<E> {
             throw new NullPointerException("entry missing");
         SetHashEntry<E> e = (SetHashEntry<E>) f;
 
-        int i = index(e.key);
+        int i = index(e.value);
 
         SetHashEntry<E> h = e.prev;
         SetHashEntry<E> g = e.next;
@@ -182,7 +184,7 @@ public final class SetHash<E> extends AbstractSet<E> {
             while (e != null) {
                 SetHashEntry<E> b = e;
                 e = b.next;
-                int j = index(b.key);
+                int j = index(b.value);
 
                 b.prev = null;
                 SetHashEntry<E> f = table[j];
@@ -223,7 +225,7 @@ public final class SetHash<E> extends AbstractSet<E> {
         SetHashEntry<E> h = e.next;
         if (h != null)
             return h;
-        int i = index(e.key);
+        int i = index(e.value);
         return getPrevEntry(i - 1);
     }
 
@@ -238,7 +240,7 @@ public final class SetHash<E> extends AbstractSet<E> {
         SetHashEntry<E> h = e.next;
         if (h != null)
             return h;
-        int i = index(e.key);
+        int i = index(e.value);
         return getNextEntry(i + 1);
     }
 

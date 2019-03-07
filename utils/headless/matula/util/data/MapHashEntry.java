@@ -34,15 +34,4 @@ package matula.util.data;
 final class MapHashEntry<K, V> extends MapEntry<K, V> {
     MapHashEntry<K, V> next;
     MapHashEntry<K, V> prev;
-
-    /**
-     * <p>Create a clause entry.</p>
-     *
-     * @param k The key.
-     * @param v The value;
-     */
-    MapHashEntry(K k, V v) {
-        super(k, v);
-    }
-
 }

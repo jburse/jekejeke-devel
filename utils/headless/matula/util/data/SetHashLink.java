@@ -72,7 +72,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
 
         SetHashLinkEntry<E> e;
         for (e = table[i]; e != null &&
-                !(key != null ? key.equals(e.key) : null == e.key); e = e.next)
+                !(key != null ? key.equals(e.value) : null == e.value); e = e.next)
             ;
 
         return e;
@@ -89,7 +89,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
             throw new NullPointerException("entry missing");
         SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) f;
 
-        int i = index(e.key);
+        int i = index(e.value);
 
         SetHashLinkEntry<E> g = table[i];
         if (g != null)
@@ -119,7 +119,9 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        return new SetHashLinkEntry<E>(key);
+        SetEntry<E> h = new SetHashLinkEntry<E>();
+        h.value = key;
+        return h;
     }
 
     /**
@@ -164,7 +166,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
             throw new NullPointerException("entry missing");
         SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) f;
 
-        int i = index(e.key);
+        int i = index(e.value);
 
         SetHashLinkEntry<E> g = e.next;
         SetHashLinkEntry<E> h = e.prev;
@@ -229,7 +231,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
             while (e != null) {
                 SetHashLinkEntry<E> b = e;
                 e = b.next;
-                int j = index(b.key);
+                int j = index(b.value);
 
                 b.prev = null;
                 SetHashLinkEntry<E> f = table[j];

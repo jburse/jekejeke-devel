@@ -34,14 +34,4 @@ package matula.util.data;
 final class SetHashEntry<K> extends SetEntry<K> {
     SetHashEntry<K> next;
     SetHashEntry<K> prev;
-
-    /**
-     * <p>Create a hash set.</p>
-     *
-     * @param k The key.
-     */
-    SetHashEntry(K k) {
-        super(k);
-    }
-
 }

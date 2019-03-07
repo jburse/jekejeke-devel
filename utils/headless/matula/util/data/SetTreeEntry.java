@@ -39,14 +39,4 @@ final class SetTreeEntry<K> extends SetEntry<K> {
     SetTreeEntry<K> right;
     SetTreeEntry<K> parent;
     boolean color = BLACK;
-
-    /**
-     * <p>Create a tree set entry.</p>
-     *
-     * @param k The key.
-     */
-    SetTreeEntry(K k) {
-        super(k);
-    }
-
 }
