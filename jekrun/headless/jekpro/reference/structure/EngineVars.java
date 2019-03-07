@@ -264,7 +264,7 @@ public final class EngineVars {
         }
         while (undo > 0) {
             SetEntry<BindVar> entry = visit.getLastEntry();
-            visit.remove(entry.key);
+            visit.remove(entry.value);
             undo--;
         }
         return true;
@@ -336,7 +336,7 @@ public final class EngineVars {
         }
         while (undo > 0) {
             SetEntry<BindVar> entry = visit.getLastEntry();
-            visit.remove(entry.key);
+            visit.remove(entry.value);
             undo--;
         }
     }

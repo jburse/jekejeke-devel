@@ -97,8 +97,8 @@ call_nth(G, C) :-
 :- meta_predicate call_nth2(0,?).
 call_nth2(G, N) :-
    pivot_new(P),
-   pivot_put(P, 0),
+   pivot_set(P, 0),
    call(G),
-   pivot_take(P, M),
+   pivot_get(P, M),
    N is M+1,
-   pivot_put(P, N).
+   pivot_set(P, N).

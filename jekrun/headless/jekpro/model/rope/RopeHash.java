@@ -96,7 +96,7 @@ public final class RopeHash
         RopeArray res = new RopeArray(size());
         for (SetEntry<Clause> entry = getFirstEntry();
              entry != null; entry = successor(entry))
-            res.add(entry.key);
+            res.add(entry.value);
         return res;
     }
 
@@ -109,7 +109,7 @@ public final class RopeHash
     public void buildIndex(Index ci, int at) {
         for (SetEntry<Clause> entry = getFirstEntry();
              entry != null; entry = successor(entry))
-            ci.buildIndex(entry.key, at);
+            ci.buildIndex(entry.value, at);
     }
 
     /**
@@ -122,7 +122,7 @@ public final class RopeHash
         int len = 0;
         for (SetEntry<Clause> entry = getFirstEntry();
              entry != null; entry = successor(entry)) {
-            SkelAtom sa = StackElement.callableToName(entry.key.head);
+            SkelAtom sa = StackElement.callableToName(entry.value.head);
             if (Clause.ancestorSource(sa.scope, en))
                 len++;
         }

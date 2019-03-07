@@ -64,7 +64,7 @@ public final class CommandLine {
             throw new NullPointerException("name missing");
         if (def == null)
             throw new NullPointerException("def missing");
-        decl.put(name, def);
+        decl.add(name, def);
     }
 
     /**
@@ -85,7 +85,7 @@ public final class CommandLine {
             i++;
             if (i >= args.length)
                 throw new ScannerError(CommandLine.OP_SYNTAX_ARG_MISSING, i);
-            res.put(name, args[i]);
+            res.add(name, args[i]);
         }
     }
 
@@ -102,7 +102,7 @@ public final class CommandLine {
             String val = applet.getParameter(entry.key);
             if (val == null)
                 continue;
-            res.put(entry.key, val);
+            res.add(entry.key, val);
         }
     }
 

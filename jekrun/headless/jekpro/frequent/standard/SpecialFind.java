@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 
@@ -109,17 +110,10 @@ public final class SpecialFind extends AbstractSpecial {
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                EngineCopy ec = en.enginecopy;
-                if (ec == null) {
-                    ec = new EngineCopy();
-                    en.enginecopy = ec;
-                }
-                ec.vars = null;
-                Object temp2 = ec.copyTerm(temp[0], ref);
-                ec.vars = null;
-                int size = EngineCopy.displaySize(temp2);
+                Object val = AbstractSkel.copySkel(temp[0], ref, en);
+                int size = EngineCopy.displaySize(val);
                 d = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-                if (!en.unifyTerm(temp[1], ref, temp2, d))
+                if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
                 if (size != 0)
                     BindCount.remTab(d.bind, en);
@@ -166,14 +160,7 @@ public final class SpecialFind extends AbstractSpecial {
             en.contdisplay = ref2;
             boolean found = en.runLoop(snap, true);
             while (found) {
-                EngineCopy ec = en.enginecopy;
-                if (ec == null) {
-                    ec = new EngineCopy();
-                    en.enginecopy = ec;
-                }
-                ec.vars = null;
-                Object val = ec.copyTerm(t2, d2);
-                ec.vars = null;
+                Object val = AbstractSkel.copySkel(t2, d2, en);
                 if (temp == null)
                     temp = new ListArray<Object>();
                 temp.add(val);

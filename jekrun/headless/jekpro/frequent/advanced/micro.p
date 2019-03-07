@@ -4,10 +4,15 @@
  * created by the predicate micro_new/2. A micro engine can then be
  * controlled by the predicates micro_cont/1 and micro_close/1.
  *
- * To exchanged data with a micro engine, pivots are provided.
- * Pivots work like unsynchronized queues of length one. A new pivot
- * can be created by the predicate pivot_new/1. A pivot can then
- * be modified by the predicates pivot_put/2 and pivot_take/2.
+ * To exchanged data with a micro engine, pivots are provided. Pivots
+ * work like unsynchronized queues of length one. A new pivot can be
+ * created by the predicate pivot_new/1. A pivot can then be modified
+ * and accessed by the predicates pivot_set/2 and pivot_get/2.
+ *
+ * A revolve delivers a map from variant terms to pivots. A new revolve
+ * can be created by the predicate revolve_new/1. A new or old variant
+ * terms can be looked-up with the predicate revolve_lookup/3. The map
+ * can be enumerated by the predicate revolve_pair/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,7 +45,7 @@
 
 :- package(library(jekpro/frequent/advanced)).
 :- use_package(foreign(jekpro/frequent/advanced)).
-:- use_package(foreign(matula/util/misc)).
+:- use_package(foreign(matula/util/data)).
 :- use_package(foreign(jekpro/tools/call)).
 :- use_package(foreign(jekpro/tools/term)).
 
@@ -81,20 +86,50 @@
 :- foreign_constructor(pivot_new/1, 'Pivot', new).
 
 /**
- * pivot_put(P, O):
- * The predicate succeeds for sending a copy of the term O
- * to the pivot P.
+ * pivot_set(P, O):
+ * The predicate succeeds in making a copy of O
+ * and setting the value of the pivot P.
  */
-% pivot_put(+Pivot, +Term)
-:- public pivot_put/2.
-:- foreign(pivot_put/2, 'ForeignMicro',
-      sysPivotPut('Interpreter','Pivot','AbstractTerm')).
+% pivot_set(+Pivot, +Term)
+:- public pivot_set/2.
+:- foreign(pivot_set/2, 'ForeignMicro',
+      sysPivotSet('Interpreter','SetEntry','AbstractTerm')).
 
 /**
- * pivot_take(P, O):
- * The predicate succeeds for getting a term O form the pivot P.
+ * pivot_get(P, O):
+ * The predicate succeeds in O with the value of the pivot P.
  */
-% pivot_take(+Pivot, -Term)
-:- public pivot_take/2.
-:- virtual pivot_take/2.
-:- foreign(pivot_take/2, 'Pivot', take).
+% pivot_get(+Pivot, -Term)
+:- public pivot_get/2.
+:- virtual pivot_get/2.
+:- foreign_getter(pivot_get/2, 'SetEntry', value).
+
+/**
+ * revolve_new(R):
+ * The predicate succeeds in R with a new revolve.
+ */
+% revolve_new(-Revolve)
+:- public revolve_new/1.
+:- foreign_constructor(revolve_new/1, 'Revolve', new).
+
+/**
+ * revolve_lookup(R, K, P):
+ * The predicate succeeds in P with the old or new pivot
+ * for a copy of the key K in the revolve R.
+ */
+% revolve_lookup(+Revolve, +Term, -Pivot)
+:- public revolve_lookup/3.
+:- foreign(revolve_lookup/3, 'ForeignMicro',
+      sysRevolveLookup('Interpreter','Revolve','AbstractTerm')).
+
+/**
+ * revolve_pair(R, U):
+ * The predicate succeeds in U with the key value pairs of the revolve R.
+ */
+% revolve_pair(+Revolve, +Pair)
+:- public revolve_pair/2.
+:- foreign(revolve_pair/2, 'ForeignMicro',
+      sysRevolvePair('CallOut','Revolve')).
+
+
+

@@ -4,6 +4,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -44,6 +45,13 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLexical extends AbstractSpecial {
+    public final static Comparator<Object> DEFAULT = new Comparator<Object>() {
+        public int compare(Object o1, Object o2) {
+            return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
+                    AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
+        }
+    };
+
     private final static int SPECIAL_LEX_EQ = 0;
     private final static int SPECIAL_LEX_NQ = 1;
     private final static int SPECIAL_LEX_LS = 2;
@@ -98,44 +106,44 @@ public final class SpecialLexical extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref, en) >= 0)
+                            temp[1], ref) >= 0)
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_LEX_LQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref, en) > 0)
+                            temp[1], ref) > 0)
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_LEX_GR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref, en) <= 0)
+                            temp[1], ref) <= 0)
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_LEX_GQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref, en) < 0)
+                            temp[1], ref) < 0)
                         return false;
                     return en.getNextRaw();
                 case SPECIAL_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Object witmolec = SpecialLexical.comparisonAtom(
-                            SpecialLexical.compareTerm(temp[1], ref, temp[2], ref, en), en);
+                            SpecialLexical.compareTerm(temp[1], ref, temp[2], ref), en);
                     if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
-                    witmolec = SpecialLexical.comparisonAtom(new EngineLexical(cmp, en)
-                            .localeCompareTerm(temp[2], ref, temp[3], ref), en);
+                    EngineLexical cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    witmolec = SpecialLexical.comparisonAtom(
+                            cmp.localeCompareTerm(temp[2], ref, temp[3], ref), en);
                     if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
@@ -239,7 +247,7 @@ public final class SpecialLexical extends AbstractSpecial {
     }
 
     /**********************************************************/
-    /* Comparison Function                                    */
+    /* Term Comparison                                        */
     /**********************************************************/
 
     /**
@@ -252,11 +260,10 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param d1   The display of the first term.
      * @param beta The skeleton of the second term.
      * @param d2   The display of the second term.
-     * @param en   The engine.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      */
     public static int compareTerm(Object alfa, Display d1,
-                                  Object beta, Display d2, Engine en)
+                                  Object beta, Display d2)
             throws ArithmeticException {
         for (; ; ) {
             BindCount b1;
@@ -275,19 +282,13 @@ public final class SpecialLexical extends AbstractSpecial {
             if (k != 0) return k;
             switch (i) {
                 case EngineLexical.CMP_TYPE_VAR:
-                    b1 = d1.bind[((SkelVar) alfa).id];
-                    i = b1.serno;
-                    if (i == -1)
-                        i = BindSerno.bindSerno(b1, en);
-                    b1 = d2.bind[((SkelVar) beta).id];
-                    k = b1.serno;
-                    if (k == -1)
-                        k = BindSerno.bindSerno(b1, en);
+                    i = ((SkelVar) alfa).getValue(d1);
+                    k = ((SkelVar) beta).getValue(d2);
                     return i - k;
                 case EngineLexical.CMP_TYPE_DECIMAL:
-                    return compareDecimalLexical(alfa, beta);
+                    return SpecialLexical.compareDecimalLexical(alfa, beta);
                 case EngineLexical.CMP_TYPE_FLOAT:
-                    return compareFloatLexical(alfa, beta);
+                    return SpecialLexical.compareFloatLexical(alfa, beta);
                 case EngineLexical.CMP_TYPE_INTEGER:
                     return SpecialCompare.compareIntegerArithmetical(alfa, beta);
                 case EngineLexical.CMP_TYPE_REF:
@@ -305,7 +306,7 @@ public final class SpecialLexical extends AbstractSpecial {
                     if (k != 0) return k;
                     i = 0;
                     for (; i < t1.length - 1; i++) {
-                        k = compareTerm(t1[i], d1, t2[i], d2, en);
+                        k = compareTerm(t1[i], d1, t2[i], d2);
                         if (k != 0) return k;
                     }
                     alfa = t1[i];

@@ -44,7 +44,7 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Engine implements InterfaceStack, Comparator<Object> {
+public class Engine implements InterfaceStack {
     public Object skel;
     public Display display;
     public Intermediate contskel;
@@ -573,18 +573,6 @@ public class Engine implements InterfaceStack, Comparator<Object> {
         display = ew.last;
         ew.last = Display.DISPLAY_CONST;
         return ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0);
-    }
-
-    /**
-     * <p>Implementation of the comparator interface.</p>
-     *
-     * @param m1 The first molec.
-     * @param m2 The second molec.
-     * @return The comparison result.
-     */
-    public final int compare(Object m1, Object m2) throws ArithmeticException {
-        return SpecialLexical.compareTerm(AbstractTerm.getSkel(m1), AbstractTerm.getDisplay(m1),
-                AbstractTerm.getSkel(m2), AbstractTerm.getDisplay(m2), this);
     }
 
 }

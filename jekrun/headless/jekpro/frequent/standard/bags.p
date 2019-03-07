@@ -213,7 +213,7 @@ forall(A, B) :-
 /**
  * foreach(F, G):
  * Calls the conjunction of those goal instances of G where F succeeds.
- * Variables occuring in G and not occuring in F are shared.
+ * Variables occurring in G and not occurring in F are shared.
  */
 % foreach(+Generator, +Goal)
 :- public foreach/2.
@@ -235,8 +235,8 @@ sys_call_values([_-V|L]) :-
 /**
  * foreach(F, G, I, O):
  * Calls the conjunction of those closure instances of G where F succeeds
- * threading them with input I and output O. Variables occuring in G and
- * not occuring in F are shared.
+ * threading them with input I and output O. Variables occurring in G and
+ * not occurring in F are shared.
  */
 % foreach(+Generator, +Goal, +Term, -Term)
 :- public foreach/4.

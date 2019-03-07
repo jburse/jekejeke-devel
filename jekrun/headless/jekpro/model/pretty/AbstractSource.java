@@ -1173,7 +1173,7 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
             pick.setSource(this);
             if (map == null) {
                 map = new AssocArray<Integer, Predicate>();
-                preds.put(fun, map);
+                preds.add(fun, map);
             }
             map.add(Integer.valueOf(arity), pick);
             cachepreds = null;
@@ -1305,7 +1305,7 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
             oper.setSource(this);
             if (map == null) {
                 map = new AssocArray<Integer, Operator>();
-                ops.put(fun, map);
+                ops.add(fun, map);
             }
             map.add(Integer.valueOf(type), oper);
             cacheops = null;

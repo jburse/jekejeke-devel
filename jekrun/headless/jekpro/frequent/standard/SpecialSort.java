@@ -6,6 +6,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -83,7 +84,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    boolean multi = SpecialSort.sort(en, temp[0], ref, en);
+                    boolean multi = SpecialSort.sort(SpecialLexical.DEFAULT, temp[0], ref, en);
                     Display d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
@@ -103,7 +104,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = SpecialSort.keySort(en, temp[0], ref, en);
+                    multi = SpecialSort.keySort(SpecialLexical.DEFAULT, temp[0], ref, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
@@ -146,8 +147,8 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_LOCALE_SORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Comparator cmp = EngineLexical.comparatorAtom(temp[0], ref);
-                    multi = SpecialSort.sort(new EngineLexical(cmp, en), temp[1], ref, en);
+                    Comparator<Object> cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    multi = SpecialSort.sort(cmp, temp[1], ref, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
@@ -158,7 +159,7 @@ public final class SpecialSort extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     cmp = EngineLexical.comparatorAtom(temp[0], ref);
-                    multi = SpecialSort.keySort(new EngineLexical(cmp, en), temp[1], ref, en);
+                    multi = SpecialSort.keySort(cmp, temp[1], ref, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                         return false;
@@ -181,15 +182,15 @@ public final class SpecialSort extends AbstractSpecial {
     /**
      * <p>Sort a list.</p>
      *
-     * @param c  The comparator.
+     * @param cmp  The comparator.
      * @param m  The skeleton.
      * @param d  The display.
      * @param en The engine.
      */
-    private static boolean sort(Comparator<Object> c,
+    private static boolean sort(Comparator<Object> cmp,
                                 Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractSet<Object> set = new SetTree<Object>(c);
+        AbstractSet<Object> set = new SetTree<Object>(cmp);
         SpecialSort.sortSet(set, m, d, en);
         return createSet(en.store.foyer.ATOM_NIL,
                 Display.DISPLAY_CONST, set, en);
@@ -278,7 +279,7 @@ public final class SpecialSort extends AbstractSpecial {
             t4 = en.skel;
             d2 = en.display;
             boolean ext = multi;
-            T elem = entry.key;
+            T elem = entry.value;
             Object val = AbstractTerm.getSkel(elem);
             Display ref = AbstractTerm.getDisplay(elem);
             multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
@@ -298,15 +299,15 @@ public final class SpecialSort extends AbstractSpecial {
      * <p>Key sort a pair list.</p>
      * <p>The result is returned in skel and display of the engine.</p>
      *
-     * @param c  The comparator.
+     * @param cmp  The comparator.
      * @param m  The skeletion.
      * @param d  The display.
      * @param en The engine.
      */
-    private static boolean keySort(Comparator<Object> c,
+    private static boolean keySort(Comparator<Object> cmp,
                                    Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(c);
+        AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(cmp);
         SpecialSort.sortMap(map, m, d, en);
         return SpecialSort.createMap(map, en);
     }

@@ -4,7 +4,6 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.NamedDistance;
@@ -406,11 +405,11 @@ public final class SpecialVars extends AbstractSpecial {
         /* pass one, all non-anon */
         for (SetEntry<Object> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            if (anon != null && anon.getKey(entry.key) != null)
+            if (anon != null && anon.getKey(entry.value) != null)
                 continue;
             NamedDistance nd;
-            if (print != null && (nd = print.get(entry.key)) != null) {
-                copy.add(entry.key, nd);
+            if (print != null && (nd = print.get(entry.value)) != null) {
+                copy.add(entry.value, nd);
             } else {
                 if (range == null)
                     range = NamedDistance.nameRange(print);
@@ -420,21 +419,21 @@ public final class SpecialVars extends AbstractSpecial {
                     name = SkelVar.sernoToString(k, false);
                     k++;
                 }
-                NamedDistance.addAnon(copy, entry.key, name);
+                NamedDistance.addAnon(copy, entry.value, name);
             }
         }
 
         /* pass two, all anon */
         for (SetEntry<Object> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            if (anon == null || anon.getKey(entry.key) == null)
+            if (anon == null || anon.getKey(entry.value) == null)
                 continue;
             NamedDistance nd;
-            if (print != null && (nd = print.get(entry.key)) != null) {
-                copy.add(entry.key, nd);
+            if (print != null && (nd = print.get(entry.value)) != null) {
+                copy.add(entry.value, nd);
             } else {
                 if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
-                    NamedDistance.addAnon(copy, entry.key, PrologReader.OP_ANON);
+                    NamedDistance.addAnon(copy, entry.value, PrologReader.OP_ANON);
                 } else {
                     if (range == null)
                         range = NamedDistance.nameRange(print);
@@ -444,7 +443,7 @@ public final class SpecialVars extends AbstractSpecial {
                         name = SkelVar.sernoToString(k, false);
                         k++;
                     }
-                    NamedDistance.addAnon(copy, entry.key, name);
+                    NamedDistance.addAnon(copy, entry.value, name);
                 }
             }
         }

@@ -1,12 +1,13 @@
 package jekpro.frequent.advanced;
 
-import jekpro.tools.call.CallIn;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
-import matula.util.misc.InterfacePipe;
-import matula.util.misc.Pivot;
+import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.Display;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.call.*;
+import jekpro.tools.term.*;
+import matula.util.data.MapEntry;
+import matula.util.data.SetEntry;
 
 /**
  * <p>Provides built-in predicates for the module micro.</p>
@@ -78,9 +79,59 @@ public final class ForeignMicro {
      * @param q     The pivot.
      * @param t     The term.
      */
-    public static void sysPivotPut(Interpreter inter, Pivot q, AbstractTerm t) {
+    public static void sysPivotSet(Interpreter inter,
+                                   SetEntry q, AbstractTerm t) {
         Object obj = AbstractTerm.copyMolec(inter, t);
-        q.put(obj);
+        q.value = obj;
+    }
+
+    /**
+     * <p>Place a copy into the revolve.</p>
+     *
+     * @param inter The interpreter.
+     * @param r     The revolve.
+     * @param k     The key.
+     */
+    public static SetEntry sysRevolveLookup(Interpreter inter,
+                                            Revolve r, AbstractTerm k) {
+        Object m = AbstractTerm.getSkel(k);
+        Display d = AbstractTerm.getDisplay(k);
+        Engine en = (Engine) inter.getEngine();
+        Object val = AbstractSkel.copySkel(m, d, en);
+        MapEntry h = r.getEntry(val);
+        if (h == null) {
+            h = r.newEntry(val, null);
+            r.putEntry(h);
+        }
+        return h;
+    }
+
+    /**
+     * <p>Enumertae the revolve.</p>
+     *
+     * @param co The call out.
+     * @param r  The revolve.
+     * @return The pair.
+     */
+    public static Object sysRevolvePair(CallOut co, Revolve r) {
+        MapEntry at;
+        if (co.getFirst()) {
+            at = r.getFirstEntry();
+        } else {
+            at = (MapEntry) co.getData();
+        }
+        if (at == null)
+            return null;
+        MapEntry next = r.successor(at);
+        co.setRetry(next != null);
+        co.setData(next);
+        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
+        int size = EngineCopy.displaySize(val);
+        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        val = AbstractTerm.createMolec(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(val, new ResetableBit());
+        return val;
     }
 
 }
