@@ -63,10 +63,9 @@ public final class ForeignPipe {
      * @param inter The interpreter.
      * @param q     The bounded queue.
      * @param t     The term.
-     * @throws InterruptedException Thread was interrupted.
      */
-    public static boolean sysPipeOffer(Interpreter inter, Queue q, AbstractTerm t)
-            throws InterruptedException {
+    public static boolean sysPipeOffer(Interpreter inter,
+                                       Queue q, AbstractTerm t) {
         Object obj = AbstractTerm.copyMolec(inter, t);
         return q.offer(obj);
     }

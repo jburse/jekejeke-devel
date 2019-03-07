@@ -93,6 +93,28 @@ public final class SkelCompound extends AbstractSkel {
         return var;
     }
 
+    /**
+     * <p>Return the hash code.</p>
+     *
+     * @return The hash code.
+     */
+    public int hashCode() {
+        return AbstractSkel.hashSkel(this, 0);
+    }
+
+    /**
+     * <p>Check the identity.</p>
+     *
+     * @param o The other object.
+     */
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof SkelCompound))
+            return false;
+        return AbstractSkel.equalSkel(this, o);
+    }
+
     /*****************************************************************/
     /* Spine Handling                                                */
     /******************************************************************/

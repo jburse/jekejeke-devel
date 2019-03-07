@@ -502,6 +502,11 @@ public final class Types {
                     AbstractFactory.OP_PERMISSION_LOOKUP,
                     mapMemberType(y),
                     mapMemberCulprit(y)));
+        } else if (x instanceof InstantiationException) {
+            return new EngineMessage(EngineMessage.permissionError(
+                    AbstractFactory.OP_PERMISSION_NEW,
+                    mapMemberType(y),
+                    mapMemberCulprit(y)));
         } else {
             throw new IllegalArgumentException("illegal exception");
         }

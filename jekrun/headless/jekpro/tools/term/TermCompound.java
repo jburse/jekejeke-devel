@@ -150,11 +150,11 @@ public final class TermCompound extends AbstractTerm {
      * @return The hash value.
      */
     public int hashCode() {
-        return SpecialSort.hashCode(skel, display, 0);
+        return SpecialSort.hashTerm(skel, display, 0);
     }
 
     /**
-     * <p>Check the identity to another molec compound.</p>
+     * <p>Check the identity.</p>
      *
      * @param o The other object.
      */

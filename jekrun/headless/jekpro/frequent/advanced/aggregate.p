@@ -1,8 +1,9 @@
 /**
- * The aggregate predicates take a set of solutions and compute
- * an aggregate on it. The predicate aggregate_all/3 aggregates the
+ * The aggregate predicates take a set of solutions and compute an
+ * aggregate on it. The predicate aggregate_all/3 aggregates the
  * solution that is produced by findall/3. The predicate aggregate/3
- * aggregates the solutions that are produced by bagof/3.
+ * respectively sys_collect/3 aggregates the solutions that are
+ * produced by bagof/3 respectively sys_heapof/3.
  *
  * Examples:
  * ?- [user].
@@ -16,6 +17,11 @@
  * R = (5,2) ;
  * Y = 4,
  * R = (5,1)
+ *
+ * The implementation of aggregate_all/3 takes advantage of pivots
+ * introduced in the module sequence. The other aggregate predicates
+ * take advantage of a map from variant terms to pivots. The memory
+ * usage is therefore proportional to the number of variant terms.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -53,7 +59,7 @@
 :- use_package(foreign(jekpro/tools/term)).
 
 :- module(aggregate, []).
-:- use_module(library(advanced/micro)).
+:- use_module(library(advanced/sequence)).
 :- use_module(library(basic/lists)).
 
 /**

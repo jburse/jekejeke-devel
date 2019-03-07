@@ -7,11 +7,10 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialCompare;
-import jekpro.reference.structure.EngineLexical;
 import jekpro.reference.structure.SpecialLexical;
+import jekpro.frequent.standard.SpecialSort;
 
 import java.io.StringWriter;
-import java.util.Comparator;
 
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>
@@ -45,12 +44,6 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSkel {
-    public final static Comparator<Object> DEFAULT = new Comparator<Object>() {
-        public int compare(Object o1, Object o2) {
-            return compareSkel(o1, o2);
-        }
-    };
-
     public final static Object VOID_OBJ = new Object();
 
     /**
@@ -90,6 +83,27 @@ public abstract class AbstractSkel {
         return val;
     }
 
+
+    /**
+     * <p>Copy a skeleton into a new term.</p>
+     *
+     * @param val The skeleton.
+     * @return The term.
+     */
+    public static Object newMolec(Object val) {
+        int size = EngineCopy.displaySize(val);
+        Display ref = (size != 0 ? new Display(Display.newBind(size)) :
+                Display.DISPLAY_CONST);
+        val = AbstractTerm.createMolec(val, ref);
+        if (size != 0)
+            AbstractTerm.setMarker(val, new ResetableBit());
+        return val;
+    }
+
+    /**********************************************************/
+    /* Skel Comparison                                        */
+    /**********************************************************/
+
     /**
      * <p>Compare two skeletons lexically.</p>
      * <p>Teil recursive solution.</p>
@@ -98,31 +112,32 @@ public abstract class AbstractSkel {
      * @param alfa The skeleton of the first term.
      * @param beta The skeleton of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     * @see SpecialLexical#compareTerm
      */
     public static int compareSkel(Object alfa, Object beta)
             throws ArithmeticException {
         for (; ; ) {
-            int i = EngineLexical.cmpType(alfa);
-            int k = i - EngineLexical.cmpType(beta);
+            int i = SpecialLexical.cmpType(alfa);
+            int k = i - SpecialLexical.cmpType(beta);
             if (k != 0) return k;
             switch (i) {
-                case EngineLexical.CMP_TYPE_VAR:
+                case SpecialLexical.CMP_TYPE_VAR:
                     i = ((SkelVar) alfa).id;
                     k = ((SkelVar) beta).id;
                     return i - k;
-                case EngineLexical.CMP_TYPE_DECIMAL:
+                case SpecialLexical.CMP_TYPE_DECIMAL:
                     return SpecialLexical.compareDecimalLexical(alfa, beta);
-                case EngineLexical.CMP_TYPE_FLOAT:
+                case SpecialLexical.CMP_TYPE_FLOAT:
                     return SpecialLexical.compareFloatLexical(alfa, beta);
-                case EngineLexical.CMP_TYPE_INTEGER:
+                case SpecialLexical.CMP_TYPE_INTEGER:
                     return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case EngineLexical.CMP_TYPE_REF:
+                case SpecialLexical.CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);
                     throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case EngineLexical.CMP_TYPE_ATOM:
+                case SpecialLexical.CMP_TYPE_ATOM:
                     return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
-                case EngineLexical.CMP_TYPE_COMPOUND:
+                case SpecialLexical.CMP_TYPE_COMPOUND:
                     Object[] t1 = ((SkelCompound) alfa).args;
                     Object[] t2 = ((SkelCompound) beta).args;
                     k = t1.length - t2.length;
@@ -140,6 +155,68 @@ public abstract class AbstractSkel {
                 default:
                     throw new IllegalArgumentException("unknown type");
             }
+        }
+    }
+
+    /********************************************************************/
+    /* Skel Hash                                                        */
+    /********************************************************************/
+
+    /**
+     * <p>Compute the hash code.</p>
+     * <p>Teil recursive solution.</p>
+     *
+     * @param t   The term.
+     * @param res The preceding hash.
+     * @return The hash value.
+     * @see SpecialSort#hashTerm
+     */
+    public static int hashSkel(Object t, int res) {
+        for (; ; ) {
+            if (!(t instanceof SkelCompound))
+                return res * 31 + t.hashCode();
+            Object[] tc = ((SkelCompound) t).args;
+            res = res * 31 + ((SkelCompound) t).sym.hashCode();
+            int i = 0;
+            for (; i < tc.length - 1; i++)
+                res = hashSkel(tc[i], res);
+            t = tc[i];
+        }
+    }
+
+    /**********************************************************/
+    /* Skel Equality                                          */
+    /**********************************************************/
+
+    /**
+     * <p>Check two terms for lexical equivalence.</p>
+     * <p>Teil recursive solution.</p>
+     *
+     * @param alfa The first term.
+     * @param beta The second term.
+     * @return True if they are lexically equal, otherwise false.
+     * @see SpecialLexical#equalTerm
+     */
+    public static boolean equalSkel(Object alfa, Object beta) {
+        for (; ; ) {
+            boolean k = (alfa instanceof SkelCompound);
+            if (k != (beta instanceof SkelCompound))
+                return false;
+            if (!k)
+                return alfa.equals(beta);
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++) {
+                if (!equalSkel(t1[i], t2[i]))
+                    return false;
+            }
+            alfa = t1[i];
+            beta = t2[i];
         }
     }
 

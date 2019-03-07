@@ -54,6 +54,7 @@ public abstract class AbstractFactory extends AbstractFramework {
     public static final String OP_PERMISSION_CONSTRUCTOR = "constructor";
     public static final String OP_PERMISSION_FIELD = "field";
     public static final String OP_PERMISSION_INDEX = "index";
+    public static final String OP_PERMISSION_NEW = "new";
 
     public static final String OP_REPRESENTATION_NULL = "null";
 

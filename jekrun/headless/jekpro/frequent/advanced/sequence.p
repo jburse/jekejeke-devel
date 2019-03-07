@@ -47,9 +47,12 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/frequent/advanced)).
+:- use_package(foreign(matula/util/data)).
+:- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/tools/term)).
 
 :- module(sequence, []).
-:- use_module(library(advanced/micro)).
 
 /**
  * limit(C, G):
@@ -102,3 +105,29 @@ call_nth2(G, N) :-
    pivot_get(P, M),
    N is M+1,
    pivot_set(P, N).
+
+/*************************************************************/
+/* Pivot Datatype                                            */
+/*************************************************************/
+
+/**
+ * pivot_new(P):
+ * The predicate succeeds in P with a new pivot.
+ */
+% pivot_new(-Pivot)
+:- foreign_constructor(pivot_new/1, 'SetEntry', new).
+
+/**
+ * pivot_set(P, O):
+ * The predicate succeeds setting the pivot P to O.
+ */
+% pivot_set(+Pivot, +Term)
+:- foreign(pivot_set/2, 'ForeignSequence',
+      sysPivotSet('Interpreter','SetEntry','AbstractTerm')).
+
+/**
+ * pivot_get(P, O):
+ * The predicate succeeds in O with a copy of the pivot P.
+ */
+% pivot_get(+Pivot, -Term)
+:- foreign(pivot_get/2, 'ForeignSequence', sysPivotGet('SetEntry')).

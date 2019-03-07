@@ -345,7 +345,8 @@ public abstract class AbstractTerm {
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
         int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        Display ref = (size != 0 ? new Display(Display.newBind(size)) :
+                Display.DISPLAY_CONST);
         val = AbstractTerm.createTerm(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(val, new ResetableBit());
@@ -369,7 +370,8 @@ public abstract class AbstractTerm {
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
         int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        Display ref = (size != 0 ? new Display(Display.newBind(size)) :
+                Display.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
             AbstractTerm.setMarker(res, new ResetableBit());
@@ -391,12 +393,7 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
-        int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-        val = AbstractTerm.createMolec(val, ref);
-        if (size != 0)
-            AbstractTerm.setMarker(val, new ResetableBit());
-        return val;
+        return AbstractSkel.newMolec(val);
     }
 
 }

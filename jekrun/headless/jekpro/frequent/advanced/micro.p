@@ -4,16 +4,6 @@
  * created by the predicate micro_new/2. A micro engine can then be
  * controlled by the predicates micro_cont/1 and micro_close/1.
  *
- * To exchanged data with a micro engine, pivots are provided. Pivots
- * work like unsynchronized queues of length one. A new pivot can be
- * created by the predicate pivot_new/1. A pivot can then be modified
- * and accessed by the predicates pivot_set/2 and pivot_get/2.
- *
- * A revolve delivers a map from variant terms to pivots. A new revolve
- * can be created by the predicate revolve_new/1. A new or old variant
- * terms can be looked-up with the predicate revolve_lookup/3. The map
- * can be enumerated by the predicate revolve_pair/2.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -62,7 +52,6 @@
 /**
  * micro_cont(M):
  * The predicate succeeds if the micro engine could continue to a success.
- * Othewise the predicate fails.
  */
 % micro_cont(+Micro)
 :- public micro_cont/1.
@@ -76,32 +65,5 @@
 :- public micro_close/1.
 :- virtual micro_close/1.
 :- foreign(micro_close/1, 'CallIn', close).
-
-/**
- * pivot_new(P):
- * The predicate succeeds in P with a new pivot.
- */
-% pivot_new(-Pivot)
-:- public pivot_new/1.
-:- foreign_constructor(pivot_new/1, 'Pivot', new).
-
-/**
- * pivot_set(P, O):
- * The predicate succeeds in making a copy of O
- * and setting the value of the pivot P.
- */
-% pivot_set(+Pivot, +Term)
-:- public pivot_set/2.
-:- foreign(pivot_set/2, 'ForeignMicro',
-      sysPivotSet('Interpreter','SetEntry','AbstractTerm')).
-
-/**
- * pivot_get(P, O):
- * The predicate succeeds in O with the value of the pivot P.
- */
-% pivot_get(+Pivot, -Term)
-:- public pivot_get/2.
-:- virtual pivot_get/2.
-:- foreign_getter(pivot_get/2, 'SetEntry', value).
 
 

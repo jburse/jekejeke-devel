@@ -1,12 +1,14 @@
 package jekpro.frequent.advanced;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapEntry;
 import matula.util.data.SetEntry;
@@ -92,12 +94,7 @@ public final class ForeignAggregate {
         co.setRetry(next != null);
         co.setData(next);
         Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
-        int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-        val = AbstractTerm.createMolec(val, ref);
-        if (size != 0)
-            AbstractTerm.setMarker(val, new ResetableBit());
-        return val;
+        return AbstractSkel.newMolec(val);
     }
 
 }

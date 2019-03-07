@@ -1,13 +1,10 @@
 package jekpro.frequent.advanced;
 
-import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.model.pretty.Foyer;
-import jekpro.tools.call.*;
-import jekpro.tools.term.*;
-import matula.util.data.MapEntry;
-import matula.util.data.SetEntry;
+import jekpro.tools.call.CallIn;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 
 /**
  * <p>Provides built-in predicates for the module micro.</p>
@@ -70,19 +67,6 @@ public final class ForeignMicro {
         } else {
             return false;
         }
-    }
-
-    /**
-     * <p>Place a copy into the pivot.</p>
-     *
-     * @param inter The interpreter.
-     * @param q     The pivot.
-     * @param t     The term.
-     */
-    public static void sysPivotSet(Interpreter inter,
-                                   SetEntry q, AbstractTerm t) {
-        Object obj = AbstractTerm.copyMolec(inter, t);
-        q.value = obj;
     }
 
 }
