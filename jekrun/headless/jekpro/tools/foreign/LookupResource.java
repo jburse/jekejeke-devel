@@ -5,7 +5,6 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.LookupBase;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractBundle;
@@ -89,8 +88,8 @@ public final class LookupResource {
      * <p>Find a path suffix.</p>
      *
      * @param path The path, in slash notation.
-     * @param src     The source, not null.
-     * @param mask    The mask.
+     * @param src  The source, not null.
+     * @param mask The mask.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
@@ -103,11 +102,11 @@ public final class LookupResource {
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
             Store store = src.getStore();
             do {
-                MapEntry<String,FileExtension>[] fixes = store.snapshotFileExtensions();
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String,FileExtension> fix = fixes[i];
+                    MapEntry<String, FileExtension> fix = fixes[i];
                     if ((fix.value.getType() & FileExtension.MASK_USES_TEXT) != 0) {
-                        String key = findResource(path+fix.key, src.getStore());
+                        String key = findResource(path + fix.key, src.getStore());
                         if (key != null)
                             return key;
                     }
@@ -120,11 +119,11 @@ public final class LookupResource {
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
             Store store = src.getStore();
             do {
-                MapEntry<String,FileExtension>[] fixes = store.snapshotFileExtensions();
+                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
-                    MapEntry<String,FileExtension> fix = fixes[i];
+                    MapEntry<String, FileExtension> fix = fixes[i];
                     if ((fix.value.getType() & FileExtension.MASK_USES_RSCS) != 0) {
-                        String key = findResource(path+fix.key, src.getStore());
+                        String key = findResource(path + fix.key, src.getStore());
                         if (key != null)
                             return key;
                     }

@@ -13,8 +13,6 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.regex.ScannerError;
 
-import static jekpro.tools.term.Knowledgebase.OP_TRUE;
-
 /*
  * With the introduction of hierarchical knowledge bases it became
  * apparent that we need to have a central location to manage the

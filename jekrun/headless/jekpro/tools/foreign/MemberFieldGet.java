@@ -124,7 +124,7 @@ final class MemberFieldGet extends AbstractMember {
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        Object[] temp = ((SkelCompound) en.skel).args;
+        Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
         Object res = AutoClass.invokeGetter(field, obj);
@@ -136,8 +136,9 @@ final class MemberFieldGet extends AbstractMember {
         if (res == null)
             return false;
         Display d = AbstractTerm.getDisplay(res);
+        Object[] help;
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(temp[temp.length - 1], ref,
+                !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
         ResetableBit check = AbstractTerm.getMarker(res);

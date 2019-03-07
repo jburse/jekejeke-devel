@@ -129,8 +129,8 @@ public final class TermVar extends AbstractTerm {
      * @return The serial number.
      */
     public int getValue(Interpreter inter) {
-        return skel.getValue(display,
-                inter != null ? (Engine) inter.getEngine() : null);
+        Engine en = (inter != null ? (Engine) inter.getEngine() : null);
+        return skel.getValue(display, en);
     }
 
     /**

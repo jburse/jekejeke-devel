@@ -147,9 +147,9 @@ final class MemberMethodDet extends AbstractMember {
         if (res == null)
             return false;
         Display d = AbstractTerm.getDisplay(res);
+        Object[] help;
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(((SkelCompound) temp).args[
-                                ((SkelCompound) temp).args.length - 1], ref,
+                !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
         ResetableBit check = AbstractTerm.getMarker(res);

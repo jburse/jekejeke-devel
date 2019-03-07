@@ -1,9 +1,11 @@
 package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindCount;
 import jekpro.model.molec.BindSerno;
 import jekpro.model.molec.Display;
+import matula.util.wire.AbstractLivestock;
 
 /**
  * <p>This class provides variable skeletons.</p>
@@ -138,6 +140,23 @@ public class SkelVar extends AbstractSkel
         } else {
             return id;
         }
+    }
+
+    /**
+     * <p>Retrieve the serial number of a variable.</p>
+     *
+     * @param ref The display.
+     * @return The serial number.
+     */
+    public int getValue(Display ref) {
+        BindCount bc = ref.bind[id];
+        int i = bc.serno;
+        if (i == -1) {
+            Thread thread = Thread.currentThread();
+            Supervisor visor = (Supervisor) AbstractLivestock.currentLivestock(thread);
+            i = BindSerno.bindSerno(bc, visor.inuse);
+        }
+        return i;
     }
 
     /**

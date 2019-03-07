@@ -1,12 +1,10 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -128,10 +126,11 @@ final class MemberFieldSet extends AbstractMember {
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage {
-        Object[] temp = ((SkelCompound) en.skel).args;
+        Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object arg = Types.denormProlog(encodeparas[0], temp[temp.length - 1], ref, null);
+        Object[] help = ((SkelCompound) temp).args;
+        Object arg = Types.denormProlog(encodeparas[0], help[help.length - 1], ref, null);
         invokeSetter(obj, arg);
         return en.getNextRaw();
     }

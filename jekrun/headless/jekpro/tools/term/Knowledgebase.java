@@ -9,12 +9,8 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
-import jekpro.tools.foreign.LookupResource;
 import matula.util.data.MapEntry;
-import matula.util.system.AbstractDecoder;
-import matula.util.system.AbstractRecognizer;
 import matula.util.system.FileExtension;
-import matula.util.system.ForeignUri;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -311,7 +307,7 @@ public class Knowledgebase {
      *
      * @return The file extensions and their type.
      */
-    public final MapEntry<String,FileExtension>[] getFileExtensions() {
+    public final MapEntry<String, FileExtension>[] getFileExtensions() {
         return store.snapshotFileExtensions();
     }
 

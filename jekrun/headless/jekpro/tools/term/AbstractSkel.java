@@ -1,12 +1,17 @@
 package jekpro.tools.term;
 
-import jekpro.model.molec.BindCount;
+import jekpro.frequent.standard.EngineCopy;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
+import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.SpecialLexical;
 
 import java.io.StringWriter;
+import java.util.Comparator;
 
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>
@@ -40,6 +45,12 @@ import java.io.StringWriter;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSkel {
+    public final static Comparator<Object> DEFAULT = new Comparator<Object>() {
+        public int compare(Object o1, Object o2) {
+            return compareSkel(o1, o2);
+        }
+    };
+
     public final static Object VOID_OBJ = new Object();
 
     /**
@@ -59,5 +70,77 @@ public abstract class AbstractSkel {
         }
     }
 
+    /**
+     * <p>Copy a term into a new skeleton.</p>
+     *
+     * @param m  The term skeletion.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The new skeleton.
+     */
+    public static Object copySkel(Object m, Display d, Engine en) {
+        EngineCopy ec = en.enginecopy;
+        if (ec == null) {
+            ec = new EngineCopy();
+            en.enginecopy = ec;
+        }
+        ec.vars = null;
+        Object val = ec.copyTerm(m, d);
+        ec.vars = null;
+        return val;
+    }
+
+    /**
+     * <p>Compare two skeletons lexically.</p>
+     * <p>Teil recursive solution.</p>
+     * <p>Throws a runtime exception for uncomparable references.</p>
+     *
+     * @param alfa The skeleton of the first term.
+     * @param beta The skeleton of the second term.
+     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     */
+    public static int compareSkel(Object alfa, Object beta)
+            throws ArithmeticException {
+        for (; ; ) {
+            int i = EngineLexical.cmpType(alfa);
+            int k = i - EngineLexical.cmpType(beta);
+            if (k != 0) return k;
+            switch (i) {
+                case EngineLexical.CMP_TYPE_VAR:
+                    i = ((SkelVar) alfa).id;
+                    k = ((SkelVar) beta).id;
+                    return i - k;
+                case EngineLexical.CMP_TYPE_DECIMAL:
+                    return SpecialLexical.compareDecimalLexical(alfa, beta);
+                case EngineLexical.CMP_TYPE_FLOAT:
+                    return SpecialLexical.compareFloatLexical(alfa, beta);
+                case EngineLexical.CMP_TYPE_INTEGER:
+                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
+                case EngineLexical.CMP_TYPE_REF:
+                    if (alfa instanceof Comparable)
+                        return ((Comparable) alfa).compareTo(beta);
+                    throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
+                case EngineLexical.CMP_TYPE_ATOM:
+                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
+                case EngineLexical.CMP_TYPE_COMPOUND:
+                    Object[] t1 = ((SkelCompound) alfa).args;
+                    Object[] t2 = ((SkelCompound) beta).args;
+                    k = t1.length - t2.length;
+                    if (k != 0) return k;
+                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym);
+                    if (k != 0) return k;
+                    i = 0;
+                    for (; i < t1.length - 1; i++) {
+                        k = compareSkel(t1[i], t2[i]);
+                        if (k != 0) return k;
+                    }
+                    alfa = t1[i];
+                    beta = t2[i];
+                    break;
+                default:
+                    throw new IllegalArgumentException("unknown type");
+            }
+        }
+    }
 
 }

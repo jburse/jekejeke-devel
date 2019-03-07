@@ -105,7 +105,7 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Interpreter implements Comparator<Object> {
+public final class Interpreter {
     private final Engine engine;
 
     public final static int FLAG_QUOTED = PrologWriter.FLAG_QUOT;
@@ -168,23 +168,6 @@ public final class Interpreter implements Comparator<Object> {
      */
     public CallIn iterator(Object goal) {
         return new CallIn(goal, this);
-    }
-
-    /*****************************************************************/
-    /* AbstractTerm Comparison                                       */
-    /*****************************************************************/
-
-    /**
-     * <p>Compare lexically this term with another term.</p>
-     *
-     * @param t1 The first term.
-     * @param t2 The second term.
-     * @return <0 this < t, 0 this = t, >0 this > t
-     */
-    public int compare(Object t1, Object t2)
-            throws ArithmeticException {
-        return SpecialLexical.compareTerm(AbstractTerm.getSkel(t1), AbstractTerm.getDisplay(t1),
-                AbstractTerm.getSkel(t2), AbstractTerm.getDisplay(t2), engine);
     }
 
     /*****************************************************************/

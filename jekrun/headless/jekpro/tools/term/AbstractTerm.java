@@ -2,7 +2,10 @@ package jekpro.tools.term;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.AbstractBind;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
@@ -338,22 +341,15 @@ public abstract class AbstractTerm {
         Display d = AbstractTerm.getDisplay(t);
 
         Engine en = (Engine) inter.getEngine();
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
-        ec.vars = null;
-        Object val = ec.copyTerm(m, d);
-        ec.vars = null;
+        Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
         int size = EngineCopy.displaySize(val);
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-        Object res = AbstractTerm.createTerm(val, ref);
+        val = AbstractTerm.createTerm(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new ResetableBit());
-        return res;
+            AbstractTerm.setMarker(val, new ResetableBit());
+        return val;
     }
 
     /**
@@ -369,14 +365,7 @@ public abstract class AbstractTerm {
         Display d = AbstractTerm.getDisplay(t);
 
         Engine en = (Engine) inter.getEngine();
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
-        ec.vars = null;
-        Object val = ec.copyTerm(m, d);
-        ec.vars = null;
+        Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
         int size = EngineCopy.displaySize(val);
@@ -398,24 +387,16 @@ public abstract class AbstractTerm {
         /* common lane */
         Object m = AbstractTerm.getSkel(t);
         Display d = AbstractTerm.getDisplay(t);
-
         Engine en = (Engine) inter.getEngine();
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
-        ec.vars = null;
-        Object val = ec.copyTerm(m, d);
-        ec.vars = null;
+        Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
         int size = EngineCopy.displaySize(val);
         Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-        Object res = AbstractTerm.createMolec(val, ref);
+        val = AbstractTerm.createMolec(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new ResetableBit());
-        return res;
+            AbstractTerm.setMarker(val, new ResetableBit());
+        return val;
     }
 
 }

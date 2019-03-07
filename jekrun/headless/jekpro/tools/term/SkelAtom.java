@@ -120,7 +120,7 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
      * @param c The collator.
      * @return <0 less, 0 equal, >0 greater
      */
-    public int compareTo(SkelAtom o, Comparator c) {
+    public int compareTo(SkelAtom o, Comparator<String> c) {
         return c.compare(fun, o.fun);
     }
 

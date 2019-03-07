@@ -76,18 +76,22 @@ public final class SkelCompound extends AbstractSkel {
      * @return The list or null.
      */
     public static Object makeExtra(Object[] a) {
-        Object var = EngineCopy.getVar(a[a.length - 1]);
+        Object var = null;
         ListArray<SkelVar> vec = null;
-        for (int i = a.length - 2; i >= 0; i--) {
+        for (int i = 0; i < a.length; i++) {
             Object newvar = EngineCopy.getVar(a[i]);
-            if (newvar != null)
+            if (newvar == null)
+                continue;
+            if (var == null) {
+                var = newvar;
+            } else {
                 vec = addExtra(newvar, vec, var);
+            }
         }
         if (vec != null)
             var = concatExtra(vec, var);
         return var;
     }
-
 
     /*****************************************************************/
     /* Spine Handling                                                */
@@ -103,22 +107,26 @@ public final class SkelCompound extends AbstractSkel {
     private static Object concatExtra(ListArray<SkelVar> vec, Object var) {
         SkelVar[] res;
         int n = vec.size();
+        int k;
         if (var != null) {
             if (var instanceof SkelVar) {
-                res = new SkelVar[n + 1];
-                res[n] = (SkelVar) var;
+                res = new SkelVar[1 + n];
+                res[0] = (SkelVar) var;
+                k = 1;
             } else {
                 SkelVar[] temp = (SkelVar[]) var;
-                res = new SkelVar[n + temp.length];
-                System.arraycopy(temp, 0, res, n, temp.length);
+                res = new SkelVar[temp.length + n];
+                System.arraycopy(temp, 0, res, 0, temp.length);
+                k = temp.length;
             }
         } else {
             if (n == 1)
                 return vec.get(0);
             res = new SkelVar[n];
+            k = 0;
         }
         for (int i = 0; i < n; i++)
-            res[n - 1 - i] = vec.get(i);
+            res[k + i] = vec.get(i);
         return res;
     }
 
@@ -147,7 +155,7 @@ public final class SkelCompound extends AbstractSkel {
             }
         } else {
             SkelVar[] temp = (SkelVar[]) newvar;
-            for (int i = temp.length - 1; i >= 0; i--) {
+            for (int i = 0; i < temp.length; i++) {
                 SkelVar mv = temp[i];
                 if (var != null && indexOf(var, mv) != -1)
                     continue;

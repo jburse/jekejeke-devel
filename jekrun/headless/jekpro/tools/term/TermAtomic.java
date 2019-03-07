@@ -1,6 +1,5 @@
 package jekpro.tools.term;
 
-import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 

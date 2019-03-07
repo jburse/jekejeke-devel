@@ -36,7 +36,6 @@ public final class ResetableBit {
 
     /**
      * <p>Create a mutable bit.</p>
-     *
      */
     public ResetableBit() {
         bit = true;
@@ -53,7 +52,6 @@ public final class ResetableBit {
 
     /**
      * <p>Set the bit.</p>
-     *
      */
     public void resetBit() {
         bit = false;
