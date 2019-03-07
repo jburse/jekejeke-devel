@@ -104,32 +104,4 @@
 :- virtual pivot_get/2.
 :- foreign_getter(pivot_get/2, 'SetEntry', value).
 
-/**
- * revolve_new(R):
- * The predicate succeeds in R with a new revolve.
- */
-% revolve_new(-Revolve)
-:- public revolve_new/1.
-:- foreign_constructor(revolve_new/1, 'Revolve', new).
-
-/**
- * revolve_lookup(R, K, P):
- * The predicate succeeds in P with the old or new pivot
- * for a copy of the key K in the revolve R.
- */
-% revolve_lookup(+Revolve, +Term, -Pivot)
-:- public revolve_lookup/3.
-:- foreign(revolve_lookup/3, 'ForeignMicro',
-      sysRevolveLookup('Interpreter','Revolve','AbstractTerm')).
-
-/**
- * revolve_pair(R, U):
- * The predicate succeeds in U with the key value pairs of the revolve R.
- */
-% revolve_pair(+Revolve, +Pair)
-:- public revolve_pair/2.
-:- foreign(revolve_pair/2, 'ForeignMicro',
-      sysRevolvePair('CallOut','Revolve')).
-
-
 

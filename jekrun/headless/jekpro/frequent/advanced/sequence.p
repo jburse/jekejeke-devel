@@ -79,7 +79,7 @@ offset(C, G) :-
 /**
  * call_nth(G, C):
  * The predicate succeeds whenever G succeeds and unifies C with
- * the numbering of the succeesses.
+ * the numbering of the successes.
  */
 % call_nth(+Goal, -Integer)
 :- public call_nth/2.

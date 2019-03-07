@@ -52,6 +52,7 @@ public final class SpecialLexical extends AbstractSpecial {
         }
     };
 
+
     private final static int SPECIAL_LEX_EQ = 0;
     private final static int SPECIAL_LEX_NQ = 1;
     private final static int SPECIAL_LEX_LS = 2;
@@ -65,6 +66,15 @@ public final class SpecialLexical extends AbstractSpecial {
     public final static int EQ_TYPE_VAR = 0;
     public final static int EQ_TYPE_ATOMIC = 1;
     public final static int EQ_TYPE_COMPOUND = 2;
+
+    /* the lexical compare categories */
+    public final static int CMP_TYPE_VAR = 0;
+    public final static int CMP_TYPE_DECIMAL = 1;
+    public final static int CMP_TYPE_FLOAT = 2;
+    public final static int CMP_TYPE_INTEGER = 3;
+    public final static int CMP_TYPE_REF = 4;
+    public final static int CMP_TYPE_ATOM = 5;
+    public final static int CMP_TYPE_COMPOUND = 6;
 
     /**
      * <p>Create an compare special.</p>
@@ -173,25 +183,8 @@ public final class SpecialLexical extends AbstractSpecial {
     }
 
     /**********************************************************/
-    /* Equality Test                                          */
+    /* Term Equality                                          */
     /**********************************************************/
-
-    /**
-     * <p>Determine the eq type class of a prolog term. The
-     * prolog term should be already dereferenced.</P>
-     *
-     * @param a The prolog term.
-     * @return The type.
-     */
-    private static int eqType(Object a) {
-        if (a instanceof SkelVar) {
-            return EQ_TYPE_VAR;
-        } else if (a instanceof SkelCompound) {
-            return EQ_TYPE_COMPOUND;
-        } else {
-            return EQ_TYPE_ATOMIC;
-        }
-    }
 
     /**
      * <p>Check two terms for lexical equivalence.</p>
@@ -246,6 +239,23 @@ public final class SpecialLexical extends AbstractSpecial {
         }
     }
 
+    /**
+     * <p>Determine the eq type class of a prolog term. The
+     * prolog term should be already dereferenced.</P>
+     *
+     * @param a The prolog term.
+     * @return The type.
+     */
+    private static int eqType(Object a) {
+        if (a instanceof SkelVar) {
+            return EQ_TYPE_VAR;
+        } else if (a instanceof SkelCompound) {
+            return EQ_TYPE_COMPOUND;
+        } else {
+            return EQ_TYPE_ATOMIC;
+        }
+    }
+
     /**********************************************************/
     /* Term Comparison                                        */
     /**********************************************************/
@@ -272,32 +282,32 @@ public final class SpecialLexical extends AbstractSpecial {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
-            int i = EngineLexical.cmpType(alfa);
+            int i = cmpType(alfa);
             while (beta instanceof SkelVar &&
                     (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
-            int k = i - EngineLexical.cmpType(beta);
+            int k = i - cmpType(beta);
             if (k != 0) return k;
             switch (i) {
-                case EngineLexical.CMP_TYPE_VAR:
+                case CMP_TYPE_VAR:
                     i = ((SkelVar) alfa).getValue(d1);
                     k = ((SkelVar) beta).getValue(d2);
                     return i - k;
-                case EngineLexical.CMP_TYPE_DECIMAL:
+                case CMP_TYPE_DECIMAL:
                     return SpecialLexical.compareDecimalLexical(alfa, beta);
-                case EngineLexical.CMP_TYPE_FLOAT:
+                case CMP_TYPE_FLOAT:
                     return SpecialLexical.compareFloatLexical(alfa, beta);
-                case EngineLexical.CMP_TYPE_INTEGER:
+                case CMP_TYPE_INTEGER:
                     return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case EngineLexical.CMP_TYPE_REF:
+                case CMP_TYPE_REF:
                     if (alfa instanceof Comparable)
                         return ((Comparable) alfa).compareTo(beta);
                     throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case EngineLexical.CMP_TYPE_ATOM:
+                case CMP_TYPE_ATOM:
                     return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
-                case EngineLexical.CMP_TYPE_COMPOUND:
+                case CMP_TYPE_COMPOUND:
                     Object[] t1 = ((SkelCompound) alfa).args;
                     Object[] t2 = ((SkelCompound) beta).args;
                     k = t1.length - t2.length;
@@ -315,6 +325,32 @@ public final class SpecialLexical extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException("unknown type");
             }
+        }
+    }
+
+
+    /**
+     * <p>Determine the compare type class of a prolog term. The
+     * prolog term should be already dereferenced.</P>
+     *
+     * @param a The prolog term.
+     * @return The type.
+     */
+    public static int cmpType(Object a) {
+        if (a instanceof SkelVar) {
+            return CMP_TYPE_VAR;
+        } else if (a instanceof SkelCompound) {
+            return CMP_TYPE_COMPOUND;
+        } else if (a instanceof SkelAtom) {
+            return CMP_TYPE_ATOM;
+        } else if (a instanceof Integer || a instanceof BigInteger) {
+            return CMP_TYPE_INTEGER;
+        } else if (a instanceof Float || a instanceof Double) {
+            return CMP_TYPE_FLOAT;
+        } else if (a instanceof Long || a instanceof BigDecimal) {
+            return CMP_TYPE_DECIMAL;
+        } else {
+            return CMP_TYPE_REF;
         }
     }
 

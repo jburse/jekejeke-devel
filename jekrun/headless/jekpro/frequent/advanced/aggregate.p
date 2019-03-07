@@ -1,4 +1,22 @@
 /**
+ * The aggregate predicates take a set of solutions and compute
+ * an aggregate on it. The predicate aggregate_all/3 aggregates the
+ * solution that is produced by findall/3. The predicate aggregate/3
+ * aggregates the solutions that are produced by bagof/3.
+ *
+ * Examples:
+ * ?- [user].
+ * p(4,5).
+ * p(1,2).
+ * p(1,3).
+ *
+ * Yes
+ * ?- aggregate((sum(X),count),p(Y,X),R).
+ * Y = 1,
+ * R = (5,2) ;
+ * Y = 4,
+ * R = (5,1)
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -29,6 +47,10 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/frequent/advanced)).
+:- use_package(foreign(matula/util/data)).
+:- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/tools/term)).
 
 :- module(aggregate, []).
 :- use_module(library(advanced/micro)).
@@ -50,9 +72,9 @@
 :- public aggregate_all/3.
 :- meta_predicate aggregate_all(?,0,?).
 aggregate_all(A, G, S) :-
-   init_state(A, I),
+   init_state(A, H),
    pivot_new(P),
-   pivot_set(P, I),
+   pivot_set(P, H),
    aggregate_all2(A, G, P),
    pivot_get(P, S).
 
@@ -68,7 +90,7 @@ aggregate_all2(_, _, _).
 /**
  * aggregate(A, X1^…^Xn^G, S):
  * The predicates aggregates the aggregate A for the solutions of G and
- * unifies the result with S. The result is grouped by the witnesses.
+ * unifies the result with S. The result is sorted by the witnesses.
  */
 % aggregate(+Aggregate, +QuantGoal, -Value)
 :- public aggregate/3.
@@ -76,7 +98,8 @@ aggregate_all2(_, _, _).
 aggregate(A, G, S) :-
    sys_goal_globals(A^G, W),
    sys_goal_kernel(G, B),
-   revolve_new(R),
+   variant_comparator(C),
+   revolve_new(C, R),
    aggregate2(W, A, B, R),
    revolve_pair(R, W-Q),
    pivot_get(Q, S).
@@ -91,6 +114,26 @@ aggregate2(W, A, B, R) :- B,
    pivot_set(P, J), fail.
 aggregate2(_, _, _, _).
 
+/**
+ * sys_collect(A, X1^…^Xn^G, S):
+ * The predicates aggregates the aggregate A for the solutions of G and
+ * unifies the result with S. The result is grouped by the witnesses.
+ */
+% sys_collect(+Aggregate, +QuantGoal, -Value)
+:- public sys_collect/3.
+:- meta_predicate sys_collect(?,0,?).
+sys_collect(A, G, S) :-
+   sys_goal_globals(A^G, W),
+   sys_goal_kernel(G, B),
+   revolve_new(R),
+   aggregate2(W, A, B, R),
+   revolve_pair(R, W-Q),
+   pivot_get(Q, S).
+
+/*************************************************************/
+/* Aggregate State                                           */
+/*************************************************************/
+
 % pivot_get_default(+Pivot, +Aggregate, -Value)
 :- private pivot_get_default/3.
 pivot_get_default(P, _, H) :-
@@ -98,6 +141,10 @@ pivot_get_default(P, _, H) :-
 pivot_get_default(_, A, H) :-
    init_state(A, H).
 
+/**
+ * init_state(A, H):
+ * The predicate succeeds in H with the initial state for the aggregate A.
+ */
 % init_state(+Aggregate, -Value)
 :- private init_state/2.
 init_state(X, _) :-
@@ -118,6 +165,11 @@ init_state(X, _) :-
 init_state(X, _) :-
    throw(error(type_error(callable,X),_)).
 
+/**
+ * next_state(H, A, J):
+ * The predicate succeeds in J with the next state for the
+ * aggregate A after the state H.
+ */
 % next_state(+Value, +Aggregate, -Value)
 :- private next_state/3.
 next_state(S, count, T) :-
@@ -137,3 +189,52 @@ next_state(S, max(X), T) :-
 next_state((S,T), (A,B), (U,V)) :-
    next_state(S, A, U),
    next_state(T, B, V).
+
+/*************************************************************/
+/* Revolve Datatype                                          */
+/*************************************************************/
+
+/**
+ * revolve_new(R):
+ * Thre predicate succeeds in R with a new revolve.
+ */
+% revolve_new(-Revolve)
+:- private revolve_new/1.
+:- foreign_constructor(revolve_new/1, 'MapHashLink', new).
+
+/**
+ * revolve_new(C, R):
+ * The predicate succeeds in R with a new revolve for the comparator C.
+ */
+% revolve_new(+Comparator, -Revolve)
+:- private revolve_new/2.
+:- foreign_constructor(revolve_new/2, 'MapTree', new(java/util/'Comparator')).
+
+/**
+ * revolve_lookup(R, K, P):
+ * The predicate succeeds in P with the old or new pivot
+ * for a copy of the key K in the revolve R.
+ */
+% revolve_lookup(+Revolve, +Term, -Pivot)
+:- private revolve_lookup/3.
+:- foreign(revolve_lookup/3, 'ForeignAggregate',
+      sysRevolveLookup('Interpreter','AbstractMap','AbstractTerm')).
+
+/**
+ * revolve_pair(R, U):
+ * The predicate succeeds in U with the key value pairs of the revolve R.
+ */
+% revolve_pair(+Revolve, +Pair)
+:- private revolve_pair/2.
+:- foreign(revolve_pair/2, 'ForeignAggregate',
+      sysRevolvePair('CallOut','AbstractMap')).
+
+/**
+ * variant_comparator(C):
+ * The predicate succeeds in C with the variant comparator.
+ */
+% variant_comparator(-Comparator)
+:- private variant_comparator/1.
+:- foreign_getter(variant_comparator/1, 'ForeignAggregate', 'DEFAULT').
+
+

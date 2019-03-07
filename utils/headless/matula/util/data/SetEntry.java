@@ -31,7 +31,7 @@ package matula.util.data;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class SetEntry<E> {
+public class SetEntry<E> {
     public E value;
 }
 

@@ -33,7 +33,7 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SetTree<E> extends AbstractSet<E> {
+public class SetTree<E> extends AbstractSet<E> {
     private final Comparator<E> comparator;
     SetTreeEntry<E> root;
 

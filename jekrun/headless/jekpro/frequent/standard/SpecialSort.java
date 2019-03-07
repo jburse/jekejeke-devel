@@ -124,7 +124,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_HASH_CODE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Number val = Integer.valueOf(hashCode(temp[0], ref, 0));
+                    Number val = Integer.valueOf(hashTerm(temp[0], ref, 0));
                     if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
@@ -440,7 +440,7 @@ public final class SpecialSort extends AbstractSpecial {
     }
 
     /********************************************************************/
-    /* Hash Functions                                                   */
+    /* Term Hash                                                        */
     /********************************************************************/
 
     /**
@@ -452,7 +452,7 @@ public final class SpecialSort extends AbstractSpecial {
      * @param res The preceding hash.
      * @return The hash value.
      */
-    public static int hashCode(Object t, Display d, int res) {
+    public static int hashTerm(Object t, Display d, int res) {
         for (; ; ) {
             BindVar b1;
             while (t instanceof SkelVar &&
@@ -468,7 +468,7 @@ public final class SpecialSort extends AbstractSpecial {
             res = res * 31 + ((SkelCompound) t).sym.hashCode();
             int i = 0;
             for (; i < tc.length - 1; i++)
-                res = hashCode(tc[i], d, res);
+                res = hashTerm(tc[i], d, res);
             t = tc[i];
         }
     }
