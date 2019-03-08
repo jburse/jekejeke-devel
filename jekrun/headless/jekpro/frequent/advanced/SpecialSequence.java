@@ -1,19 +1,19 @@
 package jekpro.frequent.advanced;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractBind;
+import jekpro.model.molec.BindCount;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Goal;
-import jekpro.reference.arithmetic.EvaluableElem;
-import jekpro.reference.arithmetic.SpecialCompare;
-import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
+import matula.util.data.SetEntry;
 
 /**
- * <p>Provides built-in predicates for the module arith.</p>
+ * <p>Provides built-in predicates for the module sequence.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,16 +43,17 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialArith extends AbstractSpecial {
-    final static int SPECIAL_BETWEEN = 0;
-    final static int SPECIAL_ABOVE = 1;
+public final class SpecialSequence extends AbstractSpecial {
+    private final static int SPECIAL_PIVOT_NEW = 0;
+    private final static int SPECIAL_PIVOT_SET = 1;
+    private final static int SPECIAL_PIVOT_GET = 2;
 
     /**
-     * <p>Create an arith special.</p>
+     * <p>Create a sequence special.</p>
      *
      * @param i The id.
      */
-    public SpecialArith(int i) {
+    public SpecialSequence(int i) {
         super(i);
     }
 
@@ -70,58 +71,54 @@ public final class SpecialArith extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_BETWEEN:
+            case SPECIAL_PIVOT_NEW:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Number num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
-                Number num2 = SpecialEval.derefAndCastNumber(temp[1], ref);
-                AbstractBind mark = en.bind;
-                int res = SpecialCompare.computeCmp(num1, num2);
-                while (res <= 0) {
-                    if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {
-                        if (res != 0) {
-                            /* create choice point */
-                            en.choices = new ChoiceArith(en.choices, num1,
-                                    (Goal) en.contskel, en.contdisplay, mark, id);
-                            en.number++;
-                        }
-                        return en.getNext();
-                    }
-
-                    /* undo bindings */
-                    en.fault = null;
-                    en.releaseBind(mark);
-                    if (en.fault != null)
-                        throw en.fault;
-
-                    num1 = EvaluableElem.add(num1, Integer.valueOf(1));
-                    res = SpecialCompare.computeCmp(num1, num2);
-                }
-                return false;
-            case SPECIAL_ABOVE:
+                if (!en.unifyTerm(temp[0], ref, new SetEntry(), Display.DISPLAY_CONST))
+                    return false;
+                return en.getNext();
+            case SPECIAL_PIVOT_SET:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
-                mark = en.bind;
-                while (true) {
-                    if (en.unifyTerm(temp[1], ref, num1, Display.DISPLAY_CONST)) {
-                        /* create choice point */
-                        en.choices = new ChoiceArith(en.choices, num1,
-                                (Goal) en.contskel, en.contdisplay, mark, id);
-                        en.number++;
-                        return en.getNext();
-                    }
-
-                    /* undo bindings */
-                    en.fault = null;
-                    en.releaseBind(mark);
-                    if (en.fault != null)
-                        throw en.fault;
-
-                    num1 = EvaluableElem.add(num1, Integer.valueOf(1));
-                }
+                SetEntry pivot = derefAndCastPivot(temp[0], ref);
+                pivot.value = AbstractSkel.copySkel(temp[1], ref, en);
+                return en.getNextRaw();
+            case SPECIAL_PIVOT_GET:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pivot = derefAndCastPivot(temp[0], ref);
+                Object val = pivot.value;
+                if (val == null)
+                    return false;
+                int size = EngineCopy.displaySize(val);
+                Display d = (size != 0 ? new Display(Display.newBind(size)) :
+                        Display.DISPLAY_CONST);
+                if (!en.unifyTerm(temp[1], ref, val, d))
+                    return false;
+                if (size != 0)
+                    BindCount.remTab(d.bind, en);
+                return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
+    }
+
+    /**
+     * <p>Cast a pivot.</p>
+     *
+     * @param m The term skel.
+     * @param d The term display.
+     * @return The pivot.
+     * @throws EngineMessage Shit happens.
+     */
+    public static SetEntry derefAndCastPivot(Object m, Display d)
+            throws EngineMessage {
+        m = SpecialUniv.derefAndCastRef(m, d);
+        if (m instanceof SetEntry) {
+            return (SetEntry) m;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_REF, m), d);
         }
     }
 

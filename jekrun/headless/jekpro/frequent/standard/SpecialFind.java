@@ -112,7 +112,8 @@ public final class SpecialFind extends AbstractSpecial {
                 ref = en.display;
                 Object val = AbstractSkel.copySkel(temp[0], ref, en);
                 int size = EngineCopy.displaySize(val);
-                d = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+                d = (size != 0 ? new Display(Display.newBind(size)) :
+                        Display.DISPLAY_CONST);
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
                 if (size != 0)

@@ -115,19 +115,18 @@ call_nth2(G, N) :-
  * The predicate succeeds in P with a new pivot.
  */
 % pivot_new(-Pivot)
-:- foreign_constructor(pivot_new/1, 'SetEntry', new).
+:- special(pivot_new/1, 'SpecialSequence', 0).
 
 /**
  * pivot_set(P, O):
  * The predicate succeeds setting the pivot P to O.
  */
 % pivot_set(+Pivot, +Term)
-:- foreign(pivot_set/2, 'ForeignSequence',
-      sysPivotSet('Interpreter','SetEntry','AbstractTerm')).
+:- special(pivot_set/2, 'SpecialSequence', 1).
 
 /**
  * pivot_get(P, O):
  * The predicate succeeds in O with a copy of the pivot P.
  */
 % pivot_get(+Pivot, -Term)
-:- foreign(pivot_get/2, 'ForeignSequence', sysPivotGet('SetEntry')).
+:- special(pivot_get/2, 'SpecialSequence', 2).

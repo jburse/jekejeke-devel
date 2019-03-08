@@ -78,19 +78,17 @@
 :- public aggregate_all/3.
 :- meta_predicate aggregate_all(?,0,?).
 aggregate_all(A, G, S) :-
-   init_state(A, H),
    pivot_new(P),
-   pivot_set(P, H),
    aggregate_all2(A, G, P),
-   pivot_get(P, S).
+   pivot_result(P, A, H),
+   S = H.
 
 % aggregate_all2(+Aggregate, +Goal, +Pivot)
 :- private aggregate_all2/3.
 :- meta_predicate aggregate_all2(?,0,?).
 aggregate_all2(A, G, P) :- G,
-   pivot_get(P, H),
-   next_state(H, A, J),
-   pivot_set(P, J), fail.
+   pivot_accu(P, A, H),
+   pivot_set(P, H), fail.
 aggregate_all2(_, _, _).
 
 /**
@@ -103,21 +101,26 @@ aggregate_all2(_, _, _).
 :- meta_predicate aggregate(?,0,?).
 aggregate(A, G, S) :-
    sys_goal_globals(A^G, W),
+   W \== [], !,
    sys_goal_kernel(G, B),
    variant_comparator(C),
    revolve_new(C, R),
    aggregate2(W, A, B, R),
    revolve_pair(R, W-Q),
    pivot_get(Q, S).
+aggregate(A, G, S) :-
+   sys_goal_kernel(G, B),
+   pivot_new(P),
+   aggregate_all2(A, B, P),
+   pivot_get(P, S).
 
 % aggregate(+Vars, +Aggregate, +Goal, +Revolve)
 :- private aggregate2/4.
 :- meta_predicate aggregate2(?,?,0,?).
-aggregate2(W, A, B, R) :- B,
+aggregate2(W, A, G, R) :- G,
    revolve_lookup(R, W, P),
-   pivot_get_default(P, A, H),
-   next_state(H, A, J),
-   pivot_set(P, J), fail.
+   pivot_accu(P, A, H),
+   pivot_set(P, H), fail.
 aggregate2(_, _, _, _).
 
 /**
@@ -130,22 +133,53 @@ aggregate2(_, _, _, _).
 :- meta_predicate sys_collect(?,0,?).
 sys_collect(A, G, S) :-
    sys_goal_globals(A^G, W),
+   W \== [], !,
    sys_goal_kernel(G, B),
    revolve_new(R),
    aggregate2(W, A, B, R),
    revolve_pair(R, W-Q),
    pivot_get(Q, S).
+sys_collect(A, G, S) :-
+   sys_goal_kernel(G, B),
+   pivot_new(P),
+   aggregate_all2(A, B, P),
+   pivot_get(P, S).
 
 /*************************************************************/
 /* Aggregate State                                           */
 /*************************************************************/
 
-% pivot_get_default(+Pivot, +Aggregate, -Value)
-:- private pivot_get_default/3.
-pivot_get_default(P, _, H) :-
-   pivot_get(P, H), !.
-pivot_get_default(_, A, H) :-
-   init_state(A, H).
+% pivot_accu(+Pivot, +Aggregate, -Value)
+:- private pivot_accu/3.
+pivot_accu(P, A, J) :-
+   pivot_get(P, H), !,
+   next_state(A, H, J).
+pivot_accu(_, A, J) :-
+   init_state(A, J).
+
+/**
+ * next_state(A, H, J):
+ * The predicate succeeds in J with the next state for the
+ * aggregate A after the state H.
+ */
+% next_state(+Aggregate, +Value, -Value)
+:- private next_state/3.
+next_state(X, _, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+next_state(count, S, T) :-
+   T is S+1.
+next_state(sum(X), S, T) :-
+   T is S+X.
+next_state(mul(X), S, T) :-
+   T is S*X.
+next_state(min(X), S, T) :-
+   T is min(S,X).
+next_state(max(X), S, T) :-
+   T is max(S,X).
+next_state((S,T), (A,B), (U,V)) :-
+   next_state(S, A, U),
+   next_state(T, B, V).
 
 /**
  * init_state(A, H):
@@ -156,45 +190,39 @@ pivot_get_default(_, A, H) :-
 init_state(X, _) :-
    var(X),
    throw(error(instantiation_error,_)).
-init_state(count, 0) :- !.
-init_state(sum(_), 0) :- !.
-init_state(mul(_), 1) :- !.
-init_state(min(_), null) :- !.
-init_state(max(_), null) :- !.
-init_state((A,B), (S,T)) :- !,
+init_state(count, 1).
+init_state(sum(X), X).
+init_state(mul(X), X).
+init_state(min(X), X).
+init_state(max(X), X).
+init_state((A,B), (S,T)) :-
    init_state(A, S),
    init_state(B, T).
-init_state(X, _) :-
-   callable(X), !,
-   functor(X, F, N),
-   throw(error(domain_error(aggregate,F/N),_)).
-init_state(X, _) :-
-   throw(error(type_error(callable,X),_)).
+
+% pivot_result(+Pivot, +Aggregate, -Value)
+:- private pivot_result/3.
+pivot_result(P, _, H) :-
+   pivot_get(P, H), !.
+pivot_result(_, A, H) :-
+   null_state(A, H).
 
 /**
- * next_state(H, A, J):
- * The predicate succeeds in J with the next state for the
- * aggregate A after the state H.
+ * null_state(A, H):
+ * The predicate succeeds in H with the null state for the aggregate A.
  */
-% next_state(+Value, +Aggregate, -Value)
-:- private next_state/3.
-next_state(S, count, T) :-
-   T is S+1.
-next_state(S, sum(X), T) :-
-   T is S+X.
-next_state(S, mul(X), T) :-
-   T is S*X.
-next_state(S, min(X), T) :-
-   S = null
--> T = X
-;  T is min(S,X).
-next_state(S, max(X), T) :-
-   S = null
--> T = X
-;  T is max(S,X).
-next_state((S,T), (A,B), (U,V)) :-
-   next_state(S, A, U),
-   next_state(T, B, V).
+% null_state(+Aggregate, -Value)
+:- private null_state/2.
+null_state(X, _) :-
+   var(X),
+   throw(error(instantiation_error,_)).
+null_state(count, 0).
+null_state(sum(_), 0).
+null_state(mul(_), 1).
+null_state(min(_), sup).
+null_state(max(_), inf).
+null_state((A,B), (S,T)) :-
+   null_state(A, S),
+   null_state(B, T).
 
 /*************************************************************/
 /* Revolve Datatype                                          */
