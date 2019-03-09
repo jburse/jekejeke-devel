@@ -67,11 +67,14 @@ public final class ForeignHyper {
 
     /**************************************************************/
     /* CheerpJ Workaround                                         */
-
     /**************************************************************/
 
     public static double epsilon() {
         return SpecialCompare.EPSILON;
+    }
+
+    public static float epsilon32() {
+        return SpecialCompare.EPSILON32;
     }
 
     public static double pi() {

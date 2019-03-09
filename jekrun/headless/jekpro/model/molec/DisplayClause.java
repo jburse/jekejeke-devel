@@ -37,12 +37,11 @@ import jekpro.model.rope.Intermediate;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DisplayClause extends Display implements InterfaceStack {
-    public final static int MASK_DPCL_MORE = 0x00000001;
-    public final static int MASK_DPCL_SOFT = 0x00000002;
+    public final static int MASK_DPCL_MORE = 0x00000010;
+    public final static int MASK_DPCL_SOFT = 0x00000020;
 
     public Intermediate contskel;
     public DisplayClause contdisplay;
-    public int flags;
     public int lastalloc;
     public int lastgc;
     public int number;

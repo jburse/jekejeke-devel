@@ -265,7 +265,7 @@ public final class Types {
      * @throws EngineMessage FFI error.
      */
     public static Object denormProlog(int typ, Object t,
-                                      Display d, ResetableBit c)
+                                      Display d, boolean c)
             throws EngineMessage {
         try {
             switch (typ) {
@@ -339,8 +339,8 @@ public final class Types {
                         d = b.display;
                     }
                     t = AbstractTerm.createTerm(t, d);
-                    if (c != null)
-                        AbstractTerm.setMarker(t, c);
+                    if (c)
+                        AbstractTerm.setMarker(t);
                     return t;
                 case Types.TYPE_TERM:
                     while (t instanceof SkelVar &&
@@ -349,8 +349,8 @@ public final class Types {
                         d = b.display;
                     }
                     t = AbstractTerm.createTermWrapped(t, d);
-                    if (c != null)
-                        AbstractTerm.setMarker(t, c);
+                    if (c)
+                        AbstractTerm.setMarker(t);
                     return t;
                 case Types.TYPE_ATOMIC:
                     while (t instanceof SkelVar &&

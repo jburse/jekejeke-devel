@@ -59,6 +59,7 @@ public final class SpecialCompare extends AbstractSpecial {
     public static final int NUM_BIG_DECIMAL = 5;
 
     public final static double EPSILON = Math.ulp(1.0);
+    public final static float EPSILON32 = Math.ulp(1.0f);
 
     public static final String OP_ILLEGAL_CATEGORY = "illegal category";
 

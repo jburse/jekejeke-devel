@@ -7,7 +7,10 @@ import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -148,6 +151,7 @@ final class MemberMethodNondet extends AbstractMember {
                 return false;
             Display d = AbstractTerm.getDisplay(res);
             Object[] help;
+            boolean ext = AbstractTerm.getAndResetMarker(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
                             AbstractTerm.getSkel(res), d)) {
@@ -166,11 +170,9 @@ final class MemberMethodNondet extends AbstractMember {
                 co.flags &= ~CallOut.MASK_CALL_SPECI;
                 co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
-                ResetableBit check = AbstractTerm.getMarker(res);
-                if (check != null && check.getBit()) {
+                if (ext)
                     BindCount.remTab(d.bind, en);
-                    check.resetBit();
-                }
+
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     ChoiceForeign cp = new ChoiceForeign(en.choices);
                     cp.co = co;

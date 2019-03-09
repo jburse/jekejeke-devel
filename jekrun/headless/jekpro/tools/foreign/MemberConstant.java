@@ -8,7 +8,6 @@ import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.ResetableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -134,10 +133,10 @@ final class MemberConstant extends AbstractMember {
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
                     AbstractFactory.OP_REPRESENTATION_NULL));
+        boolean ext = AbstractTerm.getAndResetMarker(res);
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
-        ResetableBit check = AbstractTerm.getMarker(res);
-        return (check != null && check.getBit());
+        return ext;
     }
 
     /***************************************************************/

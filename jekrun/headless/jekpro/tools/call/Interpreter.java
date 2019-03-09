@@ -8,18 +8,15 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.ResetableBit;
 import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Comparator;
 
 /**
  * This class represents an interpreter. The interpreter object can be
@@ -399,7 +396,7 @@ public final class Interpreter {
         }
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new ResetableBit());
+            AbstractTerm.setMarker(res);
         return res;
     }
 

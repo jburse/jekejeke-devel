@@ -59,7 +59,6 @@ import jekpro.tools.call.Interpreter;
 public final class TermCompound extends AbstractTerm {
     final SkelCompound skel;
     final Display display;
-    ResetableBit marker;
 
     /**
      * <p>Constructor for internal use only.</p>
@@ -142,6 +141,27 @@ public final class TermCompound extends AbstractTerm {
      */
     public Display getDisplay() {
         return display;
+    }
+
+    /**
+     * <p>Set the marker.</p>
+     */
+    public void setMarker() {
+        display.flags |= Display.MASK_DPTM_MLTI;
+    }
+
+    /**
+     * <p>Get and reset the marker.</p>
+     *
+     * @return The marker.
+     */
+    public boolean getAndResetMarker() {
+        if ((display.flags & Display.MASK_DPTM_MLTI) != 0) {
+            display.flags &= ~Display.MASK_DPTM_MLTI;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -284,23 +304,19 @@ public final class TermCompound extends AbstractTerm {
      */
     private Display makeCount(Object[] args) {
         Display last = Display.DISPLAY_CONST;
-        ResetableBit check = null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             Object t = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
-                ResetableBit c = AbstractTerm.getMarker(obj);
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
-                    check = c;
-                } else if (last != d || check != c) {
+                } else if (last != d) {
                     throw new IllegalArgumentException("needs display");
                 }
             }
             args[i] = t;
         }
-        marker = check;
         return last;
     }
 
@@ -320,7 +336,6 @@ public final class TermCompound extends AbstractTerm {
         int countvar = 0;
         boolean multi = false;
         Display last = Display.DISPLAY_CONST;
-        ResetableBit check = null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             /* fast lane */
@@ -330,21 +345,17 @@ public final class TermCompound extends AbstractTerm {
             Object t = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
-                ResetableBit c = AbstractTerm.getMarker(obj);
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
-                    check = c;
-                } else if (last != d || check != c) {
+                } else if (last != d) {
                     multi = true;
                 }
             }
         }
         if (multi) {
             last = new Display(Display.newBind(countvar));
-            marker = new ResetableBit();
-        } else {
-            marker = check;
+            last.flags |= Display.MASK_DPTM_MLTI;
         }
         en.skel = Boolean.valueOf(multi);
         return last;
@@ -378,12 +389,10 @@ public final class TermCompound extends AbstractTerm {
                 Display d = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;
+                boolean ext = AbstractTerm.getAndResetMarker(obj);
                 d3.bind[sv.id].bindVar(t, d, en);
-                ResetableBit check = AbstractTerm.getMarker(obj);
-                if (check != null && check.getBit()) {
+                if (ext)
                     BindCount.remTab(d.bind, en);
-                    check.resetBit();
-                }
                 args[i] = sv;
             } else {
                 args[i] = t;

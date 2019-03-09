@@ -5,7 +5,6 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.ResetableBit;
 
 /**
  * <p>The call-in object can be obtained from an interpreter by providing
@@ -281,23 +280,21 @@ public final class CallIn {
         Display ref = AbstractTerm.getDisplay(goal);
         en.display = ref;
         en.deref();
-        ResetableBit check = AbstractTerm.getMarker(goal);
         goal = null;
         mark = en.bind;
         snap = en.number;
         try {
+            boolean ext = AbstractTerm.getAndResetMarker(goal);
             boolean multi = en.wrapGoal();
-            if (multi && (check != null && check.getBit())) {
+            if (multi && ext)
                 BindCount.remTab(ref.bind, en);
-                check.resetBit();
-            }
             ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
             ref2.bind = DisplayClause.newBindClause(clause.dispsize);
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
-            if (multi || (check != null && check.getBit()))
+            if (multi || ext)
                 BindCount.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);

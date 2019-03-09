@@ -8,7 +8,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.ResetableBit;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -122,7 +121,7 @@ final class LenseMember extends AbstractLense {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
-            Object obj = Types.denormProlog(encodeobj, temp[0], ref, null);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref, false);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
@@ -131,10 +130,10 @@ final class LenseMember extends AbstractLense {
             if (res == null)
                 throw new EngineMessage(EngineMessage.representationError(
                         AbstractFactory.OP_REPRESENTATION_NULL));
+            boolean ext = AbstractTerm.getAndResetMarker(res);
             en.skel = AbstractTerm.getSkel(res);
             en.display = AbstractTerm.getDisplay(res);
-            ResetableBit check = AbstractTerm.getMarker(res);
-            return (check != null && check.getBit());
+            return ext;
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));

@@ -8,7 +8,10 @@ import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 
 import static jekpro.tools.array.AbstractLense.MASK_METH_FUNC;
 
@@ -117,6 +120,7 @@ final class ChoiceForeign extends AbstractChoice {
             if (res == null)
                 return false;
             Display d = AbstractTerm.getDisplay(res);
+            boolean ext = AbstractTerm.getAndResetMarker(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(((SkelCompound) term).args[
                                     ((SkelCompound) term).args.length - 1], ref,
@@ -131,11 +135,9 @@ final class ChoiceForeign extends AbstractChoice {
                         throw en.fault;
                 }
             } else {
-                ResetableBit check = AbstractTerm.getMarker(res);
-                if (check != null && check.getBit()) {
+                if (ext)
                     BindCount.remTab(d.bind, en);
-                    check.resetBit();
-                }
+
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     /* meta argument change */
                     if ((co.flags & CallOut.MASK_CALL_SPECI) != 0)

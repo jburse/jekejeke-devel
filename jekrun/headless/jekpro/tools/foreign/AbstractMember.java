@@ -164,7 +164,7 @@ abstract class AbstractMember extends AbstractLense
             } else {
                 en.computeExpr(((SkelCompound) temp).args[k], ref);
                 k++;
-                args[i] = Types.denormProlog(typ, en.skel, en.display, null);
+                args[i] = Types.denormProlog(typ, en.skel, en.display, false);
             }
         }
         return args;
@@ -181,7 +181,7 @@ abstract class AbstractMember extends AbstractLense
     final Object convertRecv(Object temp, Display ref)
             throws EngineMessage {
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref, null);
+            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref, false);
         } else {
             return null;
         }
@@ -214,7 +214,7 @@ abstract class AbstractMember extends AbstractLense
             } else if (typ == Types.TYPE_CALLOUT) {
                 args[i] = co;
             } else {
-                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref, null);
+                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref, false);
                 k++;
             }
         }

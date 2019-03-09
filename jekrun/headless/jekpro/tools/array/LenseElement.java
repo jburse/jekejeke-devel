@@ -119,7 +119,7 @@ final class LenseElement extends AbstractLense {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
-            Object obj = Types.denormProlog(encodeobj, temp[0], ref, null);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref, false);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
@@ -132,15 +132,13 @@ final class LenseElement extends AbstractLense {
             if (res == null)
                 return false;
             Display d = AbstractTerm.getDisplay(res);
+            boolean ext = AbstractTerm.getAndResetMarker(res);
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(temp[2], ref,
                             AbstractTerm.getSkel(res), d))
                 return false;
-            ResetableBit check = AbstractTerm.getMarker(res);
-            if (check != null && check.getBit()) {
+            if (ext)
                 BindCount.remTab(d.bind, en);
-                check.resetBit();
-            }
             return en.getNext();
         } catch (ClassCastException x) {
             throw new EngineMessage(

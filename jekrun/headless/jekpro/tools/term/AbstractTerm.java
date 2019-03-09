@@ -184,6 +184,18 @@ public abstract class AbstractTerm {
      */
     public abstract Display getDisplay();
 
+    /**
+     * <p>Set the marker.</p>
+     */
+    public abstract void setMarker();
+
+    /**
+     * <p>Get and reset the marker.</p>
+     *
+     * @return The marker.
+     */
+    public abstract boolean getAndResetMarker();
+
     /************************************************************/
     /* Experimental Multi                                       */
     /************************************************************/
@@ -192,16 +204,10 @@ public abstract class AbstractTerm {
      * <p>Set the multi flag.</p>
      *
      * @param t The term.
-     * @param m The multi flag.
      */
-    public static void setMarker(Object t, ResetableBit m) {
-        if (t instanceof TermVar) {
-            ((TermVar) t).marker = m;
-        } else if (t instanceof TermCompound) {
-            ((TermCompound) t).marker = m;
-        } else {
-            /* */
-        }
+    public static void setMarker(Object t) {
+        if (t instanceof AbstractTerm)
+            ((AbstractTerm) t).setMarker();
     }
 
     /**
@@ -210,13 +216,11 @@ public abstract class AbstractTerm {
      * @param t The term.
      * @return The multi flag.
      */
-    public static ResetableBit getMarker(Object t) {
-        if (t instanceof TermVar) {
-            return ((TermVar) t).marker;
-        } else if (t instanceof TermCompound) {
-            return ((TermCompound) t).marker;
+    public static boolean getAndResetMarker(Object t) {
+        if (t instanceof AbstractTerm) {
+            return ((AbstractTerm) t).getAndResetMarker();
         } else {
-            return null;
+            return false;
         }
     }
 
@@ -349,7 +353,7 @@ public abstract class AbstractTerm {
                 Display.DISPLAY_CONST);
         val = AbstractTerm.createTerm(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(val, new ResetableBit());
+            AbstractTerm.setMarker(val);
         return val;
     }
 
@@ -374,7 +378,7 @@ public abstract class AbstractTerm {
                 Display.DISPLAY_CONST);
         AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res, new ResetableBit());
+            AbstractTerm.setMarker(res);
         return res;
     }
 

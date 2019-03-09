@@ -125,6 +125,22 @@ public final class TermAtomic extends AbstractTerm {
     }
 
     /**
+     * <p>Set the marker.</p>
+     */
+    public void setMarker() {
+        /* */
+    }
+
+    /**
+     * <p>Get and reset the marker.</p>
+     *
+     * @return The marker.
+     */
+    public boolean getAndResetMarker() {
+        return false;
+    }
+
+    /**
      * <p>Compute the hash code of this term.</p>
      *
      * @return The hash value.

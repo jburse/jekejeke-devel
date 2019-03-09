@@ -208,7 +208,7 @@ public abstract class AbstractDelegate {
             boolean multi = en.computeExpr(help[i], ref);
             Object val = AbstractTerm.createMolec(en.skel, en.display);
             if (multi)
-                AbstractTerm.setMarker(val, new ResetableBit());
+                AbstractTerm.setMarker(val);
             args[i] = val;
         }
         return args;
@@ -253,12 +253,10 @@ public abstract class AbstractDelegate {
                 Display ref2 = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;
+                boolean ext = AbstractTerm.getAndResetMarker(obj);
                 ref.bind[sv.id].bindVar(temp, ref2, en);
-                ResetableBit check = AbstractTerm.getMarker(obj);
-                if (check != null && check.getBit()) {
+                if (ext)
                     BindCount.remTab(ref2.bind, en);
-                    check.resetBit();
-                }
                 args[i] = sv;
             } else {
                 args[i] = temp;
