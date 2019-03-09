@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -70,177 +70,194 @@ public final class EvaluableElem extends AbstractSpecial {
     /**
      * <p>Arithmetically evaluate an evaluable.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniEvaluate(Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_MINUS:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    boolean multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     Display d = en.display;
+                    boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = neg(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_PLUS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = alfa;
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_ABS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = abs(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_SIGN:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = sign(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_FLOAT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = (alfa instanceof Double ? alfa :
                             TermAtomic.makeDouble(alfa.doubleValue()));
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_DECIMAL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = decimal(alfa);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_FLOAT32:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = (alfa instanceof Float ? alfa :
                             TermAtomic.makeFloat(alfa.floatValue()));
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_ADD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = add(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_SUB:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = sub(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_MUL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = mul(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = TermAtomic.makeDouble(slash(alfa, beta));
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 case EVALUABLE_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     SpecialEval.checkNotLessThanZero(beta);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = intPow(alfa, x);
                     en.display = Display.DISPLAY_CONST;
-                    return false;
+                    return;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }

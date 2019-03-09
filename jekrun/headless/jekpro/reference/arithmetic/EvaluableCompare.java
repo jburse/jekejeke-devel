@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -59,48 +59,51 @@ public final class EvaluableCompare extends AbstractSpecial {
     /**
      * <p>Arithmetically evaluate an evaluable.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniEvaluate(Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case EVALUABLE_MIN:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                boolean multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 en.skel = min(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
-                return false;
+                return;
             case EVALUABLE_MAX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 en.skel = max(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
-                return false;
+                return;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

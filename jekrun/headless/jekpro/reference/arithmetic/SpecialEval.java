@@ -69,12 +69,13 @@ public final class SpecialEval extends AbstractSpecial {
             case SPECIAL_IS:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                boolean multi = en.computeExpr(temp[1], ref);
+                en.computeExpr(temp[1], ref);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

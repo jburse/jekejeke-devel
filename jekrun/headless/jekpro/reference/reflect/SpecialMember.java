@@ -112,7 +112,7 @@ public final class SpecialMember extends AbstractSpecial {
                         Object[] args = new Object[arity];
                         System.arraycopy(vars, 0, args, 0, arity);
                         en.skel = new SkelCompound(sa, args, (arity > 1 ? vars : vars[0]));
-                        d = new Display(Display.newBind(arity));
+                        d = new Display(Display.newLexical(arity));
                         multi = true;
                     } else {
                         en.skel = temp[0];
@@ -131,7 +131,7 @@ public final class SpecialMember extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     return en.getNext();
                 case SPECIAL_SYS_TERM_TO_FUNCTOR:
                     temp = ((SkelCompound) en.skel).args;

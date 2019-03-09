@@ -66,13 +66,13 @@ public final class EvaluableQuali extends AbstractSpecial {
     /**
      * <p>Arithmetically evaluate an evaluable.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniEvaluate(Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case EVALUABLE_COLON:
@@ -82,7 +82,8 @@ public final class EvaluableQuali extends AbstractSpecial {
                 SkelAtom mod = SpecialQuali.modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
-                return en.computeExpr(en.skel, en.display);
+                en.computeExpr(en.skel, en.display);
+                return;
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
@@ -97,7 +98,8 @@ public final class EvaluableQuali extends AbstractSpecial {
                 mod = SpecialQuali.objToAtom(obj, recv, d2, en);
                 boolean ext = SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, ext, en);
-                return en.computeExpr(en.skel, en.display);
+                en.computeExpr(en.skel, en.display);
+                return;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

@@ -102,11 +102,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+                ref2.bind = DisplayClause.newClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi)
-                    BindCount.remTab(ref.bind, en);
+                    BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
@@ -128,15 +128,15 @@ public final class SpecialQuali extends AbstractSpecial {
                 d2 = en.display;
                 multi = en.wrapGoal();
                 if (multi && ext)
-                    BindCount.remTab(d2.bind, en);
+                    BindUniv.remTab(d2.bind, en);
                 ref = en.display;
                 clause = en.store.foyer.CLAUSE_CONT;
                 ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+                ref2.bind = DisplayClause.newClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
-                    BindCount.remTab(ref.bind, en);
+                    BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
@@ -650,7 +650,7 @@ public final class SpecialQuali extends AbstractSpecial {
             en.skel = SpecialQuali.prependAlloc(sa, recv, d2,
                     sc2.args, d3, multi, en);
             if (multi && ext)
-                BindCount.remTab(d3.bind, en);
+                BindUniv.remTab(d3.bind, en);
             return (multi || ext);
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
@@ -706,7 +706,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         en.display = last;
         return multi;
     }

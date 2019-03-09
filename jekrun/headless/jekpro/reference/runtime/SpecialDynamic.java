@@ -386,7 +386,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      */
     public static Display createDisplay(Object t) {
         int size = EngineCopy.displaySize(t);
-        return (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        return (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
     }
 
     /*************************************************************/

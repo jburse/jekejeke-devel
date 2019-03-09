@@ -276,7 +276,7 @@ public final class SpecialLexical extends AbstractSpecial {
                                   Object beta, Display d2)
             throws ArithmeticException {
         for (; ; ) {
-            BindCount b1;
+            BindUniv b1;
             while (alfa instanceof SkelVar &&
                     (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;

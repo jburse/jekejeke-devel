@@ -111,12 +111,13 @@ public final class SpecialPred extends AbstractSpecial {
                 pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                boolean multi = SpecialPred.predicateToProperties(pick, en);
+                SpecialPred.predicateToProperties(pick, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -125,12 +126,13 @@ public final class SpecialPred extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialPred.predicateToProperty(pick, prop, en);
+                SpecialPred.predicateToProperty(pick, prop, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_PREDICATE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -151,12 +153,13 @@ public final class SpecialPred extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialPred.predicateToProperty(pick, prop, en);
+                SpecialPred.predicateToProperty(pick, prop, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -263,15 +266,13 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param pick The predicate.
      * @param en   The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean predicateToProperties(Predicate pick, Engine en)
+    public static void predicateToProperties(Predicate pick, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -286,10 +287,9 @@ public final class SpecialPred extends AbstractSpecial {
                 Object[] vals = getPropPred(pick, prop, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractInformation.consArray(multi, vals, en);
+                AbstractInformation.consArray(vals, en);
             }
         }
-        return multi;
     }
 
     /**
@@ -299,16 +299,15 @@ public final class SpecialPred extends AbstractSpecial {
      * @param pred The predicate.
      * @param prop The property.
      * @param en   The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean predicateToProperty(Predicate pred, StoreKey prop,
+    public static void predicateToProperty(Predicate pred, StoreKey prop,
                                               Engine en)
             throws EngineMessage {
         Object[] vals = getPropPred(pred, prop, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractInformation.consArray(false, vals, en);
+        AbstractInformation.consArray(vals, en);
     }
 
     /**

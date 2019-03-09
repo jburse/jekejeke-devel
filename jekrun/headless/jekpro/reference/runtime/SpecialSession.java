@@ -332,7 +332,7 @@ public final class SpecialSession extends AbstractSpecial {
                 DisplayClause backref = en.visor.query;
                 try {
                     DisplayClause ref = new DisplayClause();
-                    ref.bind = DisplayClause.newBindClause(clause.dispsize);
+                    ref.bind = DisplayClause.newClause(clause.dispsize);
                     ref.def = clause;
                     en.visor.query = ref;
                     ref.setEngine(en);
@@ -442,7 +442,7 @@ public final class SpecialSession extends AbstractSpecial {
         Display d;
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             int size = rd.getGensym();
-            d = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            d = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             en.fault = null;
         } else {
             Intermediate r = en.contskel;
@@ -461,7 +461,7 @@ public final class SpecialSession extends AbstractSpecial {
             DisplayClause ref;
             try {
                 ref = new DisplayClause();
-                ref.bind = DisplayClause.newBindClause(clause.dispsize);
+                ref.bind = DisplayClause.newClause(clause.dispsize);
                 ref.def = clause;
                 en.visor.query = ref;
                 ref.setEngine(en);
@@ -670,7 +670,7 @@ public final class SpecialSession extends AbstractSpecial {
             return false;
         en.skel = val;
         int size = rd.getGensym();
-        en.display = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        en.display = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
         return true;
     }
 

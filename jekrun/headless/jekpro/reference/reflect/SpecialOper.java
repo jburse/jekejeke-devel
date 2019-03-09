@@ -13,11 +13,9 @@ import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
-import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
@@ -142,12 +140,13 @@ public final class SpecialOper extends AbstractSpecial {
                 oper = operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
-                boolean multi = operToProperties(oper, en);
+                operToProperties(oper, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -156,12 +155,13 @@ public final class SpecialOper extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = operToProperty(oper, prop, en);
+                operToProperty(oper, prop, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_OPER_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -193,12 +193,13 @@ public final class SpecialOper extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialOper.operToProperty(oper, prop, en);
+                SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_SYNTAX_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -296,17 +297,15 @@ public final class SpecialOper extends AbstractSpecial {
      *
      * @param oper The operator.
      * @param en   The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean operToProperties(Operator oper,
-                                           Engine en)
+    public static void operToProperties(Operator oper,
+                                        Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -323,10 +322,9 @@ public final class SpecialOper extends AbstractSpecial {
                 Object[] vals = prop.getObjProp(oper, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractInformation.consArray(multi, vals, en);
+                AbstractInformation.consArray(vals, en);
             }
         }
-        return multi;
     }
 
     /**
@@ -336,18 +334,17 @@ public final class SpecialOper extends AbstractSpecial {
      * @param oper The operator.
      * @param sk   The property.
      * @param en   The engine.
-     * @return The multi flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static boolean operToProperty(Operator oper, StoreKey sk,
-                                         Engine en)
+    public static void operToProperty(Operator oper, StoreKey sk,
+                                      Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Operator> prop = SpecialOper.findOperProperty(sk, en);
         Object[] vals = prop.getObjProp(oper, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractInformation.consArray(false, vals, en);
+        AbstractInformation.consArray(vals, en);
     }
 
     /***********************************************************************/
@@ -359,9 +356,9 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Throws a domain error for undefined flags.</p>
      *
      * @param oper The operator.
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
+     * @param m    The value skeleton.
+     * @param d    The value display.
+     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void setOperProp(Operator oper,
@@ -381,9 +378,9 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Throws a domain error for undefined flags.</p>
      *
      * @param oper The operator.
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
+     * @param m    The value skeleton.
+     * @param d    The value display.
+     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void resetOperProp(Operator oper,

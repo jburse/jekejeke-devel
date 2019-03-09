@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
@@ -91,7 +91,7 @@ public final class EngineLexical implements Comparator<Object> {
                                  Object beta, Display d2)
             throws ArithmeticException {
         for (; ; ) {
-            BindCount b1;
+            BindUniv b1;
             while (alfa instanceof SkelVar &&
                     (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;

@@ -746,7 +746,7 @@ public final class SpecialLoad extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 ||
                 ((flags & MASK_SHOW_NRBD) != 0)) {
             int size = EngineCopy.displaySize(t);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             EngineVars ev = new EngineVars();
             ev.singsOf(t, ref);
             MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref, en);
@@ -761,7 +761,7 @@ public final class SpecialLoad extends AbstractSpecial {
         int snap = en.number;
         int size = EngineCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
-        Display dc = new Display(Display.newBind(size + 1));
+        Display dc = new Display(Display.newLexical(size + 1));
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
@@ -770,7 +770,7 @@ public final class SpecialLoad extends AbstractSpecial {
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref = new DisplayClause();
-            ref.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref.bind = DisplayClause.newClause(clause.dispsize);
             ref.def = clause;
             ref.addArgument(t, dc, en);
             ref.setEngine(en);

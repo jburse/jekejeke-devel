@@ -2,7 +2,7 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -88,96 +88,108 @@ public final class SpecialCompare extends AbstractSpecial {
             case SPECIAL_COMPARE_EQ:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                boolean multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 if (!SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_NQ:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.testEq(alfa, beta))
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_LS:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_LQ:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_GR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return en.getNextRaw();
             case SPECIAL_COMPARE_GQ:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                multi = en.computeExpr(temp[0], ref);
+                en.computeExpr(temp[0], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                multi = en.computeExpr(temp[1], ref);
+                    BindUniv.remTab(d.bind, en);
+                en.computeExpr(temp[1], ref);
                 d = en.display;
+                multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
                 return en.getNextRaw();

@@ -89,25 +89,31 @@ public final class SpecialVars extends AbstractSpecial {
                     Display ref = en.display;
                     EngineVars ev = new EngineVars();
                     ev.varInclude(temp[0], ref);
-                    boolean multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    SpecialSort.createSet(ev.vars, en);
                     Display d = en.display;
+                    boolean multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     return en.getNext();
                 case SPECIAL_SYS_TERM_SINGELTONS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     ev = new EngineVars();
                     ev.singsOf(temp[0], ref);
-                    multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                            Display.DISPLAY_CONST, ev.anon, en);
+                    en.skel = en.store.foyer.ATOM_NIL;
+                    en.display = Display.DISPLAY_CONST;
+                    SpecialSort.createSet(ev.anon, en);
                     d = en.display;
+                    multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     return en.getNext();
                 case SPECIAL_SYS_GOAL_KERNEL:
                     temp = ((SkelCompound) en.skel).args;
@@ -121,13 +127,15 @@ public final class SpecialVars extends AbstractSpecial {
                     ref = en.display;
                     ev = new EngineVars();
                     SpecialVars.goalGlobals(temp[0], ref, ev);
-                    multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                            Display.DISPLAY_CONST, ev.vars, en);
+                    en.skel = en.store.foyer.ATOM_NIL;
+                    en.display = Display.DISPLAY_CONST;
+                    SpecialSort.createSet(ev.vars, en);
                     d = en.display;
+                    multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     return en.getNext();
                 case SPECIAL_NUMBERVARS:
                     temp = ((SkelCompound) en.skel).args;
@@ -171,12 +179,16 @@ public final class SpecialVars extends AbstractSpecial {
                     ref = en.display;
                     ev = new EngineVars();
                     ev.safeVars(temp[0], ref);
-                    multi = SpecialSort.createSet(temp[2], ref, ev.vars, en);
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    SpecialSort.createSet(ev.vars, en);
                     d = en.display;
+                    multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     return en.getNext();
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -528,7 +540,7 @@ public final class SpecialVars extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
         for (MapEntry<Object, NamedDistance> entry =

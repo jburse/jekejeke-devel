@@ -131,7 +131,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         if (!en.unifyTerm(temp[3], ref, sc, d))
                             return false;
                         if (multi)
-                            BindCount.remTab(d.bind, en);
+                            BindUniv.remTab(d.bind, en);
                         return en.getNext();
                     } else if (en.skel instanceof SkelAtom) {
                         return false;
@@ -169,7 +169,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindCount.remTab(d.bind, en);
+                        BindUniv.remTab(d.bind, en);
                     return en.getNext();
                 case SPECIAL_SYS_TERM_TO_LIST:
                     temp = ((SkelCompound) en.skel).args;
@@ -231,7 +231,7 @@ public final class SpecialUniv extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         en.display = last;
         return multi;
     }
@@ -422,7 +422,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         en.display = last;
         return (multi ? -length - 1 : length);
     }
