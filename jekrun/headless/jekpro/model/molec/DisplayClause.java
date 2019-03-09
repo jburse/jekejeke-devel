@@ -78,31 +78,31 @@ public final class DisplayClause extends Display implements InterfaceStack {
 
     /**
      * <p>Create a new display.</p>
-     * <p>Don't fill the binds with bindvars.</p>
+     * <p>Don't fill the binds with bind lexical.</p>
      *
      * @param s The size.
      * @return The new display.
      */
-    public static BindCount[] newBindClause(int s) {
-        return (s != 0 ? new BindCount[s] : BindCount.BIND_CONST);
+    public static BindUniv[] newClause(int s) {
+        return (s != 0 ? new BindUniv[s] : BindUniv.BIND_CONST);
     }
 
     /**
      * <p>Set the bind size.</p>
-     * <p>Don't refill the binds with bindvars.</p>
+     * <p>Don't refill the binds with bind lexical.</p>
      *
      * @param s The bind size.
      * @param b The display
      * @return The new display.
      */
-    public static BindCount[] setSizeClause(int s, BindCount[] b) {
+    public static BindUniv[] resizeClause(int s, BindUniv[] b) {
         int n = (b != null ? b.length : 0);
         if (n == s)
             return b;
         if (s == 0) {
-            b = BindCount.BIND_CONST;
+            b = BindUniv.BIND_CONST;
         } else {
-            BindCount[] newbind = new BindCount[s];
+            BindUniv[] newbind = new BindUniv[s];
             n = Math.min(n, s);
             if (n != 0)
                 System.arraycopy(b, 0, newbind, 0, n);
@@ -123,7 +123,7 @@ public final class DisplayClause extends Display implements InterfaceStack {
      * @param en The engine.
      */
     public final void addArgument(Object m, Display d, Engine en) {
-        BindCount b = new BindCount();
+        BindUniv b = new BindUniv();
         bind[lastalloc] = b;
         bind[lastalloc].bindVar(m, d, en);
         lastalloc++;

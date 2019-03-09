@@ -5,7 +5,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.inter.*;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -138,7 +138,7 @@ public final class SpecialRef extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_CLAUSE_REF:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
@@ -148,24 +148,26 @@ public final class SpecialRef extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                multi = SpecialRef.refToProperties(ptr, en);
+                SpecialRef.refToProperties(ptr, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_REF_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialRef.refToProperty(sk, ptr, en);
+                SpecialRef.refToProperty(sk, ptr, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -248,15 +250,13 @@ public final class SpecialRef extends AbstractSpecial {
      *
      * @param ptr The reference.
      * @param en  The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean refToProperties(InterfaceReference ptr, Engine en)
+    private static void refToProperties(InterfaceReference ptr, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -271,10 +271,9 @@ public final class SpecialRef extends AbstractSpecial {
                 Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractInformation.consArray(multi, vals, en);
+                AbstractInformation.consArray(vals, en);
             }
         }
-        return multi;
     }
 
     /**
@@ -284,16 +283,15 @@ public final class SpecialRef extends AbstractSpecial {
      * @param prop The property.
      * @param ptr  The ptr.
      * @param en   The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean refToProperty(StoreKey prop,
+    private static void refToProperty(StoreKey prop,
                                          InterfaceReference ptr, Engine en)
             throws EngineMessage {
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractInformation.consArray(false, vals, en);
+        AbstractInformation.consArray(vals, en);
     }
 
     /**

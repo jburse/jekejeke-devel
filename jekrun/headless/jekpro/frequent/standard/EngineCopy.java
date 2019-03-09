@@ -43,8 +43,8 @@ import matula.util.data.MapHash;
 public final class EngineCopy {
     public final static int MASK_COPY_SINGL = 0x00000001;
 
-    public MapHash<BindCount, SkelVar> vars;
-    public MapHash<BindCount, SkelVar> anon;
+    public MapHash<BindUniv, SkelVar> vars;
+    public MapHash<BindUniv, SkelVar> anon;
     public int flags;
 
     /**
@@ -143,9 +143,9 @@ public final class EngineCopy {
      * @return The new variable.
      */
     private SkelVar getVarValue(SkelVar v, Display d) {
-        BindCount key = d.bind[v.id];
+        BindUniv key = d.bind[v.id];
         if (vars == null) {
-            vars = new MapHash<BindCount, SkelVar>();
+            vars = new MapHash<BindUniv, SkelVar>();
             v = null;
         } else {
             v = vars.get(key);
@@ -403,10 +403,10 @@ public final class EngineCopy {
      * @return The new variable.
      */
     private SkelVar getVarNew(SkelVar v, Display d) {
-        BindCount key = d.bind[v.id];
+        BindUniv key = d.bind[v.id];
         SkelVar mv;
         if (vars == null) {
-            vars = new MapHash<BindCount, SkelVar>();
+            vars = new MapHash<BindUniv, SkelVar>();
             mv = null;
         } else {
             mv = vars.get(key);
@@ -416,7 +416,7 @@ public final class EngineCopy {
             vars.add(key, mv);
             if ((flags & MASK_COPY_SINGL) != 0) {
                 if (anon == null)
-                    anon = new MapHash<BindCount, SkelVar>();
+                    anon = new MapHash<BindUniv, SkelVar>();
                 anon.add(key, mv);
             }
         } else {

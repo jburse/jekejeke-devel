@@ -84,9 +84,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         for (; ; ) {
             clause = list[at++];
             if (dc.bind == null) {
-                dc.bind = DisplayClause.newBindClause(clause.dispsize);
+                dc.bind = DisplayClause.newClause(clause.dispsize);
             } else {
-                dc.bind = DisplayClause.setSizeClause(clause.dispsize, dc.bind);
+                dc.bind = DisplayClause.resizeClause(clause.dispsize, dc.bind);
             }
             dc.def = clause;
             lastalloc = (clause.intargs != null ?
@@ -173,9 +173,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         for (; ; ) {
             clause = list[at++];
             if (ref1.bind == null) {
-                ref1.bind = Display.newBind(clause.size);
+                ref1.bind = Display.newLexical(clause.size);
             } else {
-                ref1.bind = Display.setSize(clause.size, ref1.bind);
+                ref1.bind = Display.resizeLexical(clause.size, ref1.bind);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
@@ -220,7 +220,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                 throw en.fault;
         }
         if (clause.size != 0)
-            BindCount.remTab(ref1.bind, en);
+            BindUniv.remTab(ref1.bind, en);
 
         while (at != list.length) {
             if (multiVisible(list[at], en))

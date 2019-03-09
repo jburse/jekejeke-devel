@@ -6,12 +6,9 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
-
-import java.util.Comparator;
 
 /**
  * <p>The class provides an engine.</p>
@@ -190,25 +187,6 @@ public class Engine implements InterfaceStack {
     }
 
     /*****************************************************************/
-    /* Display Management                                        */
-    /*****************************************************************/
-
-    /**
-     * <p>New bind.</p>
-     *
-     * @param i The current last alloc.
-     * @param n The max last alloc.
-     */
-    public static int newBind(int i, int n, BindCount[] u) {
-        do {
-            if (u[i] == null)
-                u[i] = new BindCount();
-            i++;
-        } while (i < n);
-        return i;
-    }
-
-    /*****************************************************************/
     /* Trampolin Interpreter                                         */
     /*****************************************************************/
 
@@ -321,21 +299,21 @@ public class Engine implements InterfaceStack {
      */
     public final boolean retireCont()
             throws EngineMessage, EngineException {
-        ListArray<BindVar> list = BindCont.bindCont(this);
+        ListArray<BindVar> list = UndoCont.bindCont(this);
         boolean ext = contCount(list, this);
         skel = contAlloc(list, ext, this);
         Display d2 = display;
         boolean multi = wrapGoal();
         if (multi && ext)
-            BindCount.remTab(d2.bind, this);
+            BindUniv.remTab(d2.bind, this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
         DisplayClause ref2 = new DisplayClause();
-        ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+        ref2.bind = DisplayClause.newClause(clause.dispsize);
         ref2.def = clause;
         ref2.addArgument(skel, ref, this);
         if (multi || ext)
-            BindCount.remTab(ref.bind, this);
+            BindUniv.remTab(ref.bind, this);
         ref2.setEngine(this);
         contskel = clause.getNextRaw(this);
         contdisplay = ref2;
@@ -368,7 +346,7 @@ public class Engine implements InterfaceStack {
             }
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         en.display = last;
         return multi;
     }
@@ -418,18 +396,15 @@ public class Engine implements InterfaceStack {
     /**
      * <p>Arithmetically evaluate the given term.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
-     * <p>There is the invariant that the result is derefered.</p>
      * <p>There is the invariant that the result is instance checked.</p>
-     * <p>There is the invariant that the result is a reference or a number.</p>
      * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      *
      * @param alfa The term.
      * @param d1   The display of the term.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean computeExpr(Object alfa, Display d1)
+    public final void computeExpr(Object alfa, Display d1)
             throws EngineMessage, EngineException {
         BindVar b;
         while (alfa instanceof SkelVar &&
@@ -440,7 +415,7 @@ public class Engine implements InterfaceStack {
         if (!(alfa instanceof AbstractSkel)) {
             skel = alfa;
             display = Display.DISPLAY_CONST;
-            return false;
+            return;
         }
         CachePredicate cp;
         if (alfa instanceof SkelCompound) {
@@ -471,7 +446,7 @@ public class Engine implements InterfaceStack {
         }
         skel = alfa;
         display = d1;
-        return fun.moniEvaluate(this);
+        fun.moniEvaluate(this);
     }
 
     /****************************************************************************/
@@ -498,11 +473,11 @@ public class Engine implements InterfaceStack {
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.bind = DisplayClause.newClause(clause.dispsize);
             ref2.def = clause;
             ref2.addArgument(skel, ref, this);
             if (multi)
-                BindCount.remTab(ref.bind, this);
+                BindUniv.remTab(ref.bind, this);
             ref2.setEngine(this);
             contskel = clause.getNextRaw(this);
             contdisplay = ref2;
@@ -567,7 +542,7 @@ public class Engine implements InterfaceStack {
             return false;
         }
         if ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0)
-            ew.last = new Display(Display.newBind(ew.countvar));
+            ew.last = new Display(Display.newLexical(ew.countvar));
         ew.countvar = 0;
         skel = ew.replaceGoalAndWrap(t, d, this);
         display = ew.last;

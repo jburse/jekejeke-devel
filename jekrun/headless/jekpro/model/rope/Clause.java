@@ -1,7 +1,6 @@
 package jekpro.model.rope;
 
 import jekpro.frequent.experiment.InterfaceReference;
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
@@ -115,15 +114,30 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param en The engine.
      */
     public final int disposeBind(int i, int n,
-                                 BindCount[] b, Engine en) {
+                                 BindUniv[] b, Engine en) {
         do {
             int k = remtab[i];
-            BindCount bc = b[k];
+            BindUniv bc = b[k];
             if ((--bc.refs) == 0) {
                 b[k] = null;
                 if (bc.display != null)
                     BindVar.unbind(bc, en);
             }
+            i++;
+        } while (i < n);
+        return i;
+    }
+
+    /**
+     * <p>New bind.</p>
+     *
+     * @param i The current last alloc.
+     * @param n The max last alloc.
+     */
+    public static int newBind(int i, int n, BindUniv[] u) {
+        do {
+            if (u[i] == null)
+                u[i] = new BindLexical();
             i++;
         } while (i < n);
         return i;
@@ -288,7 +302,7 @@ public class Clause extends Intermediate implements InterfaceReference {
     public boolean clauseRef(Engine en)
             throws EngineMessage {
         en.skel = PreClause.intermediateToClause(this, en);
-        en.display = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        en.display = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
         return (size != 0);
     }
 

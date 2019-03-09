@@ -3,7 +3,7 @@ package jekpro.frequent.advanced;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -91,12 +91,12 @@ public final class SpecialSequence extends AbstractSpecial {
                 if (val == null)
                     return false;
                 int size = EngineCopy.displaySize(val);
-                Display d = (size != 0 ? new Display(Display.newBind(size)) :
+                Display d = (size != 0 ? new Display(Display.newLexical(size)) :
                         Display.DISPLAY_CONST);
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
                 if (size != 0)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

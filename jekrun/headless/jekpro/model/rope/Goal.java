@@ -92,7 +92,7 @@ public class Goal extends Intermediate {
         int n = endalloc;
         int i = u.lastalloc;
         if (i < n)
-            u.lastalloc = Engine.newBind(i, n, u.bind);
+            u.lastalloc = Clause.newBind(i, n, u.bind);
 
         if (uniargs != null)
             Goal.unifyBody(uniargs, u, en);

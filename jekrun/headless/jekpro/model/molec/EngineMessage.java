@@ -306,7 +306,7 @@ public final class EngineMessage extends Exception {
     public String toString() {
         try {
             int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             return EngineMessage.messageMake(template, ref, Locale.getDefault(), null, null);
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldnt happen", x);
@@ -326,7 +326,7 @@ public final class EngineMessage extends Exception {
             Locale locale = store.foyer.locale;
             Properties error = getErrorLang(locale, store);
             int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             return EngineMessage.messageMake(template, ref, locale, error, null);
         } catch (IOException x) {
             throw new RuntimeException("shouldnt happen", x);

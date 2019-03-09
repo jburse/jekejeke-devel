@@ -78,11 +78,11 @@ public final class SpecialBody extends AbstractSpecial {
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+                ref2.bind = DisplayClause.newClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi)
-                    BindCount.remTab(ref.bind, en);
+                    BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;

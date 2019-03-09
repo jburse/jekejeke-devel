@@ -166,11 +166,11 @@ public final class EngineException extends Exception {
         list.add(m);
         /* copy second */
         int size = EngineCopy.displaySize(e2.getTemplate());
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
         m = eb.copyTerm(e2.getTemplate(), ref);
         /* copy cause chain */
         size = EngineCopy.displaySize(e1.getTemplate());
-        ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
         for (int i = list.size() - 1; i >= 0; i--) {
             m = new SkelCompound(new SkelAtom(OP_CAUSE),
                     eb.copyTerm(list.get(i), ref), m);
@@ -298,7 +298,7 @@ public final class EngineException extends Exception {
     public String getMessage() {
         try {
             int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             return errorMake(template, ref, null, null, null);
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
@@ -322,7 +322,7 @@ public final class EngineException extends Exception {
         Locale locale = en.store.foyer.locale;
         Properties lang = EngineMessage.getErrorLang(locale, en.store);
         int size = EngineCopy.displaySize(template);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
         return errorMake(template, ref, locale, lang, en);
     }
 
@@ -344,7 +344,7 @@ public final class EngineException extends Exception {
             Locale locale = en.store.foyer.locale;
             Properties lang = EngineMessage.getErrorLang(locale, en.store);
             int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             EngineException.printStackTrace(wr, template, ref, locale, lang, en);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -366,7 +366,7 @@ public final class EngineException extends Exception {
             Locale locale = en.store.foyer.locale;
             Properties lang = EngineMessage.getErrorLang(locale, en.store);
             int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             EngineException.printStackTrace(wr, template, ref, locale, lang, en);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -575,7 +575,7 @@ public final class EngineException extends Exception {
                 ((SkelCompound) m).sym.fun.equals(fun)) {
             Object o = ((SkelCompound) m).args[0];
             int size = EngineCopy.displaySize(m);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             return new EngineMessage(o, ref);
         } else if (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 2 &&
@@ -586,7 +586,7 @@ public final class EngineException extends Exception {
                     ((SkelCompound) m).sym.fun.equals(fun)) {
                 Object o = ((SkelCompound) m).args[0];
                 int size = EngineCopy.displaySize(m);
-                Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+                Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
                 return new EngineMessage(o, ref);
             }
         }
@@ -609,7 +609,7 @@ public final class EngineException extends Exception {
                 OP_CAUSE.equals(((SkelCompound) m).sym.fun)) {
             Object o = ((SkelCompound) m).args[ARG_SECONDARY];
             int size = EngineCopy.displaySize(m);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             return new EngineException(o, ref);
         }
         return null;

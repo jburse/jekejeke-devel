@@ -84,7 +84,7 @@ public final class SpecialApply extends AbstractSpecial {
                 if (!en.unifyTerm(temp[temp.length - 1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_SYS_CALL_ANY:
                 temp = ((SkelCompound) en.skel).args;
@@ -93,15 +93,15 @@ public final class SpecialApply extends AbstractSpecial {
                 d = en.display;
                 multi = en.wrapGoal();
                 if (multi && ext)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+                ref2.bind = DisplayClause.newClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
-                    BindCount.remTab(ref.bind, en);
+                    BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
                 en.contskel = clause.getNextRaw(en);
                 en.contdisplay = ref2;
@@ -146,7 +146,7 @@ public final class SpecialApply extends AbstractSpecial {
             boolean multi = pairCount(t, d, t4, d2, en);
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
             if (multi && ext)
-                BindCount.remTab(d2.bind, en);
+                BindUniv.remTab(d2.bind, en);
             return (multi || ext);
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
@@ -163,7 +163,7 @@ public final class SpecialApply extends AbstractSpecial {
             boolean multi = pairCount(t, d, t4, d2, en);
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
             if (multi && ext)
-                BindCount.remTab(d2.bind, en);
+                BindUniv.remTab(d2.bind, en);
             return (multi || ext);
         } else {
             SkelAtom sa;
@@ -219,7 +219,7 @@ public final class SpecialApply extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         en.display = last;
         return multi;
     }
@@ -327,7 +327,7 @@ public final class SpecialApply extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
         en.display = last;
         return multi;
     }

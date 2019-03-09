@@ -128,11 +128,11 @@ public final class SpecialControl extends AbstractSpecial {
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.bind = DisplayClause.newClause(clause.dispsize);
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi)
-                BindCount.remTab(ref.bind, en);
+                BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -181,11 +181,11 @@ public final class SpecialControl extends AbstractSpecial {
         try {
             Object temp2 = y.getTemplate();
             int size = EngineCopy.displaySize(temp2);
-            Display ref2 = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+            Display ref2 = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
             if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                 throw y;
             if (size != 0)
-                BindCount.remTab(ref2.bind, en);
+                BindUniv.remTab(ref2.bind, en);
         } catch (EngineException z) {
             throw new EngineException(y, z);
         }

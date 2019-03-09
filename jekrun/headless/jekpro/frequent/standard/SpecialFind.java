@@ -79,13 +79,14 @@ public final class SpecialFind extends AbstractSpecial {
 
                 en.skel = en.store.foyer.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
-                boolean multi = SpecialFind.createList(list, en);
+                SpecialFind.createList(list, en);
 
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_FINDALL_END:
                 temp = ((SkelCompound) en.skel).args;
@@ -99,25 +100,26 @@ public final class SpecialFind extends AbstractSpecial {
                 en.skel = temp[3];
                 en.display = ref;
                 en.deref();
-                multi = SpecialFind.createList(list, en);
+                SpecialFind.createList(list, en);
 
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Object val = AbstractSkel.copySkel(temp[0], ref, en);
                 int size = EngineCopy.displaySize(val);
-                d = (size != 0 ? new Display(Display.newBind(size)) :
+                d = (size != 0 ? new Display(Display.newLexical(size)) :
                         Display.DISPLAY_CONST);
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
                 if (size != 0)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -151,11 +153,11 @@ public final class SpecialFind extends AbstractSpecial {
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.bind = DisplayClause.newClause(clause.dispsize);
             ref2.def = clause;
             ref2.addArgument(en.skel, en.display, en);
             if (multi)
-                BindCount.remTab(ref.bind, en);
+                BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;
@@ -190,30 +192,20 @@ public final class SpecialFind extends AbstractSpecial {
      * <p>The end is passed in skel and display of the engine.</p>
      * <p>Result is returned in skel and display of the engine.</p>
      *
-     * @param temp The list of solutions.
+     * @param temp The list of solutions or null.
      * @param en   The engine.
-     * @return True if new display is returned, otherwise false.
      */
-    private static boolean createList(ListArray<Object> temp, Engine en) {
-        boolean multi = false;
+    private static void createList(ListArray<Object> temp, Engine en) {
         if (temp == null)
-            return multi;
+            return;
         for (int i = temp.size() - 1; i >= 0; i--) {
             Object t = en.skel;
             Display d = en.display;
-            boolean ext = multi;
             Object val = temp.get(i);
-            int size = EngineCopy.displaySize(val);
-            Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-            multi = SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+            Display ref = AbstractSkel.newDisplay(val);
+            SpecialFind.pairValue2(en.store.foyer.CELL_CONS,
                     val, ref, t, d, en);
-            if (multi && ext)
-                BindCount.remTab(d.bind, en);
-            if (multi && (size != 0))
-                BindCount.remTab(ref.bind, en);
-            multi = (multi || ext || (size != 0));
         }
-        return multi;
     }
 
     /**
@@ -225,11 +217,10 @@ public final class SpecialFind extends AbstractSpecial {
      * @param t  The term skeleton.
      * @param d  The term display.
      * @param en The engine.
-     * @return True if new display is returned, otherwise false.
      */
-    public static boolean pairValue(SkelCompound sc,
-                                    Object t2, Display d2,
-                                    Object t, Display d, Engine en) {
+    public static void pairValue2(SkelCompound sc,
+                                  Object t2, Display d2,
+                                  Object t, Display d, Engine en) {
         Object v2 = EngineCopy.getVar(t2);
         Object v = EngineCopy.getVar(t);
         if (v2 == null) {
@@ -238,21 +229,25 @@ public final class SpecialFind extends AbstractSpecial {
             args[1] = t;
             en.skel = new SkelCompound(sc.sym, args, v);
             en.display = d;
-            return false;
         } else if (v == null) {
             Object[] args = new Object[2];
             args[0] = t2;
             args[1] = t;
             en.skel = new SkelCompound(sc.sym, args, v2);
             en.display = d2;
-            return false;
         } else {
-            Display d3 = new Display(Display.newBind(2));
+            Display d3 = new Display(Display.newLexical(2));
+            boolean ext = d2.getAndReset();
             d3.bind[0].bindVar(t2, d2, en);
+            if (ext)
+                BindUniv.remTab(d2.bind, en);
+            ext = d.getAndReset();
             d3.bind[1].bindVar(t, d, en);
+            if (ext)
+                BindUniv.remTab(d.bind, en);
+            d3.flags |= Display.MASK_DPTM_MLTI;
             en.skel = sc;
             en.display = d3;
-            return true;
         }
     }
 

@@ -283,9 +283,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (; ; ) {
             clause = list[at++];
             if (dc.bind == null) {
-                dc.bind = DisplayClause.newBindClause(clause.dispsize);
+                dc.bind = DisplayClause.newClause(clause.dispsize);
             } else {
-                dc.bind = DisplayClause.setSizeClause(clause.dispsize, dc.bind);
+                dc.bind = DisplayClause.resizeClause(clause.dispsize, dc.bind);
             }
             dc.def = clause;
             lastalloc = (clause.intargs != null ?
@@ -349,7 +349,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                         return -1;
             } else {
                 if (k < n)
-                    k = Engine.newBind(k, n, ref2.bind);
+                    k = Clause.newBind(k, n, ref2.bind);
                 if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
                     return -1;
             }
@@ -562,9 +562,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (; ; ) {
             clause = list[at++];
             if (ref1.bind == null) {
-                ref1.bind = Display.newBind(clause.size);
+                ref1.bind = Display.newLexical(clause.size);
             } else {
-                ref1.bind = Display.setSize(clause.size, ref1.bind);
+                ref1.bind = Display.resizeLexical(clause.size, ref1.bind);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
@@ -604,7 +604,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 throw en.fault;
         }
         if (clause.size != 0)
-            BindCount.remTab(ref1.bind, en);
+            BindUniv.remTab(ref1.bind, en);
 
         if (at != list.length) {
             /* create choice point */
