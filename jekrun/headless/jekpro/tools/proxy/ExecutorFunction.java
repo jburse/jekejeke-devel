@@ -136,9 +136,8 @@ final class ExecutorFunction extends AbstractExecutor {
             help = AbstractTerm.copyMolec(inter, help);
             callin.close();
 
-            boolean ext = AbstractTerm.getAndResetMarker(help);
             return Types.denormProlog(encoderet, AbstractTerm.getSkel(help),
-                    AbstractTerm.getDisplay(help), ext);
+                    AbstractTerm.getDisplay(help));
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }

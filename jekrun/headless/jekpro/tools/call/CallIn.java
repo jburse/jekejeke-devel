@@ -284,18 +284,18 @@ public final class CallIn {
         mark = en.bind;
         snap = en.number;
         try {
-            boolean ext = AbstractTerm.getAndResetMarker(goal);
+            boolean ext = ref.getAndReset();
             boolean multi = en.wrapGoal();
             if (multi && ext)
-                BindCount.remTab(ref.bind, en);
+                BindUniv.remTab(ref.bind, en);
             ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            ref2.bind = DisplayClause.newClause(clause.dispsize);
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi || ext)
-                BindCount.remTab(ref.bind, en);
+                BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
             en.contskel = clause.getNextRaw(en);
             en.contdisplay = ref2;

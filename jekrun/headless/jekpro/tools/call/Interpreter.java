@@ -386,7 +386,7 @@ public final class Interpreter {
         if (val == null)
             return null;
         int size = rd.getGensym();
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
+        Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
         try {
             if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), val, ref, en, rd))
@@ -394,10 +394,9 @@ public final class Interpreter {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(res);
-        return res;
+            ref.flags |= Display.MASK_DPTM_MLTI;
+        return AbstractTerm.createTermWrapped(val, ref);
     }
 
     /***********************************************************/

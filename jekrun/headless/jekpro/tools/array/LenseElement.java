@@ -2,14 +2,17 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
@@ -119,7 +122,7 @@ final class LenseElement extends AbstractLense {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
-            Object obj = Types.denormProlog(encodeobj, temp[0], ref, false);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
@@ -132,13 +135,13 @@ final class LenseElement extends AbstractLense {
             if (res == null)
                 return false;
             Display d = AbstractTerm.getDisplay(res);
-            boolean ext = AbstractTerm.getAndResetMarker(res);
+            boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(temp[2], ref,
                             AbstractTerm.getSkel(res), d))
                 return false;
             if (ext)
-                BindCount.remTab(d.bind, en);
+                BindUniv.remTab(d.bind, en);
             return en.getNext();
         } catch (ClassCastException x) {
             throw new EngineMessage(

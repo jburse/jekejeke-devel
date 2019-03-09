@@ -151,7 +151,7 @@ final class MemberMethodNondet extends AbstractMember {
                 return false;
             Display d = AbstractTerm.getDisplay(res);
             Object[] help;
-            boolean ext = AbstractTerm.getAndResetMarker(res);
+            boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
                             AbstractTerm.getSkel(res), d)) {
@@ -171,7 +171,7 @@ final class MemberMethodNondet extends AbstractMember {
                 co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
                 if (ext)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
 
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     ChoiceForeign cp = new ChoiceForeign(en.choices);

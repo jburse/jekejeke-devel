@@ -83,21 +83,19 @@ public abstract class AbstractSkel {
         return val;
     }
 
-
     /**
-     * <p>Copy a skeleton into a new term.</p>
+     * <p>Create a new display.</p>
      *
      * @param val The skeleton.
-     * @return The term.
+     * @return The display.
      */
-    public static Object newMolec(Object val) {
+    public static Display newDisplay(Object val) {
         int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) :
+        Display ref = (size != 0 ? new Display(Display.newLexical(size)) :
                 Display.DISPLAY_CONST);
-        val = AbstractTerm.createMolec(val, ref);
         if (size != 0)
-            AbstractTerm.setMarker(val);
-        return val;
+            ref.flags |= Display.MASK_DPTM_MLTI;
+        return ref;
     }
 
     /**********************************************************/

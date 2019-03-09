@@ -1,6 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -163,8 +164,12 @@ abstract class AbstractMember extends AbstractLense
                 args[i] = en.proxy;
             } else {
                 en.computeExpr(((SkelCompound) temp).args[k], ref);
+                Display d = en.display;
+                boolean multi = d.getAndReset();
+                args[i] = Types.denormProlog(typ, en.skel, d);
+                if (multi)
+                    BindUniv.remTab(d.bind, en);
                 k++;
-                args[i] = Types.denormProlog(typ, en.skel, en.display, false);
             }
         }
         return args;
@@ -181,7 +186,7 @@ abstract class AbstractMember extends AbstractLense
     final Object convertRecv(Object temp, Display ref)
             throws EngineMessage {
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
-            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref, false);
+            return Types.denormProlog(encodeobj, ((SkelCompound) temp).args[0], ref);
         } else {
             return null;
         }
@@ -214,7 +219,7 @@ abstract class AbstractMember extends AbstractLense
             } else if (typ == Types.TYPE_CALLOUT) {
                 args[i] = co;
             } else {
-                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref, false);
+                args[i] = Types.denormProlog(typ, ((SkelCompound) temp).args[k], ref);
                 k++;
             }
         }

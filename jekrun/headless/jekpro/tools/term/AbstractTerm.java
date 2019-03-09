@@ -1,6 +1,5 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.Display;
@@ -184,46 +183,6 @@ public abstract class AbstractTerm {
      */
     public abstract Display getDisplay();
 
-    /**
-     * <p>Set the marker.</p>
-     */
-    public abstract void setMarker();
-
-    /**
-     * <p>Get and reset the marker.</p>
-     *
-     * @return The marker.
-     */
-    public abstract boolean getAndResetMarker();
-
-    /************************************************************/
-    /* Experimental Multi                                       */
-    /************************************************************/
-
-    /**
-     * <p>Set the multi flag.</p>
-     *
-     * @param t The term.
-     */
-    public static void setMarker(Object t) {
-        if (t instanceof AbstractTerm)
-            ((AbstractTerm) t).setMarker();
-    }
-
-    /**
-     * <p>Retrieve the multi flag.</p>
-     *
-     * @param t The term.
-     * @return The multi flag.
-     */
-    public static boolean getAndResetMarker(Object t) {
-        if (t instanceof AbstractTerm) {
-            return ((AbstractTerm) t).getAndResetMarker();
-        } else {
-            return false;
-        }
-    }
-
     /************************************************************/
     /* String Generation                                        */
     /************************************************************/
@@ -348,13 +307,8 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
-        int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) :
-                Display.DISPLAY_CONST);
-        val = AbstractTerm.createTerm(val, ref);
-        if (size != 0)
-            AbstractTerm.setMarker(val);
-        return val;
+        Display ref = AbstractSkel.newDisplay(val);
+        return AbstractTerm.createTerm(val, ref);
     }
 
     /**
@@ -373,13 +327,8 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
-        int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) :
-                Display.DISPLAY_CONST);
-        AbstractTerm res = AbstractTerm.createTermWrapped(val, ref);
-        if (size != 0)
-            AbstractTerm.setMarker(res);
-        return res;
+        Display ref = AbstractSkel.newDisplay(val);
+        return AbstractTerm.createTermWrapped(val, ref);
     }
 
     /**
@@ -397,7 +346,8 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
-        return AbstractSkel.newMolec(val);
+        Display ref = AbstractSkel.newDisplay(val);
+        return AbstractTerm.createMolec(val, ref);
     }
 
 }

@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.tools.call.*;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
@@ -198,12 +199,8 @@ public final class ProxyHandler implements InvocationHandler {
         if (idx < 0 || state.length() <= idx)
             throw new ArrayIndexOutOfBoundsException();
         Object m = state.at(idx);
-        int size = EngineCopy.displaySize(m);
-        Display ref = (size != 0 ? new Display(Display.newBind(size)) : Display.DISPLAY_CONST);
-        AbstractTerm res = AbstractTerm.createTermWrapped(m, ref);
-        if (size != 0)
-            AbstractTerm.setMarker(res);
-        return res;
+        Display ref = AbstractSkel.newDisplay(m);
+        return AbstractTerm.createTermWrapped(m, ref);
     }
 
     /**

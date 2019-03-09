@@ -3,7 +3,7 @@ package jekpro.tools.term;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.reference.structure.SpecialLexical;
@@ -141,27 +141,6 @@ public final class TermCompound extends AbstractTerm {
      */
     public Display getDisplay() {
         return display;
-    }
-
-    /**
-     * <p>Set the marker.</p>
-     */
-    public void setMarker() {
-        display.flags |= Display.MASK_DPTM_MLTI;
-    }
-
-    /**
-     * <p>Get and reset the marker.</p>
-     *
-     * @return The marker.
-     */
-    public boolean getAndResetMarker() {
-        if ((display.flags & Display.MASK_DPTM_MLTI) != 0) {
-            display.flags &= ~Display.MASK_DPTM_MLTI;
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -354,7 +333,7 @@ public final class TermCompound extends AbstractTerm {
             }
         }
         if (multi) {
-            last = new Display(Display.newBind(countvar));
+            last = new Display(Display.newLexical(countvar));
             last.flags |= Display.MASK_DPTM_MLTI;
         }
         en.skel = Boolean.valueOf(multi);
@@ -389,10 +368,10 @@ public final class TermCompound extends AbstractTerm {
                 Display d = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;
-                boolean ext = AbstractTerm.getAndResetMarker(obj);
+                boolean ext = d.getAndReset();
                 d3.bind[sv.id].bindVar(t, d, en);
                 if (ext)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 args[i] = sv;
             } else {
                 args[i] = t;

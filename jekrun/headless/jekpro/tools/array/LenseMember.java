@@ -110,18 +110,18 @@ final class LenseMember extends AbstractLense {
     /**
      * <p>Arithmetically evaluate a compound.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    public final boolean moniEvaluate(Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
-            Object obj = Types.denormProlog(encodeobj, temp[0], ref, false);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
@@ -130,10 +130,8 @@ final class LenseMember extends AbstractLense {
             if (res == null)
                 throw new EngineMessage(EngineMessage.representationError(
                         AbstractFactory.OP_REPRESENTATION_NULL));
-            boolean ext = AbstractTerm.getAndResetMarker(res);
             en.skel = AbstractTerm.getSkel(res);
             en.display = AbstractTerm.getDisplay(res);
-            return ext;
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));

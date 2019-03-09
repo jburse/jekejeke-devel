@@ -79,11 +79,11 @@ final class LenseUpdate extends AbstractLense {
         try {
             Object[] temp = ((SkelCompound) en.skel).args;
             Display ref = en.display;
-            Object obj = Types.denormProlog(encodeobj, temp[0], ref, false);
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref);
             Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
             SpecialEval.checkNotLessThanZero(num);
             int idx = SpecialEval.castIntValue(num);
-            Object res = Types.denormProlog(encodeparas[1], temp[2], ref, false);
+            Object res = Types.denormProlog(encodeparas[1], temp[2], ref);
             set(obj, idx, res);
             return en.getNextRaw();
         } catch (ClassCastException x) {

@@ -146,9 +146,8 @@ final class ExecutorMethod extends AbstractExecutor {
                 callin.next();
                 help = (help != null ? AbstractTerm.copyMolec(inter, help) : null);
                 callin.close();
-                boolean ext = (help != null && AbstractTerm.getAndResetMarker(help));
                 help = (help != null ? Types.denormProlog(encoderet, AbstractTerm.getSkel(help),
-                        AbstractTerm.getDisplay(help), ext) : noretDenormProlog(true));
+                        AbstractTerm.getDisplay(help)) : noretDenormProlog(true));
             } else {
                 help = (help != null ? null : noretDenormProlog(false));
             }

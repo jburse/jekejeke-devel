@@ -120,10 +120,11 @@ final class ChoiceForeign extends AbstractChoice {
             if (res == null)
                 return false;
             Display d = AbstractTerm.getDisplay(res);
-            boolean ext = AbstractTerm.getAndResetMarker(res);
+            Object[] help;
+            boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
-                    !en.unifyTerm(((SkelCompound) term).args[
-                                    ((SkelCompound) term).args.length - 1], ref,
+                    !en.unifyTerm((help=((SkelCompound) term).args)[
+                                    help.length - 1], ref,
                             AbstractTerm.getSkel(res), d)) {
                 if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
                     return false;
@@ -136,7 +137,7 @@ final class ChoiceForeign extends AbstractChoice {
                 }
             } else {
                 if (ext)
-                    BindCount.remTab(d.bind, en);
+                    BindUniv.remTab(d.bind, en);
 
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     /* meta argument change */

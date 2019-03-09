@@ -106,20 +106,19 @@ final class LenseLength extends AbstractLense {
     /**
      * <p>Arithmetically evaluate a compound.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
      * @throws EngineMessage FFI error.
      */
-    public final boolean moniEvaluate(Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        Object obj = Types.denormProlog(encodeobj, temp[0], ref, false);
+        Object obj = Types.denormProlog(encodeobj, temp[0], ref);
         en.skel = Integer.valueOf(getLength(obj));
         en.display = Display.DISPLAY_CONST;
-        return false;
     }
 
     /**

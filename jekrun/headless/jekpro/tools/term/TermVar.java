@@ -71,7 +71,7 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        display = new Display(Display.newBind(1));
+        display = new Display(Display.newLexical(1));
         display.flags |= Display.MASK_DPTM_MLTI;
     }
 
@@ -95,27 +95,6 @@ public final class TermVar extends AbstractTerm {
      */
     public Display getDisplay() {
         return display;
-    }
-
-    /**
-     * <p>Set the marker.</p>
-     */
-    public void setMarker() {
-        display.flags |= Display.MASK_DPTM_MLTI;
-    }
-
-    /**
-     * <p>Get and reset the marker.</p>
-     *
-     * @return The marker.
-     */
-    public boolean getAndResetMarker() {
-        if ((display.flags & Display.MASK_DPTM_MLTI) != 0) {
-            display.flags &= ~Display.MASK_DPTM_MLTI;
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**

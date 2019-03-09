@@ -8,7 +8,10 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 
 /**
  * <p>This is the base class for all predicate delegates. It also
@@ -119,12 +122,13 @@ public abstract class AbstractDelegate {
         Display ref = en.display;
 
         Object expr = AbstractDelegate.tunnelArgs(temp);
-        boolean multi = en.computeExpr(expr, ref);
+        en.computeExpr(expr, ref);
         Display d = en.display;
+        boolean multi = d.getAndReset();
         if (!en.unifyTerm(temp.args[temp.args.length - 1], ref, en.skel, d))
             return false;
         if (multi)
-            BindCount.remTab(d.bind, en);
+            BindUniv.remTab(d.bind, en);
         return en.getNext();
     }
 
@@ -152,14 +156,14 @@ public abstract class AbstractDelegate {
     /**
      * <p>Delegate an evaluable function.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public boolean moniEvaluate(Engine en)
+    public void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
@@ -173,9 +177,9 @@ public abstract class AbstractDelegate {
 
         AbstractDelegate.invokeOther(en);
 
+        ref.flags |= Display.MASK_DPTM_MLTI;
         en.display = ref;
         en.skel = temp;
-        return true;
     }
 
     /**
@@ -200,16 +204,12 @@ public abstract class AbstractDelegate {
             en.skel = help[0];
             en.display = ref;
             en.deref();
-            Object val = AbstractTerm.createMolec(en.skel, en.display);
-            args[i] = val;
+            args[i] = AbstractTerm.createMolec(en.skel, en.display);
             i++;
         }
         for (; i < help.length; i++) {
-            boolean multi = en.computeExpr(help[i], ref);
-            Object val = AbstractTerm.createMolec(en.skel, en.display);
-            if (multi)
-                AbstractTerm.setMarker(val);
-            args[i] = val;
+            en.computeExpr(help[i], ref);
+            args[i] = AbstractTerm.createMolec(en.skel, en.display);
         }
         return args;
     }
@@ -228,7 +228,7 @@ public abstract class AbstractDelegate {
             if (EngineCopy.getVar(temp) != null)
                 countvar++;
         }
-        return new Display(Display.newBind(countvar + 1));
+        return new Display(Display.newLexical(countvar + 1));
     }
 
     /**
@@ -250,13 +250,13 @@ public abstract class AbstractDelegate {
             Object obj = args[i];
             Object temp = AbstractTerm.getSkel(obj);
             if (EngineCopy.getVar(temp) != null) {
-                Display ref2 = AbstractTerm.getDisplay(obj);
+                Display d = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;
-                boolean ext = AbstractTerm.getAndResetMarker(obj);
-                ref.bind[sv.id].bindVar(temp, ref2, en);
+                boolean ext = d.getAndReset();
+                ref.bind[sv.id].bindVar(temp, d, en);
                 if (ext)
-                    BindCount.remTab(ref2.bind, en);
+                    BindUniv.remTab(d.bind, en);
                 args[i] = sv;
             } else {
                 args[i] = temp;
@@ -282,11 +282,11 @@ public abstract class AbstractDelegate {
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
         DisplayClause ref2 = new DisplayClause();
-        ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+        ref2.bind = DisplayClause.newClause(clause.dispsize);
         ref2.def = clause;
         ref2.addArgument(en.skel, ref, en);
         if (multi)
-            BindCount.remTab(ref.bind, en);
+            BindUniv.remTab(ref.bind, en);
         ref2.setEngine(en);
         en.contskel = clause.getNextRaw(en);
         en.contdisplay = ref2;

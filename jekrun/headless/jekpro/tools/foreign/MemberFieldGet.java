@@ -1,7 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -140,13 +140,13 @@ final class MemberFieldGet extends AbstractMember {
             return false;
         Display d = AbstractTerm.getDisplay(res);
         Object[] help;
-        boolean ext = AbstractTerm.getAndResetMarker(res);
+        boolean ext = d.getAndReset();
         if (res != AbstractSkel.VOID_OBJ &&
                 !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;
         if (ext)
-            BindCount.remTab(d.bind, en);
+            BindUniv.remTab(d.bind, en);
         return en.getNext();
     }
 
