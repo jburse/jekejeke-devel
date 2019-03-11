@@ -2,7 +2,8 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
@@ -80,11 +81,11 @@ public class SpecialArith extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_MP_DECIMAL:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     MathContext mc = SpecialArith.derefAndCastContext(temp[1], ref);
                     if (!en.unifyTerm(temp[2], ref, mpDecimal(alfa, mc),
-                            BindCount.DISPLAY_CONST))
+                            Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_MP_ADD:
@@ -94,7 +95,7 @@ public class SpecialArith extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpAdd(alfa, beta, mc),
-                            BindCount.DISPLAY_CONST))
+                            Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_MP_SUB:
@@ -104,7 +105,7 @@ public class SpecialArith extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpSub(alfa, beta, mc),
-                            BindCount.DISPLAY_CONST))
+                            Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_MP_MUL:
@@ -114,7 +115,7 @@ public class SpecialArith extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpMul(alfa, beta, mc),
-                            BindCount.DISPLAY_CONST))
+                            Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_MP_SLASH:
@@ -124,7 +125,7 @@ public class SpecialArith extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     if (!en.unifyTerm(temp[3], ref, mpSlash(alfa, beta, mc),
-                            BindCount.DISPLAY_CONST))
+                            Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 case SPECIAL_MP_INT_POW:
@@ -135,7 +136,7 @@ public class SpecialArith extends AbstractSpecial {
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     int x = SpecialEval.castIntValue(beta);
                     if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, x, mc),
-                            BindCount.DISPLAY_CONST))
+                            Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:
@@ -158,7 +159,7 @@ public class SpecialArith extends AbstractSpecial {
      * @return The clause.
      * @throws EngineMessage Shit happens.
      */
-    static MathContext derefAndCastContext(Object m, BindCount[] d)
+    static MathContext derefAndCastContext(Object m, Display d)
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRef(m, d);
         if (m instanceof MathContext) {

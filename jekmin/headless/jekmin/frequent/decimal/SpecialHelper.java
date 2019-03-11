@@ -2,7 +2,8 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.Display;
 
 /**
  * <p>Provides some constants.</p>
@@ -55,22 +56,21 @@ public class SpecialHelper extends AbstractSpecial {
     /**
      * <p>Arithmetically evaluate an evaluable.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
-     * @return True if new display is returned, otherwise false.
      */
-    public final boolean moniEvaluate(Engine en) {
+    public final void moniEvaluate(Engine en) {
         switch (id) {
             case EVALUABLE_LOG2:
                 en.skel = DOUBLE_LOG2;
-                en.display = BindCount.DISPLAY_CONST;
-                return false;
+                en.display = Display.DISPLAY_CONST;
+                return;
             case EVALUABLE_LOG10:
                 en.skel = DOUBLE_LOG10;
-                en.display = BindCount.DISPLAY_CONST;
-                return false;
+                en.display = Display.DISPLAY_CONST;
+                return;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
