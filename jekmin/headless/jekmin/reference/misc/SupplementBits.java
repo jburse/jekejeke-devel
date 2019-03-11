@@ -2,7 +2,8 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -62,86 +63,92 @@ public final class SupplementBits extends AbstractSpecial {
     /**
      * <p>Arithmetically evaluate an evaluable.</p>
      * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the r and u of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniEvaluate(Engine en)
+    public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
                 case EVALUABLE_BITCOUNT:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
-                    boolean multi = en.computeExpr(temp[0], ref);
-                    BindCount[] d = en.display;
+                    Display ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    Display d = en.display;
+                    boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = Integer.valueOf(bitCount(alfa));
-                    en.display = BindCount.DISPLAY_CONST;
-                    return false;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 case EVALUABLE_BITLENGTH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = Integer.valueOf(bitLength(alfa));
-                    en.display = BindCount.DISPLAY_CONST;
-                    return false;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 case EVALUABLE_LOWESTSETBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindUniv.remTab(d.bind, en);
                     en.skel = Integer.valueOf(lowestSetBit(alfa));
-                    en.display = BindCount.DISPLAY_CONST;
-                    return false;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 case EVALUABLE_SETBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindUniv.remTab(d.bind, en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     int x = SpecialEval.castIntValue(alfa);
                     en.skel = setBit(x, beta);
-                    en.display = BindCount.DISPLAY_CONST;
-                    return false;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 case EVALUABLE_CLEARBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = en.computeExpr(temp[0], ref);
+                    en.computeExpr(temp[0], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
-                    multi = en.computeExpr(temp[1], ref);
+                        BindUniv.remTab(d.bind, en);
+                    en.computeExpr(temp[1], ref);
                     d = en.display;
+                    multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindCount.remTab(d, en);
+                        BindUniv.remTab(d.bind, en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     x = SpecialEval.castIntValue(alfa);
                     en.skel = clearBit(x, beta);
-                    en.display = BindCount.DISPLAY_CONST;
-                    return false;
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }

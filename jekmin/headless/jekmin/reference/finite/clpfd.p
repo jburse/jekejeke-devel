@@ -71,7 +71,7 @@
 :- use_module(library(minimal/delta)).
 :- use_module(library(misc/struc)).
 :- use_module(library(misc/elem)).
-:- use_module(library(experiment/surrogate)).
+:- use_module(library(misc/residue)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
 :- use_module(helper).

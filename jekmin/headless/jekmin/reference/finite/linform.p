@@ -101,7 +101,7 @@
 :- use_module(library(minimal/hypo)).
 :- use_module(library(minimal/delta)).
 :- use_module(library(basic/lists)).
-:- use_module(library(experiment/surrogate)).
+:- use_module(library(misc/residue)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(misc/elem)).
@@ -310,7 +310,7 @@ true
 /* Create Surrogate */
 post(sys_lin_ref(R, L, T))
 <= phaseout_posted(sys_lin(L, T)),
-   sys_new_surrogate(R).
+   surrogate_new(R).
 
 /* Trivial Cases */
 fail

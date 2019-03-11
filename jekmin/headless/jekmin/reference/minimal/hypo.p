@@ -200,9 +200,9 @@ retireall(H, G) :-
 % :- meta_predicate [(0,0)].
 % A, B :- A, B.
 
-% ','(+Goal, +Goal, +Goal)
+% ','(+Hypo, +Hypo, +Goal)
 :- public ','/3.
-:- meta_predicate ','(0,0,0).
+:- meta_predicate ','(1,1,0).
 ','(A, B, G) :-
    call(A, call(B,G)).
 
@@ -217,9 +217,9 @@ retireall(H, G) :-
 % A; _ :- A.
 % _; B :- B.
 
-% ;(+Goal, +Goal, +Goal)
+% ;(+Hypo, +Hypo, +Goal)
 :- public ;/3.
-:- meta_predicate ;(0,0,0).
+:- meta_predicate ;(1,1,0).
 ;(A, _, G) :-
    call(A, G).
 ;(_, B, G) :-

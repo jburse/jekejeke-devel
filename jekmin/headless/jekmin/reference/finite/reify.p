@@ -63,7 +63,7 @@
 :- use_module(library(minimal/hypo)).
 :- use_module(library(minimal/delta)).
 :- use_module(library(misc/struc)).
-:- use_module(library(experiment/surrogate)).
+:- use_module(library(misc/residue)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
 :- use_module(helper).
@@ -535,7 +535,7 @@ true
 /* Create Surrogate */
 post(sys_pit_ref(R, L, T, B, C))
 <= phaseout_posted(sys_pit(L, T, B, C)),
-   sys_new_surrogate(R).
+   surrogate_new(R).
 
 /* Trivial Cases */
 sys_melt_const(B, C)
@@ -782,7 +782,7 @@ true
 /* Create Surrogate */
 post(sys_lot_ref(V, L, S, T, B, C))
 <= phaseout_posted(sys_lot(L, S, B, C)),
-   sys_new_surrogate(V),
+   surrogate_new(V),
    sys_bound_set(S, T).
 
 /* Trivial Cases */

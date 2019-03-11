@@ -67,6 +67,7 @@
 :- reexport(tree).
 :- use_module(library(term/unify)).
 :- use_module(library(basic/lists)).
+:- use_module(library(basic/random)).
 
 /**
  * sat(A):
@@ -277,6 +278,23 @@ sys_labeling([B|L]) :-
 sys_labeling([]).
 
 /**
+ * random_labeling(L):
+ * The predicate randomly labels the variables in L.
+ */
+% random_labeling(+List)
+:- public random_labeling/1.
+random_labeling(L) :-
+   sys_plan_list(L, R),
+   sys_random_labeling(R).
+
+% sys_random_labeling(+List)
+:- private sys_random_labeling/1.
+sys_random_labeling([B|L]) :-
+   sys_random_sat_value(B),
+   sys_random_labeling(L).
+sys_random_labeling([]).
+
+/**
  * sat_count(L, N):
  * The predicate silently labels the variables in L and
  * succeeds in N with the count of the solutions.
@@ -303,6 +321,19 @@ sys_sat_count([], 1).
 :- private sys_sat_value/1.
 sys_sat_value(0).
 sys_sat_value(1).
+
+/**
+ * sys_random_sat_value(B):
+ * The predicate succeeds in B with a random sat value.
+ */
+% sys_random_sat_value(-Boolean)
+sys_random_sat_value(B) :-
+   var(B), !,
+   findall(C, sys_sat_value(C), L),
+   random_permutation(L, R),
+   member(B, R).
+sys_random_sat_value(B) :-
+   sys_sat_value(B).
 
 /**
  * sys_sat_sum(L, N):

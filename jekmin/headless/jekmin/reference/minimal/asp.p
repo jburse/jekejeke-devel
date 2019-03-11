@@ -18,10 +18,10 @@
  * which can then be used to produce an anwser set:
  *
  * Example:
- * fail <= posted('p'), posted('q'), posted('r').
- * choose(['p','r']) <= posted(init).
- * choose(['q']) <= posted('p').
- * choose(['r']) <= posted('p').
+ * fail <= posted(p), posted(q), posted(r).
+ * choose([p,r]) <= posted(init).
+ * choose([q]) <= posted(p).
+ * choose([r]) <= posted(p).
  * ?- post(init).
  *
  * Our approach to answer set programming allows explicit mixing of

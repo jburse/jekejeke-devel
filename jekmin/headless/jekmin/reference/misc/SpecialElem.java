@@ -2,7 +2,7 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
@@ -72,13 +72,13 @@ public final class SpecialElem extends AbstractSpecial {
             switch (id) {
                 case SPECIAL_DIVMOD:
                     Object[] temp = ((SkelCompound) en.skel).args;
-                    BindCount[] ref = en.display;
+                    Display ref = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     Number beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     Number[] res = divMod(alfa, beta);
-                    if (!en.unifyTerm(temp[2], ref, res[0], BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[2], ref, res[0], Display.DISPLAY_CONST))
                         return false;
-                    if (!en.unifyTerm(temp[3], ref, res[1], BindCount.DISPLAY_CONST))
+                    if (!en.unifyTerm(temp[3], ref, res[1], Display.DISPLAY_CONST))
                         return false;
                     return en.getNext();
                 default:

@@ -41,6 +41,12 @@
  * Y = 4 ;
  * ...
  *
+ * The predicates indomain/1 and label/1 have randomized equivalents
+ * random_indomain/1 and random_label/1. For a full enumeration the
+ * randomized versions would be slower, more memory intensive and
+ * not give a random sequence, but they are still helpful in picking
+ * a first random solution.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -78,6 +84,7 @@
 :- use_module(library(minimal/hypo)).
 :- use_module(library(advanced/arith)).
 :- use_module(library(basic/lists)).
+:- use_module(library(basic/random)).
 :- use_module(intset).
 :- use_module(linform).
 
@@ -111,6 +118,26 @@ indomain(X) :-
    throw(error(type_error(integer,X),_)).
 
 /**
+ * random_indomain(V):
+ * The predicate succeeds randomly for every constant I that is
+ * in the domain of the variable V. The domain of the variable
+ * can be only finite.
+ */
+% random_indomain(-Integer)
+:- public random_indomain/1.
+random_indomain(X) :-
+   var(X), !,
+   sys_freeze_var(X, B),
+   sys_retire_set(B, S),
+   findall(Y, sys_mem_set(S, Y), L),
+   random_permutation(L, R),
+   member(X, R).
+random_indomain(X) :-
+   integer(X), !.
+random_indomain(X) :-
+   throw(error(type_error(integer,X),_)).
+
+/**
  * sys_retire_set(B, S):
  * The predicate succeeds for the domain S of the variable 
  * reference B. The predicate also removes the domain 
@@ -128,7 +155,7 @@ sys_retire_set(_, [...]).
 
 /**
  * label([V1, .., Vn]):
- * The predicate post all the assignments of constants I1, .., In
+ * The predicate posts all the assignments of constants I1, .., In
  * to the variables V1, .., Vn from their domains. Infinite domains
  * are filtered out and cantor paired. Then smaller domains are
  * enumerated first.
@@ -154,6 +181,34 @@ sys_label_finite(L) :-
    indomain(X),
    sys_label_finite(T).
 sys_label_finite(_).
+
+/**
+ * random_label([V1,..,Vn]):
+ * The predicate posts randomly all the assignments of constants I1, .., In
+ * to the variables V1, .., Vn from their domains. Infinite domains
+ * are filtered out and cantor paired. Then smaller domains are
+ * enumerated first.
+ */
+% random_label(+List)
+:- public random_label/1.
+random_label(L) :-
+   sys_sel_infinite(L, D),
+   D \== [], !,
+   sys_abs_bound(D, M),
+   sys_abs_sum(D, H),
+   H #= M,
+   indomain(M),
+   sys_random_label_finite(L).
+random_label(L) :-
+   sys_random_label_finite(L).
+
+% sys_random_label_finite(+List)
+:- private sys_random_label_finite/1.
+sys_random_label_finite(L) :-
+   sys_good_pick(L, X, _, T), !,
+   random_indomain(X),
+   sys_random_label_finite(T).
+sys_random_label_finite(_).
 
 /**
  * sys_good_pick(L, Y, N, R):
@@ -278,8 +333,8 @@ sys_mem_range(..A, C) :- !,
    B is -A,
    above(B, Y),
    C is -Y.
-sys_mem_range(A..., C) :- !,
-   above(A, C).
+sys_mem_range(B..., C) :- !,
+   above(B, C).
 sys_mem_range(A..B, C) :- !,
    between(A, B, C).
 sys_mem_range(A, A).

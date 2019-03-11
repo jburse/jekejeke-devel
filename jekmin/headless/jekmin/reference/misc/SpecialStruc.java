@@ -70,7 +70,7 @@ public final class SpecialStruc extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_TERM_KERNEL:
                 Object[] temp = ((SkelCompound) en.skel).args;
-                BindCount[] ref = en.display;
+                Display ref = en.display;
                 SpecialStruc.termKernel(temp[0], ref, en);
                 if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
@@ -80,13 +80,15 @@ public final class SpecialStruc extends AbstractSpecial {
                 ref = en.display;
                 EngineVars ev = new EngineVars();
                 SpecialStruc.termGlobals(temp[0], ref, ev);
-                boolean multi = SpecialSort.createSet(en.store.foyer.ATOM_NIL,
-                        BindCount.DISPLAY_CONST, ev.vars, en);
-                BindCount[] d = en.display;
+                en.skel = en.store.foyer.ATOM_NIL;
+                en.display = Display.DISPLAY_CONST;
+                SpecialSort.createSet(ev.vars, en);
+                Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d, en);
+                    BindUniv.remTab(d.bind, en);
                 return en.getNext();
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
@@ -105,10 +107,10 @@ public final class SpecialStruc extends AbstractSpecial {
      * @param d  The goal display.
      * @param en The engine.
      */
-    private static void termKernel(Object t, BindCount[] d, Engine en) {
+    private static void termKernel(Object t, Display d, Engine en) {
         while (t instanceof SkelVar) {
             BindVar b;
-            if ((b = d[((SkelVar) t).id]).display == null)
+            if ((b = d.bind[((SkelVar) t).id]).display == null)
                 break;
             t = b.skel;
             d = b.display;
@@ -120,7 +122,7 @@ public final class SpecialStruc extends AbstractSpecial {
             t = sc.args[1];
             while (t instanceof SkelVar) {
                 BindVar b;
-                if ((b = d[((SkelVar) t).id]).display == null)
+                if ((b = d.bind[((SkelVar) t).id]).display == null)
                     break;
                 t = b.skel;
                 d = b.display;
@@ -137,10 +139,10 @@ public final class SpecialStruc extends AbstractSpecial {
      * @param t The goal skeleton.
      * @param d The goal display.
      */
-    private static void termGlobals(Object t, BindCount[] d, EngineVars ev) {
+    private static void termGlobals(Object t, Display d, EngineVars ev) {
         while (t instanceof SkelVar) {
             BindVar b;
-            if ((b = d[((SkelVar) t).id]).display == null)
+            if ((b = d.bind[((SkelVar) t).id]).display == null)
                 return;
             t = b.skel;
             d = b.display;
