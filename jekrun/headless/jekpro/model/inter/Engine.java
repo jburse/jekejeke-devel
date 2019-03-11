@@ -270,7 +270,8 @@ public class Engine implements InterfaceStack {
     }
 
     /**
-     * <p>Dequeue the oldest goal from the suspension queue.</p>
+     * <p>Dequeue all goals from the suspension queue.</p>
+     * <p>And prepend the goals to the current continuation.</p>
      */
     public final void retireCont()
             throws EngineMessage, EngineException {
