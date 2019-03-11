@@ -125,7 +125,7 @@ final class LenseDimension extends AbstractLense {
             Object val = newInstance(size);
             if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
                 return false;
-            return en.getNext();
+            return true;
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));

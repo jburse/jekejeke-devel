@@ -185,7 +185,7 @@ final class MemberMethodNondet extends AbstractMember {
                     en.choices = cp;
                     en.number++;
                 }
-                return en.getNext();
+                return true;
             }
         }
     }

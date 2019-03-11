@@ -1,13 +1,13 @@
 package jekpro.tools.call;
 
+import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.PositionKey;
@@ -385,8 +385,7 @@ public final class Interpreter {
         }
         if (val == null)
             return null;
-        int size = rd.getGensym();
-        Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        Display ref = AbstractSkel.createDisplay(val);
         try {
             if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), val, ref, en, rd))
@@ -394,7 +393,7 @@ public final class Interpreter {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        if (size != 0)
+        if (EngineCopy.displaySize(val) != 0)
             ref.flags |= Display.MASK_DPTM_MLTI;
         return AbstractTerm.createTermWrapped(val, ref);
     }

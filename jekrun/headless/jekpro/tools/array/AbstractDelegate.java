@@ -60,6 +60,7 @@ public abstract class AbstractDelegate {
     public final static int MASK_DELE_VIRT = 0x00000001;
     public final static int MASK_DELE_ARIT = 0x00000002;
     public final static int MASK_DELE_MULT = 0x00000004;
+    public final static int MASK_DELE_NOBR = 0x00000008;
 
     public int subflags;
 
@@ -117,7 +118,7 @@ public abstract class AbstractDelegate {
      * @throws EngineException FFI error.
      */
     public boolean moniFirst(Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineException, EngineMessage {
         SkelCompound temp = (SkelCompound) en.skel;
         Display ref = en.display;
 
@@ -129,7 +130,7 @@ public abstract class AbstractDelegate {
             return false;
         if (multi)
             BindUniv.remTab(d.bind, en);
-        return en.getNext();
+        return true;
     }
 
     /**
@@ -228,7 +229,7 @@ public abstract class AbstractDelegate {
             if (EngineCopy.getVar(temp) != null)
                 countvar++;
         }
-        return new Display(Display.newLexical(countvar + 1));
+        return new Display(BindUniv.newUnivLexical(countvar,1));
     }
 
     /**
@@ -281,14 +282,14 @@ public abstract class AbstractDelegate {
         boolean multi = en.wrapGoal();
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        DisplayClause ref2 = new DisplayClause();
-        ref2.bind = DisplayClause.newClause(clause.dispsize);
+        DisplayClause ref2 = new DisplayClause(
+                DisplayClause.newClause(clause.dispsize));
         ref2.def = clause;
         ref2.addArgument(en.skel, ref, en);
         if (multi)
             BindUniv.remTab(ref.bind, en);
         ref2.setEngine(en);
-        en.contskel = clause.getNextRaw(en);
+        en.contskel = clause;
         en.contdisplay = ref2;
         if (!en.runLoop(snap, true))
             throw new EngineMessage(EngineMessage.evaluationError(

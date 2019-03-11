@@ -85,7 +85,7 @@ final class LenseUpdate extends AbstractLense {
             int idx = SpecialEval.castIntValue(num);
             Object res = Types.denormProlog(encodeparas[1], temp[2], ref);
             set(obj, idx, res);
-            return en.getNextRaw();
+            return true;
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));

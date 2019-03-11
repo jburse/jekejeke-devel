@@ -147,7 +147,7 @@ final class ChoiceForeign extends AbstractChoice {
                     en.choices = this;
                     en.number++;
                 }
-                return en.getNext();
+                return true;
             }
         }
     }

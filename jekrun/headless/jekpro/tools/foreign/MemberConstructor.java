@@ -158,7 +158,7 @@ final class MemberConstructor extends AbstractMember {
             return false;
         if (ext)
             BindUniv.remTab(d.bind, en);
-        return en.getNext();
+        return true;
     }
 
     /***************************************************************/

@@ -6,6 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.Display;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
 
@@ -333,7 +334,7 @@ public final class TermCompound extends AbstractTerm {
             }
         }
         if (multi) {
-            last = new Display(Display.newLexical(countvar));
+            last = new Display(BindUniv.newUniv(countvar));
             last.flags |= Display.MASK_DPTM_MLTI;
         }
         en.skel = Boolean.valueOf(multi);

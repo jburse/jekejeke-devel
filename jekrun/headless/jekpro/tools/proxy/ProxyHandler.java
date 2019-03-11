@@ -199,7 +199,7 @@ public final class ProxyHandler implements InvocationHandler {
         if (idx < 0 || state.length() <= idx)
             throw new ArrayIndexOutOfBoundsException();
         Object m = state.at(idx);
-        Display ref = AbstractSkel.newDisplay(m);
+        Display ref = AbstractSkel.createMarker(m);
         return AbstractTerm.createTermWrapped(m, ref);
     }
 

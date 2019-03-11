@@ -290,14 +290,14 @@ public final class CallIn {
                 BindUniv.remTab(ref.bind, en);
             ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi || ext)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref2;
             if (en.runLoop(snap, true)) {
                 en.contskel = r;

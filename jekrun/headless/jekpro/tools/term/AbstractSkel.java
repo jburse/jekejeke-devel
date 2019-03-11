@@ -3,9 +3,7 @@ package jekpro.tools.term;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.structure.SpecialLexical;
@@ -46,6 +44,8 @@ import java.io.StringWriter;
 public abstract class AbstractSkel {
     public final static Object VOID_OBJ = new Object();
 
+
+
     /**
      * <p>Return a string of a skeleton.</p>
      *
@@ -83,15 +83,29 @@ public abstract class AbstractSkel {
         return val;
     }
 
+
+    /**
+     * <p>Create a display for an error.</p>
+     *
+     * @param t The skeleton.
+     * @return The display.
+     */
+    public static Display createDisplay(Object t) {
+        int size = EngineCopy.displaySize(t);
+        return (size != 0 ? new Display(BindLexical.newLexical(size)) :
+                Display.DISPLAY_CONST);
+    }
+
+
     /**
      * <p>Create a new display.</p>
      *
      * @param val The skeleton.
      * @return The display.
      */
-    public static Display newDisplay(Object val) {
+    public static Display createMarker(Object val) {
         int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(Display.newLexical(size)) :
+        Display ref = (size != 0 ? new Display(BindLexical.newLexical(size)) :
                 Display.DISPLAY_CONST);
         if (size != 0)
             ref.flags |= Display.MASK_DPTM_MLTI;

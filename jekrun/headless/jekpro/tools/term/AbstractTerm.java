@@ -307,7 +307,7 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
-        Display ref = AbstractSkel.newDisplay(val);
+        Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createTerm(val, ref);
     }
 
@@ -327,7 +327,7 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
-        Display ref = AbstractSkel.newDisplay(val);
+        Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createTermWrapped(val, ref);
     }
 
@@ -346,7 +346,7 @@ public abstract class AbstractTerm {
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
-        Display ref = AbstractSkel.newDisplay(val);
+        Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
     }
 
