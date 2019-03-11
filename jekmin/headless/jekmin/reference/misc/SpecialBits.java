@@ -62,7 +62,7 @@ public final class SpecialBits extends AbstractSpecial {
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniFirst(Engine en)
+    public final boolean moniFirst2(Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -75,7 +75,7 @@ public final class SpecialBits extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastInteger(temp[1], ref);
                     if (!sysTestBit(k, beta))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }

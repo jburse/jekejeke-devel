@@ -3,7 +3,7 @@ package jekdev.reference.inspection;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -83,7 +83,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_MODULE_TO_SLASH:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -91,17 +91,18 @@ public final class SpecialNotation extends AbstractSpecial {
                 obj = SpecialDynamic.moduleToSlashSkel(sa.fun, sa.scope, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_COLON_TO_CALLABLE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                boolean multi = SpecialQuali.colonToCallable(temp[0], ref, true, en);
+                SpecialQuali.colonToCallable(temp[0], ref, true, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
+                    BindUniv.remTab(d.bind, en);
+                return true;
             case SPECIAL_SYS_CALLABLE_TO_COLON:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -112,7 +113,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 obj = SpecialDynamic.callableToColonSkel(en.skel, (sa != null ? sa.scope : null), en);
                 if (!en.unifyTerm(temp[1], ref, obj, en.display))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_COLON_TO_INDICATOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -120,7 +121,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 obj = new SkelCompound(new SkelAtom(Foyer.OP_SLASH), en.skel, arity);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_INDICATOR_TO_COLON:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -130,7 +131,7 @@ public final class SpecialNotation extends AbstractSpecial {
                         arityint, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }

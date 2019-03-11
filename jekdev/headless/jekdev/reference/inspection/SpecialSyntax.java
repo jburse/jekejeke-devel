@@ -2,7 +2,7 @@ package jekdev.reference.inspection;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -82,27 +82,28 @@ public final class SpecialSyntax extends AbstractSpecial {
                 if (!en.unifyTerm(temp[0], ref,
                         SpecialSyntax.currentSyntax(en), Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Operator op = SpecialOper.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 op = SpecialOper.operToSyntax(temp[0], ref, en);
                 if (op == null)
                     return false;
-                boolean multi = SpecialOper.operToProperties(op, en);
+                SpecialOper.operToProperties(op, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
+                    BindUniv.remTab(d.bind, en);
+                return true;
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -113,7 +114,7 @@ public final class SpecialSyntax extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialOper.setOperProp(op, en.skel, en.display, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_RESET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -124,7 +125,7 @@ public final class SpecialSyntax extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialOper.resetOperProp(op, en.skel, en.display, en);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }

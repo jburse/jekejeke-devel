@@ -68,7 +68,6 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_LAST_GOAL = " last_goal";
     private final static String CODE_CALL_META = " call_meta";
     private final static String CODE_LAST_META = " last_meta";
-    private final static String CODE_CALL_CONT = " call_cont";
 
     private final static int ALGN_NMBR = 5;
 
@@ -119,8 +118,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw.setWriter(wr);
                 SpecialFriendly.intermediatePredicate(pw, pick, source, 0, en);
                 SpecialLoad.newLineFlush(wr);
-                return en.getNextRaw();
-
+                return true;
             case SPECIAL_SYS_INSTRUMENTED:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -144,7 +142,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw.setWriter(wr);
                 SpecialFriendly.intermediatePredicate(pw, pick, source, MASK_FRIEND_DEBUG, en);
                 SpecialLoad.newLineFlush(wr);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -250,19 +248,6 @@ public final class SpecialFriendly extends AbstractSpecial {
     }
 
     /**
-     * <p>Write a line number.</p>
-     *
-     * @param wr    The writer.
-     * @param count The line number count.
-     * @return The incremented line number count.
-     */
-    private static int intermediateCount(Writer wr, int count)
-            throws IOException {
-        wr.write(PrologWriter.align(Integer.toString(count), ALGN_NMBR, false));
-        return count + 1;
-    }
-
-    /**
      * <p>Write out a dispose bind instruction.</p>
      *
      * @param t      The clause term.
@@ -299,41 +284,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         return count;
     }
 
-    /**
-     * <p>Write out a call goal instruction.</p>
-     *
-     * @param body  The body goal.
-     * @param pw    The prolog writer.
-     * @param ref   The display.
-     * @param count The statement counter.
-     * @return The statement counter.
-     * @throws IOException IO error.
-     */
-    private static int intermediateCallGoal(Goal body,
-                                            PrologWriter pw, Display ref,
-                                            int count)
-            throws IOException, EngineException, EngineMessage {
-        Writer wr = pw.getWriter();
-        count = intermediateCount(wr, count);
-        if ((body.flags & Intermediate.MASK_INTER_NLST) == 0) {
-            if ((body.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                wr.write(SpecialFriendly.CODE_LAST_GOAL);
-            } else {
-                wr.write(SpecialFriendly.CODE_LAST_META);
-            }
-        } else {
-            if ((body.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                wr.write(SpecialFriendly.CODE_CALL_GOAL);
-            } else {
-                wr.write(SpecialFriendly.CODE_CALL_META);
-            }
-        }
-        wr.write(' ');
-        pw.unparseStatement(body.goal, ref);
-        wr.write('\n');
-        wr.flush();
-        return count;
-    }
+
 
     /**
      * <p>Disassemble a clause.</p>
@@ -412,16 +363,64 @@ public final class SpecialFriendly extends AbstractSpecial {
             }
             /* dissassemble a dispose */
             int n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
-            count = intermediateDisposeBind(t, lastgc, n, clause, pw, ref, count);
-            /* dissassemble a continuation */
-            intermediateCount(wr, count);
-            wr.write(SpecialFriendly.CODE_CALL_CONT);
-            wr.write('\n');
-            wr.flush();
+            intermediateDisposeBind(t, lastgc, n, clause, pw, ref, count);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
     }
+
+    /**
+     * <p>Write out a call goal instruction.</p>
+     *
+     * @param goal  The body goal.
+     * @param pw    The prolog writer.
+     * @param ref   The display.
+     * @param count The statement counter.
+     * @return The statement counter.
+     * @throws IOException IO error.
+     */
+    private static int intermediateCallGoal(Goal goal,
+                                            PrologWriter pw, Display ref,
+                                            int count)
+            throws IOException, EngineException, EngineMessage {
+        Writer wr = pw.getWriter();
+        count = intermediateCount(wr, count);
+        if ((goal.flags & Intermediate.MASK_INTER_NLST) == 0) {
+            if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                wr.write(SpecialFriendly.CODE_LAST_GOAL);
+            } else {
+                wr.write(SpecialFriendly.CODE_LAST_META);
+            }
+        } else {
+            if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                wr.write(SpecialFriendly.CODE_CALL_GOAL);
+            } else {
+                wr.write(SpecialFriendly.CODE_CALL_META);
+            }
+        }
+        wr.write(' ');
+        pw.unparseStatement(goal.goal, ref);
+        wr.write('\n');
+        wr.flush();
+        return count;
+    }
+
+    /**
+     * <p>Write a line number.</p>
+     *
+     * @param wr    The writer.
+     * @param count The line number count.
+     * @return The incremented line number count.
+     */
+    private static int intermediateCount(Writer wr, int count)
+            throws IOException {
+        wr.write(PrologWriter.align(Integer.toString(count), ALGN_NMBR, false));
+        return count + 1;
+    }
+
+    /*******************************************************/
+    /* Navigation Helper                                   */
+    /*******************************************************/
 
     /**
      * <p>Get the first literal of a clause.</p>

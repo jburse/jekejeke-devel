@@ -65,7 +65,7 @@ public final class SpecialStruc extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean moniFirst(Engine en)
+    public final boolean moniFirst2(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_SYS_TERM_KERNEL:
@@ -74,7 +74,7 @@ public final class SpecialStruc extends AbstractSpecial {
                 SpecialStruc.termKernel(temp[0], ref, en);
                 if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_TERM_GLOBALS:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -89,7 +89,7 @@ public final class SpecialStruc extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }

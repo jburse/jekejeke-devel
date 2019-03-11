@@ -164,7 +164,7 @@ public final class SupervisorTrace extends Supervisor {
         }
         if (list == null) {
             list = new ListArray<Integer>();
-            tspys.put(fun, list);
+            tspys.add(fun, list);
         }
         if (!list.contains(Integer.valueOf(arity)))
             list.add(Integer.valueOf(arity));
@@ -264,7 +264,7 @@ public final class SupervisorTrace extends Supervisor {
             return res;
         for (SetEntry<PositionKey> entry = tbreakpoints.getFirstEntry();
              entry != null; entry = tbreakpoints.successor(entry)) {
-            res.add(entry.key);
+            res.add(entry.value);
         }
         return res;
     }

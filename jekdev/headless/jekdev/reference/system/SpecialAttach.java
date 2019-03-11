@@ -85,20 +85,20 @@ public final class SpecialAttach extends AbstractSpecial {
                 Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 ((SupervisorTrace) en.visor).addThreadSpyPoint(pick.getArity(), pick.getFun());
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_TSPYING:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref, currentThreadSpyPoints(en), Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_TNOSPY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 Predicate.checkExistentProvable(pick, temp[0], ref);
                 ((SupervisorTrace) en.visor).removeThreadSpyPoint(pick.getArity(), pick.getFun());
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_TBREAK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -108,7 +108,7 @@ public final class SpecialAttach extends AbstractSpecial {
                 int line = SpecialEval.castIntValue(num);
                 PositionKey pk = new PositionKey(key, line);
                 ((SupervisorTrace) en.visor).addThreadBreakPoint(pk);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_TNOBREAK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -118,13 +118,13 @@ public final class SpecialAttach extends AbstractSpecial {
                 line = SpecialEval.castIntValue(num);
                 pk = new PositionKey(key, line);
                 ((SupervisorTrace) en.visor).removeThreadBreakPoint(pk);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_TBREAKING:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref, currentThreadBreakPoints(en), Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }

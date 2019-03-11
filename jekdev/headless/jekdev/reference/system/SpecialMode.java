@@ -100,7 +100,7 @@ public final class SpecialMode extends AbstractSpecial {
                 en.deref();
                 if (!SpecialMode.invokeIgnore(en))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_NOTRACE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 int port = ((Integer) temp[0]).intValue();
@@ -113,23 +113,20 @@ public final class SpecialMode extends AbstractSpecial {
                 SkelAtom sa = StackElement.callableToName(en.skel);
                 if (sa != null && sa.scope != null &&
                         (sa.scope.getBits() & AbstractSource.MASK_SRC_NOTR) != 0)
-                    return en.getNextRaw();
+                    return true;
 
                 return false;
             case SPECIAL_SYS_PORT_SHOW:
                 temp = ((SkelCompound) en.skel).args;
                 port = ((Integer) temp[0]).intValue();
 
-                int tflags = en.visor.flags & SpecialDefault.MASK_MODE_DEBG;
-                int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG;
-                if ((tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) == 0 ||
-                        (en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) != 0)
-                    return en.getNextRaw();
+                if (!SpecialMode.isDebug(en))
+                    return true;
 
-                tflags = en.visor.flags & SpecialDefault.MASK_MODE_VIBL;
-                flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_VIBL;
+                int tflags = en.visor.flags & SpecialDefault.MASK_MODE_VIBL;
+                int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_VIBL;
                 if (!SpecialMode.isPort((tflags != 0 ? tflags : flags) >> 24, port))
-                    return en.getNextRaw();
+                    return true;
 
                 u2 = getPortDisplay(port, en);
                 r2 = getGoalSkel(port, u2);
@@ -149,7 +146,7 @@ public final class SpecialMode extends AbstractSpecial {
                             visortrace.setSkipFrame(null);
                             break;
                         }
-                        return en.getNextRaw();
+                        return true;
                     case SpecialDefault.MASK_DEBG_DBON:
                         StoreTrace storetrace = (StoreTrace) en.store;
                         visortrace = (SupervisorTrace) en.visor;
@@ -168,7 +165,7 @@ public final class SpecialMode extends AbstractSpecial {
                                         storetrace.containsSpyPoint(cp.pick.getArity(), cp.pick.getFun()))) {
                             break;
                         }
-                        return en.getNextRaw();
+                        return true;
                     default:
                         throw new IllegalArgumentException("illegal mode");
                 }
@@ -178,7 +175,7 @@ public final class SpecialMode extends AbstractSpecial {
                 en.display = Display.DISPLAY_CONST;
                 if (!SpecialMode.invokeBoth(en))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_CUT_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 port = ((Integer) temp[0]).intValue();
@@ -189,7 +186,7 @@ public final class SpecialMode extends AbstractSpecial {
                 port = en.number - 1;
                 if (isCutChoice(port, u2))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_GOAL_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 port = ((Integer) temp[0]).intValue();
@@ -201,7 +198,7 @@ public final class SpecialMode extends AbstractSpecial {
                 AbstractChoice choice = en.choices.next;
                 if (!isGoalChoice(choice, r2, u2))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_GOAL_CUT:
                 en.window = en.contdisplay;
                 en.fault = null;
@@ -209,7 +206,7 @@ public final class SpecialMode extends AbstractSpecial {
                 en.window = null;
                 if (en.fault != null)
                     throw en.fault;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_CLAUSE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 port = ((Integer) temp[0]).intValue();
@@ -220,7 +217,7 @@ public final class SpecialMode extends AbstractSpecial {
                 choice = en.choices.next;
                 if (isClauseChoice(choice, u2))
                     return false;
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -293,14 +290,14 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi)
-                BindCount.remTab(ref.bind, en);
+                BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true)) {
                 en.visor.setVerify(backverify);
@@ -351,14 +348,14 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newBindClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi)
-                BindCount.remTab(ref.bind, en);
+                BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true)) {
                 en.visor.setIgnore(backignore);
@@ -510,6 +507,22 @@ public final class SpecialMode extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
+    }
+
+
+    /**
+     * <p>Check whether we are in debug mode.</p>
+     * <p>Can be overridden by subclasses.</p>
+     *
+     * @return True in debug mode, otherwise false.
+     */
+    public static boolean isDebug(Engine en) {
+        int tflags = en.visor.flags & SpecialDefault.MASK_MODE_DEBG;
+        int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG;
+        if ((tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) != 0 &&
+                (en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0)
+            return true;
+        return false;
     }
 
 }

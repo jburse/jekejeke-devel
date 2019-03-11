@@ -7,7 +7,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -94,27 +94,28 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (!en.unifyTerm(temp[0], ref,
                         SpecialProvable.currentProvables(en), Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_CURRENT_PROVABLE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                boolean multi = SpecialPred.predicateToProperties(pick, en);
+                SpecialPred.predicateToProperties(pick, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
+                    BindUniv.remTab(d.bind, en);
+                return true;
             case SPECIAL_SET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -125,7 +126,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialPred.addPredProp(en.skel, en.display, pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_RESET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -136,7 +137,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialPred.removePredProp(en.skel, en.display, pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -144,13 +145,14 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                multi = callableToProperties(en.skel, en.display, en);
+                callableToProperties(en.skel, en.display, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
+                    BindUniv.remTab(d.bind, en);
+                return true;
             case SPECIAL_SYS_CALLABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -159,13 +161,14 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                multi = callableToProperty(prop, en.skel, en.display, en);
+                callableToProperty(prop, en.skel, en.display, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
+                    BindUniv.remTab(d.bind, en);
+                return true;
             case SPECIAL_SET_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -182,7 +185,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 addAtomProp(en.skel, en.display, t, d, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_RESET_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -199,7 +202,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 removeAtomProp(en.skel, en.display, t, d, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -217,14 +220,12 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param t2 The callable skeleton.
      * @param d2 The callable display.
      * @param en The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean callableToProperties(Object t2, Display d2, Engine en)
+    private static void callableToProperties(Object t2, Display d2, Engine en)
             throws EngineMessage {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        boolean multi = false;
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
@@ -240,10 +241,9 @@ public final class SpecialProvable extends AbstractSpecial {
                 Object[] vals = getPropCallable(prop, t2, d2, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractInformation.consArray(multi, vals, en);
+                AbstractInformation.consArray(vals, en);
             }
         }
-        return multi;
     }
 
     /**
@@ -254,16 +254,15 @@ public final class SpecialProvable extends AbstractSpecial {
      * @param t2   The callable skeleton.
      * @param d2   The callable display.
      * @param en   The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean callableToProperty(StoreKey prop, Object t2, Display d2,
+    private static void callableToProperty(StoreKey prop, Object t2, Display d2,
                                               Engine en)
             throws EngineMessage {
         Object[] vals = getPropCallable(prop, t2, d2, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractInformation.consArray(false, vals, en);
+        AbstractInformation.consArray(vals, en);
     }
 
     /**

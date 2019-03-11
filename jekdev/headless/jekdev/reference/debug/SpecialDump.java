@@ -86,7 +86,7 @@ public final class SpecialDump extends AbstractSpecial {
                 dumpHeader(pick, wr);
                 ((AbstractDefined) fun).inspectClauses(wr, en);
                 SpecialLoad.newLineFlush(wr);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }

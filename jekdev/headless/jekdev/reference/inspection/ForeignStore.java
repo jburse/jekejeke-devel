@@ -15,7 +15,6 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.ResetableBit;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
@@ -68,11 +67,8 @@ public final class ForeignStore {
             throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
-            boolean multi = storeToProperties((Store) know.getStore(), en);
-            Object res = AbstractTerm.createTerm(en.skel, en.display);
-            if (multi)
-                AbstractTerm.setMarker(res, new ResetableBit());
-            return res;
+            storeToProperties((Store) know.getStore(), en);
+            return AbstractTerm.createTerm(en.skel, en.display);
         } catch (EngineException x) {
             throw new InterpreterException(x);
         } catch (EngineMessage x) {
@@ -97,11 +93,8 @@ public final class ForeignStore {
         try {
             StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(obj),
                     AbstractTerm.getDisplay(obj), en);
-            boolean multi = storeToProperty((Store) know.getStore(), sk, en);
-            Object res = AbstractTerm.createTerm(en.skel, en.display);
-            if (multi)
-                AbstractTerm.setMarker(res, new ResetableBit());
-            return res;
+            storeToProperty((Store) know.getStore(), sk, en);
+            return AbstractTerm.createTerm(en.skel, en.display);
         } catch (EngineException x) {
             throw new InterpreterException(x);
         } catch (EngineMessage x) {
@@ -202,17 +195,15 @@ public final class ForeignStore {
      *
      * @param store The store.
      * @param en    The engine.
-     * @return The multi flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static boolean storeToProperties(Store store, Engine en)
+    public static void storeToProperties(Store store, Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -229,10 +220,9 @@ public final class ForeignStore {
                 Object[] vals = prop.getObjProp(store, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractInformation.consArray(multi, vals, en);
+                AbstractInformation.consArray(vals, en);
             }
         }
-        return multi;
     }
 
     /**
@@ -244,18 +234,17 @@ public final class ForeignStore {
      * @param store The store, non null.
      * @param sk    The property.
      * @param en    The engine.
-     * @return The multi flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static boolean storeToProperty(Store store, StoreKey sk,
+    public static void storeToProperty(Store store, StoreKey sk,
                                           Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Store> prop = findStoreProperty(sk, en);
         Object[] vals = prop.getObjProp(store, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractInformation.consArray(false, vals, en);
+        AbstractInformation.consArray(vals, en);
     }
 
     /*******************************************************************/

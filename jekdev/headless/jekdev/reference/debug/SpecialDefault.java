@@ -127,34 +127,34 @@ public final class SpecialDefault extends AbstractSpecial {
                     Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                     Predicate.checkExistentProvable(pick, temp[0], ref);
                     ((StoreTrace) en.store).addSpyPoint(pick.getArity(), pick.getFun());
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_NOSPY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                     Predicate.checkExistentProvable(pick, temp[0], ref);
                     ((StoreTrace) en.store).removeSpyPoint(pick.getArity(), pick.getFun());
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_SPYING:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (!en.unifyTerm(temp[0], ref, currentSpyPoints(en), Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_NOTRACE_FRAME:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     InterfaceStack frame = SpecialFrame.derefAndCastStackElement(temp[0], ref);
                     if (!sysNotraceFrame(frame, en))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_LEASHED_PORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     int port = SpecialMode.atomToPort(temp[0], ref);
                     if (!sysLeashedPort(port, en))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_TRACE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -162,7 +162,7 @@ public final class SpecialDefault extends AbstractSpecial {
                     frame = SpecialFrame.derefAndCastStackElement(temp[1], ref);
                     SpecialFrame.checkNotNull(frame);
                     sysTrace(port, frame, en);
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_TRACE_PROMPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -170,7 +170,7 @@ public final class SpecialDefault extends AbstractSpecial {
                     frame = SpecialFrame.derefAndCastStackElement(temp[1], ref);
                     SpecialFrame.checkNotNull(frame);
                     sysTracePrompt(port, frame, en);
-                    return en.getNextRaw();
+                    return true;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
@@ -328,7 +328,7 @@ public final class SpecialDefault extends AbstractSpecial {
             pw.unparseStatement(t, d);
             return;
         }
-        Display dc = new Display(Display.newBind(2));
+        Display dc = new Display(BindLexical.newLexical(2));
         SkelVar var1 = SkelVar.valueOf(0);
         SkelVar var3 = SkelVar.valueOf(1);
         dc.bind[0].bindVar(t, d, en);
@@ -340,12 +340,12 @@ public final class SpecialDefault extends AbstractSpecial {
         DisplayClause u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause();
-            ref.bind = DisplayClause.newBindClause(clause.dispsize);
+            DisplayClause ref = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref.def = clause;
             ref.addArgument(t, dc, en);
             ref.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref;
             if (!en.runLoop(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(

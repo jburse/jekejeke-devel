@@ -8,7 +8,7 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.InterfaceStack;
-import jekpro.model.molec.BindCount;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -85,33 +85,34 @@ public final class SpecialFrame extends AbstractSpecial {
         switch (id) {
             case SPECIAL_RULE_FRAME:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_DEFN |
-                        AbstractDefined.OPT_RSLT_FRME, en);
+                        AbstractDefined.OPT_RSLT_CREF, en);
             case SPECIAL_SYS_FRAME_PROPERTY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 InterfaceStack frame = derefAndCastStackElement(temp[0], ref);
                 checkNotNull(frame);
-                boolean multi = SpecialFrame.frameToProperties(frame, en);
+                SpecialFrame.frameToProperties(frame, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
+                    BindUniv.remTab(d.bind, en);
+                return true;
             case SPECIAL_SYS_FRAME_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 frame = derefAndCastStackElement(temp[0], ref);
                 checkNotNull(frame);
                 StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
-                multi = SpecialFrame.frameToProperty(frame, sk, en);
+                SpecialFrame.frameToProperty(frame, sk, en);
                 d = en.display;
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindCount.remTab(d.bind, en);
-                return en.getNext();
-
+                    BindUniv.remTab(d.bind, en);
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -128,17 +129,15 @@ public final class SpecialFrame extends AbstractSpecial {
      *
      * @param frame The frame, non null.
      * @param en    The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean frameToProperties(InterfaceStack frame,
+    private static void frameToProperties(InterfaceStack frame,
                                              Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        boolean multi = false;
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractTracking tracking = entry.value;
@@ -155,10 +154,9 @@ public final class SpecialFrame extends AbstractSpecial {
                 Object[] vals = prop.getObjProp(frame, en);
                 en.skel = t;
                 en.display = d;
-                multi = AbstractInformation.consArray(multi, vals, en);
+                AbstractInformation.consArray(vals, en);
             }
         }
-        return multi;
     }
 
     /**
@@ -168,17 +166,16 @@ public final class SpecialFrame extends AbstractSpecial {
      * @param frame The frame, non null.
      * @param sk    The property.
      * @param en    The engine.
-     * @return The multi flag.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean frameToProperty(InterfaceStack frame, StoreKey sk,
+    private static void frameToProperty(InterfaceStack frame, StoreKey sk,
                                            Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<InterfaceStack> prop = findFrameProperty(sk, en);
         Object[] vals = prop.getObjProp(frame, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        return AbstractInformation.consArray(false, vals, en);
+        AbstractInformation.consArray(vals, en);
     }
 
     /**

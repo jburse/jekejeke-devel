@@ -66,7 +66,7 @@ public final class SpecialElem extends AbstractSpecial {
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniFirst(Engine en)
+    public final boolean moniFirst2(Engine en)
             throws EngineMessage, EngineException {
         try {
             switch (id) {
@@ -80,7 +80,7 @@ public final class SpecialElem extends AbstractSpecial {
                         return false;
                     if (!en.unifyTerm(temp[3], ref, res[1], Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
