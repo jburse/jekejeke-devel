@@ -62,11 +62,10 @@ public final class SpecialFind extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineException {
         switch (id) {
             case SPECIAL_FINDALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -87,7 +86,7 @@ public final class SpecialFind extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_FINDALL_END:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -108,19 +107,18 @@ public final class SpecialFind extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Object val = AbstractSkel.copySkel(temp[0], ref, en);
-                int size = EngineCopy.displaySize(val);
-                d = (size != 0 ? new Display(Display.newLexical(size)) :
-                        Display.DISPLAY_CONST);
+                d = AbstractSkel.createMarker(val);
+                multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
-                if (size != 0)
+                if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -152,14 +150,14 @@ public final class SpecialFind extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref2.def = clause;
             ref2.addArgument(en.skel, en.display, en);
             if (multi)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref2;
             boolean found = en.runLoop(snap, true);
             while (found) {
@@ -202,8 +200,8 @@ public final class SpecialFind extends AbstractSpecial {
             Object t = en.skel;
             Display d = en.display;
             Object val = temp.get(i);
-            Display ref = AbstractSkel.newDisplay(val);
-            SpecialFind.pairValue2(en.store.foyer.CELL_CONS,
+            Display ref = AbstractSkel.createMarker(val);
+            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t, d, en);
         }
     }
@@ -218,9 +216,9 @@ public final class SpecialFind extends AbstractSpecial {
      * @param d  The term display.
      * @param en The engine.
      */
-    public static void pairValue2(SkelCompound sc,
-                                  Object t2, Display d2,
-                                  Object t, Display d, Engine en) {
+    public static void pairValue(SkelCompound sc,
+                                 Object t2, Display d2,
+                                 Object t, Display d, Engine en) {
         Object v2 = EngineCopy.getVar(t2);
         Object v = EngineCopy.getVar(t);
         if (v2 == null) {
@@ -236,7 +234,8 @@ public final class SpecialFind extends AbstractSpecial {
             en.skel = new SkelCompound(sc.sym, args, v2);
             en.display = d2;
         } else {
-            Display d3 = new Display(Display.newLexical(2));
+            Display d3 = new Display(BindUniv.newUniv(2));
+            d3.flags |= Display.MASK_DPTM_MLTI;
             boolean ext = d2.getAndReset();
             d3.bind[0].bindVar(t2, d2, en);
             if (ext)
@@ -245,7 +244,6 @@ public final class SpecialFind extends AbstractSpecial {
             d3.bind[1].bindVar(t, d, en);
             if (ext)
                 BindUniv.remTab(d.bind, en);
-            d3.flags |= Display.MASK_DPTM_MLTI;
             en.skel = sc;
             en.display = d3;
         }

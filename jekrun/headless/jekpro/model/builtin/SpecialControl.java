@@ -1,6 +1,5 @@
 package jekpro.model.builtin;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -8,6 +7,7 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -75,7 +75,7 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_FAIL:
                 return false;
             case SPECIAL_TRUE:
-                return en.getNextRaw();
+                return true;
             case SPECIAL_CUT:
                 DisplayClause ref2 = en.contdisplay;
                 en.window = ref2;
@@ -84,7 +84,7 @@ public final class SpecialControl extends AbstractSpecial {
                 en.window = null;
                 if (en.fault != null)
                     throw en.fault;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_FETCH_STACK:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
@@ -92,7 +92,7 @@ public final class SpecialControl extends AbstractSpecial {
                         EngineException.fetchStack(en),
                         Display.DISPLAY_CONST))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_RAISE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -127,14 +127,14 @@ public final class SpecialControl extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref2.def = clause;
             ref2.addArgument(en.skel, ref, en);
             if (multi)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true))
                 return false;
@@ -159,7 +159,7 @@ public final class SpecialControl extends AbstractSpecial {
             en.choices = new ChoiceTrap(en.choices, snap, r, u, mark);
             en.number++;
         }
-        return en.getNextRaw();
+        return true;
     }
 
     /**
@@ -180,11 +180,11 @@ public final class SpecialControl extends AbstractSpecial {
         Display ref = en.display;
         try {
             Object temp2 = y.getTemplate();
-            int size = EngineCopy.displaySize(temp2);
-            Display ref2 = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref2 = AbstractSkel.createMarker(temp2);
+            boolean multi = ref2.getAndReset();
             if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                 throw y;
-            if (size != 0)
+            if (multi)
                 BindUniv.remTab(ref2.bind, en);
         } catch (EngineException z) {
             throw new EngineException(y, z);
@@ -194,7 +194,7 @@ public final class SpecialControl extends AbstractSpecial {
         en.deref();
         if (!SpecialSignal.invokeAtomic(en))
             return false;
-        return en.getNextRaw();
+        return true;
     }
 
 }

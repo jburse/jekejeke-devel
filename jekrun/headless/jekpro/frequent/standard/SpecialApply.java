@@ -79,31 +79,33 @@ public final class SpecialApply extends AbstractSpecial {
             case SPECIAL_SYS_MODEXT_ARGS_ANY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                boolean multi = moduleExtendGoal(temp[0], ref, temp, ref, temp.length - 1, en);
+                moduleExtendGoal(temp[0], ref, temp, ref, temp.length - 1, en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[temp.length - 1], ref, en.skel, d))
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_CALL_ANY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                boolean ext = moduleExtendGoal(temp[0], ref, temp, ref, temp.length, en);
+                moduleExtendGoal(temp[0], ref, temp, ref, temp.length, en);
                 d = en.display;
+                boolean ext = d.getAndReset();
                 multi = en.wrapGoal();
                 if (multi && ext)
                     BindUniv.remTab(d.bind, en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause(
+                        DisplayClause.newClause(clause.dispsize));
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi || ext)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
-                en.contskel = clause.getNextRaw(en);
+                en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
             default:
@@ -120,11 +122,10 @@ public final class SpecialApply extends AbstractSpecial {
      * @param d2    The arguments display.
      * @param slice The slice length.
      * @param en    The engine.
-     * @return True if new display is returned, otherwise false.
      */
-    private static boolean moduleExtendGoal(Object t, Display d,
-                                            Object[] t2, Display d2,
-                                            int slice, Engine en)
+    private static void moduleExtendGoal(Object t, Display d,
+                                         Object[] t2, Display d2,
+                                         int slice, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -135,7 +136,7 @@ public final class SpecialApply extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
             SkelCompound sc = (SkelCompound) t;
-            boolean ext = moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
+            moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
             Object t4 = en.skel;
             d2 = en.display;
             en.skel = sc.args[0];
@@ -145,14 +146,11 @@ public final class SpecialApply extends AbstractSpecial {
             d = en.display;
             boolean multi = pairCount(t, d, t4, d2, en);
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
-            if (multi && ext)
-                BindUniv.remTab(d2.bind, en);
-            return (multi || ext);
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
             SkelCompound sc = (SkelCompound) t;
-            boolean ext = moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
+            moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
             Object t4 = en.skel;
             d2 = en.display;
             en.skel = sc.args[0];
@@ -162,9 +160,6 @@ public final class SpecialApply extends AbstractSpecial {
             d = en.display;
             boolean multi = pairCount(t, d, t4, d2, en);
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
-            if (multi && ext)
-                BindUniv.remTab(d2.bind, en);
-            return (multi || ext);
         } else {
             SkelAtom sa;
             if (t instanceof SkelCompound) {
@@ -178,7 +173,6 @@ public final class SpecialApply extends AbstractSpecial {
             }
             boolean multi = extendCount(t, d, t2, d2, slice, en);
             en.skel = extendAlloc(sa, t, d, t2, d2, slice, multi, en);
-            return multi;
         }
     }
 
@@ -197,8 +191,8 @@ public final class SpecialApply extends AbstractSpecial {
      * @param en The engine.
      * @return True if new display is returned, otherwise false.
      */
-    private static boolean pairCount(Object t, Display d, Object t2,
-                                     Display d2, Engine en) {
+    private static boolean pairCount(Object t, Display d,
+                                     Object t2, Display d2, Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
@@ -218,8 +212,10 @@ public final class SpecialApply extends AbstractSpecial {
                 multi = true;
             }
         }
-        if (multi)
-            last = new Display(Display.newLexical(countvar));
+        if (multi) {
+            last = new Display(BindUniv.newUniv(countvar));
+            last.flags |= Display.MASK_DPTM_MLTI;
+        }
         en.display = last;
         return multi;
     }
@@ -262,7 +258,10 @@ public final class SpecialApply extends AbstractSpecial {
         if (multi && EngineCopy.getVar(t2) != null) {
             SkelVar sv = vars[countvar];
             // countvar++;
+            boolean ext = d2.getAndReset();
             d3.bind[sv.id].bindVar(t2, d2, en);
+            if (ext)
+                BindUniv.remTab(d2.bind, en);
             args[1] = sv;
         } else {
             args[1] = t2;
@@ -326,8 +325,10 @@ public final class SpecialApply extends AbstractSpecial {
                 }
             }
         }
-        if (multi)
-            last = new Display(Display.newLexical(countvar));
+        if (multi) {
+            last = new Display(BindUniv.newUniv(countvar));
+            last.flags |= Display.MASK_DPTM_MLTI;
+        }
         en.display = last;
         return multi;
     }

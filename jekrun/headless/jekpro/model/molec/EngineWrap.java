@@ -3,6 +3,7 @@ package jekpro.model.molec;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
+import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -264,7 +265,18 @@ public final class EngineWrap {
                     last.bind[sv.id].bindVar(t, d, en);
                     t = sv;
                 }
-                t = new SkelCompound(new SkelAtom(Branch.OP_CALL, en.store.getRootSystem()), t);
+//                if (back != null &&
+//                        back.args.length == 2 &&
+//                        back.sym.fun.equals(SpecialQuali.OP_COLON)) {
+//                    Object[] args = new Object[1];
+//                    args[0] = back.args[1];
+//                    SkelCompound help = new SkelCompound(new SkelAtom(Branch.OP_CALL,
+//                            en.store.getRootSystem()), args, null);
+//                    back.args[1] = help;
+//                } else {
+                    t = new SkelCompound(new SkelAtom(Branch.OP_CALL,
+                            en.store.getRootSystem()), t);
+//                }
                 break;
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;

@@ -93,7 +93,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en), en);
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_PROXY_STATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -105,7 +105,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size, en);
                     if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -115,7 +115,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     sa = SpecialQuali.modToAtom(obj, temp[1], ref, en);
                     if (!CacheSubclass.getSubclass(sa, mod, en))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }

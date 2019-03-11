@@ -1,6 +1,5 @@
 package jekpro.frequent.advanced;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -76,13 +75,13 @@ public final class SpecialSequence extends AbstractSpecial {
                 Display ref = en.display;
                 if (!en.unifyTerm(temp[0], ref, new SetEntry(), Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_PIVOT_SET:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 SetEntry pivot = derefAndCastPivot(temp[0], ref);
                 pivot.value = AbstractSkel.copySkel(temp[1], ref, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_PIVOT_GET:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -90,14 +89,13 @@ public final class SpecialSequence extends AbstractSpecial {
                 Object val = pivot.value;
                 if (val == null)
                     return false;
-                int size = EngineCopy.displaySize(val);
-                Display d = (size != 0 ? new Display(Display.newLexical(size)) :
-                        Display.DISPLAY_CONST);
+                Display d = AbstractSkel.createMarker(val);
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
-                if (size != 0)
+                if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

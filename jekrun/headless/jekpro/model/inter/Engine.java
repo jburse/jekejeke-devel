@@ -7,7 +7,10 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
 
 /**
@@ -205,6 +208,9 @@ public class Engine implements InterfaceStack {
             for (; ; ) {
                 if (found) {
                     if (contskel != null) {
+                        if (hasCont() && contskel.getWake(this))
+                            retireCont();
+                        contskel = contskel.getNextRaw(this);
                         found = contskel.resolveNext(this);
                     } else {
                         break;
@@ -249,55 +255,24 @@ public class Engine implements InterfaceStack {
             choices.moniCut(n, this);
     }
 
-    /**
-     * <p>Retrieve the next goal depending on debug mode.</p>
-     * <p>The next goal is placed in the skel and display of the engine.</p>
-     *
-     * @return Always true.
-     */
-    public final boolean getNextRaw() {
-        contskel = contskel.getNextRaw(this);
-        return true;
-    }
-
-    /**
-     * <p>Prepare from continuation queue or retrieve the next goal.</p>
-     * <p>Differnt result depending on debug mode and wakeup mute.</p>
-     * <p>The next goal is placed in the skel and display of the engine.</p>
-     *
-     * @return Always true.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public final boolean getNext()
-            throws EngineMessage, EngineException {
-        return (contskel.getRetire(this) ?
-                retireCont() :
-                getNextRaw());
-    }
-
     /***************************************************************/
     /* Suspend Handling                                            */
     /***************************************************************/
 
     /**
-     * <p>Check the continuation queue of the engine.</p>
+     * <p>Check whether the suspension queue is non-empty.</p>
      *
-     * @return True if the queue is non-empty, otherwise false.
+     * @return True if the suspension queue is non-empty.
      */
     public final boolean hasCont() {
-        if (visor.cont != null &&
-                (visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0)
-            return true;
-        return false;
+        return (visor.cont != null &&
+                (visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0);
     }
 
     /**
      * <p>Dequeue the oldest goal from the suspension queue.</p>
-     *
-     * @return True if sucessful, false otherwise.
      */
-    public final boolean retireCont()
+    public final void retireCont()
             throws EngineMessage, EngineException {
         ListArray<BindVar> list = UndoCont.bindCont(this);
         boolean ext = contCount(list, this);
@@ -308,16 +283,15 @@ public class Engine implements InterfaceStack {
             BindUniv.remTab(d2.bind, this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
-        DisplayClause ref2 = new DisplayClause();
-        ref2.bind = DisplayClause.newClause(clause.dispsize);
+        DisplayClause ref2 = new DisplayClause(
+                DisplayClause.newClause(clause.dispsize));
         ref2.def = clause;
         ref2.addArgument(skel, ref, this);
         if (multi || ext)
             BindUniv.remTab(ref.bind, this);
         ref2.setEngine(this);
-        contskel = clause.getNextRaw(this);
+        contskel = clause;
         contdisplay = ref2;
-        return true;
     }
 
     /**
@@ -346,7 +320,7 @@ public class Engine implements InterfaceStack {
             }
         }
         if (multi)
-            last = new Display(Display.newLexical(countvar));
+            last = new Display(BindUniv.newUniv(countvar));
         en.display = last;
         return multi;
     }
@@ -472,14 +446,14 @@ public class Engine implements InterfaceStack {
             boolean multi = wrapGoal();
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause();
-            ref2.bind = DisplayClause.newClause(clause.dispsize);
+            DisplayClause ref2 = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref2.def = clause;
             ref2.addArgument(skel, ref, this);
             if (multi)
                 BindUniv.remTab(ref.bind, this);
             ref2.setEngine(this);
-            contskel = clause.getNextRaw(this);
+            contskel = clause;
             contdisplay = ref2;
             if (!runLoop(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(
@@ -542,7 +516,7 @@ public class Engine implements InterfaceStack {
             return false;
         }
         if ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0)
-            ew.last = new Display(Display.newLexical(ew.countvar));
+            ew.last = new Display(BindUniv.newUniv(ew.countvar));
         ew.countvar = 0;
         skel = ew.replaceGoalAndWrap(t, d, this);
         display = ew.last;

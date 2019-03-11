@@ -119,7 +119,7 @@ final class ChoiceArith extends AbstractChoice {
                             en.choices = this;
                             en.number++;
                         }
-                        return en.getNext();
+                        return true;
                     }
 
                     /* undo bindings */
@@ -140,7 +140,7 @@ final class ChoiceArith extends AbstractChoice {
                         /* reuse choice point */
                         en.choices = this;
                         en.number++;
-                        return en.getNext();
+                        return true;
                     }
 
                     /* undo bindings */

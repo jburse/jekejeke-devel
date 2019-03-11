@@ -91,7 +91,7 @@ public final class SpecialSort extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_DISTINCT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -102,7 +102,7 @@ public final class SpecialSort extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -113,7 +113,7 @@ public final class SpecialSort extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_KEYGROUP:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -124,21 +124,21 @@ public final class SpecialSort extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_HASH_CODE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number val = Integer.valueOf(hashTerm(temp[0], ref, 0));
                     if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_GROUND:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     val = SpecialEval.derefAndCastInteger(temp[1], ref);
                     if (!termGround(temp[0], ref, SpecialEval.castIntValue(val)))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_HASH_CODE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -147,7 +147,7 @@ public final class SpecialSort extends AbstractSpecial {
                             SpecialEval.castIntValue(val), 0));
                     if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_LOCALE_SORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -159,7 +159,7 @@ public final class SpecialSort extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_LOCALE_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -171,7 +171,7 @@ public final class SpecialSort extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -283,7 +283,7 @@ public final class SpecialSort extends AbstractSpecial {
             Object elem = entry.value;
             Object val = AbstractTerm.getSkel(elem);
             Display ref = AbstractTerm.getDisplay(elem);
-            SpecialFind.pairValue2(en.store.foyer.CELL_CONS,
+            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t4, d2, en);
         }
     }
@@ -418,11 +418,11 @@ public final class SpecialSort extends AbstractSpecial {
                 Object elem = list.get(i);
                 Object val = AbstractTerm.getSkel(elem);
                 Display ref = AbstractTerm.getDisplay(elem);
-                SpecialFind.pairValue2(en.store.foyer.CELL_SUB,
+                SpecialFind.pairValue(en.store.foyer.CELL_SUB,
                         val2, ref2, val, ref, en);
                 val = en.skel;
                 ref = en.display;
-                SpecialFind.pairValue2(en.store.foyer.CELL_CONS,
+                SpecialFind.pairValue(en.store.foyer.CELL_CONS,
                         val, ref, t4, d2, en);
             }
         }

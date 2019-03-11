@@ -13,7 +13,6 @@ import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.regex.ScannerToken;
-import matula.util.system.AbstractRecognizer;
 import matula.util.system.ForeignCache;
 import matula.util.system.OpenCheck;
 import matula.util.wire.AbstractLivestock;
@@ -305,8 +304,7 @@ public final class EngineMessage extends Exception {
      */
     public String toString() {
         try {
-            int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref = AbstractSkel.createDisplay(template);
             return EngineMessage.messageMake(template, ref, Locale.getDefault(), null, null);
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldnt happen", x);
@@ -325,8 +323,7 @@ public final class EngineMessage extends Exception {
         try {
             Locale locale = store.foyer.locale;
             Properties error = getErrorLang(locale, store);
-            int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref = AbstractSkel.createDisplay(template);
             return EngineMessage.messageMake(template, ref, locale, error, null);
         } catch (IOException x) {
             throw new RuntimeException("shouldnt happen", x);

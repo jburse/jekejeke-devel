@@ -94,7 +94,7 @@ public final class ForeignAggregate {
         co.setRetry(next != null);
         co.setData(next);
         Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
-        Display ref = AbstractSkel.newDisplay(val);
+        Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
     }
 

@@ -49,9 +49,12 @@ public final class DisplayClause extends Display implements InterfaceStack {
     public Clause def;
 
     /**
-     * <p>Create a display clause.</p>
+     * <p>Create a new display.</p>
+     *
+     * @param b The bind count.
      */
-    public DisplayClause() {
+    public DisplayClause(BindUniv[] b) {
+        super(b);
     }
 
     /**
@@ -135,10 +138,11 @@ public final class DisplayClause extends Display implements InterfaceStack {
      * @param en The engine.
      */
     public final void setEngine(Engine en) {
+        DisplayClause u = en.contdisplay;
         number = en.number;
-        prune = this;
+        prune = ((def.flags & Clause.MASK_CLAUSE_NOBR)!=0 ? u.prune : this);
         contskel = en.contskel;
-        contdisplay = en.contdisplay;
+        contdisplay = u;
     }
 
 }

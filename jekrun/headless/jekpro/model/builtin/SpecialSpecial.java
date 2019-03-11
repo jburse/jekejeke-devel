@@ -81,7 +81,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     en.deref();
                     EngineMessage.checkCallable(en.skel, en.display);
                     SpecialPred.addPredProp(en.skel, en.display, pick, en);
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_RESET_PREDICATE_PROPERTY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -93,13 +93,13 @@ public final class SpecialSpecial extends AbstractSpecial {
                     en.deref();
                     EngineMessage.checkCallable(en.skel, en.display);
                     SpecialPred.removePredProp(en.skel, en.display, pick, en);
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_NEUTRAL_PREDICATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Predicate.indicatorToPredicateDefined(temp[0],
                             ref, en, CachePredicate.MASK_CACH_CRTE);
-                    return en.getNextRaw();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }

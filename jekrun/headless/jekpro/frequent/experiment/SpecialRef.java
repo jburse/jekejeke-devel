@@ -98,7 +98,7 @@ public final class SpecialRef extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref,
                         clause, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_ASSUMABLE_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -107,39 +107,40 @@ public final class SpecialRef extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref,
                         clause, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_RECORDA_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 InterfaceReference ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 if (!ptr.assertRef(0, en))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_RECORDZ_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 if (!ptr.assertRef(AbstractDefined.OPT_ACTI_BOTT, en))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_ERASE_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
                 if (!ptr.retractRef(en))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_COMPILED_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                boolean multi = ptr.clauseRef(en);
+                ptr.clauseRef(en);
                 Display d = en.display;
+                boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_CLAUSE_REF:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
                         AbstractDefined.OPT_ACTI_WRIT |
@@ -155,7 +156,7 @@ public final class SpecialRef extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_REF_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -168,7 +169,7 @@ public final class SpecialRef extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -178,7 +179,7 @@ public final class SpecialRef extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialRef.addRefProp(en.skel, en.display, ptr, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_RESET_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -188,7 +189,7 @@ public final class SpecialRef extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialRef.removeRefProp(en.skel, en.display, ptr, en);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

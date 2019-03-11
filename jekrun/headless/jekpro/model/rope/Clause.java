@@ -5,6 +5,8 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
 import matula.util.data.MapHashLink;
@@ -46,6 +48,7 @@ public class Clause extends Intermediate implements InterfaceReference {
     public final static int MASK_CLAUSE_STOP = 0x00000100;
     public final static int MASK_CLAUSE_NBDY = 0x00000200;
     public final static int MASK_CLAUSE_NHED = 0x00000400;
+    public final static int MASK_CLAUSE_NOBR = 0x00000800;
 
     public Object head;
     public int dispsize;
@@ -72,6 +75,8 @@ public class Clause extends Intermediate implements InterfaceReference {
             flags |= Intermediate.MASK_INTER_MUTE;
         if ((copt & AbstractDefined.MASK_DEFI_NHED) != 0)
             flags |= Clause.MASK_CLAUSE_NHED;
+        if ((copt & AbstractDelegate.MASK_DELE_NOBR) != 0)
+            flags |= Clause.MASK_CLAUSE_NOBR;
     }
 
     /**
@@ -86,19 +91,20 @@ public class Clause extends Intermediate implements InterfaceReference {
                 u.number + 1 : u.number) >= en.number) {
             int n = endgc;
             int i = u.lastgc;
-            if (i < n)
-                u.lastgc = disposeBind(i, n, u.bind, en);
+            if (i < n) {
+                disposeBind(i, n, u.bind, en);
+                u.lastgc = n;
+            }
         }
 
         if ((flags & Clause.MASK_CLAUSE_STOP) != 0) {
             en.contskel = null;
             en.contdisplay = null;
-            return true;
         } else {
             en.contskel = u.contskel;
             en.contdisplay = u.contdisplay;
-            return en.getNextRaw();
         }
+        return true;
     }
 
     /***********************************************************/
@@ -113,7 +119,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param b  The display clause.
      * @param en The engine.
      */
-    public final int disposeBind(int i, int n,
+    public final void disposeBind(int i, int n,
                                  BindUniv[] b, Engine en) {
         do {
             int k = remtab[i];
@@ -125,7 +131,6 @@ public class Clause extends Intermediate implements InterfaceReference {
             }
             i++;
         } while (i < n);
-        return i;
     }
 
     /**
@@ -134,13 +139,12 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param i The current last alloc.
      * @param n The max last alloc.
      */
-    public static int newBind(int i, int n, BindUniv[] u) {
+    public static void newBind(int i, int n, BindUniv[] u) {
         do {
             if (u[i] == null)
                 u[i] = new BindLexical();
             i++;
         } while (i < n);
-        return i;
     }
 
     /***********************************************************/
@@ -296,14 +300,13 @@ public class Clause extends Intermediate implements InterfaceReference {
      * <p>The result is returned in the skeleton and display.</p>
      *
      * @param en The engine.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean clauseRef(Engine en)
+    public void clauseRef(Engine en)
             throws EngineMessage {
-        en.skel = PreClause.intermediateToClause(this, en);
-        en.display = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
-        return (size != 0);
+        Object val = PreClause.intermediateToClause(this, en);
+        en.skel = val;
+        en.display = AbstractSkel.createMarker(val);
     }
 
     /**************************************************************/

@@ -1,6 +1,7 @@
 package jekpro.model.rope;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 
@@ -39,9 +40,6 @@ public abstract class Intermediate {
     public final static int MASK_INTER_MUTE = 0x00000001;
     public final static int MASK_INTER_NLST = 0x00000002;
 
-    public final static int MASK_INTER_BOTH =
-            MASK_INTER_MUTE | MASK_INTER_NLST;
-
     public Intermediate next;
     public int flags;
 
@@ -66,9 +64,8 @@ public abstract class Intermediate {
      * @param en The engine.
      * @return The retire flag.
      */
-    public boolean getRetire(Engine en) {
-        return (en.hasCont() &&
-                (flags & MASK_INTER_MUTE) == 0);
+    public boolean getWake(Engine en) {
+        return (flags & MASK_INTER_MUTE) == 0;
     }
 
     /**

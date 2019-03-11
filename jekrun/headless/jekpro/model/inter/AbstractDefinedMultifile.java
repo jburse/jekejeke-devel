@@ -78,13 +78,13 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractBind mark = en.bind;
         Clause clause;
-        DisplayClause dc = new DisplayClause();
+        DisplayClause dc = null;
         int lastalloc;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (dc.bind == null) {
-                dc.bind = DisplayClause.newClause(clause.dispsize);
+            if (dc == null) {
+                dc = new DisplayClause(DisplayClause.newClause(clause.dispsize));
             } else {
                 dc.bind = DisplayClause.resizeClause(clause.dispsize, dc.bind);
             }
@@ -114,7 +114,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         DisplayClause u = en.contdisplay;
         dc.lastalloc = lastalloc;
         dc.number = en.number;
-        dc.prune = ((subflags & MASK_DEFI_NOBR) != 0 ? u.prune : dc);
+        dc.prune = ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : dc);
         dc.contskel = en.contskel;
         dc.contdisplay = u;
 
@@ -133,7 +133,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         }
         en.contskel = clause;
         en.contdisplay = dc;
-        return en.getNext();
+        return true;
     }
 
     /**
@@ -168,33 +168,22 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractBind mark = en.bind;
         Clause clause;
-        Display ref1 = new Display();
+        Display ref1 = null;
+        boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (ref1.bind == null) {
-                ref1.bind = Display.newLexical(clause.size);
+            if (ref1 == null) {
+                ref1 = new Display(BindLexical.newLexical(clause.size));
             } else {
-                ref1.bind = Display.resizeLexical(clause.size, ref1.bind);
+                ref1.bind = BindLexical.resizeLexical(clause.size, ref1.bind);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.head).args, ref1, en)) {
                 Object end = PreClause.intermediateToBody(clause.next, en.store);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
-                    if ((flags & OPT_RSLT_FRME) != 0) {
-                        Frame frame = new Frame(clause, ref1);
-                        if (en.unifyTerm(temp[2], ref,
-                                frame, Display.DISPLAY_CONST)) {
-                            if ((flags & OPT_RSLT_CREF) != 0) {
-                                if (en.unifyTerm(temp[3], ref,
-                                        clause, Display.DISPLAY_CONST))
-                                    break;
-                            } else {
-                                break;
-                            }
-                        }
-                    } else if ((flags & OPT_RSLT_CREF) != 0) {
+                    if ((flags & OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(temp[2], ref,
                                 clause, Display.DISPLAY_CONST))
                             break;
@@ -219,6 +208,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
+        if (ext)
+            BindUniv.remTab(refhead.bind, en);
         if (clause.size != 0)
             BindUniv.remTab(ref1.bind, en);
 
@@ -236,7 +227,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             en.number++;
         }
         /* succeed */
-        return en.getNext();
+        return true;
     }
 
     /**

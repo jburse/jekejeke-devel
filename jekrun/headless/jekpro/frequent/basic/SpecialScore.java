@@ -78,7 +78,7 @@ public final class SpecialScore extends AbstractSpecial {
                 if ((en.skel instanceof AbstractSkel || en.skel instanceof Number) ||
                         !clazz.isInstance(en.skel))
                     return false;
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

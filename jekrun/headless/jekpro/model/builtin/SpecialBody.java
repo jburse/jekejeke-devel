@@ -3,10 +3,7 @@ package jekpro.model.builtin;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -77,14 +74,14 @@ public final class SpecialBody extends AbstractSpecial {
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause(
+                        DisplayClause.newClause(clause.dispsize));
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
                 if (multi)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
-                en.contskel = clause.getNextRaw(en);
+                en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
             /*
@@ -111,25 +108,6 @@ public final class SpecialBody extends AbstractSpecial {
     /*************************************************************/
     /* Replace Context & Site                                    */
     /*************************************************************/
-
-    /**
-     * <p>Create a new atom for a given site.</p>
-     *
-     * @param fun The name of the atom.
-     * @param en  The engine.
-     * @param sa2 The call-site, or null.
-     * @return The new atom.
-     */
-    public static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
-        AbstractSource scope = (sa2 != null ? sa2.scope : null);
-        PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
-
-        int m = (pos != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        sa2 = en.store.foyer.createAtom(fun, scope, m);
-        sa2.setPosition(pos);
-
-        return sa2;
-    }
 
 
 }

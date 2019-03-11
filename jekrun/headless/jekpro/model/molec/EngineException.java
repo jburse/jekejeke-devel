@@ -8,10 +8,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 
 import java.io.IOException;
@@ -165,12 +162,10 @@ public final class EngineException extends Exception {
         }
         list.add(m);
         /* copy second */
-        int size = EngineCopy.displaySize(e2.getTemplate());
-        Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        Display ref = AbstractSkel.createDisplay(e2.getTemplate());
         m = eb.copyTerm(e2.getTemplate(), ref);
         /* copy cause chain */
-        size = EngineCopy.displaySize(e1.getTemplate());
-        ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        ref = AbstractSkel.createDisplay(e1.getTemplate());
         for (int i = list.size() - 1; i >= 0; i--) {
             m = new SkelCompound(new SkelAtom(OP_CAUSE),
                     eb.copyTerm(list.get(i), ref), m);
@@ -297,8 +292,7 @@ public final class EngineException extends Exception {
      */
     public String getMessage() {
         try {
-            int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref = AbstractSkel.createDisplay(template);
             return errorMake(template, ref, null, null, null);
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
@@ -321,8 +315,7 @@ public final class EngineException extends Exception {
             throws IOException, EngineException, EngineMessage {
         Locale locale = en.store.foyer.locale;
         Properties lang = EngineMessage.getErrorLang(locale, en.store);
-        int size = EngineCopy.displaySize(template);
-        Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        Display ref = AbstractSkel.createDisplay(template);
         return errorMake(template, ref, locale, lang, en);
     }
 
@@ -343,8 +336,7 @@ public final class EngineException extends Exception {
         try {
             Locale locale = en.store.foyer.locale;
             Properties lang = EngineMessage.getErrorLang(locale, en.store);
-            int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref = AbstractSkel.createDisplay(template);
             EngineException.printStackTrace(wr, template, ref, locale, lang, en);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -365,8 +357,7 @@ public final class EngineException extends Exception {
         try {
             Locale locale = en.store.foyer.locale;
             Properties lang = EngineMessage.getErrorLang(locale, en.store);
-            int size = EngineCopy.displaySize(template);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref = AbstractSkel.createDisplay(template);
             EngineException.printStackTrace(wr, template, ref, locale, lang, en);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -569,24 +560,21 @@ public final class EngineException extends Exception {
      * @return The type, or null.
      */
     public EngineMessage exceptionType(String fun) {
-        Object m = getTemplate();
-        if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 2 &&
-                ((SkelCompound) m).sym.fun.equals(fun)) {
-            Object o = ((SkelCompound) m).args[0];
-            int size = EngineCopy.displaySize(m);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        if (template instanceof SkelCompound &&
+                ((SkelCompound) template).args.length == 2 &&
+                ((SkelCompound) template).sym.fun.equals(fun)) {
+            Object o = ((SkelCompound) template).args[0];
+            Display ref = AbstractSkel.createDisplay(template);
             return new EngineMessage(o, ref);
-        } else if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 2 &&
-                ((SkelCompound) m).sym.fun.equals(OP_CAUSE)) {
-            m = ((SkelCompound) m).args[ARG_PRIMARY];
+        } else if (template instanceof SkelCompound &&
+                ((SkelCompound) template).args.length == 2 &&
+                ((SkelCompound) template).sym.fun.equals(OP_CAUSE)) {
+            Object m = ((SkelCompound) template).args[ARG_PRIMARY];
             if (m instanceof SkelCompound &&
                     ((SkelCompound) m).args.length == 2 &&
                     ((SkelCompound) m).sym.fun.equals(fun)) {
                 Object o = ((SkelCompound) m).args[0];
-                int size = EngineCopy.displaySize(m);
-                Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+                Display ref = AbstractSkel.createDisplay(template);
                 return new EngineMessage(o, ref);
             }
         }
@@ -603,13 +591,11 @@ public final class EngineException extends Exception {
      * @return The rest, or null,
      */
     public final EngineException causeChainRest() {
-        Object m = getTemplate();
-        if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 2 &&
-                OP_CAUSE.equals(((SkelCompound) m).sym.fun)) {
-            Object o = ((SkelCompound) m).args[ARG_SECONDARY];
-            int size = EngineCopy.displaySize(m);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        if (template instanceof SkelCompound &&
+                ((SkelCompound) template).args.length == 2 &&
+                OP_CAUSE.equals(((SkelCompound) template).sym.fun)) {
+            Object o = ((SkelCompound) template).args[ARG_SECONDARY];
+            Display ref = AbstractSkel.createDisplay(template);
             return new EngineException(o, ref);
         }
         return null;

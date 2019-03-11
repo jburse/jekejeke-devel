@@ -1,6 +1,5 @@
 package jekpro.model.rope;
 
-import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.InterfaceInit;
 import jekpro.model.inter.Engine;
@@ -12,7 +11,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;

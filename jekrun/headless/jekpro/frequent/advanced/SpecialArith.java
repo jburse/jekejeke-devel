@@ -85,7 +85,7 @@ public final class SpecialArith extends AbstractSpecial {
                                     (Goal) en.contskel, en.contdisplay, mark, id);
                             en.number++;
                         }
-                        return en.getNext();
+                        return true;
                     }
 
                     /* undo bindings */
@@ -109,7 +109,7 @@ public final class SpecialArith extends AbstractSpecial {
                         en.choices = new ChoiceArith(en.choices, num1,
                                 (Goal) en.contskel, en.contdisplay, mark, id);
                         en.number++;
-                        return en.getNext();
+                        return true;
                     }
 
                     /* undo bindings */

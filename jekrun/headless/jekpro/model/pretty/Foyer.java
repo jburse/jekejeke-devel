@@ -129,6 +129,7 @@ public abstract class Foyer extends Enforced {
     public Clause CLAUSE_CONT;
     public Clause CLAUSE_CALL;
     public Clause CLAUSE_HOOK;
+    public Clause CLAUSE_TRAN;
 
     /**
      * <p>Retrieve the factory.</p>

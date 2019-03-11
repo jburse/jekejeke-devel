@@ -85,15 +85,18 @@ public class Goal extends Intermediate {
                 u.number + 1 : u.number) >= en.number) {
             int n = endgc;
             int i = u.lastgc;
-            if (i < n)
-                u.lastgc = u.def.disposeBind(i, n, u.bind, en);
+            if (i < n) {
+                u.def.disposeBind(i, n, u.bind, en);
+                u.lastgc = n;
+            }
         }
 
         int n = endalloc;
         int i = u.lastalloc;
-        if (i < n)
-            u.lastalloc = Clause.newBind(i, n, u.bind);
-
+        if (i < n) {
+            Clause.newBind(i, n, u.bind);
+            u.lastalloc = n;
+        }
         if (uniargs != null)
             Goal.unifyBody(uniargs, u, en);
         if ((flags & Intermediate.MASK_INTER_NLST) == 0 &&
@@ -104,8 +107,10 @@ public class Goal extends Intermediate {
                 Clause clause = u1.def;
                 n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
                 i = u1.lastgc;
-                if (i < n)
-                    u1.lastgc = clause.disposeBind(i, n, u1.bind, en);
+                if (i < n) {
+                    clause.disposeBind(i, n, u1.bind, en);
+                    u1.lastgc = n;
+                }
                 u.contskel = u1.contskel;
                 u.contdisplay = u1.contdisplay;
             }
