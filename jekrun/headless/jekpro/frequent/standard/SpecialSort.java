@@ -443,7 +443,7 @@ public final class SpecialSort extends AbstractSpecial {
      */
     public static int hashTerm(Object t, Display d, int res) {
         for (; ; ) {
-            BindVar b1;
+            BindUniv b1;
             while (t instanceof SkelVar &&
                     (b1 = d.bind[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
@@ -476,7 +476,7 @@ public final class SpecialSort extends AbstractSpecial {
         for (; ; ) {
             if (depth == 0)
                 return true;
-            BindVar b1;
+            BindUniv b1;
             while (t instanceof SkelVar &&
                     (b1 = d.bind[((SkelVar) t).id]).display != null) {
                 t = b1.skel;
@@ -510,7 +510,7 @@ public final class SpecialSort extends AbstractSpecial {
         for (; ; ) {
             if (depth == 0)
                 return res;
-            BindVar b1;
+            BindUniv b1;
             while (t instanceof SkelVar &&
                     (b1 = d.bind[((SkelVar) t).id]).display != null) {
                 t = b1.skel;

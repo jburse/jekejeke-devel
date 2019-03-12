@@ -1,9 +1,7 @@
 package jekpro.model.molec;
 
-import jekpro.model.inter.Engine;
-
 /**
- * <p>The class provides a serial number undo.</p>
+ * <p>This class provides a serial number variable binder.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -33,53 +31,54 @@ import jekpro.model.inter.Engine;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class UndoSerno extends BindVar {
+public class BindLexical extends BindVar {
+    public int serno = -1;
+
+    /********************************************************/
+    /* Lexical Allocation & Reallocation                    */
+    /********************************************************/
 
     /**
-     * <p>Create a serno binder.</p>
+     * <p>Create a new display.</p>
+     * <p>Fill the binds with bind lexical.</p>
      *
-     * @param d The bind count.
+     * @param s The size.
+     * @return The new display.
      */
-    private UndoSerno(BindLexical d) {
-        skel = d;
+    public static BindUniv[] newLexical(int s) {
+        if (s == 0)
+            return BIND_CONST;
+        BindUniv[] b = new BindUniv[s];
+        for (int i = 0; i < s; i++)
+            b[i] = new BindLexical();
+        return b;
     }
 
     /**
-     * <p>Reset the serno.</p>
+     * <p>Set the bind size.</p>
+     * <p>Refill the binds with bind lexical.</p>
      *
-     * @param en The engine.
+     * @param s The bind size.
+     * @param b The display
+     * @return The new display.
      */
-    public void unbind(Engine en) {
-        /* reset serno */
-        BindLexical bc = (BindLexical)skel;
-        int k = bc.serno;
-        if (k == -1)
-            throw new IllegalStateException("value missing");
-        bc.serno = -1;
-        en.serno = k;
-
-        removeBind(en);
+    public static BindUniv[] resizeLexical(int s, BindUniv[] b) {
+        int n = (b != null ? b.length : 0);
+        if (n != s) {
+            if (s == 0) {
+                b = BIND_CONST;
+            } else {
+                BindUniv[] newbind = new BindUniv[s];
+                n = Math.min(n, s);
+                if (n != 0)
+                    System.arraycopy(b, 0, newbind, 0, n);
+                b = newbind;
+            }
+        }
+        for (int i = 0; i < s; i++) {
+            if (b[i] == null)
+                b[i] = new BindLexical();
+        }
+        return b;
     }
-
-    /**
-     * <p>Set a new serno.</p>
-     *
-     * @param d  The display.
-     * @param en The engine.
-     * @return The new serno.
-     */
-    public static int bindSerno(BindLexical d, Engine en) {
-        /* set serno */
-        if (d.serno != -1)
-            throw new IllegalStateException("cant override");
-        int k = en.serno;
-        d.serno = k;
-        en.serno = k + 1;
-
-        UndoSerno bs = new UndoSerno(d);
-        bs.addBind(en);
-
-        return k;
-    }
-
 }

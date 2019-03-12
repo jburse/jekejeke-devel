@@ -2,10 +2,7 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractBind;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialCompare;
@@ -75,7 +72,7 @@ public final class SpecialArith extends AbstractSpecial {
                 Display ref = en.display;
                 Number num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 Number num2 = SpecialEval.derefAndCastNumber(temp[1], ref);
-                AbstractBind mark = en.bind;
+                BindVar mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
                 while (res <= 0) {
                     if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {

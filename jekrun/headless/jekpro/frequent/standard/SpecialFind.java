@@ -144,7 +144,7 @@ public final class SpecialFind extends AbstractSpecial {
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         ListArray<Object> temp = null;
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
@@ -237,11 +237,11 @@ public final class SpecialFind extends AbstractSpecial {
             Display d3 = new Display(BindUniv.newUniv(2));
             d3.flags |= Display.MASK_DPTM_MLTI;
             boolean ext = d2.getAndReset();
-            d3.bind[0].bindVar(t2, d2, en);
+            d3.bind[0].bindUniv(t2, d2, en);
             if (ext)
                 BindUniv.remTab(d2.bind, en);
             ext = d.getAndReset();
-            d3.bind[1].bindVar(t, d, en);
+            d3.bind[1].bindUniv(t, d, en);
             if (ext)
                 BindUniv.remTab(d.bind, en);
             en.skel = sc;

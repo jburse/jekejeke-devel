@@ -1,7 +1,7 @@
 package jekpro.model.pretty;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindVar;
+import jekpro.model.molec.BindUniv;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -104,7 +104,7 @@ public final class NamedDistance {
      */
     public static int derefCount(Engine en) {
         int count = 0;
-        BindVar b;
+        BindUniv b;
         while (en.skel instanceof SkelVar &&
                 (b = en.display.bind[((SkelVar) en.skel).id]).display != null) {
             en.skel = b.skel;

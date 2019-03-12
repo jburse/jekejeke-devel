@@ -127,7 +127,7 @@ public class Clause extends Intermediate implements InterfaceReference {
             if ((--bc.refs) == 0) {
                 b[k] = null;
                 if (bc.display != null)
-                    BindVar.unbind(bc, en);
+                    BindUniv.unbind(bc, en);
             }
             i++;
         } while (i < n);

@@ -281,7 +281,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at == list.length)
             return false;
 
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         Clause clause;
         DisplayClause dc = null;
         int lastalloc;
@@ -563,7 +563,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at == list.length)
             return false;
 
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         Clause clause;
         Display ref1 = null;
         boolean ext = refhead.getAndReset();

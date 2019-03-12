@@ -46,19 +46,19 @@ final class ChoiceArith extends AbstractChoice {
     private Number cur;
     private final Goal goalskel;
     private final DisplayClause goaldisplay;
-    private final AbstractBind mark;
+    private final BindVar mark;
     private final int id;
 
     /**
      * <p>Create pick choice.</p>
      *
-     * @param n The molec.
+     * @param n The next choice.
      * @param m The mark.
+     *          @param i The function code.
      */
     ChoiceArith(AbstractChoice n,
                 Number c, Goal r, DisplayClause u,
-                AbstractBind m,
-                int i) {
+                BindVar m, int i) {
         super(n);
         goalskel = r;
         goaldisplay = u;
@@ -96,7 +96,7 @@ final class ChoiceArith extends AbstractChoice {
         Display d = goaldisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
-            BindVar b1;
+            BindUniv b1;
             while (t instanceof SkelVar &&
                     (b1 = d.bind[((SkelVar) t).id]).display != null) {
                 t = b1.skel;

@@ -123,7 +123,7 @@ public class Goal extends Intermediate {
         Display d1 = u;
         if ((flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
-            BindVar b;
+            BindUniv b;
             while (alfa instanceof SkelVar &&
                     (b = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b.skel;
@@ -179,7 +179,7 @@ public class Goal extends Intermediate {
         Display ref = u.contdisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
-            BindVar b;
+            BindUniv b;
             while (alfa instanceof SkelVar &&
                     (b = ref.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b.skel;
@@ -192,14 +192,14 @@ public class Goal extends Intermediate {
             int n = arr[i];
             alfa = t1[n];
             Display d1 = ref;
-            BindVar b;
+            BindUniv b;
             while (alfa instanceof SkelVar &&
                     (b = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b.skel;
                 d1 = b.display;
             }
             b = u.bind[((SkelVar) t2[n]).id];
-            b.bindVar(alfa, d1, en);
+            b.bindUniv(alfa, d1, en);
         }
     }
 

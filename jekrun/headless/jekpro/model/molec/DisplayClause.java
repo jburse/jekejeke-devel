@@ -128,7 +128,7 @@ public final class DisplayClause extends Display implements InterfaceStack {
     public final void addArgument(Object m, Display d, Engine en) {
         BindUniv b = new BindUniv();
         bind[lastalloc] = b;
-        bind[lastalloc].bindVar(m, d, en);
+        bind[lastalloc].bindUniv(m, d, en);
         lastalloc++;
     }
 

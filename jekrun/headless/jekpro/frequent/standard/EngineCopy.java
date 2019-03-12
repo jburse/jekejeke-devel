@@ -100,7 +100,7 @@ public final class EngineCopy {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -189,7 +189,7 @@ public final class EngineCopy {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -291,7 +291,7 @@ public final class EngineCopy {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -370,7 +370,7 @@ public final class EngineCopy {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;

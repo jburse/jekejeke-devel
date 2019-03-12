@@ -620,7 +620,7 @@ public final class EngineMessage extends Exception {
             PrologWriter.toString(term, ref, buf, PrologWriter.FLAG_QUOT, en);
             return buf.toString();
         }
-        BindVar b;
+        BindUniv b;
         while (term instanceof SkelVar &&
                 (b = ref.bind[((SkelVar) term).id]).display != null) {
             term = b.skel;
@@ -744,7 +744,7 @@ public final class EngineMessage extends Exception {
             if (ARGTYPE_ID.equals(pat.get(i))) {
                 Object t = ((SkelCompound) term).args[i];
                 Display d = ref;
-                BindVar b;
+                BindUniv b;
                 while (t instanceof SkelVar &&
                         (b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
@@ -783,7 +783,7 @@ public final class EngineMessage extends Exception {
                 continue;
             Object t = ((SkelCompound) term).args[i];
             Display d = ref;
-            BindVar b;
+            BindUniv b;
             while (t instanceof SkelVar &&
                     (b = d.bind[((SkelVar) t).id]).display != null) {
                 t = b.skel;

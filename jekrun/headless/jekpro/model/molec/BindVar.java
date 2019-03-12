@@ -3,7 +3,7 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 
 /**
- * <p>The class provides a serial number undo.</p>
+ * <p>This class provides a trailed variable binder.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -33,53 +33,50 @@ import jekpro.model.inter.Engine;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class UndoSerno extends BindVar {
+public class BindVar extends BindUniv {
+    private BindVar next;
+    private BindVar prev;
 
     /**
-     * <p>Create a serno binder.</p>
-     *
-     * @param d The bind count.
-     */
-    private UndoSerno(BindLexical d) {
-        skel = d;
-    }
-
-    /**
-     * <p>Reset the serno.</p>
+     * <p>Restore state as desired and remove bind from the engine.</p>
+     * <p>The current exception is passed via the engine skel.</p>
+     * <p>The new current exception is returned via the engine skel.</p>
      *
      * @param en The engine.
      */
     public void unbind(Engine en) {
-        /* reset serno */
-        BindLexical bc = (BindLexical)skel;
-        int k = bc.serno;
-        if (k == -1)
-            throw new IllegalStateException("value missing");
-        bc.serno = -1;
-        en.serno = k;
-
-        removeBind(en);
+        BindUniv.unbind(this, en);
     }
 
     /**
-     * <p>Set a new serno.</p>
+     * <p>Remove this bind from the engine.</p>
      *
-     * @param d  The display.
      * @param en The engine.
-     * @return The new serno.
      */
-    public static int bindSerno(BindLexical d, Engine en) {
-        /* set serno */
-        if (d.serno != -1)
-            throw new IllegalStateException("cant override");
-        int k = en.serno;
-        d.serno = k;
-        en.serno = k + 1;
+    void removeBind(Engine en) {
+        BindVar f = prev;
+        BindVar g = next;
+        if (f != null) {
+            f.next = g;
+        } else {
+            en.bind = g;
+        }
+        if (g != null)
+            g.prev = f;
+    }
 
-        UndoSerno bs = new UndoSerno(d);
-        bs.addBind(en);
-
-        return k;
+    /**
+     * <p>Add this bind to the engine.</p>
+     *
+     * @param en The engine.
+     */
+    void addBind(Engine en) {
+        prev = null;
+        BindVar f = en.bind;
+        if (f != null)
+            f.prev = this;
+        next = f;
+        en.bind = this;
     }
 
 }

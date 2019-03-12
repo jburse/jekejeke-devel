@@ -59,8 +59,9 @@ public class EngineYield extends Engine {
      * <p>The goal is passed via skel and display of this engine.</p>
      * <p>In case of exception, the choice points are already removed.</p>
      *
-     * @param snap The choice barrier.
-     * @return True if the goal list succeeded, otherwise null.
+     * @param snap  The choice barrier.
+     * @param found The backtracking flag.
+     * @return True if the goal list succeeded, otherwise false.
      * @throws EngineException Shit happens.
      */
     public final boolean runLoop(int snap, boolean found)

@@ -76,7 +76,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             at++;
         }
 
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         Clause clause;
         DisplayClause dc = null;
         int lastalloc;
@@ -166,7 +166,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             at++;
         }
 
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         Clause clause;
         Display ref1 = null;
         boolean ext = refhead.getAndReset();

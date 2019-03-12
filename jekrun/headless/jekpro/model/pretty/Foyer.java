@@ -111,12 +111,10 @@ public abstract class Foyer extends Enforced {
     private final ListArray<Store> regs = new ListArray<Store>();
     private Store[] cacheregs;
 
-    public final SkelAtom ATOM_COMMA = new SkelAtom(Foyer.OP_COMMA);
     public final SkelAtom ATOM_SLASH = new SkelAtom(Foyer.OP_SLASH);
     public final SkelAtom ATOM_NIL = new SkelAtom(Foyer.OP_NIL);
     public final SkelAtom ATOM_CONS = new SkelAtom(Foyer.OP_CONS);
     public final SkelAtom ATOM_SUB = new SkelAtom(Foyer.OP_SUB);
-    public final SkelAtom ATOM_TRUE = new SkelAtom(Foyer.OP_TRUE);
     public final SkelAtom ATOM_EQUAL = new SkelAtom(Foyer.OP_EQUAL);
     public final SkelAtom ATOM_LESS = new SkelAtom(Foyer.OP_LESS);
     public final SkelAtom ATOM_GREATER = new SkelAtom(Foyer.OP_GREATER);
@@ -125,6 +123,12 @@ public abstract class Foyer extends Enforced {
             SkelVar.valueOf(0), SkelVar.valueOf(1));
     public final SkelCompound CELL_SUB = new SkelCompound(ATOM_SUB,
             SkelVar.valueOf(0), SkelVar.valueOf(1));
+
+    public SkelCompound CELL_COMMA;
+
+    public SkelAtom ATOM_CALL;
+    public SkelAtom ATOM_COMMA;
+    public SkelAtom ATOM_TRUE;
 
     public Clause CLAUSE_CONT;
     public Clause CLAUSE_CALL;

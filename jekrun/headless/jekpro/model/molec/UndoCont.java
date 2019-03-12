@@ -35,8 +35,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class UndoCont extends AbstractBind {
-    private final ListArray<BindVar> val;
+public final class UndoCont extends BindVar {
 
     /**
      * <p>Create a last binder.</p>
@@ -44,7 +43,7 @@ public final class UndoCont extends AbstractBind {
      * @param v The value.
      */
     private UndoCont(ListArray<BindVar> v) {
-        val = v;
+        skel = v;
     }
 
     /**
@@ -54,6 +53,7 @@ public final class UndoCont extends AbstractBind {
      */
     public void unbind(Engine en) {
         /* set back */
+        ListArray<BindVar> val = (ListArray<BindVar>)skel;
         Supervisor visor = en.visor;
         if (visor.cont != null)
             throw new IllegalStateException("cant override");
@@ -78,6 +78,7 @@ public final class UndoCont extends AbstractBind {
 
         UndoCont bs = new UndoCont(val);
         bs.addBind(en);
+
         return val;
     }
 

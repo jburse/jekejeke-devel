@@ -121,7 +121,7 @@ public final class SpecialControl extends AbstractSpecial {
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
         DisplayClause u = en.contdisplay;
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();

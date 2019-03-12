@@ -1,6 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SpecialFind;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Clause;
@@ -51,7 +52,7 @@ public class Engine implements InterfaceStack {
     public DisplayClause contdisplay;
     public Store store;
     public final Supervisor visor;
-    public AbstractBind bind;
+    public BindVar bind;
     public AbstractChoice choices;
     public int serno;
     public int number;
@@ -98,7 +99,7 @@ public class Engine implements InterfaceStack {
      * and display.</p>
      */
     public final void deref() {
-        BindVar b;
+        BindUniv b;
         while (skel instanceof SkelVar &&
                 (b = display.bind[((SkelVar) skel).id]).display != null) {
             skel = b.skel;
@@ -123,7 +124,7 @@ public class Engine implements InterfaceStack {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
                 // combined check and deref
-                BindVar b1;
+                BindUniv b1;
                 if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                     alfa = b1.skel;
                     d1 = b1.display;
@@ -132,7 +133,7 @@ public class Engine implements InterfaceStack {
                 for (; ; ) {
                     if (beta instanceof SkelVar) {
                         // combined check and deref
-                        BindVar b2;
+                        BindUniv b2;
                         if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
                             beta = b2.skel;
                             d2 = b2.display;
@@ -148,7 +149,7 @@ public class Engine implements InterfaceStack {
             for (; ; ) {
                 // combined check and deref
                 if (beta instanceof SkelVar) {
-                    BindVar b;
+                    BindUniv b;
                     if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
                         beta = b.skel;
                         d2 = b.display;
@@ -184,7 +185,7 @@ public class Engine implements InterfaceStack {
      *
      * @param mark The marker.
      */
-    public final void releaseBind(AbstractBind mark) {
+    public final void releaseBind(BindVar mark) {
         while (bind != mark)
             bind.unbind(this);
     }
@@ -198,8 +199,9 @@ public class Engine implements InterfaceStack {
      * <p>The goal is passed via skel and display of this engine.</p>
      * <p>In case of exception, the choice points are already removed.</p>
      *
-     * @param snap The choice barrier.
-     * @return True if the goal list succeeded, otherwise null.
+     * @param snap  The choice barrier.
+     * @param found The backtracking flag.
+     * @return True if the goal list succeeded, otherwise false.
      * @throws EngineException Shit happens.
      */
     public boolean runLoop(int snap, boolean found)
@@ -276,9 +278,9 @@ public class Engine implements InterfaceStack {
     public final void retireCont()
             throws EngineMessage, EngineException {
         ListArray<BindVar> list = UndoCont.bindCont(this);
-        boolean ext = contCount(list, this);
-        skel = contAlloc(list, ext, this);
+        createComma(list, this);
         Display d2 = display;
+        boolean ext = d2.getAndReset();
         boolean multi = wrapGoal();
         if (multi && ext)
             BindUniv.remTab(d2.bind, this);
@@ -296,72 +298,23 @@ public class Engine implements InterfaceStack {
     }
 
     /**
-     * <p>Count the needed variable place holders.</p>
+     * <p>Create the comma list.</p>
+     * <p>Result is returned in skel and display of the engine.</p>
      *
-     * @param list The continuation queue.
+     * @param temp The list of solutions or null.
      * @param en   The engine.
-     * @return True if new display is returned, otherwise false.
      */
-    private static boolean contCount(ListArray<BindVar> list, Engine en) {
-        int countvar = 0;
-        Display last = Display.DISPLAY_CONST;
-        boolean multi = false;
-        for (int i = list.size() - 1; i >= 0; i--) {
-            BindVar bv = list.get(i);
-            en.skel = bv.skel;
-            en.display = bv.display;
-            en.deref();
-            if (EngineCopy.getVar(en.skel) != null) {
-                countvar++;
-                if (last == Display.DISPLAY_CONST) {
-                    last = en.display;
-                } else if (last != en.display) {
-                    multi = true;
-                }
-            }
+    private static void createComma(ListArray<BindVar> temp, Engine en) {
+        BindVar val = temp.get(temp.size() - 1);
+        en.skel = val.skel;
+        en.display = val.display;
+        for (int i = temp.size() - 2; i >= 0; i--) {
+            Object t = en.skel;
+            Display d = en.display;
+            val = temp.get(i);
+            SpecialFind.pairValue(en.store.foyer.CELL_COMMA,
+                    val.skel, val.display, t, d, en);
         }
-        if (multi)
-            last = new Display(BindUniv.newUniv(countvar));
-        en.display = last;
-        return multi;
-    }
-
-    /**
-     * <p>Unpack the arguments and bind the needed variable
-     * place holders.</p>
-     *
-     * @param list  The continuation queue.
-     * @param multi The multi flag.
-     * @param en    The engine.
-     * @return The new conjunction.
-     */
-    private static Object contAlloc(ListArray<BindVar> list, boolean multi,
-                                    Engine en) {
-        Display d3 = en.display;
-        int countvar = 0;
-        Object res = null;
-        for (int i = list.size() - 1; i >= 0; i--) {
-            BindVar bv = list.get(i);
-            en.skel = bv.skel;
-            en.display = bv.display;
-            en.deref();
-            Object temp;
-            if (multi && EngineCopy.getVar(en.skel) != null) {
-                SkelVar sv = SkelVar.valueOf(countvar);
-                countvar++;
-                d3.bind[sv.id].bindVar(en.skel, en.display, en);
-                temp = sv;
-            } else {
-                temp = en.skel;
-            }
-            if (res == null) {
-                res = temp;
-            } else {
-                res = new SkelCompound(en.store.foyer.ATOM_COMMA, temp, res);
-            }
-        }
-        en.display = d3;
-        return res;
     }
 
     /*************************************************************************/
@@ -381,7 +334,7 @@ public class Engine implements InterfaceStack {
      */
     public final void computeExpr(Object alfa, Display d1)
             throws EngineMessage, EngineException {
-        BindVar b;
+        BindUniv b;
         while (alfa instanceof SkelVar &&
                 (b = d1.bind[((SkelVar) alfa).id]).display != null) {
             alfa = b.skel;
@@ -441,7 +394,7 @@ public class Engine implements InterfaceStack {
         DisplayClause u = contdisplay;
         boolean backignore = visor.setIgnore(false);
         boolean backverify = visor.setVerify(false);
-        AbstractBind mark = bind;
+        BindVar mark = bind;
         int snap = number;
         try {
             boolean multi = wrapGoal();

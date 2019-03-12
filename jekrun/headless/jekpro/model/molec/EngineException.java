@@ -389,7 +389,7 @@ public final class EngineException extends Exception {
                                    Engine en)
             throws EngineMessage, EngineException {
         for (; ; ) {
-            BindVar b;
+            BindUniv b;
             while (term instanceof SkelVar &&
                     (b = ref.bind[((SkelVar) term).id]).display != null) {
                 term = b.skel;
@@ -452,7 +452,7 @@ public final class EngineException extends Exception {
                                        Engine en)
             throws IOException, EngineMessage, EngineException {
         for (; ; ) {
-            BindVar b;
+            BindUniv b;
             while (term instanceof SkelVar &&
                     (b = ref.bind[((SkelVar) term).id]).display != null) {
                 term = b.skel;
@@ -515,7 +515,7 @@ public final class EngineException extends Exception {
                                      Engine en)
             throws IOException, EngineMessage, EngineException {
         for (; ; ) {
-            BindVar b;
+            BindUniv b;
             while (term instanceof SkelVar &&
                     (b = ref.bind[((SkelVar) term).id]).display != null) {
                 term = b.skel;

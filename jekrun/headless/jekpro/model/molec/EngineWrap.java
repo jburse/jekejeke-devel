@@ -1,9 +1,7 @@
 package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -64,7 +62,7 @@ public final class EngineWrap {
             throws EngineMessage, EngineException {
         for (; ; ) {
             if (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -136,7 +134,7 @@ public final class EngineWrap {
             throws EngineMessage, EngineException {
         for (; ; ) {
             if (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -199,7 +197,7 @@ public final class EngineWrap {
     private void countRest(Object t, Display d) {
         for (; ; ) {
             if (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -253,7 +251,7 @@ public final class EngineWrap {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -262,7 +260,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last.bind[sv.id].bindUniv(t, d, en);
                     t = sv;
                 }
 //                if (back != null &&
@@ -274,8 +272,7 @@ public final class EngineWrap {
 //                            en.store.getRootSystem()), args, null);
 //                    back.args[1] = help;
 //                } else {
-                    t = new SkelCompound(new SkelAtom(Branch.OP_CALL,
-                            en.store.getRootSystem()), t);
+                    t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
 //                }
                 break;
             } else if (t instanceof SkelCompound) {
@@ -309,7 +306,7 @@ public final class EngineWrap {
                 } else if ((flags & MASK_WRAP_MLTI) != 0 && sc.var != null) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last.bind[sv.id].bindUniv(t, d, en);
                     t = sv;
                     break;
                 } else {
@@ -349,7 +346,7 @@ public final class EngineWrap {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -358,7 +355,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last.bind[sv.id].bindUniv(t, d, en);
                     t = sv;
                 }
                 break;
@@ -393,7 +390,7 @@ public final class EngineWrap {
                 } else if ((flags & MASK_WRAP_MLTI) != 0 && sc.var != null) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last.bind[sv.id].bindUniv(t, d, en);
                     t = sv;
                     break;
                 } else {
@@ -428,7 +425,7 @@ public final class EngineWrap {
     private Object replaceRest(Object t, Display d, Engine en) {
         for (; ; ) {
             if (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -437,7 +434,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last.bind[sv.id].bindUniv(t, d, en);
                     t = sv;
                 }
                 break;
@@ -446,7 +443,7 @@ public final class EngineWrap {
                 if ((flags & MASK_WRAP_MLTI) != 0 && sc.var != null) {
                     SkelVar sv = SkelVar.valueOf(countvar);
                     countvar++;
-                    last.bind[sv.id].bindVar(t, d, en);
+                    last.bind[sv.id].bindUniv(t, d, en);
                     t = sv;
                     break;
                 } else {

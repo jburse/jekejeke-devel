@@ -250,7 +250,7 @@ public final class SpecialApply extends AbstractSpecial {
         if (multi && EngineCopy.getVar(t) != null) {
             SkelVar sv = vars[countvar];
             countvar++;
-            d3.bind[sv.id].bindVar(t, d, en);
+            d3.bind[sv.id].bindUniv(t, d, en);
             args[0] = sv;
         } else {
             args[0] = t;
@@ -259,7 +259,7 @@ public final class SpecialApply extends AbstractSpecial {
             SkelVar sv = vars[countvar];
             // countvar++;
             boolean ext = d2.getAndReset();
-            d3.bind[sv.id].bindVar(t2, d2, en);
+            d3.bind[sv.id].bindUniv(t2, d2, en);
             if (ext)
                 BindUniv.remTab(d2.bind, en);
             args[1] = sv;
@@ -377,7 +377,7 @@ public final class SpecialApply extends AbstractSpecial {
                 if (multi && EngineCopy.getVar(en.skel) != null) {
                     SkelVar sv = vars[countvar];
                     countvar++;
-                    d3.bind[sv.id].bindVar(en.skel, en.display, en);
+                    d3.bind[sv.id].bindUniv(en.skel, en.display, en);
                     args[i] = sv;
                 } else {
                     args[i] = en.skel;
@@ -391,7 +391,7 @@ public final class SpecialApply extends AbstractSpecial {
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d3.bind[sv.id].bindVar(en.skel, en.display, en);
+                d3.bind[sv.id].bindUniv(en.skel, en.display, en);
                 args[len + i] = sv;
             } else {
                 args[len + i] = en.skel;
