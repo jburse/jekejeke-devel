@@ -102,7 +102,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 if (!SpecialCompare.testEq(alfa, beta))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_COMPARE_NQ:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -120,7 +120,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.testEq(alfa, beta))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_COMPARE_LS:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -138,7 +138,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_COMPARE_LQ:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -156,7 +156,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_COMPARE_GR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -174,7 +174,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_COMPARE_GQ:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -192,7 +192,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

@@ -76,7 +76,7 @@ public final class SpecialEval extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -96,7 +96,7 @@ public final class SpecialEval extends AbstractSpecial {
      */
     public static Number derefAndCastNumber(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -121,7 +121,7 @@ public final class SpecialEval extends AbstractSpecial {
      */
     public static Number derefAndCastInteger(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -148,7 +148,7 @@ public final class SpecialEval extends AbstractSpecial {
      */
     public static Number derefAndCastDecimal(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;

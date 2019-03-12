@@ -74,7 +74,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.window = null;
                 if (en.fault != null)
                     throw en.fault;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
                 u = en.contdisplay;
                 if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
@@ -88,7 +88,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 } else {
                     u.flags |= DisplayClause.MASK_DPCL_SOFT;
                 }
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SAFE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
@@ -96,12 +96,12 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newClause(clause.dispsize);
+                DisplayClause ref2 = new DisplayClause(
+                        DisplayClause.newClause(clause.dispsize));
                 ref2.def = clause;
                 ref2.addArgument(en.skel, en.display, en);
                 ref2.setEngine(en);
-                en.contskel = clause.getNextRaw(en);
+                en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
             default:

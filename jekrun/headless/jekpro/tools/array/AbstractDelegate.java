@@ -229,7 +229,7 @@ public abstract class AbstractDelegate {
             if (EngineCopy.getVar(temp) != null)
                 countvar++;
         }
-        return new Display(BindUniv.newUnivLexical(countvar,1));
+        return new Display(BindUniv.newUnivLexical(countvar, 1));
     }
 
     /**
@@ -255,7 +255,7 @@ public abstract class AbstractDelegate {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 boolean ext = d.getAndReset();
-                ref.bind[sv.id].bindVar(temp, d, en);
+                ref.bind[sv.id].bindUniv(temp, d, en);
                 if (ext)
                     BindUniv.remTab(d.bind, en);
                 args[i] = sv;

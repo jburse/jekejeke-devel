@@ -125,7 +125,7 @@ final class MemberMethodNondet extends AbstractMember {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         CallOut co = new CallOut();
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         Object temp = en.skel;
         Display ref = en.display;
         int hint = en.store.foyer.getHint();

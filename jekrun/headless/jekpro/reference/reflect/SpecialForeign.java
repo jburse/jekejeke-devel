@@ -111,7 +111,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_FOREIGN_CONSTRUCTOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -135,7 +135,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_FOREIGN_GETTER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -155,7 +155,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_FOREIGN_SETTER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -175,7 +175,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_FOREIGN_FUN:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -196,7 +196,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_FOREIGN_CONST:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -216,7 +216,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 Predicate.definePredicate(pick, del, en);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

@@ -3,6 +3,7 @@ package jekpro.reference.reflect;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -55,8 +56,8 @@ public final class SpecialPred extends AbstractSpecial {
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY = 3;
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY_CHK = 4;
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY_IDX = 5;
-    /* private final static int SPECIAL_SYS_SET_PREDICATE_PROPERTY = 6; */
-    /* private final static int SPECIAL_SYS_RESET_PREDICATE_PROPERTY = 7; */
+    /* private final static int SPECIAL_SYS_SET_PREDICATE_PROPERTY = 5; */
+    /* private final static int SPECIAL_SYS_RESET_PREDICATE_PROPERTY = 6; */
     private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 8;
     private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 9;
 
@@ -89,7 +90,7 @@ public final class SpecialPred extends AbstractSpecial {
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialPred.defineStatic(pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_CURRENT_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -97,14 +98,14 @@ public final class SpecialPred extends AbstractSpecial {
                         SpecialPred.currentPredicates(en),
                         Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_CURRENT_PREDICATE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_PREDICATE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -118,7 +119,7 @@ public final class SpecialPred extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -133,7 +134,7 @@ public final class SpecialPred extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_PREDICATE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -145,7 +146,7 @@ public final class SpecialPred extends AbstractSpecial {
                         SpecialPred.propertyToPredicates(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -160,7 +161,7 @@ public final class SpecialPred extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -172,7 +173,7 @@ public final class SpecialPred extends AbstractSpecial {
                         propertyToProvables(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

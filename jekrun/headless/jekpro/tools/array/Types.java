@@ -1,6 +1,6 @@
 package jekpro.tools.array;
 
-import jekpro.model.molec.BindVar;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -270,7 +270,7 @@ public final class Types {
                 case Types.TYPE_STRING:
                     return SpecialUniv.derefAndCastString(t, d);
                 case Types.TYPE_CHARSEQ:
-                    BindVar b;
+                    BindUniv b;
                     while (t instanceof SkelVar &&
                             (b = d.bind[((SkelVar) t).id]).display != null) {
                         t = b.skel;

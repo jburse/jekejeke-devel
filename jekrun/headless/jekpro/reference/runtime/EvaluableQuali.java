@@ -2,6 +2,7 @@ package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -52,10 +53,8 @@ public final class EvaluableQuali extends AbstractSpecial {
         super(i);
         switch (i) {
             case EVALUABLE_COLON:
-                subflags |= MASK_DELE_VIRT;
-                subflags |= MASK_DELE_ARIT;
-                break;
             case EVALUABLE_COLONCOLON:
+                subflags |= MASK_DELE_VIRT;
                 subflags |= MASK_DELE_ARIT;
                 break;
             default:
@@ -82,7 +81,11 @@ public final class EvaluableQuali extends AbstractSpecial {
                 SkelAtom mod = SpecialQuali.modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
-                en.computeExpr(en.skel, en.display);
+                ref = en.display;
+                boolean ext = ref.getAndReset();
+                en.computeExpr(en.skel, ref);
+                if (ext)
+                    BindUniv.remTab(ref.bind, en);
                 return;
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
@@ -90,15 +93,19 @@ public final class EvaluableQuali extends AbstractSpecial {
 
                 en.skel = temp.args[0];
                 en.display = ref;
-                en.computeExpr(en.skel, en.display);
+                en.deref();
                 Object recv = en.skel;
                 Display d2 = en.display;
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 mod = SpecialQuali.objToAtom(obj, recv, d2, en);
-                boolean ext = SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, ext, en);
-                en.computeExpr(en.skel, en.display);
+                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
+                SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
+                ref = en.display;
+                ext = ref.getAndReset();
+                en.computeExpr(en.skel, ref);
+                if (ext)
+                    BindUniv.remTab(ref.bind, en);
                 return;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

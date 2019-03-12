@@ -93,7 +93,7 @@ public final class SpecialUniv extends AbstractSpecial {
                             return false;
                         if (!en.unifyTerm(temp[2], ref, cmp[nth - 1], en.display))
                             return false;
-                        return en.getNext();
+                        return true;
                     } else if (en.skel instanceof SkelAtom) {
                         return false;
                     } else {
@@ -132,7 +132,7 @@ public final class SpecialUniv extends AbstractSpecial {
                             return false;
                         if (multi)
                             BindUniv.remTab(d.bind, en);
-                        return en.getNext();
+                        return true;
                     } else if (en.skel instanceof SkelAtom) {
                         return false;
                     } else {
@@ -146,18 +146,18 @@ public final class SpecialUniv extends AbstractSpecial {
                     ref = en.display;
                     if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_NOT_UNIFY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    AbstractBind mark = en.bind;
+                    BindVar mark = en.bind;
                     if (en.unifyTerm(temp[1], ref, temp[0], ref))
                         return false;
                     en.fault = null;
                     en.releaseBind(mark);
                     if (en.fault != null)
                         throw en.fault;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_LIST_TO_TERM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -170,7 +170,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_TERM_TO_LIST:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -180,7 +180,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.skel = SpecialUniv.termToList(en.skel, en);
                     if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                         return false;
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -231,7 +231,7 @@ public final class SpecialUniv extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newLexical(countvar));
+            last = new Display(BindUniv.newUniv(countvar));
         en.display = last;
         return multi;
     }
@@ -275,7 +275,7 @@ public final class SpecialUniv extends AbstractSpecial {
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d4.bind[sv.id].bindVar(en.skel, en.display, en);
+                d4.bind[sv.id].bindUniv(en.skel, en.display, en);
                 args[i] = sv;
             } else {
                 args[i] = en.skel;
@@ -351,7 +351,7 @@ public final class SpecialUniv extends AbstractSpecial {
 
         if (t instanceof SkelAtom &&
                 ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
-            BindVar b;
+            BindUniv b;
             while (t2 instanceof SkelVar &&
                     (b = d2.bind[((SkelVar) t2).id]).display != null) {
                 t2 = b.skel;
@@ -422,7 +422,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
         if (multi)
-            last = new Display(Display.newLexical(countvar));
+            last = new Display(BindUniv.newUniv(countvar));
         en.display = last;
         return (multi ? -length - 1 : length);
     }
@@ -461,7 +461,7 @@ public final class SpecialUniv extends AbstractSpecial {
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d2.bind[sv.id].bindVar(en.skel, en.display, en);
+                d2.bind[sv.id].bindUniv(en.skel, en.display, en);
                 args[pos] = sv;
             } else {
                 args[pos] = en.skel;
@@ -573,7 +573,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 int i = 0;
                 for (; i < temp.length - 1; i++) {
                     v = temp[i];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         if (hasVar(b.skel, b.display, t, d2))
                             return true;
@@ -584,7 +584,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 }
                 v = temp[i];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 m = b.skel;
                 d = b.display;
@@ -608,7 +608,7 @@ public final class SpecialUniv extends AbstractSpecial {
      */
     public static String derefAndCastString(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -633,7 +633,7 @@ public final class SpecialUniv extends AbstractSpecial {
      */
     public static SkelAtom derefAndCastStringWrapped(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -658,7 +658,7 @@ public final class SpecialUniv extends AbstractSpecial {
      */
     public static Object derefAndCastRef(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -683,7 +683,7 @@ public final class SpecialUniv extends AbstractSpecial {
      */
     public static Object derefAndCastRefOrNull(Object t, Display d)
             throws EngineMessage {
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;

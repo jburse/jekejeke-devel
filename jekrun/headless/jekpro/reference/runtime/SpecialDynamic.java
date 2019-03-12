@@ -1,7 +1,6 @@
 package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -89,48 +88,48 @@ public final class SpecialDynamic extends AbstractSpecial {
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialDynamic.defineDynamic(pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_ENSURE_THREAD_LOCAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialDynamic.defineThreadLocal(pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_ENSURE_GROUP_LOCAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 SpecialDynamic.defineGroupLocal(pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_CLAUSE:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE, en);
             case SPECIAL_ASSERTA:
                 AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_ASSERTZ:
                 AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE |
                         AbstractDefined.OPT_ACTI_BOTT, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_ABOLISH_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, 0);
                 if (pick == null)
-                    return en.getNextRaw();
+                    return true;
                 abolishPred(pick, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_ABOLISH_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Operator oper = Operator.operToOperatorDefined(temp[0], ref, en, false);
                 if (oper == null)
-                    return en.getNextRaw();
+                    return true;
                 abolishOper(oper, en);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -279,7 +278,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             } else {
                 if (err) {
                     EngineMessage.checkInstantiated(t);
-                    Display d = createDisplay(t);
+                    Display d = AbstractSkel.createDisplay(t);
                     throw new EngineMessage(EngineMessage.typeError(
                             (comp ? EngineMessage.OP_TYPE_CALLABLE :
                                     EngineMessage.OP_TYPE_ATOM), t), d);
@@ -311,7 +310,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             } else {
                 if (err) {
                     EngineMessage.checkInstantiated(t);
-                    Display d = createDisplay(t);
+                    Display d = AbstractSkel.createDisplay(t);
                     throw new EngineMessage(EngineMessage.domainError(
                             (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
                                     EngineMessage.OP_DOMAIN_MODULE), t), d);
@@ -349,7 +348,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 return CachePackage.getPackage(sa, ((SkelAtom) t).fun);
             if (err) {
                 EngineMessage.checkInstantiated(t);
-                Display d = createDisplay(t);
+                Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_ATOM, t), d);
             } else {
@@ -368,7 +367,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 return (SkelAtom) t;
             if (err) {
                 EngineMessage.checkInstantiated(t);
-                Display d = createDisplay(t);
+                Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
                         (set ? EngineMessage.OP_DOMAIN_ARRAY :
                                 EngineMessage.OP_DOMAIN_PACKAGE), t), d);
@@ -376,17 +375,6 @@ public final class SpecialDynamic extends AbstractSpecial {
                 return null;
             }
         }
-    }
-
-    /**
-     * <p>Create a display for an error.</p>
-     *
-     * @param t The skeleton.
-     * @return The display.
-     */
-    public static Display createDisplay(Object t) {
-        int size = EngineCopy.displaySize(t);
-        return (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
     }
 
     /*************************************************************/
@@ -481,7 +469,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 /* reference */
                 mod = SpecialProxy.classOrProxyName(mod, en);
                 if (mod == null) {
-                    Display d = createDisplay(temp.args[0]);
+                    Display d = AbstractSkel.createDisplay(temp.args[0]);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
                 }
@@ -498,7 +486,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 t = CacheFunctor.getFunctor(sa, (SkelAtom) mod, temp.sym, en);
             } else {
                 EngineMessage.checkInstantiated(t);
-                Display d = createDisplay(t);
+                Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
@@ -512,13 +500,13 @@ public final class SpecialDynamic extends AbstractSpecial {
                 /* reference */
                 mod = SpecialProxy.refClassOrProxy(mod);
                 if (mod == null) {
-                    Display d = createDisplay(temp.args[0]);
+                    Display d = AbstractSkel.createDisplay(temp.args[0]);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, temp.args[0]), d);
                 }
                 mod = SpecialProxy.classOrProxyName(mod, en);
                 if (mod == null) {
-                    Display d = createDisplay(temp.args[0]);
+                    Display d = AbstractSkel.createDisplay(temp.args[0]);
                     throw new EngineMessage(EngineMessage.domainError(
                             EngineMessage.OP_DOMAIN_CLASS, temp.args[0]), d);
                 }
@@ -541,7 +529,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                         temp.sym, en), recv);
             } else {
                 EngineMessage.checkInstantiated(t);
-                Display d = createDisplay(t);
+                Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
@@ -698,13 +686,13 @@ public final class SpecialDynamic extends AbstractSpecial {
             /* reference */
             mod = SpecialProxy.refClassOrProxy(mod);
             if (mod == null) {
-                Display d = createDisplay(t);
+                Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
             }
             mod = SpecialProxy.classOrProxyName(mod, en);
             if (mod == null) {
-                Display d = createDisplay(t);
+                Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_CLASS, t), d);
             }

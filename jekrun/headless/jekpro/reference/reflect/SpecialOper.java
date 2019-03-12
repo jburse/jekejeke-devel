@@ -111,7 +111,7 @@ public final class SpecialOper extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Operator.operToOperatorDefined(temp[0], ref, en, true);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_CHECK_STYLE_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -119,21 +119,21 @@ public final class SpecialOper extends AbstractSpecial {
                 SkelAtom sa = (SkelAtom) en.skel;
                 Operator.checkExistentOperator(oper, temp[0], ref);
                 Operator.checkOperDecl(oper, sa, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_CURRENT_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 if (!en.unifyTerm(temp[0], ref,
                         currentOpers(en), Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_CURRENT_OPER_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 oper = operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -147,7 +147,7 @@ public final class SpecialOper extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_OPER_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -162,7 +162,7 @@ public final class SpecialOper extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_OPER_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -174,7 +174,7 @@ public final class SpecialOper extends AbstractSpecial {
                         SpecialOper.propertyToOperators(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_RESET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -185,7 +185,7 @@ public final class SpecialOper extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 resetOperProp(oper, en.skel, en.display, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -200,7 +200,7 @@ public final class SpecialOper extends AbstractSpecial {
                     return false;
                 if (multi)
                     BindUniv.remTab(d.bind, en);
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -212,7 +212,7 @@ public final class SpecialOper extends AbstractSpecial {
                         propertyToSyntax(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

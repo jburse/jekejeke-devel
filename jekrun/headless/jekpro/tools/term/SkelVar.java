@@ -3,9 +3,8 @@ package jekpro.tools.term;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindLexical;
-import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.UndoSerno;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.UndoSerno;
 import matula.util.wire.AbstractLivestock;
 
 /**
@@ -133,7 +132,7 @@ public final class SkelVar extends AbstractSkel
      */
     public int getValue(Display ref, Engine en) {
         if (en != null) {
-            BindLexical bc = (BindLexical)ref.bind[id];
+            BindLexical bc = (BindLexical) ref.bind[id];
             int i = bc.serno;
             if (i == -1)
                 i = UndoSerno.bindSerno(bc, en);
@@ -150,7 +149,7 @@ public final class SkelVar extends AbstractSkel
      * @return The serial number.
      */
     public int getValue(Display ref) {
-        BindLexical bc = (BindLexical)ref.bind[id];
+        BindLexical bc = (BindLexical) ref.bind[id];
         int i = bc.serno;
         if (i == -1) {
             Thread thread = Thread.currentThread();

@@ -78,25 +78,25 @@ public final class SpecialMember extends AbstractSpecial {
                     Display ref = en.display;
                     if (!en.unifyTerm(temp[1], ref, temp[0], ref))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_VAR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (!isVar(temp[0], ref))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_NONVAR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (isVar(temp[0], ref))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_GROUND:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (!isGround(temp[0], ref))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SYS_FUNCTOR_TO_TERM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -112,7 +112,7 @@ public final class SpecialMember extends AbstractSpecial {
                         Object[] args = new Object[arity];
                         System.arraycopy(vars, 0, args, 0, arity);
                         en.skel = new SkelCompound(sa, args, (arity > 1 ? vars : vars[0]));
-                        d = new Display(Display.newLexical(arity));
+                        d = new Display(BindLexical.newLexical(arity));
                         multi = true;
                     } else {
                         en.skel = temp[0];
@@ -132,7 +132,7 @@ public final class SpecialMember extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_TERM_TO_FUNCTOR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -153,7 +153,7 @@ public final class SpecialMember extends AbstractSpecial {
                         return false;
                     if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -174,7 +174,7 @@ public final class SpecialMember extends AbstractSpecial {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
                 // combined check and deref
-                BindVar b1;
+                BindUniv b1;
                 if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                     alfa = b1.skel;
                     d1 = b1.display;
@@ -208,7 +208,7 @@ public final class SpecialMember extends AbstractSpecial {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         if (!isGround(b.skel, b.display))
                             return false;
@@ -218,7 +218,7 @@ public final class SpecialMember extends AbstractSpecial {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;

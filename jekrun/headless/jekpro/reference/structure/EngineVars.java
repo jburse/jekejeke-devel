@@ -1,7 +1,7 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.molec.BindVar;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
@@ -43,7 +43,7 @@ import matula.util.data.SetHashLink;
 public final class EngineVars {
     public SetHashLink<Object> vars; /* input order */
     public SetHashLink<Object> anon; /* input order */
-    public SetHashLink<BindVar> visit; /* input order */
+    public SetHashLink<BindUniv> visit; /* input order */
 
     /****************************************************************/
     /* Variable & Singletons                                        */
@@ -71,7 +71,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         varInclude(b.skel, b.display);
                     } else {
@@ -80,7 +80,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;
@@ -130,7 +130,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         varExclude(b.skel, b.display);
                     } else {
@@ -144,7 +144,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 t = b.skel;
                 d = b.display;
@@ -173,7 +173,7 @@ public final class EngineVars {
         for (; ; ) {
             if (t instanceof SkelVar) {
                 SkelVar v = (SkelVar) t;
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[v.id]).display != null) {
                     t = b.skel;
                     d = b.display;
@@ -240,7 +240,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         if (visitAdd(b))
                             return false;
@@ -251,7 +251,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 if (visitAdd(b))
                     return false;
@@ -263,7 +263,7 @@ public final class EngineVars {
             }
         }
         while (undo > 0) {
-            SetEntry<BindVar> entry = visit.getLastEntry();
+            SetEntry<BindUniv> entry = visit.getLastEntry();
             visit.remove(entry.value);
             undo--;
         }
@@ -276,9 +276,9 @@ public final class EngineVars {
      * @param b The bind.
      * @return True if the bind already exists, otherwise false.
      */
-    private boolean visitAdd(BindVar b) {
+    private boolean visitAdd(BindUniv b) {
         if (visit == null) {
-            visit = new SetHashLink<BindVar>();
+            visit = new SetHashLink<BindUniv>();
             visit.add(b);
         } else {
             if (visit.getKey(b) == null) {
@@ -310,7 +310,7 @@ public final class EngineVars {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         if (visitAdd(b))
                             continue;
@@ -322,7 +322,7 @@ public final class EngineVars {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 if (visitAdd(b))
                     break;
@@ -335,7 +335,7 @@ public final class EngineVars {
             }
         }
         while (undo > 0) {
-            SetEntry<BindVar> entry = visit.getLastEntry();
+            SetEntry<BindUniv> entry = visit.getLastEntry();
             visit.remove(entry.value);
             undo--;
         }

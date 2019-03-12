@@ -99,7 +99,7 @@ public final class SpecialVars extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_TERM_SINGELTONS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -114,14 +114,14 @@ public final class SpecialVars extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_GOAL_KERNEL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     SpecialVars.goalKernel(temp[0], ref, en);
                     if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_GOAL_GLOBALS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -136,7 +136,7 @@ public final class SpecialVars extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 case SPECIAL_NUMBERVARS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -148,14 +148,17 @@ public final class SpecialVars extends AbstractSpecial {
                         return false;
                     if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_SYS_NUMBER_VARIABLES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    SpecialVars.numberVariables(temp, ref, en);
-                    if (!en.unifyTerm(temp[3], ref, en.skel, en.display))
+                    multi = SpecialVars.numberVariables(temp, ref, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[3], ref, en.skel, d))
                         return false;
-                    return en.getNext();
+                    if (multi)
+                        BindUniv.remTab(d.bind, en);
+                    return true;
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -163,17 +166,20 @@ public final class SpecialVars extends AbstractSpecial {
                     Clause def = (ref2 != null ? ref2.def : null);
                     MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
                     MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
-                    mapToAssoc(print, en);
-                    if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                    multi = mapToAssoc(print, en);
+                    d = en.display;
+                    if (!en.unifyTerm(temp[0], ref, en.skel, d))
                         return false;
-                    return en.getNext();
+                    if (multi)
+                        BindUniv.remTab(d.bind, en);
+                    return true;
                 case SPECIAL_ACYCLIC_TERM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     ev = new EngineVars();
                     if (!ev.isAcyclic(temp[0], ref))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_SAFE_TERM_VARIABLES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -189,7 +195,7 @@ public final class SpecialVars extends AbstractSpecial {
                         return false;
                     if (multi)
                         BindUniv.remTab(d.bind, en);
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -213,7 +219,7 @@ public final class SpecialVars extends AbstractSpecial {
      */
     private static void goalKernel(Object t, Display d, Engine en) {
         while (t instanceof SkelVar) {
-            BindVar b;
+            BindUniv b;
             if ((b = d.bind[((SkelVar) t).id]).display == null)
                 break;
             t = b.skel;
@@ -225,7 +231,7 @@ public final class SpecialVars extends AbstractSpecial {
             SkelCompound sc = (SkelCompound) t;
             t = sc.args[1];
             while (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display == null)
                     break;
                 t = b.skel;
@@ -245,7 +251,7 @@ public final class SpecialVars extends AbstractSpecial {
      */
     private static void goalGlobals(Object t, Display d, EngineVars ev) {
         while (t instanceof SkelVar) {
-            BindVar b;
+            BindUniv b;
             if ((b = d.bind[((SkelVar) t).id]).display == null)
                 return;
             t = b.skel;
@@ -292,7 +298,7 @@ public final class SpecialVars extends AbstractSpecial {
                 int j = 0;
                 for (; j < temp.length - 1; j++) {
                     v = temp[j];
-                    BindVar b = d.bind[v.id];
+                    BindUniv b = d.bind[v.id];
                     if (b.display != null) {
                         val = numberVars(b.skel, b.display, val, en);
                         if (val == null)
@@ -306,7 +312,7 @@ public final class SpecialVars extends AbstractSpecial {
                 }
                 v = temp[j];
             }
-            BindVar b = d.bind[v.id];
+            BindUniv b = d.bind[v.id];
             if (b.display != null) {
                 m = b.skel;
                 d = b.display;
@@ -384,14 +390,14 @@ public final class SpecialVars extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void numberVariables(Object[] temp, Display ref,
-                                        Engine en)
+    private static boolean numberVariables(Object[] temp, Display ref,
+                                           Engine en)
             throws EngineMessage {
         SetHashLink<Object> vars = SpecialVars.arrayToSet(temp[0], ref, en);
         MapHashLink<Object, NamedDistance> print = SpecialVars.assocToMap(temp[1], ref, en);
         SetHashLink<Object> anon = SpecialVars.arrayToSet(temp[2], ref, en);
         MapHashLink<Object, NamedDistance> copy = SpecialVars.numberVars(vars, anon, print, 0);
-        SpecialVars.mapToAssoc(copy, en);
+        return SpecialVars.mapToAssoc(copy, en);
     }
 
     /**
@@ -520,8 +526,8 @@ public final class SpecialVars extends AbstractSpecial {
      * @param mvs The variable map.
      * @param en  The engine.
      */
-    public static void mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
-                                  Engine en) {
+    public static boolean mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
+                                     Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
@@ -540,7 +546,7 @@ public final class SpecialVars extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(Display.newLexical(countvar));
+            last = new Display(BindUniv.newUniv(countvar));
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
         for (MapEntry<Object, NamedDistance> entry =
@@ -552,7 +558,7 @@ public final class SpecialVars extends AbstractSpecial {
                 Display d = AbstractTerm.getDisplay(entry.key);
                 SkelVar var = SkelVar.valueOf(countvar);
                 countvar++;
-                last.bind[var.id].bindVar(t, d, en);
+                last.bind[var.id].bindUniv(t, d, en);
                 val = var;
             } else {
                 val = t;
@@ -563,8 +569,8 @@ public final class SpecialVars extends AbstractSpecial {
         }
         en.skel = m;
         en.display = last;
+        return multi;
     }
-
 
     /**
      * <p>Create variable map from variable names.</p>

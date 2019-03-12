@@ -2,7 +2,10 @@ package jekpro.reference.structure;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -105,41 +108,41 @@ public final class SpecialLexical extends AbstractSpecial {
                     Display ref = en.display;
                     if (!equalTerm(temp[0], ref, temp[1], ref))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_LEX_NQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (equalTerm(temp[0], ref, temp[1], ref))
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_LEX_LS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref) >= 0)
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_LEX_LQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref) > 0)
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_LEX_GR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref) <= 0)
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_LEX_GQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (SpecialLexical.compareTerm(temp[0], ref,
                             temp[1], ref) < 0)
                         return false;
-                    return en.getNextRaw();
+                    return true;
                 case SPECIAL_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -147,7 +150,7 @@ public final class SpecialLexical extends AbstractSpecial {
                             SpecialLexical.compareTerm(temp[1], ref, temp[2], ref), en);
                     if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -156,7 +159,7 @@ public final class SpecialLexical extends AbstractSpecial {
                             cmp.localeCompareTerm(temp[2], ref, temp[3], ref), en);
                     if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -199,7 +202,7 @@ public final class SpecialLexical extends AbstractSpecial {
     public static boolean equalTerm(Object alfa, Display d1,
                                     Object beta, Display d2) {
         for (; ; ) {
-            BindVar b1;
+            BindUniv b1;
             while (alfa instanceof SkelVar &&
                     (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
                 alfa = b1.skel;

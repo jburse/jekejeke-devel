@@ -1,7 +1,7 @@
 package jekpro.reference.structure;
 
-import jekpro.model.molec.AbstractBind;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.BindVar;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -224,7 +224,7 @@ public final class ForeignAtom {
         while (ac.hasMoreElements()) {
             Integer val1 = ac.getCFrom();
             Integer val2 = ac.nextElement();
-            AbstractBind mark = AbstractTerm.markBind(inter);
+            BindVar mark = AbstractTerm.markBind(inter);
             if (AbstractTerm.unifyTerm(inter, cout, val1)) {
                 co.setRetry(true);
                 return val2;

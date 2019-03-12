@@ -105,7 +105,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
                 opts.makeLoad(source, sa.fun, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_DETACH_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -114,7 +114,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 opts.makeUnload(source, sa.fun, en);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_IMPORT_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -123,7 +123,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 SpecialLoad.performImport(source, sa.fun, en, opts);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SHOW_PROVABLE_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -152,7 +152,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.setWriter(wr);
                 SpecialLoad.listProvable(pw, pick, source, en);
                 newLineFlush(wr);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -179,7 +179,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.setWriter(wr);
                 SpecialLoad.listSyntax(pw, oper, en);
                 newLineFlush(wr);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -203,7 +203,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.setWriter(wr);
                 SpecialLoad.listBase(pw, source, en);
                 newLineFlush(wr);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_HAS_CLAUSE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -222,7 +222,7 @@ public final class SpecialLoad extends AbstractSpecial {
 
                 if (!hasClause(pick, source, en))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_SHORT_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -239,13 +239,13 @@ public final class SpecialLoad extends AbstractSpecial {
 
                 AbstractSource.showShortName(wr, source);
                 newLineFlush(wr);
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_REGISTER_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
-                return en.getNextRaw();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -745,8 +745,7 @@ public final class SpecialLoad extends AbstractSpecial {
             throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 ||
                 ((flags & MASK_SHOW_NRBD) != 0)) {
-            int size = EngineCopy.displaySize(t);
-            Display ref = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            Display ref = AbstractSkel.createDisplay(t);
             EngineVars ev = new EngineVars();
             ev.singsOf(t, ref);
             MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref, en);
@@ -757,24 +756,24 @@ public final class SpecialLoad extends AbstractSpecial {
             SpecialLoad.flushWriter(pw.getWriter());
             return ref;
         }
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         int snap = en.number;
         int size = EngineCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
-        Display dc = new Display(Display.newLexical(size + 1));
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
+        Display dc = AbstractSkel.createDisplay(t);
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause();
-            ref.bind = DisplayClause.newClause(clause.dispsize);
+            DisplayClause ref = new DisplayClause(
+                    DisplayClause.newClause(clause.dispsize));
             ref.def = clause;
             ref.addArgument(t, dc, en);
             ref.setEngine(en);
-            en.contskel = clause.getNextRaw(en);
+            en.contskel = clause;
             en.contdisplay = ref;
             if (!en.runLoop(snap, true))
                 throw new EngineMessage(

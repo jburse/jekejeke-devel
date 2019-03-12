@@ -54,7 +54,7 @@ final class ChoiceForeign extends AbstractChoice {
     MemberMethodNondet del;
     Object obj;
     Object[] args;
-    AbstractBind mark;
+    BindVar mark;
     Intermediate goalskel;
     DisplayClause goaldisplay;
 
@@ -97,7 +97,7 @@ final class ChoiceForeign extends AbstractChoice {
         Display ref = goaldisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
-            BindVar b1;
+            BindUniv b1;
             while (term instanceof SkelVar &&
                     (b1 = ref.bind[((SkelVar) term).id]).display != null) {
                 term = b1.skel;

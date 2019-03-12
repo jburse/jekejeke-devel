@@ -4,8 +4,6 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.Display;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
@@ -205,7 +203,7 @@ public final class TermCompound extends AbstractTerm {
     public Object getArg(int k) {
         Object t = skel.args[k];
         Display d = display;
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -225,7 +223,7 @@ public final class TermCompound extends AbstractTerm {
     public AbstractTerm getArgWrapped(int k) {
         Object t = skel.args[k];
         Display d = display;
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -245,7 +243,7 @@ public final class TermCompound extends AbstractTerm {
     public Object getArgMolec(int k) {
         Object t = skel.args[k];
         Display d = display;
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -370,7 +368,7 @@ public final class TermCompound extends AbstractTerm {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 boolean ext = d.getAndReset();
-                d3.bind[sv.id].bindVar(t, d, en);
+                d3.bind[sv.id].bindUniv(t, d, en);
                 if (ext)
                     BindUniv.remTab(d.bind, en);
                 args[i] = sv;

@@ -2,7 +2,6 @@ package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
 import jekpro.frequent.standard.EngineCopy;
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -12,10 +11,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 
 /**
  * <p>Provides built-in predicates for the module quali.</p>
@@ -54,8 +50,8 @@ public final class SpecialQuali extends AbstractSpecial {
 
     private final static int SPECIAL_CALL_COLON = 0;
     private final static int SPECIAL_CALL_COLONCOLON = 1;
-    private final static int SPECIAL_SYS_GET_CLASS = 2;
-    private final static int SPECIAL_SYS_REPLACE_SITE = 3;
+    private final static int SPECIAL_SYS_GET_CLASS = 3;
+    private final static int SPECIAL_SYS_REPLACE_SITE = 4;
 
     /**
      * <p>Create a colon special.</p>
@@ -66,9 +62,9 @@ public final class SpecialQuali extends AbstractSpecial {
         super(i);
         switch (i) {
             case SPECIAL_CALL_COLON:
+            case SPECIAL_CALL_COLONCOLON:
                 subflags |= MASK_DELE_VIRT;
                 break;
-            case SPECIAL_CALL_COLONCOLON:
             case SPECIAL_SYS_GET_CLASS:
             case SPECIAL_SYS_REPLACE_SITE:
                 break;
@@ -98,17 +94,17 @@ public final class SpecialQuali extends AbstractSpecial {
                 SkelAtom mod = modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
-                boolean multi = en.wrapGoal();
                 ref = en.display;
-                Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newClause(clause.dispsize);
+                boolean ext = ref.getAndReset();
+                Clause clause = en.store.foyer.CLAUSE_TRAN;
+                DisplayClause ref2 = new DisplayClause(
+                        DisplayClause.newClause(clause.dispsize));
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
-                if (multi)
+                if (ext)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
-                en.contskel = clause.getNextRaw(en);
+                en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
             case SPECIAL_CALL_COLONCOLON:
@@ -123,22 +119,19 @@ public final class SpecialQuali extends AbstractSpecial {
 
                 obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
                 mod = objToAtom(obj, recv, d2, en);
-                boolean ext = SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
-                ext = SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, ext, en);
-                d2 = en.display;
-                multi = en.wrapGoal();
-                if (multi && ext)
-                    BindUniv.remTab(d2.bind, en);
+                SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
+                SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
                 ref = en.display;
-                clause = en.store.foyer.CLAUSE_CONT;
-                ref2 = new DisplayClause();
-                ref2.bind = DisplayClause.newClause(clause.dispsize);
+                ext = ref.getAndReset();
+                clause = en.store.foyer.CLAUSE_TRAN;
+                ref2 = new DisplayClause(
+                        DisplayClause.newClause(clause.dispsize));
                 ref2.def = clause;
                 ref2.addArgument(en.skel, ref, en);
-                if (multi || ext)
+                if (ext)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
-                en.contskel = clause.getNextRaw(en);
+                en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
             case SPECIAL_SYS_GET_CLASS:
@@ -151,7 +144,7 @@ public final class SpecialQuali extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, m));
                 if (!en.unifyTerm(temp.args[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
-                return en.getNext();
+                return true;
             case SPECIAL_SYS_REPLACE_SITE:
                 temp = (SkelCompound) en.skel;
                 ref = en.display;
@@ -169,11 +162,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 SkelAtom sa2 = StackElement.callableToName(en.skel);
 
                 SkelAtom sa = StackElement.callableToName(obj);
-                sa = SpecialBody.makeAtom(sa.fun, en, sa2);
+                sa = makeAtom(sa.fun, en, sa2);
                 obj = StackElement.callableFromName(obj, sa);
                 if (!en.unifyTerm(temp.args[0], ref, obj, d2))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -371,12 +364,11 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param d    The colon display.
      * @param comp The compound flag.
      * @param en   The engine.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean colonToCallable(Object t, Display d,
-                                          boolean comp,
-                                          Engine en)
+    public static void colonToCallable(Object t, Display d,
+                                       boolean comp,
+                                       Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -390,8 +382,8 @@ public final class SpecialQuali extends AbstractSpecial {
             Object obj = SpecialQuali.slashToClass(temp.args[0], d, false, true, en);
             SkelAtom mod = modToAtom(obj, temp.args[0], d, en);
             SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
-            return colonToRoutine(mod, temp.sym, comp, en);
-        } else if (t instanceof SkelCompound &&
+            SpecialQuali.colonToRoutine(mod, temp.sym, comp, en);
+        } else if (comp && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(OP_COLONCOLON)) {
             SkelCompound temp = (SkelCompound) t;
@@ -404,10 +396,8 @@ public final class SpecialQuali extends AbstractSpecial {
 
             Object obj = SpecialQuali.slashToClass(recv, d2, true, true, en);
             SkelAtom mod = objToAtom(obj, recv, d2, en);
-            boolean ext = SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
-            return colonToMethod(mod, temp.sym, recv, d2, comp, ext, en);
-        } else {
-            return false;
+            SpecialQuali.colonToCallable(temp.args[1], d, comp, en);
+            SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, comp, en);
         }
     }
 
@@ -600,21 +590,18 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param sa2  The call site.
      * @param comp The compound flag.
      * @param en   The engine.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean colonToRoutine(SkelAtom mod, SkelAtom sa2,
-                                         boolean comp, Engine en)
+    public static void colonToRoutine(SkelAtom mod, SkelAtom sa2,
+                                      boolean comp, Engine en)
             throws EngineMessage {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
             en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, mod,
                     sa2, en), sc2.args, sc2.var);
-            return false;
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
             en.skel = CacheFunctor.getFunctor(sa, mod, sa2, en);
-            return false;
         } else {
             EngineMessage.checkInstantiated(en.skel);
             throw new EngineMessage(EngineMessage.typeError(
@@ -631,15 +618,13 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param recv The receiver skeleton.
      * @param d2   The receiver display.
      * @param comp The compound flag.
-     * @param ext  The extra flag.
      * @param en   The engine.
-     * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public static boolean colonToMethod(SkelAtom mod, SkelAtom sa2,
-                                        Object recv, Display d2,
-                                        boolean comp, boolean ext,
-                                        Engine en)
+    public static void colonToMethod(SkelAtom mod, SkelAtom sa2,
+                                     Object recv, Display d2,
+                                     boolean comp,
+                                     Engine en)
             throws EngineMessage {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
@@ -649,15 +634,11 @@ public final class SpecialQuali extends AbstractSpecial {
                     sc2.args, d3, en);
             en.skel = SpecialQuali.prependAlloc(sa, recv, d2,
                     sc2.args, d3, multi, en);
-            if (multi && ext)
-                BindUniv.remTab(d3.bind, en);
-            return (multi || ext);
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
             sa = CacheFunctor.getFunctor(sa, mod, sa2, en);
             en.skel = new SkelCompound(sa, recv);
             en.display = d2;
-            return false;
         } else {
             EngineMessage.checkInstantiated(en.skel);
             throw new EngineMessage(EngineMessage.typeError(
@@ -688,14 +669,14 @@ public final class SpecialQuali extends AbstractSpecial {
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
         for (int i = -1; i < t2.length; i++) {
-            if (i != -1) {
-                en.skel = t2[i];
-                en.display = d2;
-                en.deref();
-            } else {
+            if (i == -1) {
                 en.skel = t;
                 en.display = d;
+            } else {
+                en.skel = t2[i];
+                en.display = d2;
             }
+            en.deref();
             if (EngineCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
@@ -705,8 +686,10 @@ public final class SpecialQuali extends AbstractSpecial {
                 }
             }
         }
-        if (multi)
-            last = new Display(Display.newLexical(countvar));
+        if (multi) {
+            last = new Display(BindUniv.newUniv(countvar));
+            last.flags |= Display.MASK_DPTM_MLTI;
+        }
         en.display = last;
         return multi;
     }
@@ -738,30 +721,52 @@ public final class SpecialQuali extends AbstractSpecial {
         }
         Object[] args = new Object[t2.length + 1];
         int countvar = 0;
+        boolean ext = (multi && d2.getAndReset());
         for (int i = -1; i < t2.length; i++) {
-            if (i != -1) {
-                en.skel = t2[i];
-                en.display = d2;
-                en.deref();
-            } else {
+            if (i == -1) {
                 en.skel = t;
                 en.display = d;
+            } else {
+                en.skel = t2[i];
+                en.display = d2;
             }
+            en.deref();
             if (multi && EngineCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d4.bind[sv.id].bindVar(en.skel, en.display, en);
+                d4.bind[sv.id].bindUniv(en.skel, en.display, en);
                 args[i + 1] = sv;
             } else {
                 args[i + 1] = en.skel;
             }
         }
+        if (ext)
+            BindUniv.remTab(d2.bind, en);
         en.display = d4;
         if (multi) {
             return new SkelCompound(sa, args, vars);
         } else {
             return new SkelCompound(sa, args);
         }
+    }
+
+    /**
+     * <p>Create a new atom for a given site.</p>
+     *
+     * @param fun The name of the atom.
+     * @param en  The engine.
+     * @param sa2 The call-site, or null.
+     * @return The new atom.
+     */
+    private static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
+        AbstractSource scope = (sa2 != null ? sa2.scope : null);
+        PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
+
+        int m = (pos != null ? SkelAtom.MASK_ATOM_POSI : 0);
+        sa2 = en.store.foyer.createAtom(fun, scope, m);
+        sa2.setPosition(pos);
+
+        return sa2;
     }
 
 }

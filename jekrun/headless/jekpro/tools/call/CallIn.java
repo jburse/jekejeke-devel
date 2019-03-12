@@ -51,7 +51,7 @@ import jekpro.tools.term.AbstractTerm;
  * @version Jekejeke Prolog 0.9.1 (a fast and small prolog interpreter)
  */
 public final class CallIn {
-    private AbstractBind mark;
+    private BindVar mark;
     private int snap;
     private int state;
     private Object goal;

@@ -3,17 +3,16 @@ package jekpro.reference.runtime;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.Branch;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.regex.ScannerError;
@@ -109,14 +108,14 @@ public final class SpecialSession extends AbstractSpecial {
                 if (en.visor.breaklevel == 0)
                     LoadForce.undoNonEmptyStack(en);
                 en.visor.breaklevel--;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_QUOTED_VAR:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
                 if (!en.unifyTerm(temp[1], ref, sysQuoteVar(fun, en), Display.DISPLAY_CONST))
                     return false;
-                return en.getNextRaw();
+                return true;
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -126,7 +125,7 @@ public final class SpecialSession extends AbstractSpecial {
                 en.skel = SpecialSession.hashToRawAssoc(vars, ref2, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
-                return en.getNext();
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -327,16 +326,16 @@ public final class SpecialSession extends AbstractSpecial {
 
                 Intermediate r = en.contskel;
                 DisplayClause u = en.contdisplay;
-                AbstractBind mark = en.bind;
+                BindVar mark = en.bind;
                 int snap = en.number;
                 DisplayClause backref = en.visor.query;
                 try {
-                    DisplayClause ref = new DisplayClause();
-                    ref.bind = DisplayClause.newClause(clause.dispsize);
+                    DisplayClause ref = new DisplayClause(
+                            DisplayClause.newClause(clause.dispsize));
                     ref.def = clause;
                     en.visor.query = ref;
                     ref.setEngine(en);
-                    en.contskel = clause.getNextRaw(en);
+                    en.contskel = clause;
                     en.contdisplay = ref;
                     boolean found = en.runLoop(snap, true);
                     if (!found)
@@ -438,11 +437,10 @@ public final class SpecialSession extends AbstractSpecial {
         }
 
         /* expand goal */
-        AbstractBind mark = en.bind;
+        BindVar mark = en.bind;
         Display d;
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
-            int size = rd.getGensym();
-            d = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+            d = AbstractSkel.createDisplay(t);
             en.fault = null;
         } else {
             Intermediate r = en.contskel;
@@ -460,12 +458,12 @@ public final class SpecialSession extends AbstractSpecial {
             DisplayClause backref = en.visor.query;
             DisplayClause ref;
             try {
-                ref = new DisplayClause();
-                ref.bind = DisplayClause.newClause(clause.dispsize);
+                ref = new DisplayClause(
+                        DisplayClause.newClause(clause.dispsize));
                 ref.def = clause;
                 en.visor.query = ref;
                 ref.setEngine(en);
-                en.contskel = clause.getNextRaw(en);
+                en.contskel = clause;
                 en.contdisplay = ref;
                 if (!en.runLoop(snap, true))
                     throw new EngineMessage(EngineMessage.syntaxError(
@@ -669,8 +667,7 @@ public final class SpecialSession extends AbstractSpecial {
                 ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
             return false;
         en.skel = val;
-        int size = rd.getGensym();
-        en.display = (size != 0 ? new Display(Display.newLexical(size)) : Display.DISPLAY_CONST);
+        en.display = AbstractSkel.createDisplay(val);
         return true;
     }
 

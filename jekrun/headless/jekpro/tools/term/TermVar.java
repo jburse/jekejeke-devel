@@ -2,8 +2,7 @@ package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindLexical;
-import jekpro.model.molec.BindVar;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.tools.call.Interpreter;
 
@@ -142,7 +141,7 @@ public final class TermVar extends AbstractTerm {
     public Object deref() {
         Object t = skel;
         Display d = display;
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
@@ -163,7 +162,7 @@ public final class TermVar extends AbstractTerm {
     public AbstractTerm derefWrapped() {
         Object t = skel;
         Display d = display;
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;
