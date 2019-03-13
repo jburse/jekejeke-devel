@@ -4,6 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -52,7 +53,6 @@ public class LoadForce {
     public final static String OP_SYS_LINK_SYS_LOAD_RESOURCE = "sys_load_resource";
     public final static String OP_SYS_LINK_SYS_HOME_FILE = "sys_home_file";
     public final static String OP_SYS_LINK_SYS_PARENT_IMPORT = "sys_parent_import";
-    public final static String OP_SYS_LINK = "sys_link";
 
     public static final int MASK_LOAD_BEGM = 0x00000001;
 
@@ -400,7 +400,7 @@ public class LoadForce {
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(OP_SYS_LINK)) {
+                    ((SkelCompound) en.skel).sym.fun.equals(PropertySource.OP_SYS_LINK)) {
                 int link = atomToLink(((SkelCompound) en.skel).args[0], en.display);
                 if ((link & LINK_SYS_AUTO_LOAD) != 0) {
                     setFlags(getFlags() | MASK_LOAD_AUTO);

@@ -381,7 +381,7 @@ public final class SpecialLoad extends AbstractSpecial {
         AbstractSource.showShortName(pw.getWriter(), src);
 
         if (src != null &&
-                (src.getBits() & AbstractSource.MASK_SRC_VSNP) == 0 &&
+                (src.getBits() & AbstractSource.MASK_SRC_VISI) == 0 &&
                 Branch.OP_USER.equals(src.getFullName())) {
             Object decl = new SkelCompound(new SkelAtom(OP_MODULE),
                     new SkelAtom(Branch.OP_USER),
@@ -405,16 +405,17 @@ public final class SpecialLoad extends AbstractSpecial {
             AbstractBranch branch = (AbstractBranch) entry.key;
             AbstractInformation[] props = branch.listSrcProp();
             for (int k = 0; k < props.length; k++) {
-                AbstractInformation prop = props[k];
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_HIDE) != 0)
+                AbstractInformation sk = props[k];
+                if ((sk.getFlags() & AbstractInformation.MASK_PROP_HIDE) != 0)
                     continue;
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_MODL) != 0 &&
+                if ((sk.getFlags() & AbstractInformation.MASK_PROP_MODL) != 0 &&
                         Branch.OP_USER.equals(src.getFullName()))
                     continue;
-                Object[] vals = SpecialSource.getPropSrc(prop, src, en);
+                AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
+                Object[] vals = prop.getObjProps(src, en);
                 for (int j = 0; j < vals.length; j++) {
                     Object val = vals[j];
-                    Object decl = prop.srcDeclSkel(AbstractTerm.getSkel(val), src, en);
+                    Object decl = sk.srcDeclSkel(AbstractTerm.getSkel(val), src, en);
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
@@ -556,9 +557,10 @@ public final class SpecialLoad extends AbstractSpecial {
      */
     private static boolean sameVisible(AbstractSource src, Predicate pick,
                                        Engine en)
-            throws EngineMessage {
-        Object[] vals = projectFirst(SpecialSource.getPropSrc(
-                Branch.PROP2_SYS_SOURCE_VISIBLE, src, en));
+            throws EngineMessage, EngineException {
+        AbstractProperty<AbstractSource> prop =
+                SpecialSource.findSrcProperty(Branch.PROP2_SYS_SOURCE_VISIBLE, en);
+        Object[] vals = projectFirst(prop.getObjProps(src, en));
         Object[] vals2 = projectFirst(SpecialPred.getPropPred(
                 pick, Branch.PROP_VISIBLE, en));
         return sameValues2(vals, vals2);

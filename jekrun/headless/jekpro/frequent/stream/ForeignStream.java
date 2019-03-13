@@ -7,6 +7,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.PropertySource;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
@@ -81,12 +82,7 @@ public final class ForeignStream {
     public final static String OP_INPUT = "input";
     public final static String OP_MODE = "mode";
     public final static String OP_FILE_NAME = "file_name";
-    public final static String OP_LAST_MODIFIED = "last_modified";
-    public final static String OP_VERSION_TAG = "version_tag";
-    public final static String OP_EXPIRATION = "expiration";
     public final static String OP_MIME_TYPE = "mime_type";
-    public final static String OP_DATE = "date";
-    public final static String OP_MAX_AGE = "max_age";
 
     /* error terms */
     public final static String OP_PERMISSION_OPEN = "open";
@@ -349,13 +345,13 @@ public final class ForeignStream {
      */
     public static Object sysInputProperties(ConnectionInput in, Object res) {
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_LAST_MODIFIED,
+                new TermCompound(PropertySource.OP_LAST_MODIFIED,
                         TermAtomic.normBigInteger(in.getLastModified())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_VERSION_TAG,
+                new TermCompound(PropertySource.OP_VERSION_TAG,
                         in.getETag()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_EXPIRATION,
+                new TermCompound(PropertySource.OP_EXPIRATION,
                         TermAtomic.normBigInteger(in.getExpiration())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MIME_TYPE,
@@ -364,10 +360,10 @@ public final class ForeignStream {
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(in.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_DATE,
+                new TermCompound(PropertySource.OP_DATE,
                         TermAtomic.normBigInteger(in.getDate())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MAX_AGE,
+                new TermCompound(PropertySource.OP_MAX_AGE,
                         Integer.valueOf(in.getMaxAge())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,
@@ -417,13 +413,13 @@ public final class ForeignStream {
                 new TermCompound(OP_BOM, (read.getBom() ? Foyer.OP_TRUE :
                         AbstractFlag.OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_LAST_MODIFIED,
+                new TermCompound(PropertySource.OP_LAST_MODIFIED,
                         TermAtomic.normBigInteger(read.getLastModified())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_VERSION_TAG,
+                new TermCompound(PropertySource.OP_VERSION_TAG,
                         read.getETag()), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_EXPIRATION,
+                new TermCompound(PropertySource.OP_EXPIRATION,
                         TermAtomic.normBigInteger(read.getExpiration())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MIME_TYPE,
@@ -435,10 +431,10 @@ public final class ForeignStream {
                 new TermCompound(OP_BUFFER,
                         Integer.valueOf(read.getBuffer())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_DATE,
+                new TermCompound(PropertySource.OP_DATE,
                         TermAtomic.normBigInteger(read.getDate())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MAX_AGE,
+                new TermCompound(PropertySource.OP_MAX_AGE,
                         Integer.valueOf(read.getMaxAge())), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_MODE,

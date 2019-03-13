@@ -319,7 +319,7 @@ public final class SpecialOper extends AbstractSpecial {
                 AbstractProperty<Operator> prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
-                Object[] vals = prop.getObjProp(oper, en);
+                Object[] vals = prop.getObjProps(oper, en);
                 en.skel = t;
                 en.display = d;
                 AbstractInformation.consArray(vals, en);
@@ -341,7 +341,7 @@ public final class SpecialOper extends AbstractSpecial {
                                       Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Operator> prop = SpecialOper.findOperProperty(sk, en);
-        Object[] vals = prop.getObjProp(oper, en);
+        Object[] vals = prop.getObjProps(oper, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         AbstractInformation.consArray(vals, en);
@@ -624,32 +624,6 @@ public final class SpecialOper extends AbstractSpecial {
                     new SkelAtom(modestr)));
         }
         return type;
-    }
-
-    /**
-     * <p>Decode an operator visibility.</p>
-     * <p>The following syntax is recognized:</p>
-     * <pre>
-     *     mode = "private" | "public"".
-     * </pre>
-     *
-     * @param fun The visibility string.
-     * @return The operator visibility.
-     * @throws EngineMessage Shit happens.
-     */
-    public static int atomToVisible(String fun)
-            throws EngineMessage {
-        int flags;
-        if (AbstractSource.OP_PRIVATE.equals(fun)) {
-            flags = Operator.MASK_OPER_VSPR;
-        } else if (AbstractSource.OP_PUBLIC.equals(fun)) {
-            flags = Operator.MASK_OPER_VSPU;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_PROPERTY_VALUE,
-                    new SkelAtom(fun)));
-        }
-        return flags;
     }
 
     /*************************************************************************/

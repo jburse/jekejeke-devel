@@ -3,7 +3,6 @@ package jekpro.reference.reflect;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
-import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -303,7 +302,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static void predicateToProperty(Predicate pred, StoreKey prop,
-                                              Engine en)
+                                           Engine en)
             throws EngineMessage {
         Object[] vals = getPropPred(pred, prop, en);
         en.skel = en.store.foyer.ATOM_NIL;

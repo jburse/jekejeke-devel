@@ -86,41 +86,42 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
 
     public final static String OP_END_OF_FILE = "end_of_file";
 
-    private static final String PREFIX_FOREIGN = "foreign:";
-    private static final String EXTENSION_HTML = ".html";
+    private final static String PREFIX_FOREIGN = "foreign:";
+    private final static String EXTENSION_HTML = ".html";
 
     /* source flags */
-    public static final int MASK_SRC_NOTR = 0x00000001;
-    public static final int MASK_SRC_PREL = 0x00000002;
-    public static final int MASK_SRC_VSPR = 0x00000004;
-    public static final int MASK_SRC_VSPU = 0x00000008;
+    public final static int MASK_SRC_NOTR = 0x00000001;
+    public final static int MASK_SRC_PREL = 0x00000002;
+    public final static int MASK_SRC_VSPR = 0x00000004;
+    public final static int MASK_SRC_VSPU = 0x00000008;
 
-    public static final int MASK_SRC_MKDT = 0x00000010;
-    public static final int MASK_SRC_FILL = 0x00000020;
-    public static final int MASK_SRC_HINT = 0x00000040;
-    public static final int MASK_SRC_SCND = 0x00000080;
+    public final static int MASK_SRC_MKDT = 0x00000010;
+    public final static int MASK_SRC_FILL = 0x00000020;
+    public final static int MASK_SRC_HINT = 0x00000040;
+    public final static int MASK_SRC_SCND = 0x00000080;
 
     /* combined source flags */
-    public static final int MASK_SRC_VSNP = MASK_SRC_VSPR | MASK_SRC_VSPU;
+    public final static int MASK_SRC_VISI = MASK_SRC_VSPR | MASK_SRC_VSPU;
+    public final static int MASK_SRC_ANNO = MASK_SRC_MKDT | MASK_SRC_FILL | MASK_SRC_HINT;
 
     /* import relationship flags */
-    public static final int MASK_IMPT_AUTO = 0x00000001;
-    public static final int MASK_IMPT_MODL = 0x00000002;
-    public static final int MASK_IMPT_REEX = 0x00000004;
+    public final static int MASK_IMPT_AUTO = 0x00000001;
+    public final static int MASK_IMPT_MODL = 0x00000002;
+    public final static int MASK_IMPT_REEX = 0x00000004;
 
-    public static final int MASK_IMPT_RSCS = 0x00000010;
-    public static final int MASK_IMPT_HOFL = 0x00000020;
-    public static final int MASK_IMPT_PAIM = 0x00000040;
+    public final static int MASK_IMPT_RSCS = 0x00000010;
+    public final static int MASK_IMPT_HOFL = 0x00000020;
+    public final static int MASK_IMPT_PAIM = 0x00000040;
 
     /* combined import relationship flags */
-    public static final int MASK_IMPT_INVM = MASK_IMPT_MODL | MASK_IMPT_PAIM;
-    public static final int MASK_IMPT_VISI = MASK_IMPT_REEX | MASK_IMPT_INVM;
+    public final static int MASK_IMPT_INVM = MASK_IMPT_MODL | MASK_IMPT_PAIM;
+    public final static int MASK_IMPT_VISI = MASK_IMPT_REEX | MASK_IMPT_INVM;
 
     /* prefix relationship flags */
-    public static final int MASK_PCKG_LIBR = 0x00000001;
-    public static final int MASK_PCKG_FRGN = 0x00000002;
-    public static final int MASK_USES_LIBR = 0x00000004;
-    public static final int MASK_USES_FRGN = 0x00000008;
+    public final static int MASK_PCKG_LIBR = 0x00000001;
+    public final static int MASK_PCKG_FRGN = 0x00000002;
+    public final static int MASK_USES_LIBR = 0x00000004;
+    public final static int MASK_USES_FRGN = 0x00000008;
 
     private final String path;
     private int flags = MASK_SRC_VSPU;

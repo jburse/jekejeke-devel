@@ -62,7 +62,7 @@ public class AbstractProperty<T> {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public Object[] getObjProp(T obj, Engine en)
+    public Object[] getObjProps(T obj, Engine en)
             throws EngineException, EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
@@ -94,6 +94,20 @@ public class AbstractProperty<T> {
      */
     public boolean resetObjProp(T obj, Object m, Display d, Engine en)
             throws EngineMessage {
+        throw new IllegalArgumentException("not implemented");
+    }
+
+    /**
+     * <p>Retrieve all the object properties.</p>
+     *
+     * @param obj The object.
+     * @param en  The engine.
+     * @return The properties.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public Object[] hasObjProp(T obj, Object m, Display d, Engine en)
+            throws EngineException, EngineMessage {
         throw new IllegalArgumentException("not implemented");
     }
 

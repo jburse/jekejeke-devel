@@ -12,6 +12,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -523,7 +524,7 @@ public final class LoadOpts extends LoadForce {
                     }
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
-                        ((SkelCompound) en.skel).sym.fun.equals(OP_SYS_LINK)) {
+                        ((SkelCompound) en.skel).sym.fun.equals(PropertySource.OP_SYS_LINK)) {
                     int link = LoadOpts.atomToLink(((SkelCompound) en.skel).args[0], en.display);
                     if ((link & LINK_SYS_AUTO_LOAD) != 0) {
                         setFlags(getFlags() | LoadForce.MASK_LOAD_AUTO);
