@@ -45,16 +45,16 @@ sys_call_goal(_) :-
    throw(error(existence_error(body,sys_call_goal/1),_)).
 
 /**
- * rule_frame(H, B, F):
+ * rule_ref(H, B, F):
  * The predicate succeeds with the user clauses that match H :- B. The
- * predicate also unifies F with the new frame reference for the
+ * predicate also unifies F with the clause reference for the
  * found clauses.
  */
-% rule_frame(+Term, -Goal, -Frame)
-:- public rule_frame/3.
-:- meta_predicate rule_frame(-1,0,?).
-:- set_predicate_property(rule_frame/3, sys_noexpand).
-:- special(rule_frame/3, 'SpecialFrame', 0).
+% rule_ref(+Term, -Goal, -Frame)
+:- public rule_ref/3.
+:- meta_predicate rule_ref(-1,0,?).
+:- set_predicate_property(rule_ref/3, sys_noexpand).
+:- special(rule_ref/3, 'SpecialFrame', 0).
 
 /**
  * frame_property(F, P):

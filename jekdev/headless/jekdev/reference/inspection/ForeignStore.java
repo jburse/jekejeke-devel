@@ -217,7 +217,7 @@ public final class ForeignStore {
                 AbstractProperty<Store> prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
-                Object[] vals = prop.getObjProp(store, en);
+                Object[] vals = prop.getObjProps(store, en);
                 en.skel = t;
                 en.display = d;
                 AbstractInformation.consArray(vals, en);
@@ -241,7 +241,7 @@ public final class ForeignStore {
                                           Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Store> prop = findStoreProperty(sk, en);
-        Object[] vals = prop.getObjProp(store, en);
+        Object[] vals = prop.getObjProps(store, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         AbstractInformation.consArray(vals, en);

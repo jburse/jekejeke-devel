@@ -82,7 +82,7 @@ public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public Object[] getObjProp(InterfaceStack frame, Engine en)
+    public Object[] getObjProps(InterfaceStack frame, Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case PROP_SYS_PARENT_FRAME:

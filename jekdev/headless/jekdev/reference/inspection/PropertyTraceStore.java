@@ -86,7 +86,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      * @param en    The engine.
      * @return The property.
      */
-    public Object[] getObjProp(Store store, Engine en) {
+    public Object[] getObjProps(Store store, Engine en) {
         switch (id) {
             case PROP_SYS_BREAK:
                 StoreTrace storetrace = (StoreTrace) store;

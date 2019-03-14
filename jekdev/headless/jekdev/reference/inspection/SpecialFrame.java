@@ -151,7 +151,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 AbstractProperty prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
-                Object[] vals = prop.getObjProp(frame, en);
+                Object[] vals = prop.getObjProps(frame, en);
                 en.skel = t;
                 en.display = d;
                 AbstractInformation.consArray(vals, en);
@@ -172,7 +172,7 @@ public final class SpecialFrame extends AbstractSpecial {
                                            Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<InterfaceStack> prop = findFrameProperty(sk, en);
-        Object[] vals = prop.getObjProp(frame, en);
+        Object[] vals = prop.getObjProps(frame, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         AbstractInformation.consArray(vals, en);

@@ -331,7 +331,7 @@ public final class SpecialDefault extends AbstractSpecial {
         Display dc = new Display(BindLexical.newLexical(2));
         SkelVar var1 = SkelVar.valueOf(0);
         SkelVar var3 = SkelVar.valueOf(1);
-        dc.bind[0].bindVar(t, d, en);
+        dc.bind[0].bindUniv(t, d, en);
         int snap = en.number;
         t = new SkelCompound(new SkelAtom("rebuild_goal"), var1, var3);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
@@ -663,7 +663,7 @@ public final class SpecialDefault extends AbstractSpecial {
      */
     public static int listToPorts(Object t, Display d) throws EngineMessage {
         int flags = MASK_PORT_MASK;
-        BindVar b;
+        BindUniv b;
         while (t instanceof SkelVar &&
                 (b = d.bind[((SkelVar) t).id]).display != null) {
             t = b.skel;

@@ -76,7 +76,7 @@
 /****************************************************************/
 
 % cover_hit(File, Line)
-:- private cover_hit/2.
+:- public cover_hit/2.
 :- dynamic cover_hit/2.
 
 % reset_cover_hit
@@ -122,6 +122,14 @@ sys_cover_body(Body) :-
    catch(Body, _, fail), !.
 sys_cover_body(_).
 
+% sys_cover_body_debug(+Body)
+:- private sys_cover_body_debug/1.
+sys_cover_body_debug(Body) :-
+   catch(Body, _, fail), !,
+   write(' success'), nl.
+sys_cover_body_debug(_) :-
+   write(' fail'), nl.
+
 /**
  * tracker_batch:
  * Run the test cases and collect the raw coverage map.
@@ -130,9 +138,24 @@ sys_cover_body(_).
 :- public tracker_batch/0.
 tracker_batch :- reset_texts, reset_cover_hit,
    visible([head,exit]), trace,
-   rule_frame(case(_, _, _, _), Body, _),
+   rule_ref(case(_, _, _, _), Body, _),
    sys_cover_body(Body), fail.
 tracker_batch :- nodebug,
+   visible([call,exit,redo,fail]), set_texts.
+
+/**
+ * tracker_batch_debug:
+ * Run the test cases and collect the raw coverage map.
+ */
+% tracker_batch_debug
+:- public tracker_batch_debug/0.
+tracker_batch_debug :- reset_texts, reset_cover_hit,
+   visible([head,exit]), trace,
+   rule_ref(case(_, _, _, Case), Body, _),
+   write('Case='),
+   write(Case-Body),
+   sys_cover_body_debug(Body), fail.
+tracker_batch_debug :- nodebug,
    visible([call,exit,redo,fail]), set_texts.
 
 % reset_texts
@@ -258,9 +281,9 @@ sys_find_hit(_, _, _, 0-1).
 % sys_find_indicator(+File, +Integer, +Integer, -Atom, -Integer)
 :- private sys_find_indicator/5.
 sys_find_indicator(SrcPin, A, B, Fun, Arity) :-
-   source_property(SrcPin, sys_location(Indicator,_,L)),
+   source_property(SrcPin, sys_location(Indicator,SrcPin,L)),
    A =< L,
-   L < B,
+   L < B, !,
    short_indicator(Indicator, SrcPin, ShortIndicator),
    sys_make_indicator(Fun, Arity, ShortIndicator).
 

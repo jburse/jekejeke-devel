@@ -51,7 +51,7 @@
 
 /**
  * micro_cont(M):
- * The predicate succeeds if the micro engine could continue to a success.
+ * The predicate succeeds if the micro engine M could continue to a success.
  */
 % micro_cont(+Micro)
 :- public micro_cont/1.
