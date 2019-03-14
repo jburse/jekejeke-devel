@@ -1,11 +1,11 @@
-package jekpro.model.rope;
+package jekpro.model.pretty;
 
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.inter.Predicate;
+import jekpro.tools.term.PositionKey;
+import matula.util.data.MapEntry;
 
 /**
- * <p>The class provides the base class for intermediate code.</p>
+ * <p>This class provides an abstract locator.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,47 +35,42 @@ import jekpro.model.molec.EngineMessage;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class Intermediate {
-    public final static int MASK_INTER_MUTE = 0x00000001;
-    public final static int MASK_INTER_NLST = 0x00000002;
+public abstract class AbstractLocator {
+    public final static int MASK_LOC_INDI = 0x00000001;
+    public final static int MASK_LOC_STAT = 0x00000002;
 
-    public Intermediate next;
-    public int flags;
-
-    /**********************************************************/
-    /* Variation Points                                       */
-    /**********************************************************/
+    protected AbstractSource src;
 
     /**
-     * <p>Retrieve the next goal depending on debug mode.</p>
-     * <p>Should be implemented by subclasses.</p>
+     * <p>Create a locator.</p>
      *
-     * @param en The engine.
-     * @return The next goal.
+     * @param s The source.
      */
-    public Intermediate getNextRaw(Engine en) {
-        return next;
+    public AbstractLocator(AbstractSource s) {
+        src = s;
     }
 
     /**
-     * <p>Retrieve the retire flag depending on debug mode.</p>
+     * <p>Add a position.</p>
+     * .
      *
-     * @param en The engine.
-     * @return The retire flag.
+     * @param pick  The predicate.
+     * @param pos   The position, can be null.
+     * @param flags The flags.
      */
-    public boolean getWake(Engine en) {
-        return (flags & MASK_INTER_MUTE) == 0;
-    }
+    public abstract void addPosition(Predicate pick,
+                                     PositionKey pos, int flags);
 
     /**
-     * <p>Resolve the current goal.</p>
-     *
-     * @param en The engine.
-     * @return The delegate.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * <p>Clear all positions.</p>
      */
-    public abstract boolean resolveNext(Engine en)
-            throws EngineException, EngineMessage;
+    public abstract void clearPositions();
+
+    /**
+     * <p>Retrieve the first indicator or static position.</p>
+     *
+     * @return The first indicator or static position.
+     */
+    public abstract PositionKey firstPosition(Predicate pick);
 
 }

@@ -120,7 +120,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param en The engine.
      */
     public final void disposeBind(int i, int n,
-                                 BindUniv[] b, Engine en) {
+                                  BindUniv[] b, Engine en) {
         do {
             int k = remtab[i];
             BindUniv bc = b[k];

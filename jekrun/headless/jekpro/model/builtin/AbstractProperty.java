@@ -37,8 +37,11 @@ import jekpro.model.molec.EngineMessage;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class AbstractProperty<T> {
+    public static final int MASK_PROP_SHOW = 0x00000001;
+    public static final int MASK_PROP_DEFL = 0x00000002;
 
     protected final int id;
+    private int flags;
 
     /**
      * <p>Create a property.</p>
@@ -47,6 +50,26 @@ public class AbstractProperty<T> {
      */
     protected AbstractProperty(int i) {
         id = i;
+    }
+
+    /**
+     * <p>Create a property.</p>
+     *
+     * @param i The id of the property.
+     * @param f The flags.
+     */
+    protected AbstractProperty(int i, int f) {
+        id = i;
+        flags = f;
+    }
+
+    /**
+     * <p>Retrieve the flags.</p>
+     *
+     * @return The flags.
+     */
+    public int getFlags() {
+        return flags;
     }
 
     /************************************************************/

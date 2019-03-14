@@ -7,6 +7,7 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
+import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.reflect.SpecialSource;
@@ -20,6 +21,7 @@ import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 import java.io.IOException;
@@ -403,19 +405,21 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractInformation[] props = branch.listSrcProp();
-            for (int k = 0; k < props.length; k++) {
-                AbstractInformation sk = props[k];
-                if ((sk.getFlags() & AbstractInformation.MASK_PROP_HIDE) != 0)
+            MapHash<StoreKey, AbstractProperty<AbstractSource>> props = branch.getSrcProps();
+            for (MapEntry<StoreKey, AbstractProperty<AbstractSource>> entry2 =
+                 (props != null ? props.getLastEntry() : null);
+                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                AbstractProperty<AbstractSource> prop = entry2.value;
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
                     continue;
-                if ((sk.getFlags() & AbstractInformation.MASK_PROP_MODL) != 0 &&
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
                         Branch.OP_USER.equals(src.getFullName()))
                     continue;
-                AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
+                StoreKey sk = entry2.key;
                 Object[] vals = prop.getObjProps(src, en);
                 for (int j = 0; j < vals.length; j++) {
                     Object val = vals[j];
-                    Object decl = sk.srcDeclSkel(AbstractTerm.getSkel(val), src, en);
+                    Object decl = srcDecl(sk, AbstractTerm.getSkel(val), src, en);
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
@@ -451,6 +455,25 @@ public final class SpecialLoad extends AbstractSpecial {
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
             SpecialLoad.flushWriter(pw.getWriter());
         }
+    }
+
+    /**
+     * <p>Determine the declaration term.</p>
+     *
+     * @param sk     The property name.
+     * @param skel   The property value.
+     * @param source The source.
+     * @param en     The engine.
+     * @return The declaration term.
+     */
+    private static Object srcDecl(StoreKey sk, Object skel,
+                                  AbstractSource source, Engine en)
+            throws EngineMessage {
+        if (sk.getFun().equals(PropertySource.OP_SYS_LINK) && sk.getArity() == 2)
+            return PropertySource.shortLink(skel, source, en);
+        if (sk.getFun().equals(PropertySource.OP_SYS_SOURCE_NAME) && sk.getArity() == 1)
+            return PropertySource.shortModule(skel, en);
+        return skel;
     }
 
     /************************************************************/
@@ -558,8 +581,8 @@ public final class SpecialLoad extends AbstractSpecial {
     private static boolean sameVisible(AbstractSource src, Predicate pick,
                                        Engine en)
             throws EngineMessage, EngineException {
-        AbstractProperty<AbstractSource> prop =
-                SpecialSource.findSrcProperty(Branch.PROP2_SYS_SOURCE_VISIBLE, en);
+        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
+        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
         Object[] vals = projectFirst(prop.getObjProps(src, en));
         Object[] vals2 = projectFirst(SpecialPred.getPropPred(
                 pick, Branch.PROP_VISIBLE, en));

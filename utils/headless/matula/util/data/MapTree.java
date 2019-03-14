@@ -63,7 +63,7 @@ public class MapTree<K, V> extends AbstractMap<K, V> {
      * <p>Find the key in the map.</p>
      *
      * @param key The key.
-     * @return The entry.
+     * @return The entry, or null.
      */
     public MapEntry<K, V> getEntry(K key) {
         MapTreeEntry<K, V> p = root;
@@ -78,6 +78,35 @@ public class MapTree<K, V> extends AbstractMap<K, V> {
             }
         }
         return null;
+    }
+
+    /**
+     * <p>Find the key in the map. </p>
+     *
+     * @param key The key.
+     * @return The lower entry, or null.
+     */
+    public MapEntry<K, V> getLowerEntry(K key) {
+        MapTreeEntry<K, V> p = root;
+        MapTreeEntry<K, V> back = null;
+        int k = 0;
+        while (p != null) {
+            k = comparator.compare(p.key, key);
+            if (k > 0) {
+                back = p;
+                p = back.left;
+            } else if (k < 0) {
+                back = p;
+                p = back.right;
+            } else {
+                return p;
+            }
+        }
+        if (k > 0) {
+            return predecessor(back);
+        } else {
+            return back;
+        }
     }
 
     /**

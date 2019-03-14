@@ -74,6 +74,34 @@ public class SetTree<E> extends AbstractSet<E> {
         return null;
     }
 
+    /**
+     * <p>Find the key in the map. </p>
+     *
+     * @param key The key.
+     * @return The lower entry, or null.
+     */
+    public SetEntry<E> getLowerEntry(E key) {
+        SetTreeEntry<E> p = root;
+        SetTreeEntry<E> back = null;
+        int k = 0;
+        while (p != null) {
+            k = comparator.compare(p.value, key);
+            if (k > 0) {
+                back = p;
+                p = back.left;
+            } else if (k < 0) {
+                back = p;
+                p = back.right;
+            } else {
+                return p;
+            }
+        }
+        if (k > 0) {
+            return predecessor(back);
+        } else {
+            return back;
+        }
+    }
 
     /**
      * <p>Add entry to the set at end.</p>

@@ -47,11 +47,6 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignAggregate {
-    public final static Comparator<Object> DEFAULT = new Comparator<Object>() {
-        public int compare(Object o1, Object o2) {
-            return AbstractSkel.compareSkel(o1, o2);
-        }
-    };
 
     /**
      * <p>Place a copy into the revolve.</p>
@@ -96,6 +91,15 @@ public final class ForeignAggregate {
         Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
         Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
+    }
+
+    /**
+     * <p>Retrieve the variant comparator.</p>
+     *
+     * @return The variant comparator.
+     */
+    public static Comparator<Object> sysVariantComparator() {
+        return AbstractSkel.DEFAULT;
     }
 
 }

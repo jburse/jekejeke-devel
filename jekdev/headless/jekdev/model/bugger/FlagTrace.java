@@ -1,6 +1,5 @@
 package jekdev.model.bugger;
 
-import jekdev.model.pretty.FoyerTrace;
 import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.debug.SpecialDefault;
 import jekdev.reference.inspection.SpecialFrame;
@@ -8,7 +7,6 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.InterfaceStack;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;

@@ -1,17 +1,14 @@
 package jekdev.model.pretty;
 
-import jekdev.model.bugger.*;
+import jekdev.model.bugger.ClauseTrace;
+import jekdev.model.bugger.SupervisorTrace;
 import jekdev.reference.system.SpecialMode;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Location;
 import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.tools.term.SkelAtom;
@@ -241,12 +238,13 @@ public abstract class FoyerTrace extends Foyer {
     }
 
     /**
-     * <p>Create a location</p>
+     * <p>Create a new locator.</p>
      *
-     * @return The location.
+     * @param src The source.
+     * @return The new locator, or null.
      */
-    public Location createLocation() {
-        return new LocationTrace();
+    public AbstractLocator createLocator(AbstractSource src) {
+        return new LocatorTrace(src);
     }
 
     /**

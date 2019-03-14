@@ -6,12 +6,11 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractFile;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.StoreKey;
-import jekpro.model.pretty.WriteOpts;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.bootload.ForeignPath;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
@@ -22,6 +21,9 @@ import jekpro.tools.term.TermAtomic;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.system.ForeignUri;
+
+import java.io.IOException;
 
 /**
  * <p>This class provides source properties.</p>
@@ -66,10 +68,10 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     private final static String OP_SYS_SOURCE_PRELOAD = "sys_source_preload";
     private final static String OP_SYS_TIMING = "sys_timing";
 
-    private final static String OP_SYS_SOURCE_VISIBLE = "sys_source_visible";
+    public final static String OP_SYS_SOURCE_VISIBLE = "sys_source_visible";
     private final static String OP_PACKAGE = "package";
     private final static String OP_USE_PACKAGE = "use_package";
-    private final static String OP_SYS_SOURCE_NAME = "sys_source_name";
+    public final static String OP_SYS_SOURCE_NAME = "sys_source_name";
     public final static String OP_SYS_LINK = "sys_link";
 
     private final static String OP_SYS_SOURCE_ANNOTATION = "sys_source_annotation";
@@ -105,6 +107,16 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     }
 
     /**
+     * <p>Create a source property.</p>
+     *
+     * @param i The id of the source property.
+     * @param f The flags.
+     */
+    private PropertySource(int i, int f) {
+        super(i,f);
+    }
+
+    /**
      * <p>Define the source properties.</p>
      *
      * @return The source properties.
@@ -118,15 +130,19 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
         srcprops.add(new StoreKey(OP_VERSION_TAG, 1), new PropertySource(PROP_VERSION_TAG));
         srcprops.add(new StoreKey(OP_DATE, 1), new PropertySource(PROP_DATE));
         srcprops.add(new StoreKey(OP_MAX_AGE, 1), new PropertySource(PROP_MAX_AGE));
-        srcprops.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertySource(PROP_SYS_NOTRACE));
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_PRELOAD, 0), new PropertySource(PROP_SYS_SOURCE_PRELOAD));
+        srcprops.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertySource(PROP_SYS_NOTRACE,
+                AbstractProperty.MASK_PROP_SHOW));
+        srcprops.add(new StoreKey(OP_SYS_SOURCE_PRELOAD, 0), new PropertySource(PROP_SYS_SOURCE_PRELOAD,
+                AbstractProperty.MASK_PROP_SHOW));
         srcprops.add(new StoreKey(OP_SYS_TIMING, 1), new PropertySource(PROP_SYS_TIMING));
 
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_VISIBLE, 1), new PropertySource(PROP_SYS_SOURCE_VISIBLE));
-        srcprops.add(new StoreKey(OP_PACKAGE, 1), new PropertySource(PROP_PACKAGE));
-        srcprops.add(new StoreKey(OP_USE_PACKAGE, 1), new PropertySource(PROP_USE_PACKAGE));
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_NAME, 1), new PropertySource(PROP_SYS_SOURCE_NAME));
-        srcprops.add(new StoreKey(OP_SYS_LINK, 2), new PropertySource(PROP_SYS_LINK));
+        srcprops.add(new StoreKey(OP_SYS_SOURCE_VISIBLE, 1), new PropertySource(PROP_SYS_SOURCE_VISIBLE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
+        srcprops.add(new StoreKey(OP_PACKAGE, 1), new PropertySource(PROP_PACKAGE, AbstractProperty.MASK_PROP_SHOW));
+        srcprops.add(new StoreKey(OP_USE_PACKAGE, 1), new PropertySource(PROP_USE_PACKAGE, AbstractProperty.MASK_PROP_SHOW));
+        srcprops.add(new StoreKey(OP_SYS_SOURCE_NAME, 1), new PropertySource(PROP_SYS_SOURCE_NAME,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
+        srcprops.add(new StoreKey(OP_SYS_LINK, 2), new PropertySource(PROP_SYS_LINK, AbstractProperty.MASK_PROP_SHOW));
 
         srcprops.add(new StoreKey(OP_SYS_SOURCE_ANNOTATION, 1), new PropertySource(PROP_SYS_SOURCE_ANNOTATION));
         srcprops.add(new StoreKey(OP_SYS_MODULE, 1), new PropertySource(PROP_SYS_MODULE));
@@ -729,7 +745,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     /* Atoms Utility                                                */
     /****************************************************************/
 
-
     /**
      * <p>Decode an operator visibility.</p>
      * <p>The following syntax is recognized:</p>
@@ -754,6 +769,96 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                     new SkelAtom(fun)));
         }
         return flags;
+    }
+
+    /****************************************************************/
+    /* Listing Utility                                              */
+    /****************************************************************/
+
+    /**
+     * <p>Generate a declaration skel for the source property.</p>
+     *
+     * @param skel   The skel.
+     * @param source The source.
+     * @param en     The engine.
+     * @return The declaration skel.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object shortLink(Object skel,
+                              AbstractSource source, Engine en)
+            throws EngineMessage {
+        try {
+            SkelCompound sc = (SkelCompound) skel;
+            String key = ((SkelAtom) sc.args[0]).fun;
+            SkelAtom sa = (SkelAtom) sc.args[1];
+
+            boolean rsc = sa.fun.equals(LoadForce.OP_SYS_LINK_SYS_LOAD_RESOURCE);
+
+            int mask;
+            if (rsc) {
+                mask = ForeignPath.MASK_MODL_RSCS | ForeignPath.MASK_FAIL_READ;
+            } else {
+                mask = ForeignPath.MASK_MODL_BASE | ForeignPath.MASK_FAIL_READ;
+            }
+            Object spec = CacheSubclass.unfindKey(key, source, mask, en);
+
+            if (spec instanceof SkelCompound &&
+                    ((SkelCompound) spec).args.length == 1 &&
+                    ((SkelCompound) spec).sym.fun.equals(LoadOpts.OP_PREFIX_LIBRARY)) {
+                if (rsc) {
+                    mask = ForeignPath.MASK_MODL_RSCS;
+                } else {
+                    mask = ForeignPath.MASK_MODL_VERB;
+                }
+            } else if (spec instanceof SkelCompound &&
+                    ((SkelCompound) spec).args.length == 1 &&
+                    ((SkelCompound) spec).sym.fun.equals(LoadOpts.OP_PREFIX_FOREIGN)) {
+                mask = ForeignPath.MASK_MODL_FRGN;
+            } else if (spec instanceof SkelAtom) {
+                key = ((SkelAtom) spec).fun;
+                if (ForeignUri.sysUriIsRelative(key)) {
+                    spec = AbstractFile.osToSlashSkel(key, true, source);
+                } else {
+                    spec = new SkelAtom(key, source);
+                }
+                return new SkelCompound(sa, spec);
+            } else {
+                throw new IllegalArgumentException("illegal spec");
+            }
+            sc = (SkelCompound) spec;
+            key = ((SkelAtom) sc.args[0]).fun;
+            spec = CacheModule.unfindPrefix(key, source, mask);
+
+            if (spec instanceof SkelAtom) {
+                key = ((SkelAtom) spec).fun;
+            } else if (spec instanceof SkelCompound &&
+                    ((SkelCompound) spec).args.length == 1 &&
+                    ((SkelCompound) spec).sym.fun.equals(LoadOpts.OP_PREFIX_VERBATIM)) {
+                sc = (SkelCompound) spec;
+                key = ((SkelAtom) sc.args[0]).fun;
+            } else {
+                throw new IllegalArgumentException("illegal spec");
+            }
+
+            spec = new SkelCompound(sc.sym,
+                    AbstractFile.osToSlashSkel(key, true, source));
+            return new SkelCompound(sa, spec);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>Generate a declaration skel for the source property.</p>
+     *
+     * @param skel   The skel.
+     * @param en The engine.
+     * @return The declaration skel.
+     */
+    public static Object shortModule(Object skel, Engine en) {
+       SkelCompound sc = (SkelCompound) skel;
+        return new SkelCompound(new SkelAtom(SpecialLoad.OP_MODULE),
+                sc.args[0], en.store.foyer.ATOM_NIL);
     }
 
 }

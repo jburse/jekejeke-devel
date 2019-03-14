@@ -7,7 +7,6 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.SkelAtomQuali;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Location;
 import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.tools.array.AbstractFactory;
@@ -398,12 +397,13 @@ public abstract class Foyer extends Enforced {
     }
 
     /**
-     * <p>Create a location</p>
+     * <p>Create a new locator.</p>
      *
-     * @return The location.
+     * @param src The source.
+     * @return The new locator, or null.
      */
-    public Location createLocation() {
-        return new Location();
+    public AbstractLocator createLocator(AbstractSource src) {
+        return null;
     }
 
     /**

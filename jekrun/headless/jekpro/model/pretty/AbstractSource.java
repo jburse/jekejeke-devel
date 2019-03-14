@@ -73,7 +73,7 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractSource implements Comparator<StoreKey> {
+public abstract class AbstractSource {
     public final static String OP_SYS_SOURCE_PRELOAD = "sys_source_preload";
     public final static String OP_SHORT_NAME = "short_name";
     public final static String OP_SYS_TIMING = "sys_timing";
@@ -135,8 +135,7 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
     private MapEntry<AbstractSource, Integer>[] cacheimportsinv;
     private final MapHashLink<String, Integer> fixes = new MapHashLink<String, Integer>();
     private MapEntry<String, Integer>[] cachefixes;
-    public final MapHashLink<Predicate, Location> locs = new MapHashLink<Predicate, Location>();
-    private MapEntry<Predicate, Location>[] cachelocs;
+    public AbstractLocator locator;
     public final MapHashLink<Predicate, Integer> predsinv = new MapHashLink<Predicate, Integer>();
     public MapEntry<Predicate, Integer>[] cachepredsinv;
     public final SetHashLink<Operator> opsinv = new SetHashLink<Operator>();
@@ -207,6 +206,7 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
      */
     void setStore(Store s) {
         store = s;
+        locator = s.foyer.createLocator(this);
     }
 
     /**
@@ -243,17 +243,6 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
      */
     public AbstractLock getRead() {
         return lock.getRead();
-    }
-
-    /**
-     * <p>Compare two store keys.</p>
-     *
-     * @param o1 The first store key.
-     * @param o2 The second store key.
-     * @return < 0 if less than, 0 if equal, > 0 if greater than.
-     */
-    public int compare(StoreKey o1, StoreKey o2) {
-        return o1.compareTo(o2);
     }
 
     /**************************************************************/
@@ -339,7 +328,8 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
             removeResource(res);
         }
 
-        clearLocation();
+        if (locator != null)
+            locator.clearPositions();
         resetBit(AbstractSource.MASK_SRC_MKDT);
         resetBit(AbstractSource.MASK_SRC_FILL);
         utildouble = ReadOpts.UTIL_CODES;
@@ -368,12 +358,11 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
             try {
                 AbstractSource src = en.visor.peekStack();
                 Object val;
-                int flags = 0;
+                int flags = PrologReader.FLAG_SING;
                 if ((src.getBits() & AbstractSource.MASK_SRC_FILL) != 0)
                     flags |= PrologWriter.FLAG_FILL;
                 if ((src.getBits() & AbstractSource.MASK_SRC_MKDT) != 0)
                     flags |= PrologWriter.FLAG_MKDT;
-                flags |= PrologReader.FLAG_SING;
                 if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
                         (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
                     flags |= PrologReader.FLAG_NEWV;
@@ -1040,72 +1029,6 @@ public abstract class AbstractSource implements Comparator<StoreKey> {
         synchronized (this) {
             flags &= ~mask;
         }
-    }
-
-    /**************************************************************/
-    /* Location Set                                               */
-    /**************************************************************/
-
-    /**
-     * <p>Define the locations for a predicate.</p>
-     * <p>Can be overridden by subclasses.</p>
-     *
-     * @param pick The predicate.
-     */
-    public Location defineLocation(Predicate pick) {
-        Location location;
-        synchronized (this) {
-            location = locs.get(pick);
-            if (location != null)
-                return location;
-            location = store.foyer.createLocation();
-            locs.add(pick, location);
-        }
-        return location;
-    }
-
-    /**
-     * <p>Clear the location information.</p>
-     */
-    public void clearLocation() {
-        synchronized (this) {
-            locs.clear();
-        }
-    }
-
-    /**
-     * <p>Retrieve the first position for a source.</p>
-     * <p>Can be overridden by subclasses.</p>
-     *
-     * @param pick The predicate.
-     * @return The first position.
-     */
-    public PositionKey getLocationFirst(Predicate pick) {
-        Location location;
-        synchronized (this) {
-            location = locs.get(pick);
-        }
-        return (location != null ? location.firstPosition() : null);
-    }
-
-    /**
-     * <p>Compute a snapshot of the locations.</p>
-     *
-     * @return The snapshot of the locations.
-     */
-    public final MapEntry<Predicate, Location>[] snapshotLocation() {
-        MapEntry<Predicate, Location>[] res = cachelocs;
-        if (res != null)
-            return res;
-        synchronized (this) {
-            res = cachelocs;
-            if (res != null)
-                return res;
-            res = new MapEntry[locs.size];
-            locs.toArray(res);
-            cachelocs = res;
-        }
-        return res;
     }
 
     /**************************************************************/
