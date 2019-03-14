@@ -89,29 +89,29 @@
 :- meta_predicate 0;0.
 :- set_predicate_property(;/2, sys_body).
 :- set_predicate_property(;/2, sys_notrace).
+:- set_predicate_property(;/2, sys_nobarrier).
 A -> B; C :- sys_local_cut,
    sys_cond(A, B, C).
 A *-> B; C :- sys_local_cut,
    sys_soft_cond(A, B, C).
 A; _ :- A.                                        % Proto
 _; B :- B.                                        % Proto
-:- set_predicate_property(;/2, sys_nobarrier).
 
 % sys_cond(+Goal, +Goal, +Goal)
 :- private sys_cond/3.
 :- meta_predicate sys_cond(0,0,0).
+:- set_predicate_property(sys_cond/3, sys_nobarrier).
 sys_cond(A, B, _) :-
    sys_safe(A), sys_local_cut, B.                              % Proto
 sys_cond(_, _, C) :- C.                           % Proto
-:- set_predicate_property(sys_cond/3, sys_nobarrier).
 
 % sys_soft_cond(+Goal, +Goal, +Goal)
 :- private sys_soft_cond/3.
 :- meta_predicate sys_soft_cond(0,0,0).
+:- set_predicate_property(sys_soft_cond/3, sys_nobarrier).
 sys_soft_cond(A, B, _) :-
    sys_safe(A), sys_soft_local_cut, B.                         % Proto
 sys_soft_cond(_, _, C) :- C.                      % Proto
-:- set_predicate_property(sys_soft_cond/3, sys_nobarrier).
 
 /**
  * sys_soft_local_cut:
@@ -131,9 +131,9 @@ sys_soft_cond(_, _, C) :- C.                      % Proto
 :- meta_predicate 0->0.
 :- set_predicate_property(-> /2, sys_body).
 :- set_predicate_property(-> /2, sys_notrace).
+:- set_predicate_property(-> /2, sys_nobarrier).
 A -> B :-
    sys_safe(A), sys_local_cut, B.                              % Proto
-:- set_predicate_property(-> /2, sys_nobarrier).
 
 /**
  * sys_local_cut:
@@ -153,9 +153,9 @@ A -> B :-
 :- meta_predicate 0*->0.
 :- set_predicate_property(*-> /2, sys_body).
 :- set_predicate_property(*-> /2, sys_notrace).
+:- set_predicate_property(*-> /2, sys_nobarrier).
 A *-> B :-
    sys_safe(A), B.                                % Proto
-:- set_predicate_property(*-> /2, sys_nobarrier).
 
 /**
  * sys_safe(A):

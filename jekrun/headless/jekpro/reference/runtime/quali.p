@@ -100,7 +100,7 @@
  * name of C by the module name M. The call is performed in the
  * same call-site as the colon notation.
  */
-% +Slash : +Compound:
+% +Slash : +Callable:
 :- public : /2.
 :- virtual : /2.
 :- set_predicate_property(: /2, (meta_predicate? :0)).
@@ -108,15 +108,16 @@
    set_predicate_property(: /2, sys_meta_predicate(C)).
 :- special(: /2, 'SpecialQuali', 0).
 :- set_predicate_property(: /2, sys_notrace).
+% :- set_predicate_property((:)/2, sys_body).
 
 /**
  * R::C:
  * The predicate calls the callable C by qualifying the predicate
- * name of C by the module name of R and prepending R itself. The
- * call is performed in the same call-site as the colon notation.
+ * name of C by the module name of R and prepending R itself.
  */
-% +Slash :: +Compound:
+% +Slash :: +Callable:
 :- public :: /2.
+:- virtual :: /2.
 :- set_predicate_property(:: /2, (meta_predicate? :: ::(0))).
 :- sys_context_property(here, C),
    set_predicate_property(:: /2, sys_meta_predicate(C)).
@@ -126,10 +127,9 @@
 /**
  * M:E:
  * The function evaluates the expression E by qualifying the function
- * name of E by the module name M. The evaluation is performed in the
- * same call-site as the colon notation.
+ * name of E by the module name M.
  */
-% +Slash : +Compound:
+% +Slash : +Callable:
 :- public : /3.
 :- virtual : /3.
 :- set_predicate_property(: /3, (meta_predicate:(?,1,?))).
@@ -141,11 +141,11 @@
 /**
  * R::E:
  * The function evaluates the expression E by qualifying the function
- * name of E by the module name of R and prepending R itself. The
- * evaluation is performed in the same call-site as the colon notation.
+ * name of E by the module name of R and prepending R itself.
  */
-% +Slash :: +Compound:
+% +Slash :: +Callable:
 :- public :: /3.
+:- virtual :: /3.
 :- set_predicate_property(:: /3, (meta_predicate::(?,::(1),?))).
 :- sys_context_property(here, C),
    set_predicate_property(:: /3, sys_meta_predicate(C)).
@@ -402,7 +402,7 @@ sys_get_module_test(O, M) :-
 
 % sys_get_class(+Ref, -Ref)
 :- private sys_get_class/2.
-:- special(sys_get_class/2, 'SpecialQuali', 2).
+:- special(sys_get_class/2, 'SpecialQuali', 3).
 
 /**
  * sys_replace_site(B, Q, A):
@@ -411,4 +411,4 @@ sys_get_module_test(O, M) :-
  */
 % sys_replace_site(-Term, +Term, +Term)
 :- public sys_replace_site/3.
-:- special(sys_replace_site/3, 'SpecialQuali', 3).
+:- special(sys_replace_site/3, 'SpecialQuali', 4).

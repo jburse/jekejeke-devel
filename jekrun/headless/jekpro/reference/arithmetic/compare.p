@@ -163,8 +163,16 @@
 
 /**
  * epsilon: [N208 9.7.3]
- * Returns the ulp of one.
+ * Returns the ulp of 64-bit one.
  */
 :- public epsilon/1.
 % :- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').
 :- foreign_fun(epsilon/1, 'ForeignHyper', epsilon).
+
+/**
+ * epsilon32:
+ * Returns the ulp of 32-bit one.
+ */
+:- public epsilon32/1.
+% :- foreign_const(epsilon32/1, 'SpecialCompare', 'EPSILON32').
+:- foreign_fun(epsilon32/1, 'ForeignHyper', epsilon32).
