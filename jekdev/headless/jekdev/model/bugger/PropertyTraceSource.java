@@ -6,7 +6,6 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
@@ -85,57 +84,29 @@ public final class PropertyTraceSource extends AbstractProperty<AbstractSource> 
      * @param src The object.
      * @param en  The engine.
      * @return The properties.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public Object[] getObjProps(AbstractSource src, Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineMessage {
         switch (id) {
             case PROP_SYS_FIRST_LOCATION:
                 AbstractLocator locator = src.locator;
                 if (locator == null)
                     return AbstractBranch.FALSE_PROPERTY;
-                ListArray<Object> list = new ListArray<Object>();
-                MapEntry<Predicate, PositionKey>[] firstsnapshot=((LocatorTrace)locator).allFirstPositions();
-                for (int i = 0; i < firstsnapshot.length; i++) {
-                    MapEntry<Predicate, PositionKey> entry = firstsnapshot[i];
-                    Predicate pick = entry.key;
-                    Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
-                            pick.getSource().getStore().user,
-                            pick.getArity(), en);
-                    PositionKey pos = entry.value;
-                    list.add(AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_SYS_FIRST_LOCATION), skel,
-                            new SkelAtom(pos.getOrigin()),
-                            Integer.valueOf(pos.getLineNo())), Display.DISPLAY_CONST));
-                }
-                Object[] vals = new Object[list.size()];
-                list.toArray(vals);
-                return vals;
+                MapEntry<PositionKey, Predicate[]>[] snapshot = ((LocatorTrace) locator).allFirstPositions();
+                if (snapshot.length == 0)
+                    return AbstractBranch.FALSE_PROPERTY;
+                SkelAtom sa = new SkelAtom(OP_SYS_FIRST_LOCATION);
+                return snapshotToVals(sa, snapshot, en);
             case PROP_SYS_LOCATION:
                 locator = src.locator;
                 if (locator == null)
                     return AbstractBranch.FALSE_PROPERTY;
-                MapEntry<Predicate, PositionKey[]>[] snapshot=((LocatorTrace)locator).allPositions();
-                list = new ListArray<Object>();
-                for (int i = 0; i < snapshot.length; i++) {
-                    MapEntry<Predicate, PositionKey[]> entry = snapshot[i];
-                    Predicate pick = entry.key;
-                    Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
-                            pick.getSource().getStore().user,
-                            pick.getArity(), en);
-                    PositionKey[] keys=entry.value;
-                    for (int j = 0; j < keys.length; j++) {
-                        PositionKey pos = keys[j];
-                        list.add(AbstractTerm.createMolec(new SkelCompound(
-                                new SkelAtom(OP_SYS_LOCATION), skel,
-                                new SkelAtom(pos.getOrigin()),
-                                Integer.valueOf(pos.getLineNo())), Display.DISPLAY_CONST));
-                    }
-                }
-                vals = new Object[list.size()];
-                list.toArray(vals);
-                return vals;
+                snapshot = ((LocatorTrace) locator).allPositions();
+                if (snapshot.length == 0)
+                    return AbstractBranch.FALSE_PROPERTY;
+                sa = new SkelAtom(OP_SYS_LOCATION);
+                return snapshotToVals(sa, snapshot, en);
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -187,6 +158,43 @@ public final class PropertyTraceSource extends AbstractProperty<AbstractSource> 
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
+    }
+
+    /*********************************************************/
+    /* Collection Helper                                     */
+    /*********************************************************/
+
+    /**
+     * <p>Convert a snapshot to a values.</p>
+     *
+     * @param sa       The property name.
+     * @param snapshot The snapshot.
+     * @param en       The engine.
+     * @return The values.
+     */
+    private static Object[] snapshotToVals(SkelAtom sa,
+                                           MapEntry<PositionKey, Predicate[]>[] snapshot,
+                                           Engine en)
+            throws EngineMessage {
+        ListArray<Object> list = new ListArray<Object>();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<PositionKey, Predicate[]> entry = snapshot[i];
+            Predicate[] snapshot2 = entry.value;
+            for (int j = 0; j < snapshot2.length; j++) {
+                Predicate pick = snapshot2[j];
+                Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+                        pick.getSource().getStore().user,
+                        pick.getArity(), en);
+                PositionKey pos = entry.key;
+                list.add(AbstractTerm.createMolec(new SkelCompound(
+                        sa, skel,
+                        new SkelAtom(pos.getOrigin()),
+                        Integer.valueOf(pos.getLineNo())), Display.DISPLAY_CONST));
+            }
+        }
+        Object[] vals = new Object[list.size()];
+        list.toArray(vals);
+        return vals;
     }
 
 }

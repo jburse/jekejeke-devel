@@ -1,5 +1,21 @@
 package jekdev.reference.testing;
 
+import jekdev.model.pretty.LocatorTrace;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractLocator;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.call.ArrayEnumeration;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.PositionKey;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.TermAtomic;
+
 /**
  * <p>This class provides locator built-ins.</p>
  * <p/>
@@ -32,4 +48,116 @@ package jekdev.reference.testing;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignLocator {
+
+    /**
+     * <p>Retrieve the first location.</p>
+     *
+     * @param inter  The interpreter.
+     * @param co     The call-out.
+     * @param atomic The atomic.
+     * @param orig   The origin.
+     * @param lineno The line number.
+     * @return The predicate indicator.
+     * @throws InterpreterMessage Shit happens
+     */
+    public static Object sysFirstLocation(Interpreter inter, CallOut co,
+                                    TermAtomic atomic,
+                                    String orig, int lineno)
+            throws InterpreterMessage {
+        try {
+            Engine engine = (Engine) inter.getEngine();
+            ArrayEnumeration<Predicate> dc;
+            if (co.getFirst()) {
+                AbstractSource scope = derefAndCastSource(atomic, engine);
+                AbstractLocator locator = scope.locator;
+                if (locator == null)
+                    return null;
+                PositionKey pos = new PositionKey(orig, lineno);
+                Predicate[] preds = ((LocatorTrace) locator).allFirstPredicates(pos);
+                if (preds.length == 0)
+                    return null;
+                dc = new ArrayEnumeration<Predicate>(preds);
+                co.setData(dc);
+            } else {
+                dc = (ArrayEnumeration<Predicate>) co.getData();
+            }
+            if (!dc.hasMoreElements())
+                return null;
+            Predicate pick = dc.nextElement();
+            co.setRetry(dc.hasMoreElements());
+            Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+                    pick.getSource().getStore().user,
+                    pick.getArity(), engine);
+            return skel;
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
+     * <p>Retrieve the first location.</p>
+     *
+     * @param inter  The interpreter.
+     * @param co     The call-out.
+     * @param atomic The atomic.
+     * @param orig   The origin.
+     * @param lineno The line number.
+     * @return The predicate indicator.
+     * @throws InterpreterMessage Shit happens
+     */
+    public static Object sysLocation(Interpreter inter, CallOut co,
+                               TermAtomic atomic,
+                               String orig, int lineno)
+            throws InterpreterMessage {
+        try {
+            Engine engine = (Engine) inter.getEngine();
+            ArrayEnumeration<Predicate> dc;
+            if (co.getFirst()) {
+                AbstractSource scope = derefAndCastSource(atomic, engine);
+                AbstractLocator locator = scope.locator;
+                if (locator == null)
+                    return null;
+                PositionKey pos = new PositionKey(orig, lineno);
+                Predicate[] preds = ((LocatorTrace) locator).allPredicates(pos);
+                if (preds.length == 0)
+                    return null;
+                dc = new ArrayEnumeration<Predicate>(preds);
+                co.setData(dc);
+            } else {
+                dc = (ArrayEnumeration<Predicate>) co.getData();
+            }
+            if (!dc.hasMoreElements())
+                return null;
+            Predicate pick = dc.nextElement();
+            co.setRetry(dc.hasMoreElements());
+            Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+                    pick.getSource().getStore().user,
+                    pick.getArity(), engine);
+            return skel;
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /****************************************************************/
+    /* Deref Utility                                                */
+    /****************************************************************/
+
+    /**
+     * <p>Deref and cast a source.</p>
+     *
+     * @param atomic The atomic.
+     * @param en     The engine.
+     * @return The source.
+     */
+    public static AbstractSource derefAndCastSource(TermAtomic atomic, Engine en)
+            throws EngineMessage {
+        SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(atomic.getSkel(),
+                atomic.getDisplay());
+        AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
+        source = source.getStore().getSource(sa.fun);
+        AbstractSource.checkExistentSource(source, sa);
+        return source;
+    }
+
 }

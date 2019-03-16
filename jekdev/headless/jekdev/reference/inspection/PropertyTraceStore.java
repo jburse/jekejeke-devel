@@ -133,7 +133,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
         try {
             switch (id) {
                 case PROP_SYS_BREAK:
-                    PositionKey pos = derefAndCastPositionKey(m, d, en);
+                    PositionKey pos = PropertyTraceStore.derefAndCastPositionKey(m, d, en);
                     StoreTrace storetrace = (StoreTrace) store;
                     storetrace.addBreakPoint(pos);
                     return true;
@@ -142,7 +142,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
                 case PROP_SYS_PARENT:
                     return false;
                 case PROP_SYS_LASTMOD:
-                    long lastmod = derefAndCastLastMod(m, d, en);
+                    long lastmod = PropertyTraceStore.derefAndCastLastMod(m, d, en);
                     storetrace = (StoreTrace) store;
                     storetrace.setLastModified(lastmod);
                     return true;
@@ -169,7 +169,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
         try {
             switch (id) {
                 case PROP_SYS_BREAK:
-                    PositionKey pos = derefAndCastPositionKey(m, d, en);
+                    PositionKey pos = PropertyTraceStore.derefAndCastPositionKey(m, d, en);
                     StoreTrace storetrace = (StoreTrace) store;
                     storetrace.removeBreakPoint(pos);
                     return true;
@@ -202,7 +202,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      * @throws EngineMessage      Shit happens.
      * @throws ClassCastException Shit happens.
      */
-    public PositionKey derefAndCastPositionKey(Object m, Display d, Engine en)
+    private static PositionKey derefAndCastPositionKey(Object m, Display d, Engine en)
             throws EngineMessage, ClassCastException {
         en.skel = m;
         en.display = d;
@@ -235,7 +235,7 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      * @throws EngineMessage      Shit happens.
      * @throws ClassCastException Shit happens.
      */
-    public long derefAndCastLastMod(Object m, Display d, Engine en)
+    private static long derefAndCastLastMod(Object m, Display d, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;

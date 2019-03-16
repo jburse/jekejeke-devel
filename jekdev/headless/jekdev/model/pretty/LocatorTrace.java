@@ -1,4 +1,4 @@
-package jekdev.reference.testing;
+package jekdev.model.pretty;
 
 import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractLocator;
@@ -74,9 +74,9 @@ public final class LocatorTrace extends AbstractLocator {
     }
 
     /**
-     * <p>Retrieve all the static positions.</p>
+     * <p>Retrieve all the indicator positions.</p>
      *
-     * @return All the static positions.
+     * @return All the indicator positions.
      */
     public MapEntry<PositionKey, Predicate[]>[] allFirstPositions() {
         return firstlocs.allPositions();
@@ -89,6 +89,24 @@ public final class LocatorTrace extends AbstractLocator {
      */
     public MapEntry<PositionKey, Predicate[]>[] allPositions() {
         return locs.allPositions();
+    }
+
+    /**
+     * <p>Retrieve all the indicator predicates.</p>
+     *
+     * @return All the indicator predicates.
+     */
+    public Predicate[] allFirstPredicates(PositionKey pos) {
+        return firstlocs.allPredicates(pos);
+    }
+
+    /**
+     * <p>Retrieve all the static predicates.</p>
+     *
+     * @return All the static predicates.
+     */
+    public Predicate[] allPredicates(PositionKey pos) {
+        return locs.allPredicates(pos);
     }
 
 }

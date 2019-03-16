@@ -1,14 +1,14 @@
-package jekdev.reference.testing;
+package jekdev.model.pretty;
 
+import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.term.PositionKey;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.data.SetHashLink;
 
 /**
- * <p>This class provides a position map.</p>
+ * <p>This class provides a synchronized position map.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,11 +39,11 @@ import matula.util.data.SetHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PositionMap {
-    private final MapHashLink<PositionKey, SetHashLink<Predicate>> locs
-            = new MapHashLink<PositionKey, SetHashLink<Predicate>>();
+    private final MapHashLink<PositionKey, PredicateSet> locs
+            = new MapHashLink<PositionKey, PredicateSet>();
     private MapEntry<PositionKey, Predicate[]>[] cachelocs;
 
-    private final static MapEntry<PositionKey, Predicate[]>[] VOID_ALL = new MapEntry[0];
+    private final static MapEntry<PositionKey, Predicate[]>[] VOID_POS = new MapEntry[0];
 
     protected AbstractSource src;
 
@@ -64,14 +64,13 @@ public final class PositionMap {
      */
     public void addPosition(PositionKey pos, Predicate pick) {
         synchronized (src) {
-            SetHashLink<Predicate> loc = locs.get(pos);
+            PredicateSet loc = locs.get(pos);
             if (loc == null) {
-                loc = new SetHashLink<Predicate>();
+                loc = new PredicateSet();
                 locs.add(pos, loc);
             }
-            if (loc.getKey(pick) != null)
+            if (!loc.addPredicate(pick))
                 return;
-            loc.add(pick);
             cachelocs = null;
         }
     }
@@ -102,21 +101,34 @@ public final class PositionMap {
             if (locs.size() != 0) {
                 res = new MapEntry[locs.size()];
                 int k = 0;
-                for (MapEntry<PositionKey, SetHashLink<Predicate>> entry = locs.getFirstEntry();
+                for (MapEntry<PositionKey, PredicateSet> entry = locs.getFirstEntry();
                      entry != null; entry = locs.successor(entry)) {
-                    SetHashLink<Predicate> loc = entry.value;
-                    Predicate[] temp = new Predicate[loc.size()];
-                    loc.toArray(temp);
+                    PredicateSet loc = entry.value;
                     MapEntry<PositionKey, Predicate[]> help = new MapEntry<PositionKey, Predicate[]>();
                     help.key = entry.key;
-                    help.value = temp;
+                    help.value = loc.allPredicates();
                     res[k] = help;
                     k++;
                 }
             } else {
-                res = VOID_ALL;
+                res = VOID_POS;
             }
             cachelocs = res;
+        }
+        return res;
+    }
+
+    /**
+     * <p>Retrieve all predicates.</p>
+     *
+     * @return Snapshot of the predicates.
+     */
+    public Predicate[] allPredicates(PositionKey pos) {
+        Predicate[] res;
+        synchronized (src) {
+            PredicateSet loc = locs.get(pos);
+            res = (loc != null ? loc.allPredicates() :
+                    AbstractBranch.FALSE_PREDS);
         }
         return res;
     }
