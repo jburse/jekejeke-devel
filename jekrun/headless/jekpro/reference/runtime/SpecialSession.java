@@ -204,11 +204,11 @@ public final class SpecialSession extends AbstractSpecial {
     /**
      * <p>DisplayClause the help text.</p>
      *
-     * @param pos The position key.
+     * @param lr The reader.
      * @param en  The engine trace.
      * @throws EngineException Shit happens.
      */
-    private static void helpText(PositionKey pos,
+    private static void helpText(Reader lr,
                                  Engine en)
             throws EngineException {
         try {
@@ -227,6 +227,7 @@ public final class SpecialSession extends AbstractSpecial {
                 throw EngineMessage.mapIOException(x);
             }
         } catch (EngineMessage x) {
+            PositionKey pos = PositionKey.createPos(lr);
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(
                             EngineException.fetchStack(en), pos, en));
@@ -283,7 +284,6 @@ public final class SpecialSession extends AbstractSpecial {
         PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
         rd.getScanner().setReader(lr);
         rd.setEngineRaw(en);
-        PositionKey pos = null;
         for (; ; ) {
             try {
                 SpecialSession.promptQuery(en);
@@ -301,8 +301,7 @@ public final class SpecialSession extends AbstractSpecial {
                         String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
                         rd.parseTailError(y);
                         EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
-                        pos = (OpenOpts.getPath(lr) != null ?
-                                new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
+                        PositionKey pos = PositionKey.createPos(lr);
                         throw new EngineException(x,
                                 EngineException.fetchPos(EngineException.fetchLoc(
                                         EngineException.fetchStack(en),
@@ -312,12 +311,10 @@ public final class SpecialSession extends AbstractSpecial {
                 } catch (IOException y) {
                     throw EngineMessage.mapIOProblem(y);
                 }
-                pos = (OpenOpts.getPath(lr) != null ?
-                        new PositionKey(OpenOpts.getPath(lr), rd.getClauseStart()) : null);
                 if (val instanceof SkelAtom &&
                         ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
                     break;
-                PreClause pre = expandGoalAndWrap(rd, val, pos, en);
+                PreClause pre = expandGoalAndWrap(rd, val, en);
                 Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
                         AbstractDefined.MASK_DEFI_NLST |
                         AbstractDefined.MASK_DEFI_STOP, en);
@@ -356,7 +353,7 @@ public final class SpecialSession extends AbstractSpecial {
                                 if (!found)
                                     failFeedback(en);
                             } else if ("?".equals(action)) {
-                                helpText(pos, en);
+                                helpText(lr, en);
                             } else {
                                 try {
                                     if (parseAction(action, en)) {
@@ -378,6 +375,7 @@ public final class SpecialSession extends AbstractSpecial {
                 } catch (EngineMessage x) {
                     en.contskel = r;
                     en.contdisplay = u;
+                    PositionKey pos = PositionKey.createPos(lr);
                     en.fault = new EngineException(x,
                             EngineException.fetchLoc(
                                     EngineException.fetchStack(en), pos, en));
@@ -402,6 +400,7 @@ public final class SpecialSession extends AbstractSpecial {
                 if (en.fault != null)
                     throw en.fault;
             } catch (EngineMessage x) {
+                PositionKey pos = PositionKey.createPos(lr);
                 EngineException y = new EngineException(x, EngineException.fetchLoc(
                         EngineException.fetchStack(en), pos, en));
                 if (systemQueryBreak(y, en))
@@ -425,7 +424,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @throws EngineException Shit happens.
      */
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
-                                               PositionKey pos, Engine en)
+                                               Engine en)
             throws EngineException {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
                 (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0) {
@@ -471,6 +470,8 @@ public final class SpecialSession extends AbstractSpecial {
             } catch (EngineMessage x) {
                 en.contskel = r;
                 en.contdisplay = u;
+                Reader lr=rd.getScanner().getReader();
+                PositionKey pos = PositionKey.createPos(lr);
                 en.fault = new EngineException(x, EngineException.fetchLoc(
                         EngineException.fetchStack(en), pos, en));
                 en.releaseBind(mark);
@@ -499,6 +500,8 @@ public final class SpecialSession extends AbstractSpecial {
                 throw en.fault;
             pre = copyGoalVarsAndWrap(rd.getVars(), t, d, en);
         } catch (EngineMessage y) {
+            Reader lr=rd.getScanner().getReader();
+            PositionKey pos = PositionKey.createPos(lr);
             en.fault = new EngineException(y, EngineException.fetchLoc(
                     EngineException.fetchStack(en), pos, en));
             en.releaseBind(mark);

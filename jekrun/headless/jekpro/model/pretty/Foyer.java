@@ -308,7 +308,7 @@ public abstract class Foyer extends Enforced {
      *
      * @return The Prolog writer.
      */
-    public static PrologWriter createWriter(int io) {
+    public PrologWriter createWriter(int io) {
         switch (io) {
             case IO_TERM:
                 return new PrologWriter();

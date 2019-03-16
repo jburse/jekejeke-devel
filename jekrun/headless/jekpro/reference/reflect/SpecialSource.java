@@ -303,7 +303,7 @@ public final class SpecialSource extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -325,7 +325,7 @@ public final class SpecialSource extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -356,7 +356,7 @@ public final class SpecialSource extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**********************************************************************/

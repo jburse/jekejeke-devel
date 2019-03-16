@@ -58,7 +58,7 @@ public final class OperatorSearch {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static AbstractSource performBase(String fun,
+    public static AbstractSource performBase(String fun,
                                               AbstractSource src, Engine en)
             throws EngineException, EngineMessage {
         if (CacheFunctor.isQuali(fun)) {

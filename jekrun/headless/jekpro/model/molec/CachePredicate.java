@@ -48,6 +48,10 @@ public final class CachePredicate extends AbstractCache {
 
     public static final int MASK_CACH_CRTE = 0x00000001;
     public static final int MASK_CACH_NSTS = 0x00000002;
+    public static final int MASK_CACH_LOCA = 0x00000004;
+
+    /* combined flags */
+    public static final int MASK_CACH_DEFI = MASK_CACH_CRTE | MASK_CACH_LOCA;
 
     public Predicate pick;
     public int flags;
@@ -163,12 +167,12 @@ public final class CachePredicate extends AbstractCache {
                 /* create name%pred */
                 s = CacheFunctor.composeQuali(s, n);
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        base.defineRoutine(arity, s, scope, en, copt) :
+                        base.defineRoutine2(arity, s, sa, en, copt) :
                         base.getRoutine(arity, s));
             } else {
                 /* create pred */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        defineRoutineUser(arity, n, scope, en, copt) :
+                        defineRoutineUser(arity, n, sa, en, copt) :
                         getRoutineUser(arity, n, scope.getStore()));
             }
         } finally {
@@ -627,21 +631,22 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param scope The call-site, not nulll.
+     * @param sa    The call-site, not nulll.
      * @param en    The engine.
      * @param copt  The create flag.
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
     private static Predicate defineRoutineUser(int arity, String fun,
-                                               AbstractSource scope,
+                                               SkelAtom sa,
                                                Engine en, int copt)
             throws EngineMessage {
-        Store store = scope.getStore();
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        Store store = src.getStore();
         Predicate pick = getRoutineUser(arity, fun, store.parent);
         if (pick == null)
-            pick = store.user.checkRoutine(arity, fun, scope);
-        pick.usagePredicate(scope, en, copt);
+            pick = store.user.checkRoutine(arity, fun, sa, en);
+        pick.usagePredicate(sa, en, copt);
         return pick;
     }
 

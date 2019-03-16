@@ -1163,13 +1163,14 @@ public class PrologReader {
     /**
      * <p>Perform the singletons style check.</p>
      *
+     * @param lr   The reader.
      * @param anon The anonymous variables.
-     * @param pos  The position.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkSingleton(MapHashLink<String, SkelVar> anon,
-                                      PositionKey pos, Engine en)
+    public static void checkSingleton(Reader lr,
+                                      MapHashLink<String, SkelVar> anon,
+                                      Engine en)
             throws EngineMessage, EngineException {
         try {
             if (anon != null && anon.size() > 0) {
@@ -1178,6 +1179,7 @@ public class PrologReader {
                         EngineMessage.OP_SYNTAX_SINGLETON_VAR, val));
             }
         } catch (EngineMessage x) {
+            PositionKey pos = PositionKey.createPos(lr);
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
                             pos, en), EngineException.OP_WARNING

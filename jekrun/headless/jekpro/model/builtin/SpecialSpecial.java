@@ -98,7 +98,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Predicate.indicatorToPredicateDefined(temp[0],
-                            ref, en, CachePredicate.MASK_CACH_CRTE);
+                            ref, en, CachePredicate.MASK_CACH_DEFI);
                     return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

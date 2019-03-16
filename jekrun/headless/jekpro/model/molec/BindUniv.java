@@ -65,7 +65,7 @@ public class BindUniv {
      * <p>Decrement the dependent counts, and if zero recursively unbind.</p>
      * <p>Tail recursive implementation.</p>
      *
-     * @param bc  The bind univ.
+     * @param bc The bind univ.
      * @param en The engine.
      */
     public static void unbind(BindUniv bc, Engine en) {

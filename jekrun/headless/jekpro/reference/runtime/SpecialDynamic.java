@@ -86,21 +86,21 @@ public final class SpecialDynamic extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialDynamic.defineDynamic(pick, en);
                 return true;
             case SPECIAL_SYS_ENSURE_THREAD_LOCAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialDynamic.defineThreadLocal(pick, en);
                 return true;
             case SPECIAL_SYS_ENSURE_GROUP_LOCAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialDynamic.defineGroupLocal(pick, en);
                 return true;
             case SPECIAL_CLAUSE:

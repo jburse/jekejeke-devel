@@ -272,7 +272,7 @@ public final class EngineWrap {
 //                            en.store.getRootSystem()), args, null);
 //                    back.args[1] = help;
 //                } else {
-                    t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
 //                }
                 break;
             } else if (t instanceof SkelCompound) {

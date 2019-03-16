@@ -140,7 +140,7 @@ public final class DisplayClause extends Display implements InterfaceStack {
     public final void setEngine(Engine en) {
         DisplayClause u = en.contdisplay;
         number = en.number;
-        prune = ((def.flags & Clause.MASK_CLAUSE_NOBR)!=0 ? u.prune : this);
+        prune = ((def.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : this);
         contskel = en.contskel;
         contdisplay = u;
     }

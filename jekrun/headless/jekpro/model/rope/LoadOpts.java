@@ -209,7 +209,7 @@ public final class LoadOpts extends LoadForce {
             if (init != null)
                 init.init(source, en);
             source.loadModule(reader, en, rec);
-            source.checkModule(en);
+            source.checkModule(reader, en);
             LoadForce.checkModuleEnd(en);
             source.setBit(AbstractSource.MASK_SRC_SCND);
             source.setTiming(source.getTiming() + System.currentTimeMillis());

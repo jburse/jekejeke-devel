@@ -300,7 +300,7 @@ public class LoadForce {
 
         try {
             if (en.visor.cond != null) {
-                source.checkModule(en);
+                source.checkModule(null, en);
                 source.setBit(AbstractSource.MASK_SRC_SCND);
             }
         } catch (EngineMessage x) {

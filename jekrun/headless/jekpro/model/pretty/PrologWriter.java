@@ -99,7 +99,7 @@ public class PrologWriter {
     final static int MASK_ATOM_OPER = 0x00000001;
 
     public Engine engine;
-    private Writer wr;
+    protected Writer wr;
     private int toff;
     private int lch = -1;
     public int flags = FLAG_DFLT;
@@ -112,6 +112,9 @@ public class PrologWriter {
     private byte utilback = ReadOpts.UTIL_ERROR;
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     private AbstractSource source;
+
+    public PrologWriter() {
+    }
 
     /**
      * <p>Set the engine.</p>
@@ -271,7 +274,7 @@ public class PrologWriter {
      *
      * @return The source.
      */
-    AbstractSource getSource() {
+    protected AbstractSource getSource() {
         return source;
     }
 
@@ -622,6 +625,12 @@ public class PrologWriter {
     protected void writeAtom(SkelAtom sa,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
+        CachePredicate cp;
+        if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0) {
+            cp = offsetToPredicate(sa, mod, nsa);
+        } else {
+            cp = null;
+        }
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
                 (spez & SPEZ_OPLE) != 0) {
             Operator op = OperatorSearch.getOper(sa.scope, sa.fun,
@@ -630,7 +639,11 @@ public class PrologWriter {
                 if ((spez & SPEZ_FUNC) != 0)
                     append(' ');
                 append(PrologReader.OP_LPAREN);
+                if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0)
+                    writeLinkBegin(cp);
                 append(atomQuoted(sa.fun, 0));
+                if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0)
+                    writeLinkEnd();
                 append(PrologReader.OP_RPAREN);
                 return;
             }
@@ -638,12 +651,20 @@ public class PrologWriter {
         if (Foyer.OP_UNIT.equals(sa.fun)) {
             if ((spez & SPEZ_FUNC) != 0)
                 append(' ');
+            if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0)
+                writeLinkBegin(cp);
             append(sa.fun);
+            if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0)
+                writeLinkEnd();
             return;
         }
         String t = atomQuoted(sa.fun, 0);
         safeSpace(t);
+        if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0)
+            writeLinkBegin(cp);
         append(t);
+        if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) !=0)
+            writeLinkEnd();
     }
 
     /**
@@ -737,211 +758,6 @@ public class PrologWriter {
     }
 
     /********************************************************/
-    /* Operator Handling                                    */
-    /********************************************************/
-
-    /**
-     * <p>Determine whether the operator needs parenthesis.</p>
-     *
-     * @param op       The operator.
-     * @param backspez The back spez.
-     * @param level    The level.
-     * @return True if the operator needs parenthesis.
-     */
-    private boolean needsParen(Operator op, int backspez, int level) {
-        switch (op.getType()) {
-            case Operator.TYPE_PREFIX:
-                if ((level < op.getLevel()) ||
-                        (level == op.getLevel() &&
-                                (backspez & SPEZ_LEFT) != 0 &&
-                                op.getRight() == 0))
-                    return true;
-                return false;
-            case Operator.TYPE_INFIX:
-                if ((level < op.getLevel()) ||
-                        (level == op.getLevel() &&
-                                (backspez & SPEZ_LEFT) != 0 &&
-                                op.getRight() == 0))
-                    return true;
-                return false;
-            case Operator.TYPE_POSTFIX:
-                if (level < op.getLevel())
-                    return true;
-                return false;
-            default:
-                throw new IllegalArgumentException("illegal type");
-        }
-    }
-
-    /**
-     * <p>Write the operator.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param op         The operator.
-     * @param sa         The atom.
-     * @param cp         The predicate or null.
-     * @param backspez   The spezification.
-     * @param backoffset The offset.
-     * @throws IOException IO Error.
-     */
-    protected void writePrefix(Operator op, SkelAtom sa,
-                               CachePredicate cp,
-                               int backspez, int backoffset)
-            throws IOException {
-        /**
-         * - spacing.
-         * - anti specification
-         */
-        String t = atomQuoted(op.getPortrayOrName(), 0);
-        safeSpace(t);
-        append(t);
-        if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
-                (backspez & SPEZ_META) != 0 &&
-                (backspez & SPEZ_EVAL) == 0) {
-            append(' ');
-        } else {
-            spez |= SPEZ_FUNC;
-            if (sa.fun.equals(Foyer.OP_SUB))
-                spez |= SPEZ_MINS;
-        }
-    }
-
-    /**
-     * <p>Write the operator.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param op         The operator.
-     * @param sa         The atom.
-     * @param cp         The predicate or null.
-     * @param decl       The declaration or null.
-     * @param backspez   The spezification.
-     * @param backoffset The offset.
-     * @throws IOException IO Error.
-     */
-    protected void writeInfix(Operator op, SkelAtom sa,
-                              CachePredicate cp,
-                              Object[] decl, int indent,
-                              int backspez, int backoffset)
-            throws IOException {
-        /**
-         * - implication newln and indent.
-         * - conjunction newln and indent.
-         * - newln disjunction and indent
-         * - spacing.
-         */
-        if (isFunr(decl) && (isLowr(decl) || isNewr(decl)) &&
-                (backspez & SPEZ_META) != 0 &&
-                (backspez & SPEZ_EVAL) == 0 &&
-                (flags & FLAG_NEWL) != 0) {
-            if ((backspez & SPEZ_ICUT) != 0) {
-                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                append(t);
-                if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                    append(' ');
-            } else if (op.getLevel() >= 1025 && !isLowr(decl)) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent - SPACES; i++)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                append(t);
-                for (int i = t.length(); i < SPACES; i++)
-                    append(' ');
-            } else {
-                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                append(t);
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-            if ((backspez & SPEZ_ICAT) != 0)
-                setTextOffset(indent);
-        } else {
-            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
-                    (backspez & SPEZ_META) != 0 &&
-                    (backspez & SPEZ_EVAL) == 0)
-                append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            append(t);
-            if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
-                    (backspez & SPEZ_META) != 0 &&
-                    (backspez & SPEZ_EVAL) == 0)
-                append(' ');
-        }
-    }
-
-    /**
-     * <p>Write the operator.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param op         The operator.
-     * @param sc         The compound skeleton.
-     * @param ref        The compoun display.
-     * @param cp         The predicate or null.
-     * @param decl       The declaration or null.
-     * @param backshift  The shift.
-     * @param backspez   The spezification.
-     * @param backoffset The offset.
-     * @throws IOException     IO error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected void writePostfix(Operator op, SkelCompound sc, Display ref,
-                                CachePredicate cp, Object[] decl,
-                                int backshift, int backspez, int backoffset,
-                                Object mod, SkelAtom nsa)
-            throws IOException, EngineMessage, EngineException {
-        /**
-         * - spacing
-         */
-        if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
-                (backspez & SPEZ_META) != 0 &&
-                (backspez & SPEZ_EVAL) == 0)
-            append(' ');
-        if (isIndex(sc)) {
-            writeIndex(sc, ref, cp, decl,
-                    backshift, backspez, backoffset, mod, nsa);
-        } else if (isStruct(sc)) {
-            writeStruct(sc, ref, cp, decl,
-                    backshift, backspez, backoffset, mod, nsa);
-        } else {
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            append(t);
-        }
-    }
-
-    /**
-     * <p>Check whether the compound is an index.</p>
-     *
-     * @param sc The compound.
-     * @return True if the compound is an index, otherwise false.
-     */
-    static boolean isIndex(SkelCompound sc) {
-        return sc.args.length > 1 &&
-                sc.sym.fun.equals(Foyer.OP_INDEX);
-    }
-
-    /**
-     * <p>Check whether the compound is a struct.</p>
-     *
-     * @param sc The compound.
-     * @return True if the compound is a struct, otherwise false.
-     */
-    static boolean isStruct(SkelCompound sc) {
-        return sc.args.length >= 1 &&
-                sc.args.length <= 2 &&
-                sc.sym.fun.equals(Foyer.OP_STRUCT);
-    }
-
-    /********************************************************/
     /* Write AbstractTerm                                   */
     /********************************************************/
 
@@ -1008,6 +824,233 @@ public class PrologWriter {
         return buf.toString();
     }
 
+    /********************************************************/
+    /* Operator Handling                                    */
+    /********************************************************/
+
+    /**
+     * <p>Determine whether the operator needs parenthesis.</p>
+     *
+     * @param op       The operator.
+     * @param backspez The back spez.
+     * @param level    The level.
+     * @return True if the operator needs parenthesis.
+     */
+    private boolean needsParen(Operator op, int backspez, int level) {
+        switch (op.getType()) {
+            case Operator.TYPE_PREFIX:
+                if ((level < op.getLevel()) ||
+                        (level == op.getLevel() &&
+                                (backspez & SPEZ_LEFT) != 0 &&
+                                op.getRight() == 0))
+                    return true;
+                return false;
+            case Operator.TYPE_INFIX:
+                if ((level < op.getLevel()) ||
+                        (level == op.getLevel() &&
+                                (backspez & SPEZ_LEFT) != 0 &&
+                                op.getRight() == 0))
+                    return true;
+                return false;
+            case Operator.TYPE_POSTFIX:
+                if (level < op.getLevel())
+                    return true;
+                return false;
+            default:
+                throw new IllegalArgumentException("illegal type");
+        }
+    }
+
+    /**
+     * <p>Write the operator.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param op         The operator.
+     * @param sa         The atom.
+     * @param cp         The predicate or null.
+     * @param backspez   The spezification.
+     * @throws IOException IO Error.
+     */
+    protected final void writePrefix(Operator op, SkelAtom sa,
+                               CachePredicate cp,
+                               int backspez)
+            throws IOException {
+        /**
+         * - spacing.
+         * - anti specification
+         */
+        String t = atomQuoted(op.getPortrayOrName(), 0);
+        safeSpace(t);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkBegin(cp);
+        append(t);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkEnd();
+        if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
+                (backspez & SPEZ_META) != 0 &&
+                (backspez & SPEZ_EVAL) == 0) {
+            append(' ');
+        } else {
+            spez |= SPEZ_FUNC;
+            if (sa.fun.equals(Foyer.OP_SUB))
+                spez |= SPEZ_MINS;
+        }
+    }
+
+    /**
+     * <p>Write the operator.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param op         The operator.
+     * @param sa         The atom.
+     * @param cp         The predicate or null.
+     * @param decl       The declaration or null.
+     * @param backspez   The spezification.
+     * @throws IOException IO Error.
+     */
+    protected void writeInfix(Operator op, SkelAtom sa,
+                              CachePredicate cp,
+                              Object[] decl, int indent,
+                              int backspez)
+            throws IOException {
+        /**
+         * - implication newln and indent.
+         * - conjunction newln and indent.
+         * - newln disjunction and indent
+         * - spacing.
+         */
+        if (isFunr(decl) && (isLowr(decl) || isNewr(decl)) &&
+                (backspez & SPEZ_META) != 0 &&
+                (backspez & SPEZ_EVAL) == 0 &&
+                (flags & FLAG_NEWL) != 0) {
+            if ((backspez & SPEZ_ICUT) != 0) {
+                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
+                    append(' ');
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
+                safeSpace(t);
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkBegin(cp);
+                append(t);
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkEnd();
+                if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                    append(' ');
+            } else if (op.getLevel() >= 1025 && !isLowr(decl)) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent - SPACES; i++)
+                    append(' ');
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
+                safeSpace(t);
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkBegin(cp);
+                append(t);
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkEnd();
+                for (int i = t.length(); i < SPACES; i++)
+                    append(' ');
+            } else {
+                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
+                    append(' ');
+                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
+                safeSpace(t);
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkBegin(cp);
+                append(t);
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkEnd();
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+            if ((backspez & SPEZ_ICAT) != 0)
+                setTextOffset(indent);
+        } else {
+            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
+                    (backspez & SPEZ_META) != 0 &&
+                    (backspez & SPEZ_EVAL) == 0)
+                append(' ');
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
+            safeSpace(t);
+            if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                writeLinkBegin(cp);
+            append(t);
+            if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                writeLinkEnd();
+            if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
+                    (backspez & SPEZ_META) != 0 &&
+                    (backspez & SPEZ_EVAL) == 0)
+                append(' ');
+        }
+    }
+
+    /**
+     * <p>Write the operator.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param op         The operator.
+     * @param sc         The compound skeleton.
+     * @param ref        The compoun display.
+     * @param cp         The predicate or null.
+     * @param decl       The declaration or null.
+     * @param backshift  The shift.
+     * @param backspez   The spezification.
+     * @param backoffset The offset.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected final void writePostfix(Operator op, SkelCompound sc, Display ref,
+                                CachePredicate cp, Object[] decl,
+                                int backshift, int backspez, int backoffset,
+                                Object mod, SkelAtom nsa)
+            throws IOException, EngineMessage, EngineException {
+        /**
+         * - spacing
+         */
+        if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
+                (backspez & SPEZ_META) != 0 &&
+                (backspez & SPEZ_EVAL) == 0)
+            append(' ');
+        if (isIndex(sc)) {
+            writeIndex(sc, ref, cp, decl,
+                    backshift, backspez, backoffset, mod, nsa);
+        } else if (isStruct(sc)) {
+            writeStruct(sc, ref, cp, decl,
+                    backshift, backspez, backoffset, mod, nsa);
+        } else {
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
+            safeSpace(t);
+            if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                writeLinkBegin(cp);
+            append(t);
+            if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                writeLinkEnd();
+        }
+    }
+
+    /**
+     * <p>Check whether the compound is an index.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is an index, otherwise false.
+     */
+    static boolean isIndex(SkelCompound sc) {
+        return sc.args.length > 1 &&
+                sc.sym.fun.equals(Foyer.OP_INDEX);
+    }
+
+    /**
+     * <p>Check whether the compound is a struct.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is a struct, otherwise false.
+     */
+    static boolean isStruct(SkelCompound sc) {
+        return sc.args.length >= 1 &&
+                sc.args.length <= 2 &&
+                sc.sym.fun.equals(Foyer.OP_STRUCT);
+    }
+
     /*********************************************************************/
     /* Special Compounds                                                 */
     /*********************************************************************/
@@ -1032,7 +1075,11 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkBegin(cp);
         append(PrologReader.OP_LBRACE);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkEnd();
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1096,12 +1143,20 @@ public class PrologWriter {
                 if ((backspez & SPEZ_META) != 0 &&
                         (backspez & SPEZ_EVAL) == 0 &&
                         (flags & FLAG_NEWL) != 0) {
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkBegin(cp);
                     append(',');
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkEnd();
                     append(CodeType.LINE_EOL);
                     for (int i = 0; i < indent; i++)
                         append(' ');
                 } else {
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkBegin(cp);
                     append(',');
+                    if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                        writeLinkEnd();
                     if ((backspez & SPEZ_META) != 0 &&
                             (backspez & SPEZ_EVAL) == 0)
                         append(' ');
@@ -1114,7 +1169,11 @@ public class PrologWriter {
                 shift = getShift(z);
             } else if (!(term instanceof SkelAtom) ||
                     !((SkelAtom) term).fun.equals(Foyer.OP_NIL)) {
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkBegin(cp);
                 append('|');
+                if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+                    writeLinkEnd();
                 write(term, ref, Operator.LEVEL_MIDDLE, null, null);
                 break;
             } else {
@@ -1144,7 +1203,11 @@ public class PrologWriter {
         int backshift = shift;
         String t = atomQuoted(sc.sym.fun, 0);
         safeSpace(t);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkBegin(cp);
         append(t);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkEnd();
         append(PrologReader.OP_LPAREN);
         int j = 0;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
@@ -1203,7 +1266,11 @@ public class PrologWriter {
                               int backshift, int backspez, int backoffset,
                               Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkBegin(cp);
         append(PrologReader.OP_LBRACKET);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkEnd();
         int j = 1;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -1258,7 +1325,11 @@ public class PrologWriter {
                                int backshift, int backspez, int backoffset,
                                Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkBegin(cp);
         append(PrologReader.OP_LBRACE);
+        if ((backspez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0)
+            writeLinkEnd();
         if (sc.args.length == 2) {
             Object z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
             spez = getSpez(z);
@@ -1358,7 +1429,7 @@ public class PrologWriter {
                     spez = (spez & SPEZ_OPLE) + getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
-                    writePrefix(op, sc.sym, cp, backspez, backoffset);
+                    writePrefix(op, sc.sym, cp, backspez);
                     write(sc.args[0], ref, op.getLevel() - op.getRight(), null, null);
                     spez = backspez;
                     offset = backoffset;
@@ -1488,13 +1559,13 @@ public class PrologWriter {
                     Operator op2;
                     if (isSimple(sc.args[1], ref)) {
                         writeInfix(op, sc.sym, cp, decl, indent, backspez
-                                | SPEZ_ICUT, backoffset);
+                                | SPEZ_ICUT);
                     } else if ((op2 = isOperSimple(sc.args[1], ref, mod2, nsa2)) != null &&
                             !needsParen(op2, spez, op.getLevel() - op.getRight())) {
                         writeInfix(op, sc.sym, cp, decl, indent, backspez
-                                | (SPEZ_ICUT | SPEZ_ICAT), backoffset);
+                                | (SPEZ_ICUT | SPEZ_ICAT));
                     } else {
-                        writeInfix(op, sc.sym, cp, decl, indent, backspez, backoffset);
+                        writeInfix(op, sc.sym, cp, decl, indent, backspez);
                     }
                     write(sc.args[1], ref, op.getLevel() - op.getRight(), mod2, nsa2);
                     spez = backspez;
@@ -1736,10 +1807,13 @@ public class PrologWriter {
     public static void toString(Object t, Display ref, Writer wr, int flags,
                                 Engine en)
             throws EngineMessage, EngineException {
-        PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
+        PrologWriter pw;
         if (en != null) {
+            pw = en.store.foyer.createWriter(Foyer.IO_TERM);
             pw.setSource(en.visor.peekStack());
             pw.setEngineRaw(en);
+        } else {
+            pw = new PrologWriter();
         }
         pw.setFlags(flags);
         pw.setWriter(wr);
@@ -1766,6 +1840,31 @@ public class PrologWriter {
             buf.append(s);
         }
         return buf.toString();
+    }
+
+    /************************************************************/
+    /* Navigation Code                                          */
+    /************************************************************/
+
+    /**
+     * <p>Write the navigation link begin comment.</p>
+     *
+     * @param cp The predicate.
+     * @throws IOException IO Error.
+     */
+    protected void writeLinkBegin(CachePredicate cp)
+            throws IOException {
+        /* do nothing */
+    }
+
+    /**
+     * <p>Write the navigation link end comment.</p>
+     *
+     * @throws IOException IO Error.
+     */
+    protected void writeLinkEnd()
+            throws IOException {
+        /* do nothing */
     }
 
 }

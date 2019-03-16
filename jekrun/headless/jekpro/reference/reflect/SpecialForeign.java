@@ -109,7 +109,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
             case SPECIAL_SYS_FOREIGN_CONSTRUCTOR:
@@ -133,7 +133,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
             case SPECIAL_SYS_FOREIGN_GETTER:
@@ -153,7 +153,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
             case SPECIAL_SYS_FOREIGN_SETTER:
@@ -173,7 +173,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
             case SPECIAL_SYS_FOREIGN_FUN:
@@ -194,7 +194,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
             case SPECIAL_SYS_FOREIGN_CONST:
@@ -214,7 +214,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
                 pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
             default:

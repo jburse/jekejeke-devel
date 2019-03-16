@@ -228,7 +228,7 @@ public final class PairsHash
         wr.write(", map=");
         wr.write(Integer.toString(length()));
         wr.write("\n");
-        PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
+        PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
         pw.setSource(en.visor.peekStack());
         pw.setEngineRaw(en);
         for (MapEntry<Object, Bouquet> entry = getFirstEntry();

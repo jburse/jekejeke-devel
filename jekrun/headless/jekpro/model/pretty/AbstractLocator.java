@@ -2,7 +2,6 @@ package jekpro.model.pretty;
 
 import jekpro.model.inter.Predicate;
 import jekpro.tools.term.PositionKey;
-import matula.util.data.MapEntry;
 
 /**
  * <p>This class provides an abstract locator.</p>
@@ -39,38 +38,19 @@ public abstract class AbstractLocator {
     public final static int MASK_LOC_INDI = 0x00000001;
     public final static int MASK_LOC_STAT = 0x00000002;
 
-    protected AbstractSource src;
-
-    /**
-     * <p>Create a locator.</p>
-     *
-     * @param s The source.
-     */
-    public AbstractLocator(AbstractSource s) {
-        src = s;
-    }
-
     /**
      * <p>Add a position.</p>
-     * .
      *
-     * @param pick  The predicate.
      * @param pos   The position, can be null.
+     * @param pick  The predicate.
      * @param flags The flags.
      */
-    public abstract void addPosition(Predicate pick,
-                                     PositionKey pos, int flags);
+    public abstract void addPosition(PositionKey pos, Predicate pick,
+                                     int flags);
 
     /**
      * <p>Clear all positions.</p>
      */
     public abstract void clearPositions();
-
-    /**
-     * <p>Retrieve the first indicator or static position.</p>
-     *
-     * @return The first indicator or static position.
-     */
-    public abstract PositionKey firstPosition(Predicate pick);
 
 }

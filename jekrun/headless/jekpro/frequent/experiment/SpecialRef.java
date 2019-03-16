@@ -364,7 +364,7 @@ public final class SpecialRef extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(prop)));
     }
 
     /**
@@ -393,7 +393,7 @@ public final class SpecialRef extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(prop)));
     }
 
     /*******************************************************************/

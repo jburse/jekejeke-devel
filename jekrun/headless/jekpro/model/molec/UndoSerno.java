@@ -51,7 +51,7 @@ public final class UndoSerno extends BindVar {
      */
     public void unbind(Engine en) {
         /* reset serno */
-        BindLexical bc = (BindLexical)skel;
+        BindLexical bc = (BindLexical) skel;
         int k = bc.serno;
         if (k == -1)
             throw new IllegalStateException("value missing");

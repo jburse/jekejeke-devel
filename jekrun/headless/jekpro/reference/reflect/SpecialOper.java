@@ -370,7 +370,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -392,7 +392,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -423,7 +423,7 @@ public final class SpecialOper extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /***********************************************************************/
@@ -477,15 +477,15 @@ public final class SpecialOper extends AbstractSpecial {
      *
      * @param t    The value skeleton.
      * @param d    The value display.
-     * @param prop The property.
+     * @param sk The property.
      * @param en   The engine.
      * @return The operators, or null.
      * @throws EngineMessage Shit happens.
      */
     public static Operator[] idxPropOper(Object t, Display d,
-                                         StoreKey prop, Engine en)
+                                         StoreKey sk, Engine en)
             throws EngineMessage {
-        if (KEY_SYS_USAGE.equals(prop)) {
+        if (KEY_SYS_USAGE.equals(sk)) {
             Object[] temp = ((SkelCompound) t).args;
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], d);
             AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
@@ -510,7 +510,7 @@ public final class SpecialOper extends AbstractSpecial {
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                    StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                    StoreKey.storeKeyToSkel(sk)));
         }
     }
 

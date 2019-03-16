@@ -53,7 +53,7 @@ public final class UndoCont extends BindVar {
      */
     public void unbind(Engine en) {
         /* set back */
-        ListArray<BindVar> val = (ListArray<BindVar>)skel;
+        ListArray<BindVar> val = (ListArray<BindVar>) skel;
         Supervisor visor = en.visor;
         if (visor.cont != null)
             throw new IllegalStateException("cant override");

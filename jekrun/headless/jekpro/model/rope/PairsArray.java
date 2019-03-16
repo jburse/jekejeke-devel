@@ -220,7 +220,7 @@ public final class PairsArray
                              Engine en)
             throws IOException, EngineMessage, EngineException {
         wr.write("\n");
-        PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
+        PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
         pw.setSource(en.visor.peekStack());
         pw.setEngineRaw(en);
         for (int j = 0; j < size(); j++) {

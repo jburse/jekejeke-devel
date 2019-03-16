@@ -145,7 +145,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 Object obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
-                PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
+                PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
@@ -172,7 +172,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
-                pw = Foyer.createWriter(Foyer.IO_TERM);
+                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
@@ -196,7 +196,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
 
-                pw = Foyer.createWriter(Foyer.IO_TERM);
+                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
@@ -260,14 +260,13 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param pw     The prolog writer.
      * @param pick   The predicate.
-     * @param source The source.
+     * @param source The source, not null.
      * @param en     The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void listProvable(PrologWriter pw,
-                                     Predicate pick, AbstractSource source,
-                                     Engine en)
+    private static void listProvable(PrologWriter pw, Predicate pick,
+                                     AbstractSource source, Engine en)
             throws EngineMessage, EngineException {
         /* flesh out properties */
         ListArray<SkelAtom> modifiers = null;
@@ -306,8 +305,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 } else {
                     for (int j = 0; j < vals.length; j++) {
                         Object val = vals[j];
-                        Object decl = prop.predDeclSkel(AbstractTerm.getSkel(val), pick,
-                                source, en);
+                        Object decl = prop.predDeclSkel(AbstractTerm.getSkel(val),
+                                pick, source, en);
                         if (modifiers != null) {
                             decl = prependModifiers(modifiers, decl);
                             modifiers = null;
@@ -586,7 +585,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Object[] vals = projectFirst(prop.getObjProps(src, en));
         Object[] vals2 = projectFirst(SpecialPred.getPropPred(
                 pick, Branch.PROP_VISIBLE, en));
-        return sameValues2(vals, vals2);
+        return sameValues(vals, vals2);
     }
 
     /**
@@ -649,7 +648,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @param vals2 The second value list.
      * @return True if both value lists contain the same elements, otherwise false.
      */
-    private static boolean sameValues2(Object[] vals, Object[] vals2) {
+    private static boolean sameValues(Object[] vals, Object[] vals2) {
         for (int i = 0; i < vals.length; i++)
             if (AbstractInformation.indexValue(vals2, vals[i]) == -1)
                 return false;

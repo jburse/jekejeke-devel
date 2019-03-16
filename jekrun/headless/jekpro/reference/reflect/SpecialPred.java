@@ -87,7 +87,7 @@ public final class SpecialPred extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialPred.defineStatic(pick, en);
                 return true;
             case SPECIAL_SYS_CURRENT_PREDICATE:
@@ -316,12 +316,12 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param pred The predicate.
-     * @param prop The property.
+     * @param sk The property.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    public static Object[] getPropPred(Predicate pred, StoreKey prop,
+    public static Object[] getPropPred(Predicate pred, StoreKey sk,
                                        Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot =
@@ -332,13 +332,13 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            Object[] vals = branch.getPredProp(pred, prop, en);
+            Object[] vals = branch.getPredProp(pred, sk, en);
             if (vals != null)
                 return vals;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**************************************************************/
@@ -388,13 +388,13 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Throws a domain error for undefined predicate properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop The property.
+     * @param sk The property.
      * @param pred The predicate.
      * @param vals The values, non null.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void setPropPred(StoreKey prop, Predicate pred,
+    private static void setPropPred(StoreKey sk, Predicate pred,
                                     Object[] vals, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot =
@@ -405,12 +405,12 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            if (branch.setPredProp(prop, pred, vals, en))
+            if (branch.setPredProp(sk, pred, vals, en))
                 return;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**************************************************************/
@@ -441,12 +441,12 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param t    The value skeleton.
      * @param d    The value display.
-     * @param prop The property.
+     * @param sk The property.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    public static Predicate[] idxPropPred(Object t, Display d, StoreKey prop,
+    public static Predicate[] idxPropPred(Object t, Display d, StoreKey sk,
                                           Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot =
@@ -457,13 +457,13 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            Predicate[] vals = branch.idxPredProp(t, d, prop, en);
+            Predicate[] vals = branch.idxPredProp(t, d, sk, en);
             if (vals != null)
                 return vals;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /*************************************************************/

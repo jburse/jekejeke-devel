@@ -28,7 +28,6 @@ import matula.util.system.OpenOpts;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Comparator;
 
 /**
  * <p>This class represents a source. Besides the predicates and operators,
@@ -353,7 +352,6 @@ public abstract class AbstractSource {
     public void loadModule(Reader lr, Engine en, boolean rec)
             throws EngineMessage, EngineException {
         PrologReader rd = null;
-        PositionKey pos = null;
         for (; ; ) {
             try {
                 AbstractSource src = en.visor.peekStack();
@@ -386,8 +384,7 @@ public abstract class AbstractSource {
                         String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
                         rd.parseTailError(y);
                         EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
-                        pos = (OpenOpts.getPath(lr) != null ?
-                                new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
+                        PositionKey pos = PositionKey.createPos(lr);
                         throw new EngineException(x,
                                 EngineException.fetchPos(EngineException.fetchLoc(
                                         EngineException.fetchStack(en),
@@ -397,12 +394,10 @@ public abstract class AbstractSource {
                 } catch (IOException y) {
                     throw EngineMessage.mapIOProblem(y);
                 }
-                pos = (OpenOpts.getPath(lr) != null ?
-                        new PositionKey(OpenOpts.getPath(lr), rd.getClauseStart()) : null);
                 if (val instanceof SkelAtom &&
                         ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
                     break;
-                ListArray<PreClause> res = FileText.expandTermAndWrap(rd, val, pos, en);
+                ListArray<PreClause> res = FileText.expandTermAndWrap(rd, val, en);
                 if (res == null)
                     continue;
                 for (int i = res.size() - 1; i >= 0; i--) { /* trick for yfx */
@@ -411,15 +406,16 @@ public abstract class AbstractSource {
                     if (val instanceof SkelCompound &&
                             ((SkelCompound) val).args.length == 1 &&
                             ((SkelCompound) val).sym.fun.equals(PreClause.OP_TURNSTILE)) {
-                        FileText.executeDirective(pre, pos, en);
+                        FileText.executeDirective(lr, pre, en);
                     } else {
-                        PrologReader.checkSingleton(pre.anon, pos, en);
+                        PrologReader.checkSingleton(lr, pre.anon, en);
                         Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, pre.molec, en);
                         clause.vars = pre.vars;
                         clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
                     }
                 }
             } catch (EngineMessage x) {
+                PositionKey pos = PositionKey.createPos(lr);
                 EngineException y = new EngineException(x,
                         EngineException.fetchLoc(
                                 EngineException.fetchStack(en), pos, en));
@@ -435,12 +431,13 @@ public abstract class AbstractSource {
     /**
      * <p>Check the module.</p>
      *
+     * @param lr The reader.
      * @param en The interpreter.
      * @return True if module is empty, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public boolean checkModule(Engine en)
+    public boolean checkModule(Reader lr, Engine en)
             throws EngineMessage, EngineException {
         boolean empty = true;
 
@@ -449,7 +446,7 @@ public abstract class AbstractSource {
         for (int i = 0; i < preds.length; i++) {
             Predicate pred = preds[i].key;
             empty = false;
-            Predicate.checkPredicateInit(pred, this, en);
+            Predicate.checkPredicateInit(lr, pred, this, en);
         }
 
         /* check operators */
@@ -457,7 +454,7 @@ public abstract class AbstractSource {
         for (int i = 0; i < opers.length; i++) {
             Operator oper = opers[i];
             empty = false;
-            Operator.checkOperInit(oper, en);
+            Operator.checkOperInit(lr, oper, en);
         }
 
         return empty;
@@ -1056,18 +1053,18 @@ public abstract class AbstractSource {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param scope The sourcel.
+     * @param sa The call-site, not null.
      * @param en    The engine.
      * @param copt  The create flag.
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
-    public final Predicate defineRoutine(int arity, String fun,
-                                         AbstractSource scope,
+    public final Predicate defineRoutine2(int arity, String fun,
+                                         SkelAtom sa,
                                          Engine en, int copt)
             throws EngineMessage {
-        Predicate pick = checkRoutine(arity, fun, scope);
-        pick.usagePredicate(scope, en, copt);
+        Predicate pick = checkRoutine(arity, fun, sa, en);
+        pick.usagePredicate(sa, en, copt);
         return pick;
     }
 
@@ -1076,11 +1073,11 @@ public abstract class AbstractSource {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param scope The call-site, not null.
+     * @param sa The call-site, not null.
      * @return Some previous predicate or the new neutral predicate.
      */
     public Predicate checkRoutine(int arity, String fun,
-                                  AbstractSource scope) {
+                                  SkelAtom sa, Engine en) {
         Predicate pick;
         synchronized (this) {
             AssocArray<Integer, Predicate> map = preds.get(fun);
@@ -1090,9 +1087,10 @@ public abstract class AbstractSource {
                     return pick;
             }
             pick = new Predicate(fun, arity);
-            if ((scope.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
+            AbstractSource src=(sa.scope!=null?sa.scope:en.store.user);
+            if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 pick.setBit(Predicate.MASK_PRED_VSPR);
-            if ((scope.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
+            if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
                 pick.setBit(Predicate.MASK_PRED_VSPU);
             pick.setSource(this);
             if (map == null) {
