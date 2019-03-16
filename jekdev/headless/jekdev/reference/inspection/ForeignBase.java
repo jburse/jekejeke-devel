@@ -1,4 +1,4 @@
-package jekdev.reference.testing;
+package jekdev.reference.inspection;
 
 import jekdev.model.pretty.LocatorTrace;
 import jekpro.model.inter.Engine;
@@ -17,7 +17,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 
 /**
- * <p>This class provides locator built-ins.</p>
+ * <p>This class provides built-ins for the module base.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -47,7 +47,7 @@ import jekpro.tools.term.TermAtomic;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignLocator {
+public final class ForeignBase {
 
     /**
      * <p>Retrieve the first location.</p>
@@ -61,8 +61,8 @@ public final class ForeignLocator {
      * @throws InterpreterMessage Shit happens
      */
     public static Object sysFirstLocation(Interpreter inter, CallOut co,
-                                    TermAtomic atomic,
-                                    String orig, int lineno)
+                                          TermAtomic atomic,
+                                          String orig, int lineno)
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();
@@ -106,8 +106,8 @@ public final class ForeignLocator {
      * @throws InterpreterMessage Shit happens
      */
     public static Object sysLocation(Interpreter inter, CallOut co,
-                               TermAtomic atomic,
-                               String orig, int lineno)
+                                     TermAtomic atomic,
+                                     String orig, int lineno)
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();

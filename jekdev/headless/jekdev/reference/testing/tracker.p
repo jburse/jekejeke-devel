@@ -64,6 +64,8 @@
 :- module(tracker, []).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/provable)).
+:- use_module(library(advanced/arith)).
+:- use_module(library(inspection/base)).
 :- use_module(runner).
 :- use_module(helper).
 
@@ -76,7 +78,7 @@
 /****************************************************************/
 
 % cover_hit(File, Line)
-:- public cover_hit/2.
+:- private cover_hit/2.
 :- dynamic cover_hit/2.
 
 % reset_cover_hit
@@ -270,21 +272,25 @@ sys_update_cover(Fun, Arity, File, Line, L) :-
 /* Analyze Text                                                 */
 /****************************************************************/
 
-% sys_find_hit(+File, +Integer, +Integer, -OkNok)
+% sys_find_hit(+Atom, +Integer, +Integer, -OkNok)
 :- private sys_find_hit/4.
-sys_find_hit(SrcPin, A, B, 1-0) :-
-   cover_hit(SrcPin, L),
-   A =< L,
-   L < B, !.
+sys_find_hit(OrigSrcPin, A, B, 1-0) :-
+   C is B-1,
+   between(A, C, L),
+   cover_hit(OrigSrcPin, L), !.
+%   cover_hit(OrigSrcPin, L),
+%   A =< L, L < B, !.
 sys_find_hit(_, _, _, 0-1).
 
-% sys_find_indicator(+File, +Integer, +Integer, -Atom, -Integer)
-:- private sys_find_indicator/5.
-sys_find_indicator(SrcPin, A, B, Fun, Arity) :-
-   source_property(SrcPin, sys_location(Indicator,SrcPin,L)),
-   A =< L,
-   L < B, !,
-   short_indicator(Indicator, SrcPin, ShortIndicator),
+% sys_find_indicator(+Atom, +Atom, +Integer, +Integer, -Atom, -Integer)
+:- private sys_find_indicator/6.
+sys_find_indicator(SrcPin, OrigSrcPin, A, B, Fun, Arity) :-
+   C is B-1,
+   between(A, C, L),
+   sys_location(SrcPin, OrigSrcPin, L, Indicator),
+                                                  %   source_property(SrcPin, sys_location(Indicator, OrigSrcPin, L)),
+                                                  %   A =< L, L < B,
+   short_indicator(Indicator, OrigSrcPin, ShortIndicator),
    sys_make_indicator(Fun, Arity, ShortIndicator).
 
 % sys_analyze_text(+File)
@@ -292,21 +298,30 @@ sys_find_indicator(SrcPin, A, B, Fun, Arity) :-
 sys_analyze_text(InName) :-
    absolute_file_name(InName, SrcPin),
    path_last_two(SrcPin, LastTwo),
-   setup_call_cleanup(open(InName, read, InStream),
-      (  repeat,
-         read_term(InStream, Term, [source(SrcPin),line_no(Line1)]),
-         (  Term == end_of_file -> !
-         ;  (  at_end_of_stream(InStream)
-            -> stream_property(InStream, line_no(L)),
-               Line2 is L+1
-            ;  stream_property(InStream, line_no(Line2))),
-            sys_find_hit(SrcPin, Line1, Line2, OkNok),
-            sys_find_indicator(SrcPin, Line1, Line2, Fun, Arity),
-            sys_update_cover(Fun, Arity, LastTwo, Line1, OkNok),
-            sys_update_predicate(Fun, Arity, LastTwo, OkNok),
-            sys_update_source(LastTwo, OkNok),
-            sys_update_summary(OkNok), fail)),
+   setup_call_cleanup(
+      open(InName, read, InStream),
+      sys_analyze_text(InStream, SrcPin, SrcPin, LastTwo),
       close(InStream)).
+
+% sys_analyze_text(+Stream, +Atom, +Atom, +Cover)
+:- private sys_analyze_text/4.
+sys_analyze_text(InStream, SrcPin, OrigSrcPin, LastTwo) :- repeat,
+   read_term(InStream, Term, [source(SrcPin),line_no(Line1)]),
+   (  Term == end_of_file -> !
+   ;  (  at_end_of_stream(InStream)
+      -> stream_property(InStream, line_no(L)),
+         Line2 is L+1
+      ;  stream_property(InStream, line_no(Line2))),
+      sys_find_hit(OrigSrcPin, Line1, Line2, OkNok),
+      sys_find_indicator(SrcPin, OrigSrcPin, Line1, Line2, Fun, Arity),
+      sys_update_cover(Fun, Arity, LastTwo, Line1, OkNok),
+      sys_update_predicate(Fun, Arity, LastTwo, OkNok),
+      sys_update_source(LastTwo, OkNok),
+      sys_update_summary(OkNok),
+      (  Term = (:-begin_module(Module))
+      -> absolute_file_name(verbatim(Module), LocalSrcPin),
+         sys_analyze_text(InStream, LocalSrcPin, OrigSrcPin, LastTwo), fail
+      ;  Term = (:-end_module) -> !; fail)).
 
 /**
  * analyze_batch:
