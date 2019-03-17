@@ -206,7 +206,7 @@ public final class SpecialFrame extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(sk.getFun(), sk.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /*******************************************************************/

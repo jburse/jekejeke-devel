@@ -2,6 +2,7 @@ package jekdev.model.pretty;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Predicate;
+import matula.util.data.ListArray;
 import matula.util.data.SetHashLink;
 
 /**
@@ -35,9 +36,7 @@ import matula.util.data.SetHashLink;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class PredicateSet {
-    private final SetHashLink<Predicate> preds
-            = new SetHashLink<Predicate>();
+public final class PredicateSet extends ListArray<Predicate> {
     private Predicate[] cachepreds;
 
     /**
@@ -47,9 +46,9 @@ public final class PredicateSet {
      * @return True if cache was cleared, otherwise false.
      */
     public boolean addPredicate(Predicate pick) {
-        if (preds.getKey(pick) != null)
+        if (contains(pick))
             return false;
-        preds.add(pick);
+        add(pick);
         cachepreds = null;
         return true;
     }
@@ -63,9 +62,9 @@ public final class PredicateSet {
         Predicate[] res = cachepreds;
         if (res != null)
             return res;
-        if (preds.size() != 0) {
-            res = new Predicate[preds.size()];
-            preds.toArray(res);
+        if (size() != 0) {
+            res = new Predicate[size()];
+            toArray(res);
         } else {
             res = AbstractBranch.FALSE_PREDS;
         }

@@ -38,9 +38,7 @@ import matula.util.data.MapHashLink;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class PositionMap {
-    private final MapHashLink<PositionKey, PredicateSet> locs
-            = new MapHashLink<PositionKey, PredicateSet>();
+public final class PositionMap extends MapHashLink<PositionKey, PredicateSet> {
     private MapEntry<PositionKey, Predicate[]>[] cachelocs;
 
     private final static MapEntry<PositionKey, Predicate[]>[] VOID_POS = new MapEntry[0];
@@ -64,10 +62,10 @@ public final class PositionMap {
      */
     public void addPosition(PositionKey pos, Predicate pick) {
         synchronized (src) {
-            PredicateSet loc = locs.get(pos);
+            PredicateSet loc = get(pos);
             if (loc == null) {
                 loc = new PredicateSet();
-                locs.add(pos, loc);
+                add(pos, loc);
             }
             if (!loc.addPredicate(pick))
                 return;
@@ -80,7 +78,7 @@ public final class PositionMap {
      */
     public void clearPositions() {
         synchronized (src) {
-            locs.clear();
+            clear();
             cachelocs = null;
         }
     }
@@ -98,11 +96,11 @@ public final class PositionMap {
             res = cachelocs;
             if (res != null)
                 return res;
-            if (locs.size() != 0) {
-                res = new MapEntry[locs.size()];
+            if (size() != 0) {
+                res = new MapEntry[size()];
                 int k = 0;
-                for (MapEntry<PositionKey, PredicateSet> entry = locs.getFirstEntry();
-                     entry != null; entry = locs.successor(entry)) {
+                for (MapEntry<PositionKey, PredicateSet> entry = getFirstEntry();
+                     entry != null; entry = successor(entry)) {
                     PredicateSet loc = entry.value;
                     MapEntry<PositionKey, Predicate[]> help = new MapEntry<PositionKey, Predicate[]>();
                     help.key = entry.key;
@@ -126,7 +124,7 @@ public final class PositionMap {
     public Predicate[] allPredicates(PositionKey pos) {
         Predicate[] res;
         synchronized (src) {
-            PredicateSet loc = locs.get(pos);
+            PredicateSet loc = get(pos);
             res = (loc != null ? loc.allPredicates() :
                     AbstractBranch.FALSE_PREDS);
         }

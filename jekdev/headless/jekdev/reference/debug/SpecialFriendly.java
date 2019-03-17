@@ -112,7 +112,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 Object obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
-                PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
+                PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setWriter(wr);
@@ -136,7 +136,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
-                pw = Foyer.createWriter(Foyer.IO_TERM);
+                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setWriter(wr);

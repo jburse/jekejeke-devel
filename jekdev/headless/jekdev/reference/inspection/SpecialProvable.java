@@ -108,7 +108,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                SpecialPred.predicateToProperties(pick, en);
+                SpecialPred.predicateToProperties2(pick, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -125,7 +125,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialPred.addPredProp(en.skel, en.display, pick, en);
+                SpecialPred.setPredProp(pick, en.skel, en.display, en);
                 return true;
             case SPECIAL_RESET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -136,7 +136,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialPred.removePredProp(en.skel, en.display, pick, en);
+                SpecialPred.resetPredProp(pick, en.skel, en.display, en);
                 return true;
             case SPECIAL_SYS_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -314,14 +314,14 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Throws a domain error for undefined atom properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop The property.
+     * @param sk The property.
      * @param t2   The callable skeleton.
      * @param d2   The callable display.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    public static Object[] getPropCallable(StoreKey prop, Object t2, Display d2,
+    public static Object[] getPropCallable(StoreKey sk, Object t2, Display d2,
                                            Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -331,27 +331,27 @@ public final class SpecialProvable extends AbstractSpecial {
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            Object[] vals = branch.getCallableProp(prop, t2, d2, en);
+            Object[] vals = branch.getCallableProp(sk, t2, d2, en);
             if (vals != null)
                 return vals;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
      * <p>Set an atom property.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop The property.
+     * @param sk The property.
      * @param t2   The callable skeleton.
      * @param d2   The callable display.
      * @param vals The values.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void setPropCallable(StoreKey prop, Object t2, Display d2,
+    private static void setPropCallable(StoreKey sk, Object t2, Display d2,
                                         Object[] vals, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -361,12 +361,12 @@ public final class SpecialProvable extends AbstractSpecial {
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            if (branch.setCallableProp(prop, t2, d2, vals, en))
+            if (branch.setCallableProp(sk, t2, d2, vals, en))
                 return;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToPropSkel(prop.getFun(), prop.getArity())));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**************************************************************/

@@ -268,7 +268,7 @@ public final class SpecialDefault extends AbstractSpecial {
             }
             wr.write(PrologWriter.align(Integer.toString(depth), 3, false));
             wr.write(" ");
-            PrologWriter pw = Foyer.createWriter(Foyer.IO_TERM);
+            PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
             pw.setSource(en.visor.peekStack());
             pw.setEngineRaw(en);
             pw.setSpez(PrologWriter.SPEZ_META);

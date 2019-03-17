@@ -160,6 +160,22 @@ public abstract class FoyerTrace extends Foyer {
         }
     }
 
+    /**
+     * <p>Factory for Prolog writers.</p>
+     *
+     * @return The Prolog writer.
+     */
+    public PrologWriter createWriter(int io) {
+        switch (io) {
+            case IO_TERM:
+                return new PrologWriterTrace();
+            case IO_ANNO:
+                return new PrologWriterAnnoTrace();
+            default:
+                throw new IllegalArgumentException("illegal io");
+        }
+    }
+
     /*********************************************************/
     /* Store etc.. Object Factories                          */
     /*********************************************************/
