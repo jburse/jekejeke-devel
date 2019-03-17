@@ -49,14 +49,10 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertyOperator extends AbstractProperty<Operator> {
-    private final static String OP_FULL_NAME = "full_name";
     private final static String OP_NSPL = "nspl";
     private final static String OP_NSPR = "nspr";
     private final static String OP_LEVEL = "level";
     private final static String OP_MODE = "mode";
-    private final static String OP_VISIBLE = "visible";
-    private final static String OP_OVERRIDE = "override";
-    private final static String OP_SYS_USAGE = "sys_usage";
     private final static String OP_SYS_PORTRAY = "sys_portray";
     private final static String OP_SYS_ALIAS = "sys_alias";
 
@@ -87,14 +83,14 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
      */
     public static MapHash<StoreKey, AbstractProperty<Operator>> defineOperProps() {
         MapHash<StoreKey, AbstractProperty<Operator>> operprops = new MapHash<StoreKey, AbstractProperty<Operator>>();
-        operprops.add(new StoreKey(OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
+        operprops.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
         operprops.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL));
         operprops.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR));
         operprops.add(new StoreKey(OP_LEVEL, 1), new PropertyOperator(PROP_LEVEL));
         operprops.add(new StoreKey(OP_MODE, 1), new PropertyOperator(PROP_MODE));
-        operprops.add(new StoreKey(OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE));
-        operprops.add(new StoreKey(OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
-        operprops.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
+        operprops.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE));
+        operprops.add(new StoreKey(PropertyPredicate.OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
+        operprops.add(new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
         operprops.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY));
         operprops.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS));
         return operprops;
@@ -115,7 +111,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             case PROP_FULL_NAME:
                 Object val = new SkelAtom(oper.getKey());
                 return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(OP_FULL_NAME), val), Display.DISPLAY_CONST)};
+                        new SkelAtom(PropertyPredicate.OP_FULL_NAME), val), Display.DISPLAY_CONST)};
             case PROP_NSPL:
                 if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
                     return new Object[]{new SkelAtom(OP_NSPL)};
@@ -151,18 +147,18 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 flags = oper.getBits();
                 if ((flags & Operator.MASK_OPER_VSPR) != 0) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_VISIBLE),
+                            new SkelAtom(PropertyPredicate.OP_VISIBLE),
                             new SkelAtom(AbstractSource.OP_PRIVATE)), Display.DISPLAY_CONST)};
                 } else if ((flags & Operator.MASK_OPER_VSPU) != 0) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_VISIBLE),
+                            new SkelAtom(PropertyPredicate.OP_VISIBLE),
                             new SkelAtom(AbstractSource.OP_PUBLIC)), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
             case PROP_OVERRIDE:
                 if ((oper.getBits() & Operator.MASK_OPER_OVRD) != 0) {
-                    return new Object[]{new SkelAtom(OP_OVERRIDE)};
+                    return new Object[]{new SkelAtom(PropertyPredicate.OP_OVERRIDE)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -173,7 +169,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 if (!Clause.ancestorSource(src, en))
                     return AbstractBranch.FALSE_PROPERTY;
                 return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(SpecialOper.OP_SYS_USAGE),
+                        new SkelAtom(PropertyPredicate.OP_SYS_USAGE),
                         src.getPathAtom()), Display.DISPLAY_CONST)};
             case PROP_SYS_PORTRAY:
                 String str = oper.getPortray();
@@ -397,7 +393,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
         d = en.display;
         if (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 1 &&
-                ((SkelCompound) m).sym.fun.equals(OP_VISIBLE)) {
+                ((SkelCompound) m).sym.fun.equals(PropertyPredicate.OP_VISIBLE)) {
             m = ((SkelCompound) m).args[0];
             String fun = SpecialUniv.derefAndCastString(m, d);
             return PropertyOperator.atomToVisible(fun);

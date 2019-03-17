@@ -265,13 +265,13 @@ public final class Interpreter {
                         AbstractTerm.getDisplay(opt), en);
                 if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
                         (wo.flags & PrologWriter.FLAG_NAVI) == 0) {
-                    pw = Foyer.createWriter(Foyer.IO_TERM);
+                    pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 } else {
-                    pw = Foyer.createWriter(Foyer.IO_ANNO);
+                    pw = en.store.foyer.createWriter(Foyer.IO_ANNO);
                 }
                 wo.setWriteOpts(pw);
             } else {
-                pw = Foyer.createWriter(Foyer.IO_TERM);
+                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 if (qf)
                     pw.flags |= PrologWriter.FLAG_QUOT;
@@ -368,8 +368,7 @@ public final class Interpreter {
                     rd.parseTailError(y);
                     EngineMessage x = new EngineMessage(
                             EngineMessage.syntaxError(y.getMessage()));
-                    PositionKey pos = (OpenOpts.getPath(lr) != null ?
-                            new PositionKey(OpenOpts.getPath(lr), OpenOpts.getLineNumber(lr)) : null);
+                    PositionKey pos = PositionKey.createPos(lr);
                     throw new EngineException(x,
                             EngineException.fetchPos(EngineException.fetchLoc(
                                     EngineException.fetchStack(en),

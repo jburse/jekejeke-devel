@@ -1,10 +1,10 @@
 package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindVar;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.molec.BindVar;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;

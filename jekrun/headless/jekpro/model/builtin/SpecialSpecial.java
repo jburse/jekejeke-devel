@@ -80,7 +80,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     en.display = ref;
                     en.deref();
                     EngineMessage.checkCallable(en.skel, en.display);
-                    SpecialPred.addPredProp(en.skel, en.display, pick, en);
+                    SpecialPred.setPredProp(pick, en.skel, en.display, en);
                     return true;
                 case SPECIAL_RESET_PREDICATE_PROPERTY:
                     temp = ((SkelCompound) en.skel).args;
@@ -92,7 +92,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     en.display = ref;
                     en.deref();
                     EngineMessage.checkCallable(en.skel, en.display);
-                    SpecialPred.removePredProp(en.skel, en.display, pick, en);
+                    SpecialPred.resetPredProp(pick, en.skel, en.display, en);
                     return true;
                 case SPECIAL_SYS_NEUTRAL_PREDICATE:
                     temp = ((SkelCompound) en.skel).args;

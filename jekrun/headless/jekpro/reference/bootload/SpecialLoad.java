@@ -288,7 +288,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 if ((prop.getFlags() & AbstractInformation.MASK_PROP_SUPR) != 0 &&
                         sameVisible(source, pick, en))
                     continue;
-                Object[] vals = SpecialPred.getPropPred(pick, prop, en);
+                AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(prop, en);
+                Object[] vals = prop1.getObjProps(pick, en);
                 if ((prop.getFlags() & AbstractInformation.MASK_PROP_SLCF) != 0) {
                     vals = selectFirst(vals, source.getPathAtom());
                 } else if ((prop.getFlags() & AbstractInformation.MASK_PROP_PRJF) != 0) {
@@ -348,7 +349,6 @@ public final class SpecialLoad extends AbstractSpecial {
             pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
         }
     }
-
 
     /**
      * <p>List the syntax operator.</p>
@@ -583,8 +583,8 @@ public final class SpecialLoad extends AbstractSpecial {
         StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
         AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
         Object[] vals = projectFirst(prop.getObjProps(src, en));
-        Object[] vals2 = projectFirst(SpecialPred.getPropPred(
-                pick, Branch.PROP_VISIBLE, en));
+        AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(Branch.PROP_VISIBLE, en);
+        Object[] vals2 = projectFirst(prop1.getObjProps(pick, en));
         return sameValues(vals, vals2);
     }
 

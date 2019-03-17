@@ -15,13 +15,10 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.Goal;
-import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
@@ -317,7 +314,7 @@ public final class SpecialSource extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static void resetSrcProp(AbstractSource src,
-                                  Object m, Display d, Engine en)
+                                    Object m, Display d, Engine en)
             throws EngineMessage {
         StoreKey sk = StackElement.callableToStoreKey(m);
         AbstractProperty<AbstractSource> prop = findSrcProperty(sk, en);
@@ -339,7 +336,7 @@ public final class SpecialSource extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static AbstractProperty<AbstractSource> findSrcProperty(StoreKey sk,
-                                                                    Engine en)
+                                                                   Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();

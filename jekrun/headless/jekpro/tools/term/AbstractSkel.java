@@ -12,6 +12,7 @@ import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.structure.SpecialLexical;
 
 import java.io.StringWriter;
+import java.util.Comparator;
 
 /**
  * <p>This is the base class for skeletons, except for numbers and references.</p>
@@ -45,8 +46,13 @@ import java.io.StringWriter;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractSkel {
-    public final static Object VOID_OBJ = new Object();
+    public final static Comparator<Object> DEFAULT = new Comparator<Object>() {
+        public int compare(Object o1, Object o2) {
+            return compareSkel(o1, o2);
+        }
+    };
 
+    public final static Object VOID_OBJ = new Object();
 
     /**
      * <p>Return a string of a skeleton.</p>

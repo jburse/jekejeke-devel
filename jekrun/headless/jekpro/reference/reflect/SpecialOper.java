@@ -70,17 +70,6 @@ public final class SpecialOper extends AbstractSpecial {
 
     public final static Operator[] FALSE_OPERS = new Operator[]{};
 
-    public final static String OP_FULL_NAME = "full_name";
-    private final static String OP_NSPL = "nspl";
-    private final static String OP_NSPR = "nspr";
-    private final static String OP_LEVEL = "level";
-    private final static String OP_MODE = "mode";
-    public final static String OP_VISIBLE = "visible";
-    public final static String OP_OVERRIDE = "override";
-    public final static String OP_SYS_USAGE = "sys_usage";
-    public final static String OP_SYS_PORTRAY = "sys_portray";
-    public final static String OP_SYS_ALIAS = "sys_alias";
-
     public final static String OP_FX = "fx";
     public final static String OP_FY = "fy";
     public final static String OP_XFX = "xfx";
@@ -451,17 +440,7 @@ public final class SpecialOper extends AbstractSpecial {
     /* Properties Interface                                                */
     /***********************************************************************/
 
-    // The property keys
-    private static final StoreKey KEY_FULL_NAME = new StoreKey(OP_FULL_NAME, 1);
-    private static final StoreKey KEY_NSPL = new StoreKey(OP_NSPL, 0);
-    private static final StoreKey KEY_NSPR = new StoreKey(OP_NSPR, 0);
-    private static final StoreKey KEY_LEVEL = new StoreKey(OP_LEVEL, 1);
-    private static final StoreKey KEY_MODE = new StoreKey(OP_MODE, 1);
-    private static final StoreKey KEY_VISIBLE = new StoreKey(OP_VISIBLE, 1);
-    private static final StoreKey KEY_OVERRIDE = new StoreKey(OP_OVERRIDE, 0);
-    private static final StoreKey KEY_SYS_USAGE = new StoreKey(OP_SYS_USAGE, 1);
-    private static final StoreKey KEY_SYS_PORTRAY = new StoreKey(OP_SYS_PORTRAY, 1);
-    private static final StoreKey KEY_SYS_ALIAS = new StoreKey(OP_SYS_ALIAS, 1);
+    private static final StoreKey KEY_SYS_USAGE = new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1);
 
     /**
      * <p>Create a syntax special.</p>
@@ -475,10 +454,10 @@ public final class SpecialOper extends AbstractSpecial {
     /**
      * <p>Retrieve operators for a property.</p>
      *
-     * @param t    The value skeleton.
-     * @param d    The value display.
+     * @param t  The value skeleton.
+     * @param d  The value display.
      * @param sk The property.
-     * @param en   The engine.
+     * @param en The engine.
      * @return The operators, or null.
      * @throws EngineMessage Shit happens.
      */

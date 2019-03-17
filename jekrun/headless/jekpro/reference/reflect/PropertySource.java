@@ -6,7 +6,10 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.AbstractFile;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.WriteOpts;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
@@ -113,7 +116,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
      * @param f The flags.
      */
     private PropertySource(int i, int f) {
-        super(i,f);
+        super(i, f);
     }
 
     /**
@@ -785,7 +788,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
      * @throws EngineMessage Shit happens.
      */
     public static Object shortLink(Object skel,
-                              AbstractSource source, Engine en)
+                                   AbstractSource source, Engine en)
             throws EngineMessage {
         try {
             SkelCompound sc = (SkelCompound) skel;
@@ -851,12 +854,12 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     /**
      * <p>Generate a declaration skel for the source property.</p>
      *
-     * @param skel   The skel.
-     * @param en The engine.
+     * @param skel The skel.
+     * @param en   The engine.
      * @return The declaration skel.
      */
     public static Object shortModule(Object skel, Engine en) {
-       SkelCompound sc = (SkelCompound) skel;
+        SkelCompound sc = (SkelCompound) skel;
         return new SkelCompound(new SkelAtom(SpecialLoad.OP_MODULE),
                 sc.args[0], en.store.foyer.ATOM_NIL);
     }

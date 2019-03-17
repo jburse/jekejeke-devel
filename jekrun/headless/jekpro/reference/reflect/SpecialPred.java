@@ -3,6 +3,7 @@ package jekpro.reference.reflect;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractInformation;
+import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -16,6 +17,7 @@ import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 
 /**
  * <p>Provides built-in predicates for the module pred.</p>
@@ -111,7 +113,7 @@ public final class SpecialPred extends AbstractSpecial {
                 pick = indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                SpecialPred.predicateToProperties(pick, en);
+                SpecialPred.predicateToProperties2(pick, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -126,7 +128,7 @@ public final class SpecialPred extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                SpecialPred.predicateToProperty(pick, prop, en);
+                SpecialPred.predicateToProperty2(pick, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
@@ -153,7 +155,7 @@ public final class SpecialPred extends AbstractSpecial {
                 if (pick == null)
                     return false;
                 prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                SpecialPred.predicateToProperty(pick, prop, en);
+                SpecialPred.predicateToProperty2(pick, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
@@ -268,8 +270,8 @@ public final class SpecialPred extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void predicateToProperties(Predicate pick, Engine en)
-            throws EngineMessage {
+    public static void predicateToProperties2(Predicate pick, Engine en)
+            throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
@@ -279,12 +281,14 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractInformation[] props = branch.listPredProp(pick);
-            for (int j = props.length - 1; j >= 0; j--) {
-                AbstractInformation prop = props[j];
+            MapHash<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
+            for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
+                 (props != null ? props.getLastEntry() : null);
+                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                AbstractProperty<Predicate> prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
-                Object[] vals = getPropPred(pick, prop, en);
+                Object[] vals = prop.getObjProps(pick, en);
                 en.skel = t;
                 en.display = d;
                 AbstractInformation.consArray(vals, en);
@@ -296,49 +300,19 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Create a prolog list for the property of the given predicate.</p>
      * <p>Result is returned in skeleton and display.</p>
      *
-     * @param pred The predicate.
-     * @param prop The property.
+     * @param pick The predicate.
+     * @param sk   The property.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void predicateToProperty(Predicate pred, StoreKey prop,
-                                           Engine en)
-            throws EngineMessage {
-        Object[] vals = getPropPred(pred, prop, en);
+    public static void predicateToProperty2(Predicate pick, StoreKey sk,
+                                            Engine en)
+            throws EngineMessage, EngineException {
+        AbstractProperty<Predicate> prop = SpecialPred.findPredProperty(sk, en);
+        Object[] vals = prop.getObjProps(pick, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         AbstractInformation.consArray(vals, en);
-    }
-
-    /**
-     * <p>Retrieve a predicate property.</p>
-     * <p>Throws a domain error for undefined predicate properties.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param pred The predicate.
-     * @param sk The property.
-     * @param en   The engine.
-     * @return The value.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object[] getPropPred(Predicate pred, StoreKey sk,
-                                       Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot =
-                en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            Object[] vals = branch.getPredProp(pred, sk, en);
-            if (vals != null)
-                return vals;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**************************************************************/
@@ -349,38 +323,84 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Set a predicate property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param t    The value skeleton.
+     * @param pick The predicate.
+     * @param m    The value skeleton.
      * @param d    The value display.
-     * @param pred The predicate.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void addPredProp(Object t, Display d, Predicate pred,
+    public static void setPredProp(Predicate pick, Object m, Display d,
                                    Engine en)
-            throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getPropPred(pred, prop, en);
-        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(t, d));
-        setPropPred(prop, pred, vals, en);
+            throws EngineMessage, EngineException {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Predicate> prop = SpecialPred.findPredProperty(sk, en);
+        if (!prop.setObjProp(pick, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
      * <p>Reset a predicate property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param t    The value skeleton.
+     * @param pick The predicate.
+     * @param m    The value skeleton.
      * @param d    The value display.
-     * @param pred The predicate.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void removePredProp(Object t, Display d, Predicate pred,
+    public static void resetPredProp(Predicate pick, Object m, Display d,
+                                     Engine en)
+            throws EngineMessage, EngineException {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Predicate> prop = SpecialPred.findPredProperty(sk, en);
+        if (!prop.resetObjProp(pick, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToSkel(sk)));
+    }
+
+    /**
+     * <p>Set a predicate property.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     *
+     * @param pick The predicate.
+     * @param m    The value skeleton.
+     * @param d    The value display.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void addPredProp(Predicate pick, Object m, Display d,
+                                   Engine en)
+            throws EngineMessage, EngineException {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Predicate> prop = SpecialPred.findPredProperty(sk, en);
+        Object[] vals = prop.getObjProps(pick, en);
+        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(m, d));
+        setPropPred(sk, pick, vals, en);
+    }
+
+    /**
+     * <p>Reset a predicate property.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     *
+     * @param pick The predicate.
+     * @param m    The value skeleton.
+     * @param d    The value display.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void removePredProp(Predicate pick, Object m, Display d,
                                       Engine en)
-            throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getPropPred(pred, prop, en);
-        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(t, d));
-        setPropPred(prop, pred, vals, en);
+            throws EngineMessage, EngineException {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Predicate> prop = SpecialPred.findPredProperty(sk, en);
+        Object[] vals = prop.getObjProps(pick, en);
+        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(m, d));
+        setPropPred(sk, pick, vals, en);
     }
 
     /**
@@ -388,7 +408,7 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Throws a domain error for undefined predicate properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param sk The property.
+     * @param sk   The property.
      * @param pred The predicate.
      * @param vals The values, non null.
      * @param en   The engine.
@@ -407,6 +427,37 @@ public final class SpecialPred extends AbstractSpecial {
             AbstractBranch branch = (AbstractBranch) entry.key;
             if (branch.setPredProp(sk, pred, vals, en))
                 return;
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
+                StoreKey.storeKeyToSkel(sk)));
+    }
+
+    /**
+     * <p>Retrieve a predicate property.</p>
+     * <p>Throws a domain error for undefined predicate properties.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param sk The property.
+     * @param en The engine.
+     * @return The predicate property.
+     * @throws EngineMessage Shit happens.
+     */
+    public static AbstractProperty<Predicate> findPredProperty(StoreKey sk,
+                                                               Engine en)
+            throws EngineMessage {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot =
+                en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
+            AbstractProperty<Predicate> prop = (props != null ? props.get(sk) : null);
+            if (prop != null)
+                return prop;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
@@ -439,10 +490,10 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Throws a domain error for unsupported predicate properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param t    The value skeleton.
-     * @param d    The value display.
+     * @param t  The value skeleton.
+     * @param d  The value display.
      * @param sk The property.
-     * @param en   The engine.
+     * @param en The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */

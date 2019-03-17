@@ -462,7 +462,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param sa    The name.
      * @param arity The length.
      * @param en    The engine.
-     * @return The colon
+     * @return The colon indictor
      * @throws EngineMessage Shit happens.
      */
     public static Object indicatorToColonSkel(SkelAtom sa, int arity,
@@ -494,7 +494,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param scope The scope.
      * @param arity The length.
      * @param en    The engine.
-     * @return The colon
+     * @return The colon indictor
      * @throws EngineMessage Shit happens.
      */
     public static Object indicatorToColonSkel(String fun,
@@ -509,12 +509,12 @@ public final class SpecialQuali extends AbstractSpecial {
             SkelAtom sa2 = new SkelAtom(OP_COLON, scope);
 
             Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
-                    new SkelAtom(CacheFunctor.sepName(fun)),
+                    new SkelAtom(CacheFunctor.sepName(fun), scope),
                     Integer.valueOf(arity));
             s = new SkelCompound(sa2, s, t);
         } else {
             s = new SkelCompound(en.store.foyer.ATOM_SLASH,
-                    new SkelAtom(fun),
+                    new SkelAtom(fun, scope),
                     Integer.valueOf(arity));
         }
         return s;
