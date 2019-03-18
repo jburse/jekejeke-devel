@@ -378,7 +378,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                 s = src.getFullName();
                 if (Branch.OP_USER.equals(s))
                     return AbstractBranch.FALSE_PROPERTY;
-                Object val = SpecialDynamic.moduleToSlashSkel(s, src.getStore().user, en);
+                Object val = SpecialDynamic.moduleToSlashSkel(s, src.getStore().user);
                 return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                         new SkelAtom(OP_SYS_MODULE),
                         val), Display.DISPLAY_CONST)};

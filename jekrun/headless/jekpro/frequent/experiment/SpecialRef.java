@@ -3,7 +3,7 @@ package jekpro.frequent.experiment;
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
+import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
@@ -272,7 +272,7 @@ public final class SpecialRef extends AbstractSpecial {
                 Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
                 en.skel = t;
                 en.display = d;
-                AbstractInformation.consArray(vals, en);
+                AbstractProperty.consArray(vals, en);
             }
         }
     }
@@ -292,7 +292,7 @@ public final class SpecialRef extends AbstractSpecial {
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractInformation.consArray(vals, en);
+        AbstractProperty.consArray(vals, en);
     }
 
     /**
@@ -310,7 +310,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(temp);
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
-        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(temp, ref));
+        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);
     }
 
@@ -329,7 +329,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(temp);
         Object[] vals = SpecialRef.getRefProp(prop, ptr, en);
-        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(temp, ref));
+        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(temp, ref));
         SpecialRef.setRefProp(prop, vals, ptr, en);
     }
 
@@ -342,13 +342,13 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Throws a domain error for undefined ptr properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop The property.
+     * @param sk The property.
      * @param ptr  The reference.
      * @param en   The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
-    private static Object[] getRefProp(StoreKey prop,
+    private static Object[] getRefProp(StoreKey sk,
                                        InterfaceReference ptr, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -358,13 +358,13 @@ public final class SpecialRef extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            Object[] vals = branch.getRefProp(prop, ptr, en);
+            Object[] vals = branch.getRefProp(sk, ptr, en);
             if (vals != null)
                 return vals;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(prop)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**
@@ -372,13 +372,13 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Throws a domain error for undefined values properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param prop  The property.
+     * @param sk  The property.
      * @param vals2 The values, non null.
      * @param ptr   The reference.
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void setRefProp(StoreKey prop, Object[] vals2,
+    private static void setRefProp(StoreKey sk, Object[] vals2,
                                    InterfaceReference ptr, Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -388,12 +388,12 @@ public final class SpecialRef extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            if (branch.setRefProp(prop, vals2, ptr, en))
+            if (branch.setRefProp(sk, vals2, ptr, en))
                 return;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(prop)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /*******************************************************************/

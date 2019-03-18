@@ -7,10 +7,7 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
-import jekpro.reference.reflect.PropertySource;
-import jekpro.reference.reflect.SpecialOper;
-import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.reflect.SpecialSource;
+import jekpro.reference.reflect.*;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
@@ -277,27 +274,28 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractInformation[] props = branch.listPredProp(pick);
-            for (int k = 0; k < props.length; k++) {
-                AbstractInformation prop = props[k];
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_HIDE) != 0)
+            MapHash<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
+            for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
+                 (props != null ? props.getLastEntry() : null);
+                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                AbstractProperty<Predicate> prop = entry2.value;
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
                     continue;
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_NOCL) != 0 &&
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
                         hasClause(pick, source, en))
                     continue;
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_SUPR) != 0 &&
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
                         sameVisible(source, pick, en))
                     continue;
-                AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(prop, en);
-                Object[] vals = prop1.getObjProps(pick, en);
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_SLCF) != 0) {
+                Object[] vals = prop.getObjProps(pick, en);
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
                     vals = selectFirst(vals, source.getPathAtom());
-                } else if ((prop.getFlags() & AbstractInformation.MASK_PROP_PRJF) != 0) {
+                } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0) {
                     vals = projectFirst(vals);
-                } else if ((prop.getFlags() & AbstractInformation.MASK_PROP_DELE) != 0) {
-                    vals = delegateSpec(vals, pick, source, en);
+                } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
+                    vals = delegateSpec(vals, pick, source);
                 }
-                if ((prop.getFlags() & AbstractInformation.MASK_PROP_MODI) != 0) {
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
                     for (int j = 0; j < vals.length; j++) {
                         if (modifiers == null)
                             modifiers = new ListArray<SkelAtom>();
@@ -306,8 +304,17 @@ public final class SpecialLoad extends AbstractSpecial {
                 } else {
                     for (int j = 0; j < vals.length; j++) {
                         Object val = vals[j];
-                        Object decl = prop.predDeclSkel(AbstractTerm.getSkel(val),
-                                pick, source, en);
+                        Object decl;
+                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
+                            decl = SpecialModel.predDeclSkelSet(AbstractTerm.getSkel(val),
+                                    pick, source, en);
+                        } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
+                            decl = SpecialModel.predDeclSkelMeta(AbstractTerm.getSkel(val),
+                                    pick, source, en);
+                        } else {
+                            decl = SpecialModel.predDeclSkelIndicator(AbstractTerm.getSkel(val),
+                                    pick, source, en);
+                        }
                         if (modifiers != null) {
                             decl = prependModifiers(modifiers, decl);
                             modifiers = null;
@@ -332,8 +339,7 @@ public final class SpecialLoad extends AbstractSpecial {
             if (source != sa.scope)
                 continue;
             if (modifiers != null) {
-                Object decl = InformationIndicator.storeKeyToColonSkel(
-                        pick.getFun(), pick.getArity(), source, en);
+                Object decl = SpecialModel.storeKeyToColonSkel(pick, source, en);
                 decl = prependModifiers(modifiers, decl);
                 modifiers = null;
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
@@ -583,7 +589,8 @@ public final class SpecialLoad extends AbstractSpecial {
         StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
         AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
         Object[] vals = projectFirst(prop.getObjProps(src, en));
-        AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(Branch.PROP_VISIBLE, en);
+        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
+        AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(sk2, en);
         Object[] vals2 = projectFirst(prop1.getObjProps(pick, en));
         return sameValues(vals, vals2);
     }
@@ -611,18 +618,17 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param vals   The value list only buit_in.
      * @param pick   The predicate.
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The value list with spec.
      */
     private static Object[] delegateSpec(Object[] vals, Predicate pick,
-                                         AbstractSource source, Engine en)
+                                         AbstractSource source)
             throws EngineMessage {
         if (vals.length == 0)
             return vals;
         Object[] newvals = new Object[vals.length];
         for (int i = 0; i < vals.length; i++) {
-            Object val = pick.del.toSpec(source, en);
+            Object val = pick.del.toSpec(source);
             newvals[i] = AbstractTerm.createMolec(val, Display.DISPLAY_CONST);
         }
         return newvals;
@@ -650,10 +656,10 @@ public final class SpecialLoad extends AbstractSpecial {
      */
     private static boolean sameValues(Object[] vals, Object[] vals2) {
         for (int i = 0; i < vals.length; i++)
-            if (AbstractInformation.indexValue(vals2, vals[i]) == -1)
+            if (AbstractProperty.indexValue(vals2, vals[i]) == -1)
                 return false;
         for (int i = 0; i < vals2.length; i++)
-            if (AbstractInformation.indexValue(vals, vals2[i]) == -1)
+            if (AbstractProperty.indexValue(vals, vals2[i]) == -1)
                 return false;
         return true;
     }

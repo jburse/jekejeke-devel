@@ -2,7 +2,6 @@ package jekdev.reference.inspection;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -220,7 +219,7 @@ public final class ForeignStore {
                 Object[] vals = prop.getObjProps(store, en);
                 en.skel = t;
                 en.display = d;
-                AbstractInformation.consArray(vals, en);
+                AbstractProperty.consArray(vals, en);
             }
         }
     }
@@ -238,13 +237,13 @@ public final class ForeignStore {
      * @throws EngineException Shit happens.
      */
     public static void storeToProperty(Store store, StoreKey sk,
-                                          Engine en)
+                                       Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<Store> prop = findStoreProperty(sk, en);
         Object[] vals = prop.getObjProps(store, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractInformation.consArray(vals, en);
+        AbstractProperty.consArray(vals, en);
     }
 
     /*******************************************************************/
@@ -272,7 +271,7 @@ public final class ForeignStore {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**
@@ -296,7 +295,7 @@ public final class ForeignStore {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    StoreKey.storeKeyToSkel(sk, en)));
     }
 
 
@@ -328,7 +327,7 @@ public final class ForeignStore {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
 }

@@ -15,6 +15,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
 /**
@@ -304,6 +305,44 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));
+        }
+    }
+
+    /**
+     * <p>Retrieve operators for a property.</p>
+     *
+     * @param m  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     * @return The operators, or null.
+     * @throws EngineMessage Shit happens.
+     */
+    public Operator[] idxObjProp(Object m, Display d, Engine en)
+            throws EngineMessage {
+        if (id == PROP_SYS_USAGE) {
+            AbstractSource src = PropertyPredicate.derefAndCastDef(m, d,
+                    PropertyPredicate.OP_SYS_USAGE, en);
+            if (src == null || !Clause.ancestorSource(src, en))
+                return SpecialOper.FALSE_OPERS;
+            Operator[] snapshot = src.snapshotOpersInv();
+            ListArray<Operator> res = null;
+            for (int i = 0; i < snapshot.length; i++) {
+                Operator oper = snapshot[i];
+                if (!Clause.ancestorSource(oper.getSource(), en))
+                    continue;
+                if (res == null)
+                    res = new ListArray<Operator>();
+                res.add(oper);
+            }
+            if (res == null)
+                return SpecialOper.FALSE_OPERS;
+            Operator[] vals = new Operator[res.size()];
+            res.toArray(vals);
+            return vals;
+        } else {
+            if (id < PROP_FULL_NAME || id > PROP_SYS_ALIAS)
+                throw new IllegalArgumentException("illegal prop");
+            return null;
         }
     }
 

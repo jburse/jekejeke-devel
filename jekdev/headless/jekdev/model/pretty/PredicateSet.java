@@ -3,7 +3,6 @@ package jekdev.model.pretty;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Predicate;
 import matula.util.data.ListArray;
-import matula.util.data.SetHashLink;
 
 /**
  * <p>This class provides a unsynchronized predicate set.</p>

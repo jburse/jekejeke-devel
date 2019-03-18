@@ -414,7 +414,8 @@ public final class SpecialFriendly extends AbstractSpecial {
      */
     private static int intermediateCount(Writer wr, int count)
             throws IOException {
-        wr.write(PrologWriter.align(Integer.toString(count), ALGN_NMBR, false));
+        wr.write(Integer.toString(count));
+        wr.write(" ");
         return count + 1;
     }
 

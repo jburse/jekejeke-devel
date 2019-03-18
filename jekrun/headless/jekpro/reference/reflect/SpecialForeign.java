@@ -420,20 +420,19 @@ public final class SpecialForeign extends AbstractSpecial {
      *
      * @param name   The name.
      * @param paras  The parameters.
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The callable.
      * @throws EngineMessage Shit happens.
      */
     public static Object methodToCallable(String name, Class[] paras,
-                                          AbstractSource source, Engine en)
+                                          AbstractSource source)
             throws EngineMessage {
         SkelAtom help = new SkelAtom(name);
         if (paras.length == 0)
             return help;
         Object[] args = new Object[paras.length];
         for (int i = 0; i < paras.length; i++)
-            args[i] = classToName(paras[i], source, en);
+            args[i] = classToName(paras[i], source);
         return new SkelCompound(help, args);
     }
 
@@ -441,20 +440,18 @@ public final class SpecialForeign extends AbstractSpecial {
      * <p>Method to callable.</p>
      *
      * @param paras  The parameter types.
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The callable.
      */
     public static Object constructorToCallable(Class[] paras,
-                                               AbstractSource source,
-                                               Engine en)
+                                               AbstractSource source)
             throws EngineMessage {
         SkelAtom help = new SkelAtom(OP_NAME_CONSTRUCTOR);
         if (paras.length == 0)
             return help;
         Object[] args = new Object[paras.length];
         for (int i = 0; i < paras.length; i++)
-            args[i] = classToName(paras[i], source, en);
+            args[i] = classToName(paras[i], source);
         return new SkelCompound(help, args);
     }
 
@@ -462,16 +459,14 @@ public final class SpecialForeign extends AbstractSpecial {
      * <p>A class back to a structured path.</p>
      *
      * @param clazz  The class.
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The class.
      * @throws EngineMessage Shit happens.
      */
-    public static Object classToName(Class clazz, AbstractSource source,
-                                     Engine en)
+    public static Object classToName(Class clazz, AbstractSource source)
             throws EngineMessage {
         String fun = AbstractRuntime.classToString(clazz);
-        return SpecialDynamic.moduleToSlashSkel(fun, source, en);
+        return SpecialDynamic.moduleToSlashSkel(fun, source);
     }
 
 }

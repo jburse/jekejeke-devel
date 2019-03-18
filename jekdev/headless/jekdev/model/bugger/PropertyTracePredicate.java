@@ -6,6 +6,7 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
 import jekpro.tools.array.AbstractDelegate;
@@ -61,14 +62,24 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
 
 
     /**
+     * <p>Create a predicate property.</p>
+     *
+     * @param i The id of the predicate property.
+     * @param f The flags.
+     */
+    private PropertyTracePredicate(int i, int f) {
+        super(i, f);
+    }
+
+    /**
      * <p>Define the predicate properties.</p>
      *
      * @return The predicate properties.
      */
     public static MapHash<StoreKey, AbstractProperty<Predicate>> definePredProps() {
         MapHash<StoreKey, AbstractProperty<Predicate>> predprops = new MapHash<StoreKey, AbstractProperty<Predicate>>();
-        predprops.add(new StoreKey(OP_SYS_NOINSTRUMENT, 0), new PropertyTracePredicate(PROP_SYS_NOINSTRUMENT));
-        predprops.add(new StoreKey(OP_SYS_NOWAKEUP, 0), new PropertyTracePredicate(PROP_SYS_NOWAKEUP));
+        predprops.add(new StoreKey(OP_SYS_NOINSTRUMENT, 0), new PropertyTracePredicate(PROP_SYS_NOINSTRUMENT, AbstractProperty.MASK_PROP_SETP));
+        predprops.add(new StoreKey(OP_SYS_NOWAKEUP, 0), new PropertyTracePredicate(PROP_SYS_NOWAKEUP, AbstractProperty.MASK_PROP_SETP));
         return predprops;
     }
 
@@ -158,6 +169,23 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
+    }
+
+    /**
+     * <p>Retrieve all the objects for a property.</p>
+     *
+     * @param en The engine.
+     * @param m  The property skeleton.
+     * @param d  The property display.
+     * @return The properties.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public Predicate[] idxObjProp(Object m, Display d, Engine en)
+            throws EngineException, EngineMessage {
+        if (id < PROP_SYS_NOINSTRUMENT || id > PROP_SYS_NOWAKEUP)
+            throw new IllegalArgumentException("illegal prop");
+        return null;
     }
 
 }

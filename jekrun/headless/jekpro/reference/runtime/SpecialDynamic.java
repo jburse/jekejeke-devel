@@ -384,18 +384,15 @@ public final class SpecialDynamic extends AbstractSpecial {
     /**
      * <p>Convert a module to a slash.</p>
      *
-     * @param fun   The module.
-     * @param scope The call-site, not null.
-     * @param en    The engine.
+     * @param fun The module.
+     * @param src The call-site, not null.
      * @return The skeleton.
      */
     public static Object moduleToSlashSkel(String fun,
-                                           AbstractSource scope,
-                                           Engine en)
+                                           AbstractSource src)
             throws EngineMessage {
         try {
             /* shorten module name */
-            AbstractSource src = (scope != null ? scope : en.store.user);
             fun = fun.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
             Object res = CacheModule.unfindPrefix(fun, src, ForeignPath.MASK_MODL_AUTO);
 
@@ -564,7 +561,8 @@ public final class SpecialDynamic extends AbstractSpecial {
                 SkelAtom mod = ((SkelAtomQuali) sa).getModule();
                 if (recv == null || !mod.fun.equals(((SkelAtom) recv).fun) ||
                         mod.scope != ((SkelAtom) recv).scope) {
-                    t = moduleToSlashSkel(mod.fun, mod.scope, en);
+                    AbstractSource src = (mod.scope != null ? mod.scope : en.store.user);
+                    t = moduleToSlashSkel(mod.fun, src);
                     Object s = new SkelCompound(sa3, temp.args, temp.var);
 
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
@@ -592,7 +590,8 @@ public final class SpecialDynamic extends AbstractSpecial {
             SkelAtom sa = (SkelAtom) t;
             if (sa instanceof SkelAtomQuali) {
                 SkelAtom mod = ((SkelAtomQuali) sa).getModule();
-                t = moduleToSlashSkel(mod.fun, mod.scope, en);
+                AbstractSource src = (mod.scope != null ? mod.scope : en.store.user);
+                t = moduleToSlashSkel(mod.fun, src);
                 Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
@@ -608,7 +607,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a callable to a colon.</p>
      *
      * @param t     The callable.
-     * @param scope The scope.
+     * @param scope The scope, not null.
      * @param en    The engine.
      * @return The colon callable.
      * @throws EngineMessage Shit happens.
@@ -629,7 +628,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 String mod = CacheFunctor.sepModule(sa.fun);
                 if (recv == null || !mod.equals(((SkelAtom) recv).fun) ||
                         scope != ((SkelAtom) recv).scope) {
-                    t = moduleToSlashSkel(mod, scope, en);
+                    t = moduleToSlashSkel(mod, scope);
                     Object s = new SkelCompound(sa3, temp.args, temp.var);
 
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
@@ -657,7 +656,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             SkelAtom sa = (SkelAtom) t;
             if (CacheFunctor.isQuali(sa.fun)) {
                 String mod = CacheFunctor.sepModule(sa.fun);
-                t = moduleToSlashSkel(mod, scope, en);
+                t = moduleToSlashSkel(mod, scope);
                 Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);

@@ -2,7 +2,6 @@ package jekpro.reference.reflect;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractSpecial;
@@ -253,7 +252,7 @@ public final class SpecialSource extends AbstractSpecial {
                 Object[] vals = prop.getObjProps(src, en);
                 en.skel = t;
                 en.display = d;
-                AbstractInformation.consArray(vals, en);
+                AbstractProperty.consArray(vals, en);
             }
         }
     }
@@ -274,7 +273,7 @@ public final class SpecialSource extends AbstractSpecial {
         Object[] vals = prop.getObjProps(src, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractInformation.consArray(vals, en);
+        AbstractProperty.consArray(vals, en);
     }
 
     /***********************************************************************/
@@ -300,7 +299,7 @@ public final class SpecialSource extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**
@@ -322,7 +321,7 @@ public final class SpecialSource extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**
@@ -353,7 +352,7 @@ public final class SpecialSource extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**********************************************************************/
@@ -411,7 +410,7 @@ public final class SpecialSource extends AbstractSpecial {
                 String s = base.getFullName();
                 if (Branch.OP_USER.equals(s))
                     continue;
-                Object val = SpecialDynamic.moduleToSlashSkel(s, base.getStore().user, en);
+                Object val = SpecialDynamic.moduleToSlashSkel(s, base.getStore().user);
                 res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
             }
             store = store.parent;

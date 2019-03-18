@@ -205,7 +205,7 @@ public final class SpecialSession extends AbstractSpecial {
      * <p>DisplayClause the help text.</p>
      *
      * @param lr The reader.
-     * @param en  The engine trace.
+     * @param en The engine trace.
      * @throws EngineException Shit happens.
      */
     private static void helpText(Reader lr,
@@ -257,7 +257,7 @@ public final class SpecialSession extends AbstractSpecial {
             String s = src.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 wr.write("(");
-                Object res = SpecialDynamic.moduleToSlashSkel(s, en.store.user, en);
+                Object res = SpecialDynamic.moduleToSlashSkel(s, en.store.user);
                 PrologWriter.toString(res, Display.DISPLAY_CONST, wr, 0, en);
                 wr.write(") ");
             }
@@ -470,7 +470,7 @@ public final class SpecialSession extends AbstractSpecial {
             } catch (EngineMessage x) {
                 en.contskel = r;
                 en.contdisplay = u;
-                Reader lr=rd.getScanner().getReader();
+                Reader lr = rd.getScanner().getReader();
                 PositionKey pos = PositionKey.createPos(lr);
                 en.fault = new EngineException(x, EngineException.fetchLoc(
                         EngineException.fetchStack(en), pos, en));
@@ -500,7 +500,7 @@ public final class SpecialSession extends AbstractSpecial {
                 throw en.fault;
             pre = copyGoalVarsAndWrap(rd.getVars(), t, d, en);
         } catch (EngineMessage y) {
-            Reader lr=rd.getScanner().getReader();
+            Reader lr = rd.getScanner().getReader();
             PositionKey pos = PositionKey.createPos(lr);
             en.fault = new EngineException(y, EngineException.fetchLoc(
                     EngineException.fetchStack(en), pos, en));

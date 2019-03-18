@@ -2,7 +2,7 @@ package jekdev.reference.inspection;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
+import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -108,7 +108,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                SpecialPred.predicateToProperties2(pick, en);
+                SpecialPred.predicateToProperties(pick, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -241,7 +241,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 Object[] vals = getPropCallable(prop, t2, d2, en);
                 en.skel = t;
                 en.display = d;
-                AbstractInformation.consArray(vals, en);
+                AbstractProperty.consArray(vals, en);
             }
         }
     }
@@ -257,12 +257,12 @@ public final class SpecialProvable extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void callableToProperty(StoreKey prop, Object t2, Display d2,
-                                              Engine en)
+                                           Engine en)
             throws EngineMessage {
         Object[] vals = getPropCallable(prop, t2, d2, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractInformation.consArray(vals, en);
+        AbstractProperty.consArray(vals, en);
     }
 
     /**
@@ -281,7 +281,7 @@ public final class SpecialProvable extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
-        vals = AbstractInformation.addValue(vals, AbstractTerm.createMolec(t, d));
+        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
         setPropCallable(prop, t2, d2, vals, en);
     }
 
@@ -301,7 +301,7 @@ public final class SpecialProvable extends AbstractSpecial {
             throws EngineMessage {
         StoreKey prop = StackElement.callableToStoreKey(t);
         Object[] vals = getPropCallable(prop, t2, d2, en);
-        vals = AbstractInformation.removeValue(vals, AbstractTerm.createMolec(t, d));
+        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
         setPropCallable(prop, t2, d2, vals, en);
     }
 
@@ -315,9 +315,9 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param sk The property.
-     * @param t2   The callable skeleton.
-     * @param d2   The callable display.
-     * @param en   The engine.
+     * @param t2 The callable skeleton.
+     * @param d2 The callable display.
+     * @param en The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
@@ -337,14 +337,14 @@ public final class SpecialProvable extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**
      * <p>Set an atom property.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param sk The property.
+     * @param sk   The property.
      * @param t2   The callable skeleton.
      * @param d2   The callable display.
      * @param vals The values.
@@ -366,7 +366,7 @@ public final class SpecialProvable extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**************************************************************/

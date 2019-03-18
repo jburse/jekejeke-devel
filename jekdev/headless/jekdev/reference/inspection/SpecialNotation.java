@@ -7,6 +7,7 @@ import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.runtime.SpecialDynamic;
@@ -88,7 +89,8 @@ public final class SpecialNotation extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                obj = SpecialDynamic.moduleToSlashSkel(sa.fun, sa.scope, en);
+                AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+                obj = SpecialDynamic.moduleToSlashSkel(sa.fun, src);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return true;
@@ -126,9 +128,9 @@ public final class SpecialNotation extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 int arityint = StoreKey.derefAndCastIndicator(temp[0], ref, en);
-                obj = SpecialQuali.indicatorToColonSkel(
-                        ((SkelAtom) en.skel).fun, ((SkelAtom) en.skel).scope,
-                        arityint, en);
+                sa = (SkelAtom) en.skel;
+                src = (sa.scope != null ? sa.scope : en.store.user);
+                obj = SpecialQuali.indicatorToColonSkel(sa.fun, src, arityint, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return true;

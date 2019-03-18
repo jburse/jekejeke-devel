@@ -266,7 +266,7 @@ public final class SpecialDefault extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException("illegal mode");
             }
-            wr.write(PrologWriter.align(Integer.toString(depth), 3, false));
+            wr.write(Integer.toString(depth));
             wr.write(" ");
             PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
             pw.setSource(en.visor.peekStack());

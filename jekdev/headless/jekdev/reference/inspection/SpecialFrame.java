@@ -2,7 +2,6 @@ package jekdev.reference.inspection;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
@@ -132,7 +131,7 @@ public final class SpecialFrame extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void frameToProperties(InterfaceStack frame,
-                                             Engine en)
+                                          Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
@@ -154,7 +153,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 Object[] vals = prop.getObjProps(frame, en);
                 en.skel = t;
                 en.display = d;
-                AbstractInformation.consArray(vals, en);
+                AbstractProperty.consArray(vals, en);
             }
         }
     }
@@ -169,13 +168,13 @@ public final class SpecialFrame extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static void frameToProperty(InterfaceStack frame, StoreKey sk,
-                                           Engine en)
+                                        Engine en)
             throws EngineMessage, EngineException {
         AbstractProperty<InterfaceStack> prop = findFrameProperty(sk, en);
         Object[] vals = prop.getObjProps(frame, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractInformation.consArray(vals, en);
+        AbstractProperty.consArray(vals, en);
     }
 
     /**
@@ -206,7 +205,7 @@ public final class SpecialFrame extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /*******************************************************************/

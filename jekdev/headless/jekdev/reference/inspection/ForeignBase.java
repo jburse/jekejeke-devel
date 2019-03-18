@@ -1,17 +1,20 @@
 package jekdev.reference.inspection;
 
 import jekdev.model.pretty.LocatorTrace;
+import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
@@ -54,22 +57,22 @@ public final class ForeignBase {
      *
      * @param inter  The interpreter.
      * @param co     The call-out.
-     * @param atomic The atomic.
+     * @param source The source.
      * @param orig   The origin.
      * @param lineno The line number.
      * @return The predicate indicator.
      * @throws InterpreterMessage Shit happens
      */
     public static Object sysFirstLocation(Interpreter inter, CallOut co,
-                                          TermAtomic atomic,
+                                          TermAtomic source,
                                           String orig, int lineno)
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();
             ArrayEnumeration<Predicate> dc;
             if (co.getFirst()) {
-                AbstractSource scope = derefAndCastSource(atomic, engine);
-                AbstractLocator locator = scope.locator;
+                AbstractSource src = derefAndCastSource(source, engine);
+                AbstractLocator locator = src.locator;
                 if (locator == null)
                     return null;
                 PositionKey pos = new PositionKey(orig, lineno);
@@ -99,22 +102,22 @@ public final class ForeignBase {
      *
      * @param inter  The interpreter.
      * @param co     The call-out.
-     * @param atomic The atomic.
+     * @param source The source.
      * @param orig   The origin.
      * @param lineno The line number.
      * @return The predicate indicator.
      * @throws InterpreterMessage Shit happens
      */
     public static Object sysLocation(Interpreter inter, CallOut co,
-                                     TermAtomic atomic,
+                                     TermAtomic source,
                                      String orig, int lineno)
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();
             ArrayEnumeration<Predicate> dc;
             if (co.getFirst()) {
-                AbstractSource scope = derefAndCastSource(atomic, engine);
-                AbstractLocator locator = scope.locator;
+                AbstractSource src = derefAndCastSource(source, engine);
+                AbstractLocator locator = src.locator;
                 if (locator == null)
                     return null;
                 PositionKey pos = new PositionKey(orig, lineno);
@@ -139,6 +142,29 @@ public final class ForeignBase {
         }
     }
 
+    /**
+     * <p>Determine the provable hash.</p>
+     *
+     * @param inter The interpreter.
+     * @param indicator The provable indicator.
+     * @param source The source.
+     * @return The provable hash.
+     * @throws InterpreterMessage Shit happens
+     */
+    public static Object sysProvableHash(Interpreter inter,
+                                         Object indicator, TermAtomic source)
+            throws InterpreterMessage {
+        try {
+            Engine engine = (Engine) inter.getEngine();
+            Predicate pick = SpecialPred.indicatorToProvable(AbstractTerm.getSkel(indicator),
+                    AbstractTerm.getDisplay(indicator), engine);
+            AbstractSource src = derefAndCastSource(source, engine);
+            return SpecialModel.storeKeyToColonSkel(pick, src, engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
     /****************************************************************/
     /* Deref Utility                                                */
     /****************************************************************/
@@ -146,18 +172,17 @@ public final class ForeignBase {
     /**
      * <p>Deref and cast a source.</p>
      *
-     * @param atomic The atomic.
+     * @param source The source.
      * @param en     The engine.
      * @return The source.
      */
-    public static AbstractSource derefAndCastSource(TermAtomic atomic, Engine en)
+    public static AbstractSource derefAndCastSource(TermAtomic source, Engine en)
             throws EngineMessage {
-        SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(atomic.getSkel(),
-                atomic.getDisplay());
-        AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
-        source = source.getStore().getSource(sa.fun);
-        AbstractSource.checkExistentSource(source, sa);
-        return source;
+        SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(source.getSkel(), source.getDisplay());
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        src = src.getStore().getSource(sa.fun);
+        AbstractSource.checkExistentSource(src, sa);
+        return src;
     }
 
 }

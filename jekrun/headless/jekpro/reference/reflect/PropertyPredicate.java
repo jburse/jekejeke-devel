@@ -6,6 +6,7 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
@@ -159,41 +160,62 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      */
     public static MapHash<StoreKey, AbstractProperty<Predicate>> definePredProps() {
         MapHash<StoreKey, AbstractProperty<Predicate>> predprops = new MapHash<StoreKey, AbstractProperty<Predicate>>();
-        predprops.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE));
+        predprops.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
+                        AbstractProperty.MASK_PROP_PRJF | AbstractProperty.MASK_PROP_MODI));
 
-        predprops.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicate(PROP_OVERRIDE));
+        predprops.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicate(PROP_OVERRIDE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
+                        AbstractProperty.MASK_PROP_MODI));
         predprops.add(new StoreKey(OP_SYS_MULTIFILE, 1), new PropertyPredicate(PROP_SYS_MULTIFILE));
-        predprops.add(new StoreKey(OP_DISCONTIGUOUS, 1), new PropertyPredicate(PROP_DISCONTIGUOUS));
+        predprops.add(new StoreKey(OP_DISCONTIGUOUS, 1), new PropertyPredicate(PROP_DISCONTIGUOUS,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
+                        AbstractProperty.MASK_PROP_MODI));
         predprops.add(new StoreKey(OP_SYS_STYLE_CHECK, 1), new PropertyPredicate(PROP_SYS_STYLE_CHECK));
         predprops.add(new StoreKey(OP_SYS_PUBLIC, 1), new PropertyPredicate(PROP_SYS_PUBLIC));
         predprops.add(new StoreKey(OP_SYS_PRIVATE, 1), new PropertyPredicate(PROP_SYS_PRIVATE));
         predprops.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicate(PROP_SYS_META_PREDICATE));
         predprops.add(new StoreKey(OP_SYS_META_FUNCTION, 1), new PropertyPredicate(PROP_SYS_META_FUNCTION));
-        predprops.add(new StoreKey(OP_SYS_DYNAMIC, 1), new PropertyPredicate(PROP_SYS_DYNAMIC))
-        ;
+        predprops.add(new StoreKey(OP_SYS_DYNAMIC, 1), new PropertyPredicate(PROP_SYS_DYNAMIC));
         predprops.add(new StoreKey(OP_SYS_THREAD_LOCAL, 1), new PropertyPredicate(PROP_SYS_THREAD_LOCAL));
         predprops.add(new StoreKey(OP_SYS_GROUP_LOCAL, 1), new PropertyPredicate(PROP_SYS_GROUP_LOCAL));
 
-        predprops.add(new StoreKey(OP_MULTIFILE, 0), new PropertyPredicate(PROP_MULTIFILE));
-        predprops.add(new StoreKey(OP_VIRTUAL, 0), new PropertyPredicate(PROP_VIRTUAL));
+        predprops.add(new StoreKey(OP_MULTIFILE, 0), new PropertyPredicate(PROP_MULTIFILE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
+        predprops.add(new StoreKey(OP_VIRTUAL, 0), new PropertyPredicate(PROP_VIRTUAL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
         predprops.add(new StoreKey(OP_SYS_ARITHMETIC, 0), new PropertyPredicate(PROP_SYS_ARITHMETIC));
         predprops.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
-        predprops.add(new StoreKey(OP_SYS_NOBARRIER, 0), new PropertyPredicate(PROP_SYS_NOBARRIER));
+        predprops.add(new StoreKey(OP_SYS_NOBARRIER, 0), new PropertyPredicate(PROP_SYS_NOBARRIER,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
 
-        predprops.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicate(PROP_SYS_NOEXPAND));
-        predprops.add(new StoreKey(OP_SYS_NOMACRO, 0), new PropertyPredicate(PROP_SYS_NOMACRO));
-        predprops.add(new StoreKey(OP_SYS_BODY, 0), new PropertyPredicate(PROP_SYS_BODY));
-        predprops.add(new StoreKey(OP_SYS_RULE, 0), new PropertyPredicate(PROP_SYS_RULE));
-        predprops.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE));
+        predprops.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicate(PROP_SYS_NOEXPAND,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        predprops.add(new StoreKey(OP_SYS_NOMACRO, 0), new PropertyPredicate(PROP_SYS_NOMACRO,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        predprops.add(new StoreKey(OP_SYS_BODY, 0), new PropertyPredicate(PROP_SYS_BODY,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        predprops.add(new StoreKey(OP_SYS_RULE, 0), new PropertyPredicate(PROP_SYS_RULE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        predprops.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
 
-        predprops.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicate(PROP_META_PREDICATE));
-        predprops.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicate(PROP_META_FUNCTION));
+        predprops.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicate(PROP_META_PREDICATE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
+        predprops.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicate(PROP_META_FUNCTION,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
 
-        predprops.add(new StoreKey(OP_BUILT_IN, 0), new PropertyPredicate(PROP_BUILT_IN));
-        predprops.add(new StoreKey(OP_STATIC, 0), new PropertyPredicate(PROP_STATIC));
-        predprops.add(new StoreKey(OP_DYNAMIC, 0), new PropertyPredicate(PROP_DYNAMIC));
-        predprops.add(new StoreKey(OP_THREAD_LOCAL, 0), new PropertyPredicate(PROP_THREAD_LOCAL));
-        predprops.add(new StoreKey(OP_GROUP_LOCAL, 0), new PropertyPredicate(PROP_GROUP_LOCAL));
+        predprops.add(new StoreKey(OP_BUILT_IN, 0), new PropertyPredicate(PROP_BUILT_IN,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+        predprops.add(new StoreKey(OP_STATIC, 0), new PropertyPredicate(PROP_STATIC,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL |
+                        AbstractProperty.MASK_PROP_DELE));
+        predprops.add(new StoreKey(OP_DYNAMIC, 0), new PropertyPredicate(PROP_DYNAMIC,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+        predprops.add(new StoreKey(OP_THREAD_LOCAL, 0), new PropertyPredicate(PROP_THREAD_LOCAL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+        predprops.add(new StoreKey(OP_GROUP_LOCAL, 0), new PropertyPredicate(PROP_GROUP_LOCAL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
 
         predprops.add(new StoreKey(OP_FULL_NAME, 1), new PropertyPredicate(PROP_FULL_NAME));
         predprops.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyPredicate(PROP_SYS_USAGE));
@@ -481,67 +503,67 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
             case PROP_OVERRIDE:
                 AbstractSource src = derefAndCastDef(m, d, OP_OVERRIDE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_OVRD, en);
                 return true;
             case PROP_SYS_MULTIFILE:
                 src = derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_MULT, en);
                 return true;
             case PROP_DISCONTIGUOUS:
                 src = derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_DISC, en);
                 return true;
             case PROP_SYS_STYLE_CHECK:
                 src = derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_STYL, en);
                 return true;
             case PROP_SYS_PUBLIC:
                 src = derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_VSPU, en);
                 return true;
             case PROP_SYS_PRIVATE:
                 src = derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_VSPR, en);
                 return true;
             case PROP_SYS_META_PREDICATE:
                 src = derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_PRED, en);
                 return true;
             case PROP_SYS_META_FUNCTION:
                 src = derefAndCastDef(m, d, OP_SYS_META_FUNCTION, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_FUNC, en);
                 return true;
             case PROP_SYS_DYNAMIC:
                 src = derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_DYNA, en);
                 return true;
             case PROP_SYS_THREAD_LOCAL:
                 src = derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_TRLC, en);
                 return true;
             case PROP_SYS_GROUP_LOCAL:
                 src = derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_GRLC, en);
                 return true;
@@ -648,67 +670,67 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
             case PROP_OVERRIDE:
                 AbstractSource src = derefAndCastDef(m, d, OP_OVERRIDE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_OVRD);
                 return true;
             case PROP_SYS_MULTIFILE:
                 src = derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_MULT);
                 return true;
             case PROP_DISCONTIGUOUS:
                 src = derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_DISC);
                 return true;
             case PROP_SYS_STYLE_CHECK:
                 src = derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_STYL);
                 return true;
             case PROP_SYS_PUBLIC:
                 src = derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_VSPU);
                 return true;
             case PROP_SYS_PRIVATE:
                 src = derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_VSPR);
                 return true;
             case PROP_SYS_META_PREDICATE:
                 src = derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_PRED);
                 return true;
             case PROP_SYS_META_FUNCTION:
                 src = derefAndCastDef(m, d, OP_SYS_META_FUNCTION, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_FUNC);
                 return true;
             case PROP_SYS_DYNAMIC:
                 src = derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_DYNA);
                 return true;
             case PROP_SYS_THREAD_LOCAL:
                 src = derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_TRLC);
                 return true;
             case PROP_SYS_GROUP_LOCAL:
                 src = derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
-                if (!Clause.ancestorSource(src, en))
+                if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_GRLC);
                 return true;
@@ -794,6 +816,44 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         }
     }
 
+    /**
+     * <p>Retrieve all the objects for a property.</p>
+     *
+     * @param en The engine.
+     * @param m  The property skeleton.
+     * @param d  The property display.
+     * @return The properties.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public Predicate[] idxObjProp(Object m, Display d, Engine en)
+            throws EngineException, EngineMessage {
+        if (id == PROP_SYS_USAGE) {
+            AbstractSource src = derefAndCastDef(m, d, OP_SYS_USAGE, en);
+            if (src == null || !Clause.ancestorSource(src, en))
+                return AbstractBranch.FALSE_PREDS;
+            MapEntry<Predicate, Integer>[] snapshot = src.snapshotPredsInv();
+            ListArray<Predicate> res = null;
+            for (int i = 0; i < snapshot.length; i++) {
+                Predicate pick = snapshot[i].key;
+                if (!Clause.ancestorSource(pick.getSource(), en))
+                    continue;
+                if (res == null)
+                    res = new ListArray<Predicate>();
+                res.add(pick);
+            }
+            if (res == null)
+                return AbstractBranch.FALSE_PREDS;
+            Predicate[] vals = new Predicate[res.size()];
+            res.toArray(vals);
+            return vals;
+        } else {
+            if (id < PROP_VISIBLE || id > PROP_SYS_NOHEAD)
+                throw new IllegalArgumentException("illegal prop");
+            return null;
+        }
+    }
+
     /*****************************************************************/
     /* Access Helper                                                 */
     /*****************************************************************/
@@ -874,7 +934,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     }
 
     /**
-     * <p>Deref and cast to predicate definition.</p>
+     * <p>Deref and cast to definition source.</p>
      *
      * @param m  The term skeleton.
      * @param d  The term display.
@@ -883,8 +943,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      * @return The definition source.
      * @throws EngineMessage Shit happens.
      */
-    private static AbstractSource derefAndCastDef(Object m, Display d,
-                                                  String op, Engine en)
+    public static AbstractSource derefAndCastDef(Object m, Display d,
+                                                 String op, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -898,7 +958,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(m, d);
             AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
             source = source.getStore().getSource(sa.fun);
-            AbstractSource.checkExistentSource(source, sa);
             return source;
         } else {
             EngineMessage.checkInstantiated(m);
@@ -937,6 +996,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
+
     /****************************************************************/
     /* Atoms Utility                                                */
     /****************************************************************/

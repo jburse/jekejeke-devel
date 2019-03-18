@@ -2,7 +2,6 @@ package jekpro.reference.reflect;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractInformation;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -11,16 +10,13 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
-import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
@@ -81,6 +77,15 @@ public final class SpecialOper extends AbstractSpecial {
     private final static String OP_PREFIX = "prefix";
     private final static String OP_INFIX = "infix";
     private final static String OP_POSTFIX = "postfix";
+
+    /**
+     * <p>Create a syntax special.</p>
+     *
+     * @param i The id of the special.
+     */
+    public SpecialOper(int i) {
+        super(i);
+    }
 
     /**
      * <p>Logically evaluate a goal in a list of goals for the first time.</p>
@@ -311,7 +316,7 @@ public final class SpecialOper extends AbstractSpecial {
                 Object[] vals = prop.getObjProps(oper, en);
                 en.skel = t;
                 en.display = d;
-                AbstractInformation.consArray(vals, en);
+                AbstractProperty.consArray(vals, en);
             }
         }
     }
@@ -333,7 +338,7 @@ public final class SpecialOper extends AbstractSpecial {
         Object[] vals = prop.getObjProps(oper, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        AbstractInformation.consArray(vals, en);
+        AbstractProperty.consArray(vals, en);
     }
 
     /***********************************************************************/
@@ -359,7 +364,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    StoreKey.storeKeyToSkel(sk, en)));
     }
 
     /**
@@ -381,7 +386,25 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    StoreKey.storeKeyToSkel(sk, en)));
+    }
+
+    /**
+     * <p>Retrieve the operators for a property.</p>
+     *
+     * @param t  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
+     */
+    private static Object propertyToOperators(Object t, Display d,
+                                              Engine en)
+            throws EngineMessage, EngineException {
+        StoreKey sk = StackElement.callableToStoreKey(t);
+        AbstractProperty<Operator> prop = findOperProperty(sk, en);
+        Operator[] vals = prop.idxObjProp(t, d, en);
+        Object res = en.store.foyer.ATOM_NIL;
+        res = consOperators(vals, res, en);
+        return res;
     }
 
     /**
@@ -412,86 +435,9 @@ public final class SpecialOper extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                StoreKey.storeKeyToSkel(sk, en)));
     }
 
-    /***********************************************************************/
-    /* High-Level Operator Property Access III                             */
-    /***********************************************************************/
-
-    /**
-     * <p>Retrieve the operators for a property.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
-     */
-    private static Object propertyToOperators(Object t, Display d,
-                                              Engine en)
-            throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Operator[] vals = idxPropOper(t, d, prop, en);
-        Object res = en.store.foyer.ATOM_NIL;
-        res = consOperators(vals, res, en);
-        return res;
-    }
-
-    /***********************************************************************/
-    /* Properties Interface                                                */
-    /***********************************************************************/
-
-    private static final StoreKey KEY_SYS_USAGE = new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1);
-
-    /**
-     * <p>Create a syntax special.</p>
-     *
-     * @param i The id of the special.
-     */
-    public SpecialOper(int i) {
-        super(i);
-    }
-
-    /**
-     * <p>Retrieve operators for a property.</p>
-     *
-     * @param t  The value skeleton.
-     * @param d  The value display.
-     * @param sk The property.
-     * @param en The engine.
-     * @return The operators, or null.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Operator[] idxPropOper(Object t, Display d,
-                                         StoreKey sk, Engine en)
-            throws EngineMessage {
-        if (KEY_SYS_USAGE.equals(sk)) {
-            Object[] temp = ((SkelCompound) t).args;
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], d);
-            AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
-            source = source.getStore().getSource(sa.fun);
-            if (source == null)
-                return SpecialOper.FALSE_OPERS;
-            Operator[] snapshot = source.snapshotOpersInv();
-            ListArray<Operator> res = null;
-            for (int i = 0; i < snapshot.length; i++) {
-                Operator oper = snapshot[i];
-                if (!Clause.ancestorSource(oper.getSource(), en))
-                    continue;
-                if (res == null)
-                    res = new ListArray<Operator>();
-                res.add(oper);
-            }
-            if (res == null)
-                return SpecialOper.FALSE_OPERS;
-            Operator[] vals = new Operator[res.size()];
-            res.toArray(vals);
-            return vals;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
-        }
-    }
 
     /*************************************************************************/
     /* Mode Conversions                                                      */
@@ -703,7 +649,7 @@ public final class SpecialOper extends AbstractSpecial {
      *
      * @param type  The type.
      * @param fun   The name.
-     * @param scope The scope.
+     * @param scope The scope, not null.
      * @param en    The engine.
      * @return The compound.
      * @throws EngineMessage Shit happens.
@@ -712,7 +658,6 @@ public final class SpecialOper extends AbstractSpecial {
                                          AbstractSource scope, Engine en)
             throws EngineMessage {
         Object s = SpecialDynamic.callableToColonSkel(new SkelAtom(fun), scope, en);
-
         return typeToOpSkel(s, type);
     }
 
@@ -795,9 +740,10 @@ public final class SpecialOper extends AbstractSpecial {
      */
     private static Object propertyToSyntax(Object t, Display d,
                                            Engine en)
-            throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Operator[] vals = idxPropOper(t, d, prop, en);
+            throws EngineMessage, EngineException {
+        StoreKey sk = StackElement.callableToStoreKey(t);
+        AbstractProperty<Operator> prop = findOperProperty(sk, en);
+        Operator[] vals = prop.idxObjProp(t, d, en);
         Object res = en.store.foyer.ATOM_NIL;
         res = consSyntax(vals, res, en);
         return res;

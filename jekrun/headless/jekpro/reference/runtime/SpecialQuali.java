@@ -471,7 +471,8 @@ public final class SpecialQuali extends AbstractSpecial {
         Object s;
         if (sa instanceof SkelAtomQuali) {
             SkelAtom mod = ((SkelAtomQuali) sa).getModule();
-            s = SpecialDynamic.moduleToSlashSkel(mod.fun, mod.scope, en);
+            AbstractSource src = (mod.scope != null ? mod.scope : en.store.user);
+            s = SpecialDynamic.moduleToSlashSkel(mod.fun, src);
             int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
             SkelAtom sa2 = en.store.foyer.createAtom(OP_COLON, sa.scope, m);
             sa2.setPosition(sa.getPosition());
@@ -491,7 +492,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * <p>Convert an indicator to a qualified indicator.</p>
      *
      * @param fun   The name.
-     * @param scope The scope.
+     * @param scope The scope, not null.
      * @param arity The length.
      * @param en    The engine.
      * @return The colon indictor
@@ -505,7 +506,7 @@ public final class SpecialQuali extends AbstractSpecial {
         Object s;
         if (CacheFunctor.isQuali(fun)) {
             String mod = CacheFunctor.sepModule(fun);
-            s = SpecialDynamic.moduleToSlashSkel(mod, scope, en);
+            s = SpecialDynamic.moduleToSlashSkel(mod, scope);
             SkelAtom sa2 = new SkelAtom(OP_COLON, scope);
 
             Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
