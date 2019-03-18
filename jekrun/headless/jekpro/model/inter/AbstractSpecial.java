@@ -100,15 +100,14 @@ public abstract class AbstractSpecial extends AbstractDelegate {
     /**
      * <p>Generate the spec of this delegate.</p>
      *
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The spec.
      * @throws EngineMessage Shit happens.
      */
-    public Object toSpec(AbstractSource source, Engine en)
+    public Object toSpec(AbstractSource source)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom("special"),
-                SpecialForeign.classToName(getClass(), source, en),
+                SpecialForeign.classToName(getClass(), source),
                 Integer.valueOf(id));
     }
 

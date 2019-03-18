@@ -1,9 +1,11 @@
 package jekpro.model.builtin;
 
+import jekpro.frequent.standard.SpecialFind;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.term.AbstractTerm;
 
 /**
  * <p>Abstract base class for properties.</p>
@@ -39,6 +41,17 @@ import jekpro.model.molec.EngineMessage;
 public class AbstractProperty<T> {
     public static final int MASK_PROP_SHOW = 0x00000001;
     public static final int MASK_PROP_DEFL = 0x00000002;
+    public static final int MASK_PROP_SUPR = 0x00000004;
+
+    /* predicate property formatting */
+    public static final int MASK_PROP_SLCF = 0x00000010;
+    public static final int MASK_PROP_PRJF = 0x00000020;
+    public static final int MASK_PROP_DELE = 0x00000040;
+    public static final int MASK_PROP_MODI = 0x00000080;
+
+    /* predicate property display */
+    public static final int MASK_PROP_SETP = 0x00000100;
+    public static final int MASK_PROP_META = 0x00000200;
 
     protected final int id;
     private int flags;
@@ -121,17 +134,111 @@ public class AbstractProperty<T> {
     }
 
     /**
-     * <p>Retrieve all the object properties.</p>
+     * <p>Check whether object has a property.</p>
      *
      * @param obj The object.
+     * @param m   The property skeleton.
+     * @param d   The property display.
      * @param en  The engine.
-     * @return The properties.
+     * @return True if object has property.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public Object[] hasObjProp(T obj, Object m, Display d, Engine en)
             throws EngineException, EngineMessage {
         throw new IllegalArgumentException("not implemented");
+    }
+
+    /**
+     * <p>Retrieve all the objects for a property.</p>
+     *
+     * @param en  The engine.
+     * @param m   The property skeleton.
+     * @param d   The property display.
+     * @return The properties.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public T[] idxObjProp(Object m, Display d, Engine en)
+            throws EngineException, EngineMessage {
+        throw new IllegalArgumentException("not implemented");
+    }
+
+    /********************************************************************/
+    /* Collection Utilities                                             */
+    /********************************************************************/
+
+    /**
+     * <p>Add a value to some values.</p>
+     *
+     * @param vals The values.
+     * @param val  The value.
+     * @return The values.
+     */
+    public static Object[] addValue(Object[] vals, Object val) {
+        int k = indexValue(vals, val);
+        if (k != -1)
+            return vals;
+        Object[] vals2 = new Object[vals.length + 1];
+        System.arraycopy(vals, 0, vals2, 0, vals.length);
+        vals2[vals.length] = val;
+        return vals2;
+    }
+
+    /**
+     * <p>Remove a value from some values.</p>
+     *
+     * @param vals The values.
+     * @param val  The value.
+     * @return The values.
+     */
+    public static Object[] removeValue(Object[] vals, Object val) {
+        int k = indexValue(vals, val);
+        if (k == -1)
+            return vals;
+        if (vals.length == 1)
+            return AbstractBranch.FALSE_PROPERTY;
+        Object[] vals2 = new Object[vals.length - 1];
+        System.arraycopy(vals, 0, vals2, 0, k);
+        System.arraycopy(vals, k + 1, vals2, k, vals2.length - k);
+        return vals2;
+    }
+
+    /**
+     * <p>Find a value in some values.</p>
+     *
+     * @param vals The values.
+     * @param val  The value.
+     * @return The index, or -1.
+     */
+    public static int indexValue(Object[] vals, Object val) {
+        for (int i = 0; i < vals.length; i++) {
+            if (val.equals(vals[i]))
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * <p>Cons an array of values to the given term.</p>
+     * <p>The tail is passed in skeleton and display.</p>
+     * <p>The result is returned in skeleton and display.</p>
+     *
+     * @param molecs The molecs.
+     * @param en     The engine.
+     */
+    public static void consArray(Object[] molecs, Engine en) {
+        if (molecs == null)
+            return;
+        for (int i = molecs.length - 1; i >= 0; i--) {
+            Object t4 = en.skel;
+            Display d2 = en.display;
+            Object elem = molecs[i];
+            Object val = AbstractTerm.getSkel(elem);
+            Display ref = AbstractTerm.getDisplay(elem);
+            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                    val, ref, t4, d2, en);
+        }
     }
 
 }

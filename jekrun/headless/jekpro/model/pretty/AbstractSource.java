@@ -1053,15 +1053,15 @@ public abstract class AbstractSource {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param sa The call-site, not null.
+     * @param sa    The call-site, not null.
      * @param en    The engine.
      * @param copt  The create flag.
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
     public final Predicate defineRoutine2(int arity, String fun,
-                                         SkelAtom sa,
-                                         Engine en, int copt)
+                                          SkelAtom sa,
+                                          Engine en, int copt)
             throws EngineMessage {
         Predicate pick = checkRoutine(arity, fun, sa, en);
         pick.usagePredicate(sa, en, copt);
@@ -1073,7 +1073,7 @@ public abstract class AbstractSource {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param sa The call-site, not null.
+     * @param sa    The call-site, not null.
      * @return Some previous predicate or the new neutral predicate.
      */
     public Predicate checkRoutine(int arity, String fun,
@@ -1087,7 +1087,7 @@ public abstract class AbstractSource {
                     return pick;
             }
             pick = new Predicate(fun, arity);
-            AbstractSource src=(sa.scope!=null?sa.scope:en.store.user);
+            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 pick.setBit(Predicate.MASK_PRED_VSPR);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)

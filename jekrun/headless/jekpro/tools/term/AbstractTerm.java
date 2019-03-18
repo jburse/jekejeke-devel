@@ -188,7 +188,7 @@ public abstract class AbstractTerm {
     /************************************************************/
 
     /**
-     * <p>Return a string of a skeleton.</p>
+     * <p>Return a string of a term.</p>
      *
      * @return The string.
      */
@@ -205,7 +205,7 @@ public abstract class AbstractTerm {
     }
 
     /**
-     * <p>Return a string of a skeleton.</p>
+     * <p>Return a string of a term.</p>
      *
      * @param flags The flags.
      * @return The string.

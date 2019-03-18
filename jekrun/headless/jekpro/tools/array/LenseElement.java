@@ -203,15 +203,14 @@ final class LenseElement extends AbstractLense {
     /**
      * <p>Generate the spec of this delegate.</p>
      *
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The spec.
      * @throws EngineMessage FFI error.
      */
-    public Object toSpec(AbstractSource source, Engine en)
+    public Object toSpec(AbstractSource source)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_ELEMENT),
-                SpecialForeign.classToName(clazz, source, en));
+                SpecialForeign.classToName(clazz, source));
     }
 
     /***************************************************************/

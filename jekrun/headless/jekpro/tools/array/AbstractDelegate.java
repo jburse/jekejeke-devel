@@ -325,12 +325,11 @@ public abstract class AbstractDelegate {
     /**
      * <p>Generate the spec of this delegate.</p>
      *
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The spec.
      * @throws EngineMessage FFI error.
      */
-    public abstract Object toSpec(AbstractSource source, Engine en)
+    public abstract Object toSpec(AbstractSource source)
             throws EngineMessage;
 
     /***************************************************************/

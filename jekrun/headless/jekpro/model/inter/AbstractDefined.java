@@ -778,10 +778,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * <p>Generate the spec of this delegate.</p>
      *
      * @param source The source.
-     * @param en     The engine.
      * @return The spec.
      */
-    public final Object toSpec(AbstractSource source, Engine en) {
+    public final Object toSpec(AbstractSource source) {
         switch (subflags & MASK_DEFI_MASK) {
             case MASK_DEFI_STAT:
                 return new SkelAtom(OP_STATIC);

@@ -72,6 +72,24 @@ public abstract class AbstractSkel {
     }
 
     /**
+     * <p>Return a string of a skeleton.</p>
+     *
+     * @param flags The flags.
+     * @return The string.
+     */
+    public String toString(int flags) {
+        try {
+            StringWriter sw = new StringWriter();
+            PrologWriter.toString(this, Display.DISPLAY_CONST, sw, flags, null);
+            return sw.toString();
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldn't happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
+    }
+
+    /**
      * <p>Copy a term into a new skeleton.</p>
      *
      * @param m  The term skeletion.

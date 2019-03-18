@@ -110,7 +110,6 @@ public abstract class Foyer extends Enforced {
     private final ListArray<Store> regs = new ListArray<Store>();
     private Store[] cacheregs;
 
-    public final SkelAtom ATOM_SLASH = new SkelAtom(Foyer.OP_SLASH);
     public final SkelAtom ATOM_NIL = new SkelAtom(Foyer.OP_NIL);
     public final SkelAtom ATOM_CONS = new SkelAtom(Foyer.OP_CONS);
     public final SkelAtom ATOM_SUB = new SkelAtom(Foyer.OP_SUB);
@@ -128,6 +127,7 @@ public abstract class Foyer extends Enforced {
     public SkelAtom ATOM_CALL;
     public SkelAtom ATOM_COMMA;
     public SkelAtom ATOM_TRUE;
+    public SkelAtom ATOM_SLASH;
 
     public Clause CLAUSE_CONT;
     public Clause CLAUSE_CALL;

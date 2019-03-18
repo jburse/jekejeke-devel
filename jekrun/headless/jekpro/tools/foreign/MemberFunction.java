@@ -169,17 +169,16 @@ final class MemberFunction extends AbstractMember {
     /**
      * <p>Generate the spec of this delegate.</p>
      *
-     * @param source The source.
-     * @param en     The engine.
+     * @param source The source, not null.
      * @return The spec.
      * @throws EngineMessage FFI error.
      */
-    public Object toSpec(AbstractSource source, Engine en)
+    public Object toSpec(AbstractSource source)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_FOREIGN_FUN),
-                SpecialForeign.classToName(method.getDeclaringClass(), source, en),
+                SpecialForeign.classToName(method.getDeclaringClass(), source),
                 SpecialForeign.methodToCallable(method.getName(),
-                        method.getParameterTypes(), source, en));
+                        method.getParameterTypes(), source));
     }
 
     /***************************************************************/
