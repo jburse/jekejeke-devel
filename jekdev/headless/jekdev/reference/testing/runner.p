@@ -255,3 +255,23 @@ runner_batch_debug :- sys_remove_result, sys_remove_predicate, sys_remove_suite,
    sys_update_summary(OkNok), fail.
 runner_batch_debug.
 
+/***************************************************************/
+/* Data View                                                   */
+/***************************************************************/
+
+% result_suite_view(-+Atom, -+Atom, --Pair)
+result_suite_view(Directory, Name, OkNok) :-
+   var(Directory),
+   var(Name), !,
+   result_suite(Suite, OkNok),
+   split_suite(Suite, Directory, Name).
+result_suite_view(Directory, Name, OkNok) :-
+   atom_split(Suite, '_', [Directory,Name]),
+   result_suite(Suite, OkNok).
+
+% split_suite(+Atom, +Atom, -Atom)
+split_suite(Suite, Directory, Name) :-
+   sub_atom(Suite, A, _, B, '_'),
+   sub_atom(Suite, 0, A, _, Directory),
+   sub_atom(Suite, _, B, 0, Name).
+

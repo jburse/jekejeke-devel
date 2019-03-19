@@ -1,6 +1,6 @@
 /**
  * This module provides additional access to sources. The predicate
- * sys_first_location and sys_location allow quick lookup of indicators
+ * sys_first_location/2 and sys_location/2 allow quick lookup of indicators
  * from positions. The predicates also work for local modules.
  *
  * Warranty & Liability
@@ -40,7 +40,7 @@
 :- module(base, []).
 
 /**
- * sys_first_location(M, O, L, I):
+ * sys_first_location(S, O, L, I):
  * The predicate succeeds in I with the predicate indicators of the
  * declarations in source S at file path O and line number L.
  */
@@ -51,7 +51,7 @@
          'String',int)).
 
 /**
- * sys_location(M, O, L, I):
+ * sys_location(S, O, L, I):
  * The predicate succeeds in I with the predicate indicators of the
  * static clauses in source S at file path O and line number L.
  */
@@ -60,3 +60,13 @@
 :- foreign(sys_location/4, 'ForeignBase',
       sysLocation('Interpreter','CallOut','TermAtomic',
          'String',int)).
+
+/**
+ * sys_provable_hash(I, S, J):
+ * The predicate succeeds in J with the predicate indicator which
+ * is the short form of I in the source S.
+ */
+% sys_provable_hash(+Indicator, +Atom, -Indicator)
+:- public sys_provable_hash/3.
+:- foreign(sys_provable_hash/3, 'ForeignBase',
+      sysProvableHash('Interpreter','Object','TermAtomic')).

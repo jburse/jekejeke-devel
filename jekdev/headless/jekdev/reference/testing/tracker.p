@@ -66,6 +66,8 @@
 :- use_module(library(inspection/provable)).
 :- use_module(library(advanced/arith)).
 :- use_module(library(inspection/base)).
+:- use_module(library(inspection/notation)).
+:- use_module(library(system/file)).
 :- use_module(runner).
 :- use_module(helper).
 
@@ -288,24 +290,24 @@ sys_find_indicator(SrcPin, OrigSrcPin, A, B, Fun, Arity) :-
    C is B-1,
    between(A, C, L),
    sys_location(SrcPin, OrigSrcPin, L, Indicator),
-                                                  %   source_property(SrcPin, sys_location(Indicator, OrigSrcPin, L)),
-                                                  %   A =< L, L < B,
-   short_indicator(Indicator, OrigSrcPin, ShortIndicator),
-   sys_make_indicator(Fun, Arity, ShortIndicator).
+   sys_indicator_colon(Fun/Arity, Indicator).
+%   source_property(SrcPin, sys_location(Indicator, OrigSrcPin, L)),
+%   A =< L, L < B,
+%   short_indicator(Indicator, OrigSrcPin, ShortIndicator),
+%   sys_make_indicator(Fun, Arity, ShortIndicator).
 
 % sys_analyze_text(+File)
 :- private sys_analyze_text/1.
 sys_analyze_text(InName) :-
    absolute_file_name(InName, SrcPin),
-   path_last_two(SrcPin, LastTwo),
    setup_call_cleanup(
       open(InName, read, InStream),
-      sys_analyze_text(InStream, SrcPin, SrcPin, LastTwo),
+      sys_analyze_text(InStream, SrcPin, SrcPin),
       close(InStream)).
 
-% sys_analyze_text(+Stream, +Atom, +Atom, +Cover)
-:- private sys_analyze_text/4.
-sys_analyze_text(InStream, SrcPin, OrigSrcPin, LastTwo) :- repeat,
+% sys_analyze_text(+Stream, +Atom, +Atom)
+:- private sys_analyze_text/3.
+sys_analyze_text(InStream, SrcPin, OrigSrcPin) :- repeat,
    read_term(InStream, Term, [source(SrcPin),line_no(Line1)]),
    (  Term == end_of_file -> !
    ;  (  at_end_of_stream(InStream)
@@ -314,13 +316,13 @@ sys_analyze_text(InStream, SrcPin, OrigSrcPin, LastTwo) :- repeat,
       ;  stream_property(InStream, line_no(Line2))),
       sys_find_hit(OrigSrcPin, Line1, Line2, OkNok),
       sys_find_indicator(SrcPin, OrigSrcPin, Line1, Line2, Fun, Arity),
-      sys_update_cover(Fun, Arity, LastTwo, Line1, OkNok),
-      sys_update_predicate(Fun, Arity, LastTwo, OkNok),
-      sys_update_source(LastTwo, OkNok),
+      sys_update_cover(Fun, Arity, OrigSrcPin, Line1, OkNok),
+      sys_update_predicate(Fun, Arity, OrigSrcPin, OkNok),
+      sys_update_source(OrigSrcPin, OkNok),
       sys_update_summary(OkNok),
       (  Term = (:-begin_module(Module))
       -> absolute_file_name(verbatim(Module), LocalSrcPin),
-         sys_analyze_text(InStream, LocalSrcPin, OrigSrcPin, LastTwo), fail
+         sys_analyze_text(InStream, LocalSrcPin, OrigSrcPin), fail
       ;  Term = (:-end_module) -> !; fail)).
 
 /**
@@ -351,12 +353,25 @@ list_cover_source :-
 % list_cover_source_data
 :- private list_cover_source_data/0.
 list_cover_source_data :-
-   cover_source(Source, Ok-Nok),
+   cover_source_view(_, Directory, Name, Ok-Nok),
    write(Ok),
    write('\t'),
    write(Nok),
    write('\t'),
-   write(Source), nl, fail.
+   write(Directory),
+   write(/),
+   write(Name), nl, fail.
 list_cover_source_data.
+
+/***************************************************************/
+/* Data View                                                  */
+/***************************************************************/
+
+% cover_source_view(-Atom, -Atom, -Atom, -Pair))
+cover_source_view(Source, Directory, Name, OkNok) :-
+   cover_source(Source, OkNok),
+   make_path(D1, N1, Source),
+   make_path(_, Directory, D1),
+   make_name(Name, _, N1).
 
 

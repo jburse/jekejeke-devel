@@ -39,11 +39,11 @@
 :- use_module(library(system/locale)).
 :- use_module(library(system/file)).
 :- use_module(library(stream/xml)).
+:- use_module(library(inspection/notation)).
+:- use_module(library(inspection/base)).
 :- use_module(runner).
 :- use_module(tracker).
 :- sys_load_resource(testing).
-
-:- op(700, xfx, is_atom).
 
 /***************************************************************/
 /* Collecting Statistics                                       */
@@ -74,7 +74,7 @@ report_begin_html(P, T, Y) :-
    write('  <head>'), nl,
    write('    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'), nl,
    write('    <title editable="comment">'),
-   write_atom(escape(T)),
+   html_escape(T),
    write('</title>'), nl,
    write('  </head>'), nl,
    write('  <body>'), nl.
@@ -91,73 +91,16 @@ report_end_html(Y) :-
 /* String Evaluation                                           */
 /***************************************************************/
 
-/**
- * A is_atom E:
- * The predicate succeeds when A unifies with the value of E.
- */
-% -Atom is_atom +Expr
-_ is_atom A :-
-   var(A),
-   throw(error(instantiation_error,_)).
-X is_atom A+B :- !,
-   Y is_atom A,
-   Z is_atom B,
-   atom_concat(Y, Z, X).
-X is_atom encode(A) :- !,
-   Y is_atom A,
-   uri_encode(Y, X).
-X is_atom escape(A) :- !,
-   Y is_atom A,
-   text_escape(Y, X).
-X is_atom uri(A,B) :- !,
-   Y is_atom A,
-   Z is_atom B,
-   make_uri(Y, '', Z, X).
-X is_atom format_atom(F,C) :- !,
-   format_atom(F, [C], X).
-
-X is_atom indicator(M:F,A) :- !,
-   X is_atom package(M)+ : +F+ / +A.
-X is_atom indicator(F,A) :- !,
-   X is_atom F+ / +A.
-X is_atom package(A/B) :- !,
-   X is_atom package(A)+ / +B.
-X is_atom package(A) :- !,
-   X is_atom A.
-
-X is_atom Y :-
-   number(Y), !,
-   number_codes(Y, H),
-   atom_codes(X, H).
-X is_atom X.
-
-/**
- * write_atom(E):
- * The predicate succeeds in writing the value of E to the current output.
- */
-% write_atom(+Expr)
-write_atom(A) :-
-   X is_atom A,
-   write(X).
-
-% html_functor_indicator(+Atom, +Integer)
-html_functor_indicator(F, A) :-
-   A < 0, !,
-   A2 is -A-1,
-   write_atom(escape(indicator(F,A2))).
-html_functor_indicator(F, A) :-
-   write_atom(escape(indicator(F,A))).
-
 % html_functor_type(+Integer)
 html_functor_type(A) :-
    A < 0, !,
    sys_get_lang(testing, P),
    get_property(P, 'result.item.eval', V1),
-   write_atom(escape(V1)).
+   html_escape(V1).
 html_functor_type(_) :-
    sys_get_lang(testing, P),
    get_property(P, 'result.item.pred', V1),
-   write_atom(escape(V1)).
+   html_escape(V1).
 
 /***************************************************************/
 /* Zebra Tables                                                */
@@ -192,91 +135,3 @@ html_pairs_data(A-B) :-
    write(A1),
    write('%</div>'),
    write('</td>'), nl.
-
-/***************************************************************/
-/* Data Views                                                  */
-/***************************************************************/
-
-% result_suite_view(-+Atom, -+Atom, --Pair)
-result_suite_view(Directory, Name, OkNok) :-
-   var(Directory),
-   var(Name), !,
-   result_suite(Suite, OkNok),
-   split_suite(Suite, Directory, Name).
-result_suite_view(Directory, Name, OkNok) :-
-   Suite is_atom Directory+'_'+Name,
-   result_suite(Suite, OkNok).
-
-% split_suite(+Atom, +Atom, -Atom)
-split_suite(Suite, Directory, Name) :-
-   sub_atom(Suite, A, _, B, '_'),
-   sub_atom(Suite, 0, A, _, Directory),
-   sub_atom(Suite, _, B, 0, Name).
-
-% cover_source_view(-+Atom, -+Atom, --Pair)
-cover_source_view(Directory, Name, OkNok) :-
-   var(Directory),
-   var(Name), !,
-   cover_source(Source, OkNok),
-   split_source(Source, Directory, Name).
-cover_source_view(Directory, Name, OkNok) :-
-   Source is_atom Directory+ / +Name,
-   cover_source(Source, OkNok).
-
-% split_source(+Atom, +Atom, -Atom)
-split_source(Source, Directory, Name) :-
-   sub_atom(Source, A, _, B, /),
-   sub_atom(Source, 0, A, _, Directory),
-   sub_atom(Source, _, B, 0, Name).
-
-/********************************************************/
-/* Module Ops                                           */
-/********************************************************/
-
-/**
- * short_indicator(I, C, J):
- * The predicate succeeds for a short indicator J. The
- * short indicator is determined from the indicator I
- * and the context C.
- */
-% short_indicator(+Indicator, +Context, -Indicator)
-short_indicator(I, C, J) :-
-   predicate_module(I, M1, J),
-   path_module(C, M2),
-   M1 = M2, !.
-short_indicator(I, _, K) :-
-   predicate_module(I, M1, J),
-   predicate_module(K, M1, J).
-
-/**
- * predicate_module(I, M, J):
- * The predicate succeeds when M is the module of I and
- * J is the name and arity of I.
- */
-% predicate_module(+Indicator, -Module, -Indicator)
-:- private predicate_module/3.
-predicate_module(M:I, M, I) :- !.
-predicate_module(I, user, I).
-
-/**
- * path_module(C, M):
- * The predicate succeeds when M is the full module name
- * of the path C.
- */
-% path_module(+Context, -Module)
-:- private path_module/2.
-path_module(C, R) :-
-   source_property(C, sys_module(H)), !,
-   R = H.
-path_module(_, user).
-
-/********************************************************/
-/* Path Ops                                             */
-/********************************************************/
-
-% path_last_two(+Context, -LastTwo)
-path_last_two(P, R) :-
-   make_path(D1, N1, P),
-   make_path(_, N2, D1),
-   make_name(B1, _, N1),
-   make_path(N2, B1, R).

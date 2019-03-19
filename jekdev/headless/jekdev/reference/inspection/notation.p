@@ -117,7 +117,7 @@ sys_callable_colon(A, T) :-
 % sys_indicator_colon(+-Indicator, -+Term):
 :- public sys_indicator_colon/2.
 sys_indicator_colon(A, T) :-
-   var(A), !,
+   ground(T), !,
    sys_colon_to_indicator(T, A).
 sys_indicator_colon(A, T) :-
    sys_indicator_to_colon(A, T).

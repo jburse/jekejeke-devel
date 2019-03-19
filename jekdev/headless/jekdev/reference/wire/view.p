@@ -35,6 +35,7 @@
 :- module(view, []).
 :- use_module(monitor).
 :- use_module(library(misc/http)).
+:- use_module(library(stream/xml)).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/store)).
 :- use_module(pages/thread).

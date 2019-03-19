@@ -35,6 +35,7 @@
 :- module(desktop, []).
 :- use_module(monitor).
 :- use_module(library(misc/http)).
+:- use_module(library(stream/xml)).
 :- reexport(view).
 :- use_module(pages/layout).
 

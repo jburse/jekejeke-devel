@@ -4,6 +4,7 @@ import jekdev.model.pretty.LocatorTrace;
 import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
@@ -145,9 +146,9 @@ public final class ForeignBase {
     /**
      * <p>Determine the provable hash.</p>
      *
-     * @param inter The interpreter.
+     * @param inter     The interpreter.
      * @param indicator The provable indicator.
-     * @param source The source.
+     * @param source    The source.
      * @return The provable hash.
      * @throws InterpreterMessage Shit happens
      */
@@ -156,7 +157,7 @@ public final class ForeignBase {
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();
-            Predicate pick = SpecialPred.indicatorToProvable(AbstractTerm.getSkel(indicator),
+            Predicate pick = derefAndCastPick(AbstractTerm.getSkel(indicator),
                     AbstractTerm.getDisplay(indicator), engine);
             AbstractSource src = derefAndCastSource(source, engine);
             return SpecialModel.storeKeyToColonSkel(pick, src, engine);
@@ -175,14 +176,31 @@ public final class ForeignBase {
      * @param source The source.
      * @param en     The engine.
      * @return The source.
+     * @throws EngineMessage Shit happens.
      */
-    public static AbstractSource derefAndCastSource(TermAtomic source, Engine en)
+    private static AbstractSource derefAndCastSource(TermAtomic source, Engine en)
             throws EngineMessage {
         SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(source.getSkel(), source.getDisplay());
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         src = src.getStore().getSource(sa.fun);
         AbstractSource.checkExistentSource(src, sa);
         return src;
+    }
+
+    /**
+     * <p>Deref and cast a provable.</p>
+     *
+     * @param m The provable skeleton.
+     * @param d The provable display.
+     * @param en     The engine.
+     * @return The provable.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Predicate derefAndCastPick(Object m, Display d, Engine en)
+            throws EngineMessage {
+        Predicate pick = SpecialPred.indicatorToProvable(m, d, en);
+        Predicate.checkExistentProvable(pick, m, d);
+        return pick;
     }
 
 }
