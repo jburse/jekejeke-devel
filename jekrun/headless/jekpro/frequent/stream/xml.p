@@ -77,6 +77,24 @@ text_escape(X, Y) :-
 :- foreign(sys_text_unescape/2, 'ForeignXml',
       sysTextUnescape('String')).
 
+/**
+ * html_escpae(T):
+ * html_escape(O, T):
+ * The predicate sends the text T escaped to the current output. The
+ * binary predicate allows specifying an output stream O.
+ */
+% html_escape(+Atom)
+:- public html_escape/1.
+html_escape(Text) :-
+   text_escape(Text, Escape),
+   write(Escape).
+
+% html_escape(+Stream, +Atom)
+:- public html_escape/2.
+html_escape(Response, Text) :-
+   text_escape(Text, Escape),
+   write(Response, Escape).
+
 /****************************************************************/
 /* Base64 Conversion                                            */
 /****************************************************************/

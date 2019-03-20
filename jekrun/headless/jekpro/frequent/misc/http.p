@@ -547,19 +547,6 @@ send_blocks(Stream, Response) :-
 send_blocks(_, _).
 
 /***************************************************************/
-/* HTTP Response Dynamic                                       */
-/***************************************************************/
-
-/**
- * html_escape(O, T):
- * The predicate sends the text T escaped to the text output stream O.
- */
-:- public html_escape/2.
-html_escape(Response, Text) :-
-   text_escape(Text, Escape),
-   write(Response, Escape).
-
-/***************************************************************/
 /* Special HTTP Responses                                      */
 /***************************************************************/
 
