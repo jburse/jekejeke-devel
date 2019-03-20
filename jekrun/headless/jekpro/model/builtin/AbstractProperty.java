@@ -152,9 +152,9 @@ public class AbstractProperty<T> {
     /**
      * <p>Retrieve all the objects for a property.</p>
      *
-     * @param en  The engine.
-     * @param m   The property skeleton.
-     * @param d   The property display.
+     * @param en The engine.
+     * @param m  The property skeleton.
+     * @param d  The property display.
      * @return The properties.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.

@@ -111,11 +111,12 @@ public class PrologWriterAnno extends PrologWriter {
      * @param decl The declaration or null.
      * @throws IOException   IO Error.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     protected final void writeInfix(Operator op, SkelAtom sa,
                                     CachePredicate cp,
                                     Object[] decl, int indent)
-            throws IOException, EngineMessage {
+            throws IOException, EngineMessage, EngineException {
         if ((flags & FLAG_FILL) == 0) {
             super.writeInfix(op, sa, cp, decl, indent);
             return;

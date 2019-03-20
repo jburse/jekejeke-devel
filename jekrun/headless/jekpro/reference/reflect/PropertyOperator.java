@@ -4,7 +4,6 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
@@ -50,23 +49,21 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertyOperator extends AbstractProperty<Operator> {
+    private final static String OP_OP = "op";
     private final static String OP_NSPL = "nspl";
     private final static String OP_NSPR = "nspr";
-    private final static String OP_LEVEL = "level";
-    private final static String OP_MODE = "mode";
     private final static String OP_SYS_PORTRAY = "sys_portray";
     private final static String OP_SYS_ALIAS = "sys_alias";
 
-    private static final int PROP_FULL_NAME = 0;
-    private static final int PROP_NSPL = 1;
-    private static final int PROP_NSPR = 2;
-    private static final int PROP_LEVEL = 3;
-    private static final int PROP_MODE = 4;
-    private static final int PROP_VISIBLE = 5;
-    private static final int PROP_OVERRIDE = 6;
-    private static final int PROP_SYS_USAGE = 7;
-    private static final int PROP_SYS_PORTRAY = 8;
-    private static final int PROP_SYS_ALIAS = 9;
+    private static final int PROP_VISIBLE = 0;
+    private static final int PROP_OP = 1;
+    private static final int PROP_NSPL = 2;
+    private static final int PROP_NSPR = 3;
+    private static final int PROP_OVERRIDE = 4;
+    private static final int PROP_SYS_USAGE = 5;
+    private static final int PROP_SYS_PORTRAY = 6;
+    private static final int PROP_SYS_ALIAS = 7;
+    private static final int PROP_FULL_NAME = 8;
 
     /**
      * <p>Create an operator property.</p>
@@ -78,22 +75,36 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     }
 
     /**
+     * <p>Create an operator property.</p>
+     *
+     * @param i The id of the operator property.
+     * @param f The flags.
+     */
+    public PropertyOperator(int i, int f) {
+        super(i, f);
+    }
+
+    /**
      * <p>Define the operator properties.</p>
      *
      * @return The operator properties.
      */
     public static MapHash<StoreKey, AbstractProperty<Operator>> defineOperProps() {
         MapHash<StoreKey, AbstractProperty<Operator>> operprops = new MapHash<StoreKey, AbstractProperty<Operator>>();
-        operprops.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
-        operprops.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL));
-        operprops.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR));
-        operprops.add(new StoreKey(OP_LEVEL, 1), new PropertyOperator(PROP_LEVEL));
-        operprops.add(new StoreKey(OP_MODE, 1), new PropertyOperator(PROP_MODE));
         operprops.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE));
+        operprops.add(new StoreKey(OP_OP, 2), new PropertyOperator(PROP_OP,
+                AbstractProperty.MASK_PROP_SHOW));
+        operprops.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        operprops.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         operprops.add(new StoreKey(PropertyPredicate.OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
         operprops.add(new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
-        operprops.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY));
-        operprops.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS));
+        operprops.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        operprops.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        operprops.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
         return operprops;
     }
 
@@ -103,16 +114,33 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
      * @param oper The operator.
      * @param en   The engine.
      * @return The properties.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
-    public Object[] getObjProps(Operator oper, Engine en)
-            throws EngineMessage, EngineException {
+    public Object[] getObjProps(Operator oper, Engine en) {
         switch (id) {
-            case PROP_FULL_NAME:
-                Object val = new SkelAtom(oper.getKey());
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(PropertyPredicate.OP_FULL_NAME), val), Display.DISPLAY_CONST)};
+            case PROP_VISIBLE:
+                int flags = oper.getBits();
+                if ((flags & Operator.MASK_OPER_VSPR) != 0) {
+                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                            new SkelAtom(PropertyPredicate.OP_VISIBLE),
+                            new SkelAtom(AbstractSource.OP_PRIVATE)), Display.DISPLAY_CONST)};
+                } else if ((flags & Operator.MASK_OPER_VSPU) != 0) {
+                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                            new SkelAtom(PropertyPredicate.OP_VISIBLE),
+                            new SkelAtom(AbstractSource.OP_PUBLIC)), Display.DISPLAY_CONST)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
+            case PROP_OP:
+                flags = oper.getLevel();
+                if (flags != 0) {
+                    Object val = Integer.valueOf(flags);
+                    Object val2 = new SkelAtom(SpecialOper.modeTypeToAtom(
+                            flags & Operator.MASK_OPER_MODE, oper.getType()));
+                    return new Object[]{AbstractTerm.createMolec(
+                            new SkelCompound(new SkelAtom(OP_OP), val, val2), Display.DISPLAY_CONST)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
             case PROP_NSPL:
                 if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
                     return new Object[]{new SkelAtom(OP_NSPL)};
@@ -122,38 +150,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             case PROP_NSPR:
                 if ((oper.getBits() & Operator.MASK_OPER_NSPR) != 0) {
                     return new Object[]{new SkelAtom(OP_NSPR)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_LEVEL:
-                int flags = oper.getLevel();
-                if (flags != 0) {
-                    val = Integer.valueOf(oper.getLevel());
-                    return new Object[]{AbstractTerm.createMolec(
-                            new SkelCompound(new SkelAtom(OP_LEVEL), val), Display.DISPLAY_CONST)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_MODE:
-                flags = oper.getBits();
-                if ((flags & Operator.MASK_OPER_DEFI) != 0) {
-                    val = new SkelAtom(SpecialOper.modeTypeToAtom(
-                            flags & Operator.MASK_OPER_MODE, oper.getType()));
-                    return new Object[]{AbstractTerm.createMolec(
-                            new SkelCompound(new SkelAtom(OP_MODE), val), Display.DISPLAY_CONST)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_VISIBLE:
-                flags = oper.getBits();
-                if ((flags & Operator.MASK_OPER_VSPR) != 0) {
-                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(PropertyPredicate.OP_VISIBLE),
-                            new SkelAtom(AbstractSource.OP_PRIVATE)), Display.DISPLAY_CONST)};
-                } else if ((flags & Operator.MASK_OPER_VSPU) != 0) {
-                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(PropertyPredicate.OP_VISIBLE),
-                            new SkelAtom(AbstractSource.OP_PUBLIC)), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -175,7 +171,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             case PROP_SYS_PORTRAY:
                 String str = oper.getPortray();
                 if (str != null) {
-                    val = new SkelAtom(str);
+                    Object val = new SkelAtom(str);
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                             new SkelAtom(OP_SYS_PORTRAY), val), Display.DISPLAY_CONST)};
                 } else {
@@ -184,12 +180,16 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             case PROP_SYS_ALIAS:
                 str = oper.getAlias();
                 if (str != null) {
-                    val = new SkelAtom(str);
+                    Object val = new SkelAtom(str);
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                             new SkelAtom(OP_SYS_ALIAS), val), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_FULL_NAME:
+                Object val = new SkelAtom(oper.getKey());
+                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                        new SkelAtom(PropertyPredicate.OP_FULL_NAME), val), Display.DISPLAY_CONST)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -209,28 +209,22 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             throws EngineMessage {
         try {
             switch (id) {
-                case PROP_FULL_NAME:
-                    /* can't modify */
-                    return false;
+                case PROP_VISIBLE:
+                    int flags = PropertyOperator.derefAndCastVisible(m, d, en);
+                    oper.resetBit(Operator.MASK_OPER_VISI);
+                    oper.setBit(flags);
+                    return true;
+                case PROP_OP:
+                    flags = PropertyOperator.derefAndCastOp(m, d, en);
+                    oper.setLevel(flags & 0xFFFF);
+                    oper.resetBit(Operator.MASK_OPER_MODE);
+                    oper.setBit(flags >> 16);
+                    return true;
                 case PROP_NSPL:
                     oper.setBit(Operator.MASK_OPER_NSPL);
                     return true;
                 case PROP_NSPR:
                     oper.setBit(Operator.MASK_OPER_NSPR);
-                    return true;
-                case PROP_LEVEL:
-                    int level = PropertyOperator.derefAndCastLevel(m, d, en);
-                    oper.setLevel(level);
-                    return true;
-                case PROP_MODE:
-                    level = PropertyOperator.derefAndCastMode(m, d, en);
-                    oper.resetBit(Operator.MASK_OPER_MODE);
-                    oper.setBit(level);
-                    return true;
-                case PROP_VISIBLE:
-                    level = PropertyOperator.derefAndCastVisible(m, d, en);
-                    oper.resetBit(Operator.MASK_OPER_VISI);
-                    oper.setBit(level);
                     return true;
                 case PROP_OVERRIDE:
                     oper.setBit(Operator.MASK_OPER_OVRD);
@@ -246,6 +240,9 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     str = PropertyOperator.derefAndCastAlias(m, d, en);
                     oper.setAlias(str);
                     return true;
+                case PROP_FULL_NAME:
+                    /* can't modify */
+                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -269,23 +266,18 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             throws EngineMessage {
         try {
             switch (id) {
-                case PROP_FULL_NAME:
-                    /* can't modify */
-                    return false;
+                case PROP_VISIBLE:
+                    oper.resetBit(Operator.MASK_OPER_VISI);
+                    return true;
+                case PROP_OP:
+                    oper.setLevel(0);
+                    oper.resetBit(Operator.MASK_OPER_MODE);
+                    return true;
                 case PROP_NSPL:
                     oper.resetBit(Operator.MASK_OPER_NSPL);
                     return true;
                 case PROP_NSPR:
                     oper.resetBit(Operator.MASK_OPER_NSPR);
-                    return true;
-                case PROP_LEVEL:
-                    oper.setLevel(0);
-                    return true;
-                case PROP_MODE:
-                    oper.resetBit(Operator.MASK_OPER_MODE);
-                    return true;
-                case PROP_VISIBLE:
-                    oper.resetBit(Operator.MASK_OPER_VISI);
                     return true;
                 case PROP_OVERRIDE:
                     oper.resetBit(Operator.MASK_OPER_OVRD);
@@ -299,6 +291,9 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 case PROP_SYS_ALIAS:
                     oper.setAlias(null);
                     return true;
+                case PROP_FULL_NAME:
+                    /* can't modify */
+                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -349,69 +344,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     /****************************************************************/
     /* Deref Utility                                                */
     /****************************************************************/
-
-    /**
-     * <p>Deref and cast to operator level.</p>
-     *
-     * @param m  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     * @return The operator level.
-     * @throws EngineMessage      Shit happens.
-     * @throws ClassCastException Shit happens.
-     */
-    private static int derefAndCastLevel(Object m, Display d, Engine en)
-            throws EngineMessage, ClassCastException {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        m = en.skel;
-        d = en.display;
-        if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 1 &&
-                ((SkelCompound) m).sym.fun.equals(OP_LEVEL)) {
-            m = ((SkelCompound) m).args[0];
-            Number num = SpecialEval.derefAndCastInteger(m, d);
-            SpecialEval.checkNotLessThanZero(num);
-            int level = SpecialEval.castIntValue(num);
-            SpecialOper.checkOperatorLevel(level);
-            return level;
-        } else {
-            EngineMessage.checkInstantiated(m);
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
-    }
-
-    /**
-     * <p>Deref and cast to operator mode.</p>
-     *
-     * @param m  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     * @return The operator mode.
-     * @throws EngineMessage      Shit happens.
-     * @throws ClassCastException Shit happens.
-     */
-    private static int derefAndCastMode(Object m, Display d, Engine en)
-            throws EngineMessage, ClassCastException {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        m = en.skel;
-        d = en.display;
-        if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 1 &&
-                ((SkelCompound) m).sym.fun.equals(OP_MODE)) {
-            m = ((SkelCompound) m).args[0];
-            String fun = SpecialUniv.derefAndCastString(m, d);
-            return SpecialOper.atomToMode(fun);
-        } else {
-            EngineMessage.checkInstantiated(m);
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
-    }
 
     /**
      * <p>Deref and cast to operator visibility.</p>
@@ -494,6 +426,41 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 ((SkelCompound) m).sym.fun.equals(OP_SYS_ALIAS)) {
             m = ((SkelCompound) m).args[0];
             return SpecialUniv.derefAndCastString(m, d);
+        } else {
+            EngineMessage.checkInstantiated(m);
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+
+    /**
+     * <p>Deref and cast to operator level.</p>
+     *
+     * @param m  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The operator level.
+     * @throws EngineMessage      Shit happens.
+     * @throws ClassCastException Shit happens.
+     */
+    private static int derefAndCastOp(Object m, Display d, Engine en)
+            throws EngineMessage, ClassCastException {
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        m = en.skel;
+        d = en.display;
+        if (m instanceof SkelCompound &&
+                ((SkelCompound) m).args.length == 2 &&
+                ((SkelCompound) m).sym.fun.equals(OP_OP)) {
+            Object[] temp = ((SkelCompound) m).args;
+            Number num = SpecialEval.derefAndCastInteger(temp[0], d);
+            SpecialEval.checkNotLessThanZero(num);
+            int level = SpecialEval.castIntValue(num);
+            SpecialOper.checkOperatorLevel(level);
+            String fun = SpecialUniv.derefAndCastString(temp[1], d);
+            int mode = SpecialOper.atomToMode(fun);
+            return level + (mode << 16);
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(

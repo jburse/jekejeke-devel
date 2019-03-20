@@ -85,9 +85,6 @@ public abstract class AbstractSource {
 
     public final static String OP_END_OF_FILE = "end_of_file";
 
-    private final static String PREFIX_FOREIGN = "foreign:";
-    private final static String EXTENSION_HTML = ".html";
-
     /* source flags */
     public final static int MASK_SRC_NOTR = 0x00000001;
     public final static int MASK_SRC_PREL = 0x00000002;
@@ -1345,19 +1342,6 @@ public abstract class AbstractSource {
     /**********************************************************************/
     /* Cross Referencer                                                   */
     /**********************************************************************/
-
-    /**
-     * <p>Retrieve the HTML path.</p></op>
-     *
-     * @return The HTML path.
-     */
-    public String getHTMLPath() {
-        if (ForeignUri.sysUriIsRelative(path)) {
-            return PREFIX_FOREIGN + ForeignFile.sysNameBase(path) + EXTENSION_HTML;
-        } else {
-            return ForeignFile.sysNameBase(path) + EXTENSION_HTML;
-        }
-    }
 
     /**
      * <p>Make a source by source key.</p>

@@ -161,7 +161,7 @@ public final class Flag extends AbstractFlag {
                 if (sk == null) {
                     return AbstractFlag.OP_NULL;
                 } else {
-                    return StoreKey.storeKeyToSkel(sk, en);
+                    return StoreKey.storeKeyToSkel(sk);
                 }
             case FLAG_SYS_ACT_STATUS:
                 return new SkelAtom(en.store.foyer.getError());

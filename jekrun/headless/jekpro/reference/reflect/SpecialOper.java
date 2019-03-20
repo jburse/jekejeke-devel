@@ -255,8 +255,8 @@ public final class SpecialOper extends AbstractSpecial {
             Operator oper = opers[i];
             if (!OperatorSearch.visibleOper(oper, en.store.user))
                 continue;
-            Object val = SpecialOper.operToColonSkel(oper.getType(), oper.getKey(),
-                    oper.getSource().getStore().user, en);
+            Object val = SpecialOper.operToColonSkel(oper.getKey(),
+                    oper.getSource().getStore().user, oper.getType(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
@@ -364,7 +364,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk, en)));
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -386,7 +386,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk, en)));
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -435,7 +435,7 @@ public final class SpecialOper extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk, en)));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
 
@@ -494,19 +494,19 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         int mode;
         if (modestr.equals(OP_FX)) {
-            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_RGHT;
+            mode = Operator.MASK_OPER_RGHT;
         } else if (modestr.equals(OP_FY)) {
-            mode = Operator.MASK_OPER_DEFI;
+            mode = 0;
         } else if (modestr.equals(OP_XFX)) {
-            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT + Operator.MASK_OPER_RGHT;
+            mode = Operator.MASK_OPER_LEFT + Operator.MASK_OPER_RGHT;
         } else if (modestr.equals(OP_XFY)) {
-            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT;
+            mode = Operator.MASK_OPER_LEFT;
         } else if (modestr.equals(OP_YFX)) {
-            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_RGHT;
+            mode = Operator.MASK_OPER_RGHT;
         } else if (modestr.equals(OP_XF)) {
-            mode = Operator.MASK_OPER_DEFI + Operator.MASK_OPER_LEFT;
+            mode = Operator.MASK_OPER_LEFT;
         } else if (modestr.equals(OP_YF)) {
-            mode = Operator.MASK_OPER_DEFI;
+            mode = 0;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_OPERATOR_SPECIFIER,
@@ -640,50 +640,43 @@ public final class SpecialOper extends AbstractSpecial {
     public static Object operToColonSkel(int type, SkelAtom sa, Engine en)
             throws EngineMessage {
         Object s = SpecialDynamic.callableToColonSkel(sa, en);
-
-        return typeToOpSkel(s, type);
+        return new SkelCompound(typeToOp(type), s);
     }
 
     /**
      * <p>Convert a type and fun to a colon.</p>
      *
-     * @param type  The type.
      * @param fun   The name.
      * @param scope The scope, not null.
+     * @param type  The type.
      * @param en    The engine.
      * @return The compound.
      * @throws EngineMessage Shit happens.
      */
-    public static Object operToColonSkel(int type, String fun,
-                                         AbstractSource scope, Engine en)
+    public static Object operToColonSkel(String fun, AbstractSource scope,
+                                         int type, Engine en)
             throws EngineMessage {
         Object s = SpecialDynamic.callableToColonSkel(new SkelAtom(fun), scope, en);
-        return typeToOpSkel(s, type);
+        return new SkelCompound(typeToOp(type), s);
     }
 
     /**
      * <p>Convert a type to a string.</p>
      *
-     * @param key  The key.
      * @param type The type.
      * @return The string.
      */
-    public static Object typeToOpSkel(Object key, int type) {
-        String optype;
+    public static SkelAtom typeToOp(int type) {
         switch (type) {
             case Operator.TYPE_PREFIX:
-                optype = OP_PREFIX;
-                break;
+                return new SkelAtom(OP_PREFIX);
             case Operator.TYPE_INFIX:
-                optype = OP_INFIX;
-                break;
+                return new SkelAtom(OP_INFIX);
             case Operator.TYPE_POSTFIX:
-                optype = OP_POSTFIX;
-                break;
+                return new SkelAtom(OP_POSTFIX);
             default:
                 throw new IllegalArgumentException("illegal type");
         }
-        return new SkelCompound(new SkelAtom(optype), key);
     }
 
     /**********************************************************/
@@ -763,8 +756,8 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         for (int i = opers.length - 1; i >= 0; i--) {
             Operator oper = opers[i];
-            Object val = operToColonSkel(oper.getType(), oper.getKey(),
-                    oper.getSource().getStore().user, en);
+            Object val = operToColonSkel(oper.getKey(),
+                    oper.getSource().getStore().user, oper.getType(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;

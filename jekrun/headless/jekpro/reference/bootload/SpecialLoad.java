@@ -155,6 +155,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
+                
                 Operator oper = SpecialOper.operToSyntax(temp[0], ref, en);
                 if (oper == null)
                     return false;
@@ -166,6 +167,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     return false;
                 if (oper.getScope() != source)
                     return false;
+
                 obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
@@ -176,7 +178,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
-                SpecialLoad.listSyntax(pw, oper, en);
+                SpecialLoad.listSyntax(pw, oper, source, en);
                 newLineFlush(wr);
                 return true;
             case SPECIAL_SYS_SHOW_BASE:
@@ -255,16 +257,18 @@ public final class SpecialLoad extends AbstractSpecial {
      * <p>System clauses are excluded.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param pw     The prolog writer.
-     * @param pick   The predicate.
-     * @param source The source, not null.
-     * @param en     The engine.
+     * @param pw   The prolog writer.
+     * @param pick The predicate.
+     * @param src  The source, not null.
+     * @param en   The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private static void listProvable(PrologWriter pw, Predicate pick,
-                                     AbstractSource source, Engine en)
+                                     AbstractSource src, Engine en)
             throws EngineMessage, EngineException {
+        if (pick.del == null)
+            return;
         /* flesh out properties */
         ListArray<SkelAtom> modifiers = null;
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
@@ -282,18 +286,18 @@ public final class SpecialLoad extends AbstractSpecial {
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
-                        hasClause(pick, source, en))
+                        hasClause(pick, src, en))
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
-                        sameVisible(source, pick, en))
+                        sameVisible(src, pick, en))
                     continue;
                 Object[] vals = prop.getObjProps(pick, en);
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
-                    vals = selectFirst(vals, source.getPathAtom());
+                    vals = selectFirst(vals, src.getPathAtom());
                 } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0) {
                     vals = projectFirst(vals);
                 } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
-                    vals = delegateSpec(vals, pick, source);
+                    vals = delegateSpec(vals, pick, src);
                 }
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
                     for (int j = 0; j < vals.length; j++) {
@@ -306,14 +310,14 @@ public final class SpecialLoad extends AbstractSpecial {
                         Object val = vals[j];
                         Object decl;
                         if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
-                            decl = SpecialModel.predDeclSkelSet(AbstractTerm.getSkel(val),
-                                    pick, source, en);
+                            decl = SpecialModel.predDeclSkelSet(
+                                    AbstractTerm.getSkel(val), pick, src);
                         } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
-                            decl = SpecialModel.predDeclSkelMeta(AbstractTerm.getSkel(val),
-                                    pick, source, en);
+                            decl = SpecialModel.predDeclSkelMeta(
+                                    AbstractTerm.getSkel(val), pick, src);
                         } else {
-                            decl = SpecialModel.predDeclSkelIndicator(AbstractTerm.getSkel(val),
-                                    pick, source, en);
+                            decl = SpecialModel.predDeclSkelIndicator(
+                                    AbstractTerm.getSkel(val), pick, src);
                         }
                         if (modifiers != null) {
                             decl = prependModifiers(modifiers, decl);
@@ -336,10 +340,10 @@ public final class SpecialLoad extends AbstractSpecial {
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
             SkelAtom sa = StackElement.callableToName(clause.head);
-            if (source != sa.scope)
+            if (src != sa.scope)
                 continue;
             if (modifiers != null) {
-                Object decl = SpecialModel.storeKeyToColonSkel(pick, source, en);
+                Object decl = SpecialModel.provableToColonSkel(pick, src);
                 decl = prependModifiers(modifiers, decl);
                 modifiers = null;
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
@@ -348,7 +352,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = PreClause.intermediateToClause(clause, en);
-            pw.setSource(source);
+            pw.setSource(src);
             pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setSource(en.visor.peekStack());
@@ -358,17 +362,54 @@ public final class SpecialLoad extends AbstractSpecial {
 
     /**
      * <p>List the syntax operator.</p>
+     *
+     * @param pw   The prolog writer.
+     * @param oper The operator.
+     * @param src  The source, not null.
+     * @param en   The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
     private static void listSyntax(PrologWriter pw,
                                    Operator oper,
+                                   AbstractSource src,
                                    Engine en)
             throws EngineMessage, EngineException {
+        if (oper.getLevel() == 0)
+            return;
         /* flesh out properties */
-        Object decl = oper.operatorToCompound(en.store);
-        decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
-        decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-        pw.unparseStatement(decl, Display.DISPLAY_CONST);
-        SpecialLoad.flushWriter(pw.getWriter());
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            for (MapEntry<StoreKey, AbstractProperty<Operator>> entry2 =
+                 (props != null ? props.getLastEntry() : null);
+                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                AbstractProperty<Operator> prop = entry2.value;
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
+                    continue;
+                Object[] vals = prop.getObjProps(oper, en);
+                for (int j = 0; j < vals.length; j++) {
+                    Object val = vals[j];
+                    Object decl;
+                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
+                        decl = SpecialModel.operDeclSkelSet(
+                                AbstractTerm.getSkel(val), oper, src);
+                    } else {
+                        decl = SpecialModel.operDeclSkelOp(
+                                AbstractTerm.getSkel(val), oper, src);
+                    }
+                    decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+                    pw.unparseStatement(decl, Display.DISPLAY_CONST);
+                    SpecialLoad.flushWriter(pw.getWriter());
+                }
+            }
+        }
     }
 
     /**

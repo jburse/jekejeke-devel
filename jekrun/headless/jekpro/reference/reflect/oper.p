@@ -124,8 +124,7 @@ sys_oper2(postfix(X), _, _) :-
    throw(error(permission_error(create,operator,postfix(X)),_)).
 sys_oper2(I, L, M) :-
    sys_neutral_oper(I),
-   set_oper_property(I, level(L)),
-   set_oper_property(I, mode(M)),
+   set_oper_property(I, op(L,M)),
    sys_check_style_oper(I).
 :- set_predicate_property(sys_oper2/3, visible(private)).
 
@@ -150,19 +149,16 @@ sys_oper2(I, L, M) :-
 current_op(L, M, C) :-
    var(C), !,
    current_oper(I),
-   oper_property(I, mode(M)),
-   oper_property(I, level(L)),
+   oper_property(I, op(L,M)),
    sys_make_oper(M, C, I).
 current_op(L, M, C) :-
    var(M), !,
    current_oper(I),
-   oper_property(I, mode(M)),
-   oper_property(I, level(L)),
+   oper_property(I, op(L,M)),
    sys_make_oper(M, C, I).
 current_op(L, M, C) :-
    sys_make_oper(M, C, I),
-   oper_property(I, mode(M)),
-   oper_property(I, level(L)).
+   oper_property(I, op(L,M)).
 :- set_predicate_property(current_op/3, visible(public)).
 
 % sys_make_oper(+Atom, +Atom, -Indicator)

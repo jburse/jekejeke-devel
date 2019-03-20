@@ -652,8 +652,8 @@ atom_split1(List, _, _) :-
 atom_split1([X], _, X) :- !.
 atom_split1([X,Y|Z], Sep, R) :- !,
    atom_split1([Y|Z], Sep, H),
-   atom_concat(Sep, H, J),
-   atom_concat(X, J, R).
+   atom_concat(X, Sep, J),
+   atom_concat(J, H, R).
 atom_split1(List, _, _) :-
    throw(error(type_error(list,List),_)).
 

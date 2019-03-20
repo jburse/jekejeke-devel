@@ -858,10 +858,11 @@ public class PrologWriter {
      * @param cp The predicate or null.
      * @throws IOException   IO Error.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     final void writePrefix(Operator op, SkelAtom sa,
                            CachePredicate cp)
-            throws IOException, EngineMessage {
+            throws IOException, EngineMessage, EngineException {
         /**
          * - spacing.
          * - anti specification
@@ -899,7 +900,7 @@ public class PrologWriter {
     protected void writeInfix(Operator op, SkelAtom sa,
                               CachePredicate cp,
                               Object[] decl, int indent)
-            throws IOException, EngineMessage {
+            throws IOException, EngineMessage, EngineException {
         /**
          * - implication newln and indent.
          * - conjunction newln and indent.
@@ -1491,22 +1492,25 @@ public class PrologWriter {
                         mod2 = null;
                         nsa2 = null;
                     }
-                    Operator op2;
-                    if (isSimple(sc.args[1], ref)) {
-                        writeInfix(op, sc.sym, cp, decl, indent
-                                | SPEZ_ICUT);
-                    } else if ((op2 = isOperSimple(sc.args[1], ref, mod2, nsa2)) != null &&
-                            !needsParen(op2, spez, op.getLevel() - op.getRight())) {
-                        writeInfix(op, sc.sym, cp, decl, indent
-                                | (SPEZ_ICUT | SPEZ_ICAT));
-                    } else {
-                        writeInfix(op, sc.sym, cp, decl, indent);
-                    }
-                    /* right operand */
                     z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
                     spez = (spez & SPEZ_OPLE) + getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
+                    int forwardspez = spez;
+                    if (isSimple(sc.args[1], ref)) {
+                        spez = backspez;
+                        spez |= SPEZ_ICUT;
+                        writeInfix(op, sc.sym, cp, decl, indent);
+                    } else if (isOperSimple(sc.args[1], ref, mod2, nsa2, op)) {
+                        spez = backspez;
+                        spez |= (SPEZ_ICUT | SPEZ_ICAT);
+                        writeInfix(op, sc.sym, cp, decl, indent);
+                    } else {
+                        spez = backspez;
+                        writeInfix(op, sc.sym, cp, decl, indent);
+                    }
+                    spez = forwardspez;
+                    /* right operand */
                     write(sc.args[1], ref, op.getLevel() - op.getRight(), mod2, nsa2);
                     spez = backspez;
                     offset = backoffset;
@@ -1564,37 +1568,41 @@ public class PrologWriter {
      * @param term The argument skeleton.
      * @param ref  The argument display.
      * @param mod  The module context, or null.
+     * @param op   The operator.
      * @return True if the argument is a an oper and a simple, otherwise false.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    private Operator isOperSimple(Object term, Display ref,
-                                  Object mod, SkelAtom nsa)
+    private boolean isOperSimple(Object term, Display ref,
+                                 Object mod, SkelAtom nsa,
+                                 Operator op)
             throws EngineMessage, EngineException {
-        if (engine == null)
-            return null;
-        engine.skel = term;
-        engine.display = ref;
-        engine.deref();
-        term = engine.skel;
-        ref = engine.display;
+        if (engine != null) {
+            engine.skel = term;
+            engine.display = ref;
+            engine.deref();
+            term = engine.skel;
+            ref = engine.display;
+        }
         if (!(term instanceof SkelCompound))
-            return null;
+            return false;
         SkelCompound sc = (SkelCompound) term;
         if (sc.args.length != 2)
-            return null;
+            return false;
         if (!isSimple(sc.args[0], ref))
-            return null;
-        Operator op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+            return false;
+        Operator op2 = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                 Operator.TYPE_INFIX, engine);
-        if (op == null)
-            return null;
+        if (op2 == null)
+            return false;
         Object[] decl = predicateToMeta(offsetToPredicate(term, mod, nsa));
         if (!isFunr(decl))
-            return null;
+            return false;
         if (!isLowr(decl) && !isNewr(decl))
-            return null;
-        return op;
+            return false;
+        if (needsParen(op2, spez, op.getLevel() - op.getRight()))
+            return false;
+        return true;
     }
 
     /**
@@ -1771,9 +1779,10 @@ public class PrologWriter {
      * @param cp The predicate.
      * @throws IOException   IO error.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     protected void appendLink(String t, CachePredicate cp)
-            throws IOException, EngineMessage {
+            throws IOException, EngineMessage, EngineException {
         append(t);
     }
 
