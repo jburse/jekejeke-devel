@@ -53,11 +53,9 @@ import matula.util.data.MapHash;
 public final class PropertyTraceSource extends AbstractProperty<AbstractSource> {
     private final static String OP_SYS_FIRST_LOCATION = "sys_first_location";
     private final static String OP_SYS_LOCATION = "sys_location";
-    private final static String OP_SYS_FULL_NAME = "sys_full_name";
 
     private static final int PROP_SYS_FIRST_LOCATION = 0;
     private static final int PROP_SYS_LOCATION = 1;
-    private static final int PROP_SYS_FULL_NAME = 2;
 
     /**
      * <p>Create a source property.</p>
@@ -77,7 +75,6 @@ public final class PropertyTraceSource extends AbstractProperty<AbstractSource> 
         MapHash<StoreKey, AbstractProperty<AbstractSource>> srcprops = new MapHash<StoreKey, AbstractProperty<AbstractSource>>();
         srcprops.add(new StoreKey(OP_SYS_FIRST_LOCATION, 3), new PropertyTraceSource(PROP_SYS_FIRST_LOCATION));
         srcprops.add(new StoreKey(OP_SYS_LOCATION, 3), new PropertyTraceSource(PROP_SYS_LOCATION));
-        srcprops.add(new StoreKey(OP_SYS_FULL_NAME, 1), new PropertyTraceSource(PROP_SYS_FULL_NAME));
         return srcprops;
     }
 
@@ -110,10 +107,6 @@ public final class PropertyTraceSource extends AbstractProperty<AbstractSource> 
                     return AbstractBranch.FALSE_PROPERTY;
                 sa = new SkelAtom(OP_SYS_LOCATION);
                 return snapshotToVals(sa, snapshot, en);
-            case PROP_SYS_FULL_NAME:
-                Object val = new SkelAtom(src.getFullName(), src.getStore().user);
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(OP_SYS_FULL_NAME), val), Display.DISPLAY_CONST)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }

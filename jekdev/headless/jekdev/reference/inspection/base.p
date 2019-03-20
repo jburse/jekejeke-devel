@@ -63,10 +63,20 @@
 
 /**
  * sys_provable_hash(I, S, J):
- * The predicate succeeds in J with the predicate indicator which
+ * The predicate succeeds in J with the provable indicator, which
  * is the short form of I in the source S.
  */
 % sys_provable_hash(+Indicator, +Atom, -Indicator)
 :- public sys_provable_hash/3.
 :- foreign(sys_provable_hash/3, 'ForeignBase',
       sysProvableHash('Interpreter','Object','TermAtomic')).
+
+/**
+ * sys_syntax_hash(I, S, J):
+ * The predicate succeeds in J with the syntax indicator, which
+ * is the short form of I in the source S.
+ */
+% sys_syntax_hash(+Indicator, +Atom, -Indicator)
+:- public sys_syntax_hash/3.
+:- foreign(sys_syntax_hash/3, 'ForeignBase',
+      sysSyntaxHash('Interpreter','Object','TermAtomic')).

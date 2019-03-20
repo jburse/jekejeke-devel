@@ -8,6 +8,8 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.rope.Operator;
+import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
@@ -147,21 +149,44 @@ public final class ForeignBase {
      * <p>Determine the provable hash.</p>
      *
      * @param inter     The interpreter.
-     * @param indicator The provable indicator.
+     * @param provable The provable indicator.
      * @param source    The source.
      * @return The provable hash.
      * @throws InterpreterMessage Shit happens
      */
     public static Object sysProvableHash(Interpreter inter,
-                                         Object indicator, TermAtomic source)
+                                         Object provable, TermAtomic source)
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();
-            Predicate pick = derefAndCastPick(AbstractTerm.getSkel(indicator),
-                    AbstractTerm.getDisplay(indicator), engine);
+            Predicate pick = derefAndCastProvable(AbstractTerm.getSkel(provable),
+                    AbstractTerm.getDisplay(provable), engine);
             AbstractSource src = derefAndCastSource(source, engine);
-            return SpecialModel.storeKeyToColonSkel(pick, src, engine);
+            return SpecialModel.provableToColonSkel(pick, src);
         } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
+     * <p>Determine the syntax hash.</p>
+     *
+     * @param inter     The interpreter.
+     * @param syntax The syntax indicator.
+     * @param source    The source.
+     * @return The provable hash.
+     * @throws InterpreterMessage Shit happens
+     */
+    public static Object sysSyntaxHash(Interpreter inter,
+                                       Object syntax, TermAtomic source)
+            throws InterpreterMessage {
+        try {
+            Engine engine = (Engine) inter.getEngine();
+            Operator oper = derefAndCastSyntax(AbstractTerm.getSkel(syntax),
+                    AbstractTerm.getDisplay(syntax), engine);
+            AbstractSource src = derefAndCastSource(source, engine);
+            return SpecialModel.syntaxToColonSkel(oper, src);
+        }catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
     }
@@ -196,11 +221,27 @@ public final class ForeignBase {
      * @return The provable.
      * @throws EngineMessage Shit happens.
      */
-    private static Predicate derefAndCastPick(Object m, Display d, Engine en)
+    private static Predicate derefAndCastProvable(Object m, Display d, Engine en)
             throws EngineMessage {
         Predicate pick = SpecialPred.indicatorToProvable(m, d, en);
         Predicate.checkExistentProvable(pick, m, d);
         return pick;
+    }
+
+    /**
+     * <p>Deref and cast a syntax.</p>
+     *
+     * @param m The syntax skeleton.
+     * @param d The syntax display.
+     * @param en     The engine.
+     * @return The syntax.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Operator derefAndCastSyntax(Object m, Display d, Engine en)
+            throws EngineMessage {
+        Operator oper = SpecialOper.operToSyntax(m, d, en);
+        Operator.checkExistentOperator(oper, m, d);
+        return oper;
     }
 
 }

@@ -280,8 +280,6 @@ sys_find_hit(OrigSrcPin, A, B, 1-0) :-
    C is B-1,
    between(A, C, L),
    cover_hit(OrigSrcPin, L), !.
-%   cover_hit(OrigSrcPin, L),
-%   A =< L, L < B, !.
 sys_find_hit(_, _, _, 0-1).
 
 % sys_find_indicator(+Atom, +Atom, +Integer, +Integer, -Atom, -Integer)
@@ -291,10 +289,6 @@ sys_find_indicator(SrcPin, OrigSrcPin, A, B, Fun, Arity) :-
    between(A, C, L),
    sys_location(SrcPin, OrigSrcPin, L, Indicator),
    sys_indicator_colon(Fun/Arity, Indicator).
-%   source_property(SrcPin, sys_location(Indicator, OrigSrcPin, L)),
-%   A =< L, L < B,
-%   short_indicator(Indicator, OrigSrcPin, ShortIndicator),
-%   sys_make_indicator(Fun, Arity, ShortIndicator).
 
 % sys_analyze_text(+File)
 :- private sys_analyze_text/1.

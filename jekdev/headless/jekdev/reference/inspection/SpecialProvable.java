@@ -337,7 +337,7 @@ public final class SpecialProvable extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk, en)));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
@@ -366,7 +366,7 @@ public final class SpecialProvable extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk, en)));
+                StoreKey.storeKeyToSkel(sk)));
     }
 
     /**************************************************************/
