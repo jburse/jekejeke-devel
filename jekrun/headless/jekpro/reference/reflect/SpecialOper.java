@@ -19,6 +19,7 @@ import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>Provides built-in predicates for the operators.</p>
@@ -306,7 +307,7 @@ public final class SpecialOper extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            MapHashLink<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
             for (MapEntry<StoreKey, AbstractProperty<Operator>> entry2 =
                  (props != null ? props.getLastEntry() : null);
                  entry2 != null; entry2 = props.predecessor(entry2)) {
@@ -417,7 +418,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @return The operator property.
      * @throws EngineMessage Shit happens.
      */
-    private static AbstractProperty<Operator> findOperProperty(StoreKey sk,
+    public static AbstractProperty<Operator> findOperProperty(StoreKey sk,
                                                                Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
@@ -428,7 +429,7 @@ public final class SpecialOper extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            MapHashLink<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
             AbstractProperty<Operator> prop = (props != null ? props.get(sk) : null);
             if (prop != null)
                 return prop;

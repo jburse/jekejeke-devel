@@ -155,7 +155,7 @@ public final class SpecialLoad extends AbstractSpecial {
             case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                
+
                 Operator oper = SpecialOper.operToSyntax(temp[0], ref, en);
                 if (oper == null)
                     return false;
@@ -278,10 +278,10 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
+            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
             for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
-                 (props != null ? props.getLastEntry() : null);
-                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                 (props != null ? props.getFirstEntry() : null);
+                 entry2 != null; entry2 = props.successor(entry2)) {
                 AbstractProperty<Predicate> prop = entry2.value;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
                     continue;
@@ -289,21 +289,22 @@ public final class SpecialLoad extends AbstractSpecial {
                         hasClause(pick, src, en))
                     continue;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
-                        sameVisible(src, pick, en))
+                        sameVisiblePredicate(src, pick, en))
                     continue;
                 Object[] vals = prop.getObjProps(pick, en);
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
                     vals = selectFirst(vals, src.getPathAtom());
-                } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0) {
-                    vals = projectFirst(vals);
                 } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
                     vals = delegateSpec(vals, pick, src);
                 }
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
                     for (int j = 0; j < vals.length; j++) {
+                        Object val = vals[j];
+                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
+                            val = firstArg(val);
                         if (modifiers == null)
                             modifiers = new ListArray<SkelAtom>();
-                        modifiers.add((SkelAtom) AbstractTerm.getSkel(vals[j]));
+                        modifiers.add((SkelAtom) AbstractTerm.getSkel(val));
                     }
                 } else {
                     for (int j = 0; j < vals.length; j++) {
@@ -316,6 +317,8 @@ public final class SpecialLoad extends AbstractSpecial {
                             decl = SpecialModel.predDeclSkelMeta(
                                     AbstractTerm.getSkel(val), pick, src);
                         } else {
+                            if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
+                                val = firstArg(val);
                             decl = SpecialModel.predDeclSkelIndicator(
                                     AbstractTerm.getSkel(val), pick, src);
                         }
@@ -361,6 +364,26 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
+     * <p>Check whether a source and a predicate have the same visibility.</p>
+     *
+     * @param src  The source.
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @return True if the source and the predicate have the same visibility, otherwise false.
+     */
+    private static boolean sameVisiblePredicate(AbstractSource src, Predicate pick,
+                                                Engine en)
+            throws EngineMessage, EngineException {
+        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
+        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
+        Object[] vals = prop.getObjProps(src, en);
+        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
+        AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(sk2, en);
+        Object[] vals2 = prop1.getObjProps(pick, en);
+        return sameValues(vals, vals2);
+    }
+
+    /**
      * <p>List the syntax operator.</p>
      *
      * @param pw   The prolog writer.
@@ -385,12 +408,15 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            MapHashLink<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
             for (MapEntry<StoreKey, AbstractProperty<Operator>> entry2 =
-                 (props != null ? props.getLastEntry() : null);
-                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                 (props != null ? props.getFirstEntry() : null);
+                 entry2 != null; entry2 = props.successor(entry2)) {
                 AbstractProperty<Operator> prop = entry2.value;
                 if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
+                    continue;
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
+                        sameVisibleOper(src, oper, en))
                     continue;
                 Object[] vals = prop.getObjProps(oper, en);
                 for (int j = 0; j < vals.length; j++) {
@@ -399,8 +425,13 @@ public final class SpecialLoad extends AbstractSpecial {
                     if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
                         decl = SpecialModel.operDeclSkelSet(
                                 AbstractTerm.getSkel(val), oper, src);
-                    } else {
+                    } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
                         decl = SpecialModel.operDeclSkelOp(
+                                AbstractTerm.getSkel(val), oper, src);
+                    } else {
+                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
+                            val = firstArg(val);
+                        decl = SpecialModel.operDeclSkelIndicator(
                                 AbstractTerm.getSkel(val), oper, src);
                     }
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
@@ -410,6 +441,26 @@ public final class SpecialLoad extends AbstractSpecial {
                 }
             }
         }
+    }
+
+    /**
+     * <p>Check whether a source and an operator have the same visibility.</p>
+     *
+     * @param src  The source.
+     * @param oper The operator.
+     * @param en   The engine.
+     * @return True if the source and the operator have the same visibility, otherwise false.
+     */
+    private static boolean sameVisibleOper(AbstractSource src, Operator oper,
+                                           Engine en)
+            throws EngineMessage, EngineException {
+        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
+        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
+        Object[] vals = prop.getObjProps(src, en);
+        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
+        AbstractProperty<Operator> prop1 = SpecialOper.findOperProperty(sk2, en);
+        Object[] vals2 = prop1.getObjProps(oper, en);
+        return sameValues(vals, vals2);
     }
 
     /**
@@ -616,43 +667,6 @@ public final class SpecialLoad extends AbstractSpecial {
         return false;
     }
 
-    /**
-     * <p>Check whether a source and a predicate have the same visibility.</p>
-     *
-     * @param src  The source.
-     * @param pick The predicate.
-     * @param en   The engine.
-     * @return True if the source and the predicate have the same visibility, otherwise false.
-     */
-    private static boolean sameVisible(AbstractSource src, Predicate pick,
-                                       Engine en)
-            throws EngineMessage, EngineException {
-        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
-        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
-        Object[] vals = projectFirst(prop.getObjProps(src, en));
-        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
-        AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(sk2, en);
-        Object[] vals2 = projectFirst(prop1.getObjProps(pick, en));
-        return sameValues(vals, vals2);
-    }
-
-    /**
-     * <p>Reduce the value list to its values.</p>
-     *
-     * @param vals The value list with property names.
-     * @return The value list without property names.
-     */
-    private static Object[] projectFirst(Object[] vals) {
-        if (vals.length == 0)
-            return vals;
-        Object[] newvals = new Object[vals.length];
-        for (int i = 0; i < vals.length; i++) {
-            Object val = vals[i];
-            SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(val);
-            newvals[i] = AbstractTerm.createMolec(sc.args[0], AbstractTerm.getDisplay(val));
-        }
-        return newvals;
-    }
 
     /**
      * <p>Convert the value list to its spec.</p>
@@ -686,23 +700,6 @@ public final class SpecialLoad extends AbstractSpecial {
         for (int i = modifiers.size() - 1; i >= 0; i--)
             decl = new SkelCompound(modifiers.get(i), decl);
         return decl;
-    }
-
-    /**
-     * <p>Check whether the two value lists contain the same elements.</p>
-     *
-     * @param vals  The first value list.
-     * @param vals2 The second value list.
-     * @return True if both value lists contain the same elements, otherwise false.
-     */
-    private static boolean sameValues(Object[] vals, Object[] vals2) {
-        for (int i = 0; i < vals.length; i++)
-            if (AbstractProperty.indexValue(vals2, vals[i]) == -1)
-                return false;
-        for (int i = 0; i < vals2.length; i++)
-            if (AbstractProperty.indexValue(vals, vals2[i]) == -1)
-                return false;
-        return true;
     }
 
     /****************************************************************/
@@ -907,6 +904,40 @@ public final class SpecialLoad extends AbstractSpecial {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
+    }
+
+    /*******************************************************************/
+    /* Property Utilities                                              */
+    /*******************************************************************/
+
+    /**
+     * <p>Check whether the two value lists contain the same elements.</p>
+     *
+     * @param vals  The first value list.
+     * @param vals2 The second value list.
+     * @return True if both value lists contain the same elements, otherwise false.
+     */
+    private static boolean sameValues(Object[] vals, Object[] vals2) {
+        if (vals.length != vals2.length)
+            return false;
+        for (int i = 0; i < vals.length; i++) {
+            Object val = firstArg(vals[i]);
+            Object val2 = firstArg(vals2[i]);
+            if (!val.equals(val2))
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     * <p>Return the first arg of the value.</p>
+     *
+     * @param val The value.
+     * @return The first arg.
+     */
+    private static Object firstArg(Object val) {
+        SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(val);
+        return AbstractTerm.createMolec(sc.args[0], Display.DISPLAY_CONST);
     }
 
 }

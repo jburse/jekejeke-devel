@@ -16,6 +16,7 @@ import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>Provides built-in predicates for the module pred.</p>
@@ -279,7 +280,7 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
+            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
             for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
                  (props != null ? props.getLastEntry() : null);
                  entry2 != null; entry2 = props.predecessor(entry2)) {
@@ -401,7 +402,7 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
+            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
             AbstractProperty<Predicate> prop = (props != null ? props.get(sk) : null);
             if (prop != null)
                 return prop;

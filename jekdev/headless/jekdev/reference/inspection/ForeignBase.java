@@ -17,10 +17,7 @@ import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.*;
 
 /**
  * <p>This class provides built-ins for the module base.</p>
@@ -91,10 +88,10 @@ public final class ForeignBase {
                 return null;
             Predicate pick = dc.nextElement();
             co.setRetry(dc.hasMoreElements());
-            Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+            Object t = SpecialQuali.indicatorToColonSkel(pick.getFun(),
                     pick.getSource().getStore().user,
                     pick.getArity(), engine);
-            return skel;
+            return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -136,10 +133,10 @@ public final class ForeignBase {
                 return null;
             Predicate pick = dc.nextElement();
             co.setRetry(dc.hasMoreElements());
-            Object skel = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+            Object t = SpecialQuali.indicatorToColonSkel(pick.getFun(),
                     pick.getSource().getStore().user,
                     pick.getArity(), engine);
-            return skel;
+            return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -162,7 +159,8 @@ public final class ForeignBase {
             Predicate pick = derefAndCastProvable(AbstractTerm.getSkel(provable),
                     AbstractTerm.getDisplay(provable), engine);
             AbstractSource src = derefAndCastSource(source, engine);
-            return SpecialModel.provableToColonSkel(pick, src);
+            Object t = SpecialModel.provableToColonSkel(pick, src);
+            return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -185,7 +183,9 @@ public final class ForeignBase {
             Operator oper = derefAndCastSyntax(AbstractTerm.getSkel(syntax),
                     AbstractTerm.getDisplay(syntax), engine);
             AbstractSource src = derefAndCastSource(source, engine);
-            return SpecialModel.syntaxToColonSkel(oper, src);
+            Object t= SpecialModel.syntaxToColonSkel(oper, src);
+            t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
+            return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         }catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }

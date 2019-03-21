@@ -16,6 +16,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>This class provides operator properties.</p>
@@ -89,11 +90,13 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
      *
      * @return The operator properties.
      */
-    public static MapHash<StoreKey, AbstractProperty<Operator>> defineOperProps() {
-        MapHash<StoreKey, AbstractProperty<Operator>> operprops = new MapHash<StoreKey, AbstractProperty<Operator>>();
-        operprops.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE));
+    public static MapHashLink<StoreKey, AbstractProperty<Operator>> defineOperProps() {
+        MapHashLink<StoreKey, AbstractProperty<Operator>> operprops = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
+        operprops.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
+                        AbstractProperty.MASK_PROP_PRJF));
         operprops.add(new StoreKey(OP_OP, 2), new PropertyOperator(PROP_OP,
-                AbstractProperty.MASK_PROP_SHOW));
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
         operprops.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         operprops.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR,

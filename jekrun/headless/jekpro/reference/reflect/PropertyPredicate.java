@@ -19,6 +19,7 @@ import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>This class provides predicate properties.</p>
@@ -158,8 +159,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      *
      * @return The predicate properties.
      */
-    public static MapHash<StoreKey, AbstractProperty<Predicate>> definePredProps() {
-        MapHash<StoreKey, AbstractProperty<Predicate>> predprops = new MapHash<StoreKey, AbstractProperty<Predicate>>();
+    public static MapHashLink<StoreKey, AbstractProperty<Predicate>> definePredProps() {
+        MapHashLink<StoreKey, AbstractProperty<Predicate>> predprops = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
         predprops.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
                         AbstractProperty.MASK_PROP_PRJF | AbstractProperty.MASK_PROP_MODI));

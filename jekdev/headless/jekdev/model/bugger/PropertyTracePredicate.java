@@ -12,6 +12,7 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>This class provides trace predicate properties.</p>
@@ -76,8 +77,8 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
      *
      * @return The predicate properties.
      */
-    public static MapHash<StoreKey, AbstractProperty<Predicate>> definePredProps() {
-        MapHash<StoreKey, AbstractProperty<Predicate>> predprops = new MapHash<StoreKey, AbstractProperty<Predicate>>();
+    public static MapHashLink<StoreKey, AbstractProperty<Predicate>> definePredProps() {
+        MapHashLink<StoreKey, AbstractProperty<Predicate>> predprops = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
         predprops.add(new StoreKey(OP_SYS_NOINSTRUMENT, 0), new PropertyTracePredicate(PROP_SYS_NOINSTRUMENT, AbstractProperty.MASK_PROP_SETP));
         predprops.add(new StoreKey(OP_SYS_NOWAKEUP, 0), new PropertyTracePredicate(PROP_SYS_NOWAKEUP, AbstractProperty.MASK_PROP_SETP));
         return predprops;
