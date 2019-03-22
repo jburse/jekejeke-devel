@@ -210,7 +210,7 @@ public class Engine implements InterfaceStack {
             for (; ; ) {
                 if (found) {
                     if (contskel != null) {
-                        if (hasCont() && contskel.getWake(this))
+                        if (hasCont())
                             retireCont();
                         contskel = contskel.getNextRaw(this);
                         found = contskel.resolveNext(this);

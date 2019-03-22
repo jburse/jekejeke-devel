@@ -1,7 +1,7 @@
 package jekpro.reference.structure;
 
-import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.BindVar;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialEval;

@@ -721,7 +721,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @param end  The Prolog list.
      * @return The Prolog list.
      */
-    public static Object addToRawAssoc(SkelVar sv, Display d,
+    private static Object addToRawAssoc(SkelVar sv, Display d,
                                        String name, Object end,
                                        Engine en) {
         if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)

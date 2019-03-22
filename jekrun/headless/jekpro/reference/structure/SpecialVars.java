@@ -14,6 +14,7 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.term.*;
 import matula.util.data.*;
+import matula.util.regex.CodeType;
 
 /**
  * <p>Provides built-in predicates for variable ops.</p>
@@ -345,8 +346,9 @@ public final class SpecialVars extends AbstractSpecial {
             return null;
         MapHashLink<Object, NamedDistance> print = null;
         for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry))
+             entry != null; entry = vars.successor(entry)) {
             print = SpecialVars.addToMap(entry.value, d, entry.key, print, en);
+        }
         return print;
     }
 
@@ -359,10 +361,10 @@ public final class SpecialVars extends AbstractSpecial {
      * @param print The print map.
      * @return The print map.
      */
-    public static MapHashLink<Object, NamedDistance> addToMap(SkelVar sv, Display d,
-                                                              String name,
-                                                              MapHashLink<Object, NamedDistance> print,
-                                                              Engine en) {
+    private static MapHashLink<Object, NamedDistance> addToMap(SkelVar sv, Display d,
+                                                               String name,
+                                                               MapHashLink<Object, NamedDistance> print,
+                                                               Engine en) {
         if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)
             return print;
         en.skel = sv;

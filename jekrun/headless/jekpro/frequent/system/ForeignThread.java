@@ -402,12 +402,6 @@ public final class ForeignThread {
                 res.add(entry2.key);
             }
         }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getThreadFlags();
-        for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
-             entry2 != null; entry2 = pfs.successor(entry2)) {
-            res.add(entry2.key);
-        }
         return res;
     }
 
@@ -424,25 +418,8 @@ public final class ForeignThread {
     public static Object getThreadFlag(String flag,
                                        Thread t, Engine en)
             throws EngineMessage, EngineException {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
-                = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
-            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-            if (af != null)
-                return af.getThreadFlag(t, en);
-        }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getThreadFlags();
-        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-        if (af != null)
-            return af.getThreadFlag(t, en);
-        return null;
+        AbstractFlag af = findThreadFlag(flag, en);
+        return af.getThreadFlag(t, en);
     }
 
     /**
@@ -459,6 +436,23 @@ public final class ForeignThread {
     public static void setFlag(String flag, Object m, Display d,
                                Thread t, Engine en)
             throws EngineMessage {
+        AbstractFlag af = findThreadFlag(flag, en);
+        if (!af.setThreadFlag(m, d, t, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+    }
+
+    /**
+     * <p>Find a thread flag.</p>
+     *
+     * @param flag The flag name.
+     * @param en The engine.
+     * @return The thread flag.
+     * @throws EngineMessage Shit happens.
+     */
+    private static AbstractFlag findThreadFlag(String flag, Engine en)
+            throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -469,27 +463,8 @@ public final class ForeignThread {
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
             AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-            if (af != null) {
-                if (af.setThreadFlag(m, d, t, en)) {
-                    return;
-                } else {
-                    throw new EngineMessage(EngineMessage.permissionError(
-                            EngineMessage.OP_PERMISSION_MODIFY,
-                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
-                }
-            }
-        }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getThreadFlags();
-        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-        if (af != null) {
-            if (af.setThreadFlag(m, d, t, en)) {
-                return;
-            } else {
-                throw new EngineMessage(EngineMessage.permissionError(
-                        EngineMessage.OP_PERMISSION_MODIFY,
-                        EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
-            }
+            if (af != null)
+                return af;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_FLAG,

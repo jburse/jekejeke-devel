@@ -148,6 +148,10 @@ public final class ForeignEngine {
      */
     public static ArrayList<String> listFlags(Engine en) {
         ArrayList<String> res = new ArrayList<String>();
+        AbstractFactory factory = en.store.foyer.getFactory();
+        ListArray<MapHash<String, AbstractFlag>> flags = factory.getPrologFlags();
+        for (int i=0; i<flags.size(); i++)
+            listFlags(flags.get(i), res);
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -156,10 +160,10 @@ public final class ForeignEngine {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            listFlags(branch.getPrologFlags(), res);
+            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
+            if (pfs!=null)
+                listFlags(pfs, res);
         }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        listFlags(factory.getPrologFlags(), res);
         return res;
     }
 
@@ -171,13 +175,7 @@ public final class ForeignEngine {
      */
     private static void listFlags(MapHash<String, AbstractFlag> pfs,
                                   ArrayList<String> res) {
-        if (pfs instanceof MapHashWithImport) {
-            ListArray<MapHash<String, AbstractFlag>> imps
-                    = ((MapHashWithImport<String, AbstractFlag>) pfs).getImports();
-            for (int i = 0; i < imps.size(); i++)
-                listFlags(imps.get(i), res);
-        }
-        for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+        for (MapEntry<String, AbstractFlag> entry2 = pfs.getFirstEntry();
              entry2 != null; entry2 = pfs.successor(entry2)) {
             res.add(entry2.key);
         }
@@ -192,25 +190,10 @@ public final class ForeignEngine {
      * @return The value or null.
      */
     public static Object getFlag(String flag, Engine en) {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
-                = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
-            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-            if (af != null)
-                return af.getFlag(en);
-        }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
-        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-        if (af != null)
-            return af.getFlag(en);
-        return null;
+        AbstractFlag af = findPrologFlag(flag, en);
+        if (af==null)
+            return null;
+        return af.getFlag(en);
     }
 
     /**
@@ -226,6 +209,32 @@ public final class ForeignEngine {
      */
     public static void setFlag(String flag, Object m, Display d, Engine en)
             throws EngineMessage {
+        AbstractFlag af = findPrologFlag(flag, en);
+        if (af==null)
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                    new SkelAtom(flag)));
+        if (!af.setFlag(m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+    }
+
+    /**
+     * <p>Find a Prolog flag.</p>
+     * @param flag The Prolog flag name.
+     * @param en The engine.
+     * @return The Prolog flag.
+     */
+    private static AbstractFlag findPrologFlag(String flag, Engine en) {
+        AbstractFactory factory = en.store.foyer.getFactory();
+        ListArray<MapHash<String, AbstractFlag>> flags = factory.getPrologFlags();
+        for (int i=0; i<flags.size(); i++) {
+            MapHash<String, AbstractFlag> pfs=flags.get(i);
+            AbstractFlag af = pfs.get(flag);
+            if (af != null)
+                return af;
+        }
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -236,31 +245,10 @@ public final class ForeignEngine {
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag> pfs = branch.getPrologFlags();
             AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-            if (af != null) {
-                if (af.setFlag(m, d, en)) {
-                    return;
-                } else {
-                    throw new EngineMessage(EngineMessage.permissionError(
-                            EngineMessage.OP_PERMISSION_MODIFY,
-                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
-                }
-            }
+            if (af != null)
+                return af;
         }
-        AbstractFactory factory = en.store.foyer.getFactory();
-        MapHash<String, AbstractFlag> pfs = factory.getPrologFlags();
-        AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
-        if (af != null) {
-            if (af.setFlag(m, d, en)) {
-                return;
-            } else {
-                throw new EngineMessage(EngineMessage.permissionError(
-                        EngineMessage.OP_PERMISSION_MODIFY,
-                        EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
-            }
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_FLAG,
-                new SkelAtom(flag)));
+        return null;
     }
 
     /*************************************************************/

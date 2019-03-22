@@ -72,7 +72,7 @@ public class EngineYield extends Engine {
                     yieldReset();
                 if (found) {
                     if (contskel != null) {
-                        if (hasCont() && contskel.getWake(this))
+                        if (hasCont())
                             retireCont();
                         contskel = contskel.getNextRaw(this);
                         found = contskel.resolveNext(this);

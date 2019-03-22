@@ -109,8 +109,8 @@ public class PrologWriterAnno extends PrologWriter {
      * @param sa   The atom.
      * @param cp   The cache predicate or null.
      * @param decl The declaration or null.
-     * @throws IOException   IO Error.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException     IO Error.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     protected final void writeInfix(Operator op, SkelAtom sa,

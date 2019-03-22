@@ -47,10 +47,8 @@ import matula.util.data.MapHashLink;
  */
 public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_NOINSTRUMENT = "sys_noinstrument";
-    private final static String OP_SYS_NOWAKEUP = "sys_nowakeup";
 
     private static final int PROP_SYS_NOINSTRUMENT = 0;
-    private static final int PROP_SYS_NOWAKEUP = 1;
 
     /**
      * <p>Create a predicate property.</p>
@@ -80,7 +78,6 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
     public static MapHashLink<StoreKey, AbstractProperty<Predicate>> definePredProps() {
         MapHashLink<StoreKey, AbstractProperty<Predicate>> predprops = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
         predprops.add(new StoreKey(OP_SYS_NOINSTRUMENT, 0), new PropertyTracePredicate(PROP_SYS_NOINSTRUMENT, AbstractProperty.MASK_PROP_SETP));
-        predprops.add(new StoreKey(OP_SYS_NOWAKEUP, 0), new PropertyTracePredicate(PROP_SYS_NOWAKEUP, AbstractProperty.MASK_PROP_SETP));
         return predprops;
     }
 
@@ -100,14 +97,6 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
                 if (fun instanceof AbstractDefined &&
                         (fun.subflags & AbstractDefined.MASK_DEFI_NIST) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOINSTRUMENT)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_SYS_NOWAKEUP:
-                fun = pick.del;
-                if (fun instanceof AbstractDefined &&
-                        (fun.subflags & AbstractDefined.MASK_DEFI_NHWK) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_NOWAKEUP)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -134,11 +123,6 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NIST;
                 return true;
-            case PROP_SYS_NOWAKEUP:
-                fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags |= AbstractDefined.MASK_DEFI_NHWK;
-                return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -162,11 +146,6 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NIST;
                 return true;
-            case PROP_SYS_NOWAKEUP:
-                fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags &= ~AbstractDefined.MASK_DEFI_NHWK;
-                return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -184,7 +163,7 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
      */
     public Predicate[] idxObjProp(Object m, Display d, Engine en)
             throws EngineException, EngineMessage {
-        if (id < PROP_SYS_NOINSTRUMENT || id > PROP_SYS_NOWAKEUP)
+        if (id < PROP_SYS_NOINSTRUMENT || id > PROP_SYS_NOINSTRUMENT)
             throw new IllegalArgumentException("illegal prop");
         return null;
     }

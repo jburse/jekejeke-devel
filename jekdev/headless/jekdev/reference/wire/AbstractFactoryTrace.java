@@ -1,11 +1,9 @@
-package jekpro.model.rope;
+package jekdev.reference.wire;
 
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.tools.array.AbstractFactory;
 
 /**
- * <p>The class provides the base class for intermediate code.</p>
+ * <p>This class provides an abstract factory.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,36 +33,13 @@ import jekpro.model.molec.EngineMessage;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class Intermediate {
-    public final static int MASK_INTER_NLST = 0x00000002;
-
-    public Intermediate next;
-    public int flags;
-
-    /**********************************************************/
-    /* Variation Points                                       */
-    /**********************************************************/
+public abstract class AbstractFactoryTrace extends AbstractFactory {
 
     /**
-     * <p>Retrieve the next goal depending on debug mode.</p>
-     * <p>Should be implemented by subclasses.</p>
-     *
-     * @param en The engine.
-     * @return The next goal.
+     * <p>Create an abstract factory trace.</p>
      */
-    public Intermediate getNextRaw(Engine en) {
-        return next;
+    public AbstractFactoryTrace() {
+        addPrologFlags(FlagFactoryTrace.defineFlags());
     }
-
-    /**
-     * <p>Resolve the current goal.</p>
-     *
-     * @param en The engine.
-     * @return The delegate.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public abstract boolean resolveNext(Engine en)
-            throws EngineException, EngineMessage;
 
 }

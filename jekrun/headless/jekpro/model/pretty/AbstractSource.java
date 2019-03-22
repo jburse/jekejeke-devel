@@ -21,7 +21,6 @@ import matula.util.data.*;
 import matula.util.misc.AbstractLock;
 import matula.util.misc.Lock;
 import matula.util.regex.ScannerError;
-import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenOpts;
 

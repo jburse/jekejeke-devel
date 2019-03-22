@@ -5,6 +5,7 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.proxy.AbstractReflection;
 import matula.comp.sharik.AbstractFramework;
+import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
 /**
@@ -72,9 +73,16 @@ public abstract class AbstractFactory extends AbstractFramework {
     public Object toolinput;
     public Object tooloutput;
     public Object toolerror;
-    private MapHash<String, AbstractFlag> prologflags;
-    private MapHash<String, AbstractFlag> threadflags;
+    private ListArray<MapHash<String, AbstractFlag>> prologflags
+            = new ListArray<MapHash<String, AbstractFlag>>();
     private AbstractReflection reflection;
+
+    /**
+     * <p>Create an abstract factor.</p>
+     */
+    public AbstractFactory() {
+        addPrologFlags(FlagFactory.defineFlags());
+    }
 
     /**
      * <p>Retrieve the reflection.</p>
@@ -103,7 +111,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      *
      * @return The prolog flags.
      */
-    public final MapHash<String, AbstractFlag> getPrologFlags() {
+    public final ListArray<MapHash<String, AbstractFlag>> getPrologFlags() {
         return prologflags;
     }
 
@@ -112,30 +120,10 @@ public abstract class AbstractFactory extends AbstractFramework {
      *
      * @param f The prolog flags.
      */
-    public final void setPrologFlags(MapHash<String, AbstractFlag> f) {
-        prologflags = f;
-    }
-
-    /****************************************************************/
-    /* Thread Flags                                                 */
-    /****************************************************************/
-
-    /**
-     * <p>Retrieve the thread flags.</p>
-     *
-     * @return The thread flags.
-     */
-    public final MapHash<String, AbstractFlag> getThreadFlags() {
-        return threadflags;
-    }
-
-    /**
-     * <p>Set the thread flags.</p>
-     *
-     * @param f The thread flags.
-     */
-    public final void setThreadFlags(MapHash<String, AbstractFlag> f) {
-        threadflags = f;
+    public final void addPrologFlags(MapHash<String, AbstractFlag> f) {
+        if (f == null)
+            throw new NullPointerException("flags missing");
+        prologflags.add(f);
     }
 
     /*******************************************************************/

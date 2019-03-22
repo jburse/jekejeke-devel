@@ -1173,8 +1173,10 @@ public class PrologReader {
                                       Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (anon != null && anon.size() > 0) {
-                Object val = singToMolec(anon, en);
+            MapEntry<String, SkelVar> entry =
+                    (anon != null ? anon.getFirstEntry() : null);
+            if (entry != null) {
+                Object val = singToSkel(entry, anon, en);
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_SINGLETON_VAR, val));
             }
@@ -1189,19 +1191,21 @@ public class PrologReader {
     }
 
     /**
-     * <p>Create a list of the singletons.</p>
+     * <p>Create a Prolog list of the printable singletons.</p>
      *
-     * @param anon The anonymous variables.
-     * @param en   The engine.
-     * @return The list of the singletons names.
+     * @param entry The first printable singleton-
+     * @param anon  The anonymous variables.
+     * @param en    The engine.
+     * @return The prolog list of the printable singletons.
      */
-    private static Object singToMolec(MapHashLink<String, SkelVar> anon,
-                                      Engine en) {
+    private static Object singToSkel(MapEntry<String, SkelVar> entry,
+                                     MapHashLink<String, SkelVar> anon,
+                                     Engine en) {
         Object end = en.store.foyer.ATOM_NIL;
-        for (MapEntry<String, SkelVar> entry = anon.getFirstEntry();
-             entry != null; entry = anon.successor(entry)) {
+        for (; entry != null; entry = anon.successor(entry)) {
+            String fun = entry.key;
             end = new SkelCompound(en.store.foyer.ATOM_CONS,
-                    new SkelAtom(entry.key), end);
+                    new SkelAtom(fun), end);
         }
         return end;
     }

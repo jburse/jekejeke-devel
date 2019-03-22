@@ -71,8 +71,6 @@ public class Clause extends Intermediate implements InterfaceReference {
             flags |= Clause.MASK_CLAUSE_STOP;
         if ((copt & AbstractDefined.MASK_DEFI_NBDY) != 0)
             flags |= Clause.MASK_CLAUSE_NBDY;
-        if ((copt & AbstractDefined.MASK_DEFI_NHWK) != 0)
-            flags |= Intermediate.MASK_INTER_MUTE;
         if ((copt & AbstractDefined.MASK_DEFI_NHED) != 0)
             flags |= Clause.MASK_CLAUSE_NHED;
         if ((copt & AbstractDelegate.MASK_DELE_NOBR) != 0)
@@ -174,8 +172,6 @@ public class Clause extends Intermediate implements InterfaceReference {
         int f2 = 0;
         if ((flags & MASK_INTER_NLST) != 0)
             f2 |= MASK_INTER_NLST;
-        if ((flags & MASK_INTER_MUTE) != 0)
-            f2 |= MASK_INTER_MUTE;
         int f3 = 0;
         if ((flags & Clause.MASK_CLAUSE_STOP) == 0)
             f3 |= Goal.MASK_GOAL_CEND;

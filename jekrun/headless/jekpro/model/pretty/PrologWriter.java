@@ -856,8 +856,8 @@ public class PrologWriter {
      * @param op The operator.
      * @param sa The atom.
      * @param cp The predicate or null.
-     * @throws IOException   IO Error.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException     IO Error.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     final void writePrefix(Operator op, SkelAtom sa,
@@ -1777,8 +1777,8 @@ public class PrologWriter {
      *
      * @param t  The string.
      * @param cp The predicate.
-     * @throws IOException   IO error.
-     * @throws EngineMessage Shit happens.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     protected void appendLink(String t, CachePredicate cp)

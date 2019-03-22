@@ -168,11 +168,14 @@ public final class SkelVar extends AbstractSkel
      */
     public static String sernoToString(int k, boolean under) {
         StringBuilder buf = new StringBuilder();
-        if (under)
+        if (under) {
             buf.appendCodePoint('_');
-        buf.appendCodePoint(k % 26 + 'A');
-        if (k >= 26)
-            buf.append(k / 26);
+            buf.append(k);
+        } else {
+            buf.appendCodePoint(k % 26 + 'A');
+            if (k >= 26)
+                buf.append(k / 26);
+        }
         return buf.toString();
     }
 
