@@ -346,9 +346,8 @@ public final class SpecialVars extends AbstractSpecial {
             return null;
         MapHashLink<Object, NamedDistance> print = null;
         for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry)) {
+             entry != null; entry = vars.successor(entry))
             print = SpecialVars.addToMap(entry.value, d, entry.key, print, en);
-        }
         return print;
     }
 

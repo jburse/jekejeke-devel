@@ -2,10 +2,7 @@ package jekpro.platform.swing;
 
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.tools.call.ArrayEnumeration;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
 import jekpro.tools.term.TermAtomic;
 
 /**
@@ -54,9 +51,10 @@ public final class TimeRecord {
      *
      * @param inter The interpreter.
      * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     public void start(Interpreter inter)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         uptime = (Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_UPTIME);
         gctime = (Number) ForeignStatistics.sysGetStat(inter,
@@ -70,9 +68,10 @@ public final class TimeRecord {
      *
      * @param inter The interpreter.
      * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     public void end(Interpreter inter)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         uptime = subtract((Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
         gctime = subtract((Number) ForeignStatistics.sysGetStat(inter,
@@ -103,8 +102,11 @@ public final class TimeRecord {
      * @param inter The interpreter.
      * @param co    The call out.
      * @return The statistics key.
+     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
      */
-    public static String sysCurrentStat(Interpreter inter, CallOut co) {
+    public static String sysCurrentStat(Interpreter inter, CallOut co)
+            throws InterpreterMessage, InterpreterException {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
@@ -136,7 +138,7 @@ public final class TimeRecord {
      * @throws InterpreterMessage Shit happens.
      */
     public Object getStat(Interpreter inter, String name)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
             return uptime;
         } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {

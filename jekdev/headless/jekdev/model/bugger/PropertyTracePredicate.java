@@ -11,7 +11,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**

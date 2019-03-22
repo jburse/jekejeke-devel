@@ -38,7 +38,7 @@ import jekpro.tools.term.SkelAtom;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractFlag {
+public abstract class AbstractFlag<T> {
     public final static String OP_ON = "on";
     public final static String OP_OFF = "off";
     public final static String OP_FALSE = "false";
@@ -56,66 +56,33 @@ public abstract class AbstractFlag {
     }
 
     /************************************************************/
-    /* Prolog Flags                                             */
-    /************************************************************/
-
-    /**
-     * <p>Retrieve the value of this Prolog flag.</p>
-     *
-     * @param en The engine.
-     * @return The value.
-     */
-    public Object getFlag(Engine en) {
-        throw new IllegalArgumentException("not implemented");
-    }
-
-    /**
-     * <p>Set the value of a this Prolog flag.</p>
-     *
-     * @param m  The value skel.
-     * @param d  The value display.
-     * @param en The engine.
-     * @return True if flag could be changed, otherwise false.
-     * @throws EngineMessage Shit happens.
-     */
-    public boolean setFlag(Object m, Display d, Engine en)
-            throws EngineMessage {
-        throw new IllegalArgumentException("not implemented");
-    }
-
-    /************************************************************/
     /* Thread Flags                                             */
     /************************************************************/
 
     /**
-     * <p>Retrieve the value of this thread flag.</p>
+     * <p>Retrieve the value of this flag.</p>
      *
-     * @param t  The thread.
+     * @param t  The object.
      * @param en The engine.
      * @return The value.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public Object getThreadFlag(Thread t, Engine en)
-            throws EngineException, EngineMessage {
-        throw new IllegalArgumentException("not implemented");
-    }
+    public abstract Object getObjFlag(T t, Engine en)
+            throws EngineException, EngineMessage;
 
     /**
      * <p>Set the value of a this flag.</p>
      *
+     * @param t  The object.
      * @param m  The value skel.
      * @param d  The value display.
-     * @param t  The thread.
      * @param en The engine.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setThreadFlag(Object m, Display d,
-                                 Thread t, Engine en)
-            throws EngineMessage {
-        throw new IllegalArgumentException("not implemented");
-    }
+    public abstract boolean setObjFlag(T t, Object m, Display d, Engine en)
+            throws EngineMessage;
 
     /************************************************************/
     /* On & Off Atom                                            */

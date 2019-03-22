@@ -95,6 +95,8 @@ public abstract class AbstractSource {
     public final static int MASK_SRC_HINT = 0x00000040;
     public final static int MASK_SRC_SCND = 0x00000080;
 
+    public final static int MASK_SRC_NSTY = 0x00000100;
+
     /* combined source flags */
     public final static int MASK_SRC_VISI = MASK_SRC_VSPR | MASK_SRC_VSPU;
     public final static int MASK_SRC_ANNO = MASK_SRC_MKDT | MASK_SRC_FILL | MASK_SRC_HINT;
@@ -404,7 +406,8 @@ public abstract class AbstractSource {
                             ((SkelCompound) val).sym.fun.equals(PreClause.OP_TURNSTILE)) {
                         FileText.executeDirective(lr, pre, en);
                     } else {
-                        PrologReader.checkSingleton(lr, pre.anon, en);
+                        if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) == 0)
+                            PrologReader.checkSingleton(lr, pre.anon, en);
                         Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, pre.molec, en);
                         clause.vars = pre.vars;
                         clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);

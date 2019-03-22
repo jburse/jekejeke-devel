@@ -38,7 +38,7 @@ import jekpro.tools.term.AbstractTerm;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class AbstractProperty<T> {
+public abstract class AbstractProperty<T> {
     public static final int MASK_PROP_SHOW = 0x00000001;
     public static final int MASK_PROP_DEFL = 0x00000002;
     public static final int MASK_PROP_SUPR = 0x00000004;
@@ -98,10 +98,8 @@ public class AbstractProperty<T> {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public Object[] getObjProps(T obj, Engine en)
-            throws EngineException, EngineMessage {
-        throw new IllegalArgumentException("not implemented");
-    }
+    public abstract Object[] getObjProps(T obj, Engine en)
+            throws EngineException, EngineMessage;
 
     /**
      * <p>Set a object property.</p>
@@ -113,10 +111,8 @@ public class AbstractProperty<T> {
      * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setObjProp(T obj, Object m, Display d, Engine en)
-            throws EngineMessage {
-        throw new IllegalArgumentException("not implemented");
-    }
+    public abstract boolean setObjProp(T obj, Object m, Display d, Engine en)
+            throws EngineMessage;
 
     /**
      * <p>Reset a object property.</p>
@@ -128,10 +124,8 @@ public class AbstractProperty<T> {
      * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean resetObjProp(T obj, Object m, Display d, Engine en)
-            throws EngineMessage {
-        throw new IllegalArgumentException("not implemented");
-    }
+    public abstract boolean resetObjProp(T obj, Object m, Display d, Engine en)
+            throws EngineMessage;
 
     /**
      * <p>Check whether object has a property.</p>

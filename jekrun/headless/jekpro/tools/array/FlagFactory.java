@@ -1,6 +1,7 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -48,23 +49,27 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FlagFactory extends AbstractFlag {
-    public final static String OP_FLAG_SYS_MASK = "sys_mask";
-    public final static String OP_FLAG_SYS_CUR_INPUT = "sys_cur_input";
-    public final static String OP_FLAG_SYS_CUR_OUTPUT = "sys_cur_output";
-    public final static String OP_FLAG_SYS_CUR_ERROR = "sys_cur_error";
-    public final static String OP_FLAG_SYS_ATTACHED_TO = "sys_attached_to";
-    public final static String OP_FLAG_BASE_URL = "base_url";
-    public final static String OP_FLAG_SYS_LOCALE = "sys_locale";
-    public final static String OP_FLAG_SYS_GOOD_FOR = "sys_good_for";
-    public final static String OP_FLAG_SYS_CPU_COUNT = "sys_cpu_count";
-    public final static String OP_FLAG_SYS_RUNTIME_VERSION = "sys_runtime_version";
-    public final static String OP_FLAG_VERBOSE = "verbose";
-    public final static String OP_FLAG_SYS_HINT = "sys_hint";
-    public final static String OP_FLAG_SYS_TOOL_INPUT = "sys_tool_input";
-    public final static String OP_FLAG_SYS_TOOL_OUTPUT = "sys_tool_output";
-    public final static String OP_FLAG_SYS_TOOL_ERROR = "sys_tool_error";
-    public final static String OP_FLAG_SYS_BELONGS_TO = "sys_belongs_to";
+public final class FlagFactory extends AbstractFlag<Engine> {
+    public final static String OP_SYS_MASK = "sys_mask";
+    public final static String OP_SYS_CUR_INPUT = "sys_cur_input";
+    public final static String OP_SYS_CUR_OUTPUT = "sys_cur_output";
+    public final static String OP_SYS_CUR_ERROR = "sys_cur_error";
+    public final static String OP_SYS_ATTACHED_TO = "sys_attached_to";
+    public final static String OP_BASE_URL = "base_url";
+    public final static String OP_SYS_LOCALE = "sys_locale";
+    public final static String OP_SYS_GOOD_FOR = "sys_good_for";
+    public final static String OP_SYS_CPU_COUNT = "sys_cpu_count";
+    public final static String OP_SYS_RUNTIME_VERSION = "sys_runtime_version";
+    public final static String OP_VERBOSE = "verbose";
+    public final static String OP_SYS_HINT = "sys_hint";
+    public final static String OP_SYS_TOOL_INPUT = "sys_tool_input";
+    public final static String OP_SYS_TOOL_OUTPUT = "sys_tool_output";
+    public final static String OP_SYS_TOOL_ERROR = "sys_tool_error";
+    public final static String OP_SYS_BELONGS_TO = "sys_belongs_to";
+    public final static String OP_BOUNDED = "bounded";
+    public final static String OP_INTEGER_ROUNDING_FUNCTION = "integer_rounding_function";
+    public final static String OP_CHAR_CONVERSION = "char_conversion";
+    public final static String OP_MAX_ARITY = "max_arity";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_CUR_INPUT = 1;
@@ -82,6 +87,10 @@ public final class FlagFactory extends AbstractFlag {
     private static final int FLAG_SYS_TOOL_OUTPUT = 13;
     private static final int FLAG_SYS_TOOL_ERROR = 14;
     private static final int FLAG_SYS_BELONGS_TO = 15;
+    private static final int FLAG_BOUNDED = 16;
+    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 17;
+    private static final int FLAG_CHAR_CONVERSION = 18;
+    private static final int FLAG_MAX_ARITY = 19;
 
     /**
      * <p>Create a flag.</p>
@@ -97,24 +106,28 @@ public final class FlagFactory extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineFlags() {
-        MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.add(OP_FLAG_SYS_MASK, new FlagFactory(FLAG_SYS_MASK));
-        prologflags.add(OP_FLAG_SYS_CUR_INPUT, new FlagFactory(FLAG_SYS_CUR_INPUT));
-        prologflags.add(OP_FLAG_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
-        prologflags.add(OP_FLAG_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
-        prologflags.add(OP_FLAG_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
-        prologflags.add(OP_FLAG_BASE_URL, new FlagFactory(FLAG_BASE_URL));
-        prologflags.add(OP_FLAG_SYS_LOCALE, new FlagFactory(FLAG_SYS_LOCALE));
-        prologflags.add(OP_FLAG_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
-        prologflags.add(OP_FLAG_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
-        prologflags.add(OP_FLAG_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
-        prologflags.add(OP_FLAG_VERBOSE, new FlagFactory(FLAG_VERBOSE));
-        prologflags.add(OP_FLAG_SYS_HINT, new FlagFactory(FLAG_SYS_HINT));
-        prologflags.add(OP_FLAG_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
-        prologflags.add(OP_FLAG_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
-        prologflags.add(OP_FLAG_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
-        prologflags.add(OP_FLAG_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
+    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
+        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
+        prologflags.add(OP_SYS_MASK, new FlagFactory(FLAG_SYS_MASK));
+        prologflags.add(OP_SYS_CUR_INPUT, new FlagFactory(FLAG_SYS_CUR_INPUT));
+        prologflags.add(OP_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
+        prologflags.add(OP_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
+        prologflags.add(OP_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
+        prologflags.add(OP_BASE_URL, new FlagFactory(FLAG_BASE_URL));
+        prologflags.add(OP_SYS_LOCALE, new FlagFactory(FLAG_SYS_LOCALE));
+        prologflags.add(OP_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
+        prologflags.add(OP_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
+        prologflags.add(OP_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
+        prologflags.add(OP_VERBOSE, new FlagFactory(FLAG_VERBOSE));
+        prologflags.add(OP_SYS_HINT, new FlagFactory(FLAG_SYS_HINT));
+        prologflags.add(OP_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
+        prologflags.add(OP_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
+        prologflags.add(OP_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
+        prologflags.add(OP_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
+        prologflags.add(OP_BOUNDED, new FlagFactory(FLAG_BOUNDED));
+        prologflags.add(OP_INTEGER_ROUNDING_FUNCTION, new FlagFactory(FLAG_INTEGER_ROUNDING_FUNCTION));
+        prologflags.add(OP_CHAR_CONVERSION, new FlagFactory(FLAG_CHAR_CONVERSION));
+        prologflags.add(OP_MAX_ARITY, new FlagFactory(FLAG_MAX_ARITY));
         return prologflags;
     }
 
@@ -124,7 +137,7 @@ public final class FlagFactory extends AbstractFlag {
      * @param en The engine.
      * @return The value.
      */
-    public Object getFlag(Engine en) {
+    public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
             case FLAG_SYS_MASK:
                 return AbstractFlag.switchToAtom((en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0);
@@ -189,6 +202,14 @@ public final class FlagFactory extends AbstractFlag {
             case FLAG_SYS_BELONGS_TO:
                 val = en.store.belongsto;
                 return val != null ? val : AbstractFlag.OP_NULL;
+            case FLAG_BOUNDED:
+                return new SkelAtom(AbstractFlag.OP_FALSE);
+            case FLAG_INTEGER_ROUNDING_FUNCTION:
+                return new SkelAtom(Branch.OP_VALUE_TOWARD_ZERO);
+            case FLAG_CHAR_CONVERSION:
+                return AbstractFlag.switchToAtom(false);
+            case FLAG_MAX_ARITY:
+                return Integer.valueOf(Integer.MAX_VALUE);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -203,7 +224,7 @@ public final class FlagFactory extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en)
+    public boolean setObjFlag(Engine obj, Object m, Display d, Engine en)
             throws EngineMessage {
         switch (id) {
             case FLAG_SYS_MASK:
@@ -278,6 +299,12 @@ public final class FlagFactory extends AbstractFlag {
             case FLAG_SYS_BELONGS_TO:
                 en.store.belongsto = SpecialUniv.derefAndCastRefOrNull(m, d);
                 return true;
+            case FLAG_BOUNDED:
+            case FLAG_INTEGER_ROUNDING_FUNCTION:
+            case FLAG_CHAR_CONVERSION:
+            case FLAG_MAX_ARITY:
+                /* can't modify */
+                return false;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

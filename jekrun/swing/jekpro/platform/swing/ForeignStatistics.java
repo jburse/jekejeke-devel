@@ -72,8 +72,11 @@ public final class ForeignStatistics {
      * @param inter The interpreter.
      * @param co    The call out.
      * @return The statistics name.
+     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
      */
-    public static String sysCurrentStat(Interpreter inter, CallOut co) {
+    public static String sysCurrentStat(Interpreter inter, CallOut co)
+            throws InterpreterMessage, InterpreterException {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
@@ -106,7 +109,7 @@ public final class ForeignStatistics {
      * @throws InterpreterMessage Validation error.
      */
     public static Object sysGetStat(Interpreter inter, String name)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         if (OP_STATISTIC_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
         } else if (OP_STATISTIC_USED.equals(name)) {

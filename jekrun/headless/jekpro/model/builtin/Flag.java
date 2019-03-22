@@ -3,6 +3,7 @@ package jekpro.model.builtin;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
@@ -48,11 +49,12 @@ import java.util.Random;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Flag extends AbstractFlag {
-    public final static String OP_FLAG_DOUBLE_QUOTES = "double_quotes"; /* ISO */
-    public final static String OP_FLAG_BACK_QUOTES = "back_quotes";
-    public final static String OP_FLAG_SINGLE_QUOTES = "single_quotes";
-    public final static String OP_FLAG_SYS_ACT_STATUS = "sys_act_status";
+public final class Flag extends AbstractFlag<Engine> {
+    public final static String OP_DOUBLE_QUOTES = "double_quotes"; /* ISO */
+    public final static String OP_BACK_QUOTES = "back_quotes";
+    public final static String OP_SINGLE_QUOTES = "single_quotes";
+    public final static String OP_SYS_ACT_STATUS = "sys_act_status";
+    public final static String OP_STYLE_CHECK = "style_check";
 
     private static final int FLAG_SYS_BODY_VARIABLE = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
@@ -60,23 +62,20 @@ public final class Flag extends AbstractFlag {
     private static final int FLAG_SYS_BODY_CONVERT = 3;
     private static final int FLAG_SYS_CLAUSE_EXPAND = 4;
     private static final int FLAG_SYS_CLAUSE_INDEX = 5;
-    private static final int FLAG_BOUNDED = 6;
-    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 7;
-    private static final int FLAG_CHAR_CONVERSION = 8;
-    private static final int FLAG_MAX_ARITY = 9;
-    private static final int FLAG_DOUBLE_QUOTES = 10;
-    private static final int FLAG_BACK_QUOTES = 11;
-    private static final int FLAG_MAX_CODE = 12;
-    private static final int FLAG_SYS_BREAK_LEVEL = 13;
-    private static final int FLAG_SYS_LAST_PRED = 14;
-    private static final int FLAG_SYS_ACT_STATUS = 15;
-    private static final int FLAG_SINGLE_QUOTES = 16;
-    private static final int FLAG_SYS_VARIABLES = 17;
-    private static final int FLAG_SYS_CHOICES = 18;
-    private static final int FLAG_DIALECT = 19;
-    private static final int FLAG_VERSION_DATA = 20;
-    private static final int FLAG_SYS_RANDOM = 21;
-    private static final int FLAG_SYS_TIMEOUT = 22;
+    private static final int FLAG_DOUBLE_QUOTES = 6;
+    private static final int FLAG_BACK_QUOTES = 7;
+    private static final int FLAG_MAX_CODE = 8;
+    private static final int FLAG_SYS_BREAK_LEVEL = 9;
+    private static final int FLAG_SYS_LAST_PRED = 10;
+    private static final int FLAG_SYS_ACT_STATUS = 11;
+    private static final int FLAG_SINGLE_QUOTES = 12;
+    private static final int FLAG_SYS_VARIABLES = 13;
+    private static final int FLAG_SYS_CHOICES = 14;
+    private static final int FLAG_DIALECT = 15;
+    private static final int FLAG_VERSION_DATA = 16;
+    private static final int FLAG_SYS_RANDOM = 17;
+    private static final int FLAG_SYS_TIMEOUT = 18;
+    private static final int FLAG_STYLE_CHECK = 19;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -92,31 +91,28 @@ public final class Flag extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineFlags() {
-        MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
+    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
+        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
         prologflags.add("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
         prologflags.add("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
         prologflags.add("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
         prologflags.add("sys_body_convert", new Flag(FLAG_SYS_BODY_CONVERT));
         prologflags.add("sys_clause_expand", new Flag(FLAG_SYS_CLAUSE_EXPAND));
         prologflags.add("sys_clause_index", new Flag(FLAG_SYS_CLAUSE_INDEX));
-        prologflags.add("bounded", new Flag(FLAG_BOUNDED));
-        prologflags.add("integer_rounding_function", new Flag(FLAG_INTEGER_ROUNDING_FUNCTION));
-        prologflags.add("char_conversion", new Flag(FLAG_CHAR_CONVERSION));
-        prologflags.add("max_arity", new Flag(FLAG_MAX_ARITY));
-        prologflags.add(OP_FLAG_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
-        prologflags.add(OP_FLAG_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
+        prologflags.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
+        prologflags.add(OP_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
         prologflags.add("max_code", new Flag(FLAG_MAX_CODE));
         prologflags.add("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
         prologflags.add("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
-        prologflags.add(OP_FLAG_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
-        prologflags.add(OP_FLAG_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
+        prologflags.add(OP_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
+        prologflags.add(OP_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
         prologflags.add("sys_variables", new Flag(FLAG_SYS_VARIABLES));
         prologflags.add("sys_choices", new Flag(FLAG_SYS_CHOICES));
         prologflags.add("dialect", new Flag(FLAG_DIALECT));
         prologflags.add("version_data", new Flag(FLAG_VERSION_DATA));
         prologflags.add("sys_random", new Flag(FLAG_SYS_RANDOM));
         prologflags.add("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
+        prologflags.add("style_check", new Flag(FLAG_STYLE_CHECK));
         return prologflags;
     }
 
@@ -126,28 +122,26 @@ public final class Flag extends AbstractFlag {
      * @param en The engine.
      * @return The value.
      */
-    public Object getFlag(Engine en) {
+    public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
             case FLAG_SYS_BODY_VARIABLE:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NBDY) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NLST) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_NLST) == 0);
             case FLAG_SYS_HEAD_VARIABLE:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NHED) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_NHED) == 0);
             case FLAG_SYS_BODY_CONVERT:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) == 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_NBCV) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) != 0);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_CEXP) != 0);
             case FLAG_SYS_CLAUSE_INDEX:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NIDX) == 0);
-            case FLAG_BOUNDED:
-                return new SkelAtom(AbstractFlag.OP_FALSE);
-            case FLAG_INTEGER_ROUNDING_FUNCTION:
-                return new SkelAtom(Branch.OP_VALUE_TOWARD_ZERO);
-            case FLAG_CHAR_CONVERSION:
-                return AbstractFlag.switchToAtom(false);
-            case FLAG_MAX_ARITY:
-                return Integer.valueOf(Integer.MAX_VALUE);
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_NIDX) == 0);
             case FLAG_DOUBLE_QUOTES:
                 return ReadOpts.utilToAtom(en.visor.peekStack().utildouble);
             case FLAG_BACK_QUOTES:
@@ -199,6 +193,9 @@ public final class Flag extends AbstractFlag {
                 return en.store.foyer.random;
             case FLAG_SYS_TIMEOUT:
                 return TermAtomic.normBigInteger(en.store.foyer.timeout);
+            case FLAG_STYLE_CHECK:
+                return AbstractFlag.switchToAtom((en.visor.peekStack().getBits() &
+                        AbstractSource.MASK_SRC_NSTY) == 0);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -213,7 +210,7 @@ public final class Flag extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en)
+    public boolean setObjFlag(Engine obj, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -259,18 +256,6 @@ public final class Flag extends AbstractFlag {
                         en.store.foyer.setBit(Foyer.MASK_FOYER_NIDX);
                     }
                     return true;
-                case FLAG_BOUNDED:
-                    /* can't modify */
-                    return false;
-                case FLAG_INTEGER_ROUNDING_FUNCTION:
-                    /* can't modify */
-                    return false;
-                case FLAG_CHAR_CONVERSION:
-                    /* can't modify */
-                    return false;
-                case FLAG_MAX_ARITY:
-                    /* can't modify */
-                    return false;
                 case FLAG_DOUBLE_QUOTES:
                     en.visor.peekStack().utildouble = (byte) ReadOpts.atomToUtil(m, d);
                     return true;
@@ -324,6 +309,13 @@ public final class Flag extends AbstractFlag {
                 case FLAG_SYS_TIMEOUT:
                     Number num = SpecialEval.derefAndCastInteger(m, d);
                     en.store.foyer.timeout = SpecialEval.castLongValue(num);
+                    return true;
+                case FLAG_STYLE_CHECK:
+                    if (AbstractFlag.atomToSwitch(m, d)) {
+                        en.visor.peekStack().resetBit(AbstractSource.MASK_SRC_NSTY);
+                    } else {
+                        en.visor.peekStack().setBit(AbstractSource.MASK_SRC_NSTY);
+                    }
                     return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");

@@ -6,9 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.tools.array.FlagFactory;
 import matula.util.data.MapHash;
-import matula.util.wire.MapHashWithImport;
 
 /**
  * <p>Toolkit trace flags.</p>
@@ -41,10 +39,10 @@ import matula.util.wire.MapHashWithImport;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FlagFactoryTrace extends AbstractFlag {
-    public final static String OP_FLAG_SYS_MONITOR_CONFIG = "sys_monitor_config";
-    public final static String OP_FLAG_SYS_MONITOR_RUNNING = "sys_monitor_running";
-    public final static String OP_FLAG_SYS_MONITOR_LOGGING = "sys_monitor_logging";
+public final class FlagFactoryTrace extends AbstractFlag<Engine> {
+    public final static String OP_SYS_MONITOR_CONFIG = "sys_monitor_config";
+    public final static String OP_SYS_MONITOR_RUNNING = "sys_monitor_running";
+    public final static String OP_SYS_MONITOR_LOGGING = "sys_monitor_logging";
 
     private static final int FLAG_SYS_MONITOR_CONFIG = 0;
     private static final int FLAG_SYS_MONITOR_RUNNING = 1;
@@ -64,11 +62,11 @@ public final class FlagFactoryTrace extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineFlags() {
-        MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.add(OP_FLAG_SYS_MONITOR_CONFIG, new FlagFactoryTrace(FLAG_SYS_MONITOR_CONFIG));
-        prologflags.add(OP_FLAG_SYS_MONITOR_RUNNING, new FlagFactoryTrace(FLAG_SYS_MONITOR_RUNNING));
-        prologflags.add(OP_FLAG_SYS_MONITOR_LOGGING, new FlagFactoryTrace(FLAG_SYS_MONITOR_LOGGING));
+    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
+        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
+        prologflags.add(OP_SYS_MONITOR_CONFIG, new FlagFactoryTrace(FLAG_SYS_MONITOR_CONFIG));
+        prologflags.add(OP_SYS_MONITOR_RUNNING, new FlagFactoryTrace(FLAG_SYS_MONITOR_RUNNING));
+        prologflags.add(OP_SYS_MONITOR_LOGGING, new FlagFactoryTrace(FLAG_SYS_MONITOR_LOGGING));
         return prologflags;
     }
 
@@ -78,7 +76,7 @@ public final class FlagFactoryTrace extends AbstractFlag {
      * @param en The engine.
      * @return The value.
      */
-    public Object getFlag(Engine en) {
+    public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
             case FLAG_SYS_MONITOR_CONFIG:
                 return Integer.valueOf(((FoyerTrace) en.store.foyer).getMonitorConfig());
@@ -101,7 +99,7 @@ public final class FlagFactoryTrace extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en)
+    public boolean setObjFlag(Engine obj, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {

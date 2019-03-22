@@ -75,7 +75,6 @@ public abstract class Foyer extends Enforced {
     public final static String OP_STRUCT = "sys_struct";
 
     public final static int MASK_FOYER_NIST = 0x00000010;
-    public final static int MASK_FOYER_NHWK = 0x00000020;
     public final static int MASK_FOYER_NBCV = 0x00000040;
     public final static int MASK_FOYER_CEXP = 0x00000080;
 

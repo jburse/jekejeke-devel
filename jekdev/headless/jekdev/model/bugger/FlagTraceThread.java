@@ -47,7 +47,7 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FlagTraceThread extends AbstractFlag {
+public final class FlagTraceThread extends AbstractFlag<Thread> {
     public final static String OP_FLAG_SYS_TDEBUG = "sys_tdebug";
     public final static String OP_FLAG_SYS_TOP_FRAME = "sys_top_frame";
     public final static String OP_FLAG_SYS_THREAD_STORE = "sys_thread_store";
@@ -72,8 +72,8 @@ public final class FlagTraceThread extends AbstractFlag {
      *
      * @return The thread flags.
      */
-    static MapHash<String, AbstractFlag> defineThreadFlags() {
-        MapHash<String, AbstractFlag> threadflags = new MapHash<String, AbstractFlag>();
+    static MapHash<String, AbstractFlag<Thread>> defineThreadFlags() {
+        MapHash<String, AbstractFlag<Thread>> threadflags = new MapHash<String, AbstractFlag<Thread>>();
         threadflags.add(OP_FLAG_SYS_TDEBUG, new FlagTraceThread(FLAG_SYS_TDEBUG));
         threadflags.add(OP_FLAG_SYS_TOP_FRAME, new FlagTraceThread(FLAG_SYS_TOP_FRAME));
         threadflags.add(OP_FLAG_SYS_THREAD_STORE, new FlagTraceThread(FLAG_SYS_THREAD_STORE));
@@ -90,7 +90,7 @@ public final class FlagTraceThread extends AbstractFlag {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    public Object getThreadFlag(Thread t, Engine en)
+    public Object getObjFlag(Thread t, Engine en)
             throws EngineException, EngineMessage {
         switch (id) {
             case FLAG_SYS_TDEBUG:
@@ -138,8 +138,8 @@ public final class FlagTraceThread extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setThreadFlag(Object m, Display d,
-                                 Thread t, Engine en)
+    public boolean setObjFlag(Thread t, Object m, Display d,
+                              Engine en)
             throws EngineMessage {
         try {
             switch (id) {

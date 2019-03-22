@@ -36,7 +36,7 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FlagThread extends AbstractFlag {
+public final class FlagThread extends AbstractFlag<Thread> {
     public final static String OP_FLAG_SYS_THREAD_NAME = "sys_thread_name";
     public final static String OP_FLAG_SYS_THREAD_STATE = "sys_thread_state";
     public final static String OP_FLAG_SYS_THREAD_GROUP = "sys_thread_group";
@@ -59,8 +59,8 @@ public final class FlagThread extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineThreadFlags() {
-        MapHash<String, AbstractFlag> threadflags = new MapHash<String, AbstractFlag>();
+    static MapHash<String, AbstractFlag<Thread>> defineThreadFlags() {
+        MapHash<String, AbstractFlag<Thread>> threadflags = new MapHash<String, AbstractFlag<Thread>>();
         threadflags.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
         threadflags.add(OP_FLAG_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
         threadflags.add(OP_FLAG_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
@@ -74,7 +74,7 @@ public final class FlagThread extends AbstractFlag {
      * @param en The engine.
      * @return The value.
      */
-    public Object getThreadFlag(Thread t, Engine en) {
+    public Object getObjFlag(Thread t, Engine en) {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
                 return t.getName();
@@ -90,15 +90,15 @@ public final class FlagThread extends AbstractFlag {
     /**
      * <p>Set the value of a this flag.</p>
      *
+     * @param t  The thread.
      * @param m  The value skel.
      * @param d  The value display.
-     * @param t  The thread.
      * @param en The engine.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setThreadFlag(Object m, Display d,
-                                 Thread t, Engine en)
+    public boolean setObjFlag(Thread t, Object m, Display d,
+                              Engine en)
             throws EngineMessage {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:

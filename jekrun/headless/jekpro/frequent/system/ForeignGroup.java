@@ -79,7 +79,7 @@ public final class ForeignGroup {
      * @return The new thread.
      */
     public static Thread sysThreadNew(Interpreter inter, ThreadGroup tg, AbstractTerm t)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Object obj = AbstractTerm.copyMolec(inter, t);
         final Interpreter inter2 = ForeignThread.makeInterpreter(inter);
         final CallIn callin = inter2.iterator(obj);

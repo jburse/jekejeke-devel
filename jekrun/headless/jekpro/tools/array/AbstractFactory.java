@@ -2,6 +2,7 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.inter.Engine;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.proxy.AbstractReflection;
 import matula.comp.sharik.AbstractFramework;
@@ -73,8 +74,8 @@ public abstract class AbstractFactory extends AbstractFramework {
     public Object toolinput;
     public Object tooloutput;
     public Object toolerror;
-    private ListArray<MapHash<String, AbstractFlag>> prologflags
-            = new ListArray<MapHash<String, AbstractFlag>>();
+    private ListArray<MapHash<String, AbstractFlag<Engine>>> prologflags
+            = new ListArray<MapHash<String, AbstractFlag<Engine>>>();
     private AbstractReflection reflection;
 
     /**
@@ -111,7 +112,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      *
      * @return The prolog flags.
      */
-    public final ListArray<MapHash<String, AbstractFlag>> getPrologFlags() {
+    public final ListArray<MapHash<String, AbstractFlag<Engine>>> getPrologFlags() {
         return prologflags;
     }
 
@@ -120,7 +121,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      *
      * @param f The prolog flags.
      */
-    public final void addPrologFlags(MapHash<String, AbstractFlag> f) {
+    public final void addPrologFlags(MapHash<String, AbstractFlag<Engine>> f) {
         if (f == null)
             throw new NullPointerException("flags missing");
         prologflags.add(f);

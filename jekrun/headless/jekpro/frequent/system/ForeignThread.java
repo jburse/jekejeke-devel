@@ -7,7 +7,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -69,7 +68,7 @@ public final class ForeignThread {
      * @return The new thread.
      */
     public static Thread sysThreadNew(Interpreter inter, AbstractTerm t)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Object obj = AbstractTerm.copyMolec(inter, t);
         final Interpreter inter2 = makeInterpreter(inter);
         final CallIn callin = inter2.iterator(obj);
@@ -86,7 +85,7 @@ public final class ForeignThread {
      * @throws InterpreterMessage Shit happens.
      */
     static Interpreter makeInterpreter(Interpreter inter)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_CUR_INPUT);
         ConnectionReader cr;
@@ -396,8 +395,10 @@ public final class ForeignThread {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
-            for (MapEntry<String, AbstractFlag> entry2 = (pfs != null ? pfs.getFirstEntry() : null);
+            MapHash<String, AbstractFlag<Thread>> pfs = branch.getThreadFlags();
+            if (pfs==null)
+                continue;
+            for (MapEntry<String, AbstractFlag<Thread>> entry2 = pfs.getFirstEntry();
                  entry2 != null; entry2 = pfs.successor(entry2)) {
                 res.add(entry2.key);
             }
@@ -419,7 +420,7 @@ public final class ForeignThread {
                                        Thread t, Engine en)
             throws EngineMessage, EngineException {
         AbstractFlag af = findThreadFlag(flag, en);
-        return af.getThreadFlag(t, en);
+        return af.getObjFlag(t, en);
     }
 
     /**
@@ -437,7 +438,7 @@ public final class ForeignThread {
                                Thread t, Engine en)
             throws EngineMessage {
         AbstractFlag af = findThreadFlag(flag, en);
-        if (!af.setThreadFlag(m, d, t, en))
+        if (!af.setObjFlag(t, m, d, en))
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
@@ -461,7 +462,7 @@ public final class ForeignThread {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<String, AbstractFlag> pfs = branch.getThreadFlags();
+            MapHash<String, AbstractFlag<Thread>> pfs = branch.getThreadFlags();
             AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
             if (af != null)
                 return af;

@@ -45,18 +45,17 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FlagTrace extends AbstractFlag {
-    public final static String OP_FLAG_UNKNOWN = "unknown"; /* ISO */
-    public final static String OP_FLAG_DEBUG = "debug"; /* ISO */
-    public final static String OP_FLAG_SYS_LEASH = "sys_leash";
-    public final static String OP_FLAG_SYS_VISIBLE = "sys_visible";
-    public final static String OP_FLAG_SYS_TLEASH = "sys_tleash";
-    public final static String OP_FLAG_SYS_TVISIBLE = "sys_tvisible";
-    public final static String OP_FLAG_SYS_CLAUSE_INSTRUMENT = "sys_clause_instrument";
-    public final static String OP_FLAG_SYS_HEAD_WAKEUP = "sys_head_wakeup";
-    public final static String OP_FLAG_SYS_SKIP_FRAME = "sys_skip_frame";
-    public final static String OP_FLAG_SYS_CLOAK = "sys_cloak";
-    public final static String OP_FLAG_SYS_MAX_STACK = "sys_max_stack";
+public final class FlagTrace extends AbstractFlag<Engine> {
+    public final static String OP_UNKNOWN = "unknown"; /* ISO */
+    public final static String OP_DEBUG = "debug"; /* ISO */
+    public final static String OP_SYS_LEASH = "sys_leash";
+    public final static String OP_SYS_VISIBLE = "sys_visible";
+    public final static String OP_SYS_TLEASH = "sys_tleash";
+    public final static String OP_SYS_TVISIBLE = "sys_tvisible";
+    public final static String OP_SYS_CLAUSE_INSTRUMENT = "sys_clause_instrument";
+    public final static String OP_SYS_SKIP_FRAME = "sys_skip_frame";
+    public final static String OP_SYS_CLOAK = "sys_cloak";
+    public final static String OP_SYS_MAX_STACK = "sys_max_stack";
 
     private static final int FLAG_UNKNOWN = 0;
     private static final int FLAG_DEBUG = 1;
@@ -65,10 +64,9 @@ public final class FlagTrace extends AbstractFlag {
     private static final int FLAG_SYS_TLEASH = 4;
     private static final int FLAG_SYS_TVISIBLE = 5;
     private static final int FLAG_SYS_CLAUSE_INSTRUMENT = 6;
-    private static final int FLAG_SYS_HEAD_WAKEUP = 7;
-    private static final int FLAG_SYS_SKIP_FRAME = 8;
-    private static final int FLAG_SYS_CLOAK = 9;
-    private static final int FLAG_SYS_MAX_STACK = 10;
+    private static final int FLAG_SYS_SKIP_FRAME = 7;
+    private static final int FLAG_SYS_CLOAK = 8;
+    private static final int FLAG_SYS_MAX_STACK = 9;
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -84,19 +82,18 @@ public final class FlagTrace extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineFlags() {
-        MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
-        prologflags.add(OP_FLAG_UNKNOWN, new FlagTrace(FLAG_UNKNOWN));
-        prologflags.add(OP_FLAG_DEBUG, new FlagTrace(FLAG_DEBUG));
-        prologflags.add(OP_FLAG_SYS_LEASH, new FlagTrace(FLAG_SYS_LEASH));
-        prologflags.add(OP_FLAG_SYS_VISIBLE, new FlagTrace(FLAG_SYS_VISIBLE));
-        prologflags.add(OP_FLAG_SYS_TLEASH, new FlagTrace(FLAG_SYS_TLEASH));
-        prologflags.add(OP_FLAG_SYS_TVISIBLE, new FlagTrace(FLAG_SYS_TVISIBLE));
-        prologflags.add(OP_FLAG_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
-        prologflags.add(OP_FLAG_SYS_HEAD_WAKEUP, new FlagTrace(FLAG_SYS_HEAD_WAKEUP));
-        prologflags.add(OP_FLAG_SYS_SKIP_FRAME, new FlagTrace(FLAG_SYS_SKIP_FRAME));
-        prologflags.add(OP_FLAG_SYS_CLOAK, new FlagTrace(FLAG_SYS_CLOAK));
-        prologflags.add(OP_FLAG_SYS_MAX_STACK, new FlagTrace(FLAG_SYS_MAX_STACK));
+    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
+        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
+        prologflags.add(OP_UNKNOWN, new FlagTrace(FLAG_UNKNOWN));
+        prologflags.add(OP_DEBUG, new FlagTrace(FLAG_DEBUG));
+        prologflags.add(OP_SYS_LEASH, new FlagTrace(FLAG_SYS_LEASH));
+        prologflags.add(OP_SYS_VISIBLE, new FlagTrace(FLAG_SYS_VISIBLE));
+        prologflags.add(OP_SYS_TLEASH, new FlagTrace(FLAG_SYS_TLEASH));
+        prologflags.add(OP_SYS_TVISIBLE, new FlagTrace(FLAG_SYS_TVISIBLE));
+        prologflags.add(OP_SYS_CLAUSE_INSTRUMENT, new FlagTrace(FLAG_SYS_CLAUSE_INSTRUMENT));
+        prologflags.add(OP_SYS_SKIP_FRAME, new FlagTrace(FLAG_SYS_SKIP_FRAME));
+        prologflags.add(OP_SYS_CLOAK, new FlagTrace(FLAG_SYS_CLOAK));
+        prologflags.add(OP_SYS_MAX_STACK, new FlagTrace(FLAG_SYS_MAX_STACK));
         return prologflags;
     }
 
@@ -106,7 +103,7 @@ public final class FlagTrace extends AbstractFlag {
      * @param en The engine.
      * @return The value.
      */
-    public Object getFlag(Engine en) {
+    public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
             case FLAG_UNKNOWN:
                 return new SkelAtom(ReadOpts.OP_VALUE_ERROR);
@@ -122,8 +119,6 @@ public final class FlagTrace extends AbstractFlag {
                 return SpecialDefault.portsToList(en, en.visor.flags >> 24);
             case FLAG_SYS_CLAUSE_INSTRUMENT:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NIST) == 0);
-            case FLAG_SYS_HEAD_WAKEUP:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NHWK) == 0);
             case FLAG_SYS_SKIP_FRAME:
                 InterfaceStack frame = ((SupervisorTrace) en.visor).getSkipFrame();
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
@@ -145,7 +140,7 @@ public final class FlagTrace extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en)
+    public boolean setObjFlag(Engine obj, Object m, Display d, Engine en)
             throws EngineMessage {
         try {
             switch (id) {
@@ -172,13 +167,6 @@ public final class FlagTrace extends AbstractFlag {
                         en.store.foyer.resetBit(Foyer.MASK_FOYER_NIST);
                     } else {
                         en.store.foyer.setBit(Foyer.MASK_FOYER_NIST);
-                    }
-                    return true;
-                case FLAG_SYS_HEAD_WAKEUP:
-                    if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NHWK);
-                    } else {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_NHWK);
                     }
                     return true;
                 case FLAG_SYS_SKIP_FRAME:

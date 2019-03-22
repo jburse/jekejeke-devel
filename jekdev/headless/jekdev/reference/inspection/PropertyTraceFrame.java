@@ -99,4 +99,38 @@ public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
         }
     }
 
+    /**
+     * <p>Set a object property.</p>
+     *
+     * @param obj The object.
+     * @param m   The property skeleton.
+     * @param d   The property display.
+     * @param en  The engine.
+     * @return True if property could be set, otherwise false.
+     * @throws EngineMessage Shit happens.
+     */
+    public boolean setObjProp(InterfaceStack obj, Object m, Display d, Engine en)
+            throws EngineMessage {
+        if (id < PROP_SYS_PARENT_FRAME || PROP_SYS_CALL_GOAL < id)
+            throw new IllegalArgumentException("illegal prop");
+        return false;
+    }
+
+    /**
+     * <p>Reset a object property.</p>
+     *
+     * @param obj The object.
+     * @param m   The property skeleton.
+     * @param d   The property display.
+     * @param en  The engine.
+     * @return True if property could be set, otherwise false.
+     * @throws EngineMessage Shit happens.
+     */
+    public boolean resetObjProp(InterfaceStack obj, Object m, Display d, Engine en)
+            throws EngineMessage {
+        if (id < PROP_SYS_PARENT_FRAME || PROP_SYS_CALL_GOAL < id)
+            throw new IllegalArgumentException("illegal prop");
+        return false;
+    }
+
 }

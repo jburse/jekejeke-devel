@@ -528,7 +528,7 @@ public final class SpecialLoad extends AbstractSpecial {
         if (src.utildouble != ReadOpts.UTIL_CODES) {
             Object val = ReadOpts.utilToAtom(src.utildouble);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
-                    new SkelAtom(Flag.OP_FLAG_DOUBLE_QUOTES), val);
+                    new SkelAtom(Flag.OP_DOUBLE_QUOTES), val);
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
@@ -537,7 +537,7 @@ public final class SpecialLoad extends AbstractSpecial {
         if (src.utilback != ReadOpts.UTIL_ERROR) {
             Object val = ReadOpts.utilToAtom(src.utilback);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
-                    new SkelAtom(Flag.OP_FLAG_BACK_QUOTES), val);
+                    new SkelAtom(Flag.OP_BACK_QUOTES), val);
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
@@ -546,7 +546,16 @@ public final class SpecialLoad extends AbstractSpecial {
         if (src.utilsingle != ReadOpts.UTIL_ATOM) {
             Object val = ReadOpts.utilToAtom(src.utilsingle);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
-                    new SkelAtom(Flag.OP_FLAG_SINGLE_QUOTES), val);
+                    new SkelAtom(Flag.OP_SINGLE_QUOTES), val);
+            decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+            pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
+            SpecialLoad.flushWriter(pw.getWriter());
+        }
+        if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) != 0) {
+            Object val = AbstractFlag.switchToAtom(false);
+            Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
+                    new SkelAtom(Flag.OP_STYLE_CHECK), val);
             decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
